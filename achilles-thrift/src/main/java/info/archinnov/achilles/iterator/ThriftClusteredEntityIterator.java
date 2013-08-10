@@ -31,7 +31,16 @@ public class ThriftClusteredEntityIterator<T> extends ThriftAbstractClusteredEnt
     {
         log.trace("Get next clustered entity of type {} ", entityClass.getCanonicalName());
         HColumn<Composite, Object> hColumn = this.sliceIterator.next();
-        T target = transformer.buildClusteredEntity(entityClass, context, hColumn);
+        T target;
+        if (context.isValueless())
+        {
+            target = transformer.buildClusteredEntityWithIdOnly(entityClass, context, hColumn.getName()
+                    .getComponents());
+        }
+        else
+        {
+            target = transformer.buildClusteredEntity(entityClass, context, hColumn);
+        }
         return proxifyClusteredEntity(target);
 
     }

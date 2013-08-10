@@ -120,6 +120,7 @@ public class ThriftQueryExecutorImplTest
         meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setFirstMeta(pm);
 
         when(query.getMeta()).thenReturn(meta);
         when(query.getClusteringsFrom()).thenReturn(clusteringsFrom);

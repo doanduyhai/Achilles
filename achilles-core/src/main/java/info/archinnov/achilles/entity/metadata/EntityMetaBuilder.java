@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.eagerType;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.table.TableCreator.TABLE_PATTERN;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -25,12 +26,19 @@ public class EntityMetaBuilder
 {
     private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
+    public static final Predicate<EntityMeta> clusteredCounterFilter = new Predicate<EntityMeta>() {
+        @Override
+        public boolean apply(EntityMeta meta)
+        {
+            return meta.isClusteredCounter();
+        }
+    };
+
     private PropertyMeta<?, ?> idMeta;
     private Class<?> entityClass;
     private String className;
     private String columnFamilyName;
     private Map<String, PropertyMeta<?, ?>> propertyMetas;
-    private boolean clusteredEntity = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
     public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
@@ -60,7 +68,6 @@ public class EntityMetaBuilder
         meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
         meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
-        meta.setClusteredEntity(clusteredEntity);
         meta.setConsistencyLevels(consistencyLevels);
 
         List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
@@ -71,6 +78,20 @@ public class EntityMetaBuilder
         meta.setEagerMetas(eagerMetas);
         meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
 
+        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = FluentIterable
+                .from(propertyMetas.values())
+                .filter(excludeIdType)
+                .toImmutableList();
+        meta.setAllMetasExceptIdMeta(allMetasExceptIdMeta);
+
+        PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.isEmpty() ? null : allMetasExceptIdMeta.get(0);
+        meta.setFirstMeta(firstMeta);
+
+        boolean clusteredEntity = idMeta.isEmbeddedId();
+        meta.setClusteredEntity(clusteredEntity);
+
+        boolean clusteredCounter = clusteredEntity && firstMeta != null && firstMeta.isCounter();
+        meta.setClusteredCounter(clusteredCounter);
         return meta;
     }
 
@@ -128,12 +149,6 @@ public class EntityMetaBuilder
     public EntityMetaBuilder propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
     {
         this.propertyMetas = propertyMetas;
-        return this;
-    }
-
-    public EntityMetaBuilder clusteredEntity(boolean clusteredEntity)
-    {
-        this.clusteredEntity = clusteredEntity;
         return this;
     }
 

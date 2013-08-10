@@ -18,14 +18,14 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.CascadeType;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -288,14 +288,22 @@ public class ThriftEntityPersisterTest {
         Object partitionKey = 10L;
         Object clusteredValue = "clusteredValue";
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .accessors().type(PropertyType.SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .accessors()
+                .type(PropertyType.SIMPLE).build();
 
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
         when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(clusteredValue);
@@ -303,6 +311,28 @@ public class ThriftEntityPersisterTest {
         persister.persist(context);
 
         verify(persisterImpl).persistClusteredEntity(persister, context, partitionKey, clusteredValue);
+    }
+
+    @Test
+    public void should_persist_value_less_clustered_entity() throws Exception {
+        Object partitionKey = 10L;
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
+
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+
+        when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
+
+        persister.persist(context);
+
+        verify(persisterImpl).persistClusteredEntity(persister, context, partitionKey, "");
+
     }
 
     @Test

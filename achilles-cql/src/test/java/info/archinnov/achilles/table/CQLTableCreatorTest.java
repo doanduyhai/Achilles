@@ -11,6 +11,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -148,18 +149,10 @@ public class CQLTableCreatorTest {
                 .field("joinMapCol")
                 .build();
 
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new LinkedHashMap<String, PropertyMeta<?, ?>>();
-        propertyMetas.put("longCol", longColPM);
-        propertyMetas.put("joinCol", joinColPM);
-        propertyMetas.put("longListCol", longListColPM);
-        propertyMetas.put("joinListCol", joinListColPM);
-        propertyMetas.put("longSetCol", longSetColPM);
-        propertyMetas.put("joinSetCol", joinSetColPM);
-        propertyMetas.put("longMapCol", longMapColPM);
-        propertyMetas.put("joinMapCol", joinMapColPM);
-
         meta = new EntityMeta();
-        meta.setPropertyMetas(propertyMetas);
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(longColPM, joinColPM, longListColPM,
+                joinListColPM, longSetColPM, joinSetColPM,
+                longMapColPM, joinMapColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -205,12 +198,8 @@ public class CQLTableCreatorTest {
                 .field("counterCol")
                 .build();
 
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new LinkedHashMap<String, PropertyMeta<?, ?>>();
-        propertyMetas.put("longCol", longColPM);
-        propertyMetas.put("counterCol", counterColPM);
-
         meta = new EntityMeta();
-        meta.setPropertyMetas(propertyMetas);
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(longColPM, counterColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");

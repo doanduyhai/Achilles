@@ -85,6 +85,7 @@ public class ThriftAbstractClusteredEntityIteratorTest {
                 .build();
         idMeta.setGetter(idGetter);
         when((PropertyMeta) context.getFirstMeta()).thenReturn(idMeta);
+        when(context.isValueless()).thenReturn(false);
         when(context.duplicate(target)).thenReturn(context);
         when(proxifier.buildProxy(eq(target), eq(context), methodCaptor.capture())).thenReturn(target);
 
@@ -93,5 +94,26 @@ public class ThriftAbstractClusteredEntityIteratorTest {
         assertThat(actual).isSameAs(target);
 
         assertThat(methodCaptor.getValue()).containsOnly(idGetter);
+    }
+
+    @Test
+    public void should_proxify_value_less_entity() throws Exception
+    {
+        Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .build();
+        idMeta.setGetter(idGetter);
+        when((PropertyMeta) context.getFirstMeta()).thenReturn(idMeta);
+        when(context.isValueless()).thenReturn(true);
+        when(context.duplicate(target)).thenReturn(context);
+        when(proxifier.buildProxy(eq(target), eq(context), methodCaptor.capture())).thenReturn(target);
+
+        BeanWithClusteredId actual = abstractIter.proxifyClusteredEntity(target);
+
+        assertThat(actual).isSameAs(target);
+
+        assertThat(methodCaptor.getValue()).isEmpty();
     }
 }

@@ -5,6 +5,9 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
+import java.util.Arrays;
+import java.util.List;
+import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 import org.junit.Before;
@@ -40,6 +43,9 @@ public class ThriftCounterClusteredEntityIteratorTest
     @Mock
     private HCounterColumn<Composite> hColumn;
 
+    @Mock
+    private Composite composite;
+
     private BeanWithClusteredId entity = new BeanWithClusteredId();
 
     @Before
@@ -55,8 +61,11 @@ public class ThriftCounterClusteredEntityIteratorTest
     @Test
     public void should_get_next() throws Exception
     {
+        List<Component<?>> components = Arrays.<Component<?>> asList(mock(Component.class));
         when(sliceIterator.next()).thenReturn(hColumn);
-        when(transformer.buildCounterClusteredEntity(entityClass, context, hColumn)).thenReturn(
+        when(hColumn.getName()).thenReturn(composite);
+        when(composite.getComponents()).thenReturn(components);
+        when(transformer.buildClusteredEntityWithIdOnly(entityClass, context, components)).thenReturn(
                 entity);
         doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
         assertThat(iterator.next()).isSameAs(entity);

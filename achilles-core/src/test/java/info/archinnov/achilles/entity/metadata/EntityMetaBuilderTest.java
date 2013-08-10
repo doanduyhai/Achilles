@@ -1,19 +1,19 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -78,6 +78,8 @@ public class EntityMetaBuilderTest
 
         assertThat(meta.getEagerMetas()).containsOnly(simpleMeta);
         assertThat(meta.getEagerGetters()).containsOnly(simpleMeta.getGetter());
+        assertThat(meta.getAllMetasExceptIdMeta()).containsOnly(simpleMeta);
+        assertThat(meta.getFirstMeta()).isSameAs((PropertyMeta) simpleMeta);
     }
 
     @Test
@@ -129,4 +131,34 @@ public class EntityMetaBuilderTest
 
         assertThat(meta.getConsistencyLevels()).isSameAs(consistencyLevels);
     }
+
+    @Test
+    public void should_build_clustered_counter_meta() throws Exception
+    {
+
+        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        PropertyMeta<Void, String> counterMeta = new PropertyMeta<Void, String>();
+        counterMeta.setType(COUNTER);
+
+        propertyMetas.put("id", idMeta);
+        propertyMetas.put("counter", counterMeta);
+
+        when(idMeta.type()).thenReturn(EMBEDDED_ID);
+        when(idMeta.getValueClass()).thenReturn(Long.class);
+        when(idMeta.isEmbeddedId()).thenReturn(true);
+
+        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
+        eagerMetas.add(counterMeta);
+
+        EntityMeta meta = entityMetaBuilder(idMeta)
+                .entityClass(CompleteBean.class)
+                .className("Bean")
+                .columnFamilyName("cfName")
+                .propertyMetas(propertyMetas)
+                .build();
+
+        assertThat(meta.isClusteredEntity()).isTrue();
+        assertThat(meta.isClusteredCounter()).isTrue();
+    }
+
 }

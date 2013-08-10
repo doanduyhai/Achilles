@@ -75,7 +75,7 @@ public class CQLDaoContextBuilder
     public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter)
     {
         Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
-                Maps.filterValues(entityMetaMap, excludeClusteredCounter), insertPSTransformer));
+                Maps.filterValues(entityMetaMap, excludeClusteredCounterFilter), insertPSTransformer));
 
         Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap<Class<?>, PreparedStatement>(
                 Maps.transformValues(entityMetaMap, selectEagerPSTransformer));
@@ -98,7 +98,7 @@ public class CQLDaoContextBuilder
 
         Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap<Class<?>, Map<CQLQueryType, PreparedStatement>>(
                 Maps.transformValues(
-                        Maps.filterValues(entityMetaMap, clusteredCounter), clusteredCounterTransformer));
+                        Maps.filterValues(entityMetaMap, clusteredCounterFilter), clusteredCounterTransformer));
 
         return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap,
                 counterQueryMap, clusteredCounterQueriesMap, session);

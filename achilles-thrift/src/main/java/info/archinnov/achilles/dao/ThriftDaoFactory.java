@@ -6,11 +6,11 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
-import org.apache.cassandra.utils.Pair;
 import java.util.Map;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
+import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,13 +43,18 @@ public class ThriftDaoFactory {
             EntityMeta entityMeta, Map<String, ThriftGenericWideRowDao> wideRowDaosMap) {
 
         Class<?> keyClass = entityMeta.getIdMeta().getComponentClasses().get(0);
-        PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
 
         Class<?> valueClass;
-        if (pm.isJoin()) {
-            valueClass = pm.joinIdMeta().getValueClass();
-        } else {
-            valueClass = pm.getValueClass();
+        if (entityMeta.isValueless()) {
+            valueClass = String.class;
+        }
+        else {
+            PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
+            if (pm.isJoin()) {
+                valueClass = pm.joinIdMeta().getValueClass();
+            } else {
+                valueClass = pm.getValueClass();
+            }
         }
 
         ThriftGenericWideRowDao dao;

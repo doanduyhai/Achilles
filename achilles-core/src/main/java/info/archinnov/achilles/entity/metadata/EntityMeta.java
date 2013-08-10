@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 
 /**
  * EntityMeta
@@ -18,7 +17,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class EntityMeta {
 
-    public static final Predicate<EntityMeta> clusteredCounter = new Predicate<EntityMeta>() {
+    public static final Predicate<EntityMeta> clusteredCounterFilter = new Predicate<EntityMeta>() {
         @Override
         public boolean apply(EntityMeta meta)
         {
@@ -26,7 +25,7 @@ public class EntityMeta {
         }
     };
 
-    public static final Predicate<EntityMeta> excludeClusteredCounter = new Predicate<EntityMeta>() {
+    public static final Predicate<EntityMeta> excludeClusteredCounterFilter = new Predicate<EntityMeta>() {
         @Override
         public boolean apply(EntityMeta meta)
         {
@@ -46,6 +45,9 @@ public class EntityMeta {
     private Map<Method, PropertyMeta<?, ?>> setterMetas;
     private boolean clusteredEntity = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+    private PropertyMeta<?, ?> firstMeta;
+    private List<PropertyMeta<?, ?>> allMetasExceptIdMeta;
+    private boolean clusteredCounter = false;
 
     public Class<?> getEntityClass() {
         return entityClass;
@@ -151,6 +153,42 @@ public class EntityMeta {
         this.eagerGetters = eagerGetters;
     }
 
+    public PropertyMeta<?, ?> getFirstMeta() {
+
+        return this.firstMeta;
+    }
+
+    public void setFirstMeta(PropertyMeta<?, ?> firstMeta) {
+        this.firstMeta = firstMeta;
+    }
+
+    public List<PropertyMeta<?, ?>> getAllMetas() {
+        return new ArrayList<PropertyMeta<?, ?>>(propertyMetas.values());
+    }
+
+    public List<PropertyMeta<?, ?>> getAllMetasExceptIdMeta() {
+
+        return this.allMetasExceptIdMeta;
+    }
+
+    public void setAllMetasExceptIdMeta(List<PropertyMeta<?, ?>> allMetasExceptIdMeta) {
+        this.allMetasExceptIdMeta = allMetasExceptIdMeta;
+    }
+
+    public boolean isClusteredCounter()
+    {
+        return this.clusteredCounter;
+    }
+
+    public void setClusteredCounter(boolean clusteredCounter) {
+        this.clusteredCounter = clusteredCounter;
+    }
+
+    public boolean isValueless()
+    {
+        return propertyMetas.size() == 1;
+    }
+
     @Override
     public String toString() {
         StringBuilder description = new StringBuilder();
@@ -162,37 +200,5 @@ public class EntityMeta {
         description.append("consistencyLevels=[").append(consistencyLevels.left.name()).append(",")
                 .append(consistencyLevels.right.name()).append("]]");
         return description.toString();
-    }
-
-    public List<PropertyMeta<?, ?>> getAllMetas() {
-        return new ArrayList<PropertyMeta<?, ?>>(propertyMetas.values());
-    }
-
-    public List<PropertyMeta<?, ?>> getAllMetasExceptIdMeta() {
-
-        return FluentIterable.from(propertyMetas.values()).filter(PropertyType.excludeIdType).toImmutableList();
-    }
-
-    public PropertyMeta<?, ?> getFirstMeta() {
-
-        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
-
-        if (allMetasExceptIdMeta.isEmpty())
-            return null;
-        else
-            return allMetasExceptIdMeta.get(0);
-    }
-
-    public boolean isClusteredCounter()
-    {
-        boolean isClusteredCounter = false;
-        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = getAllMetasExceptIdMeta();
-        int propertyCount = allMetasExceptIdMeta.size();
-        if (propertyCount > 0)
-        {
-            PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.get(0);
-            isClusteredCounter = clusteredEntity && propertyCount == 1 && firstMeta.isCounter();
-        }
-        return isClusteredCounter;
     }
 }

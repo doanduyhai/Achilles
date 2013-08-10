@@ -1,7 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -21,7 +20,6 @@ import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -41,7 +39,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * ThriftQueryExecutorTest
@@ -60,6 +57,9 @@ public class ThriftSliceQueryExecutorTest
 
     @Mock
     private ThriftPersistenceContextFactory contextFactory;
+
+    @Mock
+    private ThriftPersistenceContext context;
 
     @Mock
     private AchillesConsistencyLevelPolicy consistencyPolicy;
@@ -82,7 +82,7 @@ public class ThriftSliceQueryExecutorTest
     private PropertyMeta<?, ?> idMeta;
 
     @Mock
-    private PropertyMeta<?, ?> pm;
+    private PropertyMeta pm;
 
     private EntityMeta meta;
 
@@ -110,18 +110,7 @@ public class ThriftSliceQueryExecutorTest
 
         entity = new BeanWithClusteredId();
         entity.setId(compoundKey);
-        Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-        idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .build();
-        idMeta.setGetter(idGetter);
-
-        meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-
-        when(query.getMeta()).thenReturn(meta);
         when(query.getConsistencyLevel()).thenReturn(consistencyLevel);
         when(query.getPartitionKey()).thenReturn(partitionKey);
 
@@ -131,16 +120,18 @@ public class ThriftSliceQueryExecutorTest
         when(pm.getGetter()).thenReturn(valueGetter);
         when(invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey)).thenReturn(compoundKey);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
-
+        when(contextFactory.newContextForSliceQuery(BeanWithClusteredId.class, partitionKey, consistencyLevel))
+                .thenReturn(context);
+        when(context.isValueless()).thenReturn(false);
+        when(context.getFirstMeta()).thenReturn(pm);
     }
 
     @Test
     public void should_get_clustered_entities() throws Exception
     {
+        //Given
         when(pm.type()).thenReturn(SIMPLE);
-
         List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
-
         when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
                 columns);
 
@@ -151,8 +142,11 @@ public class ThriftSliceQueryExecutorTest
         when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), any(Set.class)))
                 .thenReturn(entity);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+
+        //When
         List<BeanWithClusteredId> actual = executor.get(query);
 
+        //Then
         assertThat(actual).containsOnly(entity);
     }
 
@@ -191,6 +185,26 @@ public class ThriftSliceQueryExecutorTest
         List<BeanWithClusteredId> entities = Arrays.asList(entity);
         when(factory.buildCounterClusteredEntities(eq(entityClass),
                 any(ThriftPersistenceContext.class), eq(columns))).thenReturn(entities);
+
+        when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), any(Set.class)))
+                .thenReturn(entity);
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+        List<BeanWithClusteredId> actual = executor.get(query);
+
+        assertThat(actual).containsOnly(entity);
+    }
+
+    @Test
+    public void should_get_value_less_clustered_entities() throws Exception
+    {
+        when(context.isValueless()).thenReturn(true);
+        List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
+        when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
+                columns);
+
+        List<BeanWithClusteredId> entities = Arrays.asList(entity);
+        when(factory.buildClusteredEntities(eq(entityClass), any(ThriftPersistenceContext.class),
+                eq(columns))).thenReturn(entities);
 
         when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), any(Set.class)))
                 .thenReturn(entity);
@@ -254,6 +268,20 @@ public class ThriftSliceQueryExecutorTest
         assertThat(iterator).isInstanceOf(ThriftCounterClusteredEntityIterator.class);
     }
 
+    @Test
+    public void should_get_value_less_iterator() throws Exception
+    {
+        when(context.isValueless()).thenReturn(true);
+        ThriftSliceIterator<Object, Object> columnsIterator = mock(ThriftSliceIterator.class);
+
+        when(executorImpl.getColumnsIterator(eq(query), any(ThriftPersistenceContext.class)))
+                .thenReturn(columnsIterator);
+
+        Iterator<BeanWithClusteredId> iterator = executor.iterator(query);
+
+        assertThat(iterator).isInstanceOf(ThriftClusteredEntityIterator.class);
+    }
+
     @Test(expected = AchillesException.class)
     public void should_exception_when_get_iterator_on_wrong_valuetype() throws Exception
     {
@@ -266,12 +294,13 @@ public class ThriftSliceQueryExecutorTest
     @Test
     public void should_remove_entire_row() throws Exception
     {
+        when(context.isValueless()).thenReturn(true);
         when(query.hasNoComponent()).thenReturn(true);
         when(query.isLimitSet()).thenReturn(false);
-        when(query.getConsistencyLevel()).thenReturn(ANY);
+        when(query.getConsistencyLevel()).thenReturn(consistencyLevel);
         executor.remove(query);
 
-        verify(executorImpl).removeRow(eq(partitionKey), any(ThriftPersistenceContext.class), eq(ANY));
+        verify(executorImpl).removeRow(eq(partitionKey), any(ThriftPersistenceContext.class), eq(consistencyLevel));
     }
 
     @Test
@@ -319,6 +348,21 @@ public class ThriftSliceQueryExecutorTest
         executor.remove(query);
 
         verify(executorImpl).removeCounterColumns(eq(columns), eq(consistencyLevel),
+                any(ThriftPersistenceContext.class));
+    }
+
+    @Test
+    public void should_remove_value_less_columns() throws Exception
+    {
+        when(context.isValueless()).thenReturn(true);
+        List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
+
+        when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
+                columns);
+
+        executor.remove(query);
+
+        verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel),
                 any(ThriftPersistenceContext.class));
     }
 

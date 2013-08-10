@@ -11,7 +11,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.Counter;
-import org.apache.cassandra.utils.Pair;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +19,7 @@ import java.util.UUID;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -99,19 +100,29 @@ public class ThriftDaoFactoryTest {
         assertThat(rowAndValueClases.right).isSameAs(String.class);
     }
 
+    // Clustered Entity Dao
     @Test
     public void should_create_clustered_entity_dao() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Integer.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Date.class)
+                .type(PropertyType.SIMPLE)
+                .build();
 
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setTableName("cf");
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
@@ -124,25 +135,34 @@ public class ThriftDaoFactoryTest {
         assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace")).isSameAs(keyspace);
         assertThat(Whitebox.getInternalState(clusteredEntityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
 
-        Pair<Class<Long>, Class<Date>> rowAndValueClases = Whitebox.getInternalState(clusteredEntityDao,
+        Pair<Class<Integer>, Class<Date>> rowAndValueClasses = Whitebox.getInternalState(clusteredEntityDao,
                 "rowkeyAndValueClasses");
-        assertThat(rowAndValueClases.left).isSameAs(Long.class);
-        assertThat(rowAndValueClases.right).isSameAs(Date.class);
+        assertThat(rowAndValueClasses.left).isSameAs(Integer.class);
+        assertThat(rowAndValueClasses.right).isSameAs(Date.class);
     }
 
     @Test
     public void should_create_counter_clustered_entity_dao() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Integer.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Integer.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(PropertyType.COUNTER).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Counter.class)
+                .type(PropertyType.COUNTER)
+                .build();
 
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setTableName("cf");
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
@@ -157,16 +177,25 @@ public class ThriftDaoFactoryTest {
     @Test
     public void should_create_object_type_clustered_entity_dao() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Integer.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Integer.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(PropertyType.SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(UserBean.class)
+                .type(PropertyType.SIMPLE)
+                .build();
 
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setTableName("cf");
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
@@ -181,22 +210,31 @@ public class ThriftDaoFactoryTest {
     @Test
     public void should_create_join_clustered_entity_dao() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Integer.class, String.class, Long.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Integer.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(UUID.class).build();
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(PropertyType.JOIN_SIMPLE)
-                .joinMeta(joinMeta).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(UserBean.class)
+                .type(PropertyType.JOIN_SIMPLE)
+                .joinMeta(joinMeta)
+                .build();
 
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setTableName("cf");
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
@@ -206,5 +244,38 @@ public class ThriftDaoFactoryTest {
                 "rowkeyAndValueClasses");
         assertThat(rowAndValueClases.left).isSameAs(Integer.class);
         assertThat(rowAndValueClases.right).isSameAs(UUID.class);
+    }
+
+    @Test
+    public void should_create_value_less_clustered_entity_dao() throws Exception {
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Integer.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
+
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setClusteredEntity(true);
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setTableName("cf");
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+
+        factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
+
+        ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
+
+        assertThat(clusteredEntityDao).isNotNull();
+        assertThat(clusteredEntityDao.getColumnFamily()).isEqualTo("cf");
+        assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy")).isSameAs(consistencyPolicy);
+        assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster")).isSameAs(cluster);
+        assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace")).isSameAs(keyspace);
+        assertThat(Whitebox.getInternalState(clusteredEntityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+
+        Pair<Class<Integer>, Class<String>> rowAndValueClasses = Whitebox.getInternalState(clusteredEntityDao,
+                "rowkeyAndValueClasses");
+        assertThat(rowAndValueClasses.left).isSameAs(Integer.class);
+        assertThat(rowAndValueClasses.right).isSameAs(String.class);
     }
 }

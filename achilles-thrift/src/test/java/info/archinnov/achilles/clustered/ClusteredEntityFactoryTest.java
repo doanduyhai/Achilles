@@ -64,8 +64,11 @@ public class ClusteredEntityFactoryTest
     public void setUp() throws Exception
     {
 
-        idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .type(PropertyType.EMBEDDED_ID).accessors().build();
+        idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .accessors()
+                .build();
 
         meta = new EntityMeta();
         meta.setIdMeta(idMeta);
@@ -78,6 +81,14 @@ public class ClusteredEntityFactoryTest
     @Test
     public void should_return_empty_list_when_empty_hcolumns() throws Exception
     {
+        PropertyMeta pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, String.class)
+                .field("name")
+                .type(PropertyType.SIMPLE)
+                .build();
+        when(context.getFirstMeta()).thenReturn(pm);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+
         List<BeanWithClusteredId> actual = factory.buildClusteredEntities(
                 BeanWithClusteredId.class, context, new ArrayList<HColumn<Composite, Object>>());
 
@@ -85,7 +96,7 @@ public class ClusteredEntityFactoryTest
     }
 
     @Test
-    public void should_build_simple_clustered_entities() throws Exception
+    public void should_build_simple_clustered_entity() throws Exception
     {
 
         PropertyMeta pm = PropertyMetaTestBuilder
@@ -94,7 +105,10 @@ public class ClusteredEntityFactoryTest
                 .type(PropertyType.SIMPLE)
                 .build();
         when(context.getFirstMeta()).thenReturn(pm);
-        when(transformer.buildClusteredEntityTransformer(BeanWithClusteredId.class, context))
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+
+        when(context.getFirstMeta()).thenReturn(pm);
+        when(transformer.clusteredEntityTransformer(BeanWithClusteredId.class, context))
                 .thenReturn(
                         new Function<HColumn<Composite, Object>, BeanWithClusteredId>()
                         {
@@ -112,7 +126,7 @@ public class ClusteredEntityFactoryTest
     }
 
     @Test
-    public void should_build_counter_clustered_entities() throws Exception
+    public void should_build_counter_clustered_entity() throws Exception
     {
 
         PropertyMeta pm = PropertyMetaTestBuilder
@@ -121,8 +135,9 @@ public class ClusteredEntityFactoryTest
                 .type(PropertyType.COUNTER)
                 .build();
         when(context.getFirstMeta()).thenReturn(pm);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
 
-        when(transformer.buildCounterClusteredEntityTransformer(BeanWithClusteredId.class, context))
+        when(transformer.counterClusteredEntityTransformer(BeanWithClusteredId.class, context))
                 .thenReturn(
                         new Function<HCounterColumn<Composite>, BeanWithClusteredId>()
                         {
@@ -139,7 +154,7 @@ public class ClusteredEntityFactoryTest
     }
 
     @Test
-    public void should_build_join_clustered_entities() throws Exception
+    public void should_build_join_clustered_entity() throws Exception
     {
         UserBean user = new UserBean();
         Map<Object, Object> joinEntitiesMap = ImmutableMap.<Object, Object> of(10L, user);
@@ -153,6 +168,7 @@ public class ClusteredEntityFactoryTest
                 .build();
 
         when(context.getFirstMeta()).thenReturn(pm);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
 
         when(transformer.buildRawValueTransformer()).thenReturn(
                 (Function) new Function<HColumn<Composite, Object>, Object>()
@@ -172,7 +188,7 @@ public class ClusteredEntityFactoryTest
                 .thenReturn(joinEntitiesMap);
 
         when(
-                transformer.buildJoinClusteredEntityTransformer(BeanWithClusteredId.class, context,
+                transformer.joinClusteredEntityTransformer(BeanWithClusteredId.class, context,
                         joinEntitiesMap))
                 .thenReturn(new Function<HColumn<Composite, Object>, BeanWithClusteredId>()
                 {
@@ -182,6 +198,27 @@ public class ClusteredEntityFactoryTest
                         return entity;
                     }
                 });
+        List<BeanWithClusteredId> clusteredEntities = factory.buildClusteredEntities(
+                BeanWithClusteredId.class,
+                context, hColumns);
+
+        assertThat(clusteredEntities).containsExactly(entity);
+    }
+
+    @Test
+    public void should_build_value_less_clustered_entity() throws Exception
+    {
+        when(context.isValueless()).thenReturn(true);
+        when(transformer.valuelessClusteredEntityTransformer(BeanWithClusteredId.class, context))
+                .thenReturn(
+                        new Function<HColumn<Composite, Object>, BeanWithClusteredId>()
+                        {
+                            @Override
+                            public BeanWithClusteredId apply(HColumn<Composite, Object> hCol)
+                            {
+                                return entity;
+                            }
+                        });
         List<BeanWithClusteredId> clusteredEntities = factory.buildClusteredEntities(
                 BeanWithClusteredId.class,
                 context, hColumns);

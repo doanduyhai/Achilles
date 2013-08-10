@@ -59,14 +59,13 @@ public class EntityParsingValidator {
 
             Validator
                     .validateBeanMappingFalse(
-                            propertyMetas != null && propertyMetas.size() != 2,
+                            propertyMetas != null && propertyMetas.size() > 2,
                             "The clustered entity '"
                                     + context.getCurrentEntityClass().getCanonicalName()
                                     + "' should not have more than two properties annotated with @EmbeddedId/@Column/@JoinColumn");
 
             Iterator<Entry<String, PropertyMeta<?, ?>>> metaIter = propertyMetas.entrySet().iterator();
             PropertyType type1 = metaIter.next().getValue().type();
-            PropertyType type2 = metaIter.next().getValue().type();
 
             log.debug("Validate that the clustered entity {} has an @EmbeddedId", context.getCurrentEntityClass()
                     .getCanonicalName());
@@ -78,11 +77,15 @@ public class EntityParsingValidator {
             log.debug("Validate that the clustered entity {} has a valid clustered value type", context
                     .getCurrentEntityClass().getCanonicalName());
 
-            Validator
-                    .validateBeanMappingTrue(
-                            type2.isValidClusteredValueType(),
-                            "The clustered entity '%s' should have a single @Column/@JoinColumn property of type simple/join simple/counter",
-                            context.getCurrentEntityClass().getCanonicalName());
+            if (metaIter.hasNext())
+            {
+                PropertyType type2 = metaIter.next().getValue().type();
+                Validator
+                        .validateBeanMappingTrue(
+                                type2.isValidClusteredValueType(),
+                                "The clustered entity '%s' should have a single @Column/@JoinColumn property of type simple/join simple/counter",
+                                context.getCurrentEntityClass().getCanonicalName());
+            }
         }
     }
 

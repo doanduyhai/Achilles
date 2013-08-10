@@ -5,8 +5,7 @@ import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftQueryExecutorImpl;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.iterator.ThriftClusteredEntityIterator;
@@ -16,6 +15,7 @@ import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -45,11 +45,12 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     public <T> List<T> get(final SliceQuery<T> sliceQuery)
     {
         ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-        EntityMeta meta = sliceQuery.getMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
-
+        List<Method> getters = context.isValueless() ? Arrays.<Method> asList() : Arrays.asList(context
+                .getFirstMeta()
+                .getGetter());
+        PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
         List<T> clusteredEntities = null;
-        switch (pm.type())
+        switch (type)
         {
             case JOIN_SIMPLE:
             case SIMPLE:
@@ -66,21 +67,21 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
                 break;
             default:
                 throw new AchillesException("Cannot get entities for clustered value of type '"
-                        + pm.type().name() + "' and clustered entity class '"
+                        + type.name() + "' and clustered entity class '"
                         + sliceQuery.getEntityClass().getCanonicalName() + "'");
         }
 
-        return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, Arrays.asList(pm.getGetter())));
+        return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, getters));
     }
 
     @Override
     public <T> Iterator<T> iterator(final SliceQuery<T> sliceQuery)
     {
         ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-        EntityMeta meta = sliceQuery.getMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
         Class<T> entityClass = sliceQuery.getEntityClass();
-        switch (pm.type())
+
+        switch (type)
         {
             case SIMPLE:
                 ThriftSliceIterator<Object, Object> columnsIterator = executorImpl
@@ -100,7 +101,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
                         counterColumnsIterator, context);
             default:
                 throw new AchillesException("Cannot get iterator for clustered value of type '"
-                        + pm.type().name() + "' and clustered entity class '"
+                        + type.name() + "' and clustered entity class '"
                         + entityClass.getCanonicalName() + "'");
         }
     }
@@ -109,8 +110,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
     public <T> void remove(final SliceQuery<T> sliceQuery)
     {
         ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-        EntityMeta meta = sliceQuery.getMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
 
         if (sliceQuery.hasNoComponent() && sliceQuery.isLimitSet() == false)
         {
@@ -118,7 +118,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
         }
         else
         {
-            switch (pm.type())
+            switch (type)
             {
                 case JOIN_SIMPLE:
                 case SIMPLE:
@@ -134,7 +134,7 @@ public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersisten
                     break;
                 default:
                     throw new AchillesException("Cannot remove clustered value of type '"
-                            + pm.type().name() + "' and clustered entity class '"
+                            + type.name() + "' and clustered entity class '"
                             + sliceQuery.getEntityClass().getCanonicalName() + "'");
             }
         }

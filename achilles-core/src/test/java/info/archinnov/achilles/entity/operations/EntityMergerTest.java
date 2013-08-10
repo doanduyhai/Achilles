@@ -16,6 +16,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * EntityMergerTest
@@ -88,10 +88,15 @@ public class EntityMergerTest {
         when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
         when(context.addToProcessingList(entity)).thenReturn(true, false);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class)
-                .field("user").accessors().type(JOIN_SIMPLE).cascadeType(ALL).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(JOIN_SIMPLE)
+                .cascadeType(ALL)
+                .accessors()
+                .build();
 
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("user", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         dirtyMap.put(pm.getSetter(), pm);
 

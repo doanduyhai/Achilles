@@ -250,6 +250,11 @@ public class ThriftPersistenceContext extends PersistenceContext
                 writeLevel);
     }
 
+    public boolean isValueless()
+    {
+        return entityMeta.isValueless();
+    }
+
     public ThriftGenericEntityDao findEntityDao(String tableName)
     {
         return daoContext.findEntityDao(tableName);

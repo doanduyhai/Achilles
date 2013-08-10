@@ -6,6 +6,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
+import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.validation.Validator;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
@@ -47,11 +48,31 @@ public class ThriftColumnFamilyValidator {
     public void validateCFForClusteredEntity(ColumnFamilyDefinition cfDef, EntityMeta meta, String tableName) {
 
         PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
 
         log.trace(
                 "Validating column family composite comparator definition for clustered entity {} and column family {}",
                 idMeta.getEntityClassName(), tableName);
+
+        String valueValidationType;
+        if (meta.isValueless())
+        {
+            valueValidationType = ThriftSerializerUtils.STRING_SRZ.getComparatorType().getClassName();
+        }
+        else
+        {
+            PropertyMeta<?, ?> pm = meta.getFirstMeta();
+            PropertyType type = pm.type();
+            if (type.isCounter()) {
+                valueValidationType = COUNTERTYPE.getClassName();
+            } else if (type.isJoin()) {
+                valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.joinIdMeta().getValueClass())
+                        .getComparatorType().getClassName();
+            } else {
+                valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.getValueClass())
+                        .getComparatorType()
+                        .getClassName();
+            }
+        }
 
         Class<?> keyClass = idMeta.getComponentClasses().get(0);
         String keyValidationType = ThriftSerializerTypeInferer.<Object> getSerializer(keyClass).getComparatorType()
@@ -68,18 +89,6 @@ public class ThriftColumnFamilyValidator {
 
         Validator.validateTableTrue(StringUtils.equals(comparatorType, comparatorTypeAlias),
                 "The column family '%s' comparator type should be '%s'", tableName, comparatorTypeAlias);
-
-        String valueValidationType;
-        PropertyType type = pm.type();
-        if (type.isCounter()) {
-            valueValidationType = COUNTERTYPE.getClassName();
-        } else if (type.isJoin()) {
-            valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.joinIdMeta().getValueClass())
-                    .getComparatorType().getClassName();
-        } else {
-            valueValidationType = ThriftSerializerTypeInferer.getSerializer(pm.getValueClass()).getComparatorType()
-                    .getClassName();
-        }
 
         Validator.validateTableTrue(StringUtils.equals(cfDef.getDefaultValidationClass(), valueValidationType),
                 "The column family '%s' default validation type should be '%s'", tableName, valueValidationType);

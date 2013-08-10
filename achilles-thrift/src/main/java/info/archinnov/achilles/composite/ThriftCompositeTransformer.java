@@ -42,7 +42,7 @@ public class ThriftCompositeTransformer
 
     // //////////////////// Clustered Entities
 
-    public <T> Function<HColumn<Composite, Object>, T> buildClusteredEntityTransformer(
+    public <T> Function<HColumn<Composite, Object>, T> clusteredEntityTransformer(
             final Class<T> entityClass,
             final ThriftPersistenceContext context)
     {
@@ -56,7 +56,7 @@ public class ThriftCompositeTransformer
         };
     }
 
-    public <T> Function<HColumn<Composite, Object>, T> buildJoinClusteredEntityTransformer(
+    public <T> Function<HColumn<Composite, Object>, T> joinClusteredEntityTransformer(
             final Class<T> entityClass, final ThriftPersistenceContext context,
             final Map<Object, Object> joinEntitiesMap)
     {
@@ -74,7 +74,20 @@ public class ThriftCompositeTransformer
         };
     }
 
-    public <T> Function<HCounterColumn<Composite>, T> buildCounterClusteredEntityTransformer(
+    public <T> Function<HColumn<Composite, Object>, T> valuelessClusteredEntityTransformer(
+            final Class<T> entityClass, final ThriftPersistenceContext context)
+    {
+        return new Function<HColumn<Composite, Object>, T>()
+        {
+            @Override
+            public T apply(HColumn<Composite, Object> hColumn)
+            {
+                return buildClusteredEntityWithIdOnly(entityClass, context, hColumn.getName().getComponents());
+            }
+        };
+    }
+
+    public <T> Function<HCounterColumn<Composite>, T> counterClusteredEntityTransformer(
             final Class<T> entityClass, final ThriftPersistenceContext context)
     {
         return new Function<HCounterColumn<Composite>, T>()
@@ -82,7 +95,7 @@ public class ThriftCompositeTransformer
             @Override
             public T apply(HCounterColumn<Composite> hColumn)
             {
-                return buildCounterClusteredEntity(entityClass, context, hColumn);
+                return buildClusteredEntityWithIdOnly(entityClass, context, hColumn.getName().getComponents());
             }
         };
     }
@@ -100,14 +113,12 @@ public class ThriftCompositeTransformer
         return mapper.createClusteredEntityWithValue(entityClass, idMeta, pm, embeddedId, value);
     }
 
-    public <T> T buildCounterClusteredEntity(Class<T> entityClass,
+    public <T> T buildClusteredEntityWithIdOnly(Class<T> entityClass,
             ThriftPersistenceContext context,
-            HCounterColumn<Composite> hColumn)
+            List<Component<?>> components)
     {
         PropertyMeta<?, ?> idMeta = context.getIdMeta();
-        Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn
-                .getName()
-                .getComponents());
+        Object embeddedId = buildEmbeddedIdFromComponents(context, components);
         return mapper.initClusteredEntity(entityClass, idMeta, embeddedId);
     }
 

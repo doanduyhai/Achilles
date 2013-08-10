@@ -10,6 +10,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -73,8 +74,12 @@ public class ThriftColumnFamilyFactoryTest {
 
     @Test
     public void should_create_clustered_entity_column_family() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.completeBean(Void.class, Integer.class).field("name")
                 .type(PropertyType.SIMPLE).build();
@@ -83,7 +88,9 @@ public class ThriftColumnFamilyFactoryTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "name", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, true)).thenReturn(
                 "(UTF8Type,UUIDType)");
@@ -97,8 +104,12 @@ public class ThriftColumnFamilyFactoryTest {
 
     @Test
     public void should_create_clustered_entity_column_family_with_counter_clustered_value() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("name")
                 .type(PropertyType.COUNTER).build();
@@ -107,7 +118,9 @@ public class ThriftColumnFamilyFactoryTest {
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "name", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, true)).thenReturn(
                 "(UTF8Type,UUIDType)");
@@ -123,8 +136,12 @@ public class ThriftColumnFamilyFactoryTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("name")
                 .type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
@@ -133,13 +150,36 @@ public class ThriftColumnFamilyFactoryTest {
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "name", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, true)).thenReturn(
                 "(UTF8Type,UUIDType)");
         ColumnFamilyDefinition cfDef = factory.createClusteredEntityCF("keyspaceName", meta);
 
         assertThat(cfDef.getDefaultValidationClass()).isEqualTo(UUID_SRZ.getComparatorType().getTypeName());
+    }
+
+    @Test
+    public void should_create_value_less_clustered_entity_column_family() throws Exception {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("tableName");
+        meta.setClassName("entityName");
+        meta.setIdMeta(idMeta);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+
+        when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, true)).thenReturn(
+                "(UTF8Type,UUIDType)");
+        ColumnFamilyDefinition cfDef = factory.createClusteredEntityCF("keyspaceName", meta);
+
+        assertThat(cfDef.getKeyValidationClass()).isEqualTo(LONG_SRZ.getComparatorType().getTypeName());
+        assertThat(cfDef.getComparatorType()).isEqualTo(COMPOSITE_SRZ.getComparatorType());
+        assertThat(cfDef.getComparatorTypeAlias()).isEqualTo("(UTF8Type,UUIDType)");
+        assertThat(cfDef.getDefaultValidationClass()).isEqualTo(STRING_SRZ.getComparatorType().getTypeName());
     }
 
     @Test

@@ -126,7 +126,7 @@ public class ThriftCompositeTransformerTest
                 pm, compoundKey, clusteredValue)).thenReturn(expected);
 
         Function<HColumn<Composite, Object>, BeanWithClusteredId> function = transformer
-                .buildClusteredEntityTransformer(BeanWithClusteredId.class, context);
+                .clusteredEntityTransformer(BeanWithClusteredId.class, context);
 
         List<BeanWithClusteredId> actualList = Lists.transform(Arrays.asList(hCol1), function);
 
@@ -170,7 +170,7 @@ public class ThriftCompositeTransformerTest
                 .thenReturn(expected);
 
         Function<HCounterColumn<Composite>, BeanWithClusteredId> function = transformer
-                .buildCounterClusteredEntityTransformer(BeanWithClusteredId.class, context);
+                .counterClusteredEntityTransformer(BeanWithClusteredId.class, context);
 
         List<BeanWithClusteredId> actualList = Lists.transform(Arrays.asList(hCol1), function);
 
@@ -216,7 +216,7 @@ public class ThriftCompositeTransformerTest
                 eq(idMeta), eq(pm), eq(embeddedId), any(UserBean.class))).thenReturn(expected);
 
         Function<HColumn<Composite, Object>, BeanWithClusteredId> function = transformer
-                .buildJoinClusteredEntityTransformer(BeanWithClusteredId.class, context,
+                .joinClusteredEntityTransformer(BeanWithClusteredId.class, context,
                         joinEntitiesMap);
 
         List<BeanWithClusteredId> actualList = Lists.transform(Arrays.asList(hCol1), function);

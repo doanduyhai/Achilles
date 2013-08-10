@@ -25,12 +25,12 @@ public class ClusteredEntityFactory
             ThriftPersistenceContext context,
             List<HColumn<Composite, Object>> hColumns)
     {
-        PropertyMeta<?, ?> pm = context.getFirstMeta();
+        boolean isJoin = context.isValueless() ? false : context.getFirstMeta().isJoin();
         if (hColumns.isEmpty())
         {
             return new ArrayList<T>();
         }
-        else if (pm.isJoin())
+        else if (isJoin)
         {
             return buildJoinClusteredEntities(entityClass, context, hColumns);
         }
@@ -44,10 +44,16 @@ public class ClusteredEntityFactory
             ThriftPersistenceContext context,
             List<HColumn<Composite, Object>> hColumns)
     {
+        Function<HColumn<Composite, Object>, T> function;
+        if (context.isValueless())
+        {
 
-        Function<HColumn<Composite, Object>, T> function = transformer
-                .buildClusteredEntityTransformer(entityClass,
-                        context);
+            function = transformer.valuelessClusteredEntityTransformer(entityClass, context);
+        }
+        else
+        {
+            function = transformer.clusteredEntityTransformer(entityClass, context);
+        }
 
         return Lists.transform(hColumns, function);
     }
@@ -63,7 +69,7 @@ public class ClusteredEntityFactory
         Map<Object, Object> joinEntitiesMap = loadJoinEntities(context, pm, joinMeta, joinIds);
 
         Function<HColumn<Composite, Object>, T> function = transformer
-                .buildJoinClusteredEntityTransformer(entityClass, context, joinEntitiesMap);
+                .joinClusteredEntityTransformer(entityClass, context, joinEntitiesMap);
 
         return Lists.transform(hColumns, function);
     }
@@ -73,7 +79,7 @@ public class ClusteredEntityFactory
             List<HCounterColumn<Composite>> hColumns)
     {
         Function<HCounterColumn<Composite>, T> function = transformer
-                .buildCounterClusteredEntityTransformer(
+                .counterClusteredEntityTransformer(
                         entityClass, context);
 
         return Lists.transform(hColumns, function);

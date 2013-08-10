@@ -50,7 +50,8 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 
             if (context.addToProcessingList(realObject)) {
                 merger.merge(context, dirtyMap);
-                List<PropertyMeta<?, ?>> joinPMs = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
+                List<PropertyMeta<?, ?>> joinPMs = FluentIterable
+                        .from(entityMeta.getAllMetasExceptIdMeta())
                         .filter(joinPropertyType).filter(hasCascadeMerge).toImmutableList();
 
                 merger.cascadeMerge(this, context, joinPMs);

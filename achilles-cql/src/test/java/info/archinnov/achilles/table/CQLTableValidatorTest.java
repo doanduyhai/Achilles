@@ -8,6 +8,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +73,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -101,7 +102,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("string", nameMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
@@ -134,7 +135,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -174,8 +175,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("user", pm));
-
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
         when(columnMetadata.getType()).thenReturn(DataType.bigint());
@@ -202,7 +202,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("friends", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -242,7 +242,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("friends", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -270,7 +270,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("followers", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -302,7 +302,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("followers", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -330,7 +330,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("preferences", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -370,7 +370,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("preferences", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);

@@ -12,6 +12,7 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import java.util.Arrays;
 import java.util.Date;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
@@ -204,15 +205,22 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class)
+                .type(PropertyType.SIMPLE).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setClusteredEntity(true);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -228,8 +236,12 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_join_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 
@@ -241,7 +253,9 @@ public class ThriftColumnFamilyValidatorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -257,14 +271,20 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_counter_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -279,15 +299,51 @@ public class ThriftColumnFamilyValidatorTest {
     }
 
     @Test
-    public void should_exception_when_wrong_key_validation_type_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
-
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class).build();
+    public void should_validate_value_less_clustered_entity() throws Exception {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setClusteredEntity(true);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList());
+
+        when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
+                "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+
+        when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
+        when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
+        when(cfDef.getComparatorTypeAlias()).thenReturn(
+                "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+        when(cfDef.getDefaultValidationClass()).thenReturn(STRING_SRZ.getComparatorType().getClassName());
+
+        validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+    }
+
+    @Test
+    public void should_exception_when_wrong_key_validation_type_for_clustered_entity() throws Exception {
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
+
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Date.class)
+                .type(PropertyType.SIMPLE)
+                .build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -302,14 +358,23 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_exception_when_wrong_comparator_type_alias_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Date.class)
+                .type(PropertyType.SIMPLE)
+                .build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -327,14 +392,20 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_exception_when_wrong_validation_type_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-                .compClasses(Long.class, String.class, UUID.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .compClasses(Long.class, String.class, UUID.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.SIMPLE).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");

@@ -26,10 +26,8 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +37,7 @@ import java.util.Set;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -149,12 +148,21 @@ public class ThriftPersisterImplTest {
         String clusteredValue = "clusteredValue";
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Integer.class).type(SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Integer.class)
+                .type(SIMPLE)
+                .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -172,12 +180,18 @@ public class ThriftPersisterImplTest {
         Counter clusteredValue = CounterBuilder.incr(10L);
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(COUNTER).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -198,7 +212,11 @@ public class ThriftPersisterImplTest {
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
         Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
 
         PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
         joinIdMeta.setGetter(idGetter);
@@ -210,7 +228,9 @@ public class ThriftPersisterImplTest {
                 .joinMeta(joinMeta).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -235,16 +255,48 @@ public class ThriftPersisterImplTest {
     }
 
     @Test
+    public void should_persist_value_less_clustered_entity() throws Exception {
+        Object partitionKey = 10L;
+        String clusteredValue = "";
+        Optional<Integer> ttlO = Optional.fromNullable(10);
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
+
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+
+        Composite comp = new Composite();
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
+        wideRowDaosMap.put("cf", wideRowDao);
+        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+        when(flushContext.getTtlO()).thenReturn(ttlO);
+        persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
+
+        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
+    }
+
+    @Test
     public void should_persist_simple_clustered_value_batch() throws Exception {
         Object partitionKey = 10L;
         String clusteredValue = "clusteredValue";
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
+
         PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
         entityMeta.setIdMeta(idMeta);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -279,6 +331,8 @@ public class ThriftPersisterImplTest {
 
         entityMeta.setIdMeta(idMeta);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -571,13 +625,14 @@ public class ThriftPersisterImplTest {
                 .completeBean(Void.class, Long.class).field("id").accessors().build();
 
         PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder
-                //
                 .completeBean(Void.class, Counter.class).field("count").type(PropertyType.COUNTER).accessors()
                 .counterIdMeta(counterIdMeta).fqcn(fqcn)
                 .consistencyLevels(Pair.create(ONE, ALL)).build();
 
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(propertyMeta));
+        entityMeta.setFirstMeta(propertyMeta);
 
         Composite keyComp = new Composite();
         Composite comp = new Composite();
@@ -606,12 +661,45 @@ public class ThriftPersisterImplTest {
         Object compoundKey = entity.getId();
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Integer.class).type(SIMPLE).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Integer.class)
+                .type(SIMPLE)
+                .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
+
+        Composite comp = new Composite();
+
+        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
+        wideRowDaosMap.put("cf", wideRowDao);
+        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+
+        persisterImpl.removeClusteredEntity(context, partitionKey);
+        verify(wideRowDao).removeColumnBatch(partitionKey, comp, wideRowMutator);
+    }
+
+    @Test
+    public void should_remove_value_less_clustered_entity() throws Exception {
+        Object compoundKey = entity.getId();
+        Object partitionKey = 10L;
+
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
+
+        entityMeta.setIdMeta(idMeta);
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
 
         Composite comp = new Composite();
 
@@ -628,12 +716,20 @@ public class ThriftPersisterImplTest {
         Object compoundKey = entity.getId();
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .field("id")
+                .type(EMBEDDED_ID)
+                .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(COUNTER).build();
+        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .type(COUNTER).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
 

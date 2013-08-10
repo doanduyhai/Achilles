@@ -92,7 +92,7 @@ public class EntityParser
         completeCounterPropertyMeta(context, idMeta);
 
         // Finish validation of property metas
-        validator.validatePropertyMetas(context, idMeta);
+        //validator.validatePropertyMetas(context, idMeta);
         validator.validateClusteredEntities(context);
 
         EntityMeta entityMeta = entityMetaBuilder(idMeta)
@@ -100,7 +100,6 @@ public class EntityParser
                 .className(entityClass.getCanonicalName())
                 .columnFamilyName(columnFamilyName)
                 .propertyMetas(context.getPropertyMetas())
-                .clusteredEntity(context.isClusteredEntity())
                 .consistencyLevels(context.getCurrentConsistencyLevels())
                 .build();
 

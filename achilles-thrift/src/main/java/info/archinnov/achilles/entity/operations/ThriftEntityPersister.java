@@ -259,16 +259,22 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         Validator.validateNotNull(entity, "Entity should be provided for clustered entity '%s' persistence",
                 className);
 
-        EntityMeta meta = context.getEntityMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
-
+        PropertyMeta<?, ?> idMeta = context.getIdMeta();
         Object partitionKey = invoker.getPartitionKey(compoundKey, idMeta);
-        Object clusteredValue = invoker.getValueFromField(entity, pm.getGetter());
 
-        Validator.validateNotNull(clusteredValue,
-                "Property '%s' should not be null for clustered entity '%s' persistence", pm.getPropertyName(),
-                className);
+        Object clusteredValue;
+        if (context.isValueless())
+        {
+            clusteredValue = "";
+        }
+        else
+        {
+            PropertyMeta<?, ?> pm = context.getFirstMeta();
+            clusteredValue = invoker.getValueFromField(entity, pm.getGetter());
+            Validator.validateNotNull(clusteredValue,
+                    "Property '%s' should not be null for clustered entity '%s' persistence", pm.getPropertyName(),
+                    className);
+        }
 
         persisterImpl.persistClusteredEntity(this, context, partitionKey, clusteredValue);
     }

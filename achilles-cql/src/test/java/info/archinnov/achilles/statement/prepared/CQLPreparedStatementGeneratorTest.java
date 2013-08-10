@@ -79,9 +79,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, "name", nameMeta, "counter", counterMeta));
-
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, counterMeta));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -112,8 +110,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
-
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -476,7 +473,7 @@ public class CQLPreparedStatementGeneratorTest
         PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
-                .type(SIMPLE)
+                .type(ID)
                 .build();
 
         PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
@@ -488,7 +485,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("counterTable");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("counter", counterMeta));
+        meta.setFirstMeta(counterMeta);
 
         PreparedStatement incrPs = mock(PreparedStatement.class);
         PreparedStatement decrPs = mock(PreparedStatement.class);

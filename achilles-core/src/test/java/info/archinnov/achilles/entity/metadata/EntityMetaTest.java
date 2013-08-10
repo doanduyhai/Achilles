@@ -4,10 +4,9 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 
@@ -66,40 +65,6 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(propertyMetas);
 
         assertThat(entityMeta.getAllMetas()).containsExactly(pm1, pm2);
-    }
-
-    @Test
-    public void should_get_all_metas_except_id_meta() throws Exception {
-
-        PropertyMeta<?, ?> pm1 = new PropertyMeta<Void, String>();
-        pm1.setType(SIMPLE);
-        PropertyMeta<?, ?> pm2 = new PropertyMeta<Void, String>();
-        pm2.setType(ID);
-
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-        propertyMetas.put("name", pm1);
-        propertyMetas.put("age", pm2);
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setPropertyMetas(propertyMetas);
-
-        assertThat(entityMeta.getAllMetasExceptIdMeta()).containsExactly(pm1);
-    }
-
-    @Test
-    public void should_return_true_for_is_clustered_counter() throws Exception
-    {
-        EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .type(COUNTER)
-                .build();
-
-        entityMeta.setClusteredEntity(true);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
-
-        assertThat(entityMeta.isClusteredCounter()).isTrue();
     }
 
     @Test
@@ -181,28 +146,6 @@ public class EntityMetaTest
     }
 
     @Test
-    public void should_get_first_meta() throws Exception
-    {
-        EntityMeta entityMeta = new EntityMeta();
-
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .type(PropertyType.ID)
-                .build();
-
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class)
-                .field("name")
-                .type(SIMPLE)
-                .build();
-
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta, "name", nameMeta));
-
-        assertThat((PropertyMeta) entityMeta.getFirstMeta()).isSameAs(nameMeta);
-    }
-
-    @Test
     public void should_return_null_when_no_first_meta() throws Exception
     {
         EntityMeta entityMeta = new EntityMeta();
@@ -216,5 +159,21 @@ public class EntityMetaTest
         entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
 
         assertThat(entityMeta.getFirstMeta()).isNull();
+    }
+
+    @Test
+    public void should_return_true_when_value_less() throws Exception
+    {
+        EntityMeta entityMeta = new EntityMeta();
+
+        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, Long.class)
+                .field("id")
+                .type(PropertyType.ID)
+                .build();
+
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+
+        assertThat(entityMeta.isValueless()).isTrue();
     }
 }

@@ -4,11 +4,16 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import org.junit.Before;
@@ -62,12 +67,41 @@ public class ThriftClusteredEntityIteratorTest
 
         PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
+                .field("id")
+                .type(PropertyType.EMBEDDED_ID)
                 .build();
         idMeta.setGetter(idGetter);
 
+        EntityMeta meta = mock(EntityMeta.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(meta.isValueless()).thenReturn(false);
         when(sliceIterator.next()).thenReturn(hColumn);
         when(transformer.buildClusteredEntity(entityClass, context, hColumn)).thenReturn(entity);
         doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
+        assertThat(iterator.next()).isSameAs(entity);
+    }
+
+    @Test
+    public void should_get_next_value_less() throws Exception
+    {
+        Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
+        Composite composite = mock(Composite.class);
+        List<Component<?>> components = Arrays.asList();
+
+        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .build();
+        idMeta.setGetter(idGetter);
+
+        when(context.isValueless()).thenReturn(true);
+        when(sliceIterator.next()).thenReturn(hColumn);
+
+        when(hColumn.getName()).thenReturn(composite);
+        when(composite.getComponents()).thenReturn(components);
+        when(transformer.buildClusteredEntityWithIdOnly(entityClass, context, components)).thenReturn(entity);
+
+        doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
+
         assertThat(iterator.next()).isSameAs(entity);
     }
 

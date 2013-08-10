@@ -232,40 +232,47 @@ public class ThriftPersisterImpl {
     public void persistClusteredEntity(ThriftEntityPersister persister, ThriftPersistenceContext context,
             Object partitionKey, Object clusteredValue) {
         Object compoundKey = context.getPrimaryKey();
-        EntityMeta meta = context.getEntityMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyMeta<?, ?> idMeta = context.getIdMeta();
 
-        String tableName = meta.getTableName();
-        String className = meta.getClassName();
+        String tableName = context.getTableName();
+        String className = context.getEntityClass().getCanonicalName();
 
         Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
 
-        if (pm.isJoin()) {
-            Object joinId = invoker.getValueFromField(clusteredValue, pm.joinIdMeta().getGetter());
+        if (context.isValueless())
+        {
+            dao.setValueBatch(partitionKey, comp, "", context.getTttO(), mutator);
+        }
+        else
+        {
+            PropertyMeta<?, ?> pm = context.getFirstMeta();
+            if (pm.isJoin()) {
+                Object joinId = invoker.getValueFromField(clusteredValue, pm.joinIdMeta().getGetter());
 
-            Validator.validateNotNull(joinId, "Primary key for join clustered value '%s' should not be null",
-                    clusteredValue);
+                Validator.validateNotNull(joinId, "Primary key for join clustered value '%s' should not be null",
+                        clusteredValue);
 
-            dao.setValueBatch(partitionKey, comp, joinId, context.getTttO(), mutator);
+                dao.setValueBatch(partitionKey, comp, joinId, context.getTttO(), mutator);
 
-            ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(pm.joinMeta(),
-                    proxifier.unwrap(clusteredValue));
+                ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(pm.joinMeta(),
+                        proxifier.unwrap(clusteredValue));
 
-            persister.cascadePersistOrEnsureExists(joinPersistenceContext, clusteredValue, pm.getJoinProperties());
-        } else if (pm.isCounter()) {
-            Validator.validateTrue(
-                    CounterImpl.class.isAssignableFrom(clusteredValue.getClass()),
-                    "Counter clustered entity '%s' value should be of type '%s'", className,
-                    CounterImpl.class.getCanonicalName());
-            CounterImpl counterValue = (CounterImpl) clusteredValue;
-            dao.incrementCounter(partitionKey, comp, counterValue.get());
-        } else {
-            Object persistentValue = pm.writeValueAsSupportedTypeOrString(clusteredValue);
-            dao.setValueBatch(partitionKey, comp, persistentValue, context.getTttO(), mutator);
+                persister
+                        .cascadePersistOrEnsureExists(joinPersistenceContext, clusteredValue, pm.getJoinProperties());
+            } else if (pm.isCounter()) {
+                Validator.validateTrue(
+                        CounterImpl.class.isAssignableFrom(clusteredValue.getClass()),
+                        "Counter clustered entity '%s' value should be of type '%s'", className,
+                        CounterImpl.class.getCanonicalName());
+                CounterImpl counterValue = (CounterImpl) clusteredValue;
+                dao.incrementCounter(partitionKey, comp, counterValue.get());
+            } else {
+                Object persistentValue = pm.writeValueAsSupportedTypeOrString(clusteredValue);
+                dao.setValueBatch(partitionKey, comp, persistentValue, context.getTttO(), mutator);
+            }
         }
     }
 
@@ -333,18 +340,18 @@ public class ThriftPersisterImpl {
 
     public void removeClusteredEntity(ThriftPersistenceContext context, Object partitionKey) {
         Object embeddedId = context.getPrimaryKey();
-        EntityMeta meta = context.getEntityMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyMeta<?, ?> idMeta = context.getIdMeta();
 
-        String tableName = meta.getTableName();
+        boolean isCounter = context.isValueless() ? false : context.getFirstMeta().isCounter();
+
+        String tableName = context.getTableName();
 
         Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, embeddedId);
 
         ThriftGenericWideRowDao dao = context.findWideRowDao(tableName);
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
 
-        if (pm.isCounter()) {
+        if (isCounter) {
             dao.removeCounterBatch(partitionKey, comp, mutator);
         } else {
             dao.removeColumnBatch(partitionKey, comp, mutator);

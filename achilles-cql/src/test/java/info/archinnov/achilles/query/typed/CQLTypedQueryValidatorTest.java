@@ -7,6 +7,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -76,7 +77,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -100,7 +101,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -120,7 +121,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 

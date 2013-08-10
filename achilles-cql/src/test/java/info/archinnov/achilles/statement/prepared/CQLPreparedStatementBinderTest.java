@@ -31,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * CQLPreparedStatementBinderTest
@@ -113,8 +112,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, name, nameMeta, "age", ageMeta, "count", counterMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta, counterMeta));
 
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
         when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);
@@ -179,8 +177,7 @@ public class CQLPreparedStatementBinderTest
         UserBean user = new UserBean();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, "name", nameMeta, "user", userMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, userMeta));
 
         long primaryKey = RandomUtils.nextLong();
         long joinId = RandomUtils.nextLong();
@@ -242,8 +239,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of
-                ("id", idMeta, "name", nameMeta, "age", ageMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta));
 
         long primaryKey = RandomUtils.nextLong();
         String name = "name";
@@ -299,7 +295,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("age", ageMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(ageMeta));
 
         CompoundKey compoundKey = new CompoundKey(userId, name);
 

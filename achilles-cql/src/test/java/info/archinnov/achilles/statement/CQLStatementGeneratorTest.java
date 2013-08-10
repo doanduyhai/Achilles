@@ -186,11 +186,7 @@ public class CQLStatementGeneratorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of(
-                "id", idMeta,
-                "age", ageMeta,
-                "followers", followersMeta,
-                "preferences", preferencesMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(ageMeta, followersMeta, preferencesMeta));
         meta.setIdMeta(idMeta);
 
         Long id = RandomUtils.nextLong();
@@ -237,7 +233,7 @@ public class CQLStatementGeneratorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "value", valueMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(valueMeta));
         meta.setIdMeta(idMeta);
 
         Long userId = RandomUtils.nextLong();

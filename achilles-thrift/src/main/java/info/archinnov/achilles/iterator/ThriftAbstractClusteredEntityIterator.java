@@ -3,7 +3,9 @@ package info.archinnov.achilles.iterator;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
+import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -46,7 +48,9 @@ public abstract class ThriftAbstractClusteredEntityIterator<T> implements Iterat
 
     protected T proxifyClusteredEntity(T target)
     {
-        return proxifier.buildProxy(target, context.duplicate(target),
-                Sets.newHashSet(context.getFirstMeta().getGetter()));
+
+        Set<Method> getters = context.isValueless() ? Sets.<Method> newHashSet() : Sets.newHashSet(context
+                .getFirstMeta().getGetter());
+        return proxifier.buildProxy(target, context.duplicate(target), getters);
     }
 }

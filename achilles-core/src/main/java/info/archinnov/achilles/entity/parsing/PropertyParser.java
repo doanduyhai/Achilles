@@ -93,7 +93,7 @@ public class PropertyParser
 
     protected PropertyMeta<?, ?> parseEmbeddedId(PropertyParsingContext context)
     {
-        log.debug("Parsing property {} as multikey id of entity class {}",
+        log.debug("Parsing property {} as embedded id of entity class {}",
                 context.getCurrentPropertyName(), context
                         .getCurrentEntityClass().getCanonicalName());
 
@@ -114,7 +114,7 @@ public class PropertyParser
                 .consistencyLevels(context.getCurrentConsistencyLevels())
                 .build(Void.class, field.getType());
 
-        log.trace("Built simple property meta for property {} of entity class {} : {}",
+        log.trace("Built embedded id property meta for property {} of entity class {} : {}",
                 propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(),
                 propertyMeta);
         return propertyMeta;

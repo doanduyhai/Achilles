@@ -65,10 +65,28 @@ public class ThriftColumnFamilyFactory {
         String entityName = entityMeta.getClassName();
 
         PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
-
         Class<?> keyClass = idMeta.getComponentClasses().get(0);
-        Class<?> valueClass = pm.getValueClass();
+        String defaultValidationType;
+        if (entityMeta.isValueless())
+        {
+            defaultValidationType = STRING_SRZ.getComparatorType().getTypeName();
+        }
+        else
+        {
+            PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
+            Class<?> valueClass = pm.getValueClass();
+            Serializer<?> valueSerializer;
+            if (pm.isCounter()) {
+                valueSerializer = LONG_SRZ;
+                defaultValidationType = COUNTERTYPE.getTypeName();
+            } else if (pm.isJoin()) {
+                valueSerializer = ThriftSerializerTypeInferer.getSerializer(pm.joinIdMeta().getValueClass());
+                defaultValidationType = valueSerializer.getComparatorType().getTypeName();
+            } else {
+                valueSerializer = ThriftSerializerTypeInferer.getSerializer(valueClass);
+                defaultValidationType = valueSerializer.getComparatorType().getTypeName();
+            }
+        }
 
         Serializer<?> keySerializer = ThriftSerializerTypeInferer.getSerializer(keyClass);
         String keyValidationType = keySerializer.getComparatorType().getTypeName();
@@ -82,23 +100,8 @@ public class ThriftColumnFamilyFactory {
         cfDef.setKeyValidationClass(keyValidationType);
         cfDef.setComparatorTypeAlias(comparatorTypesAlias);
 
-        Serializer<?> valueSerializer;
-        String defaultValidationType;
-        if (pm.isCounter()) {
-            valueSerializer = LONG_SRZ;
-            defaultValidationType = COUNTERTYPE.getTypeName();
-        } else if (pm.isJoin()) {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(pm.joinIdMeta().getValueClass());
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        } else {
-            valueSerializer = ThriftSerializerTypeInferer.getSerializer(valueClass);
-            defaultValidationType = valueSerializer.getComparatorType().getTypeName();
-        }
-
         cfDef.setDefaultValidationClass(defaultValidationType);
         cfDef.setComment("Column family for clustered entity '" + entityName + "'");
-
-        String propertyName = pm.getPropertyName();
 
         StringBuilder builder = new StringBuilder("\n\n");
         builder.append("Create column family for clustered entity '");
@@ -108,8 +111,7 @@ public class ThriftColumnFamilyFactory {
         builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
         builder.append(comparatorTypesAlias).append("'\n");
         builder.append("\t\tand default_validation_class = ").append(defaultValidationType).append("\n");
-        builder.append("\t\tand comment = 'Column family for property ").append(propertyName);
-        builder.append(" of entity ").append(entityName).append("'\n\n");
+        builder.append("\t\tand comment = 'Column family for clustered entity").append(entityName).append("'\n\n");
 
         log.debug(builder.toString());
 
