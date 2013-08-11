@@ -9,18 +9,18 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class KeySetWrapper<K> extends SetWrapper<K> {
-    public KeySetWrapper(Set<K> target) {
+public class KeySetWrapper extends SetWrapper {
+    public KeySetWrapper(Set<Object> target) {
         super(target);
     }
 
     @Override
-    public boolean add(K arg0) {
+    public boolean add(Object arg0) {
         throw new UnsupportedOperationException("This method is not supported for a key set");
     }
 
     @Override
-    public boolean addAll(Collection<? extends K> arg0) {
+    public boolean addAll(Collection<?> arg0) {
         throw new UnsupportedOperationException("This method is not supported for a key set");
     }
 }

@@ -102,10 +102,10 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, Object> hCol1 = HColumnTestBuilder
                 .<Object> simple(comp1, clusteredValue);
 
-        PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
@@ -144,10 +144,10 @@ public class ThriftCompositeTransformerTest
         Composite comp1 = CompositeTestBuilder.builder().values(11).buildSimple();
         HCounterColumn<Composite> hCol1 = HColumnTestBuilder.counter(comp1, 150L);
 
-        PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
-        PropertyMeta<Void, Long> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -156,7 +156,7 @@ public class ThriftCompositeTransformerTest
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        meta.setPropertyMetas(ImmutableMap.of("name", pm));
 
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn((PropertyMeta) idMeta);
@@ -194,10 +194,10 @@ public class ThriftCompositeTransformerTest
         HColumn<Composite, Object> hCol1 = HColumnTestBuilder
                 .<Object> simple(comp1, joinId);
 
-        PropertyMeta<CompoundKey, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .keyValueClass(CompoundKey.class, CompoundKey.class).type(EMBEDDED_ID).build();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)

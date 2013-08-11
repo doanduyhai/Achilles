@@ -24,12 +24,12 @@ public class CascadeMergeFilterTest
 	public void should_filter_cascade_merge_or_all() throws Exception
 	{
 		CascadeMergeFilter filter = new CascadeMergeFilter();
-		PropertyMeta<Void, String> pm1 = PropertyMetaTestBuilder
+		PropertyMeta pm1 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(MERGE, PERSIST)
 				.build();
-		PropertyMeta<Void, String> pm2 = PropertyMetaTestBuilder
+		PropertyMeta pm2 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(REMOVE, REFRESH)

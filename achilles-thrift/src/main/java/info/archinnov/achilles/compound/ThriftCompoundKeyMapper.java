@@ -22,7 +22,7 @@ public class ThriftCompoundKeyMapper
 
     private ThriftCompoundKeyValidator validator = new ThriftCompoundKeyValidator();
 
-    public <V> V fromCompositeToEmbeddedId(PropertyMeta<?, V> pm, List<Component<?>> components,
+    public <V> V fromCompositeToEmbeddedId(PropertyMeta pm, List<Component<?>> components,
             Object partitionKey)
     {
         if (log.isTraceEnabled())
@@ -57,7 +57,7 @@ public class ThriftCompoundKeyMapper
         return compoundKey;
     }
 
-    public Composite fromCompoundToCompositeForInsertOrGet(Object compoundKey, PropertyMeta<?, ?> pm)
+    public Composite fromCompoundToCompositeForInsertOrGet(Object compoundKey, PropertyMeta pm)
     {
         log.trace("Build composite from key {} to persist @CompoundKey {} ", compoundKey, pm.getPropertyName());
 
@@ -67,7 +67,7 @@ public class ThriftCompoundKeyMapper
     }
 
     protected Composite fromComponentsToCompositeForInsertOrGet(List<Object> components,
-            PropertyMeta<?, ?> pm)
+            PropertyMeta pm)
     {
         String propertyName = pm.getPropertyName();
 
@@ -110,7 +110,7 @@ public class ThriftCompoundKeyMapper
     }
 
     public Composite fromComponentsToCompositeForQuery(List<Object> components,
-            PropertyMeta<?, ?> pm,
+            PropertyMeta pm,
             ComponentEquality equality)
     {
         String propertyName = pm.getPropertyName();

@@ -20,7 +20,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public List<Object> encodeToComponents(PropertyMeta<?, ?> pm, Object compoundKey)
+    public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey)
     {
         List<Object> compoundComponents = new ArrayList<Object>();
         List<Method> componentGetters = pm.getComponentGetters();
@@ -38,7 +38,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public Object decodeFromComponents(PropertyMeta<?, ?> pm, List<?> components)
+    public Object decodeFromComponents(PropertyMeta pm, List<?> components)
     {
         Constructor<?> constructor = pm.getEmbeddedIdConstructor();
         List<Method> componentSetters = pm.getComponentSetters();

@@ -80,7 +80,7 @@ public class ThriftAbstractClusteredEntityIteratorTest {
     {
         Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .build();
         idMeta.setGetter(idGetter);
@@ -101,7 +101,7 @@ public class ThriftAbstractClusteredEntityIteratorTest {
     {
         Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .build();
         idMeta.setGetter(idGetter);

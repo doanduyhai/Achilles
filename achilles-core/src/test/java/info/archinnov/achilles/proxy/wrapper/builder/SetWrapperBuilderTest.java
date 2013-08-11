@@ -6,13 +6,10 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.SetWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,44 +27,44 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class SetWrapperBuilderTest
 {
 
-	@Mock
-	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    @Mock
+    private Map<Method, PropertyMeta> dirtyMap;
 
-	private Method setter;
+    private Method setter;
 
-	@Mock
-	private EntityProxifier proxifier;
+    @Mock
+    private EntityProxifier<PersistenceContext> proxifier;
 
-	@Mock
-	private PersistenceContext context;
+    @Mock
+    private PersistenceContext context;
 
-	@Mock
-	private PropertyMeta<Void, String> propertyMeta;
+    @Mock
+    private PropertyMeta propertyMeta;
 
-	@Before
-	public void setUp() throws Exception
-	{
-		setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
-	}
+    @Before
+    public void setUp() throws Exception
+    {
+        setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
+    }
 
-	@Test
-	public void should_build() throws Exception
-	{
-		Set<String> target = new HashSet<String>();
-		SetWrapper<String> wrapper = SetWrapperBuilder //
-				.builder(context, target)
-				.dirtyMap(dirtyMap)
-				.setter(setter)
-				.propertyMeta(propertyMeta)
-				.proxifier(proxifier)
-				.build();
+    @Test
+    public void should_build() throws Exception
+    {
+        Set<Object> target = new HashSet<Object>();
+        SetWrapper wrapper = SetWrapperBuilder //
+                .builder(context, target)
+                .dirtyMap(dirtyMap)
+                .setter(setter)
+                .propertyMeta(propertyMeta)
+                .proxifier(proxifier)
+                .build();
 
-		assertThat(wrapper.getTarget()).isSameAs(target);
-		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
+        assertThat(wrapper.getTarget()).isSameAs(target);
+        assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
+        assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+        assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+        assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+        assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
-	}
+    }
 }

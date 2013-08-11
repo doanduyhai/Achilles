@@ -45,12 +45,12 @@ public class ThriftEntityProxifierTest {
         Long primaryKey = 11L;
         entity.setId(primaryKey);
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
                 .accessors().build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
@@ -79,8 +79,8 @@ public class ThriftEntityProxifierTest {
         CompleteBean entity = new CompleteBean();
 
         EntityMeta meta = new EntityMeta();
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
         meta.setClassName("CompleteBean");
         meta.setClusteredEntity(true);
 

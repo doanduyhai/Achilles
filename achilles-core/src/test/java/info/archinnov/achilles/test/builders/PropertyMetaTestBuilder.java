@@ -53,7 +53,7 @@ public class PropertyMetaTestBuilder<T, K, V>
     private boolean buildAccessors;
     private Class<?> idClass;
     private ObjectMapper objectMapper;
-    private PropertyMeta<Void, ?> counterIdMeta;
+    private PropertyMeta counterIdMeta;
     private String fqcn;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
     private DataTranscoder transcoder;
@@ -88,9 +88,9 @@ public class PropertyMetaTestBuilder<T, K, V>
         this.valueClass = valueClass;
     }
 
-    public PropertyMeta<K, V> build() throws Exception
+    public PropertyMeta build() throws Exception
     {
-        PropertyMeta<K, V> pm = new PropertyMeta<K, V>();
+        PropertyMeta pm = new PropertyMeta();
         pm.setType(type);
         pm.setEntityClassName(entityClassName);
         pm.setPropertyName(field);
@@ -146,7 +146,7 @@ public class PropertyMetaTestBuilder<T, K, V>
         return pm;
     }
 
-    private void setTranscoder(PropertyMeta<K, V> pm) {
+    private void setTranscoder(PropertyMeta pm) {
         if (transcoder != null)
         {
             pm.setTranscoder(transcoder);
@@ -281,7 +281,7 @@ public class PropertyMetaTestBuilder<T, K, V>
         return this;
     }
 
-    public PropertyMetaTestBuilder<T, K, V> counterIdMeta(PropertyMeta<Void, ?> counterIdMeta)
+    public PropertyMetaTestBuilder<T, K, V> counterIdMeta(PropertyMeta counterIdMeta)
     {
         this.counterIdMeta = counterIdMeta;
         return this;

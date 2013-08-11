@@ -69,14 +69,14 @@ public class EntityInterceptorTest
 
     private Object[] args = new Object[] {};
 
-    private Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
-    private Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
+    private Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
+    private Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
     private Set<Method> alreadyLoaded = new HashSet<Method>();
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+    private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
     private CompleteBean bean;
     private Long key = RandomUtils.nextLong();
     private Object rawValue = "raw";
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     @Before
     public void setUp() throws Throwable
@@ -134,7 +134,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_key_when_invoking_id_getter() throws Throwable
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -161,7 +161,7 @@ public class EntityInterceptorTest
     public void should_load_lazy_property_and_return_it() throws Throwable
     {
 
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -180,7 +180,7 @@ public class EntityInterceptorTest
     public void should_return_lazy_property_already_loaded() throws Throwable
     {
 
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -199,7 +199,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_simple_property() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -219,7 +219,7 @@ public class EntityInterceptorTest
     @Test
     public void should_build_counter_wrapper() throws Throwable
     {
-        PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Counter.class)
                 .field("count")
                 .accessors()
@@ -239,7 +239,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_join_simple() throws Throwable
     {
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .accessors()
@@ -259,7 +259,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_null_for_join_simple() throws Throwable
     {
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .accessors()
@@ -277,7 +277,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_list_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("friends")
                 .accessors()
@@ -296,7 +296,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_lazy_list_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("friends")
                 .accessors()
@@ -315,7 +315,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_join_list_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("friends")
                 .accessors()
@@ -334,7 +334,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_null_for_list_property() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("friends")
                 .accessors()
@@ -352,7 +352,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_set_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers")
                 .accessors()
@@ -371,7 +371,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_lazy_set_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers")
                 .accessors()
@@ -390,7 +390,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_join_set_wrapper() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers")
                 .accessors()
@@ -409,7 +409,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_null_for_set_property() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers")
                 .accessors()
@@ -427,7 +427,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_map_wrapper() throws Throwable
     {
-        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences")
                 .accessors()
@@ -446,7 +446,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_lazy_map_wrapper() throws Throwable
     {
-        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences")
                 .accessors()
@@ -465,7 +465,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_join_map_wrapper() throws Throwable
     {
-        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences")
                 .accessors()
@@ -484,7 +484,7 @@ public class EntityInterceptorTest
     @Test
     public void should_return_null_for_map_property() throws Throwable
     {
-        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences")
                 .accessors()
@@ -502,7 +502,7 @@ public class EntityInterceptorTest
     @Test
     public void should_exception_when_calling_setter_on_counter() throws Throwable
     {
-        PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Counter.class)
                 .field("count")
                 .accessors()
@@ -521,7 +521,7 @@ public class EntityInterceptorTest
     @Test
     public void should_set_simple_value() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -541,7 +541,7 @@ public class EntityInterceptorTest
     @Test
     public void should_set_lazy_value() throws Throwable
     {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()

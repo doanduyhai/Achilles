@@ -48,7 +48,7 @@ public class EntityRefresherTest {
     private EntityInterceptor<PersistenceContext, CompleteBean> jpaEntityInterceptor;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    private Map<Method, PropertyMeta> dirtyMap;
 
     @Mock
     private Set<Method> alreadyLoaded;

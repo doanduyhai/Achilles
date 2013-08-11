@@ -17,7 +17,7 @@ public class ThriftComparatorTypeAliasFactory {
 
     private CompoundKeyParser parser = new CompoundKeyParser();
 
-    public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta<?, ?> propertyMeta, boolean forCreation) {
+    public <ID> String determineCompatatorTypeAliasForCompositeCF(PropertyMeta propertyMeta, boolean forCreation) {
         log.debug(
                 "Determine the Comparator type alias for composite-based column family using propertyMeta of field {} ",
                 propertyMeta.getPropertyName());
@@ -56,7 +56,7 @@ public class ThriftComparatorTypeAliasFactory {
         return comparatorTypesAlias;
     }
 
-    public String determineCompatatorTypeAliasForClusteredEntity(PropertyMeta<?, ?> idMeta, boolean forCreation) {
+    public String determineCompatatorTypeAliasForClusteredEntity(PropertyMeta idMeta, boolean forCreation) {
         log.debug(
                 "Determine the Comparator type alias for composite-based column family using propertyMeta of field {} ",
                 idMeta.getPropertyName());

@@ -74,7 +74,7 @@ public class CQLPersistenceContextTest
 
     private EntityMeta meta;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     private Long primaryKey = RandomUtils.nextLong();
 
@@ -176,7 +176,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_update() throws Exception
     {
-        List<PropertyMeta<?, ?>> pms = Arrays.asList();
+        List<PropertyMeta> pms = Arrays.asList();
         context.pushUpdateStatement(pms);
 
         verify(daoContext).pushUpdateStatement(context, pms);
@@ -206,7 +206,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_simple_counter_increment() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.bindForSimpleCounterIncrement(counterMeta, 11L);
 
@@ -216,7 +216,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_increment_simple_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
@@ -226,7 +226,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_decrement_simple_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
@@ -236,7 +236,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_get_simple_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         Row row = mock(Row.class);
         when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
@@ -249,7 +249,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_return_null_when_no_simple_counter_value() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
 
@@ -259,7 +259,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_simple_counter_removal() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.bindForSimpleCounterRemoval(counterMeta);
 
@@ -270,7 +270,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_clustered_counter_increment() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
@@ -280,7 +280,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_increment_clustered_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.incrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
@@ -290,7 +290,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_decrement_clustered_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.decrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
@@ -300,7 +300,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_get_clustered_counter() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
         counterMeta.setPropertyName("count");
 
         Row row = mock(Row.class);
@@ -314,7 +314,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_return_null_when_no_clustered_counter_value() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
 
@@ -324,7 +324,7 @@ public class CQLPersistenceContextTest
     @Test
     public void should_bind_for_clustered_counter_removal() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         context.bindForClusteredCounterRemoval(counterMeta);
 

@@ -68,21 +68,21 @@ public class CQLEntityMapperTest
     @Test
     public void should_set_eager_properties_to_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
                 .type(PropertyType.ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
+        List<PropertyMeta> eagerMetas = Arrays.asList(pm);
 
         when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
         when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
@@ -98,14 +98,14 @@ public class CQLEntityMapperTest
     @Test
     public void should_set_null_to_entity_when_no_value_from_row() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        List<PropertyMeta<?, ?>> eagerMetas = Arrays.<PropertyMeta<?, ?>> asList(pm);
+        List<PropertyMeta> eagerMetas = Arrays.asList(pm);
 
         when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
 
@@ -119,7 +119,7 @@ public class CQLEntityMapperTest
     @Test
     public void should_do_nothing_when_null_row() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -134,7 +134,7 @@ public class CQLEntityMapperTest
     @Test
     public void should_set_property_to_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -149,7 +149,7 @@ public class CQLEntityMapperTest
     @Test
     public void should_set_compound_key_to_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -170,14 +170,14 @@ public class CQLEntityMapperTest
     {
         Long id = RandomUtils.nextLong();
         String name = "name";
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        Map<String, PropertyMeta<?, ?>> propertiesMap = ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta);
+        Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta);
 
         ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
         ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
@@ -205,20 +205,20 @@ public class CQLEntityMapperTest
     public void should_skip_mapping_join_column() throws Exception
     {
         Long id = RandomUtils.nextLong();
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<?, ?> userMeta = PropertyMetaTestBuilder
+        PropertyMeta userMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
                 .build();
 
-        Map<String, PropertyMeta<?, ?>> propertiesMap = ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta,
+        Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
                 "user", userMeta);
 
         ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);

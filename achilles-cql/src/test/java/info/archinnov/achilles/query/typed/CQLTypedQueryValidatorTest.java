@@ -30,7 +30,7 @@ public class CQLTypedQueryValidatorTest {
     public void should_exception_when_wrong_table() throws Exception
     {
         EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
         meta.setTableName("table");
 
         String queryString = "SELECT * from test";
@@ -46,14 +46,14 @@ public class CQLTypedQueryValidatorTest {
     @Test
     public void should_exception_when_missing_id_column() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -69,7 +69,7 @@ public class CQLTypedQueryValidatorTest {
     @Test
     public void should_exception_when_missing_component_column_for_embedded_id() throws Exception
     {
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, CompoundKey.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
@@ -77,7 +77,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -94,14 +94,14 @@ public class CQLTypedQueryValidatorTest {
     @Test
     public void should_skip_id_column_validation_when_select_star() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
@@ -113,7 +113,7 @@ public class CQLTypedQueryValidatorTest {
     @Test
     public void should_skip_component_column_validation_when_select_star() throws Exception
     {
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, CompoundKey.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
@@ -121,7 +121,7 @@ public class CQLTypedQueryValidatorTest {
                 .build();
 
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta<?, ?>>());
+        meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 

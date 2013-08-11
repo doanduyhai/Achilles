@@ -82,13 +82,13 @@ public class CQLTableCreatorTest {
     @Test
     public void should_create_complete_table() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(ID)
                 .field("id")
                 .build();
 
-        PropertyMeta<Void, UUID> joinIdMeta = PropertyMetaTestBuilder
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder
                 .valueClass(UUID.class)
                 .type(ID)
                 .field("joinId")
@@ -97,52 +97,52 @@ public class CQLTableCreatorTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<Void, Long> longColPM = PropertyMetaTestBuilder
+        PropertyMeta longColPM = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("longCol")
                 .build();
 
-        PropertyMeta<Void, UserBean> joinColPM = PropertyMetaTestBuilder
+        PropertyMeta joinColPM = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SIMPLE)
                 .joinMeta(joinMeta)
                 .field("joinCol")
                 .build();
 
-        PropertyMeta<Void, Long> longListColPM = PropertyMetaTestBuilder
+        PropertyMeta longListColPM = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(LIST)
                 .field("longListCol")
                 .build();
 
-        PropertyMeta<Void, UserBean> joinListColPM = PropertyMetaTestBuilder
+        PropertyMeta joinListColPM = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_LIST)
                 .joinMeta(joinMeta)
                 .field("joinListCol")
                 .build();
 
-        PropertyMeta<Void, Long> longSetColPM = PropertyMetaTestBuilder
+        PropertyMeta longSetColPM = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SET)
                 .field("longSetCol")
                 .build();
 
-        PropertyMeta<Void, UserBean> joinSetColPM = PropertyMetaTestBuilder
+        PropertyMeta joinSetColPM = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SET)
                 .joinMeta(joinMeta)
                 .field("joinSetCol")
                 .build();
 
-        PropertyMeta<Integer, Long> longMapColPM = PropertyMetaTestBuilder
+        PropertyMeta longMapColPM = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, Long.class)
                 .type(MAP)
                 .field("longMapCol")
                 .build();
 
-        PropertyMeta<Integer, UserBean> joinMapColPM = PropertyMetaTestBuilder
+        PropertyMeta joinMapColPM = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
                 .type(JOIN_MAP)
                 .joinMeta(joinMeta)
@@ -150,7 +150,7 @@ public class CQLTableCreatorTest {
                 .build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(longColPM, joinColPM, longListColPM,
+        meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, joinColPM, longListColPM,
                 joinListColPM, longSetColPM, joinSetColPM,
                 longMapColPM, joinMapColPM));
         meta.setIdMeta(idMeta);
@@ -178,7 +178,7 @@ public class CQLTableCreatorTest {
     @Test
     public void should_create_table_with_embedde_id() throws Exception
     {
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .field("id")
@@ -186,20 +186,20 @@ public class CQLTableCreatorTest {
                 .compClasses(Long.class, Integer.class, UUID.class)
                 .build();
 
-        PropertyMeta<Void, Long> longColPM = PropertyMetaTestBuilder
+        PropertyMeta longColPM = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("longCol")
                 .build();
 
-        PropertyMeta<Void, Long> counterColPM = PropertyMetaTestBuilder
+        PropertyMeta counterColPM = PropertyMetaTestBuilder
                 .keyValueClass(Void.class, Long.class)
                 .type(COUNTER)
                 .field("counterCol")
                 .build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(longColPM, counterColPM));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, counterColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");

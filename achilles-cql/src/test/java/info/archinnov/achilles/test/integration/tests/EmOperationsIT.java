@@ -4,8 +4,6 @@ import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
@@ -579,11 +577,6 @@ public class EmOperationsIT
         entity = em.merge(entity);
 
         entity.getFriends();
-
-        PropertyMeta<Void, String> nameMeta = new PropertyMeta<Void, String>();
-        nameMeta.setType(PropertyType.SIMPLE);
-
-        nameMeta.setPropertyName("name");
 
         session.execute("UPDATE completebean SET name='DuyHai_modified' WHERE id=" + entity.getId());
         session.execute("UPDATE completebean SET friends=friends + ['qux'] WHERE id="

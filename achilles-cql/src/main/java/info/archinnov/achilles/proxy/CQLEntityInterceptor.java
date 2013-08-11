@@ -24,7 +24,7 @@ public class CQLEntityInterceptor<T> extends EntityInterceptor<CQLPersistenceCon
     }
 
     @Override
-    protected Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
+    protected Counter buildCounterWrapper(PropertyMeta propertyMeta)
     {
         return new CQLCounterWrapper(context, propertyMeta);
     }

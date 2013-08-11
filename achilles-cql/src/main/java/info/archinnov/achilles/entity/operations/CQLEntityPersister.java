@@ -50,9 +50,9 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
     {
         persisterImpl.persist(context);
 
-        List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
+        List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
 
-        Set<PropertyMeta<?, ?>> joinPMsWithCascade = FluentIterable
+        Set<PropertyMeta> joinPMsWithCascade = FluentIterable
                 .from(allMetas)
                 .filter(joinPropertyType)
                 .filter(hasCascadePersist)
@@ -62,12 +62,12 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 
         if (context.getConfigContext().isEnsureJoinConsistency())
         {
-            Set<PropertyMeta<?, ?>> joinPMs = FluentIterable
+            Set<PropertyMeta> joinPMs = FluentIterable
                     .from(allMetas)
                     .filter(joinPropertyType)
                     .toImmutableSet();
 
-            Set<PropertyMeta<?, ?>> ensureExistsPMs = Sets.difference(joinPMs,
+            Set<PropertyMeta> ensureExistsPMs = Sets.difference(joinPMs,
                     joinPMsWithCascade);
 
             log.debug("Consistency check for join entity of class {} and primary key {} ",
@@ -76,7 +76,7 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
             persisterImpl.ensureEntitiesExist(context, ensureExistsPMs);
         }
 
-        Set<PropertyMeta<?, ?>> counterMetas = FluentIterable
+        Set<PropertyMeta> counterMetas = FluentIterable
                 .from(allMetas)
                 .filter(counterType)
                 .toImmutableSet();

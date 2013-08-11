@@ -26,7 +26,7 @@ public class CQLEntityInterceptorBuilderTest {
     @Test
     public void should_build_interceptor_with_eager_fields_already_loaded() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("id")
                 .build();
@@ -34,8 +34,8 @@ public class CQLEntityInterceptorBuilderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setClassName("classname");
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
         meta.setEagerGetters(Lists.newArrayList(idMeta.getGetter()));
 
         when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
@@ -55,7 +55,7 @@ public class CQLEntityInterceptorBuilderTest {
     @Test
     public void should_build_interceptor_with_no_eager_fields() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("id")
                 .build();
@@ -63,8 +63,8 @@ public class CQLEntityInterceptorBuilderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setClassName("classname");
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta<?, ?>>());
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
         meta.setEagerGetters(Lists.newArrayList(idMeta.getGetter()));
 
         when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);

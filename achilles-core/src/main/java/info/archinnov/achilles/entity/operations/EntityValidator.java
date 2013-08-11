@@ -37,7 +37,7 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
 
     public void validateEntity(Object entity, EntityMeta entityMeta) {
         log.debug("Validate entity {}", entity);
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
                 .getCanonicalName());
@@ -50,7 +50,7 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
         validatePrimaryKey(idMeta, id);
     }
 
-    public void validatePrimaryKey(PropertyMeta<?, ?> idMeta, Object primaryKey) {
+    public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
         if (idMeta.isEmbeddedId()) {
             List<Object> components = idMeta.encodeToComponents(primaryKey);
             for (Object component : components) {

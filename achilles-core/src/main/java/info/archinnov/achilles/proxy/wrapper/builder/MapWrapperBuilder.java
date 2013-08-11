@@ -10,20 +10,20 @@ import java.util.Map;
  * @author DuyHai DOAN
  * 
  */
-public class MapWrapperBuilder<K, V> extends AbstractWrapperBuilder<MapWrapperBuilder<K, V>, K, V> {
-    private Map<K, V> target;
+public class MapWrapperBuilder extends AbstractWrapperBuilder<MapWrapperBuilder> {
+    private Map<Object, Object> target;
 
-    public static <ID, K, V> MapWrapperBuilder<K, V> builder(PersistenceContext context, Map<K, V> target) {
-        return new MapWrapperBuilder<K, V>(context, target);
+    public static MapWrapperBuilder builder(PersistenceContext context, Map<Object, Object> target) {
+        return new MapWrapperBuilder(context, target);
     }
 
-    public MapWrapperBuilder(PersistenceContext context, Map<K, V> target) {
+    public MapWrapperBuilder(PersistenceContext context, Map<Object, Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public MapWrapper<K, V> build() {
-        MapWrapper<K, V> mapWrapper = new MapWrapper<K, V>(this.target);
+    public MapWrapper build() {
+        MapWrapper mapWrapper = new MapWrapper(this.target);
         super.build(mapWrapper);
         return mapWrapper;
     }

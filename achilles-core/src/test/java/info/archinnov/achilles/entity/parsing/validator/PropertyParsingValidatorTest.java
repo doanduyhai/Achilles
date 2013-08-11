@@ -8,13 +8,13 @@ import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,11 +40,10 @@ public class PropertyParsingValidatorTest
     @Mock
     private PropertyParsingContext context;
 
-    @SuppressWarnings("unchecked")
     @Test
     public void should_exception_when_duplicate_property_meta() throws Exception
     {
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
         propertyMetas.put("name", null);
         when(context.getCurrentPropertyName()).thenReturn("name");
         when(context.getPropertyMetas()).thenReturn(propertyMetas);

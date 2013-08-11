@@ -10,20 +10,20 @@ import java.util.ListIterator;
  * @author DuyHai DOAN
  * 
  */
-public class ListIteratorWrapperBuilder<V> extends AbstractWrapperBuilder<ListIteratorWrapperBuilder<V>, Void, V> {
-    private ListIterator<V> target;
+public class ListIteratorWrapperBuilder extends AbstractWrapperBuilder<ListIteratorWrapperBuilder> {
+    private ListIterator<Object> target;
 
-    public static <V> ListIteratorWrapperBuilder<V> builder(PersistenceContext context, ListIterator<V> target) {
-        return new ListIteratorWrapperBuilder<V>(context, target);
+    public static ListIteratorWrapperBuilder builder(PersistenceContext context, ListIterator<Object> target) {
+        return new ListIteratorWrapperBuilder(context, target);
     }
 
-    public ListIteratorWrapperBuilder(PersistenceContext context, ListIterator<V> target) {
+    public ListIteratorWrapperBuilder(PersistenceContext context, ListIterator<Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public ListIteratorWrapper<V> build() {
-        ListIteratorWrapper<V> listIteratorWrapper = new ListIteratorWrapper<V>(this.target);
+    public ListIteratorWrapper build() {
+        ListIteratorWrapper listIteratorWrapper = new ListIteratorWrapper(this.target);
         super.build(listIteratorWrapper);
         return listIteratorWrapper;
     }

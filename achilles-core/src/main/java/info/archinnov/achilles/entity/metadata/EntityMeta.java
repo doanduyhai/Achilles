@@ -37,16 +37,16 @@ public class EntityMeta {
     private String className;
     private String tableName;
     private Class<?> idClass;
-    private Map<String, PropertyMeta<?, ?>> propertyMetas;
-    private List<PropertyMeta<?, ?>> eagerMetas;
+    private Map<String, PropertyMeta> propertyMetas;
+    private List<PropertyMeta> eagerMetas;
     private List<Method> eagerGetters;
-    private PropertyMeta<?, ?> idMeta;
-    private Map<Method, PropertyMeta<?, ?>> getterMetas;
-    private Map<Method, PropertyMeta<?, ?>> setterMetas;
+    private PropertyMeta idMeta;
+    private Map<Method, PropertyMeta> getterMetas;
+    private Map<Method, PropertyMeta> setterMetas;
     private boolean clusteredEntity = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
-    private PropertyMeta<?, ?> firstMeta;
-    private List<PropertyMeta<?, ?>> allMetasExceptIdMeta;
+    private PropertyMeta firstMeta;
+    private List<PropertyMeta> allMetasExceptIdMeta;
     private boolean clusteredCounter = false;
 
     public Class<?> getEntityClass() {
@@ -73,35 +73,35 @@ public class EntityMeta {
         this.tableName = tableName;
     }
 
-    public Map<String, PropertyMeta<?, ?>> getPropertyMetas() {
+    public Map<String, PropertyMeta> getPropertyMetas() {
         return propertyMetas;
     }
 
-    public void setPropertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas) {
+    public void setPropertyMetas(Map<String, PropertyMeta> propertyMetas) {
         this.propertyMetas = propertyMetas;
     }
 
-    public PropertyMeta<?, ?> getIdMeta() {
+    public PropertyMeta getIdMeta() {
         return idMeta;
     }
 
-    public void setIdMeta(PropertyMeta<?, ?> idMeta) {
+    public void setIdMeta(PropertyMeta idMeta) {
         this.idMeta = idMeta;
     }
 
-    public Map<Method, PropertyMeta<?, ?>> getGetterMetas() {
+    public Map<Method, PropertyMeta> getGetterMetas() {
         return getterMetas;
     }
 
-    public void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas) {
+    public void setGetterMetas(Map<Method, PropertyMeta> getterMetas) {
         this.getterMetas = getterMetas;
     }
 
-    public Map<Method, PropertyMeta<?, ?>> getSetterMetas() {
+    public Map<Method, PropertyMeta> getSetterMetas() {
         return setterMetas;
     }
 
-    public void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas) {
+    public void setSetterMetas(Map<Method, PropertyMeta> setterMetas) {
         this.setterMetas = setterMetas;
     }
 
@@ -137,11 +137,11 @@ public class EntityMeta {
         this.idClass = idClass;
     }
 
-    public List<PropertyMeta<?, ?>> getEagerMetas() {
+    public List<PropertyMeta> getEagerMetas() {
         return eagerMetas;
     }
 
-    public void setEagerMetas(List<PropertyMeta<?, ?>> eagerMetas) {
+    public void setEagerMetas(List<PropertyMeta> eagerMetas) {
         this.eagerMetas = eagerMetas;
     }
 
@@ -153,25 +153,25 @@ public class EntityMeta {
         this.eagerGetters = eagerGetters;
     }
 
-    public PropertyMeta<?, ?> getFirstMeta() {
+    public PropertyMeta getFirstMeta() {
 
         return this.firstMeta;
     }
 
-    public void setFirstMeta(PropertyMeta<?, ?> firstMeta) {
+    public void setFirstMeta(PropertyMeta firstMeta) {
         this.firstMeta = firstMeta;
     }
 
-    public List<PropertyMeta<?, ?>> getAllMetas() {
-        return new ArrayList<PropertyMeta<?, ?>>(propertyMetas.values());
+    public List<PropertyMeta> getAllMetas() {
+        return new ArrayList<PropertyMeta>(propertyMetas.values());
     }
 
-    public List<PropertyMeta<?, ?>> getAllMetasExceptIdMeta() {
+    public List<PropertyMeta> getAllMetasExceptIdMeta() {
 
         return this.allMetasExceptIdMeta;
     }
 
-    public void setAllMetasExceptIdMeta(List<PropertyMeta<?, ?>> allMetasExceptIdMeta) {
+    public void setAllMetasExceptIdMeta(List<PropertyMeta> allMetasExceptIdMeta) {
         this.allMetasExceptIdMeta = allMetasExceptIdMeta;
     }
 

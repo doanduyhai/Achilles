@@ -7,7 +7,6 @@ import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
-import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +15,7 @@ import java.util.Map;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
+import org.apache.cassandra.utils.Pair;
 
 /**
  * ThriftJoinSliceIterator
@@ -30,14 +30,14 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 {
 
     private SliceQuery<K, Composite, Object> query;
-    private PropertyMeta<KEY, VALUE> propertyMeta;
+    private PropertyMeta propertyMeta;
     private ThriftJoinEntityLoader joinHelper = new ThriftJoinEntityLoader();
     private ThriftGenericEntityDao joinEntityDao;
 
     public ThriftJoinSliceIterator( //
             AchillesConsistencyLevelPolicy policy, //
             ThriftGenericEntityDao joinEntityDao, //
-            String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
+            String cf, PropertyMeta propertyMeta, //
             SliceQuery<K, Composite, Object> query, Composite start, //
             final Composite finish, boolean reversed)
     {
@@ -47,7 +47,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 
     public ThriftJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
             ThriftGenericEntityDao joinEntityDao, //
-            String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
+            String cf, PropertyMeta propertyMeta, //
             SliceQuery<K, Composite, Object> query, Composite start, //
             final Composite finish, boolean reversed, int count)
     {
@@ -63,7 +63,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 
     public ThriftJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
             ThriftGenericEntityDao joinEntityDao, //
-            String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
+            String cf, PropertyMeta propertyMeta, //
             SliceQuery<K, Composite, Object> query, Composite start, //
             ColumnSliceFinish finish, boolean reversed)
     {
@@ -73,7 +73,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 
     public ThriftJoinSliceIterator(AchillesConsistencyLevelPolicy policy, //
             ThriftGenericEntityDao joinEntityDao, //
-            String cf, PropertyMeta<KEY, VALUE> propertyMeta, //
+            String cf, PropertyMeta propertyMeta, //
             SliceQuery<K, Composite, Object> query, Composite start, //
             ColumnSliceFinish finish, boolean reversed, int count)
     {
@@ -105,7 +105,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
         {
             HColumn<Composite, ?> hColumn = iter.next();
 
-            PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
+            PropertyMeta joinIdMeta = propertyMeta.joinIdMeta();
 
             Object joinId;
             if (propertyMeta.isJoin())
@@ -125,7 +125,7 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
         {
 
             Map<Object, VALUE> loadedEntities = joinHelper.loadJoinEntities(
-                    propertyMeta.getValueClass(), joinIds, propertyMeta.joinMeta(), joinEntityDao);
+                    (Class<VALUE>) propertyMeta.getValueClass(), joinIds, propertyMeta.joinMeta(), joinEntityDao);
 
             for (Object joinId : joinIds)
             {

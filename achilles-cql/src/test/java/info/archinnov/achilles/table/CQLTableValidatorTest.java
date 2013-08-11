@@ -60,20 +60,20 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_id_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -88,21 +88,21 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_embedded_id_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compNames("userId", "name")
                 .compClasses(Long.class, String.class)
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("string")
                 .type(SIMPLE)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
         when(tableMetadata.getName()).thenReturn("table");
         ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
@@ -122,20 +122,20 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_simple_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -151,14 +151,14 @@ public class CQLTableValidatorTest {
                 .field("name")
                 .type(LAZY_SIMPLE)
                 .build();
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("name", pm));
         validator.validateForEntity(entityMeta, tableMetadata);
     }
 
     @Test
     public void should_validate_join_simple_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
@@ -167,7 +167,7 @@ public class CQLTableValidatorTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(JOIN_SIMPLE)
@@ -175,7 +175,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
         when(columnMetadata.getType()).thenReturn(DataType.bigint());
@@ -189,20 +189,20 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_list_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, String.class)
                 .field("friends")
                 .type(LIST)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -218,14 +218,14 @@ public class CQLTableValidatorTest {
                 .field("friends")
                 .type(LAZY_LIST)
                 .build();
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("friends", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("friends", pm));
         validator.validateForEntity(entityMeta, tableMetadata);
     }
 
     @Test
     public void should_validate_join_list_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
@@ -234,7 +234,7 @@ public class CQLTableValidatorTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, UserBean.class)
                 .field("friends")
                 .joinMeta(joinMeta)
@@ -242,7 +242,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -257,20 +257,20 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_set_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, String.class)
                 .field("followers")
                 .type(SET)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -285,7 +285,7 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_join_set_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
@@ -294,7 +294,7 @@ public class CQLTableValidatorTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Void.class, UserBean.class)
                 .field("followers")
                 .type(JOIN_SET)
@@ -302,7 +302,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -317,20 +317,20 @@ public class CQLTableValidatorTest {
     @Test
     public void should_validate_map_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Integer.class, String.class)
                 .field("preferences")
                 .type(MAP)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
@@ -346,14 +346,14 @@ public class CQLTableValidatorTest {
                 .field("preferences")
                 .type(LAZY_MAP)
                 .build();
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("preferences", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
         validator.validateForEntity(entityMeta, tableMetadata);
     }
 
     @Test
     public void should_validate_join_map_field_for_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
@@ -362,7 +362,7 @@ public class CQLTableValidatorTest {
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder.
+        PropertyMeta pm = PropertyMetaTestBuilder.
                 completeBean(Integer.class, String.class)
                 .field("preferences")
                 .type(JOIN_MAP)
@@ -370,7 +370,7 @@ public class CQLTableValidatorTest {
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(tableMetadata.getName()).thenReturn("table");
         when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);

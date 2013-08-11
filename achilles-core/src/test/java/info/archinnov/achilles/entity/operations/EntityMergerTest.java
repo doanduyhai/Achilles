@@ -61,9 +61,9 @@ public class EntityMergerTest {
 
     private EntityMeta meta = new EntityMeta();
 
-    private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+    private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap = new HashMap<Method, PropertyMeta<?, ?>>();
+    private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
 
     @Before
     public void setUp() {
@@ -88,7 +88,7 @@ public class EntityMergerTest {
         when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
         when(context.addToProcessingList(entity)).thenReturn(true, false);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(JOIN_SIMPLE)
@@ -96,7 +96,7 @@ public class EntityMergerTest {
                 .accessors()
                 .build();
 
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
 
         dirtyMap.put(pm.getSetter(), pm);
 

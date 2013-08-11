@@ -69,7 +69,7 @@ public abstract class EntityManagerFactory
     {
         log.info("Start discovery of entities, searching in packages '{}'",
                 StringUtils.join(entityPackages, ","));
-        Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+        Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 
         List<Class<?>> entities = achillesEntityExplorer.discoverEntities(entityPackages);
         validator.validateAtLeastOneEntity(entities, entityPackages);

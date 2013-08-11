@@ -164,29 +164,29 @@ public class CQLStatementGeneratorTest {
     @Test
     public void should_generate_insert_for_simple_id() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id").accessors()
                 .type(ID).build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age").accessors()
                 .type(SIMPLE).build();
 
-        PropertyMeta<?, ?> followersMeta = PropertyMetaTestBuilder
+        PropertyMeta followersMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers").accessors()
                 .type(SET).build();
 
-        PropertyMeta<?, ?> preferencesMeta = PropertyMetaTestBuilder
+        PropertyMeta preferencesMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences").accessors()
                 .type(MAP).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(ageMeta, followersMeta, preferencesMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta, followersMeta, preferencesMeta));
         meta.setIdMeta(idMeta);
 
         Long id = RandomUtils.nextLong();
@@ -216,7 +216,7 @@ public class CQLStatementGeneratorTest {
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
         Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compNames("id", "name")
                 .compClasses(Long.class, String.class)
@@ -225,7 +225,7 @@ public class CQLStatementGeneratorTest {
                 .type(EMBEDDED_ID).build();
         idMeta.setGetter(idGetter);
 
-        PropertyMeta<?, ?> valueMeta = PropertyMetaTestBuilder
+        PropertyMeta valueMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("value")
                 .type(SIMPLE).build();
@@ -233,7 +233,7 @@ public class CQLStatementGeneratorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(valueMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(valueMeta));
         meta.setIdMeta(idMeta);
 
         Long userId = RandomUtils.nextLong();
@@ -254,34 +254,34 @@ public class CQLStatementGeneratorTest {
     @Test
     public void should_generate_update_for_simple_id() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id").accessors()
                 .type(ID).build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age").accessors()
                 .type(SIMPLE).build();
 
-        PropertyMeta<?, ?> friendsMeta = PropertyMetaTestBuilder
+        PropertyMeta friendsMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("friends").accessors()
                 .type(LAZY_LIST).build();
 
-        PropertyMeta<?, ?> followersMeta = PropertyMetaTestBuilder
+        PropertyMeta followersMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("followers").accessors()
                 .type(SET).build();
 
-        PropertyMeta<?, ?> preferencesMeta = PropertyMetaTestBuilder
+        PropertyMeta preferencesMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, String.class)
                 .field("preferences").accessors()
                 .type(MAP).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of(
+        meta.setPropertyMetas(ImmutableMap.of(
                 "id", idMeta,
                 "age", ageMeta,
                 "followers", followersMeta,
@@ -301,7 +301,7 @@ public class CQLStatementGeneratorTest {
                 .buid();
 
         Update.Assignments update = generator.generateUpdateFields(entity, meta,
-                Arrays.<PropertyMeta<?, ?>> asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
+                Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
 
         assertThat(update.getQueryString())
                 .isEqualTo(
@@ -320,7 +320,7 @@ public class CQLStatementGeneratorTest {
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
         Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compNames("id", "name")
                 .compClasses(Long.class, String.class)
@@ -329,7 +329,7 @@ public class CQLStatementGeneratorTest {
                 .type(EMBEDDED_ID).build();
         idMeta.setGetter(idGetter);
 
-        PropertyMeta<?, ?> valueMeta = PropertyMetaTestBuilder
+        PropertyMeta valueMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("value")
                 .type(SIMPLE).build();
@@ -337,7 +337,7 @@ public class CQLStatementGeneratorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "value", valueMeta));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "value", valueMeta));
         meta.setIdMeta(idMeta);
 
         Long userId = RandomUtils.nextLong();
@@ -349,7 +349,7 @@ public class CQLStatementGeneratorTest {
         entity.setValue("value");
 
         Update.Assignments update = generator.generateUpdateFields(entity, meta,
-                Arrays.<PropertyMeta<?, ?>> asList(valueMeta));
+                Arrays.asList(valueMeta));
 
         assertThat(update.getQueryString()).isEqualTo(
                 "UPDATE table SET value='value' WHERE id=" + userId + " AND name='name';");
@@ -358,7 +358,7 @@ public class CQLStatementGeneratorTest {
 
     private EntityMeta prepareEntityMeta(String... componentNames) throws Exception
     {
-        PropertyMeta<?, ?> idMeta;
+        PropertyMeta idMeta;
         if (componentNames.length > 1)
         {
             idMeta = PropertyMetaTestBuilder
@@ -377,17 +377,17 @@ public class CQLStatementGeneratorTest {
                     .build();
         }
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .type(SIMPLE).build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE).build();
 
-        PropertyMeta<?, ?> labelMeta = PropertyMetaTestBuilder
+        PropertyMeta labelMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("label")
                 .type(SIMPLE)
@@ -395,7 +395,7 @@ public class CQLStatementGeneratorTest {
 
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
-        meta.setEagerMetas(Arrays.<PropertyMeta<?, ?>> asList(idMeta, ageMeta, nameMeta, labelMeta));
+        meta.setEagerMetas(Arrays.asList(idMeta, ageMeta, nameMeta, labelMeta));
         meta.setIdMeta(idMeta);
 
         return meta;

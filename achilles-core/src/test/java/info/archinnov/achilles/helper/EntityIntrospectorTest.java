@@ -9,11 +9,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -21,6 +19,7 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,16 +44,16 @@ public class EntityIntrospectorTest
     private EntityMeta entityMeta;
 
     @Mock
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
-    private PropertyMeta<TweetCompoundKey, String> wideMapMeta;
+    private PropertyMeta wideMapMeta;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> getterMetas;
+    private Map<Method, PropertyMeta> getterMetas;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> setterMetas;
+    private Map<Method, PropertyMeta> setterMetas;
 
     private final EntityIntrospector introspector = new EntityIntrospector();
 
@@ -68,6 +67,7 @@ public class EntityIntrospectorTest
         class Test
         {
 
+            @SuppressWarnings("unused")
             Boolean old;
         }
 
@@ -83,6 +83,7 @@ public class EntityIntrospectorTest
         class Test
         {
 
+            @SuppressWarnings("unused")
             boolean old;
         }
 
@@ -97,6 +98,7 @@ public class EntityIntrospectorTest
     {
         class Test
         {
+            @SuppressWarnings("unused")
             boolean a;
         }
 
@@ -110,6 +112,7 @@ public class EntityIntrospectorTest
 
         class Test
         {
+            @SuppressWarnings("unused")
             String name;
         }
 
@@ -127,6 +130,7 @@ public class EntityIntrospectorTest
         {
             String name;
 
+            @SuppressWarnings("unused")
             public String getA()
             {
                 return name;
@@ -145,8 +149,10 @@ public class EntityIntrospectorTest
 
         class Test
         {
+            @SuppressWarnings("unused")
             String name;
 
+            @SuppressWarnings("unused")
             public Long getName()
             {
                 return 1L;
@@ -164,6 +170,7 @@ public class EntityIntrospectorTest
     public void should_exception_when_setter_returning_wrong_type() throws Exception
     {
 
+        @SuppressWarnings("unused")
         class Test
         {
             String name;
@@ -190,6 +197,7 @@ public class EntityIntrospectorTest
     public void should_exception_when_setter_taking_wrong_type() throws Exception
     {
 
+        @SuppressWarnings("unused")
         class Test
         {
             String name;
@@ -215,6 +223,7 @@ public class EntityIntrospectorTest
     @Test
     public void should_find_getter_from_boolean_as_isOld() throws Exception
     {
+        @SuppressWarnings("unused")
         class Test
         {
             boolean old;
@@ -239,6 +248,7 @@ public class EntityIntrospectorTest
     @Test
     public void should_find_getter_from_boolean_as_getOld() throws Exception
     {
+        @SuppressWarnings("unused")
         class Test
         {
             boolean old;

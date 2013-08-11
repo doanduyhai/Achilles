@@ -23,7 +23,7 @@ public class MapTranscoderTest {
     @Test
     public void should_encode() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(SIMPLE)
                 .build();
@@ -37,7 +37,7 @@ public class MapTranscoderTest {
     @Test
     public void should_encode_key() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(JOIN_SIMPLE)
                 .build();
@@ -48,7 +48,7 @@ public class MapTranscoderTest {
     @Test
     public void should_encode_value() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(SIMPLE)
                 .build();
@@ -59,7 +59,7 @@ public class MapTranscoderTest {
     @Test
     public void should_decode() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(SIMPLE)
                 .build();
@@ -73,7 +73,7 @@ public class MapTranscoderTest {
     @Test
     public void should_decode_key() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(JOIN_SIMPLE)
                 .build();
@@ -84,7 +84,7 @@ public class MapTranscoderTest {
     @Test
     public void should_decode_value() throws Exception
     {
-        PropertyMeta<Integer, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, String.class)
                 .type(SIMPLE)
                 .build();

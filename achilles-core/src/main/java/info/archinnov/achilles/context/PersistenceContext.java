@@ -71,7 +71,7 @@ public abstract class PersistenceContext
 
     private void extractPartitionKey()
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         if (idMeta.isEmbeddedId())
         {
             this.partitionKey = invoker.getPartitionKey(primaryKey, idMeta);
@@ -113,12 +113,12 @@ public abstract class PersistenceContext
         return entities;
     }
 
-    public PropertyMeta<?, ?> getIdMeta()
+    public PropertyMeta getIdMeta()
     {
         return entityMeta.getIdMeta();
     }
 
-    public PropertyMeta<?, ?> getFirstMeta()
+    public PropertyMeta getFirstMeta()
     {
         return entityMeta.getAllMetasExceptIdMeta().get(0);
     }

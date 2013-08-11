@@ -92,7 +92,7 @@ public class ReflectionInvokerTest
 
 		Method[] accessors = introspector.findAccessors(Bean.class,
 				Bean.class.getDeclaredField("complicatedAttributeName"));
-		PropertyMeta<Void, String> idMeta = factory()
+		PropertyMeta idMeta = factory()
 				.type(SIMPLE)
 				.propertyName("complicatedAttributeName")
 				.accessors(accessors)
@@ -105,7 +105,7 @@ public class ReflectionInvokerTest
 	@Test
 	public void should_return_null_key_when_null_entity() throws Exception
 	{
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+		PropertyMeta idMeta = PropertyMetaTestBuilder //
 				.completeBean(Void.class, Long.class)
 				.field("id")
 				.accessors()
@@ -118,7 +118,7 @@ public class ReflectionInvokerTest
 	{
 		long partitionKey = RandomUtils.nextLong();
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class)
 				.compGetters(userIdGetter)
 				.type(PropertyType.EMBEDDED_ID)
@@ -134,7 +134,7 @@ public class ReflectionInvokerTest
 	{
 		long partitionKey = RandomUtils.nextLong();
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class)
 				.compGetters(userIdGetter)
 				.type(PropertyType.ID)
@@ -189,7 +189,7 @@ public class ReflectionInvokerTest
 	{
 		Long partitionKey = RandomUtils.nextLong();
 
-		PropertyMeta<Void, CompoundKeyByConstructor> idMeta = PropertyMetaTestBuilder
+		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKeyByConstructor.class)
 				.type(PropertyType.EMBEDDED_ID)
 				.compNames("toto")
@@ -216,7 +216,7 @@ public class ReflectionInvokerTest
 		Long partitionKey = RandomUtils.nextLong();
 
 		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
-		PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class)
 				.compSetters(userIdSetter)
 				.build();

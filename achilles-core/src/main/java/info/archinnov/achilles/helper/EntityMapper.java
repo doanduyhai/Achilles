@@ -25,7 +25,7 @@ public class EntityMapper {
 
     protected ReflectionInvoker invoker = new ReflectionInvoker();
 
-    protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta<?, ?> listMeta, Object value) {
+    protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta listMeta, Object value) {
         String propertyName = listMeta.getPropertyName();
         List<Object> list = null;
         if (!listProperties.containsKey(propertyName)) {
@@ -37,7 +37,7 @@ public class EntityMapper {
         list.add(value);
     }
 
-    protected void addToSet(Map<String, Set<Object>> setProperties, PropertyMeta<?, ?> setMeta, Object value) {
+    protected void addToSet(Map<String, Set<Object>> setProperties, PropertyMeta setMeta, Object value) {
         String propertyName = setMeta.getPropertyName();
 
         Set<Object> set = null;
@@ -50,7 +50,7 @@ public class EntityMapper {
         set.add(value);
     }
 
-    protected void addToMap(Map<String, Map<Object, Object>> mapProperties, PropertyMeta<?, ?> mapMeta,
+    protected void addToMap(Map<String, Map<Object, Object>> mapProperties, PropertyMeta mapMeta,
             KeyValue<?, ?> keyValue) {
         String propertyName = mapMeta.getPropertyName();
 
@@ -64,7 +64,7 @@ public class EntityMapper {
         map.put(keyValue.getKey(), mapMeta.castValue(keyValue.getValue()));
     }
 
-    public <T, ID> void setIdToEntity(ID key, PropertyMeta<?, ?> idMeta, T entity) {
+    public <T, ID> void setIdToEntity(ID key, PropertyMeta idMeta, T entity) {
         log.trace("Set primary key value {} to entity {} ", key, entity);
 
         try {
@@ -74,7 +74,7 @@ public class EntityMapper {
         }
     }
 
-    public <T, ID> void setSimplePropertyToEntity(String value, PropertyMeta<?, ?> propertyMeta, T entity) {
+    public <T, ID> void setSimplePropertyToEntity(String value, PropertyMeta propertyMeta, T entity) {
         log.trace("Set simple property {} to entity {} ", propertyMeta.getPropertyName(), entity);
 
         try {
@@ -84,7 +84,7 @@ public class EntityMapper {
         }
     }
 
-    public void setListPropertyToEntity(List<?> list, PropertyMeta<?, ?> listMeta, Object entity) {
+    public void setListPropertyToEntity(List<?> list, PropertyMeta listMeta, Object entity) {
         log.trace("Set list property {} to entity {} ", listMeta.getPropertyName(), entity);
 
         try {
@@ -94,7 +94,7 @@ public class EntityMapper {
         }
     }
 
-    public void setSetPropertyToEntity(Set<?> set, PropertyMeta<?, ?> setMeta, Object entity) {
+    public void setSetPropertyToEntity(Set<?> set, PropertyMeta setMeta, Object entity) {
         log.trace("Set set property {} to entity {} ", setMeta.getPropertyName(), entity);
 
         try {
@@ -104,7 +104,7 @@ public class EntityMapper {
         }
     }
 
-    public void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta<?, ?> mapMeta, Object entity) {
+    public void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta mapMeta, Object entity) {
         log.trace("Set map property {} to entity {} ", mapMeta.getPropertyName(), entity);
 
         try {

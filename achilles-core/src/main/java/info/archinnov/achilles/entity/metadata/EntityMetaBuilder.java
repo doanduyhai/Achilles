@@ -34,19 +34,19 @@ public class EntityMetaBuilder
         }
     };
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
     private Class<?> entityClass;
     private String className;
     private String columnFamilyName;
-    private Map<String, PropertyMeta<?, ?>> propertyMetas;
+    private Map<String, PropertyMeta> propertyMetas;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-    public static EntityMetaBuilder entityMetaBuilder(PropertyMeta<?, ?> idMeta)
+    public static EntityMetaBuilder entityMetaBuilder(PropertyMeta idMeta)
     {
         return new EntityMetaBuilder(idMeta);
     }
 
-    public EntityMetaBuilder(PropertyMeta<?, ?> idMeta) {
+    public EntityMetaBuilder(PropertyMeta idMeta) {
         this.idMeta = idMeta;
     }
 
@@ -70,7 +70,7 @@ public class EntityMetaBuilder
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
         meta.setConsistencyLevels(consistencyLevels);
 
-        List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
+        List<PropertyMeta> eagerMetas = FluentIterable
                 .from(propertyMetas.values())
                 .filter(eagerType)
                 .toImmutableList();
@@ -78,13 +78,13 @@ public class EntityMetaBuilder
         meta.setEagerMetas(eagerMetas);
         meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
 
-        List<PropertyMeta<?, ?>> allMetasExceptIdMeta = FluentIterable
+        List<PropertyMeta> allMetasExceptIdMeta = FluentIterable
                 .from(propertyMetas.values())
                 .filter(excludeIdType)
                 .toImmutableList();
         meta.setAllMetasExceptIdMeta(allMetasExceptIdMeta);
 
-        PropertyMeta<?, ?> firstMeta = allMetasExceptIdMeta.isEmpty() ? null : allMetasExceptIdMeta.get(0);
+        PropertyMeta firstMeta = allMetasExceptIdMeta.isEmpty() ? null : allMetasExceptIdMeta.get(0);
         meta.setFirstMeta(firstMeta);
 
         boolean clusteredEntity = idMeta.isEmbeddedId();
@@ -95,32 +95,32 @@ public class EntityMetaBuilder
         return meta;
     }
 
-    private Map<Method, PropertyMeta<?, ?>> extractGetterMetas(
-            Map<String, PropertyMeta<?, ?>> propertyMetas)
+    private Map<Method, PropertyMeta> extractGetterMetas(
+            Map<String, PropertyMeta> propertyMetas)
     {
-        Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
-        for (PropertyMeta<?, ?> propertyMeta : propertyMetas.values())
+        Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
+        for (PropertyMeta propertyMeta : propertyMetas.values())
         {
             getterMetas.put(propertyMeta.getGetter(), propertyMeta);
         }
         return getterMetas;
     }
 
-    private Map<Method, PropertyMeta<?, ?>> extractSetterMetas(
-            Map<String, PropertyMeta<?, ?>> propertyMetas)
+    private Map<Method, PropertyMeta> extractSetterMetas(
+            Map<String, PropertyMeta> propertyMetas)
     {
-        Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
-        for (PropertyMeta<?, ?> propertyMeta : propertyMetas.values())
+        Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
+        for (PropertyMeta propertyMeta : propertyMetas.values())
         {
             setterMetas.put(propertyMeta.getSetter(), propertyMeta);
         }
         return setterMetas;
     }
 
-    private List<Method> extractEagerGetters(List<PropertyMeta<?, ?>> eagerMetas)
+    private List<Method> extractEagerGetters(List<PropertyMeta> eagerMetas)
     {
         List<Method> eagerMethods = new ArrayList<Method>();
-        for (PropertyMeta<?, ?> propertyMeta : eagerMetas)
+        for (PropertyMeta propertyMeta : eagerMetas)
         {
             eagerMethods.add(propertyMeta.getGetter());
         }
@@ -146,7 +146,7 @@ public class EntityMetaBuilder
         return this;
     }
 
-    public EntityMetaBuilder propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
+    public EntityMetaBuilder propertyMetas(Map<String, PropertyMeta> propertyMetas)
     {
         this.propertyMetas = propertyMetas;
         return this;

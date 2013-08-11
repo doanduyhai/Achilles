@@ -19,7 +19,7 @@ public class CounterPropertiesTest
 	@Test
 	public void should_to_string() throws Exception
 	{
-		PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+		PropertyMeta idMeta = PropertyMetaTestBuilder //
 				.completeBean(Void.class, Long.class) //
 				.field("id").type(PropertyType.SIMPLE)
 				//

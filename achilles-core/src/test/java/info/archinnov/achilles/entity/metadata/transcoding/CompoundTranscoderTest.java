@@ -53,7 +53,7 @@ public class CompoundTranscoderTest {
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
         Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
 
-        PropertyMeta<Void, CompoundKey> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .compClasses(Long.class, String.class)
@@ -79,7 +79,7 @@ public class CompoundTranscoderTest {
 
         Constructor<CompoundKey> constructor = CompoundKey.class.getDeclaredConstructor();
 
-        PropertyMeta<Void, CompoundKey> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .compClasses(Long.class, String.class)
@@ -106,7 +106,7 @@ public class CompoundTranscoderTest {
 
         Constructor<CompoundKey> constructor = CompoundKey.class.getDeclaredConstructor(Long.class, String.class);
 
-        PropertyMeta<Void, CompoundKey> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .compClasses(Long.class, String.class)

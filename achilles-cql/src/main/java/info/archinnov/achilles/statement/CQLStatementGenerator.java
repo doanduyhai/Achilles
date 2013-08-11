@@ -76,18 +76,18 @@ public class CQLStatementGenerator {
     }
 
     public Select generateSelectEntity(EntityMeta entityMeta) {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         Selection select = select();
 
         generateSelectForPrimaryKey(idMeta, select);
 
-        List<PropertyMeta<?, ?>> eagerMetas = FluentIterable
+        List<PropertyMeta> eagerMetas = FluentIterable
                 .from(entityMeta.getEagerMetas())
                 .filter(PropertyType.excludeIdType)
                 .toImmutableList();
 
-        for (PropertyMeta<?, ?> pm : eagerMetas) {
+        for (PropertyMeta pm : eagerMetas) {
             select.column(pm.getPropertyName());
         }
         return select.from(entityMeta.getTableName());
@@ -95,19 +95,19 @@ public class CQLStatementGenerator {
 
     public Insert generateInsert(Object entity, EntityMeta entityMeta)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Insert insert = insertInto(entityMeta.getTableName());
         generateInsertPrimaryKey(entity, idMeta, insert);
 
-        List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+        List<PropertyMeta> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
                 .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
-        List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
         fieldMetas.remove(idMeta);
 
-        for (PropertyMeta<?, ?> pm : fieldMetas)
+        for (PropertyMeta pm : fieldMetas)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
             value = encodeValueForCassandra(pm, value);
@@ -117,14 +117,14 @@ public class CQLStatementGenerator {
     }
 
     public Update.Assignments generateUpdateFields(Object entity, EntityMeta entityMeta,
-            List<PropertyMeta<?, ?>> pms)
+            List<PropertyMeta> pms)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Update update = update(entityMeta.getTableName());
 
         int i = 0;
         Assignments assignments = null;
-        for (PropertyMeta<?, ?> pm : pms)
+        for (PropertyMeta pm : pms)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
             value = encodeValueForCassandra(pm, value);
@@ -141,7 +141,7 @@ public class CQLStatementGenerator {
         return generateWhereClauseForUpdate(entity, idMeta, assignments);
     }
 
-    private Update.Assignments generateWhereClauseForUpdate(Object entity, PropertyMeta<?, ?> idMeta,
+    private Update.Assignments generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,
             Assignments update)
     {
         if (idMeta.isEmbeddedId())
@@ -175,7 +175,7 @@ public class CQLStatementGenerator {
         return update;
     }
 
-    private void generateInsertPrimaryKey(Object entity, PropertyMeta<?, ?> idMeta, Insert insert)
+    private void generateInsertPrimaryKey(Object entity, PropertyMeta idMeta, Insert insert)
     {
         Object primaryKey = invoker.getValueFromField(entity, idMeta.getGetter());
         if (idMeta.isEmbeddedId())
@@ -196,7 +196,7 @@ public class CQLStatementGenerator {
         }
     }
 
-    private Object encodeValueForCassandra(PropertyMeta<?, ?> pm, Object value)
+    private Object encodeValueForCassandra(PropertyMeta pm, Object value)
     {
         if (value != null)
         {
@@ -226,7 +226,7 @@ public class CQLStatementGenerator {
         return value;
     }
 
-    private void generateSelectForPrimaryKey(PropertyMeta<?, ?> idMeta, Selection select) {
+    private void generateSelectForPrimaryKey(PropertyMeta idMeta, Selection select) {
         if (idMeta.isEmbeddedId()) {
             for (String component : idMeta.getComponentNames()) {
                 select.column(component);

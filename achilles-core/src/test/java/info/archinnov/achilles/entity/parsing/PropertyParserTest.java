@@ -49,7 +49,7 @@ public class PropertyParserTest
 
     private PropertyParser parser = new PropertyParser();
 
-    private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+    private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
     private EntityParsingContext entityContext;
     private ConfigurationContext configContext;
 
@@ -90,10 +90,10 @@ public class PropertyParserTest
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
         context.setPrimaryKey(true);
 
-        PropertyMeta<Void, Long> meta = (PropertyMeta<Void, Long>) parser.parse(context);
+        PropertyMeta meta = (PropertyMeta) parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
-        assertThat(meta.getValueClass()).isEqualTo(Long.class);
+        assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
         assertThat(context.getPropertyMetas()).hasSize(1);
 
     }
@@ -123,7 +123,7 @@ public class PropertyParserTest
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
         context.isEmbeddedId(true);
 
-        PropertyMeta<Void, CompoundKey> meta = (PropertyMeta<Void, CompoundKey>) parser
+        PropertyMeta meta = (PropertyMeta) parser
                 .parse(context);
 
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
@@ -133,7 +133,7 @@ public class PropertyParserTest
         Method nameSetter = CompoundKey.class.getDeclaredMethod("setName", String.class);
 
         assertThat(meta.getPropertyName()).isEqualTo("id");
-        assertThat(meta.getValueClass()).isEqualTo(CompoundKey.class);
+        assertThat((Class) meta.getValueClass()).isEqualTo(CompoundKey.class);
         EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
         assertThat(embeddedIdProperties).isNotNull();
         assertThat(embeddedIdProperties.getComponentClasses()).contains(Long.class, String.class);
@@ -167,19 +167,19 @@ public class PropertyParserTest
 
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("name"));
 
-        PropertyMeta<Void, String> meta = (PropertyMeta<Void, String>) parser.parse(context);
+        PropertyMeta meta = (PropertyMeta) parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("name");
-        assertThat(meta.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
 
         assertThat(meta.getGetter().getName()).isEqualTo("getName");
-        assertThat((Class<String>) meta.getGetter().getReturnType()).isEqualTo(String.class);
+        assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(String.class);
         assertThat(meta.getSetter().getName()).isEqualTo("setName");
-        assertThat((Class<String>) meta.getSetter().getParameterTypes()[0]).isEqualTo(String.class);
+        assertThat((Class) meta.getSetter().getParameterTypes()[0]).isEqualTo(String.class);
 
         assertThat(meta.type()).isEqualTo(PropertyType.SIMPLE);
 
-        assertThat((PropertyMeta<Void, String>) context.getPropertyMetas().get("name")).isSameAs(
+        assertThat((PropertyMeta) context.getPropertyMetas().get("name")).isSameAs(
                 meta);
 
     }
@@ -205,7 +205,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("name"));
 
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("firstname");
     }
@@ -232,7 +232,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("active"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat((Class<Boolean>) meta.getValueClass()).isEqualTo(boolean.class);
     }
@@ -258,12 +258,12 @@ public class PropertyParserTest
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("counter"));
 
-        PropertyMeta<Void, Long> meta = (PropertyMeta<Void, Long>) parser.parse(context);
+        PropertyMeta meta = (PropertyMeta) parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
         assertThat(meta.getCounterProperties()).isNotNull();
         assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
-        assertThat((PropertyMeta<Void, Long>) context.getCounterMetas().get(0)).isSameAs(meta);
+        assertThat((PropertyMeta) context.getCounterMetas().get(0)).isSameAs(meta);
     }
 
     @Test
@@ -286,7 +286,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("counter"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
         assertThat(meta.getReadConsistencyLevel()).isEqualTo(ONE);
@@ -366,7 +366,7 @@ public class PropertyParserTest
             }
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("type"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat((Class<PropertyType>) meta.getValueClass()).isEqualTo(PropertyType.class);
     }
@@ -392,7 +392,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("uuid"));
 
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat((Class<UUID>) meta.getValueClass()).isEqualTo(UUID.class);
     }
@@ -419,7 +419,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("friends"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
         assertThat(meta.type().isLazy()).isTrue();
     }
 
@@ -445,7 +445,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("friends"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("friends");
         assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
@@ -481,7 +481,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("followers"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("followers");
         assertThat((Class<Long>) meta.getValueClass()).isEqualTo(Long.class);
@@ -516,7 +516,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("preferences"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("preferences");
         assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
@@ -551,7 +551,7 @@ public class PropertyParserTest
         }
         PropertyParsingContext context = newContext(Test.class,
                 Test.class.getDeclaredField("map"));
-        PropertyMeta<?, ?> meta = parser.parse(context);
+        PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.getPropertyName()).isEqualTo("map");
         assertThat((Class) meta.getValueClass()).isEqualTo(List.class);

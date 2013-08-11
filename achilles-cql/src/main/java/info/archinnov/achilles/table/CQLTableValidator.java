@@ -30,7 +30,7 @@ public class CQLTableValidator {
     }
 
     public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         if (entityMeta.isClusteredCounter())
         {
 
@@ -39,7 +39,7 @@ public class CQLTableValidator {
 
     }
 
-    private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, PropertyMeta<?, ?> idMeta) {
+    private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, PropertyMeta idMeta) {
         if (idMeta.isEmbeddedId())
         {
             List<String> componentNames = idMeta.getComponentNames();
@@ -54,7 +54,7 @@ public class CQLTableValidator {
             validateColumn(tableMetadata, idMeta);
         }
 
-        for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())
+        for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta())
         {
             switch (pm.type())
             {
@@ -115,7 +115,7 @@ public class CQLTableValidator {
 
     }
 
-    private void validateColumn(TableMetadata tableMetadata, PropertyMeta<?, ?> pm)
+    private void validateColumn(TableMetadata tableMetadata, PropertyMeta pm)
     {
         if (pm.isJoin())
         {
@@ -142,7 +142,7 @@ public class CQLTableValidator {
                 realType, expectedType);
     }
 
-    private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta<?, ?> pm)
+    private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm)
     {
         String columnName = pm.getPropertyName().toLowerCase();
         String tableName = tableMetadata.getName();

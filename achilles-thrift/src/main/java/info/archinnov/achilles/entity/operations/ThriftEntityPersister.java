@@ -49,7 +49,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
                 // Remove first
                 persisterImpl.removeEntityBatch(context);
 
-                for (PropertyMeta<?, ?> propertyMeta : entityMeta.getPropertyMetas().values())
+                for (PropertyMeta propertyMeta : entityMeta.getPropertyMetas().values())
                 {
                     this.persistPropertyBatch(context, propertyMeta);
                 }
@@ -58,7 +58,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     public void persistPropertyBatch(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(),
                 context.getEntity());
@@ -119,7 +119,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     public void removePropertyBatch(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         log.debug("Removing property {} from entity of class {} and primary key {} ",
                 propertyMeta.getPropertyName(),
@@ -178,7 +178,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistListProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         List<?> list = (List<?>) invoker.getValueFromField(context.getEntity(),
                 propertyMeta.getGetter());
@@ -189,7 +189,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistSetProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         Set<?> set = (Set<?>) invoker.getValueFromField(context.getEntity(),
                 propertyMeta.getGetter());
@@ -200,7 +200,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistMapProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         Map<?, ?> map = (Map<?, ?>) invoker.getValueFromField(context.getEntity(),
                 propertyMeta.getGetter());
@@ -211,7 +211,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistJoinEntity(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         Object joinEntity = invoker
                 .getValueFromField(context.getEntity(), propertyMeta.getGetter());
@@ -223,7 +223,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistJoinListOrSetProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
 
         Collection<?> joinCollection = (Collection<?>) invoker.getValueFromField(
@@ -236,7 +236,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
     }
 
     private void batchPersistJoinMapProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         Map<?, ?> joinMap = (Map<?, ?>) invoker.getValueFromField(context.getEntity(),
                 propertyMeta.getGetter());
@@ -259,7 +259,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         Validator.validateNotNull(entity, "Entity should be provided for clustered entity '%s' persistence",
                 className);
 
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
         Object partitionKey = invoker.getPartitionKey(compoundKey, idMeta);
 
         Object clusteredValue;
@@ -269,7 +269,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         }
         else
         {
-            PropertyMeta<?, ?> pm = context.getFirstMeta();
+            PropertyMeta pm = context.getFirstMeta();
             clusteredValue = invoker.getValueFromField(entity, pm.getGetter());
             Validator.validateNotNull(clusteredValue,
                     "Property '%s' should not be null for clustered entity '%s' persistence", pm.getPropertyName(),
@@ -287,7 +287,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
         Validator.validateNotNull(embeddedId,
                 "Embedded id should be provided for clustered entity '%s' persistence", className);
 
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
 
         Object partitionKey = invoker.getPartitionKey(embeddedId, idMeta);
 

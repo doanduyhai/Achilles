@@ -1,9 +1,7 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.proxy.wrapper.AbstractWrapper;
 import info.archinnov.achilles.proxy.wrapper.KeySetWrapper;
-
 import java.util.Set;
 
 /**
@@ -12,28 +10,25 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class KeySetWrapperBuilder<K> extends
-		AbstractWrapperBuilder<KeySetWrapperBuilder<K>, K, Void>
+public class KeySetWrapperBuilder extends AbstractWrapperBuilder<KeySetWrapperBuilder>
 {
-	private Set<K> target;
+    private Set<Object> target;
 
-	public KeySetWrapperBuilder(PersistenceContext context, Set<K> target) {
-		super.context = context;
-		this.target = target;
-	}
+    public KeySetWrapperBuilder(PersistenceContext context, Set<Object> target) {
+        super.context = context;
+        this.target = target;
+    }
 
-	public static <K> KeySetWrapperBuilder<K> builder(PersistenceContext context,
-			Set<K> target)
-	{
-		return new KeySetWrapperBuilder<K>(context, target);
-	}
+    public static KeySetWrapperBuilder builder(PersistenceContext context, Set<Object> target)
+    {
+        return new KeySetWrapperBuilder(context, target);
+    }
 
-	@SuppressWarnings("unchecked")
-	public KeySetWrapper<K> build()
-	{
-		KeySetWrapper<K> keySetWrapper = new KeySetWrapper<K>(this.target);
-		super.build((AbstractWrapper<K, Void>) keySetWrapper);
-		return keySetWrapper;
-	}
+    public KeySetWrapper build()
+    {
+        KeySetWrapper keySetWrapper = new KeySetWrapper(this.target);
+        super.build(keySetWrapper);
+        return keySetWrapper;
+    }
 
 }

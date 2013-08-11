@@ -89,12 +89,12 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_persist_simple_property() throws Exception {
-        PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder
+        PropertyMeta simpleMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("simpleMeta", simpleMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("simpleMeta", simpleMeta));
 
         persister.persist(context);
 
@@ -104,12 +104,12 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_persist_counter_property() throws Exception {
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(PropertyType.COUNTER)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("counterMeta", counterMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("counterMeta", counterMeta));
 
         persister.persist(context);
 
@@ -119,10 +119,10 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_not_persist_twice_the_same_entity() throws Exception {
-        PropertyMeta<Void, String> simpleMeta = PropertyMetaTestBuilder.valueClass(String.class)
+        PropertyMeta simpleMeta = PropertyMetaTestBuilder.valueClass(String.class)
                 .type(PropertyType.SIMPLE).build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("simpleMeta", simpleMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("simpleMeta", simpleMeta));
 
         persister.persist(context);
         persister.persist(context);
@@ -133,18 +133,18 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_cascade_persist() throws Exception {
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Void.class, UserBean.class).field("user").accessors().type(PropertyType.JOIN_SIMPLE)
                 .joinMeta(joinMeta).cascadeType(CascadeType.PERSIST)
                 .consistencyLevels(Pair.create(ALL, ALL)).build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("propertyMeta", propertyMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("propertyMeta", propertyMeta));
 
         Long joinId = RandomUtils.nextLong();
 
@@ -160,7 +160,7 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_ensure_join_entity_exist() throws Exception {
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
@@ -183,10 +183,10 @@ public class ThriftEntityPersisterTest {
     public void should_persist_list() throws Exception {
         ArrayList<String> list = new ArrayList<String>();
 
-        PropertyMeta<Void, String> listMeta = PropertyMetaTestBuilder //
+        PropertyMeta listMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class).field("friends").accessors().type(PropertyType.LIST).build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("listMeta", listMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("listMeta", listMeta));
 
         when(invoker.getValueFromField(entity, listMeta.getGetter())).thenReturn(list);
         persister.persist(context);
@@ -199,10 +199,10 @@ public class ThriftEntityPersisterTest {
     public void should_persist_set() throws Exception {
         Set<String> set = new HashSet<String>();
 
-        PropertyMeta<Void, String> setMeta = PropertyMetaTestBuilder //
+        PropertyMeta setMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class).field("followers").accessors().type(PropertyType.SET).build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("setMeta", setMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("setMeta", setMeta));
 
         when(invoker.getValueFromField(entity, setMeta.getGetter())).thenReturn(set);
         persister.persist(context);
@@ -215,12 +215,12 @@ public class ThriftEntityPersisterTest {
     public void should_persist_map() throws Exception {
         Map<Integer, String> map = new HashMap<Integer, String>();
 
-        PropertyMeta<Integer, String> mapMeta = PropertyMetaTestBuilder
+        PropertyMeta mapMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Integer.class, String.class).field("preferences").accessors().type(PropertyType.MAP)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("mapMeta", mapMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("mapMeta", mapMeta));
 
         when(invoker.getValueFromField(entity, mapMeta.getGetter())).thenReturn(map);
         persister.persist(context);
@@ -233,12 +233,12 @@ public class ThriftEntityPersisterTest {
     public void should_persist_join() throws Exception {
         UserBean user = new UserBean();
 
-        PropertyMeta<Void, UserBean> joinMeta = PropertyMetaTestBuilder
+        PropertyMeta joinMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Void.class, UserBean.class).field("user").accessors().type(PropertyType.JOIN_SIMPLE)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("joinMeta", joinMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("joinMeta", joinMeta));
 
         when(invoker.getValueFromField(entity, joinMeta.getGetter())).thenReturn(user);
         persister.persist(context);
@@ -251,12 +251,12 @@ public class ThriftEntityPersisterTest {
     public void should_persist_join_collection() throws Exception {
         Set<String> joinSet = new HashSet<String>();
 
-        PropertyMeta<Void, String> joinSetMeta = PropertyMetaTestBuilder
+        PropertyMeta joinSetMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Void.class, String.class).field("followers").accessors().type(PropertyType.JOIN_SET)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("joinSetMeta", joinSetMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("joinSetMeta", joinSetMeta));
 
         when(invoker.getValueFromField(entity, joinSetMeta.getGetter())).thenReturn(joinSet);
         persister.persist(context);
@@ -269,12 +269,12 @@ public class ThriftEntityPersisterTest {
     public void should_persist_join_map() throws Exception {
         Map<Integer, String> joinMap = new HashMap<Integer, String>();
 
-        PropertyMeta<Integer, String> joinMapMeta = PropertyMetaTestBuilder
+        PropertyMeta joinMapMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Integer.class, String.class).field("preferences").accessors()
                 .type(PropertyType.JOIN_MAP).build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("joinMapMeta", joinMapMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("joinMapMeta", joinMapMeta));
 
         when(invoker.getValueFromField(entity, joinMapMeta.getGetter())).thenReturn(joinMap);
         persister.persist(context);
@@ -288,13 +288,13 @@ public class ThriftEntityPersisterTest {
         Object partitionKey = 10L;
         Object clusteredValue = "clusteredValue";
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -302,8 +302,8 @@ public class ThriftEntityPersisterTest {
 
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
         when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
         when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(clusteredValue);
@@ -317,7 +317,7 @@ public class ThriftEntityPersisterTest {
     public void should_persist_value_less_clustered_entity() throws Exception {
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
@@ -325,7 +325,7 @@ public class ThriftEntityPersisterTest {
 
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
         when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
 
@@ -340,13 +340,13 @@ public class ThriftEntityPersisterTest {
         Object clusteredValue = "clusteredValue";
         Object partitionKey = RandomUtils.nextLong();
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
                 .accessors().type(PropertyType.SIMPLE).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
 
         when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
         persister.persistClusteredValue(context, clusteredValue);
@@ -364,7 +364,7 @@ public class ThriftEntityPersisterTest {
     public void should_remove_clustered_entity() throws Exception {
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
 
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
@@ -377,7 +377,7 @@ public class ThriftEntityPersisterTest {
 
     @Test
     public void should_remove_property_as_batch() throws Exception {
-        PropertyMeta<Void, String> nameMeta = new PropertyMeta<Void, String>();
+        PropertyMeta nameMeta = new PropertyMeta();
 
         persister.removePropertyBatch(context, nameMeta);
         verify(persisterImpl).removePropertyBatch(context, nameMeta);

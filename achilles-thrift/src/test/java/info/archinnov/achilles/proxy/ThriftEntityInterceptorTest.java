@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
@@ -70,13 +69,13 @@ public class ThriftEntityInterceptorTest
     private ThriftGenericEntityDao entityDao;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> getterMetas;
+    private Map<Method, PropertyMeta> getterMetas;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> setterMetas;
+    private Map<Method, PropertyMeta> setterMetas;
 
     @Mock
-    private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    private Map<Method, PropertyMeta> dirtyMap;
 
     @Mock
     private Set<Method> alreadyLoaded;
@@ -93,7 +92,7 @@ public class ThriftEntityInterceptorTest
     private PropertyMeta propertyMeta;
 
     @Mock
-    private PropertyMeta<Void, UUID> joinPropertyMeta;
+    private PropertyMeta joinPropertyMeta;
 
     @Mock
     private Mutator<Long> mutator;
@@ -119,13 +118,13 @@ public class ThriftEntityInterceptorTest
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
-    private PropertyMeta<Void, Long> joinIdMeta;
+    private PropertyMeta joinIdMeta;
 
-    private PropertyMeta<Void, String> nameMeta;
+    private PropertyMeta nameMeta;
 
-    private PropertyMeta<Void, UserBean> userMeta;
+    private PropertyMeta userMeta;
 
     @Before
     public void setUp() throws Exception
@@ -454,7 +453,7 @@ public class ThriftEntityInterceptorTest
 
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
         Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
-        PropertyMeta<?, ?> clusteredIdMeta = PropertyMetaTestBuilder
+        PropertyMeta clusteredIdMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .compGetters(Arrays.asList(userIdGetter, nameGetter))

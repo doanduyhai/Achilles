@@ -18,7 +18,7 @@ public class ListTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public List<Object> encode(PropertyMeta<?, ?> pm, List<?> entityValue) {
+    public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
         List<Object> encoded = new ArrayList<Object>();
         for (Object value : entityValue)
         {
@@ -28,7 +28,7 @@ public class ListTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public List<Object> decode(PropertyMeta<?, ?> pm, List<?> cassandraValue) {
+    public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
         List<Object> decoded = new ArrayList<Object>();
         for (Object value : cassandraValue)
         {

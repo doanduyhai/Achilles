@@ -31,7 +31,7 @@ public class CQLEntityInterceptorTest {
     @Test
     public void should_build_counter_wrapper() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta counterMeta = new PropertyMeta();
 
         interceptor = new CQLEntityInterceptor<ClusteredEntityWithCounter>();
         interceptor.setContext(context);

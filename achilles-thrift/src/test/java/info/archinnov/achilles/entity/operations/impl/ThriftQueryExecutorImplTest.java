@@ -70,10 +70,10 @@ public class ThriftQueryExecutorImplTest
     private SliceQuery<ClusteredEntity> query;
 
     @Mock
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
-    private PropertyMeta<Object, Object> pm;
+    private PropertyMeta pm;
 
     @Mock
     private Mutator<Object> mutator;
@@ -119,7 +119,7 @@ public class ThriftQueryExecutorImplTest
     {
         meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
+        meta.setPropertyMetas(ImmutableMap.of("pm", pm));
         meta.setFirstMeta(pm);
 
         when(query.getMeta()).thenReturn(meta);

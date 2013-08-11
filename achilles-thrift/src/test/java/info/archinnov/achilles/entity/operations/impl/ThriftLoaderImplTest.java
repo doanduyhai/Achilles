@@ -106,7 +106,7 @@ public class ThriftLoaderImplTest
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     private ThriftPersistenceContext context;
 
@@ -165,13 +165,13 @@ public class ThriftLoaderImplTest
         HColumn<Composite, Object> hCol = new HColumnImpl<Composite, Object>(comp, clusteredValue,
                 10);
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();
@@ -179,8 +179,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -206,12 +206,12 @@ public class ThriftLoaderImplTest
     {
         Composite comp = new Composite();
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();
@@ -222,8 +222,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -248,13 +248,13 @@ public class ThriftLoaderImplTest
         HColumn<Composite, Object> hCol = new HColumnImpl<Composite, Object>(comp, clusteredValue,
                 10);
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SIMPLE)
                 .build();
@@ -262,8 +262,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -288,13 +288,13 @@ public class ThriftLoaderImplTest
     {
         Composite comp = new Composite();
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SIMPLE)
                 .build();
@@ -305,8 +305,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -329,13 +329,13 @@ public class ThriftLoaderImplTest
         BeanWithClusteredId expected = new BeanWithClusteredId();
         HCounterColumn<Composite> hCounterCol = new HCounterColumnImpl<Composite>(comp, 10L);
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<Void, Long> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(COUNTER)
                 .build();
@@ -343,8 +343,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -371,13 +371,13 @@ public class ThriftLoaderImplTest
     {
         Composite comp = new Composite();
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(COUNTER)
                 .build();
@@ -388,8 +388,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         context = buildPersistenceContext(entityMeta);
@@ -414,7 +414,7 @@ public class ThriftLoaderImplTest
         HColumn<Composite, Object> hCol = new HColumnImpl<Composite, Object>(comp, clusteredValue,
                 10);
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
@@ -423,8 +423,8 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList());
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList());
 
         context = buildPersistenceContext(entityMeta);
 
@@ -450,7 +450,7 @@ public class ThriftLoaderImplTest
     {
         Composite comp = new Composite();
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
@@ -462,7 +462,7 @@ public class ThriftLoaderImplTest
         entityMeta.setClusteredEntity(true);
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(CompoundKey.class);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
         context = buildPersistenceContext(entityMeta);
 
@@ -481,7 +481,7 @@ public class ThriftLoaderImplTest
     public void should_load_simple_property_for_entity() throws Exception
     {
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+        PropertyMeta nameMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -491,7 +491,7 @@ public class ThriftLoaderImplTest
         when(compositeFactory.createBaseForGet(nameMeta)).thenReturn(comp);
         when(entityDao.getValue(entity.getId(), comp)).thenReturn("name_xyz");
 
-        String actual = loaderImpl.loadSimpleProperty(context, nameMeta);
+        Object actual = loaderImpl.loadSimpleProperty(context, nameMeta);
         assertThat(actual).isEqualTo("name_xyz");
     }
 
@@ -501,13 +501,13 @@ public class ThriftLoaderImplTest
         Long partitionKey = RandomUtils.nextLong();
         CompoundKey embeddedId = new CompoundKey(partitionKey, "name");
         Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-        PropertyMeta<Void, CompoundKey> embeddedIdMeta = PropertyMetaTestBuilder
+        PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .compGetters(userIdGetter)
                 .build();
 
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .build();
 
@@ -522,14 +522,14 @@ public class ThriftLoaderImplTest
 
         when(wideRowDao.getValue(partitionKey, comp)).thenReturn("name_xyz");
 
-        String actual = loaderImpl.loadSimpleProperty(context, pm);
+        Object actual = loaderImpl.loadSimpleProperty(context, pm);
         assertThat(actual).isEqualTo("name_xyz");
     }
 
     @Test
     public void should_load_list() throws Exception
     {
-        PropertyMeta<Void, String> listMeta = PropertyMetaTestBuilder //
+        PropertyMeta listMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("friends")
                 .accessors()
@@ -545,14 +545,14 @@ public class ThriftLoaderImplTest
         when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
                 .thenReturn(columns);
 
-        List<String> actual = loaderImpl.loadListProperty(context, listMeta);
+        List<Object> actual = loaderImpl.loadListProperty(context, listMeta);
         assertThat(actual).containsExactly("foo", "bar");
     }
 
     @Test
     public void should_load_set() throws Exception
     {
-        PropertyMeta<Void, String> setMeta = PropertyMetaTestBuilder //
+        PropertyMeta setMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("followers")
                 .accessors()
@@ -568,15 +568,14 @@ public class ThriftLoaderImplTest
         when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
                 .thenReturn(columns);
 
-        Set<String> actual = loaderImpl.loadSetProperty(context, setMeta);
+        Set<Object> actual = loaderImpl.loadSetProperty(context, setMeta);
         assertThat(actual).containsExactly("John", "Helen");
     }
 
     @Test
     public void should_load_map() throws Exception
     {
-        PropertyMeta<Integer, UserBean> setMeta = PropertyMetaTestBuilder
-                //
+        PropertyMeta setMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, UserBean.class)
                 .field("usersMap")
                 .type(PropertyType.MAP)
@@ -598,7 +597,7 @@ public class ThriftLoaderImplTest
         when(entityDao.findColumnsRange(entity.getId(), start, end, false, Integer.MAX_VALUE))
                 .thenReturn(columns);
 
-        Map<Integer, UserBean> actual = loaderImpl.loadMapProperty(context, setMeta);
+        Map<Object, UserBean> actual = (Map) loaderImpl.loadMapProperty(context, setMeta);
         assertThat(actual).hasSize(2);
         assertThat(actual.get(1).getName()).isEqualTo("user1");
         assertThat(actual.get(2).getName()).isEqualTo("user2");
@@ -611,7 +610,7 @@ public class ThriftLoaderImplTest
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Integer.class, UserBean.class)
                 .field("user")
@@ -626,7 +625,7 @@ public class ThriftLoaderImplTest
         when(entityDao.getValue(entity.getId(), comp)).thenReturn(stringJoinId);
         when(loader.load(contextCaptor.capture(), eq(UserBean.class))).thenReturn(user);
 
-        UserBean actual = loaderImpl.loadJoinSimple(context, propertyMeta, loader);
+        UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context, propertyMeta, loader);
         assertThat(actual).isSameAs(user);
         assertThat(contextCaptor.getValue().getPrimaryKey()).isEqualTo(new Long(stringJoinId));
         assertThat(contextCaptor.getValue().getEntityMeta()).isSameAs(joinMeta);
@@ -639,7 +638,7 @@ public class ThriftLoaderImplTest
         CompoundKey embeddedId = new CompoundKey(partitionKey, "name");
         Long joinId = RandomUtils.nextLong();
 
-        PropertyMeta<Void, CompoundKey> embeddedIdMeta = PropertyMetaTestBuilder
+        PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(EMBEDDED_ID)
                 .build();
@@ -651,7 +650,7 @@ public class ThriftLoaderImplTest
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .joinMeta(joinMeta)
@@ -667,7 +666,7 @@ public class ThriftLoaderImplTest
         when(wideRowDao.getValue(partitionKey, comp)).thenReturn(joinId);
         when(loader.load(contextCaptor.capture(), eq(UserBean.class))).thenReturn(user);
 
-        UserBean actual = loaderImpl.loadJoinSimple(context, pm, loader);
+        UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context, pm, loader);
         assertThat(actual).isSameAs(user);
         assertThat(contextCaptor.getValue().getPrimaryKey()).isEqualTo(joinId);
         assertThat(contextCaptor.getValue().getEntityMeta()).isSameAs(joinMeta);
@@ -679,8 +678,7 @@ public class ThriftLoaderImplTest
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder
-                //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Integer.class, UserBean.class)
                 .field("user")
                 .joinMeta(joinMeta)
@@ -692,7 +690,7 @@ public class ThriftLoaderImplTest
         when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
         when(entityDao.getValue(entity.getId(), comp)).thenReturn(null);
 
-        UserBean actual = loaderImpl.loadJoinSimple(context, propertyMeta, loader);
+        UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context, propertyMeta, loader);
         assertThat(actual).isNull();
 
     }

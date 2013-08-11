@@ -51,7 +51,7 @@ public class EntityValidatorTest {
     private EntityMeta entityMeta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
     private PersistenceContext context;
@@ -59,7 +59,7 @@ public class EntityValidatorTest {
     @Before
     public void setUp() {
         Whitebox.setInternalState(entityValidator, ReflectionInvoker.class, invoker);
-        when((PropertyMeta<Void, Long>) entityMeta.getIdMeta()).thenReturn(idMeta);
+        when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
     }
 
     @Test

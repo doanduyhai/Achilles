@@ -72,7 +72,7 @@ public class ThriftDaoContextBuilderTest {
 
     @Test
     public void should_build_entity_dao() throws Exception {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -80,7 +80,7 @@ public class ThriftDaoContextBuilderTest {
         entityMeta.setTableName("cf");
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(Long.class);
-        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         entityMetaMap.put(CompleteBean.class, entityMeta);
 
@@ -92,7 +92,7 @@ public class ThriftDaoContextBuilderTest {
 
     @Test
     public void should_build_clustered_entity_dao() throws Exception {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -100,7 +100,7 @@ public class ThriftDaoContextBuilderTest {
         entityMeta.setTableName("cf");
         entityMeta.setIdMeta(idMeta);
         entityMeta.setIdClass(Long.class);
-        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         entityMetaMap.put(CompleteBean.class, entityMeta);
 

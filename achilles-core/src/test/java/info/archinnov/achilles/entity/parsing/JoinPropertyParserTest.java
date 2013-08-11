@@ -46,7 +46,7 @@ public class JoinPropertyParserTest
 
     private JoinPropertyParser parser = new JoinPropertyParser();
 
-    private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+    private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
     private EntityParsingContext entityContext;
 
     @Mock
@@ -94,14 +94,14 @@ public class JoinPropertyParserTest
         PropertyParsingContext context = newJoinParsingContext(Test.class,
                 Test.class.getDeclaredField("user"));
 
-        PropertyMeta<Void, UserBean> meta = (PropertyMeta<Void, UserBean>) parser
+        PropertyMeta meta = (PropertyMeta) parser
                 .parseJoin(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SIMPLE);
         JoinProperties joinProperties = meta.getJoinProperties();
         assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
 
-        assertThat((PropertyMeta<Void, UserBean>) context.getPropertyMetas().get("user")).isSameAs(
+        assertThat((PropertyMeta) context.getPropertyMetas().get("user")).isSameAs(
                 meta);
 
         assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
@@ -129,11 +129,10 @@ public class JoinPropertyParserTest
         }
         PropertyParsingContext context = newJoinParsingContext(Test.class,
                 Test.class.getDeclaredField("user"));
-        PropertyMeta<?, ?> meta = parser.parseJoin(context);
+        PropertyMeta meta = parser.parseJoin(context);
 
         JoinProperties joinProperties = meta.getJoinProperties();
         assertThat(joinProperties.getCascadeTypes()).isEmpty();
-        assertThat(context.getJoinWideMaps()).isEmpty();
     }
 
     @Test
@@ -197,12 +196,11 @@ public class JoinPropertyParserTest
         PropertyParsingContext context = newJoinParsingContext(Test.class,
                 Test.class.getDeclaredField("users"));
 
-        PropertyMeta<?, ?> meta = parser.parseJoin(context);
+        PropertyMeta meta = parser.parseJoin(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.JOIN_LIST);
         JoinProperties joinProperties = meta.getJoinProperties();
         assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-        assertThat(context.getJoinWideMaps()).isEmpty();
         assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
                 .isEqualTo(UserBean.class);
     }
@@ -234,12 +232,11 @@ public class JoinPropertyParserTest
         }
         PropertyParsingContext context = newJoinParsingContext(Test.class,
                 Test.class.getDeclaredField("users"));
-        PropertyMeta<?, ?> meta = parser.parseJoin(context);
+        PropertyMeta meta = parser.parseJoin(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.JOIN_SET);
         JoinProperties joinProperties = meta.getJoinProperties();
         assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, MERGE);
-        assertThat(context.getJoinWideMaps()).isEmpty();
         assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
                 .isEqualTo(UserBean.class);
     }
@@ -271,12 +268,11 @@ public class JoinPropertyParserTest
         }
         PropertyParsingContext context = newJoinParsingContext(Test.class,
                 Test.class.getDeclaredField("users"));
-        PropertyMeta<?, ?> meta = parser.parseJoin(context);
+        PropertyMeta meta = parser.parseJoin(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.JOIN_MAP);
         JoinProperties joinProperties = meta.getJoinProperties();
         assertThat(joinProperties.getCascadeTypes()).contains(PERSIST, REFRESH);
-        assertThat(context.getJoinWideMaps()).isEmpty();
         assertThat((Class<UserBean>) joinPropertyMetaToBeFilled.get(meta))
                 .isEqualTo(UserBean.class);
     }

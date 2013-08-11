@@ -19,7 +19,7 @@ public class ThriftCompoundKeyValidator extends CompoundKeyValidator {
 
     private static final Logger log = LoggerFactory.getLogger(ThriftCompoundKeyValidator.class);
 
-    public <K> void validateBoundsForQuery(PropertyMeta<?, ?> propertyMeta, K start, K end,
+    public <K> void validateBoundsForQuery(PropertyMeta propertyMeta, K start, K end,
             OrderingMode ordering)
     {
         log.trace("Check composites {} / {} with respect to ordering mode {}", start, end,

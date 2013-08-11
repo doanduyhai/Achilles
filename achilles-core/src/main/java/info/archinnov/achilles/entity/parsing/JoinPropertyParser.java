@@ -25,12 +25,12 @@ public class JoinPropertyParser {
     private PropertyFilter filter = new PropertyFilter();
     private PropertyParser parser = new PropertyParser();
 
-    public PropertyMeta<?, ?> parseJoin(PropertyParsingContext context) {
+    public PropertyMeta parseJoin(PropertyParsingContext context) {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
 
-        PropertyMeta<?, ?> joinPropertyMeta = this.parser.parse(context);
+        PropertyMeta joinPropertyMeta = this.parser.parse(context);
 
         log.debug("Parsing join property meta {} for entity {}", joinPropertyMeta.getPropertyName(), context
                 .getCurrentEntityClass()

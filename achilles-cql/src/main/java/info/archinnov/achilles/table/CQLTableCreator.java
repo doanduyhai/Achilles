@@ -106,7 +106,7 @@ public class CQLTableCreator extends TableCreator {
 
     private void createTable(EntityMeta entityMeta, String tableName) {
         CQLTableBuilder builder = CQLTableBuilder.createTable(tableName);
-        for (PropertyMeta<?, ?> pm : entityMeta.getAllMetasExceptIdMeta())
+        for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta())
         {
             String propertyName = pm.getPropertyName();
             Class<?> keyClass = pm.getKeyClass();
@@ -152,12 +152,12 @@ public class CQLTableCreator extends TableCreator {
     }
 
     private void createTableForClusteredCounter(EntityMeta meta) {
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyMeta pm = meta.getFirstMeta();
 
         log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
 
         CQLTableBuilder builder = CQLTableBuilder.createCounterTable(meta.getTableName());
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
         buildPrimaryKeys(idMeta, builder);
         builder.addColumn(pm.getPropertyName(), pm.getValueClass());
 
@@ -183,7 +183,7 @@ public class CQLTableCreator extends TableCreator {
         return tableMetas;
     }
 
-    private void buildPrimaryKeys(PropertyMeta<?, ?> pm, CQLTableBuilder builder) {
+    private void buildPrimaryKeys(PropertyMeta pm, CQLTableBuilder builder) {
         if (pm.isEmbeddedId())
         {
             List<String> componentNames = pm.getComponentNames();

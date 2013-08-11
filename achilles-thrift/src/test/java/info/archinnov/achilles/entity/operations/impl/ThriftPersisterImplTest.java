@@ -148,20 +148,20 @@ public class ThriftPersisterImplTest {
         String clusteredValue = "clusteredValue";
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Integer.class)
                 .type(SIMPLE)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -180,17 +180,17 @@ public class ThriftPersisterImplTest {
         Counter clusteredValue = CounterBuilder.incr(10L);
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(COUNTER).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(COUNTER).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -212,24 +212,24 @@ public class ThriftPersisterImplTest {
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
         Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
         joinIdMeta.setGetter(idGetter);
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(JOIN_SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(JOIN_SIMPLE)
                 .joinMeta(joinMeta).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -260,14 +260,14 @@ public class ThriftPersisterImplTest {
         String clusteredValue = "";
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
@@ -285,17 +285,17 @@ public class ThriftPersisterImplTest {
         String clusteredValue = "clusteredValue";
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -317,21 +317,21 @@ public class ThriftPersisterImplTest {
 
         Optional<Integer> ttlO = Optional.fromNullable(10);
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
 
         Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
-        PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
         joinIdMeta.setGetter(userIdGetter);
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(UserBean.class).joinMeta(joinMeta)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).joinMeta(joinMeta)
                 .type(JOIN_SIMPLE).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -358,7 +358,7 @@ public class ThriftPersisterImplTest {
     @Test
     public void should_batch_simple_property() throws Exception {
 
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -378,7 +378,7 @@ public class ThriftPersisterImplTest {
     @Test
     public void should_persist_counter_property() throws Exception {
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.
+        PropertyMeta idMeta = PropertyMetaTestBuilder.
                 completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
@@ -386,7 +386,7 @@ public class ThriftPersisterImplTest {
 
         entityMeta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .fqcn("fqcn")
@@ -409,7 +409,7 @@ public class ThriftPersisterImplTest {
 
     @Test
     public void should_batch_list_property() throws Exception {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class).field("friends").accessors().build();
 
         Composite comp1 = new Composite();
@@ -427,7 +427,7 @@ public class ThriftPersisterImplTest {
 
     @Test
     public void should_batch_set_property() throws Exception {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class).field("followers").accessors().build();
 
         Composite comp1 = new Composite();
@@ -448,7 +448,7 @@ public class ThriftPersisterImplTest {
 
     @Test
     public void should_batch_map_property() throws Exception {
-        PropertyMeta<Integer, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Integer.class, String.class).field("preferences").type(MAP).accessors().build();
 
         Map<Integer, String> map = new HashMap<Integer, String>();
@@ -491,13 +491,13 @@ public class ThriftPersisterImplTest {
     @Test
     public void should_batch_persist_join_entity() throws Exception {
         Long joinId = 154654L;
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 //
                 .completeBean(Void.class, UserBean.class).field("user").type(JOIN_SIMPLE).joinMeta(joinMeta)
                 .accessors().build();
@@ -525,13 +525,13 @@ public class ThriftPersisterImplTest {
     @Test
     public void should_batch_persist_join_collection() throws Exception {
         Long joinId1 = 54351L, joinId2 = 4653L;
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, UserBean.class).field("user").joinMeta(joinMeta).build();
 
         UserBean user1 = new UserBean(), user2 = new UserBean();
@@ -570,13 +570,13 @@ public class ThriftPersisterImplTest {
     @Test
     public void should_batch_persist_join_map() throws Exception {
         Long joinId1 = 54351L, joinId2 = 4653L;
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<Integer, UserBean> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Integer.class, UserBean.class).joinMeta(joinMeta).build();
 
         UserBean user1 = new UserBean(), user2 = new UserBean();
@@ -621,17 +621,17 @@ public class ThriftPersisterImplTest {
     public void should_remove_entity_having_simple_counter() throws Exception {
         String fqcn = CompleteBean.class.getCanonicalName();
 
-        PropertyMeta<Void, Long> counterIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta counterIdMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class).field("id").accessors().build();
 
-        PropertyMeta<Void, Counter> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Counter.class).field("count").type(PropertyType.COUNTER).accessors()
                 .counterIdMeta(counterIdMeta).fqcn(fqcn)
                 .consistencyLevels(Pair.create(ONE, ALL)).build();
 
         entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("pm", propertyMeta));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(propertyMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("pm", propertyMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(propertyMeta));
         entityMeta.setFirstMeta(propertyMeta);
 
         Composite keyComp = new Composite();
@@ -661,20 +661,20 @@ public class ThriftPersisterImplTest {
         Object compoundKey = entity.getId();
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Integer.class)
                 .type(SIMPLE)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -692,14 +692,14 @@ public class ThriftPersisterImplTest {
         Object compoundKey = entity.getId();
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
         Composite comp = new Composite();
 
@@ -716,19 +716,19 @@ public class ThriftPersisterImplTest {
         Object compoundKey = entity.getId();
         Object partitionKey = 10L;
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(COUNTER).build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         entityMeta.setFirstMeta(pm);
 
         Composite comp = new Composite();
@@ -743,7 +743,7 @@ public class ThriftPersisterImplTest {
 
     @Test
     public void should_batch_remove_property() throws Exception {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).accessors().build();
 
         Composite start = new Composite(), end = new Composite();

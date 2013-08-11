@@ -58,19 +58,19 @@ public class CQLPreparedStatementGeneratorTest
     public void should_prepare_insert_ps() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("counter")
                 .type(PropertyType.COUNTER)
@@ -79,7 +79,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, counterMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, counterMeta));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -91,16 +91,16 @@ public class CQLPreparedStatementGeneratorTest
     @Test
     public void should_prepare_insert_ps_with_clustered_id() throws Exception
     {
-        List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+        List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -110,7 +110,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -124,13 +124,13 @@ public class CQLPreparedStatementGeneratorTest
     public void should_prepare_select_field_ps() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -153,7 +153,7 @@ public class CQLPreparedStatementGeneratorTest
     public void should_prepare_select_field_ps_for_clustered_id() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
@@ -178,19 +178,19 @@ public class CQLPreparedStatementGeneratorTest
     public void should_prepare_update_fields_ps() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -203,7 +203,7 @@ public class CQLPreparedStatementGeneratorTest
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareUpdateFields(session, meta,
-                Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta));
+                Arrays.asList(nameMeta, ageMeta));
 
         assertThat(actual).isSameAs(ps);
 
@@ -214,20 +214,20 @@ public class CQLPreparedStatementGeneratorTest
     public void should_prepare_update_fields_with_clustered_id_ps() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -240,7 +240,7 @@ public class CQLPreparedStatementGeneratorTest
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareUpdateFields(session, meta,
-                Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta));
+                Arrays.asList(nameMeta, ageMeta));
 
         assertThat(actual).isSameAs(ps);
 
@@ -252,7 +252,7 @@ public class CQLPreparedStatementGeneratorTest
     public void should_exception_when_preparing_select_for_counter_type() throws Exception
     {
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -272,15 +272,15 @@ public class CQLPreparedStatementGeneratorTest
     @Test
     public void should_prepare_select_eager_ps_with_single_key() throws Exception
     {
-        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
+        List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -303,16 +303,16 @@ public class CQLPreparedStatementGeneratorTest
     @Test
     public void should_prepare_select_eager_ps_with_clustered_key() throws Exception
     {
-        List<PropertyMeta<?, ?>> eagerMetas = new ArrayList<PropertyMeta<?, ?>>();
+        List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -338,13 +338,13 @@ public class CQLPreparedStatementGeneratorTest
     public void should_remove_entity_having_single_key() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -368,14 +368,14 @@ public class CQLPreparedStatementGeneratorTest
     public void should_remove_entity_having_clustered_key() throws Exception
     {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .compNames("id", "a", "b")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -384,7 +384,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
+        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
@@ -398,13 +398,13 @@ public class CQLPreparedStatementGeneratorTest
     @Test
     public void should_remove_entity_having_counter() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(UUID.class, String.class)
                 .field("counter")
                 .type(PropertyType.COUNTER)
@@ -413,7 +413,7 @@ public class CQLPreparedStatementGeneratorTest
         EntityMeta meta = new EntityMeta();
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
+        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
@@ -470,13 +470,13 @@ public class CQLPreparedStatementGeneratorTest
     @Test
     public void should_prepare_clustered_counter_queries() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(ID)
                 .build();
 
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("counter")
                 .type(COUNTER)

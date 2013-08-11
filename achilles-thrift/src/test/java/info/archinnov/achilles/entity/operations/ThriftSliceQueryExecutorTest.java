@@ -79,7 +79,7 @@ public class ThriftSliceQueryExecutorTest
     @Mock
     private SliceQuery<BeanWithClusteredId> query;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
     private PropertyMeta pm;

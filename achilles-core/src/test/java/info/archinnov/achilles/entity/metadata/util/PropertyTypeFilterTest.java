@@ -22,21 +22,21 @@ public class PropertyTypeFilterTest
     {
         PropertyTypeFilter filter = new PropertyTypeFilter(COUNTER, SIMPLE);
 
-        PropertyMeta<?, ?> pm1 = PropertyMetaTestBuilder
+        PropertyMeta pm1 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm1")
                 .type(SET)
                 .build();
 
-        PropertyMeta<?, ?> pm2 = PropertyMetaTestBuilder
+        PropertyMeta pm2 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm2")
                 .type(SIMPLE)
                 .build();
 
-        PropertyMeta<?, ?> pm3 = PropertyMetaTestBuilder
+        PropertyMeta pm3 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm3")

@@ -27,18 +27,18 @@ public class CQLPreparedStatementBinder
     public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
     {
         List<Object> values = new ArrayList<Object>();
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
         values.addAll(bindPrimaryKey(primaryKey, idMeta));
 
-        List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+        List<PropertyMeta> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
                 .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
-        List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
 
-        for (PropertyMeta<?, ?> pm : fieldMetas)
+        for (PropertyMeta pm : fieldMetas)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
             value = encodeValueForCassandra(pm, value);
@@ -48,11 +48,11 @@ public class CQLPreparedStatementBinder
     }
 
     public BoundStatement bindForUpdate(PreparedStatement ps, EntityMeta entityMeta,
-            List<PropertyMeta<?, ?>> pms, Object entity)
+            List<PropertyMeta> pms, Object entity)
     {
         List<Object> values = new ArrayList<Object>();
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
-        for (PropertyMeta<?, ?> pm : pms)
+        PropertyMeta idMeta = entityMeta.getIdMeta();
+        for (PropertyMeta pm : pms)
         {
             Object value = invoker.getValueFromField(entity, pm.getGetter());
             value = encodeValueForCassandra(pm, value);
@@ -66,34 +66,34 @@ public class CQLPreparedStatementBinder
     public BoundStatement bindStatementWithOnlyPKInWhereClause(PreparedStatement ps,
             EntityMeta entityMeta, Object primaryKey)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         List<Object> values = bindPrimaryKey(primaryKey, idMeta);
         return ps.bind(values.toArray(new Object[values.size()]));
     }
 
     public BoundStatement bindForSimpleCounterIncrementDecrement(PreparedStatement ps,
-            EntityMeta entityMeta, PropertyMeta<?, ?> pm, Object primaryKey, Long increment)
+            EntityMeta entityMeta, PropertyMeta pm, Object primaryKey, Long increment)
     {
         Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         return ps.bind(ArrayUtils.add(values, 0, increment));
     }
 
     public BoundStatement bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm, Object primaryKey)
+            PropertyMeta pm, Object primaryKey)
     {
         Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         return ps.bind(values);
     }
 
     public BoundStatement bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm, Object primaryKey)
+            PropertyMeta pm, Object primaryKey)
     {
         Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         return ps.bind(values);
     }
 
     public BoundStatement bindForClusteredCounterIncrementDecrement(PreparedStatement ps,
-            EntityMeta entityMeta, PropertyMeta<?, ?> pm, Object primaryKey, Long increment)
+            EntityMeta entityMeta, PropertyMeta pm, Object primaryKey, Long increment)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
         Object[] keys = primarykeys.toArray(new Object[primarykeys.size()]);
@@ -101,20 +101,20 @@ public class CQLPreparedStatementBinder
     }
 
     public BoundStatement bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm, Object primaryKey)
+            PropertyMeta pm, Object primaryKey)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
         return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
     }
 
     public BoundStatement bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm, Object primaryKey)
+            PropertyMeta pm, Object primaryKey)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
         return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
     }
 
-    private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta<?, ?> idMeta)
+    private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta)
     {
         List<Object> values = new ArrayList<Object>();
         if (idMeta.isEmbeddedId())
@@ -128,7 +128,7 @@ public class CQLPreparedStatementBinder
         return values;
     }
 
-    private Object encodeValueForCassandra(PropertyMeta<?, ?> pm, Object value)
+    private Object encodeValueForCassandra(PropertyMeta pm, Object value)
     {
         if (value != null)
         {
@@ -159,9 +159,9 @@ public class CQLPreparedStatementBinder
     }
 
     private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm, Object primaryKey)
+            PropertyMeta pm, Object primaryKey)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         String fqcn = entityMeta.getClassName();
         String primaryKeyAsString = idMeta.forceEncodeToJSON(primaryKey);
         String propertyName = pm.getPropertyName();

@@ -63,29 +63,29 @@ public class EntityInitializerTest
 
         Class<? extends CompleteBean> beanClass = bean.getClass();
 
-        PropertyMeta<?, ?> nameMeta = new PropertyMeta<Void, String>();
+        PropertyMeta nameMeta = new PropertyMeta();
         nameMeta.setEntityClassName("beanClass");
         nameMeta.setType(SIMPLE);
         nameMeta.setGetter(beanClass.getMethod("getName"));
 
-        PropertyMeta<?, ?> friendsMeta = new PropertyMeta<Void, String>();
+        PropertyMeta friendsMeta = new PropertyMeta();
         friendsMeta.setEntityClassName("beanClass");
         friendsMeta.setType(LAZY_LIST);
         friendsMeta.setGetter(beanClass.getMethod("getFriends"));
 
-        PropertyMeta<?, ?> followersMeta = new PropertyMeta<Void, String>();
+        PropertyMeta followersMeta = new PropertyMeta();
         followersMeta.setEntityClassName("beanClass");
         followersMeta.setType(LAZY_SET);
         followersMeta.setGetter(beanClass.getMethod("getFollowers"));
 
         Set<Method> alreadyLoaded = Sets.newHashSet(friendsMeta.getGetter(), nameMeta.getGetter());
 
-        Map<Method, PropertyMeta<?, ?>> getterMetas = ImmutableMap.<Method, PropertyMeta<?, ?>> of(
+        Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(
                 nameMeta.getGetter(), nameMeta,
                 friendsMeta.getGetter(), friendsMeta,
                 followersMeta.getGetter(), followersMeta);
 
-        Map<String, PropertyMeta<?, ?>> allMetas = ImmutableMap.<String, PropertyMeta<?, ?>> of(
+        Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of(
                 "name", nameMeta,
                 "friends", friendsMeta,
                 "followers", followersMeta);
@@ -113,14 +113,14 @@ public class EntityInitializerTest
             }
         };
 
-        PropertyMeta<Void, Long> pm = new PropertyMeta<Void, Long>();
+        PropertyMeta pm = new PropertyMeta();
         pm.setType(PropertyType.LAZY_SIMPLE);
         pm.setGetter(bean.getClass().getMethod("getId"));
 
         EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", pm));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id", pm));
 
-        entityMeta.setGetterMetas(ImmutableMap.<Method, PropertyMeta<?, ?>> of(pm.getGetter(), pm));
+        entityMeta.setGetterMetas(ImmutableMap.<Method, PropertyMeta> of(pm.getGetter(), pm));
 
         when(interceptor.getAlreadyLoaded()).thenReturn(new HashSet<Method>());
 

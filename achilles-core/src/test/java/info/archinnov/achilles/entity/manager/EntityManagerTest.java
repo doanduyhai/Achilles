@@ -265,7 +265,7 @@ public class EntityManagerTest {
 
         when(em.initPersistenceContext(CompleteBean.class, primaryKey, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL,
                 NO_TTL)).thenReturn(context);
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         em.removeById(CompleteBean.class, primaryKey);
@@ -297,7 +297,7 @@ public class EntityManagerTest {
                 em.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), levelOCaptor.capture(),
                         levelOCaptor.capture(),
                         eq(NO_TTL))).thenReturn(context);
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         em.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
@@ -314,7 +314,7 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
         when(context.find(CompleteBean.class)).thenReturn(entity);
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.find(CompleteBean.class, primaryKey);
@@ -331,7 +331,7 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
         when(context.find(CompleteBean.class)).thenReturn(entity);
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.find(CompleteBean.class, primaryKey, EACH_QUORUM);
@@ -347,7 +347,7 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey);
         doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.getReference(CompleteBean.class, primaryKey);
@@ -365,7 +365,7 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
         doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(Optional.class));
 
-        PropertyMeta idMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta idMeta = new PropertyMeta();
         when(context.getIdMeta()).thenReturn(idMeta);
 
         CompleteBean bean = em.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);

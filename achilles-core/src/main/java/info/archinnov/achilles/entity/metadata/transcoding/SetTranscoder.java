@@ -18,7 +18,7 @@ public class SetTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public Set<Object> encode(PropertyMeta<?, ?> pm, Set<?> entityValue) {
+    public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
         Set<Object> encoded = new HashSet<Object>();
         for (Object value : entityValue)
         {
@@ -28,7 +28,7 @@ public class SetTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public Set<Object> decode(PropertyMeta<?, ?> pm, Set<?> cassandraValue) {
+    public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
         Set<Object> decoded = new HashSet<Object>();
         for (Object value : cassandraValue)
         {

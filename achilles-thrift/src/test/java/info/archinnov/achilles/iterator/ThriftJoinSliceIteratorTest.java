@@ -43,7 +43,7 @@ import org.powermock.reflect.Whitebox;
 public class ThriftJoinSliceIteratorTest
 {
     @Mock
-    private PropertyMeta<Integer, UserBean> propertyMeta;
+    private PropertyMeta propertyMeta;
 
     @Mock
     private SliceQuery<Long, Composite, Object> query;
@@ -87,7 +87,7 @@ public class ThriftJoinSliceIteratorTest
         when(queryResult.get()).thenReturn(columnSlice);
         when(columnSlice.getColumns()).thenReturn(hColumns);
         when(hColumns.iterator()).thenReturn(columnsIterator);
-        when(propertyMeta.getValueClass()).thenReturn(UserBean.class);
+        when((Class) propertyMeta.getValueClass()).thenReturn(UserBean.class);
 
         user1.setName("user1");
         user2.setName("user2");
@@ -95,17 +95,17 @@ public class ThriftJoinSliceIteratorTest
 
         when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
 
-        PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta joinIdMeta = new PropertyMeta();
         joinIdMeta.setValueClass(Long.class);
         joinIdMeta.setObjectMapper(objectMapper);
-        when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
+        when(propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
     }
 
     @Test
     public void should_return_3_entities() throws Exception
     {
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(Long.class)
                 .type(PropertyType.SIMPLE)
                 .build();
@@ -114,7 +114,7 @@ public class ThriftJoinSliceIteratorTest
         when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
         when(propertyMeta.isJoin()).thenReturn(true);
         when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-        when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);
+        when(propertyMeta.joinIdMeta()).thenReturn(idMeta);
 
         Composite start = new Composite(), //
         end = new Composite(), //
@@ -176,7 +176,7 @@ public class ThriftJoinSliceIteratorTest
     @Test
     public void should_reload_load_when_reaching_end_of_batch() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(Long.class)
                 .type(PropertyType.SIMPLE)
                 .build();
@@ -185,7 +185,7 @@ public class ThriftJoinSliceIteratorTest
         when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
         when(propertyMeta.isJoin()).thenReturn(true);
         when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-        when((PropertyMeta<Void, Long>) propertyMeta.joinIdMeta()).thenReturn(idMeta);
+        when(propertyMeta.joinIdMeta()).thenReturn(idMeta);
 
         Composite start = new Composite(), //
         end = new Composite(), //

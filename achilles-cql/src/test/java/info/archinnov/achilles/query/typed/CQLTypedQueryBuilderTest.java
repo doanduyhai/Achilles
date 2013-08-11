@@ -78,14 +78,14 @@ public class CQLTypedQueryBuilderTest {
     @Test
     public void should_get_all_managed_with_select_star() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -112,21 +112,21 @@ public class CQLTypedQueryBuilderTest {
     @Test
     public void should_get_all_managed_with_normal_select() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, Long> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -167,14 +167,14 @@ public class CQLTypedQueryBuilderTest {
     @Test
     public void should_get_all_raw_entities() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -199,14 +199,14 @@ public class CQLTypedQueryBuilderTest {
     @Test
     public void should_get_first_managed_entity() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -232,14 +232,14 @@ public class CQLTypedQueryBuilderTest {
     @Test
     public void should_get_first_raw_entity() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -292,11 +292,11 @@ public class CQLTypedQueryBuilderTest {
 
     }
 
-    private EntityMeta buildEntityMeta(PropertyMeta<?, ?>... pms) {
+    private EntityMeta buildEntityMeta(PropertyMeta... pms) {
         EntityMeta meta = new EntityMeta();
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
         List<Method> eagerMetas = new ArrayList<Method>();
-        for (PropertyMeta<?, ?> pm : pms)
+        for (PropertyMeta pm : pms)
         {
             propertyMetas.put(pm.getPropertyName(), pm);
             eagerMetas.add(pm.getGetter());
@@ -307,7 +307,7 @@ public class CQLTypedQueryBuilderTest {
         return meta;
     }
 
-    private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta<?, ?>> propertyMetas,
+    private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
             boolean managed) {
         builder = new CQLTypedQueryBuilder<CompleteBean>(entityClass, daoContext, queryString, meta, contextFactory,
                 managed);

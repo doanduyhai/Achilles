@@ -111,7 +111,7 @@ public class ThriftJoinLoaderImplTest
     public void should_load_join_list() throws Exception
     {
         EntityMeta joinMeta = new EntityMeta();
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class)
                 .field("userId")
                 .accessors()
@@ -123,7 +123,7 @@ public class ThriftJoinLoaderImplTest
         JoinProperties joinProperties = new JoinProperties();
         joinProperties.setEntityMeta(joinMeta);
 
-        PropertyMeta<Void, UserBean> propertyMeta = new PropertyMeta<Void, UserBean>();
+        PropertyMeta propertyMeta = new PropertyMeta();
         propertyMeta.setJoinProperties(joinProperties);
         propertyMeta.setValueClass(UserBean.class);
 
@@ -148,7 +148,7 @@ public class ThriftJoinLoaderImplTest
                 joinHelper.loadJoinEntities(eq(UserBean.class), listCaptor.capture(), eq(joinMeta),
                         eq(joinEntityDao))).thenReturn(joinEntitiesMap);
 
-        List<UserBean> actual = thriftJoinLoader.loadJoinListProperty(context, propertyMeta);
+        List<Object> actual = thriftJoinLoader.loadJoinListProperty(context, propertyMeta);
 
         assertThat(actual).containsExactly(user1, user2);
         assertThat(listCaptor.getValue()).containsExactly(11L, 12L);
@@ -158,7 +158,7 @@ public class ThriftJoinLoaderImplTest
     public void should_load_join_set() throws Exception
     {
         EntityMeta joinMeta = new EntityMeta();
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class)
                 .field("userId")
                 .accessors()
@@ -170,7 +170,7 @@ public class ThriftJoinLoaderImplTest
         JoinProperties joinProperties = new JoinProperties();
         joinProperties.setEntityMeta(joinMeta);
 
-        PropertyMeta<Void, UserBean> propertyMeta = new PropertyMeta<Void, UserBean>();
+        PropertyMeta propertyMeta = new PropertyMeta();
         propertyMeta.setJoinProperties(joinProperties);
         propertyMeta.setValueClass(UserBean.class);
 
@@ -195,7 +195,7 @@ public class ThriftJoinLoaderImplTest
                 joinHelper.loadJoinEntities(eq(UserBean.class), listCaptor.capture(), eq(joinMeta),
                         eq(joinEntityDao))).thenReturn(joinEntitiesMap);
 
-        Set<UserBean> actual = thriftJoinLoader.loadJoinSetProperty(context, propertyMeta);
+        Set<Object> actual = thriftJoinLoader.loadJoinSetProperty(context, propertyMeta);
 
         assertThat(actual).contains(user1, user2);
         assertThat(listCaptor.getValue()).containsExactly(11L, 12L);
@@ -205,7 +205,7 @@ public class ThriftJoinLoaderImplTest
     public void should_load_join_map() throws Exception
     {
         EntityMeta joinMeta = new EntityMeta();
-        PropertyMeta<Void, Long> joinIdMeta = PropertyMetaTestBuilder //
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
                 .of(UserBean.class, Void.class, Long.class)
                 .field("userId")
                 .accessors()
@@ -217,7 +217,7 @@ public class ThriftJoinLoaderImplTest
         JoinProperties joinProperties = new JoinProperties();
         joinProperties.setEntityMeta(joinMeta);
 
-        PropertyMeta<Integer, UserBean> propertyMeta = new PropertyMeta<Integer, UserBean>();
+        PropertyMeta propertyMeta = new PropertyMeta();
         propertyMeta.setJoinProperties(joinProperties);
         propertyMeta.setKeyClass(Integer.class);
         propertyMeta.setValueClass(UserBean.class);
@@ -243,7 +243,7 @@ public class ThriftJoinLoaderImplTest
                 joinHelper.loadJoinEntities(eq(UserBean.class), listCaptor.capture(), eq(joinMeta),
                         eq(joinEntityDao))).thenReturn(joinEntitiesMap);
 
-        Map<Integer, UserBean> actual = thriftJoinLoader.loadJoinMapProperty(context, propertyMeta);
+        Map<Object, UserBean> actual = (Map) thriftJoinLoader.loadJoinMapProperty(context, propertyMeta);
 
         assertThat(actual.get(11)).isSameAs(user1);
         assertThat(actual.get(12)).isSameAs(user2);

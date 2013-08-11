@@ -61,7 +61,7 @@ public class CQLEntityInterceptorBuilder<T> {
             alreadyLoaded.addAll(entityMeta.getEagerGetters());
         }
         interceptor.setAlreadyLoaded(alreadyLoaded);
-        interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
+        interceptor.setDirtyMap(new HashMap<Method, PropertyMeta>());
         interceptor.setPrimaryKey(context.getPrimaryKey());
 
         return interceptor;

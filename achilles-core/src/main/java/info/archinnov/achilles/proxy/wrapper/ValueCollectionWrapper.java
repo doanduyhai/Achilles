@@ -8,19 +8,19 @@ import java.util.Collection;
  * @author DuyHai DOAN
  * 
  */
-public class ValueCollectionWrapper<V> extends CollectionWrapper<V> {
+public class ValueCollectionWrapper extends CollectionWrapper {
 
-    public ValueCollectionWrapper(Collection<V> target) {
+    public ValueCollectionWrapper(Collection<Object> target) {
         super(target);
     }
 
     @Override
-    public boolean add(V arg0) {
+    public boolean add(Object arg0) {
         throw new UnsupportedOperationException("This method is not supported for a key set");
     }
 
     @Override
-    public boolean addAll(Collection<? extends V> arg0) {
+    public boolean addAll(Collection<?> arg0) {
         throw new UnsupportedOperationException("This method is not supported for a key set");
     }
 }

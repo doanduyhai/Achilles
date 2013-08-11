@@ -52,7 +52,7 @@ public class CQLPersistenceContextFactoryTest {
 
     private EntityMeta meta;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     @Before
     public void setUp() throws Exception

@@ -64,7 +64,7 @@ public class ThriftColumnFamilyFactory {
         String tableName = entityMeta.getTableName();
         String entityName = entityMeta.getClassName();
 
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Class<?> keyClass = idMeta.getComponentClasses().get(0);
         String defaultValidationType;
         if (entityMeta.isValueless())
@@ -73,7 +73,7 @@ public class ThriftColumnFamilyFactory {
         }
         else
         {
-            PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
+            PropertyMeta pm = entityMeta.getFirstMeta();
             Class<?> valueClass = pm.getValueClass();
             Serializer<?> valueSerializer;
             if (pm.isCounter()) {

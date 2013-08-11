@@ -1,7 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import java.util.Arrays;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -16,21 +15,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ValueCollectionWrapperTest
 {
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_add() throws Exception
-	{
-		ValueCollectionWrapper<String> wrapper = new ValueCollectionWrapper<String>(
-				Arrays.asList("a"));
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_exception_on_add() throws Exception
+    {
+        ValueCollectionWrapper wrapper = new ValueCollectionWrapper(Arrays.<Object> asList("a"));
 
-		wrapper.add("");
-	}
+        wrapper.add("");
+    }
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_add_all() throws Exception
-	{
-		ValueCollectionWrapper<String> wrapper = new ValueCollectionWrapper<String>(
-				Arrays.asList("a"));
+    @Test(expected = UnsupportedOperationException.class)
+    public void should_exception_on_add_all() throws Exception
+    {
+        ValueCollectionWrapper wrapper = new ValueCollectionWrapper(Arrays.<Object> asList("a"));
 
-		wrapper.addAll(Arrays.asList("a", "b"));
-	}
+        wrapper.addAll(Arrays.asList("a", "b"));
+    }
 }

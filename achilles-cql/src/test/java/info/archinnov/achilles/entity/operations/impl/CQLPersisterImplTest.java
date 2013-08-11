@@ -14,14 +14,13 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,8 +65,8 @@ public class CQLPersisterImplTest
     @Mock
     private EntityMeta joinMeta;
 
-    private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
-    private Set<PropertyMeta<?, ?>> joinMetas = new HashSet<PropertyMeta<?, ?>>();
+    private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
+    private Set<PropertyMeta> joinMetas = new HashSet<PropertyMeta>();
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -95,7 +94,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_persist_clustered_counter() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .accessors()
@@ -113,7 +112,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_exception_when_null_value_for_clustered_counter() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .accessors()
@@ -132,7 +131,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_persist_counters() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .accessors()
@@ -140,7 +139,7 @@ public class CQLPersisterImplTest
 
         when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(12L));
 
-        persisterImpl.persistCounters(context, Sets.<PropertyMeta<?, ?>> newHashSet(counterMeta));
+        persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
         verify(context).bindForSimpleCounterIncrement(counterMeta, 12L);
     }
@@ -148,7 +147,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_not_persist_counters_when_no_counter_set() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .accessors()
@@ -156,7 +155,7 @@ public class CQLPersisterImplTest
 
         when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
 
-        persisterImpl.persistCounters(context, Sets.<PropertyMeta<?, ?>> newHashSet(counterMeta));
+        persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
         verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta), any(Long.class));
     }
@@ -164,7 +163,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_cascade_persist() throws Exception
     {
-        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -188,7 +187,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_check_for_entity_existence() throws Exception
     {
-        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -223,7 +222,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_remove_clustered_counter() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .accessors()
@@ -240,7 +239,7 @@ public class CQLPersisterImplTest
     @Test
     public void should_remove_linked_counters() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.COUNTER)

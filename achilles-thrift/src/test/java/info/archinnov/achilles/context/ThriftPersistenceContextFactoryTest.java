@@ -53,7 +53,7 @@ public class ThriftPersistenceContextFactoryTest {
 
     private EntityMeta meta;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     @Before
     public void setUp() throws Exception

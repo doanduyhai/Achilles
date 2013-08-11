@@ -42,7 +42,7 @@ public class ThriftColumnFamilyValidatorTest {
     private EntityMeta entityMeta;
 
     @Mock
-    private PropertyMeta<Long, String> propertyMeta;
+    private PropertyMeta propertyMeta;
 
     @Mock
     private ColumnFamilyDefinition cfDef;
@@ -205,21 +205,21 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Date.class)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class)
                 .type(PropertyType.SIMPLE).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setClusteredEntity(true);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -236,25 +236,25 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_join_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(PropertyType.JOIN_SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(PropertyType.JOIN_SIMPLE)
                 .joinMeta(joinMeta).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -271,19 +271,19 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_counter_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -300,7 +300,7 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_validate_value_less_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
@@ -310,8 +310,8 @@ public class ThriftColumnFamilyValidatorTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
         meta.setClusteredEntity(true);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList());
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList());
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
                 "CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
@@ -327,22 +327,22 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_exception_when_wrong_key_validation_type_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Date.class)
                 .type(PropertyType.SIMPLE)
                 .build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -358,22 +358,22 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_exception_when_wrong_comparator_type_alias_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Date.class)
                 .type(PropertyType.SIMPLE)
                 .build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(
@@ -392,19 +392,19 @@ public class ThriftColumnFamilyValidatorTest {
 
     @Test
     public void should_exception_when_wrong_validation_type_for_clustered_entity() throws Exception {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
                 .build();
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.SIMPLE).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.SIMPLE).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+        meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
         meta.setFirstMeta(pm);
 
         when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false)).thenReturn(

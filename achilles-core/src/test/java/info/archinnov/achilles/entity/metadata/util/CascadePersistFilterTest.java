@@ -25,12 +25,12 @@ public class CascadePersistFilterTest
 	public void should_filter_cascade_persist_or_all() throws Exception
 	{
 		CascadePersistFilter filter = new CascadePersistFilter();
-		PropertyMeta<Void, String> pm1 = PropertyMetaTestBuilder
+		PropertyMeta pm1 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(MERGE, ALL)
 				.build();
-		PropertyMeta<Void, String> pm2 = PropertyMetaTestBuilder
+		PropertyMeta pm2 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(REMOVE, REFRESH)

@@ -38,7 +38,7 @@ public class CQLLoaderImpl
 
         if (entityMeta.isClusteredCounter())
         {
-            PropertyMeta<?, ?> counterMeta = entityMeta.getFirstMeta();
+            PropertyMeta counterMeta = entityMeta.getFirstMeta();
             ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
                     .getReadConsistencyLevel().get() : counterMeta.getReadConsistencyLevel();
             Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
@@ -59,7 +59,7 @@ public class CQLLoaderImpl
         return entity;
     }
 
-    public void loadPropertyIntoEntity(CQLPersistenceContext context, PropertyMeta<?, ?> pm,
+    public void loadPropertyIntoEntity(CQLPersistenceContext context, PropertyMeta pm,
             Object entity)
     {
         Row row = context.loadProperty(pm);
@@ -67,11 +67,11 @@ public class CQLLoaderImpl
     }
 
     public void loadJoinPropertyIntoEntity(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, Object entity)
+            PropertyMeta pm, Object entity)
     {
         Row row = context.loadProperty(pm);
         EntityMeta joinMeta = pm.getJoinProperties().getEntityMeta();
-        PropertyMeta<?, ?> joinIdMeta = joinMeta.getIdMeta();
+        PropertyMeta joinIdMeta = joinMeta.getIdMeta();
 
         Object joinValue = null;
         switch (pm.type())
@@ -97,7 +97,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinList(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, Row row, EntityMeta joinMeta, PropertyMeta<?, ?> joinIdMeta,
+            PropertyMeta pm, Row row, EntityMeta joinMeta, PropertyMeta joinIdMeta,
             Object joinValue)
     {
         List<Object> joinEntitiesList = new ArrayList<Object>();
@@ -112,7 +112,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinSet(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, Row row, EntityMeta joinMeta, PropertyMeta<?, ?> joinIdMeta,
+            PropertyMeta pm, Row row, EntityMeta joinMeta, PropertyMeta joinIdMeta,
             Object joinValue)
     {
         Set<Object> joinEntitiesSet = new HashSet<Object>();
@@ -127,7 +127,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinMap(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, Row row, EntityMeta joinMeta, Object joinValue)
+            PropertyMeta pm, Row row, EntityMeta joinMeta, Object joinValue)
     {
         Map<Object, Object> joinEntitiesMap = new HashMap<Object, Object>();
         Class<?> keyClass = pm.getKeyClass();
@@ -143,7 +143,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinSimple(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, Row row, EntityMeta joinMeta, PropertyMeta<?, ?> joinIdMeta,
+            PropertyMeta pm, Row row, EntityMeta joinMeta, PropertyMeta joinIdMeta,
             Object joinValue)
     {
         Object joinId = cqlRowInvoker.invokeOnRowForProperty(row, pm, pm.getPropertyName(),
@@ -156,7 +156,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinEntity(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, EntityMeta joinMeta, Object joinId)
+            PropertyMeta pm, EntityMeta joinMeta, Object joinId)
     {
         CQLPersistenceContext joinContext = context.createContextForJoin(
                 pm.getValueClass(), joinMeta, joinId);
@@ -164,7 +164,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinEntitiesForCollection(CQLEntityLoader loader,
-            CQLPersistenceContext context, PropertyMeta<?, ?> pm, EntityMeta joinMeta,
+            CQLPersistenceContext context, PropertyMeta pm, EntityMeta joinMeta,
             Collection<?> joinIds, Collection<Object> joinEntities)
     {
         for (Object joinId : joinIds)
@@ -176,7 +176,7 @@ public class CQLLoaderImpl
     }
 
     private Object loadJoinEntitiesForMap(CQLEntityLoader loader, CQLPersistenceContext context,
-            PropertyMeta<?, ?> pm, EntityMeta joinMeta, Map<?, ?> joinIdMap,
+            PropertyMeta pm, EntityMeta joinMeta, Map<?, ?> joinIdMap,
             Map<Object, Object> joinEntitiesMap)
     {
         for (Entry<?, ?> entry : joinIdMap.entrySet())

@@ -64,7 +64,7 @@ public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext
 
     @Override
     public <V> void loadPropertyIntoObject(ThriftPersistenceContext context, Object realObject,
-            PropertyMeta<?, V> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         log.debug("Loading eager properties into entity of class {} with primary key {}", context
                 .getEntityClass()
@@ -107,7 +107,7 @@ public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext
         invoker.setValueToField(realObject, propertyMeta.getSetter(), value);
     }
 
-    protected <V> V loadPrimaryKey(ThriftPersistenceContext context, PropertyMeta<?, V> propertyMeta)
+    protected Object loadPrimaryKey(ThriftPersistenceContext context, PropertyMeta propertyMeta)
     {
         return loaderImpl.loadSimpleProperty(context, propertyMeta);
     }

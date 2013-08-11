@@ -43,14 +43,14 @@ public class EntityParsingValidatorTest {
 
     @Test
     public void should_exception_when_value_less_property_meta_map() throws Exception {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
         EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
-        context.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta));
+        context.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id", idMeta));
         exception.expect(AchillesBeanMappingException.class);
         exception
                 .expectMessage("The entity '"
@@ -64,7 +64,7 @@ public class EntityParsingValidatorTest {
     public void should_skip_wide_row_validation_when_not_wide_row_with_thrift_impl() throws Exception {
         EntityParsingContext context = new EntityParsingContext(null, null, CompleteBean.class);
         context.setClusteredEntity(false);
-        context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        context.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         validator.validateClusteredEntities(context);
     }
@@ -76,7 +76,7 @@ public class EntityParsingValidatorTest {
         EntityParsingContext context = new EntityParsingContext(null, configContext, CompleteBean.class);
 
         context.setClusteredEntity(false);
-        context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        context.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         validator.validateClusteredEntities(context);
     }
@@ -88,7 +88,7 @@ public class EntityParsingValidatorTest {
         EntityParsingContext context = new EntityParsingContext(null, configContext, CompleteBean.class);
 
         context.setClusteredEntity(true);
-        context.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        context.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         validator.validateClusteredEntities(context);
     }
@@ -98,7 +98,7 @@ public class EntityParsingValidatorTest {
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setImpl(Impl.THRIFT);
         EntityParsingContext context = new EntityParsingContext(null, configContext, CompleteBean.class);
-        HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
         propertyMetas.put("name", null);
         propertyMetas.put("age", null);
         propertyMetas.put("id", null);
@@ -117,12 +117,12 @@ public class EntityParsingValidatorTest {
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setImpl(Impl.THRIFT);
         EntityParsingContext context = new EntityParsingContext(null, configContext, CompleteBean.class);
-        HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(Long.class).type(PropertyType.ID).build();
 
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .valueClass(String.class).type(PropertyType.SIMPLE).build();
         propertyMetas.put("id", idMeta);
         propertyMetas.put("name", propertyMeta);
@@ -141,12 +141,12 @@ public class EntityParsingValidatorTest {
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setImpl(Impl.THRIFT);
         EntityParsingContext context = new EntityParsingContext(null, configContext, CompleteBean.class);
-        HashMap<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .valueClass(Long.class).type(PropertyType.EMBEDDED_ID).build();
 
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .valueClass(String.class).type(PropertyType.LIST).build();
         propertyMetas.put("id", idMeta);
         propertyMetas.put("name", propertyMeta);
@@ -162,7 +162,7 @@ public class EntityParsingValidatorTest {
 
     @Test
     public void should_exception_when_join_entity_is_wide_row() throws Exception {
-        PropertyMeta<Void, String> propertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
                 .valueClass(String.class).field("test").entityClassName("entity").build();
 
         EntityMeta joinMeta = new EntityMeta();

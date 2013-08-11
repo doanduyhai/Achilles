@@ -17,7 +17,7 @@ public class ReflectionInvoker
 {
     private static final Logger log = LoggerFactory.getLogger(ReflectionInvoker.class);
 
-    public Object getPrimaryKey(Object entity, PropertyMeta<?, ?> idMeta)
+    public Object getPrimaryKey(Object entity, PropertyMeta idMeta)
     {
         Method getter = idMeta.getGetter();
 
@@ -40,7 +40,7 @@ public class ReflectionInvoker
         return null;
     }
 
-    public Object getPartitionKey(Object compoundKey, PropertyMeta<?, ?> idMeta)
+    public Object getPartitionKey(Object compoundKey, PropertyMeta idMeta)
     {
         if (idMeta.isEmbeddedId())
         {
@@ -133,7 +133,7 @@ public class ReflectionInvoker
     }
 
     public Object instanciateEmbeddedIdWithPartitionKey(
-            PropertyMeta<?, ?> idMeta,
+            PropertyMeta idMeta,
             Object partitionKey)
     {
         Constructor<Object> constructor = idMeta.getEmbeddedIdConstructor();

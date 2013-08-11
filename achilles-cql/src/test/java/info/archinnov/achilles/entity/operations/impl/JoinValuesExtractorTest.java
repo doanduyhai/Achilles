@@ -51,7 +51,7 @@ public class JoinValuesExtractorTest
     @Test
     public void should_transform_join_simple_meta() throws Exception
     {
-        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -60,11 +60,11 @@ public class JoinValuesExtractorTest
 
         when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user1);
 
-        Collection<Pair<List<?>, PropertyMeta<?, ?>>> pairsList = Collections2.transform(
+        Collection<Pair<List<?>, PropertyMeta>> pairsList = Collections2.transform(
                 Arrays.asList(joinSimpleMeta), transformer);
 
         assertThat(pairsList).hasSize(1);
-        Pair<List<?>, PropertyMeta<?, ?>> pair = pairsList.iterator().next();
+        Pair<List<?>, PropertyMeta> pair = pairsList.iterator().next();
         assertThat((List<Object>) pair.left).containsOnly(user1);
         assertThat((PropertyMeta) pair.right).isSameAs(joinSimpleMeta);
     }
@@ -72,7 +72,7 @@ public class JoinValuesExtractorTest
     @Test
     public void should_transform_join_collection_meta() throws Exception
     {
-        PropertyMeta<?, ?> joinListMeta = PropertyMetaTestBuilder
+        PropertyMeta joinListMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_LIST)
@@ -83,11 +83,11 @@ public class JoinValuesExtractorTest
 
         when(invoker.getValueFromField(entity, joinListMeta.getGetter())).thenReturn(joinUsers);
 
-        Collection<Pair<List<?>, PropertyMeta<?, ?>>> pairsList = Collections2.transform(
+        Collection<Pair<List<?>, PropertyMeta>> pairsList = Collections2.transform(
                 Arrays.asList(joinListMeta), transformer);
 
         assertThat(pairsList).hasSize(1);
-        Pair<List<?>, PropertyMeta<?, ?>> pair = pairsList.iterator().next();
+        Pair<List<?>, PropertyMeta> pair = pairsList.iterator().next();
         assertThat((List<Object>) pair.left).containsOnly(user1, user2);
         assertThat((PropertyMeta) pair.right).isSameAs(joinListMeta);
     }
@@ -95,7 +95,7 @@ public class JoinValuesExtractorTest
     @Test
     public void should_transform_join_map_meta() throws Exception
     {
-        PropertyMeta<?, ?> joinMapMeta = PropertyMetaTestBuilder
+        PropertyMeta joinMapMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_MAP)
@@ -106,13 +106,12 @@ public class JoinValuesExtractorTest
 
         when(invoker.getValueFromField(entity, joinMapMeta.getGetter())).thenReturn(joinUsers);
 
-        Collection<Pair<List<?>, PropertyMeta<?, ?>>> pairsList = Collections2.transform(
+        Collection<Pair<List<?>, PropertyMeta>> pairsList = Collections2.transform(
                 Arrays.asList(joinMapMeta), transformer);
 
         assertThat(pairsList).hasSize(1);
-        Pair<List<?>, PropertyMeta<?, ?>> pair = pairsList.iterator().next();
+        Pair<List<?>, PropertyMeta> pair = pairsList.iterator().next();
         assertThat((List<Object>) pair.left).containsOnly(user1, user2);
         assertThat((PropertyMeta) pair.right).isSameAs(joinMapMeta);
     }
-
 }

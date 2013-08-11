@@ -46,16 +46,16 @@ public class ThriftCompoundKeyMapperTest
     private ThriftCompoundKeyValidator validator;
 
     @Mock
-    private PropertyMeta<TweetCompoundKey, String> compoundKeyMeta;
+    private PropertyMeta compoundKeyMeta;
 
     @Mock
-    private PropertyMeta<CompoundKeyWithEnum, String> compoundKeyWithEnumMeta;
+    private PropertyMeta compoundKeyWithEnumMeta;
 
     @Mock
-    private PropertyMeta<CompoundKeyByConstructor, String> compoundKeyByConstructorMeta;
+    private PropertyMeta compoundKeyByConstructorMeta;
 
     @Mock
-    private PropertyMeta<CompoundKeyByConstructorWithEnum, String> compoundKeyByConstructorWithEnumMeta;
+    private PropertyMeta compoundKeyByConstructorWithEnumMeta;
 
     @Mock
     private DataTranscoder transcoder;
@@ -68,7 +68,7 @@ public class ThriftCompoundKeyMapperTest
         CompoundKey compoundKey = new CompoundKey();
         HColumn<Composite, String> hCol1 = buildHColumn(buildComposite(name), "val1");
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .compClasses(Arrays.<Class<?>> asList(Long.class, String.class))
                 .transcoder(transcoder)

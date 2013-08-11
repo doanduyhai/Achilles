@@ -37,7 +37,7 @@ public class CQLTypedQueryBuilder<T> {
     private Class<T> entityClass;
     private CQLDaoContext daoContext;
     private String normalizedQuery;
-    private Map<String, PropertyMeta<?, ?>> propertiesMap;
+    private Map<String, PropertyMeta> propertiesMap;
     private EntityMeta meta;
     private CQLPersistenceContextFactory contextFactory;
     private boolean managed;
@@ -114,10 +114,10 @@ public class CQLTypedQueryBuilder<T> {
         return entity;
     }
 
-    private Map<String, PropertyMeta<?, ?>> transformPropertiesMap(EntityMeta meta)
+    private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta)
     {
-        Map<String, PropertyMeta<?, ?>> propertiesMap = new HashMap<String, PropertyMeta<?, ?>>();
-        for (Entry<String, PropertyMeta<?, ?>> entry : meta.getPropertyMetas().entrySet())
+        Map<String, PropertyMeta> propertiesMap = new HashMap<String, PropertyMeta>();
+        for (Entry<String, PropertyMeta> entry : meta.getPropertyMetas().entrySet())
         {
             String propertyName = entry.getKey().toLowerCase();
             propertiesMap.put(propertyName, entry.getValue());
@@ -138,7 +138,7 @@ public class CQLTypedQueryBuilder<T> {
             if (matcher.matches())
             {
                 selectedColumns = Arrays.asList(matcher.group(1).replaceAll(WHITE_SPACES, "").split(","));
-                for (PropertyMeta<?, ?> pm : propertiesMap.values())
+                for (PropertyMeta pm : propertiesMap.values())
                 {
                     if (selectedColumns.contains(pm.getPropertyName().toLowerCase()))
                     {

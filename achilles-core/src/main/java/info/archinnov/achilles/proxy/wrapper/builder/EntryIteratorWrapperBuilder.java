@@ -11,22 +11,21 @@ import java.util.Map.Entry;
  * @author DuyHai DOAN
  * 
  */
-public class EntryIteratorWrapperBuilder<K, V> extends
-        AbstractWrapperBuilder<EntryIteratorWrapperBuilder<K, V>, K, V> {
-    private Iterator<Entry<K, V>> target;
+public class EntryIteratorWrapperBuilder extends AbstractWrapperBuilder<EntryIteratorWrapperBuilder> {
+    private Iterator<Entry<Object, Object>> target;
 
-    public static <K, V> EntryIteratorWrapperBuilder<K, V> builder(PersistenceContext context,
-            Iterator<Entry<K, V>> target) {
-        return new EntryIteratorWrapperBuilder<K, V>(context, target);
+    public static EntryIteratorWrapperBuilder builder(PersistenceContext context,
+            Iterator<Entry<Object, Object>> target) {
+        return new EntryIteratorWrapperBuilder(context, target);
     }
 
-    public EntryIteratorWrapperBuilder(PersistenceContext context, Iterator<Entry<K, V>> target) {
+    public EntryIteratorWrapperBuilder(PersistenceContext context, Iterator<Entry<Object, Object>> target) {
         super.context = context;
         this.target = target;
     }
 
-    public EntryIteratorWrapper<K, V> build() {
-        EntryIteratorWrapper<K, V> iteratorWrapper = new EntryIteratorWrapper<K, V>(this.target);
+    public EntryIteratorWrapper build() {
+        EntryIteratorWrapper iteratorWrapper = new EntryIteratorWrapper(this.target);
         super.build(iteratorWrapper);
         return iteratorWrapper;
     }

@@ -54,10 +54,10 @@ public class ThriftPersistenceContextTest
     private ReflectionInvoker introspector;
 
     private EntityMeta entityMeta;
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     private EntityMeta joinMeta;
-    private PropertyMeta<Void, Long> joinIdMeta;
+    private PropertyMeta joinIdMeta;
 
     @Mock
     private ThriftDaoContext thriftDaoContext;

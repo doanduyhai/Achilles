@@ -10,20 +10,20 @@ import java.util.List;
  * @author DuyHai DOAN
  * 
  */
-public class ListWrapperBuilder<V> extends AbstractWrapperBuilder<ListWrapperBuilder<V>, Void, V> {
-    private List<V> target;
+public class ListWrapperBuilder extends AbstractWrapperBuilder<ListWrapperBuilder> {
+    private List<Object> target;
 
-    public static <V> ListWrapperBuilder<V> builder(PersistenceContext context, List<V> target) {
-        return new ListWrapperBuilder<V>(context, target);
+    public static ListWrapperBuilder builder(PersistenceContext context, List<Object> target) {
+        return new ListWrapperBuilder(context, target);
     }
 
-    public ListWrapperBuilder(PersistenceContext context, List<V> target) {
+    public ListWrapperBuilder(PersistenceContext context, List<Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public ListWrapper<V> build() {
-        ListWrapper<V> listWrapper = new ListWrapper<V>(this.target);
+    public ListWrapper build() {
+        ListWrapper listWrapper = new ListWrapper(this.target);
         super.build(listWrapper);
         return listWrapper;
     }

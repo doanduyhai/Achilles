@@ -34,7 +34,7 @@ public class CQLPersisterImpl
     public void persistClusteredCounter(CQLPersistenceContext context)
     {
         Object entity = context.getEntity();
-        PropertyMeta<?, ?> counterMeta = context.getFirstMeta();
+        PropertyMeta counterMeta = context.getFirstMeta();
         Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
         if (counter != null)
         {
@@ -54,10 +54,10 @@ public class CQLPersisterImpl
 
     }
 
-    public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> counterMetas)
+    public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta> counterMetas)
     {
         Object entity = context.getEntity();
-        for (PropertyMeta<?, ?> counterMeta : counterMetas)
+        for (PropertyMeta counterMeta : counterMetas)
         {
             Object counter = invoker.getValueFromField(entity, counterMeta.getGetter());
             if (counter != null)
@@ -74,12 +74,12 @@ public class CQLPersisterImpl
     }
 
     public void cascadePersist(CQLEntityPersister entityPersister, CQLPersistenceContext context,
-            Set<PropertyMeta<?, ?>> joinPMs)
+            Set<PropertyMeta> joinPMs)
     {
         Object entity = context.getEntity();
         JoinValuesExtractor extractorAndFilter = new JoinValuesExtractor(entity);
 
-        List<Pair<List<?>, PropertyMeta<?, ?>>> pairList = FluentIterable
+        List<Pair<List<?>, PropertyMeta>> pairList = FluentIterable
                 .from(joinPMs)
                 .transform(extractorAndFilter)
                 .filter(nullJoinValuesFilter)
@@ -88,12 +88,12 @@ public class CQLPersisterImpl
         doCascade(entityPersister, context, pairList);
     }
 
-    public void ensureEntitiesExist(CQLPersistenceContext context, Set<PropertyMeta<?, ?>> joinPMs)
+    public void ensureEntitiesExist(CQLPersistenceContext context, Set<PropertyMeta> joinPMs)
     {
         Object entity = context.getEntity();
         JoinValuesExtractor extractorAndFilter = new JoinValuesExtractor(entity);
 
-        List<Pair<List<?>, PropertyMeta<?, ?>>> pairList = FluentIterable
+        List<Pair<List<?>, PropertyMeta>> pairList = FluentIterable
                 .from(joinPMs)
                 .transform(extractorAndFilter)
                 .filter(nullJoinValuesFilter)
@@ -120,21 +120,21 @@ public class CQLPersisterImpl
     {
         EntityMeta entityMeta = context.getEntityMeta();
 
-        List<PropertyMeta<?, ?>> allMetas = entityMeta.getAllMetasExceptIdMeta();
-        Collection<PropertyMeta<?, ?>> proxyMetas = filter(allMetas, counterType);
-        for (PropertyMeta<?, ?> pm : proxyMetas)
+        List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
+        Collection<PropertyMeta> proxyMetas = filter(allMetas, counterType);
+        for (PropertyMeta pm : proxyMetas)
         {
             context.bindForSimpleCounterRemoval(pm);
         }
     }
 
     private void doCascade(CQLEntityPersister entityPersister, CQLPersistenceContext context,
-            List<Pair<List<?>, PropertyMeta<?, ?>>> pairList)
+            List<Pair<List<?>, PropertyMeta>> pairList)
     {
-        for (Pair<List<?>, PropertyMeta<?, ?>> pair : pairList)
+        for (Pair<List<?>, PropertyMeta> pair : pairList)
         {
             List<?> joinValues = pair.left;
-            PropertyMeta<?, ?> joinPM = pair.right;
+            PropertyMeta joinPM = pair.right;
             for (Object joinEntity : joinValues)
             {
                 CQLPersistenceContext joinContext = context.createContextForJoin(joinPM
@@ -146,12 +146,12 @@ public class CQLPersisterImpl
     }
 
     private void checkForExistence(CQLPersistenceContext context,
-            List<Pair<List<?>, PropertyMeta<?, ?>>> pairList)
+            List<Pair<List<?>, PropertyMeta>> pairList)
     {
-        for (Pair<List<?>, PropertyMeta<?, ?>> pair : pairList)
+        for (Pair<List<?>, PropertyMeta> pair : pairList)
         {
             List<?> joinValues = pair.left;
-            PropertyMeta<?, ?> joinPM = pair.right;
+            PropertyMeta joinPM = pair.right;
             for (Object joinEntity : joinValues)
             {
                 EntityMeta joinMeta = joinPM.getJoinProperties().getEntityMeta();

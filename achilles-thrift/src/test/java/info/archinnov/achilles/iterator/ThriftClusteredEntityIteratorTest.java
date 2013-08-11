@@ -65,7 +65,7 @@ public class ThriftClusteredEntityIteratorTest
     {
         Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .field("id")
                 .type(PropertyType.EMBEDDED_ID)
@@ -88,7 +88,7 @@ public class ThriftClusteredEntityIteratorTest
         Composite composite = mock(Composite.class);
         List<Component<?>> components = Arrays.asList();
 
-        PropertyMeta<Void, CompoundKey> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .build();
         idMeta.setGetter(idGetter);

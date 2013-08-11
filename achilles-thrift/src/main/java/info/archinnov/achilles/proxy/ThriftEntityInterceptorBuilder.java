@@ -63,7 +63,7 @@ public class ThriftEntityInterceptorBuilder<T>
         {
             Validator.validateNotNull(context.getEntityDao(), "Entity dao for '%s' should not be null", className);
         }
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Validator.validateNotNull(idMeta, "Id metadata for '%s' should not be null", className);
 
         interceptor.setTarget(target);
@@ -79,7 +79,7 @@ public class ThriftEntityInterceptorBuilder<T>
         }
 
         interceptor.setAlreadyLoaded(alreadyLoaded);
-        interceptor.setDirtyMap(new HashMap<Method, PropertyMeta<?, ?>>());
+        interceptor.setDirtyMap(new HashMap<Method, PropertyMeta>());
 
         interceptor.setPrimaryKey(context.getPrimaryKey());
 

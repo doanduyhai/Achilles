@@ -33,9 +33,9 @@ public class TableCreatorTest
 
     private EntityMeta entityMeta;
 
-    private PropertyMeta<Void, String> simplePropertyMeta;
+    private PropertyMeta simplePropertyMeta;
 
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     private ConfigurationContext configContext = new ConfigurationContext();
 
@@ -71,11 +71,11 @@ public class TableCreatorTest
         verify(creator).validateOrCreateTableForCounter(true);
     }
 
-    private void prepareData(PropertyMeta<?, ?>... extraPropertyMetas) throws Exception
+    private void prepareData(PropertyMeta... extraPropertyMetas) throws Exception
     {
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
-        for (PropertyMeta<?, ?> propertyMeta : extraPropertyMetas)
+        for (PropertyMeta propertyMeta : extraPropertyMetas)
         {
             propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
         }

@@ -10,10 +10,9 @@ import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_simple() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(SIMPLE)
                 .propertyName("prop")
@@ -53,7 +52,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -71,7 +70,7 @@ public class PropertyMetaBuilderTest {
         props.setComponentGetters(new ArrayList<Method>());
         props.setComponentSetters(new ArrayList<Method>());
 
-        PropertyMeta<Void, CompoundKey> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(EMBEDDED_ID)
                 .propertyName("prop")
@@ -84,7 +83,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.type()).isEqualTo(EMBEDDED_ID);
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
-        assertThat(built.getValueClass()).isEqualTo(CompoundKey.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(CompoundKey.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isTrue();
@@ -97,7 +96,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_simple_lazy() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(LAZY_SIMPLE)
                 .propertyName("prop")
@@ -109,7 +108,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -119,7 +118,7 @@ public class PropertyMetaBuilderTest {
 
     @Test
     public void should_build_simple_with_object_as_value() throws Exception {
-        PropertyMeta<Void, Bean> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(SIMPLE)
                 .propertyName("prop")
@@ -132,7 +131,7 @@ public class PropertyMetaBuilderTest {
 
         Bean bean = new Bean();
         assertThat(built.getValueFromString(writeString(bean))).isInstanceOf(Bean.class);
-        assertThat(built.getValueClass()).isEqualTo(Bean.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(Bean.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -143,7 +142,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_list() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(LIST)
                 .propertyName("prop")
@@ -155,7 +154,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -166,7 +165,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_list_lazy() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(LAZY_LIST)
                 .propertyName("prop")
@@ -178,7 +177,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -189,7 +188,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_set() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(SET)
                 .propertyName("prop")
@@ -201,7 +200,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -212,7 +211,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_set_lazy() throws Exception {
 
-        PropertyMeta<Void, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(LAZY_SET)
                 .propertyName("prop")
@@ -224,7 +223,7 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -235,7 +234,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_map() throws Exception {
 
-        PropertyMeta<Integer, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(MAP)
                 .propertyName("prop")
@@ -247,10 +246,10 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getKey(12)).isInstanceOf(Integer.class);
-        assertThat(built.getKeyClass()).isEqualTo(Integer.class);
+        assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.isEmbeddedId()).isFalse();
@@ -260,7 +259,7 @@ public class PropertyMetaBuilderTest {
 
     @Test
     public void should_build_map_with_object_as_key() throws Exception {
-        PropertyMeta<Bean, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(MAP)
                 .propertyName("prop")
@@ -273,10 +272,10 @@ public class PropertyMetaBuilderTest {
 
         Bean bean = new Bean();
         assertThat(built.getKey(bean)).isInstanceOf(Bean.class);
-        assertThat(built.getKeyClass()).isEqualTo(Bean.class);
+        assertThat((Class) built.getKeyClass()).isEqualTo(Bean.class);
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isFalse();
         assertThat(built.type().isJoin()).isFalse();
@@ -286,7 +285,7 @@ public class PropertyMetaBuilderTest {
     @Test
     public void should_build_map_lazy() throws Exception {
 
-        PropertyMeta<Integer, String> built = PropertyMetaBuilder
+        PropertyMeta built = PropertyMetaBuilder
                 .factory()
                 .type(LAZY_MAP)
                 .propertyName("prop")
@@ -298,10 +297,10 @@ public class PropertyMetaBuilderTest {
         assertThat(built.getPropertyName()).isEqualTo("prop");
 
         assertThat(built.getKey(12)).isInstanceOf(Integer.class);
-        assertThat(built.getKeyClass()).isEqualTo(Integer.class);
+        assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
         assertThat(built.getValueFromString("\"val\"")).isInstanceOf(String.class);
-        assertThat(built.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
         assertThat(built.type().isLazy()).isTrue();
         assertThat(built.isEmbeddedId()).isFalse();

@@ -80,7 +80,7 @@ public class CQLLoaderImplTest
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-    private PropertyMeta<?, Long> idMeta;
+    private PropertyMeta idMeta;
 
     @Before
     public void setUp() throws Exception
@@ -127,7 +127,7 @@ public class CQLLoaderImplTest
     {
         Long counterValue = RandomUtils.nextLong();
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -149,7 +149,7 @@ public class CQLLoaderImplTest
     {
         Long counterValue = RandomUtils.nextLong();
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -170,7 +170,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_return_null_for_eager_load_clusterd_counter_when_not_found() throws Exception
     {
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -189,7 +189,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_property_into_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -206,7 +206,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_join_simple_into_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -228,7 +228,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_simple_into_entity_when_null() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -246,7 +246,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_join_list_into_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_LIST)
@@ -270,7 +270,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_list_into_entity_when_null() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_LIST)
@@ -288,7 +288,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_list_into_entity_empty_id_list() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_LIST)
@@ -307,7 +307,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_join_set_into_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_SET)
@@ -331,7 +331,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_set_into_entity_when_null() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_SET)
@@ -349,7 +349,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_set_into_entity_when_empty_id_set() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_SET)
@@ -368,7 +368,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_join_map_into_entity() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
@@ -394,7 +394,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_map_into_entity_when_null() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
@@ -413,7 +413,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_not_load_join_map_into_entity_when_empty_id_map() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .keyValueClass(Integer.class, UserBean.class)
                 .field("name")
                 .type(PropertyType.JOIN_MAP)
@@ -432,7 +432,7 @@ public class CQLLoaderImplTest
     @Test
     public void should_load_null_when_not_join_type() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)

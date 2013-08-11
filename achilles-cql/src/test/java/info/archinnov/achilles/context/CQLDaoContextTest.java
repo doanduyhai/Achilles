@@ -15,11 +15,11 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -183,17 +183,17 @@ public class CQLDaoContextTest
     @Test
     public void should_push_update_without_ttl() throws Exception
     {
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("age")
                 .build();
 
-        List<PropertyMeta<?, ?>> pms = Arrays.asList(nameMeta, ageMeta);
+        List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
         when(context.getTttO()).thenReturn(Optional.<Integer> absent());
         when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms))
                 .thenReturn(ps);
@@ -208,17 +208,17 @@ public class CQLDaoContextTest
     @Test
     public void should_push_update_with_ttl() throws Exception
     {
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("age")
                 .build();
 
-        List<PropertyMeta<?, ?>> pms = Arrays.asList(nameMeta, ageMeta);
+        List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
         int ttl = 15465;
         when(context.getTttO()).thenReturn(Optional.<Integer> fromNullable(ttl));
@@ -236,7 +236,7 @@ public class CQLDaoContextTest
     @Test
     public void should_check_for_entity_existence() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("id")
                 .build();
@@ -304,7 +304,7 @@ public class CQLDaoContextTest
     @Test
     public void should_load_property() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(ONE, ALL))
@@ -328,7 +328,7 @@ public class CQLDaoContextTest
     @Test
     public void should_return_null_when_loading_property() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(ONE, ALL))
@@ -362,7 +362,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_simple_counter_increment() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -381,7 +381,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_simple_counter_increment_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -401,7 +401,7 @@ public class CQLDaoContextTest
     public void should_increment_simple_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .build();
@@ -418,7 +418,7 @@ public class CQLDaoContextTest
     public void should_decrement_simple_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .build();
@@ -434,7 +434,7 @@ public class CQLDaoContextTest
     @Test
     public void should_get_simple_counter() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -456,7 +456,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_simple_counter_delete() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -473,7 +473,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_simple_counter_delete_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .field("name")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -491,7 +491,7 @@ public class CQLDaoContextTest
     @Test
     public void should_push_clustered_counter_increment() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -511,7 +511,7 @@ public class CQLDaoContextTest
     @Test
     public void should_push_clustered_counter_increment_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -532,7 +532,7 @@ public class CQLDaoContextTest
     public void should_increment_clustered_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .build();
@@ -551,7 +551,7 @@ public class CQLDaoContextTest
     public void should_decrement_clustered_counter() throws Exception
     {
         Long counterValue = RandomUtils.nextLong();
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .build();
@@ -569,7 +569,7 @@ public class CQLDaoContextTest
     @Test
     public void should_get_clustered_counter() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -591,7 +591,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_clustered_counter_delete() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
@@ -608,7 +608,7 @@ public class CQLDaoContextTest
     @Test
     public void should_bind_clustered_counter_delete_with_runtime_consistency() throws Exception
     {
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .field("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))

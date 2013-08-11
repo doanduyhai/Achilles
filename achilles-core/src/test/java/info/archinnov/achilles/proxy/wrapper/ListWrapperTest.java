@@ -2,10 +2,10 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,140 +29,140 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ListWrapperTest
 {
 
-	@Mock
-	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    @Mock
+    private Map<Method, PropertyMeta> dirtyMap;
 
-	private Method setter;
+    private Method setter;
 
-	@Mock
-	private PropertyMeta<Void, String> propertyMeta;
+    @Mock
+    private PropertyMeta propertyMeta;
 
-	@Mock
-	private EntityProxifier proxifier;
+    @Mock
+    private EntityProxifier<PersistenceContext> proxifier;
 
-	@Before
-	public void setUp() throws Exception
-	{
-		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
-	}
+    @Before
+    public void setUp() throws Exception
+    {
+        setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+    }
 
-	@Test
-	public void should_mark_dirty_on_element_add_at_index() throws Exception
-	{
+    @Test
+    public void should_mark_dirty_on_element_add_at_index() throws Exception
+    {
 
-		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("a")).thenReturn("a");
-		listWrapper.add(0, "a");
+        ArrayList<String> target = new ArrayList<String>();
+        ListWrapper listWrapper = prepareListWrapper(target);
+        when(proxifier.unwrap("a")).thenReturn("a");
+        listWrapper.add(0, "a");
 
-		assertThat(target).hasSize(1);
-		assertThat(target.get(0)).isEqualTo("a");
+        assertThat(target).hasSize(1);
+        assertThat(target.get(0)).isEqualTo("a");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_mark_dirty_on_add_all_at_index() throws Exception
-	{
+    @Test
+    public void should_mark_dirty_on_add_all_at_index() throws Exception
+    {
 
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		listWrapper.setProxifier(proxifier);
+        ArrayList<String> target = new ArrayList<String>();
+        target.add("a");
+        ListWrapper listWrapper = prepareListWrapper(target);
+        listWrapper.setProxifier(proxifier);
 
-		Collection<String> list = Arrays.asList("b", "c");
-		when(proxifier.unwrap(list)).thenReturn(list);
+        Collection<String> list = Arrays.asList("b", "c");
+        when(proxifier.unwrap(list)).thenReturn(list);
 
-		listWrapper.addAll(1, list);
+        listWrapper.addAll(1, list);
 
-		assertThat(target).hasSize(3);
-		assertThat(target.get(1)).isEqualTo("b");
-		assertThat(target.get(2)).isEqualTo("c");
+        assertThat(target).hasSize(3);
+        assertThat(target.get(1)).isEqualTo("b");
+        assertThat(target.get(2)).isEqualTo("c");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_mark_dirty_on_remove_at_index() throws Exception
-	{
+    @Test
+    public void should_mark_dirty_on_remove_at_index() throws Exception
+    {
 
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		listWrapper.remove(1);
+        ArrayList<String> target = new ArrayList<String>();
+        target.add("a");
+        target.add("b");
+        ListWrapper listWrapper = prepareListWrapper(target);
+        listWrapper.remove(1);
 
-		assertThat(target).hasSize(1);
-		assertThat(target.get(0)).isEqualTo("a");
+        assertThat(target).hasSize(1);
+        assertThat(target.get(0)).isEqualTo("a");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_mark_dirty_on_set() throws Exception
-	{
+    @Test
+    public void should_mark_dirty_on_set() throws Exception
+    {
 
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		target.add("c");
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("d")).thenReturn("d");
-		listWrapper.set(1, "d");
+        ArrayList<String> target = new ArrayList<String>();
+        target.add("a");
+        target.add("b");
+        target.add("c");
+        ListWrapper listWrapper = prepareListWrapper(target);
+        when(proxifier.unwrap("d")).thenReturn("d");
+        listWrapper.set(1, "d");
 
-		assertThat(target).hasSize(3);
-		assertThat(target.get(1)).isEqualTo("d");
+        assertThat(target).hasSize(3);
+        assertThat(target.get(1)).isEqualTo("d");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_mark_dirty_on_list_iterator_add() throws Exception
-	{
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		ListIterator<String> listIteratorWrapper = prepareListWrapper(target).listIterator();
+    @Test
+    public void should_mark_dirty_on_list_iterator_add() throws Exception
+    {
+        ArrayList<String> target = new ArrayList<String>();
+        target.add("a");
+        target.add("b");
+        ListIterator<Object> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
-		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
-		when(proxifier.unwrap("c")).thenReturn("c");
-		listIteratorWrapper.add("c");
+        assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
+        when(proxifier.unwrap("c")).thenReturn("c");
+        listIteratorWrapper.add("c");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_mark_dirty_on_sub_list_add() throws Exception
-	{
-		ArrayList<String> target = new ArrayList<String>();
-		target.add("a");
-		target.add("b");
-		target.add("c");
-		List<String> subListWrapper = prepareListWrapper(target).subList(0, 1);
+    @Test
+    public void should_mark_dirty_on_sub_list_add() throws Exception
+    {
+        ArrayList<String> target = new ArrayList<String>();
+        target.add("a");
+        target.add("b");
+        target.add("c");
+        List<Object> subListWrapper = prepareListWrapper(target).subList(0, 1);
 
-		assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
-		when(proxifier.unwrap("d")).thenReturn("d");
-		subListWrapper.add("d");
+        assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
+        when(proxifier.unwrap("d")).thenReturn("d");
+        subListWrapper.add("d");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 
-	@Test
-	public void should_get_target() throws Exception
-	{
-		ArrayList<String> target = new ArrayList<String>();
-		ListWrapper<String> listWrapper = prepareListWrapper(target);
+    @Test
+    public void should_get_target() throws Exception
+    {
+        ArrayList<String> target = new ArrayList<String>();
+        ListWrapper listWrapper = prepareListWrapper(target);
 
-		assertThat(listWrapper.getTarget()).isSameAs(target);
-	}
+        assertThat((List) listWrapper.getTarget()).isSameAs(target);
+    }
 
-	private ListWrapper<String> prepareListWrapper(List<String> target)
-	{
-		ListWrapper<String> listWrapper = new ListWrapper<String>(target);
-		listWrapper.setDirtyMap(dirtyMap);
-		listWrapper.setSetter(setter);
-		listWrapper.setPropertyMeta(propertyMeta);
-		listWrapper.setProxifier(proxifier);
-		return listWrapper;
-	}
+    private ListWrapper prepareListWrapper(List<String> target)
+    {
+        ListWrapper listWrapper = new ListWrapper((List) target);
+        listWrapper.setDirtyMap(dirtyMap);
+        listWrapper.setSetter(setter);
+        listWrapper.setPropertyMeta(propertyMeta);
+        listWrapper.setProxifier(proxifier);
+        return listWrapper;
+    }
 }

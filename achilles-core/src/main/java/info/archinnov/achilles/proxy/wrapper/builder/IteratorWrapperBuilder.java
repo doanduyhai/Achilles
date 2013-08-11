@@ -10,20 +10,20 @@ import java.util.Iterator;
  * @author DuyHai DOAN
  * 
  */
-public class IteratorWrapperBuilder<V> extends AbstractWrapperBuilder<IteratorWrapperBuilder<V>, Void, V> {
-    private Iterator<V> target;
+public class IteratorWrapperBuilder extends AbstractWrapperBuilder<IteratorWrapperBuilder> {
+    private Iterator<Object> target;
 
-    public static <V> IteratorWrapperBuilder<V> builder(PersistenceContext context, Iterator<V> target) {
-        return new IteratorWrapperBuilder<V>(context, target);
+    public static IteratorWrapperBuilder builder(PersistenceContext context, Iterator<Object> target) {
+        return new IteratorWrapperBuilder(context, target);
     }
 
-    public IteratorWrapperBuilder(PersistenceContext context, Iterator<V> target) {
+    public IteratorWrapperBuilder(PersistenceContext context, Iterator<Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public IteratorWrapper<V> build() {
-        IteratorWrapper<V> iteratorWrapper = new IteratorWrapper<V>(this.target);
+    public IteratorWrapper build() {
+        IteratorWrapper iteratorWrapper = new IteratorWrapper(this.target);
         super.build(iteratorWrapper);
         return iteratorWrapper;
     }

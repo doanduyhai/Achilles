@@ -98,7 +98,7 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
             ConsistencyLevel cl)
     {
         EntityMeta meta = entityMetaMap.get(entityClass);
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
         Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
 
         CQLImmediateFlushContext flushContext = buildImmediateFlushContext(Optional.fromNullable(cl),

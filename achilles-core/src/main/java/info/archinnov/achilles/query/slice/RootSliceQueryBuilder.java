@@ -23,7 +23,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
     protected EntityMeta meta;
 
     protected Object partitionKey = null;
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
     private Object[] fromClusterings = null;
     private Object[] toClusterings = null;
     private OrderingMode ordering = OrderingMode.ASCENDING;

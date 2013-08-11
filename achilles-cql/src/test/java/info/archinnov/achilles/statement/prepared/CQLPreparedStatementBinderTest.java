@@ -80,7 +80,7 @@ public class CQLPreparedStatementBinderTest
         long age = RandomUtils.nextLong();
         String name = "name";
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -88,7 +88,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -96,7 +96,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -104,7 +104,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(UUID.class, String.class)
                 .field("count")
                 .type(PropertyType.COUNTER)
@@ -112,7 +112,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta, counterMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, ageMeta, counterMeta));
 
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
         when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);
@@ -145,7 +145,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_insert_with_join_entity() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -153,7 +153,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -161,11 +161,11 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<Void, Long> joinIdMeta = new PropertyMeta<Void, Long>();
+        PropertyMeta joinIdMeta = new PropertyMeta();
         EntityMeta joinMeta = new EntityMeta();
         joinMeta.setIdMeta(joinIdMeta);
 
-        PropertyMeta<?, ?> userMeta = PropertyMetaTestBuilder
+        PropertyMeta userMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -177,7 +177,7 @@ public class CQLPreparedStatementBinderTest
         UserBean user = new UserBean();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, userMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, userMeta));
 
         long primaryKey = RandomUtils.nextLong();
         long joinId = RandomUtils.nextLong();
@@ -214,7 +214,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_insert_with_null_fields() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -222,7 +222,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
@@ -230,7 +230,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -239,7 +239,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(nameMeta, ageMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, ageMeta));
 
         long primaryKey = RandomUtils.nextLong();
         String name = "name";
@@ -278,7 +278,7 @@ public class CQLPreparedStatementBinderTest
         long age = RandomUtils.nextLong();
         String name = "name";
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -286,7 +286,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .type(PropertyType.SIMPLE)
@@ -295,7 +295,7 @@ public class CQLPreparedStatementBinderTest
                 .build();
 
         entityMeta.setIdMeta(idMeta);
-        entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta<?, ?>> asList(ageMeta));
+        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta));
 
         CompoundKey compoundKey = new CompoundKey(userId, name);
 
@@ -327,7 +327,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_with_only_pk_in_where_clause() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -361,7 +361,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_update() throws Exception
     {
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .accessors()
@@ -369,7 +369,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .accessors()
@@ -377,7 +377,7 @@ public class CQLPreparedStatementBinderTest
                 .transcoder(transcoder)
                 .build();
 
-        PropertyMeta<?, ?> ageMeta = PropertyMetaTestBuilder
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("age")
                 .accessors()
@@ -422,7 +422,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_simple_counter_increment_decrement() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -432,7 +432,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)
@@ -452,7 +452,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_simple_counter_select() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -462,7 +462,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)
@@ -479,7 +479,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_simple_counter_delete() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -489,7 +489,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)
@@ -506,7 +506,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_clustered_counter_increment_decrement() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -517,7 +517,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)
@@ -536,7 +536,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_clustered_counter_select() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -547,7 +547,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)
@@ -564,7 +564,7 @@ public class CQLPreparedStatementBinderTest
     @Test
     public void should_bind_for_clustered_counter_delete() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .transcoder(transcoder)
@@ -575,7 +575,7 @@ public class CQLPreparedStatementBinderTest
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("counter")
                 .transcoder(transcoder)

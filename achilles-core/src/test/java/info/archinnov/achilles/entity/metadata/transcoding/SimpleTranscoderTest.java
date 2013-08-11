@@ -22,7 +22,7 @@ public class SimpleTranscoderTest {
     @Test
     public void should_encode() throws Exception
     {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();
@@ -35,7 +35,7 @@ public class SimpleTranscoderTest {
     @Test
     public void should_decode() throws Exception
     {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();

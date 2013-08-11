@@ -48,7 +48,7 @@ public class CQLEntityLoaderTest
 
 	private CompleteBean entity = new CompleteBean();
 
-	private PropertyMeta<Void, Long> idMeta;
+	private PropertyMeta idMeta;
 
 	private Long primaryKey = RandomUtils.nextLong();
 
@@ -103,7 +103,7 @@ public class CQLEntityLoaderTest
 	{
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta<Void, Long> pm = PropertyMetaTestBuilder
+		PropertyMeta pm = PropertyMetaTestBuilder
 				.valueClass(Long.class)
 				.type(SIMPLE)
 				.build();
@@ -118,7 +118,7 @@ public class CQLEntityLoaderTest
 	{
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta<Void, Long> pm = PropertyMetaTestBuilder
+		PropertyMeta pm = PropertyMetaTestBuilder
 				.valueClass(Long.class)
 				.type(JOIN_SIMPLE)
 				.build();
@@ -133,7 +133,7 @@ public class CQLEntityLoaderTest
 	{
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta<Void, Counter> pm = PropertyMetaTestBuilder
+		PropertyMeta pm = PropertyMetaTestBuilder
 				.valueClass(Counter.class)
 				.type(COUNTER)
 				.build();

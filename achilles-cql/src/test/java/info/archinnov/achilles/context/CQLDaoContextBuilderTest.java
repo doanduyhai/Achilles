@@ -70,13 +70,13 @@ public class CQLDaoContextBuilderTest
     {
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
         EntityMeta meta = new EntityMeta();
-        PropertyMeta<?, ?> nameMeta = PropertyMetaTestBuilder
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(PropertyType.SIMPLE)
                 .build();
 
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta));
+        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);
 
         when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);

@@ -73,7 +73,7 @@ public class CQLSliceQueryExecutorTest {
     private CQLPersistenceContext context;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     private SliceQuery<ClusteredEntity> sliceQuery;
 

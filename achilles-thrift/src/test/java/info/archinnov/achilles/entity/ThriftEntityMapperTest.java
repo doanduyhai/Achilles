@@ -74,7 +74,7 @@ public class ThriftEntityMapperTest
 
     private EntityMeta entityMeta;
 
-    private PropertyMeta<Void, Long> idMeta;
+    private PropertyMeta idMeta;
 
     @Before
     public void setUp() throws Exception
@@ -91,7 +91,7 @@ public class ThriftEntityMapperTest
 
         CompleteBean entity = new CompleteBean();
 
-        PropertyMeta<Void, String> namePropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta namePropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
@@ -99,7 +99,7 @@ public class ThriftEntityMapperTest
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> listPropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta listPropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Void.class, String.class)
                 .field("friends")
                 .type(LIST)
@@ -107,7 +107,7 @@ public class ThriftEntityMapperTest
                 .accessors()
                 .build();
 
-        PropertyMeta<Void, String> setPropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta setPropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Void.class, String.class)
                 .field("followers")
                 .type(SET)
@@ -115,7 +115,7 @@ public class ThriftEntityMapperTest
                 .accessors()
                 .build();
 
-        PropertyMeta<Integer, String> mapPropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Integer.class, String.class)
                 .field("preferences")
                 .type(MAP)
@@ -180,7 +180,7 @@ public class ThriftEntityMapperTest
     {
         CompleteBean entity = new CompleteBean();
 
-        PropertyMeta<Void, String> namePropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta namePropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
@@ -212,7 +212,7 @@ public class ThriftEntityMapperTest
     {
         CompleteBean entity = new CompleteBean();
 
-        PropertyMeta<Void, String> lazyNamePropertyMeta = PropertyMetaTestBuilder //
+        PropertyMeta lazyNamePropertyMeta = PropertyMetaTestBuilder //
                 .of(CompleteBean.class, Void.class, String.class)
                 .field("name")
                 .type(LAZY_SIMPLE)

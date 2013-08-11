@@ -17,7 +17,7 @@ import com.datastax.driver.core.Row;
  */
 public class CQLRowMethodInvoker
 {
-    public Object invokeOnRowForFields(Row row, PropertyMeta<?, ?> pm)
+    public Object invokeOnRowForFields(Row row, PropertyMeta pm)
     {
         String propertyName = pm.getPropertyName();
         Object value = null;
@@ -51,7 +51,7 @@ public class CQLRowMethodInvoker
         return value;
     }
 
-    public Object invokeOnRowForCompoundKey(Row row, PropertyMeta<?, ?> pm)
+    public Object invokeOnRowForCompoundKey(Row row, PropertyMeta pm)
     {
         List<String> componentNames = pm.getComponentNames();
         List<Class<?>> componentClasses = pm.getComponentClasses();
@@ -80,7 +80,7 @@ public class CQLRowMethodInvoker
 
     }
 
-    public Object invokeOnRowForProperty(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
+    public Object invokeOnRowForProperty(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass)
     {
         try
         {
@@ -93,7 +93,7 @@ public class CQLRowMethodInvoker
         }
     }
 
-    public List<?> invokeOnRowForList(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
+    public List<?> invokeOnRowForList(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass)
     {
         try {
             List<?> rawValues = row.getList(propertyName, toCompatibleJavaType(valueClass));
@@ -105,7 +105,7 @@ public class CQLRowMethodInvoker
         }
     }
 
-    public Set<?> invokeOnRowForSet(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> valueClass)
+    public Set<?> invokeOnRowForSet(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass)
     {
         try {
             Set<?> rawValues = row.getSet(propertyName, toCompatibleJavaType(valueClass));
@@ -117,7 +117,7 @@ public class CQLRowMethodInvoker
         }
     }
 
-    public Map<?, ?> invokeOnRowForMap(Row row, PropertyMeta<?, ?> pm, String propertyName, Class<?> keyClass,
+    public Map<?, ?> invokeOnRowForMap(Row row, PropertyMeta pm, String propertyName, Class<?> keyClass,
             Class<?> valueClass)
     {
         try

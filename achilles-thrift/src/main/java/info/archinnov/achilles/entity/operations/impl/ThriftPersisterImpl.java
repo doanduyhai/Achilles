@@ -40,7 +40,7 @@ public class ThriftPersisterImpl {
 
     private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
-    public void batchPersistSimpleProperty(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    public void batchPersistSimpleProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
         Composite name = thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta);
         String value = propertyMeta.writeValueToString(invoker.getValueFromField(context.getEntity(),
                 propertyMeta.getGetter()));
@@ -56,13 +56,13 @@ public class ThriftPersisterImpl {
         }
     }
 
-    public void persistCounter(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    public void persistCounter(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 
         Object counter = invoker.getValueFromField(context.getEntity(), propertyMeta.getGetter());
         String entityClassName = context.getEntityClass().getCanonicalName();
         if (counter != null) {
 
-            PropertyMeta<?, ?> idMeta = context.getEntityMeta().getIdMeta();
+            PropertyMeta idMeta = context.getEntityMeta().getIdMeta();
             Object primaryKey = context.getPrimaryKey();
             Composite rowKey = thriftCompositeFactory.createKeyForCounter(propertyMeta.fqcn(), primaryKey, idMeta);
             Composite name = thriftCompositeFactory.createBaseForCounterGet(propertyMeta);
@@ -84,7 +84,7 @@ public class ThriftPersisterImpl {
         }
     }
 
-    public <V> void batchPersistList(List<V> list, ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    public <V> void batchPersistList(List<V> list, ThriftPersistenceContext context, PropertyMeta propertyMeta) {
         int count = 0;
         for (V value : list) {
             Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
@@ -104,7 +104,7 @@ public class ThriftPersisterImpl {
         }
     }
 
-    public <V> void batchPersistSet(Set<V> set, ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    public <V> void batchPersistSet(Set<V> set, ThriftPersistenceContext context, PropertyMeta propertyMeta) {
         for (V value : set) {
             Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, value.hashCode());
 
@@ -123,7 +123,7 @@ public class ThriftPersisterImpl {
     }
 
     public <K, V> void batchPersistMap(Map<K, V> map, ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta) {
+            PropertyMeta propertyMeta) {
         for (Entry<K, V> entry : map.entrySet()) {
             Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, entry.getKey()
                     .hashCode());
@@ -141,10 +141,10 @@ public class ThriftPersisterImpl {
         }
     }
 
-    public <V> void batchPersistJoinEntity(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta,
+    public <V> void batchPersistJoinEntity(ThriftPersistenceContext context, PropertyMeta propertyMeta,
             V joinEntity, ThriftEntityPersister persister) {
         JoinProperties joinProperties = propertyMeta.getJoinProperties();
-        PropertyMeta<?, ?> idMeta = propertyMeta.joinIdMeta();
+        PropertyMeta idMeta = propertyMeta.joinIdMeta();
 
         Object joinId = invoker.getPrimaryKey(joinEntity, idMeta);
         Validator.validateNotNull(joinId, "Primary key for join entity '%s' should not be null", joinEntity);
@@ -166,11 +166,11 @@ public class ThriftPersisterImpl {
         persister.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
     }
 
-    public <V> void batchPersistJoinCollection(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta,
+    public <V> void batchPersistJoinCollection(ThriftPersistenceContext context, PropertyMeta propertyMeta,
             Collection<V> joinCollection, ThriftEntityPersister persister) {
         JoinProperties joinProperties = propertyMeta.getJoinProperties();
         EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
-        PropertyMeta<?, ?> joinIdMeta = joinEntityMeta.getIdMeta();
+        PropertyMeta joinIdMeta = joinEntityMeta.getIdMeta();
         int count = 0;
         for (V joinEntity : joinCollection) {
             Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
@@ -197,11 +197,11 @@ public class ThriftPersisterImpl {
         }
     }
 
-    public <K, V> void batchPersistJoinMap(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta,
+    public <K, V> void batchPersistJoinMap(ThriftPersistenceContext context, PropertyMeta propertyMeta,
             Map<K, V> joinMap, ThriftEntityPersister persiter) {
         JoinProperties joinProperties = propertyMeta.getJoinProperties();
         EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
-        PropertyMeta<?, ?> idMeta = joinEntityMeta.getIdMeta();
+        PropertyMeta idMeta = joinEntityMeta.getIdMeta();
 
         for (Entry<K, V> entry : joinMap.entrySet()) {
             Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, entry.getKey()
@@ -232,7 +232,7 @@ public class ThriftPersisterImpl {
     public void persistClusteredEntity(ThriftEntityPersister persister, ThriftPersistenceContext context,
             Object partitionKey, Object clusteredValue) {
         Object compoundKey = context.getPrimaryKey();
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
 
         String tableName = context.getTableName();
         String className = context.getEntityClass().getCanonicalName();
@@ -248,7 +248,7 @@ public class ThriftPersisterImpl {
         }
         else
         {
-            PropertyMeta<?, ?> pm = context.getFirstMeta();
+            PropertyMeta pm = context.getFirstMeta();
             if (pm.isJoin()) {
                 Object joinId = invoker.getValueFromField(clusteredValue, pm.joinIdMeta().getGetter());
 
@@ -280,8 +280,8 @@ public class ThriftPersisterImpl {
             Object clusteredValue, ThriftEntityPersister persister) {
         Object compoundKey = context.getPrimaryKey();
         EntityMeta meta = context.getEntityMeta();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> pm = meta.getFirstMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
+        PropertyMeta pm = meta.getFirstMeta();
         String tableName = meta.getTableName();
         Composite comp = thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey);
 
@@ -289,7 +289,7 @@ public class ThriftPersisterImpl {
         Mutator<Object> mutator = context.getWideRowMutator(tableName);
         Object persistentValue;
         if (pm.isJoin()) {
-            PropertyMeta<?, ?> joinIdMeta = pm.joinIdMeta();
+            PropertyMeta joinIdMeta = pm.joinIdMeta();
             persistentValue = invoker.getPrimaryKey(clusteredValue, joinIdMeta);
             dao.setValueBatch(partitionKey, comp, persistentValue, context.getTttO(), mutator);
 
@@ -329,9 +329,9 @@ public class ThriftPersisterImpl {
         Mutator<Object> entityMutator = context.getEntityMutator(entityMeta.getTableName());
         context.getEntityDao().removeRowBatch(primaryKey, entityMutator);
 
-        List<PropertyMeta<?, ?>> pms = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta()).toImmutableList();
+        List<PropertyMeta> pms = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta()).toImmutableList();
 
-        for (PropertyMeta<?, ?> propertyMeta : pms) {
+        for (PropertyMeta propertyMeta : pms) {
             if (propertyMeta.isCounter()) {
                 removeSimpleCounter(context, propertyMeta);
             }
@@ -340,7 +340,7 @@ public class ThriftPersisterImpl {
 
     public void removeClusteredEntity(ThriftPersistenceContext context, Object partitionKey) {
         Object embeddedId = context.getPrimaryKey();
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
 
         boolean isCounter = context.isValueless() ? false : context.getFirstMeta().isCounter();
 
@@ -359,7 +359,7 @@ public class ThriftPersisterImpl {
 
     }
 
-    public void removePropertyBatch(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    public void removePropertyBatch(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
         Composite start = thriftCompositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL);
         Composite end = thriftCompositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 
@@ -372,7 +372,7 @@ public class ThriftPersisterImpl {
                 context.getEntityMutator(context.getTableName()));
     }
 
-    private void removeSimpleCounter(ThriftPersistenceContext context, PropertyMeta<?, ?> propertyMeta) {
+    private void removeSimpleCounter(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
         Composite keyComp = thriftCompositeFactory.createKeyForCounter(propertyMeta.fqcn(), context.getPrimaryKey(),
                 propertyMeta.counterIdMeta());
         Composite com = thriftCompositeFactory.createForBatchInsertSingleCounter(propertyMeta);

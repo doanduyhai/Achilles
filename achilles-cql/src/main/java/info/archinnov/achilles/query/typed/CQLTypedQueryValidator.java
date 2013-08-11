@@ -17,7 +17,7 @@ public class CQLTypedQueryValidator {
     private static final Logger logger = LoggerFactory.getLogger(CQLTypedQueryValidator.class);
 
     public void validateTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
         String normalizedQuery = queryString.toLowerCase();
 
         validateRawTypedQuery(entityClass, queryString, meta);
@@ -54,7 +54,7 @@ public class CQLTypedQueryValidator {
                 "The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
                 entityClass.getCanonicalName());
 
-        for (PropertyMeta<?, ?> pm : meta.getAllMetasExceptIdMeta())
+        for (PropertyMeta pm : meta.getAllMetasExceptIdMeta())
         {
             String column = pm.getPropertyName().toLowerCase();
             if (pm.isJoin() && normalizedQuery.contains(column))

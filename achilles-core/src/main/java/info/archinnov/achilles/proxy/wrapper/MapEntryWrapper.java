@@ -11,22 +11,22 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.Entry<K, V> {
+public class MapEntryWrapper extends AbstractWrapper implements Map.Entry<Object, Object> {
     private static final Logger log = LoggerFactory.getLogger(MapEntryWrapper.class);
 
-    private final Map.Entry<K, V> target;
+    private final Map.Entry<Object, Object> target;
 
-    public MapEntryWrapper(Map.Entry<K, V> target) {
+    public MapEntryWrapper(Map.Entry<Object, Object> target) {
         this.target = target;
     }
 
     @Override
-    public K getKey() {
+    public Object getKey() {
         return this.target.getKey();
     }
 
     @Override
-    public V getValue() {
+    public Object getValue() {
         if (isJoin()) {
             return proxifier.buildProxy(this.target.getValue(), joinContext(this.target.getValue()));
         } else {
@@ -35,17 +35,17 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
     }
 
     @Override
-    public V setValue(V value) {
+    public Object setValue(Object value) {
         log.trace("Mark map entry property {} of entity class {} dirty upon element set",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-        V result = this.target.setValue(proxifier.unwrap(value));
+        Object result = this.target.setValue(proxifier.unwrap(value));
         this.markDirty();
         return result;
     }
 
-    public boolean equals(Entry<K, V> entry) {
-        K key = entry.getKey();
-        V value = proxifier.unwrap(entry.getValue());
+    public boolean equals(Entry<Object, Object> entry) {
+        Object key = entry.getKey();
+        Object value = proxifier.unwrap(entry.getValue());
 
         boolean keyEquals = this.target.getKey().equals(key);
 
@@ -61,15 +61,15 @@ public class MapEntryWrapper<K, V> extends AbstractWrapper<K, V> implements Map.
 
     @Override
     public int hashCode() {
-        K key = this.target.getKey();
-        V value = this.target.getValue();
+        Object key = this.target.getKey();
+        Object value = this.target.getValue();
         int result = 1;
         result = result * 31 + key.hashCode();
         result = result * 31 + (value == null ? 0 : value.hashCode());
         return result;
     }
 
-    public Map.Entry<K, V> getTarget() {
+    public Map.Entry<Object, Object> getTarget() {
         return target;
     }
 

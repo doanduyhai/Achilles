@@ -7,8 +7,8 @@ import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,12 +52,12 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public <K, V> PropertyMeta<K, V> build(Class<K> keyClass, Class<V> valueClass) {
+    public PropertyMeta build(Class<?> keyClass, Class<?> valueClass) {
         log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
-        PropertyMeta<K, V> meta = null;
+        PropertyMeta meta = null;
         boolean isCompound = embeddedIdProperties == null ? false : true;
-        meta = new PropertyMeta<K, V>();
+        meta = new PropertyMeta();
         meta.setObjectMapper(objectMapper);
         meta.setType(type);
         meta.setPropertyName(propertyName);

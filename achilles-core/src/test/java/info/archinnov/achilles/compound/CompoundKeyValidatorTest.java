@@ -32,7 +32,7 @@ public class CompoundKeyValidatorTest
     private CompoundKeyValidator validator;
 
     @Mock
-    private PropertyMeta<?, ?> pm;
+    private PropertyMeta pm;
 
     @Before
     public void setUp()

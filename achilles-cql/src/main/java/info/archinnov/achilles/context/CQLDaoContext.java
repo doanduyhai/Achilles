@@ -89,7 +89,7 @@ public class CQLDaoContext
         }
     }
 
-    public void pushUpdateStatement(CQLPersistenceContext context, List<PropertyMeta<?, ?>> pms)
+    public void pushUpdateStatement(CQLPersistenceContext context, List<PropertyMeta> pms)
     {
         EntityMeta entityMeta = context.getEntityMeta();
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
@@ -119,7 +119,7 @@ public class CQLDaoContext
         return executeReadWithConsistency(context, ps, readLevel).size() == 1;
     }
 
-    public Row loadProperty(CQLPersistenceContext context, PropertyMeta<?, ?> pm)
+    public Row loadProperty(CQLPersistenceContext context, PropertyMeta pm)
     {
         PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache,
                 context, pm);
@@ -150,7 +150,7 @@ public class CQLDaoContext
 
     // Simple counter
     public void bindForSimpleCounterIncrement(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long increment)
+            PropertyMeta counterMeta, Long increment)
     {
         PreparedStatement ps = counterQueryMap.get(INCR);
         BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
@@ -161,7 +161,7 @@ public class CQLDaoContext
     }
 
     public void incrementSimpleCounter(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistencyLevel)
+            PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(INCR);
         BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
@@ -170,7 +170,7 @@ public class CQLDaoContext
     }
 
     public void decrementSimpleCounter(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
+            PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(DECR);
         BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
@@ -178,7 +178,7 @@ public class CQLDaoContext
         context.executeImmediateWithConsistency(bs, consistencyLevel);
     }
 
-    public Row getSimpleCounter(CQLPersistenceContext context, PropertyMeta<?, ?> counterMeta,
+    public Row getSimpleCounter(CQLPersistenceContext context, PropertyMeta counterMeta,
             ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(SELECT);
@@ -190,7 +190,7 @@ public class CQLDaoContext
     }
 
     public void bindForSimpleCounterDelete(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Object primaryKey)
+            PropertyMeta counterMeta, Object primaryKey)
     {
         PreparedStatement ps = counterQueryMap.get(DELETE);
         BoundStatement bs = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
@@ -201,7 +201,7 @@ public class CQLDaoContext
 
     // Clustered counter
     public void pushClusteredCounterIncrementStatement(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long increment)
+            PropertyMeta counterMeta, Long increment)
     {
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
@@ -211,7 +211,7 @@ public class CQLDaoContext
     }
 
     public void incrementClusteredCounter(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistencyLevel)
+            PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
         BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
@@ -220,7 +220,7 @@ public class CQLDaoContext
     }
 
     public void decrementClusteredCounter(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
+            PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
         BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
@@ -228,7 +228,7 @@ public class CQLDaoContext
         context.executeImmediateWithConsistency(bs, consistencyLevel);
     }
 
-    public Row getClusteredCounter(CQLPersistenceContext context, PropertyMeta<?, ?> counterMeta,
+    public Row getClusteredCounter(CQLPersistenceContext context, PropertyMeta counterMeta,
             ConsistencyLevel consistencyLevel)
     {
         EntityMeta entityMeta = context.getEntityMeta();
@@ -241,7 +241,7 @@ public class CQLDaoContext
     }
 
     public void bindForClusteredCounterDelete(CQLPersistenceContext context, EntityMeta meta,
-            PropertyMeta<?, ?> counterMeta, Object primaryKey)
+            PropertyMeta counterMeta, Object primaryKey)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
         BoundStatement bs = binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey);
@@ -354,13 +354,13 @@ public class CQLDaoContext
         return writeLevel;
     }
 
-    private ConsistencyLevel getReadConsistencyLevel(CQLPersistenceContext context, PropertyMeta<?, ?> pm) {
+    private ConsistencyLevel getReadConsistencyLevel(CQLPersistenceContext context, PropertyMeta pm) {
         ConsistencyLevel consistency = context.getReadConsistencyLevel().isPresent() ? context
                 .getReadConsistencyLevel().get() : pm.getReadConsistencyLevel();
         return consistency;
     }
 
-    private ConsistencyLevel getWriteConsistencyLevel(CQLPersistenceContext context, PropertyMeta<?, ?> counterMeta) {
+    private ConsistencyLevel getWriteConsistencyLevel(CQLPersistenceContext context, PropertyMeta counterMeta) {
         ConsistencyLevel consistency = context.getWriteConsistencyLevel().isPresent() ? context
                 .getWriteConsistencyLevel().get() : counterMeta.getWriteConsistencyLevel();
         return consistency;

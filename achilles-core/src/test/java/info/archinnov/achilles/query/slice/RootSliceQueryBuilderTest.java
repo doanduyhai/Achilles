@@ -51,7 +51,7 @@ public class RootSliceQueryBuilderTest
     private EntityMeta meta;
 
     @Mock
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
     private CompoundKeyValidator compoundKeyValidator;

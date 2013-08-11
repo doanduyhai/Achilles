@@ -98,7 +98,7 @@ public class CQLPersistenceContext extends PersistenceContext
         return daoContext.eagerLoadEntity(this);
     }
 
-    public Row loadProperty(PropertyMeta<?, ?> pm)
+    public Row loadProperty(PropertyMeta pm)
     {
         return daoContext.loadProperty(this, pm);
     }
@@ -108,7 +108,7 @@ public class CQLPersistenceContext extends PersistenceContext
         daoContext.pushInsertStatement(this);
     }
 
-    public void pushUpdateStatement(List<PropertyMeta<?, ?>> pms)
+    public void pushUpdateStatement(List<PropertyMeta> pms)
     {
         daoContext.pushUpdateStatement(this, pms);
     }
@@ -119,22 +119,22 @@ public class CQLPersistenceContext extends PersistenceContext
     }
 
     // Simple counter
-    public void bindForSimpleCounterIncrement(PropertyMeta<?, ?> counterMeta, Long increment)
+    public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment)
     {
         daoContext.bindForSimpleCounterIncrement(this, entityMeta, counterMeta, increment);
     }
 
-    public void incrementSimpleCounter(PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistency)
+    public void incrementSimpleCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency)
     {
         daoContext.incrementSimpleCounter(this, entityMeta, counterMeta, increment, consistency);
     }
 
-    public void decrementSimpleCounter(PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistency)
+    public void decrementSimpleCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency)
     {
         daoContext.decrementSimpleCounter(this, entityMeta, counterMeta, decrement, consistency);
     }
 
-    public Long getSimpleCounter(PropertyMeta<?, ?> counterMeta, ConsistencyLevel consistency)
+    public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency)
     {
         Row row = daoContext.getSimpleCounter(this, counterMeta, consistency);
         if (row != null)
@@ -144,28 +144,28 @@ public class CQLPersistenceContext extends PersistenceContext
         return null;
     }
 
-    public void bindForSimpleCounterRemoval(PropertyMeta<?, ?> counterMeta)
+    public void bindForSimpleCounterRemoval(PropertyMeta counterMeta)
     {
         daoContext.bindForSimpleCounterDelete(this, entityMeta, counterMeta, primaryKey);
     }
 
     // Clustered counter
-    public void pushClusteredCounterIncrementStatement(PropertyMeta<?, ?> counterMeta, Long increment)
+    public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment)
     {
         daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
     }
 
-    public void incrementClusteredCounter(PropertyMeta<?, ?> counterMeta, Long increment, ConsistencyLevel consistency)
+    public void incrementClusteredCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency)
     {
         daoContext.incrementClusteredCounter(this, entityMeta, counterMeta, increment, consistency);
     }
 
-    public void decrementClusteredCounter(PropertyMeta<?, ?> counterMeta, Long decrement, ConsistencyLevel consistency)
+    public void decrementClusteredCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency)
     {
         daoContext.decrementClusteredCounter(this, entityMeta, counterMeta, decrement, consistency);
     }
 
-    public Long getClusteredCounter(PropertyMeta<?, ?> counterMeta, ConsistencyLevel readLevel)
+    public Long getClusteredCounter(PropertyMeta counterMeta, ConsistencyLevel readLevel)
     {
         Row row = daoContext.getClusteredCounter(this, counterMeta, readLevel);
         if (row != null)
@@ -175,7 +175,7 @@ public class CQLPersistenceContext extends PersistenceContext
         return null;
     }
 
-    public void bindForClusteredCounterRemoval(PropertyMeta<?, ?> counterMeta)
+    public void bindForClusteredCounterRemoval(PropertyMeta counterMeta)
     {
         daoContext.bindForClusteredCounterDelete(this, entityMeta, counterMeta, primaryKey);
     }

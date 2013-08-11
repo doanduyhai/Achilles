@@ -47,7 +47,7 @@ public class ThriftColumnFamilyValidator {
 
     public void validateCFForClusteredEntity(ColumnFamilyDefinition cfDef, EntityMeta meta, String tableName) {
 
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
 
         log.trace(
                 "Validating column family composite comparator definition for clustered entity {} and column family {}",
@@ -60,7 +60,7 @@ public class ThriftColumnFamilyValidator {
         }
         else
         {
-            PropertyMeta<?, ?> pm = meta.getFirstMeta();
+            PropertyMeta pm = meta.getFirstMeta();
             PropertyType type = pm.type();
             if (type.isCounter()) {
                 valueValidationType = COUNTERTYPE.getClassName();

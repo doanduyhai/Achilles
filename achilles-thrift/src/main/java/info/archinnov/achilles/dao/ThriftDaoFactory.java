@@ -49,7 +49,7 @@ public class ThriftDaoFactory {
             valueClass = String.class;
         }
         else {
-            PropertyMeta<?, ?> pm = entityMeta.getFirstMeta();
+            PropertyMeta pm = entityMeta.getFirstMeta();
             if (pm.isJoin()) {
                 valueClass = pm.joinIdMeta().getValueClass();
             } else {

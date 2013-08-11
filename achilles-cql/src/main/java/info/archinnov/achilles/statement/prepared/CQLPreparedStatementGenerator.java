@@ -34,19 +34,19 @@ public class CQLPreparedStatementGenerator
 {
     public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Insert insert = insertInto(entityMeta.getTableName());
         prepareInsertPrimaryKey(idMeta, insert);
 
-        List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+        List<PropertyMeta> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
                 .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
-        List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
         fieldMetas.remove(idMeta);
 
-        for (PropertyMeta<?, ?> pm : fieldMetas)
+        for (PropertyMeta pm : fieldMetas)
         {
             insert.value(pm.getPropertyName(), bindMarker());
         }
@@ -55,20 +55,20 @@ public class CQLPreparedStatementGenerator
 
     public PreparedStatement prepareInsertPSForClusteredCounter(Session session, EntityMeta entityMeta)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         Insert insert = insertInto(entityMeta.getTableName());
         prepareInsertPrimaryKey(idMeta, insert);
 
-        List<PropertyMeta<?, ?>> nonProxyMetas = FluentIterable
+        List<PropertyMeta> nonProxyMetas = FluentIterable
                 .from(entityMeta.getAllMetasExceptIdMeta())
                 .filter(PropertyType.excludeCounterType)
                 .toImmutableList();
 
-        List<PropertyMeta<?, ?>> fieldMetas = new ArrayList<PropertyMeta<?, ?>>(nonProxyMetas);
+        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
         fieldMetas.remove(idMeta);
 
-        for (PropertyMeta<?, ?> pm : fieldMetas)
+        for (PropertyMeta pm : fieldMetas)
         {
             insert.value(pm.getPropertyName(), bindMarker());
         }
@@ -76,9 +76,9 @@ public class CQLPreparedStatementGenerator
     }
 
     public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta,
-            PropertyMeta<?, ?> pm)
+            PropertyMeta pm)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         if (pm.isCounter())
         {
@@ -96,14 +96,14 @@ public class CQLPreparedStatementGenerator
     }
 
     public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta,
-            List<PropertyMeta<?, ?>> pms)
+            List<PropertyMeta> pms)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         Update update = update(entityMeta.getTableName());
 
         int i = 0;
         Assignments assignments = null;
-        for (PropertyMeta<?, ?> pm : pms)
+        for (PropertyMeta pm : pms)
         {
             if (i == 0)
             {
@@ -121,11 +121,11 @@ public class CQLPreparedStatementGenerator
 
     public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         Selection select = select();
 
-        for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas())
+        for (PropertyMeta pm : entityMeta.getEagerMetas())
         {
             select = prepareSelectField(pm, select);
         }
@@ -177,8 +177,8 @@ public class CQLPreparedStatementGenerator
 
     public Map<CQLQueryType, PreparedStatement> prepareClusteredCounterQueryMap(Session session, EntityMeta meta)
     {
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        PropertyMeta<?, ?> counterMeta = meta.getFirstMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
+        PropertyMeta counterMeta = meta.getFirstMeta();
         String tableName = meta.getTableName();
         String counterName = counterMeta.getPropertyName();
 
@@ -203,7 +203,7 @@ public class CQLPreparedStatementGenerator
         return clusteredCounterPSMap;
     }
 
-    private Selection prepareSelectField(PropertyMeta<?, ?> pm, Selection select)
+    private Selection prepareSelectField(PropertyMeta pm, Selection select)
     {
         if (pm.isEmbeddedId())
         {
@@ -219,7 +219,7 @@ public class CQLPreparedStatementGenerator
         return select;
     }
 
-    private void prepareInsertPrimaryKey(PropertyMeta<?, ?> idMeta, Insert insert)
+    private void prepareInsertPrimaryKey(PropertyMeta idMeta, Insert insert)
     {
         if (idMeta.isEmbeddedId())
         {
@@ -234,7 +234,7 @@ public class CQLPreparedStatementGenerator
         }
     }
 
-    private Statement prepareWhereClauseForSelect(PropertyMeta<?, ?> idMeta, Select from)
+    private Statement prepareWhereClauseForSelect(PropertyMeta idMeta, Select from)
     {
         Statement statement;
         if (idMeta.isEmbeddedId())
@@ -262,7 +262,7 @@ public class CQLPreparedStatementGenerator
         return statement;
     }
 
-    private Statement prepareWhereClauseForUpdate(PropertyMeta<?, ?> idMeta, Assignments update)
+    private Statement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update)
     {
         Statement statement;
         if (idMeta.isEmbeddedId())
@@ -293,7 +293,7 @@ public class CQLPreparedStatementGenerator
     public Map<String, PreparedStatement> prepareRemovePSs(Session session,
             EntityMeta entityMeta)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
         Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
 
@@ -304,7 +304,7 @@ public class CQLPreparedStatementGenerator
         return removePSs;
     }
 
-    private Statement prepareWhereClauseForDelete(PropertyMeta<?, ?> idMeta, Delete mainFrom)
+    private Statement prepareWhereClauseForDelete(PropertyMeta idMeta, Delete mainFrom)
     {
         Statement mainStatement;
         if (idMeta.isEmbeddedId())

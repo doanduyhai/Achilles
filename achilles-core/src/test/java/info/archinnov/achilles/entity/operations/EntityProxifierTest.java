@@ -53,7 +53,7 @@ public class EntityProxifierTest
 	private EntityMeta entityMeta;
 
 	@Mock
-	private PropertyMeta<Void, Long> idMeta;
+	private PropertyMeta idMeta;
 
 	@Before
 	public void setUp()

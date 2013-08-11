@@ -3,10 +3,10 @@ package info.archinnov.achilles.entity.parsing.context;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -39,17 +39,7 @@ public class PropertyParsingContext
         return context.getCurrentObjectMapper();
     }
 
-    public Map<PropertyMeta<?, ?>, String> getWideMaps()
-    {
-        return context.getWideMaps();
-    }
-
-    public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
-    {
-        return context.getJoinWideMaps();
-    }
-
-    public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
+    public Map<String, PropertyMeta> getPropertyMetas()
     {
         return context.getPropertyMetas();
     }
@@ -94,7 +84,7 @@ public class PropertyParsingContext
         this.currentExternalTableName = currentExternalTableName;
     }
 
-    public List<PropertyMeta<?, ?>> getCounterMetas()
+    public List<PropertyMeta> getCounterMetas()
     {
         return context.getCounterMetas();
     }
@@ -109,7 +99,7 @@ public class PropertyParsingContext
         return context.getConfigurableCLPolicy();
     }
 
-    public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled()
+    public Map<PropertyMeta, Class<?>> getJoinPropertyMetaToBeFilled()
     {
         return context.getJoinPropertyMetaToBeFilled();
     }

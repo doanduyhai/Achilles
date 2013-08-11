@@ -103,8 +103,8 @@ public class ThriftCompositeTransformer
     public <T> T buildClusteredEntity(Class<T> entityClass, ThriftPersistenceContext context,
             HColumn<Composite, Object> hColumn)
     {
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
-        PropertyMeta<?, ?> pm = context.getFirstMeta();
+        PropertyMeta idMeta = context.getIdMeta();
+        PropertyMeta pm = context.getFirstMeta();
         Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn
                 .getName()
                 .getComponents());
@@ -117,7 +117,7 @@ public class ThriftCompositeTransformer
             ThriftPersistenceContext context,
             List<Component<?>> components)
     {
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
         Object embeddedId = buildEmbeddedIdFromComponents(context, components);
         return mapper.initClusteredEntity(entityClass, idMeta, embeddedId);
     }
@@ -126,7 +126,7 @@ public class ThriftCompositeTransformer
             List<Component<?>> components)
     {
         Object partitionKey = context.getPartitionKey();
-        PropertyMeta<?, ?> idMeta = context.getIdMeta();
+        PropertyMeta idMeta = context.getIdMeta();
         return compoundKeyMapper.fromCompositeToEmbeddedId(idMeta, components, partitionKey);
     }
 

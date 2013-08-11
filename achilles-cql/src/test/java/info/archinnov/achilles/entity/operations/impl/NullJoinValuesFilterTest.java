@@ -33,7 +33,7 @@ public class NullJoinValuesFilterTest {
     @Test
     public void should_return_list_when_join_value_exist() throws Exception
     {
-        PropertyMeta<?, ?> joinSimpleMeta = PropertyMetaTestBuilder
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(PropertyType.JOIN_SIMPLE)
@@ -41,10 +41,9 @@ public class NullJoinValuesFilterTest {
                 .build();
         UserBean user = new UserBean();
 
-        Pair<List<?>, PropertyMeta<?, ?>> pair = Pair.<List<?>, PropertyMeta<?, ?>> create(Arrays.asList(user),
+        Pair<List<?>, PropertyMeta> pair = Pair.<List<?>, PropertyMeta> create(Arrays.asList(user),
                 joinSimpleMeta);
-        Collection<Pair<List<?>, PropertyMeta<?, ?>>> filtered = Collections2.filter(
-                Arrays.asList(pair), filter);
+        Collection<Pair<List<?>, PropertyMeta>> filtered = Collections2.filter(Arrays.asList(pair), filter);
 
         assertThat(filtered).hasSize(1);
 
@@ -53,18 +52,15 @@ public class NullJoinValuesFilterTest {
     @Test
     public void should_filter_out_empty_join_values_list() throws Exception
     {
-        PropertyMeta<?, ?> pm = new PropertyMeta<Void, String>();
+        PropertyMeta pm = new PropertyMeta();
         UserBean user = new UserBean();
 
-        Pair<List<?>, PropertyMeta<?, ?>> pair1 = Pair.<List<?>, PropertyMeta<?, ?>> create(
-                Arrays.asList(), pm);
-        Pair<List<?>, PropertyMeta<?, ?>> pair2 = Pair.<List<?>, PropertyMeta<?, ?>> create(
-                Arrays.asList(user), pm);
+        Pair<List<?>, PropertyMeta> pair1 = Pair.<List<?>, PropertyMeta> create(Arrays.asList(), pm);
+        Pair<List<?>, PropertyMeta> pair2 = Pair.<List<?>, PropertyMeta> create(Arrays.asList(user), pm);
 
-        List<Pair<List<?>, PropertyMeta<?, ?>>> list = Arrays.asList(pair1, pair2);
+        List<Pair<List<?>, PropertyMeta>> list = Arrays.asList(pair1, pair2);
 
-        Collection<Pair<List<?>, PropertyMeta<?, ?>>> filtered = Collections2.filter(list,
-                filter);
+        Collection<Pair<List<?>, PropertyMeta>> filtered = Collections2.filter(list, filter);
 
         assertThat(filtered).containsOnly(pair2);
 

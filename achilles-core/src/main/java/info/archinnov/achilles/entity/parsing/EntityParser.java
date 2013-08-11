@@ -53,7 +53,7 @@ public class EntityParser
         context.setCurrentConsistencyLevels(consistencyLevels);
         context.setCurrentColumnFamilyName(columnFamilyName);
 
-        PropertyMeta<?, ?> idMeta = null;
+        PropertyMeta idMeta = null;
         List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
         for (Field field : inheritedFields)
         {
@@ -117,14 +117,14 @@ public class EntityParser
         log.debug("Fill in join entity meta into property meta of join type");
 
         // Retrieve EntityMeta objects for join columns after entities parsing
-        for (Entry<PropertyMeta<?, ?>, Class<?>> entry : context
+        for (Entry<PropertyMeta, Class<?>> entry : context
                 .getJoinPropertyMetaToBeFilled()
                 .entrySet())
         {
             Class<?> clazz = entry.getValue();
             validator.validateJoinEntityExist(entityMetaMap, clazz);
 
-            PropertyMeta<?, ?> propertyMeta = entry.getKey();
+            PropertyMeta propertyMeta = entry.getKey();
             EntityMeta joinEntityMeta = entityMetaMap.get(clazz);
 
             validator.validateJoinEntityNotClusteredEntity(propertyMeta, joinEntityMeta);
@@ -154,9 +154,9 @@ public class EntityParser
         context.setCurrentObjectMapper(objectMapper);
     }
 
-    private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta<?, ?> idMeta)
+    private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta idMeta)
     {
-        for (PropertyMeta<?, ?> counterMeta : context.getCounterMetas())
+        for (PropertyMeta counterMeta : context.getCounterMetas())
         {
 
             log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta

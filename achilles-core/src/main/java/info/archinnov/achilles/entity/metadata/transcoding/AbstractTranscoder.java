@@ -25,83 +25,83 @@ public abstract class AbstractTranscoder implements DataTranscoder {
     }
 
     @Override
-    public Object encode(PropertyMeta<?, ?> pm, Object entityValue) {
+    public Object encode(PropertyMeta pm, Object entityValue) {
         throw new AchillesException("Transcoder cannot encode value '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Object encodeKey(PropertyMeta<?, ?> pm, Object entityValue) {
+    public Object encodeKey(PropertyMeta pm, Object entityValue) {
         throw new AchillesException("Transcoder cannot encode key '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public List<Object> encode(PropertyMeta<?, ?> pm, List<?> entityValue) {
+    public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
         throw new AchillesException("Transcoder cannot encode value '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Set<Object> encode(PropertyMeta<?, ?> pm, Set<?> entityValue) {
+    public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
         throw new AchillesException("Transcoder cannot encode value '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Map<Object, Object> encode(PropertyMeta<?, ?> pm, Map<?, ?> entityValue) {
+    public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue) {
         throw new AchillesException("Transcoder cannot encode value '" + entityValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public List<Object> encodeToComponents(PropertyMeta<?, ?> pm, Object compoundKey)
+    public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey)
     {
         throw new AchillesException("Transcoder cannot encode from value '" + compoundKey
                 + "' to components for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Object decode(PropertyMeta<?, ?> pm, Object cassandraValue) {
+    public Object decode(PropertyMeta pm, Object cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Object decodeKey(PropertyMeta<?, ?> pm, Object cassandraValue) {
+    public Object decodeKey(PropertyMeta pm, Object cassandraValue) {
         throw new AchillesException("Transcoder cannot decode key '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public List<Object> decode(PropertyMeta<?, ?> pm, List<?> cassandraValue) {
+    public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Set<Object> decode(PropertyMeta<?, ?> pm, Set<?> cassandraValue) {
+    public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Map<Object, Object> decode(PropertyMeta<?, ?> pm, Map<?, ?> cassandraValue) {
+    public Map<Object, Object> decode(PropertyMeta pm, Map<?, ?> cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
     }
 
     @Override
-    public Object decodeFromComponents(PropertyMeta<?, ?> pm, List<?> components)
+    public Object decodeFromComponents(PropertyMeta pm, List<?> components)
     {
         throw new AchillesException("Transcoder cannot decode from components '" + components
                 + "' to value for type '" + pm.type().name() + "'");
     }
 
-    protected Object encode(PropertyMeta<?, ?> pm, Class<?> sourceType, Object entityValue)
+    protected Object encode(PropertyMeta pm, Class<?> sourceType, Object entityValue)
     {
         if (pm.type().isJoin()) {
-            PropertyMeta<?, ?> joinIdMeta = pm.joinIdMeta();
+            PropertyMeta joinIdMeta = pm.joinIdMeta();
             Object joinId = invoker.getPrimaryKey(entityValue, joinIdMeta);
             return joinIdMeta.encode(joinId);
         }
@@ -120,7 +120,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
         }
     }
 
-    protected Object decode(PropertyMeta<?, ?> pm, Class<?> targetType, Object cassandraValue)
+    protected Object decode(PropertyMeta pm, Class<?> targetType, Object cassandraValue)
     {
         if (pm.type().isJoin()) {
             return pm.joinIdMeta().decode(cassandraValue);

@@ -10,22 +10,22 @@ import java.util.Collection;
  * @author DuyHai DOAN
  * 
  */
-public class ValueCollectionWrapperBuilder<V> extends
-        AbstractWrapperBuilder<ValueCollectionWrapperBuilder<V>, Void, V> {
-    private Collection<V> target;
+public class ValueCollectionWrapperBuilder extends
+        AbstractWrapperBuilder<ValueCollectionWrapperBuilder> {
+    private Collection<Object> target;
 
-    public ValueCollectionWrapperBuilder(PersistenceContext context, Collection<V> target) {
+    public ValueCollectionWrapperBuilder(PersistenceContext context, Collection<Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public static <V> ValueCollectionWrapperBuilder<V> builder(PersistenceContext context,
-            Collection<V> target) {
-        return new ValueCollectionWrapperBuilder<V>(context, target);
+    public static ValueCollectionWrapperBuilder builder(PersistenceContext context,
+            Collection<Object> target) {
+        return new ValueCollectionWrapperBuilder(context, target);
     }
 
-    public ValueCollectionWrapper<V> build() {
-        ValueCollectionWrapper<V> valueCollectionWrapper = new ValueCollectionWrapper<V>(this.target);
+    public ValueCollectionWrapper build() {
+        ValueCollectionWrapper valueCollectionWrapper = new ValueCollectionWrapper(this.target);
         super.build(valueCollectionWrapper);
         return valueCollectionWrapper;
     }

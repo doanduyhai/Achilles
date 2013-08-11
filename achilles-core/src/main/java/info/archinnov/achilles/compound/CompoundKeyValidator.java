@@ -11,7 +11,7 @@ public abstract class CompoundKeyValidator
 {
     protected ComponentComparator comparator = new ComponentComparator();
 
-    public void validatePartitionKey(PropertyMeta<?, ?> pm, Object... partitionKeys)
+    public void validatePartitionKey(PropertyMeta pm, Object... partitionKeys)
     {
         String className = pm.getEntityClassName();
         Validator.validateNotNull(partitionKeys,
@@ -32,7 +32,7 @@ public abstract class CompoundKeyValidator
         }
     }
 
-    public void validateClusteringKeys(PropertyMeta<?, ?> pm, Object... clusteringKeys)
+    public void validateClusteringKeys(PropertyMeta pm, Object... clusteringKeys)
     {
         String className = pm.getEntityClassName();
         Validator.validateNotNull(clusteringKeys,
@@ -75,7 +75,7 @@ public abstract class CompoundKeyValidator
         }
     }
 
-    public void validateComponentsForSliceQuery(PropertyMeta<?, ?> propertyMeta, List<Object> start,
+    public void validateComponentsForSliceQuery(PropertyMeta propertyMeta, List<Object> start,
             List<Object> end, OrderingMode ordering)
     {
         Validator.validateNotNull(start.get(0), "Partition key should not be null for start clustering key : %s"

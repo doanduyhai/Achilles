@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements Iterator<Entry<K, V>> {
+public class EntryIteratorWrapper extends AbstractWrapper implements Iterator<Entry<Object, Object>> {
     private static final Logger log = LoggerFactory.getLogger(EntryIteratorWrapper.class);
 
-    private Iterator<Entry<K, V>> target;
+    private Iterator<Entry<Object, Object>> target;
 
-    public EntryIteratorWrapper(Iterator<Entry<K, V>> target) {
+    public EntryIteratorWrapper(Iterator<Entry<Object, Object>> target) {
         this.target = target;
     }
 
@@ -27,21 +27,17 @@ public class EntryIteratorWrapper<K, V> extends AbstractWrapper<K, V> implements
     }
 
     @Override
-    public Entry<K, V> next() {
-        Entry<K, V> result = null;
-        Entry<K, V> entry = this.target.next();
+    public Entry<Object, Object> next() {
+        Entry<Object, Object> result = null;
+        Entry<Object, Object> entry = this.target.next();
         if (entry != null) {
             log.trace("Build wrapper for next entry of property {} of entity class {}",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
             result = MapEntryWrapperBuilder.builder(context, entry) //
                     .dirtyMap(dirtyMap)
-                    //
                     .setter(setter)
-                    //
                     .propertyMeta(propertyMeta)
-                    //
                     .proxifier(proxifier)
-                    //
                     .build();
         }
         return result;

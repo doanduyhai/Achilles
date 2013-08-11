@@ -27,13 +27,13 @@ public class ThriftCompositeFactory
     private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
     private CompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
-    public <K, V, T> Composite createCompositeForClustered(PropertyMeta<K, V> propertyMeta, T key)
+    public <K, V, T> Composite createCompositeForClustered(PropertyMeta propertyMeta, T key)
     {
         log.trace("Creating base composite for propertyMeta {}", propertyMeta.getPropertyName());
         return compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(key, propertyMeta);
     }
 
-    public Composite[] createForClusteredQuery(PropertyMeta<?, ?> idMeta,
+    public Composite[] createForClusteredQuery(PropertyMeta idMeta,
             List<Object> clusteringFrom, List<Object> clusteringTo, BoundingMode bounding,
             OrderingMode ordering)
     {
@@ -57,7 +57,7 @@ public class ThriftCompositeFactory
 
     }
 
-    public Composite createKeyForCounter(String fqcn, Object key, PropertyMeta<?, ?> idMeta)
+    public Composite createKeyForCounter(String fqcn, Object key, PropertyMeta idMeta)
     {
         log.trace("Creating composite counter row key for entity class {} and primary key {}",
                 fqcn, key);
@@ -68,7 +68,7 @@ public class ThriftCompositeFactory
         return comp;
     }
 
-    public <K, V> Composite createBaseForGet(PropertyMeta<K, V> propertyMeta)
+    public <K, V> Composite createBaseForGet(PropertyMeta propertyMeta)
     {
         log
                 .trace("Creating base composite for propertyMeta {} get",
@@ -81,12 +81,12 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public Composite createBaseForClusteredGet(Object compoundKey, PropertyMeta<?, ?> idMeta)
+    public Composite createBaseForClusteredGet(Object compoundKey, PropertyMeta idMeta)
     {
         return compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(compoundKey, idMeta);
     }
 
-    public <K, V> Composite createBaseForCounterGet(PropertyMeta<K, V> propertyMeta)
+    public <K, V> Composite createBaseForCounterGet(PropertyMeta propertyMeta)
     {
         log
                 .trace("Creating base composite for propertyMeta {} get",
@@ -97,7 +97,7 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public <K, V> Composite createBaseForQuery(PropertyMeta<K, V> propertyMeta,
+    public <K, V> Composite createBaseForQuery(PropertyMeta propertyMeta,
             ComponentEquality equality)
     {
         log.trace("Creating base composite for propertyMeta {} query and equality {}",
@@ -109,7 +109,7 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public <K, V> Composite createForBatchInsertSingleValue(PropertyMeta<K, V> propertyMeta)
+    public <K, V> Composite createForBatchInsertSingleValue(PropertyMeta propertyMeta)
     {
         log.trace("Creating base composite for propertyMeta {} for single value batch insert",
                 propertyMeta.getPropertyName());
@@ -125,7 +125,7 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public <K, V> Composite createForBatchInsertSingleCounter(PropertyMeta<K, V> propertyMeta)
+    public <K, V> Composite createForBatchInsertSingleCounter(PropertyMeta propertyMeta)
     {
         log
                 .trace("Creating base composite for propertyMeta {} for single counter value batch insert",
@@ -138,7 +138,7 @@ public class ThriftCompositeFactory
         return composite;
     }
 
-    public <K, V> Composite createForBatchInsertMultiValue(PropertyMeta<K, V> propertyMeta,
+    public <K, V> Composite createForBatchInsertMultiValue(PropertyMeta propertyMeta,
             int hashOrPosition)
     {
         log

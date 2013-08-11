@@ -68,14 +68,14 @@ public class ThriftLoaderImpl
         return entity;
     }
 
-    public <V> V loadSimpleProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, V> propertyMeta)
+    public Object loadSimpleProperty(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
         if (context.isClusteredEntity())
         {
             Object embeddedId = context.getPrimaryKey();
             Object partitionKey = context.getPartitionKey();
-            PropertyMeta<?, ?> idMeta = context.getIdMeta();
+            PropertyMeta idMeta = context.getIdMeta();
             Composite composite = compositeFactory.createBaseForClusteredGet(embeddedId, idMeta);
             if (log.isTraceEnabled())
             {
@@ -106,8 +106,8 @@ public class ThriftLoaderImpl
         }
     }
 
-    public <V> List<V> loadListProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, V> propertyMeta)
+    public List<Object> loadListProperty(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
         log.trace("Loading list property {} of class {} from column family {} with primary key {}",
                 propertyMeta
@@ -116,10 +116,10 @@ public class ThriftLoaderImpl
                         .getTableName(),
                 context.getPrimaryKey());
         List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
-        List<V> list = null;
+        List<Object> list = null;
         if (columns.size() > 0)
         {
-            list = new ArrayList<V>();
+            list = new ArrayList<Object>();
             for (Pair<Composite, String> pair : columns)
             {
                 list.add(propertyMeta.getValueFromString(pair.right));
@@ -128,8 +128,8 @@ public class ThriftLoaderImpl
         return list;
     }
 
-    public <V> Set<V> loadSetProperty(ThriftPersistenceContext context,
-            PropertyMeta<?, V> propertyMeta)
+    public Set<Object> loadSetProperty(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
         log.trace("Loading set property {} of class {} from column family {} with primary key {}",
                 propertyMeta
@@ -138,10 +138,10 @@ public class ThriftLoaderImpl
                         .getTableName(),
                 context.getPrimaryKey());
         List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
-        Set<V> set = null;
+        Set<Object> set = null;
         if (columns.size() > 0)
         {
-            set = new HashSet<V>();
+            set = new HashSet<Object>();
             for (Pair<Composite, String> pair : columns)
             {
                 set.add(propertyMeta.getValueFromString(pair.right));
@@ -150,8 +150,8 @@ public class ThriftLoaderImpl
         return set;
     }
 
-    public <K, V> Map<K, V> loadMapProperty(ThriftPersistenceContext context,
-            PropertyMeta<K, V> propertyMeta)
+    public Map<Object, Object> loadMapProperty(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
         log.trace("Loading map property {} of class {} from column family {} with primary key {}",
                 propertyMeta
@@ -160,14 +160,14 @@ public class ThriftLoaderImpl
                         .getTableName(),
                 context.getPrimaryKey());
         List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
-        Class<K> keyClass = propertyMeta.getKeyClass();
-        Map<K, V> map = null;
+        Class<?> keyClass = propertyMeta.getKeyClass();
+        Map<Object, Object> map = null;
         if (columns.size() > 0)
         {
-            map = new HashMap<K, V>();
+            map = new HashMap<Object, Object>();
             for (Pair<Composite, String> pair : columns)
             {
-                KeyValue<K, V> holder = propertyMeta.getKeyValueFromString(pair.right);
+                KeyValue<Object, Object> holder = propertyMeta.getKeyValueFromString(pair.right);
 
                 map.put(keyClass.cast(holder.getKey()), holder.getValue());
             }
@@ -175,8 +175,8 @@ public class ThriftLoaderImpl
         return map;
     }
 
-    private <V> List<Pair<Composite, String>> fetchColumns(ThriftPersistenceContext context,
-            PropertyMeta<?, V> propertyMeta)
+    private List<Pair<Composite, String>> fetchColumns(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
 
         Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
@@ -192,11 +192,11 @@ public class ThriftLoaderImpl
         return columns;
     }
 
-    public <V> V loadJoinSimple(ThriftPersistenceContext context, PropertyMeta<?, V> propertyMeta,
+    public Object loadJoinSimple(ThriftPersistenceContext context, PropertyMeta propertyMeta,
             ThriftEntityLoader loader)
     {
         EntityMeta joinMeta = propertyMeta.joinMeta();
-        PropertyMeta<?, ?> joinIdMeta = propertyMeta.joinIdMeta();
+        PropertyMeta joinIdMeta = propertyMeta.joinIdMeta();
 
         Object joinId;
         if (context.isClusteredEntity())
@@ -214,7 +214,7 @@ public class ThriftLoaderImpl
             ThriftPersistenceContext joinContext = context.createContextForJoin(
                     propertyMeta.getValueClass(),
                     joinMeta, joinId);
-            return loader.<V> load(joinContext, propertyMeta.getValueClass());
+            return loader.load(joinContext, propertyMeta.getValueClass());
         }
         else
         {
@@ -222,8 +222,8 @@ public class ThriftLoaderImpl
         }
     }
 
-    private <V> String retrieveJoinIdForEntity(ThriftPersistenceContext context,
-            PropertyMeta<?, V> propertyMeta)
+    private String retrieveJoinIdForEntity(ThriftPersistenceContext context,
+            PropertyMeta propertyMeta)
     {
         Composite composite = compositeFactory.createBaseForGet(propertyMeta);
         if (log.isTraceEnabled())
@@ -239,10 +239,10 @@ public class ThriftLoaderImpl
     }
 
     private Object retrieveJoinIdForClusteredEntity(ThriftPersistenceContext context,
-            PropertyMeta<?, ?> propertyMeta)
+            PropertyMeta propertyMeta)
     {
         Object embeddedId = context.getPrimaryKey();
-        PropertyMeta<?, ?> idMeta = context.getEntityMeta().getIdMeta();
+        PropertyMeta idMeta = context.getEntityMeta().getIdMeta();
         Object partitionKey = invoker.getPartitionKey(embeddedId, idMeta);
         Composite composite = compositeFactory.createBaseForClusteredGet(embeddedId, idMeta);
         if (log.isTraceEnabled())
@@ -261,7 +261,7 @@ public class ThriftLoaderImpl
             EntityMeta entityMeta,
             Object primaryKey)
     {
-        PropertyMeta<?, ?> idMeta = entityMeta.getIdMeta();
+        PropertyMeta idMeta = entityMeta.getIdMeta();
         boolean isCounter = entityMeta.isValueless() ? false : entityMeta.getFirstMeta().isCounter();
         boolean isJoin = entityMeta.isValueless() ? false : entityMeta.getFirstMeta().isJoin();
         Composite composite = compositeFactory.createBaseForClusteredGet(primaryKey, idMeta);

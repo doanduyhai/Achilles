@@ -34,7 +34,7 @@ public class ThriftCompoundKeyValidatorTest {
     private ThriftCompoundKeyValidator validator;
 
     @Mock
-    private PropertyMeta<?, ?> pm;
+    private PropertyMeta pm;
 
     @Before
     public void setUp()

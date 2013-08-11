@@ -8,14 +8,14 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class SetWrapper<V> extends CollectionWrapper<V> implements Set<V> {
+public class SetWrapper extends CollectionWrapper implements Set<Object> {
 
-    public SetWrapper(Set<V> target) {
+    public SetWrapper(Set<Object> target) {
         super(target);
     }
 
     @Override
-    public Set<V> getTarget() {
-        return ((Set<V>) super.target);
+    public Set<Object> getTarget() {
+        return ((Set<Object>) super.target);
     }
 }

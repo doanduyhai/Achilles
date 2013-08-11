@@ -54,7 +54,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     public SliceFromEmbeddedIdBuilder fromEmbeddedId(Object fromEmbeddedId)
     {
         Class<?> embeddedIdClass = meta.getIdClass();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
         Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
                 embeddedIdClass.getCanonicalName());
         List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
@@ -78,7 +78,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
     public SliceToEmbeddedIdBuilder toEmbeddedId(Object toEmbeddedId)
     {
         Class<?> embeddedIdClass = meta.getIdClass();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
         Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
                 embeddedIdClass.getCanonicalName());
 
@@ -349,7 +349,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         public DefaultQueryBuilder toEmbeddedId(Object toEmbeddedId)
         {
             Class<?> embeddedIdClass = meta.getIdClass();
-            PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+            PropertyMeta idMeta = meta.getIdMeta();
             Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
                     embeddedIdClass.getCanonicalName());
 
@@ -379,7 +379,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
         public DefaultQueryBuilder fromEmbeddedId(Object fromEmbeddedId)
         {
             Class<?> embeddedIdClass = meta.getIdClass();
-            PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+            PropertyMeta idMeta = meta.getIdMeta();
             Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
                     embeddedIdClass.getCanonicalName());
 

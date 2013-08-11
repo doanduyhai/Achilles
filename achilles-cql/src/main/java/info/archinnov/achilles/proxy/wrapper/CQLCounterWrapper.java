@@ -14,10 +14,10 @@ import info.archinnov.achilles.type.Counter;
 public class CQLCounterWrapper implements Counter {
 
     private CQLPersistenceContext context;
-    private PropertyMeta<?, ?> counterMeta;
+    private PropertyMeta counterMeta;
     private boolean clusteredCounter;
 
-    public CQLCounterWrapper(CQLPersistenceContext context, PropertyMeta<?, ?> counterMeta) {
+    public CQLCounterWrapper(CQLPersistenceContext context, PropertyMeta counterMeta) {
         this.context = context;
         this.counterMeta = counterMeta;
         this.clusteredCounter = context.getEntityMeta().isClusteredCounter();

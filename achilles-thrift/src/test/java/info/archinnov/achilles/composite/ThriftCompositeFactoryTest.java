@@ -51,7 +51,7 @@ public class ThriftCompositeFactoryTest
     private CompoundKeyValidator compoundKeyValidator;
 
     @Mock
-    private PropertyMeta<Void, CompoundKey> embeddedIdMeta;
+    private PropertyMeta embeddedIdMeta;
 
     @Before
     public void setUp()
@@ -80,7 +80,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_key_for_counter() throws Exception
     {
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
 
         Composite comp = factory.createKeyForCounter("fqcn", 11L, idMeta);
 
@@ -92,7 +92,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_base_for_get() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -113,7 +113,7 @@ public class ThriftCompositeFactoryTest
     public void should_create_base_for_clustered_get() throws Exception
     {
         Object compoundKey = new CompoundKey();
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(SIMPLE)
                 .build();
@@ -129,7 +129,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_base_for_counter_get() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -145,7 +145,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_base_for_query() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -163,7 +163,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_for_batch_insert_single() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -180,7 +180,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_for_batch_insert_single_counter() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -195,7 +195,7 @@ public class ThriftCompositeFactoryTest
     @Test
     public void should_create_for_batch_insert_multiple() throws Exception
     {
-        PropertyMeta<Void, Long> meta = PropertyMetaTestBuilder
+        PropertyMeta meta = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")
@@ -213,7 +213,7 @@ public class ThriftCompositeFactoryTest
     public void should_create_for_clustered_query() throws Exception
     {
 
-        PropertyMeta<?, ?> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(Long.class)
                 .type(SIMPLE)
                 .field("name")

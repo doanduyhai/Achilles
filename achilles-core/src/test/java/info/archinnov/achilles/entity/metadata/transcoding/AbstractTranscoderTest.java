@@ -54,7 +54,7 @@ public class AbstractTranscoderTest {
     private ReflectionInvoker invoker;
 
     @Mock
-    private PropertyMeta<?, ?> pm;
+    private PropertyMeta pm;
 
     @Before
     public void setUp()
@@ -66,7 +66,7 @@ public class AbstractTranscoderTest {
     @Test
     public void should_encode_supported_type() throws Exception
     {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();
@@ -79,7 +79,7 @@ public class AbstractTranscoderTest {
     @Test
     public void should_encode_enum_type() throws Exception
     {
-        PropertyMeta<Void, PropertyType> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(PropertyType.class)
                 .type(SIMPLE)
                 .build();
@@ -94,7 +94,7 @@ public class AbstractTranscoderTest {
     {
         UserBean bean = new UserBean();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -114,7 +114,7 @@ public class AbstractTranscoderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(pm);
 
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SIMPLE)
                 .joinMeta(meta)
@@ -131,7 +131,7 @@ public class AbstractTranscoderTest {
     @Test
     public void should_decode_supported_type() throws Exception
     {
-        PropertyMeta<Void, String> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .type(SIMPLE)
                 .build();
@@ -144,7 +144,7 @@ public class AbstractTranscoderTest {
     @Test
     public void should_decode_enum_type() throws Exception
     {
-        PropertyMeta<Void, PropertyType> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(PropertyType.class)
                 .type(SIMPLE)
                 .build();
@@ -159,7 +159,7 @@ public class AbstractTranscoderTest {
     {
         UserBean bean = new UserBean();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -178,7 +178,7 @@ public class AbstractTranscoderTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(pm);
 
-        PropertyMeta<Void, UserBean> propertyMeta = PropertyMetaTestBuilder
+        PropertyMeta propertyMeta = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(JOIN_SIMPLE)
                 .joinMeta(meta)
@@ -196,7 +196,7 @@ public class AbstractTranscoderTest {
     {
         UserBean bean = new UserBean();
 
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -214,7 +214,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_encode_object() throws Exception
     {
         UserBean bean = new UserBean();
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -230,7 +230,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_encode_list() throws Exception
     {
         List<UserBean> list = Arrays.asList(new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -246,7 +246,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_encode_set() throws Exception
     {
         Set<UserBean> set = Sets.newHashSet(new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -262,7 +262,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_encode_map() throws Exception
     {
         Map<Integer, UserBean> map = ImmutableMap.of(1, new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -278,7 +278,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_encode_to_components() throws Exception
     {
         CompoundKey compound = new CompoundKey();
-        PropertyMeta<Void, CompoundKey> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(SIMPLE)
                 .build();
@@ -294,7 +294,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_decode_object() throws Exception
     {
         UserBean bean = new UserBean();
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -310,7 +310,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_decode_list() throws Exception
     {
         List<UserBean> list = Arrays.asList(new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -326,7 +326,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_decode_set() throws Exception
     {
         Set<UserBean> set = Sets.newHashSet(new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -342,7 +342,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_decode_map() throws Exception
     {
         Map<Integer, UserBean> map = ImmutableMap.of(1, new UserBean());
-        PropertyMeta<Void, UserBean> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(UserBean.class)
                 .type(SIMPLE)
                 .build();
@@ -358,7 +358,7 @@ public class AbstractTranscoderTest {
     public void should_exception_by_default_on_decode_from_components() throws Exception
     {
         List<Object> components = new ArrayList<Object>();
-        PropertyMeta<Void, CompoundKey> pm = PropertyMetaTestBuilder
+        PropertyMeta pm = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
                 .type(SIMPLE)
                 .build();

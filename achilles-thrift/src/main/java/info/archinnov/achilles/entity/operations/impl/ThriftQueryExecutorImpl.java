@@ -33,7 +33,7 @@ public class ThriftQueryExecutorImpl
     {
         EntityMeta meta = query.getMeta();
         final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
 
         final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta,
                 query.getClusteringsFrom(),
@@ -59,7 +59,7 @@ public class ThriftQueryExecutorImpl
     {
         EntityMeta meta = query.getMeta();
         final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
 
         final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta,
                 query.getClusteringsFrom(),
@@ -84,8 +84,8 @@ public class ThriftQueryExecutorImpl
             ThriftPersistenceContext context)
     {
         EntityMeta meta = query.getMeta();
-        final PropertyMeta<?, ?> idMeta = meta.getIdMeta();
-        final PropertyMeta<Object, Object> pm = (PropertyMeta<Object, Object>) meta.getFirstMeta();
+        final PropertyMeta idMeta = meta.getIdMeta();
+        final PropertyMeta pm = meta.getFirstMeta();
 
         final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
 
@@ -139,7 +139,7 @@ public class ThriftQueryExecutorImpl
     {
         EntityMeta meta = query.getMeta();
         final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
 
         final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta,
                 query.getClusteringsFrom(),
@@ -165,7 +165,7 @@ public class ThriftQueryExecutorImpl
     {
         EntityMeta meta = query.getMeta();
         final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-        PropertyMeta<?, ?> idMeta = meta.getIdMeta();
+        PropertyMeta idMeta = meta.getIdMeta();
 
         final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta,
                 query.getClusteringsFrom(),

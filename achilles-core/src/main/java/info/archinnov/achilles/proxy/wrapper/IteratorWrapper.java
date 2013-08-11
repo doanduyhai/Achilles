@@ -11,12 +11,12 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iterator<V> {
+public class IteratorWrapper extends AbstractWrapper implements Iterator<Object> {
     private static final Logger log = LoggerFactory.getLogger(IteratorWrapper.class);
 
-    protected Iterator<V> target;
+    protected Iterator<Object> target;
 
-    public IteratorWrapper(Iterator<V> target) {
+    public IteratorWrapper(Iterator<Object> target) {
         this.target = target;
     }
 
@@ -26,8 +26,8 @@ public class IteratorWrapper<V> extends AbstractWrapper<Void, V> implements Iter
     }
 
     @Override
-    public V next() {
-        V value = this.target.next();
+    public Object next() {
+        Object value = this.target.next();
         if (isJoin()) {
             log.trace("Build proxy for join entity for property {} of entity class {} upon next() call",
                     propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());

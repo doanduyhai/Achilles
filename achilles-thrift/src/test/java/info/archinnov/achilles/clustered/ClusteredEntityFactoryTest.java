@@ -56,7 +56,7 @@ public class ClusteredEntityFactoryTest
 
     private EntityMeta meta;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     private BeanWithClusteredId entity = new BeanWithClusteredId();
 
@@ -87,7 +87,7 @@ public class ClusteredEntityFactoryTest
                 .type(PropertyType.SIMPLE)
                 .build();
         when(context.getFirstMeta()).thenReturn(pm);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
         List<BeanWithClusteredId> actual = factory.buildClusteredEntities(
                 BeanWithClusteredId.class, context, new ArrayList<HColumn<Composite, Object>>());
@@ -105,7 +105,7 @@ public class ClusteredEntityFactoryTest
                 .type(PropertyType.SIMPLE)
                 .build();
         when(context.getFirstMeta()).thenReturn(pm);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
         when(context.getFirstMeta()).thenReturn(pm);
         when(transformer.clusteredEntityTransformer(BeanWithClusteredId.class, context))
@@ -135,7 +135,7 @@ public class ClusteredEntityFactoryTest
                 .type(PropertyType.COUNTER)
                 .build();
         when(context.getFirstMeta()).thenReturn(pm);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
         when(transformer.counterClusteredEntityTransformer(BeanWithClusteredId.class, context))
                 .thenReturn(
@@ -168,7 +168,7 @@ public class ClusteredEntityFactoryTest
                 .build();
 
         when(context.getFirstMeta()).thenReturn(pm);
-        meta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("id", idMeta, "pm", pm));
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
         when(transformer.buildRawValueTransformer()).thenReturn(
                 (Function) new Function<HColumn<Composite, Object>, Object>()

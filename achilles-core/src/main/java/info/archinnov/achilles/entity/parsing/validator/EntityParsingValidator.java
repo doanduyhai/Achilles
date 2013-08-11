@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class EntityParsingValidator {
     private static final Logger log = LoggerFactory.getLogger(EntityParsingValidator.class);
 
-    public void validateHasIdMeta(Class<?> entityClass, PropertyMeta<?, ?> idMeta) {
+    public void validateHasIdMeta(Class<?> entityClass, PropertyMeta idMeta) {
         log.debug("Validate that entity class {} has an id meta", entityClass.getCanonicalName());
 
         Validator
@@ -35,11 +35,11 @@ public class EntityParsingValidator {
 
     }
 
-    public void validatePropertyMetas(EntityParsingContext context, PropertyMeta<?, ?> idMeta) {
+    public void validatePropertyMetas(EntityParsingContext context, PropertyMeta idMeta) {
         log.debug("Validate that there is at least one property meta for the entity class {}", context
                 .getCurrentEntityClass().getCanonicalName());
 
-        ArrayList<PropertyMeta<?, ?>> metas = new ArrayList<PropertyMeta<?, ?>>(context.getPropertyMetas().values());
+        ArrayList<PropertyMeta> metas = new ArrayList<PropertyMeta>(context.getPropertyMetas().values());
         metas.remove(idMeta);
         Validator
                 .validateBeanMappingFalse(
@@ -51,7 +51,7 @@ public class EntityParsingValidator {
     }
 
     public void validateClusteredEntities(EntityParsingContext context) {
-        Map<String, PropertyMeta<?, ?>> propertyMetas = context.getPropertyMetas();
+        Map<String, PropertyMeta> propertyMetas = context.getPropertyMetas();
 
         if (context.isClusteredEntity() && context.isThriftImpl()) {
             log.debug("Validate that there is at least one property meta for the clustered entity {}", context
@@ -64,7 +64,7 @@ public class EntityParsingValidator {
                                     + context.getCurrentEntityClass().getCanonicalName()
                                     + "' should not have more than two properties annotated with @EmbeddedId/@Column/@JoinColumn");
 
-            Iterator<Entry<String, PropertyMeta<?, ?>>> metaIter = propertyMetas.entrySet().iterator();
+            Iterator<Entry<String, PropertyMeta>> metaIter = propertyMetas.entrySet().iterator();
             PropertyType type1 = metaIter.next().getValue().type();
 
             log.debug("Validate that the clustered entity {} has an @EmbeddedId", context.getCurrentEntityClass()
@@ -89,7 +89,7 @@ public class EntityParsingValidator {
         }
     }
 
-    public void validateJoinEntityNotClusteredEntity(PropertyMeta<?, ?> propertyMeta, EntityMeta joinEntityMeta) {
+    public void validateJoinEntityNotClusteredEntity(PropertyMeta propertyMeta, EntityMeta joinEntityMeta) {
         log.debug("Validate that the join entity for the property {} of the entity class {} is not clustered",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 

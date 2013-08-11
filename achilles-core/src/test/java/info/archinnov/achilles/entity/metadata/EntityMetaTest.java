@@ -21,11 +21,11 @@ public class EntityMetaTest
     @Test
     public void should_to_string() throws Exception
     {
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
         propertyMetas.put("name", null);
         propertyMetas.put("age", null);
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder //
+        PropertyMeta idMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.SIMPLE)
@@ -54,10 +54,10 @@ public class EntityMetaTest
     @Test
     public void should_get_all_metas() throws Exception {
 
-        PropertyMeta<?, ?> pm1 = new PropertyMeta<Void, String>();
-        PropertyMeta<?, ?> pm2 = new PropertyMeta<Void, String>();
+        PropertyMeta pm1 = new PropertyMeta();
+        PropertyMeta pm2 = new PropertyMeta();
 
-        Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
         propertyMetas.put("name", pm1);
         propertyMetas.put("age", pm2);
 
@@ -71,14 +71,14 @@ public class EntityMetaTest
     public void should_return_false_for_is_clustered_counter_if_not_clustered() throws Exception
     {
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+        PropertyMeta counterMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(COUNTER)
                 .build();
 
         entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("count", counterMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("count", counterMeta));
 
         assertThat(entityMeta.isClusteredCounter()).isFalse();
     }
@@ -88,20 +88,20 @@ public class EntityMetaTest
     {
         EntityMeta entityMeta = new EntityMeta();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+        PropertyMeta nameMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
                 .build();
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder //
+        PropertyMeta counterMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(COUNTER)
                 .build();
 
         entityMeta.setClusteredEntity(true);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("name", nameMeta, "count",
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("name", nameMeta, "count",
                 counterMeta));
 
         assertThat(entityMeta.isClusteredCounter()).isFalse();
@@ -111,14 +111,14 @@ public class EntityMetaTest
     public void should_return_false_for_is_clustered_counter_if_value_less() throws Exception
     {
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
         entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
 
         assertThat(entityMeta.isClusteredCounter()).isFalse();
     }
@@ -127,19 +127,19 @@ public class EntityMetaTest
     public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception
     {
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
-        PropertyMeta<Void, String> nameMeta = PropertyMetaTestBuilder //
+        PropertyMeta nameMeta = PropertyMetaTestBuilder //
                 .completeBean(Void.class, String.class)
                 .field("name")
                 .type(SIMPLE)
                 .build();
         entityMeta.setClusteredEntity(true);
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta, "nameMeta",
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta, "nameMeta",
                 nameMeta));
 
         assertThat(entityMeta.isClusteredCounter()).isFalse();
@@ -150,13 +150,13 @@ public class EntityMetaTest
     {
         EntityMeta entityMeta = new EntityMeta();
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
 
         assertThat(entityMeta.getFirstMeta()).isNull();
     }
@@ -166,13 +166,13 @@ public class EntityMetaTest
     {
         EntityMeta entityMeta = new EntityMeta();
 
-        PropertyMeta<Void, Long> idMeta = PropertyMetaTestBuilder
+        PropertyMeta idMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("id")
                 .type(PropertyType.ID)
                 .build();
 
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta<?, ?>> of("idMeta", idMeta));
+        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
 
         assertThat(entityMeta.isValueless()).isTrue();
     }

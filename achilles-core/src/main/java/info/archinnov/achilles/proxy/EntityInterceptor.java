@@ -37,9 +37,9 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
     protected Object primaryKey;
     protected Method idGetter;
     protected Method idSetter;
-    protected Map<Method, PropertyMeta<?, ?>> getterMetas;
-    protected Map<Method, PropertyMeta<?, ?>> setterMetas;
-    protected Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    protected Map<Method, PropertyMeta> getterMetas;
+    protected Map<Method, PropertyMeta> setterMetas;
+    protected Map<Method, PropertyMeta> dirtyMap;
     protected Set<Method> alreadyLoaded;
     protected CONTEXT context;
 
@@ -83,7 +83,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
             throws Throwable
     {
         Object result = null;
-        PropertyMeta<?, ?> propertyMeta = this.getterMetas.get(method);
+        PropertyMeta propertyMeta = this.getterMetas.get(method);
 
         // Load fields into target object
         if (!propertyMeta.isCounter() && !this.alreadyLoaded.contains(method))
@@ -128,12 +128,12 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                             propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
                     @SuppressWarnings("unchecked")
-                    List<V> list = (List<V>) rawValue;
+                    List<Object> list = (List<Object>) rawValue;
                     result = ListWrapperBuilder
                             .builder(context, list)
                             .dirtyMap(dirtyMap)
                             .setter(propertyMeta.getSetter())
-                            .propertyMeta(this.<Void, V> getPropertyMetaByProperty(method))
+                            .propertyMeta(this.getPropertyMetaByProperty(method))
                             .proxifier(proxifier)
                             .build();
                 }
@@ -147,12 +147,12 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                             propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
                     @SuppressWarnings("unchecked")
-                    Set<V> set = (Set<V>) rawValue;
+                    Set<Object> set = (Set<Object>) rawValue;
                     result = SetWrapperBuilder
                             .builder(context, set)
                             .dirtyMap(dirtyMap)
                             .setter(propertyMeta.getSetter())
-                            .propertyMeta(this.<Void, V> getPropertyMetaByProperty(method))
+                            .propertyMeta(this.getPropertyMetaByProperty(method))
                             .proxifier(proxifier)
                             .build();
                 }
@@ -166,12 +166,12 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
                             propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
                     @SuppressWarnings("unchecked")
-                    Map<K, V> map = (Map<K, V>) rawValue;
+                    Map<Object, Object> map = (Map<Object, Object>) rawValue;
                     result = MapWrapperBuilder //
                             .builder(context, map)
                             .dirtyMap(dirtyMap)
                             .setter(propertyMeta.getSetter())
-                            .propertyMeta(this.<K, V> getPropertyMetaByProperty(method))
+                            .propertyMeta(this.getPropertyMetaByProperty(method))
                             .proxifier(proxifier)
                             .build();
                 }
@@ -186,12 +186,12 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         return result;
     }
 
-    protected abstract Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta);
+    protected abstract Counter buildCounterWrapper(PropertyMeta propertyMeta);
 
     private Object interceptSetter(Method method, Object[] args, MethodProxy proxy)
             throws Throwable
     {
-        PropertyMeta<?, ?> propertyMeta = this.setterMetas.get(method);
+        PropertyMeta propertyMeta = this.setterMetas.get(method);
         Object result = null;
 
         switch (propertyMeta.type())
@@ -214,7 +214,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         return result;
     }
 
-    public Map<Method, PropertyMeta<?, ?>> getDirtyMap()
+    public Map<Method, PropertyMeta> getDirtyMap()
     {
         return dirtyMap;
     }
@@ -249,17 +249,17 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         this.idSetter = idSetter;
     }
 
-    void setGetterMetas(Map<Method, PropertyMeta<?, ?>> getterMetas)
+    void setGetterMetas(Map<Method, PropertyMeta> getterMetas)
     {
         this.getterMetas = getterMetas;
     }
 
-    void setSetterMetas(Map<Method, PropertyMeta<?, ?>> setterMetas)
+    void setSetterMetas(Map<Method, PropertyMeta> setterMetas)
     {
         this.setterMetas = setterMetas;
     }
 
-    void setDirtyMap(Map<Method, PropertyMeta<?, ?>> dirtyMap)
+    void setDirtyMap(Map<Method, PropertyMeta> dirtyMap)
     {
         this.dirtyMap = dirtyMap;
     }
@@ -279,10 +279,9 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T> i
         this.context = context;
     }
 
-    @SuppressWarnings("unchecked")
-    private <K, V> PropertyMeta<K, V> getPropertyMetaByProperty(Method method)
+    private PropertyMeta getPropertyMetaByProperty(Method method)
     {
-        return (PropertyMeta<K, V>) getterMetas.get(method);
+        return (PropertyMeta) getterMetas.get(method);
     }
 
     protected void setLoader(EntityLoader<CONTEXT> loader)

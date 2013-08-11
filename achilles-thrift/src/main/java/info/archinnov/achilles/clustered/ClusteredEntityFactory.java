@@ -62,7 +62,7 @@ public class ClusteredEntityFactory
             ThriftPersistenceContext context,
             List<HColumn<Composite, Object>> hColumns)
     {
-        PropertyMeta<Object, Object> pm = (PropertyMeta<Object, Object>) context.getFirstMeta();
+        PropertyMeta pm = context.getFirstMeta();
         EntityMeta joinMeta = pm.joinMeta();
 
         List<Object> joinIds = Lists.transform(hColumns, transformer.buildRawValueTransformer());
@@ -86,12 +86,12 @@ public class ClusteredEntityFactory
     }
 
     private Map<Object, Object> loadJoinEntities(ThriftPersistenceContext context,
-            PropertyMeta<Object, Object> pm,
+            PropertyMeta pm,
             EntityMeta joinMeta, List<Object> joinIds)
     {
         ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta.getTableName());
 
-        Map<Object, Object> joinEntities = joinHelper.loadJoinEntities(pm.getValueClass(), joinIds,
+        Map<Object, Object> joinEntities = joinHelper.loadJoinEntities((Class<Object>) pm.getValueClass(), joinIds,
                 joinMeta, joinEntityDao);
 
         return joinEntities;

@@ -59,7 +59,7 @@ public class EntityParserTest {
     @InjectMocks
     private EntityParser parser;
 
-    private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta<?, ?>, Class<?>>();
+    private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 
     @Mock
     private AchillesConsistencyLevelPolicy policy;
@@ -106,15 +106,15 @@ public class EntityParserTest {
         assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
         assertThat(meta.getPropertyMetas()).hasSize(7);
 
-        PropertyMeta<?, ?> id = meta.getPropertyMetas().get("id");
-        PropertyMeta<?, ?> name = meta.getPropertyMetas().get("name");
-        PropertyMeta<?, ?> age = meta.getPropertyMetas().get("age_in_year");
-        PropertyMeta<Void, String> friends = (PropertyMeta<Void, String>) meta.getPropertyMetas().get("friends");
-        PropertyMeta<Void, String> followers = (PropertyMeta<Void, String>) meta.getPropertyMetas().get("followers");
-        PropertyMeta<Integer, String> preferences = (PropertyMeta<Integer, String>) meta.getPropertyMetas().get(
+        PropertyMeta id = meta.getPropertyMetas().get("id");
+        PropertyMeta name = meta.getPropertyMetas().get("name");
+        PropertyMeta age = meta.getPropertyMetas().get("age_in_year");
+        PropertyMeta friends = (PropertyMeta) meta.getPropertyMetas().get("friends");
+        PropertyMeta followers = (PropertyMeta) meta.getPropertyMetas().get("followers");
+        PropertyMeta preferences = (PropertyMeta) meta.getPropertyMetas().get(
                 "preferences");
 
-        PropertyMeta<Void, UserBean> creator = (PropertyMeta<Void, UserBean>) meta.getPropertyMetas().get("creator");
+        PropertyMeta creator = (PropertyMeta) meta.getPropertyMetas().get("creator");
 
         assertThat(id).isNotNull();
         assertThat(name).isNotNull();
@@ -143,27 +143,27 @@ public class EntityParserTest {
         assertThat(age.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(friends.getPropertyName()).isEqualTo("friends");
-        assertThat(friends.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) friends.getValueClass()).isEqualTo(String.class);
         assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
         assertThat(friends.type().isLazy()).isTrue();
         assertThat(friends.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(friends.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(followers.getPropertyName()).isEqualTo("followers");
-        assertThat(followers.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) followers.getValueClass()).isEqualTo(String.class);
         assertThat(followers.type()).isEqualTo(PropertyType.SET);
         assertThat(followers.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(followers.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(preferences.getPropertyName()).isEqualTo("preferences");
-        assertThat(preferences.getValueClass()).isEqualTo(String.class);
+        assertThat((Class) preferences.getValueClass()).isEqualTo(String.class);
         assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
-        assertThat(preferences.getKeyClass()).isEqualTo(Integer.class);
+        assertThat((Class) preferences.getKeyClass()).isEqualTo(Integer.class);
         assertThat(preferences.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(preferences.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(creator.getPropertyName()).isEqualTo("creator");
-        assertThat(creator.getValueClass()).isEqualTo(UserBean.class);
+        assertThat((Class) creator.getValueClass()).isEqualTo(UserBean.class);
         assertThat(creator.type()).isEqualTo(JOIN_SIMPLE);
         assertThat(creator.getJoinProperties().getCascadeTypes()).containsExactly(CascadeType.ALL);
 
@@ -189,7 +189,7 @@ public class EntityParserTest {
         assertThat(meta).isNotNull();
 
         assertThat((Class<CompoundKey>) meta.getIdClass()).isEqualTo(CompoundKey.class);
-        PropertyMeta<Void, CompoundKey> idMeta = (PropertyMeta<Void, CompoundKey>) meta.getIdMeta();
+        PropertyMeta idMeta = (PropertyMeta) meta.getIdMeta();
 
         assertThat(idMeta.isEmbeddedId()).isTrue();
         assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
@@ -226,16 +226,16 @@ public class EntityParserTest {
 
         assertThat(meta).isNotNull();
         assertThat(entityContext.getHasSimpleCounter()).isTrue();
-        PropertyMeta<Void, Long> idMeta = (PropertyMeta<Void, Long>) meta.getIdMeta();
+        PropertyMeta idMeta = (PropertyMeta) meta.getIdMeta();
         assertThat(idMeta).isNotNull();
-        PropertyMeta<?, ?> counterMeta = meta.getPropertyMetas().get("counter");
+        PropertyMeta counterMeta = meta.getPropertyMetas().get("counter");
         assertThat(counterMeta).isNotNull();
 
         CounterProperties counterProperties = counterMeta.getCounterProperties();
 
         assertThat(counterProperties).isNotNull();
         assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithSimpleCounter.class.getCanonicalName());
-        assertThat((PropertyMeta<Void, Long>) counterProperties.getIdMeta()).isSameAs(idMeta);
+        assertThat((PropertyMeta) counterProperties.getIdMeta()).isSameAs(idMeta);
     }
 
     @Test
@@ -294,9 +294,9 @@ public class EntityParserTest {
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat((Class<CompoundKey>) meta.getIdMeta().getValueClass()).isEqualTo(CompoundKey.class);
 
-        Map<String, PropertyMeta<?, ?>> propertyMetas = meta.getPropertyMetas();
+        Map<String, PropertyMeta> propertyMetas = meta.getPropertyMetas();
         assertThat(propertyMetas).hasSize(2);
-        PropertyMeta<?, ?> friendMeta = propertyMetas.get("friend");
+        PropertyMeta friendMeta = propertyMetas.get("friend");
 
         assertThat(friendMeta.type()).isEqualTo(JOIN_SIMPLE);
 
@@ -342,7 +342,7 @@ public class EntityParserTest {
         joinEntityMeta.setClusteredEntity(false);
         joinEntityMeta.setIdClass(Long.class);
 
-        PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
+        PropertyMeta joinPropertyMeta = new PropertyMeta();
         joinPropertyMeta.setJoinProperties(new JoinProperties());
         joinPropertyMeta.setType(JOIN_MAP);
         joinPropertyMeta.setIdClass(Long.class);
@@ -362,7 +362,7 @@ public class EntityParserTest {
         EntityMeta joinEntityMeta = new EntityMeta();
         joinEntityMeta.setClusteredEntity(true);
         joinEntityMeta.setClassName(BeanWithJoinColumnAsEntity.class.getCanonicalName());
-        PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
+        PropertyMeta joinPropertyMeta = new PropertyMeta();
 
         joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsEntity.class);
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();
@@ -380,7 +380,7 @@ public class EntityParserTest {
     public void should_exception_when_no_entity_meta_found_for_join_property() throws Exception {
         initEntityParsingContext(null);
 
-        PropertyMeta<Integer, String> joinPropertyMeta = new PropertyMeta<Integer, String>();
+        PropertyMeta joinPropertyMeta = new PropertyMeta();
 
         joinPropertyMetaToBeFilled.put(joinPropertyMeta, BeanWithJoinColumnAsEntity.class);
         entityMetaMap = new HashMap<Class<?>, EntityMeta>();

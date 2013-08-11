@@ -3,10 +3,10 @@ package info.archinnov.achilles.test.builders;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 
 /**
  * EntityMetaTestBuilder
@@ -17,17 +17,17 @@ import java.util.Map;
 public class EntityMetaTestBuilder<ID>
 {
 
-    private PropertyMeta<Void, ID> idMeta;
+    private PropertyMeta idMeta;
     private String classname;
     private String columnFamilyName;
     private Long serialVersionUID;
-    private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-    private Map<Method, PropertyMeta<?, ?>> getterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
-    private Map<Method, PropertyMeta<?, ?>> setterMetas = new HashMap<Method, PropertyMeta<?, ?>>();
+    private Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+    private Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
+    private Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
     private boolean columnFamilyDirectMapping = false;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
-    public static <ID> EntityMetaTestBuilder<ID> builder(PropertyMeta<Void, ID> idMeta)
+    public static <ID> EntityMetaTestBuilder<ID> builder(PropertyMeta idMeta)
     {
         return new EntityMetaTestBuilder<ID>(idMeta);
     }
@@ -47,7 +47,7 @@ public class EntityMetaTestBuilder<ID>
         return meta;
     }
 
-    public EntityMetaTestBuilder(PropertyMeta<Void, ID> idMeta) {
+    public EntityMetaTestBuilder(PropertyMeta idMeta) {
         this.idMeta = idMeta;
     }
 
@@ -69,7 +69,7 @@ public class EntityMetaTestBuilder<ID>
         return this;
     }
 
-    public EntityMetaTestBuilder<ID> propertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
+    public EntityMetaTestBuilder<ID> propertyMetas(Map<String, PropertyMeta> propertyMetas)
     {
         this.propertyMetas = propertyMetas;
         return this;
@@ -88,14 +88,14 @@ public class EntityMetaTestBuilder<ID>
         return this;
     }
 
-    public <K, V> EntityMetaTestBuilder<ID> addPropertyMeta(PropertyMeta<K, V> propertyMeta)
+    public <K, V> EntityMetaTestBuilder<ID> addPropertyMeta(PropertyMeta propertyMeta)
     {
         this.propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
         return this;
     }
 
     public <T, K, V> EntityMetaTestBuilder<ID> addGetter(Class<T> targetClass, String getter,
-            PropertyMeta<K, V> propertyMeta) throws SecurityException, NoSuchMethodException
+            PropertyMeta propertyMeta) throws SecurityException, NoSuchMethodException
     {
         Method getterMethod = targetClass.getDeclaredMethod(getter);
         getterMetas.put(getterMethod, propertyMeta);
@@ -103,7 +103,7 @@ public class EntityMetaTestBuilder<ID>
     }
 
     public <T, S, K, V> EntityMetaTestBuilder<ID> addSetter(Class<T> targetClass, String setter,
-            Class<S> type, PropertyMeta<K, V> propertyMeta) throws SecurityException,
+            Class<S> type, PropertyMeta propertyMeta) throws SecurityException,
             NoSuchMethodException
     {
         Method setterMethod = targetClass.getDeclaredMethod(setter, type);

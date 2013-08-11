@@ -11,21 +11,21 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class EntrySetWrapperBuilder<K, V> extends AbstractWrapperBuilder<EntrySetWrapperBuilder<K, V>, K, V> {
-    private Set<Entry<K, V>> target;
+public class EntrySetWrapperBuilder extends AbstractWrapperBuilder<EntrySetWrapperBuilder> {
+    private Set<Entry<Object, Object>> target;
 
-    public static <K, V> EntrySetWrapperBuilder<K, V> builder(PersistenceContext context,
-            Set<Entry<K, V>> target) {
-        return new EntrySetWrapperBuilder<K, V>(context, target);
+    public static EntrySetWrapperBuilder builder(PersistenceContext context,
+            Set<Entry<Object, Object>> target) {
+        return new EntrySetWrapperBuilder(context, target);
     }
 
-    public EntrySetWrapperBuilder(PersistenceContext context, Set<Entry<K, V>> target) {
+    public EntrySetWrapperBuilder(PersistenceContext context, Set<Entry<Object, Object>> target) {
         super.context = context;
         this.target = target;
     }
 
-    public EntrySetWrapper<K, V> build() {
-        EntrySetWrapper<K, V> entrySetWrapper = new EntrySetWrapper<K, V>(this.target);
+    public EntrySetWrapper build() {
+        EntrySetWrapper entrySetWrapper = new EntrySetWrapper(this.target);
         super.build(entrySetWrapper);
         return entrySetWrapper;
     }

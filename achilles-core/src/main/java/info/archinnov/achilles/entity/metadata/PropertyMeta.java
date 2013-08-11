@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Sets;
 
 /**
- * PropertyMeta<K, V>
+ * PropertyMeta
  * 
  * @author DuyHai DOAN
  * 
  */
-public class PropertyMeta<K, V>
+public class PropertyMeta
 {
     private static final Logger log = LoggerFactory.getLogger(PropertyMeta.class);
 
@@ -34,8 +34,8 @@ public class PropertyMeta<K, V>
     private PropertyType type;
     private String propertyName;
     private String entityClassName;
-    private Class<K> keyClass;
-    private Class<V> valueClass;
+    private Class<?> keyClass;
+    private Class<?> valueClass;
     private Method getter;
     private Method setter;
     private CounterProperties counterProperties;
@@ -48,7 +48,7 @@ public class PropertyMeta<K, V>
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyMeta.class);
 
-    public V getValueFromString(Object stringValue)
+    public Object getValueFromString(Object stringValue)
     {
         log.trace("Getting value from string {} for property {} of entity class {}", stringValue,
                 propertyName, entityClassName);
@@ -80,13 +80,13 @@ public class PropertyMeta<K, V>
         }
     }
 
-    public KeyValue<K, V> getKeyValueFromString(String stringKeyValue)
+    public KeyValue<Object, Object> getKeyValueFromString(String stringKeyValue)
     {
         log.trace("Getting key/value from string {} for property {} of entity class {}",
                 stringKeyValue, propertyName, entityClassName);
         try
         {
-            return this.objectMapper.readValue(stringKeyValue, new TypeReference<KeyValue<K, V>>()
+            return this.objectMapper.readValue(stringKeyValue, new TypeReference<KeyValue<Object, Object>>()
             {
             });
         } catch (Exception e)
@@ -143,7 +143,7 @@ public class PropertyMeta<K, V>
         }
     }
 
-    public V castValue(Object object)
+    public Object castValue(Object object)
     {
         try
         {
@@ -250,12 +250,12 @@ public class PropertyMeta<K, V>
         return joinProperties != null ? joinProperties.getEntityMeta() : null;
     }
 
-    public PropertyMeta<?, ?> joinIdMeta()
+    public PropertyMeta joinIdMeta()
     {
         return joinMeta() != null ? joinMeta().getIdMeta() : null;
     }
 
-    public PropertyMeta<?, ?> counterIdMeta()
+    public PropertyMeta counterIdMeta()
     {
         return counterProperties != null ? counterProperties.getIdMeta() : null;
     }
@@ -397,22 +397,22 @@ public class PropertyMeta<K, V>
         this.propertyName = propertyName;
     }
 
-    public Class<K> getKeyClass()
+    public Class<?> getKeyClass()
     {
         return keyClass;
     }
 
-    public void setKeyClass(Class<K> keyClass)
+    public void setKeyClass(Class<?> keyClass)
     {
         this.keyClass = keyClass;
     }
 
-    public Class<V> getValueClass()
+    public Class<?> getValueClass()
     {
         return valueClass;
     }
 
-    public void setValueClass(Class<V> valueClass)
+    public void setValueClass(Class<?> valueClass)
     {
         this.valueClass = valueClass;
     }
@@ -457,7 +457,7 @@ public class PropertyMeta<K, V>
         this.idClass = idClass;
     }
 
-    public K getKey(Object object)
+    public Object getKey(Object object)
     {
         return keyClass.cast(object);
     }
@@ -563,7 +563,7 @@ public class PropertyMeta<K, V>
             return false;
         if (getClass() != obj.getClass())
             return false;
-        PropertyMeta<?, ?> other = (PropertyMeta<?, ?>) obj;
+        PropertyMeta other = (PropertyMeta) obj;
         if (entityClassName == null)
         {
             if (other.entityClassName != null)

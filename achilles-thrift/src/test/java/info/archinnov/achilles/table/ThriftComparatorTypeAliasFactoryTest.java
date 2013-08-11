@@ -35,19 +35,19 @@ public class ThriftComparatorTypeAliasFactoryTest {
     private ThriftCompoundKeyMapper mapper;
 
     @Mock
-    private PropertyMeta<TweetCompoundKey, String> compoundKeyWideMeta;
+    private PropertyMeta compoundKeyWideMeta;
 
     @Mock
-    private PropertyMeta<CompoundKeyWithEnum, String> compoundKeyWithEnumWideMeta;
+    private PropertyMeta compoundKeyWithEnumWideMeta;
 
     @Mock
     private EmbeddedIdProperties embeddedIdProperties;
 
     @Mock
-    private PropertyMeta<CorrectCompoundKey, String> embeddedIdMeta;
+    private PropertyMeta embeddedIdMeta;
 
     @Mock
-    private PropertyMeta<Integer, String> idMeta;
+    private PropertyMeta idMeta;
 
     @Mock
     private List<Method> componentGetters;
@@ -61,7 +61,7 @@ public class ThriftComparatorTypeAliasFactoryTest {
     @Test
     public void should_determine_composite_type_alias_for_clustered_entity_creation() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class).build();
 
         String actual = factory.determineCompatatorTypeAliasForClusteredEntity(idMeta, true);
@@ -72,7 +72,7 @@ public class ThriftComparatorTypeAliasFactoryTest {
     @Test
     public void should_determine_composite_type_alias_for_clustered_entity_validation() throws Exception {
 
-        PropertyMeta<?, ?> idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
                 .compClasses(Long.class, String.class, UUID.class).build();
 
         String actual = factory.determineCompatatorTypeAliasForClusteredEntity(idMeta, false);

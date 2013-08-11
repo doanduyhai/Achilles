@@ -19,7 +19,6 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.KeyValue;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +27,7 @@ import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 import net.sf.cglib.proxy.Factory;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
@@ -706,7 +706,7 @@ public class EmOperationsIT
 
         bean.getFriends();
 
-        PropertyMeta<Void, String> nameMeta = new PropertyMeta<Void, String>();
+        PropertyMeta nameMeta = new PropertyMeta();
         nameMeta.setType(PropertyType.SIMPLE);
 
         nameMeta.setPropertyName("name");
@@ -714,7 +714,7 @@ public class EmOperationsIT
         Composite nameComposite = thriftCompositeFactory.createForBatchInsertSingleValue(nameMeta);
         dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
-        PropertyMeta<Void, String> listLazyMeta = new PropertyMeta<Void, String>();
+        PropertyMeta listLazyMeta = new PropertyMeta();
         listLazyMeta.setType(LAZY_LIST);
         listLazyMeta.setPropertyName("friends");
 

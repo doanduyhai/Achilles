@@ -429,7 +429,7 @@ public abstract class ThriftAbstractDao
     }
 
     public <K, KEY, VALUE> ThriftJoinSliceIterator<K, KEY, VALUE> getJoinColumnsIterator(
-            ThriftGenericEntityDao joinEntityDao, PropertyMeta<KEY, VALUE> propertyMeta, K key,
+            ThriftGenericEntityDao joinEntityDao, PropertyMeta propertyMeta, K key,
             Composite start,
             Composite end, boolean reversed, int count)
     {

@@ -6,12 +6,12 @@ import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -22,14 +22,12 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class EntityParsingContext
 {
-    private Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled;
+    private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled;
     private ConfigurationContext configContext;
     private Boolean hasCounter = false;
 
-    private Map<String, PropertyMeta<?, ?>> propertyMetas = new HashMap<String, PropertyMeta<?, ?>>();
-    private List<PropertyMeta<?, ?>> counterMetas = new ArrayList<PropertyMeta<?, ?>>();
-    private Map<PropertyMeta<?, ?>, String> wideMaps = new HashMap<PropertyMeta<?, ?>, String>();
-    private Map<PropertyMeta<?, ?>, String> joinWideMaps = new HashMap<PropertyMeta<?, ?>, String>();
+    private Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+    private List<PropertyMeta> counterMetas = new ArrayList<PropertyMeta>();
     private Class<?> currentEntityClass;
     private ObjectMapper currentObjectMapper;
     private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
@@ -37,7 +35,7 @@ public class EntityParsingContext
     private String currentColumnFamilyName;
 
     public EntityParsingContext(//
-            Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
+            Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled, //
             ConfigurationContext configContext, //
             Class<?> currentEntityClass)
     {
@@ -47,7 +45,7 @@ public class EntityParsingContext
     }
 
     public EntityParsingContext( //
-            Map<PropertyMeta<?, ?>, Class<?>> joinPropertyMetaToBeFilled, //
+            Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled, //
             ConfigurationContext configContext)
     {
         this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
@@ -64,7 +62,7 @@ public class EntityParsingContext
         return configContext.getImpl() == Impl.THRIFT;
     }
 
-    public Map<PropertyMeta<?, ?>, Class<?>> getJoinPropertyMetaToBeFilled()
+    public Map<PropertyMeta, Class<?>> getJoinPropertyMetaToBeFilled()
     {
         return joinPropertyMetaToBeFilled;
     }
@@ -74,22 +72,12 @@ public class EntityParsingContext
         return currentEntityClass;
     }
 
-    public Map<String, PropertyMeta<?, ?>> getPropertyMetas()
+    public Map<String, PropertyMeta> getPropertyMetas()
     {
         return propertyMetas;
     }
 
-    public Map<PropertyMeta<?, ?>, String> getWideMaps()
-    {
-        return wideMaps;
-    }
-
-    public Map<PropertyMeta<?, ?>, String> getJoinWideMaps()
-    {
-        return joinWideMaps;
-    }
-
-    public void setPropertyMetas(Map<String, PropertyMeta<?, ?>> propertyMetas)
+    public void setPropertyMetas(Map<String, PropertyMeta> propertyMetas)
     {
         this.propertyMetas = propertyMetas;
     }
@@ -130,7 +118,7 @@ public class EntityParsingContext
         this.currentConsistencyLevels = currentConsistencyLevels;
     }
 
-    public List<PropertyMeta<?, ?>> getCounterMetas()
+    public List<PropertyMeta> getCounterMetas()
     {
         return counterMetas;
     }

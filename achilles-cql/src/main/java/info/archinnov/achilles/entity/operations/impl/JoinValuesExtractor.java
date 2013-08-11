@@ -15,8 +15,7 @@ import com.google.common.base.Function;
  * @author DuyHai DOAN
  * 
  */
-public class JoinValuesExtractor implements
-        Function<PropertyMeta<?, ?>, Pair<List<?>, PropertyMeta<?, ?>>>
+public class JoinValuesExtractor implements Function<PropertyMeta, Pair<List<?>, PropertyMeta>>
 {
     private ReflectionInvoker invoker = new ReflectionInvoker();
 
@@ -27,7 +26,7 @@ public class JoinValuesExtractor implements
     }
 
     @Override
-    public Pair<List<?>, PropertyMeta<?, ?>> apply(PropertyMeta<?, ?> pm)
+    public Pair<List<?>, PropertyMeta> apply(PropertyMeta pm)
     {
         List<Object> joinValues = new ArrayList<Object>();
         Object joinValue = invoker.getValueFromField(entity, pm.getGetter());
@@ -47,7 +46,7 @@ public class JoinValuesExtractor implements
                 joinValues.add(joinValue);
             }
         }
-        return Pair.<List<?>, PropertyMeta<?, ?>> create(joinValues, pm);
+        return Pair.<List<?>, PropertyMeta> create(joinValues, pm);
     }
 
 }

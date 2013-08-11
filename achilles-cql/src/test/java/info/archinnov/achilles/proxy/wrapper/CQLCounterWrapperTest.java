@@ -31,7 +31,7 @@ public class CQLCounterWrapperTest {
     private CQLPersistenceContext context;
 
     @Mock
-    private PropertyMeta<?, ?> counterMeta;
+    private PropertyMeta counterMeta;
 
     @Before
     public void setUp()

@@ -22,13 +22,13 @@ public class CQLEntityMapper extends EntityMapper
 
     public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity)
     {
-        for (PropertyMeta<?, ?> pm : entityMeta.getEagerMetas())
+        for (PropertyMeta pm : entityMeta.getEagerMetas())
         {
             setPropertyToEntity(row, pm, entity);
         }
     }
 
-    public void setPropertyToEntity(Row row, PropertyMeta<?, ?> pm, Object entity)
+    public void setPropertyToEntity(Row row, PropertyMeta pm, Object entity)
     {
         if (row != null)
         {
@@ -48,12 +48,12 @@ public class CQLEntityMapper extends EntityMapper
         }
     }
 
-    public void setJoinValueToEntity(Object value, PropertyMeta<?, ?> pm, Object entity)
+    public void setJoinValueToEntity(Object value, PropertyMeta pm, Object entity)
     {
         invoker.setValueToField(entity, pm.getSetter(), value);
     }
 
-    public <T> T mapRowToEntity(Class<T> entityClass, Row row, Map<String, PropertyMeta<?, ?>> propertiesMap)
+    public <T> T mapRowToEntity(Class<T> entityClass, Row row, Map<String, PropertyMeta> propertiesMap)
     {
         T entity = null;
         ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
@@ -63,7 +63,7 @@ public class CQLEntityMapper extends EntityMapper
             for (Definition column : columnDefinitions)
             {
                 String columnName = column.getName();
-                PropertyMeta<?, ?> pm = propertiesMap.get(columnName);
+                PropertyMeta pm = propertiesMap.get(columnName);
                 if (pm != null && !pm.isJoin())
                 {
                     Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);

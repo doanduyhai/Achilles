@@ -47,7 +47,7 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext>
 
     @Override
     public <V> void loadPropertyIntoObject(CQLPersistenceContext context, Object realObject,
-            PropertyMeta<?, V> pm)
+            PropertyMeta pm)
     {
         PropertyType type = pm.type();
         if (!type.isCounter())

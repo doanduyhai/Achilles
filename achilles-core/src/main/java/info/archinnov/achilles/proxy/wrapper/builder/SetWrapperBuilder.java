@@ -10,20 +10,20 @@ import java.util.Set;
  * @author DuyHai DOAN
  * 
  */
-public class SetWrapperBuilder<V> extends AbstractWrapperBuilder<SetWrapperBuilder<V>, Void, V> {
-    private Set<V> target;
+public class SetWrapperBuilder extends AbstractWrapperBuilder<SetWrapperBuilder> {
+    private Set<Object> target;
 
-    public static <ID, V> SetWrapperBuilder<V> builder(PersistenceContext context, Set<V> target) {
-        return new SetWrapperBuilder<V>(context, target);
+    public static SetWrapperBuilder builder(PersistenceContext context, Set<Object> target) {
+        return new SetWrapperBuilder(context, target);
     }
 
-    public SetWrapperBuilder(PersistenceContext context, Set<V> target) {
+    public SetWrapperBuilder(PersistenceContext context, Set<Object> target) {
         super.context = context;
         this.target = target;
     }
 
-    public SetWrapper<V> build() {
-        SetWrapper<V> setWrapper = new SetWrapper<V>(this.target);
+    public SetWrapper build() {
+        SetWrapper setWrapper = new SetWrapper(this.target);
         super.build(setWrapper);
         return setWrapper;
     }

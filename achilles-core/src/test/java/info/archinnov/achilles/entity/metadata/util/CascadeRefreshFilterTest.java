@@ -24,12 +24,12 @@ public class CascadeRefreshFilterTest
 	public void should_filter_cascade_refresh_or_all() throws Exception
 	{
 		CascadeRefreshFilter filter = new CascadeRefreshFilter();
-		PropertyMeta<Void, String> pm1 = PropertyMetaTestBuilder
+		PropertyMeta pm1 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(REFRESH)
 				.build();
-		PropertyMeta<Void, String> pm2 = PropertyMetaTestBuilder
+		PropertyMeta pm2 = PropertyMetaTestBuilder
 				.valueClass(String.class)
 				.field("name")
 				.cascadeTypes(REMOVE, MERGE)

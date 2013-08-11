@@ -12,17 +12,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Collection<V> {
+public class CollectionWrapper extends AbstractWrapper implements Collection<Object> {
     private static final Logger log = LoggerFactory.getLogger(CollectionWrapper.class);
 
-    protected Collection<V> target;
+    protected Collection<Object> target;
 
-    public CollectionWrapper(Collection<V> target) {
+    public CollectionWrapper(Collection<Object> target) {
         this.target = target;
     }
 
     @Override
-    public boolean add(V arg0) {
+    public boolean add(Object arg0) {
         log.trace("Mark collection property {} of entity class {} dirty upon element addition",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
         this.markDirty();
@@ -32,7 +32,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     }
 
     @Override
-    public boolean addAll(Collection<? extends V> arg0) {
+    public boolean addAll(Collection<?> arg0) {
         boolean result = false;
         result = target.addAll(proxifier.unwrap(arg0));
         if (result) {
@@ -69,19 +69,15 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
     }
 
     @Override
-    public Iterator<V> iterator() {
+    public Iterator<Object> iterator() {
         log.trace("Build iterator wrapper for collection property {} of entity class {}",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
         return IteratorWrapperBuilder.builder(context, this.target.iterator()) //
                 .dirtyMap(dirtyMap)
-                //
                 .setter(setter)
-                //
                 .propertyMeta(propertyMeta)
-                //
                 .proxifier(proxifier)
-                //
                 .build();
     }
 
@@ -135,7 +131,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
                             propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
             Object[] array = new Object[this.target.size()];
             int i = 0;
-            for (V joinEntity : this.target) {
+            for (Object joinEntity : this.target) {
                 array[i] = proxifier.buildProxy(joinEntity, joinContext(joinEntity));
                 i++;
             }
@@ -165,7 +161,7 @@ public class CollectionWrapper<V> extends AbstractWrapper<Void, V> implements Co
         return result;
     }
 
-    public Collection<V> getTarget() {
+    public Collection<Object> getTarget() {
         return this.target;
     }
 }

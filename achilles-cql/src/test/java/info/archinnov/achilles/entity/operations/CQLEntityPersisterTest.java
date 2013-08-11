@@ -70,10 +70,10 @@ public class CQLEntityPersisterTest
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 
-    private List<PropertyMeta<?, ?>> allMetas = new ArrayList<PropertyMeta<?, ?>>();
+    private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
     @Captor
-    private ArgumentCaptor<Set<PropertyMeta<?, ?>>> metaSetCaptor;
+    private ArgumentCaptor<Set<PropertyMeta>> metaSetCaptor;
 
     @Captor
     private ArgumentCaptor<Insert> insertCaptor;
@@ -101,14 +101,14 @@ public class CQLEntityPersisterTest
         when(entityMeta.isClusteredCounter()).thenReturn(false);
         when(context.addToProcessingList(entity)).thenReturn(true);
 
-        PropertyMeta<Void, UserBean> joinMeta = PropertyMetaTestBuilder
+        PropertyMeta joinMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(JOIN_SIMPLE)
                 .cascadeType(CascadeType.ALL)
                 .build();
 
-        PropertyMeta<Void, Long> counterMeta = PropertyMetaTestBuilder
+        PropertyMeta counterMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, Long.class)
                 .field("count")
                 .type(COUNTER)
@@ -161,7 +161,7 @@ public class CQLEntityPersisterTest
         when(context.getConfigContext().isEnsureJoinConsistency()).thenReturn(true);
         when(context.addToProcessingList(entity)).thenReturn(true);
 
-        PropertyMeta<Void, UserBean> joinMeta = PropertyMetaTestBuilder
+        PropertyMeta joinMeta = PropertyMetaTestBuilder
                 .completeBean(Void.class, UserBean.class)
                 .field("user")
                 .type(JOIN_SIMPLE)

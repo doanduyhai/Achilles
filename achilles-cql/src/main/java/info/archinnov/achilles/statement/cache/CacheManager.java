@@ -24,10 +24,10 @@ public class CacheManager
 {
     private CQLPreparedStatementGenerator generator = new CQLPreparedStatementGenerator();
 
-    private Function<PropertyMeta<?, ?>, String> propertyExtractor = new Function<PropertyMeta<?, ?>, String>()
+    private Function<PropertyMeta, String> propertyExtractor = new Function<PropertyMeta, String>()
     {
         @Override
-        public String apply(PropertyMeta<?, ?> pm)
+        public String apply(PropertyMeta pm)
         {
             return pm.getPropertyName();
         }
@@ -35,7 +35,7 @@ public class CacheManager
 
     public PreparedStatement getCacheForFieldSelect(Session session,
             Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-            CQLPersistenceContext context, PropertyMeta<?, ?> pm)
+            CQLPersistenceContext context, PropertyMeta pm)
     {
         Class<?> entityClass = context.getEntityClass();
         EntityMeta entityMeta = context.getEntityMeta();
@@ -53,7 +53,7 @@ public class CacheManager
 
     public PreparedStatement getCacheForFieldsUpdate(Session session,
             Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-            CQLPersistenceContext context, List<PropertyMeta<?, ?>> pms)
+            CQLPersistenceContext context, List<PropertyMeta> pms)
     {
         Class<?> entityClass = context.getEntityClass();
         EntityMeta entityMeta = context.getEntityMeta();
@@ -69,7 +69,7 @@ public class CacheManager
         return ps;
     }
 
-    private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta<?, ?> pm)
+    private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta pm)
     {
         if (pm.isEmbeddedId())
         {

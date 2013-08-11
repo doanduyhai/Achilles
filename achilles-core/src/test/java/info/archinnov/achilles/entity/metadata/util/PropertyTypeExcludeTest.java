@@ -22,21 +22,21 @@ public class PropertyTypeExcludeTest
     {
         PropertyTypeExclude exclude = new PropertyTypeExclude(COUNTER, SIMPLE);
 
-        PropertyMeta<Void, String> pm1 = PropertyMetaTestBuilder
+        PropertyMeta pm1 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm1")
                 .type(SET)
                 .build();
 
-        PropertyMeta<Void, String> pm2 = PropertyMetaTestBuilder
+        PropertyMeta pm2 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm2")
                 .type(SIMPLE)
                 .build();
 
-        PropertyMeta<Void, String> pm3 = PropertyMetaTestBuilder
+        PropertyMeta pm3 = PropertyMetaTestBuilder
                 .valueClass(String.class)
                 .entityClassName("entity")
                 .field("pm3")

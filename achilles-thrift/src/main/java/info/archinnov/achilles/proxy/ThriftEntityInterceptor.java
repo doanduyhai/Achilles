@@ -33,14 +33,14 @@ public class ThriftEntityInterceptor<T> extends
     }
 
     @Override
-    protected Counter buildCounterWrapper(PropertyMeta<?, ?> propertyMeta)
+    protected Counter buildCounterWrapper(PropertyMeta propertyMeta)
     {
         Counter result;
         Object rowKey;
         Composite comp;
         ThriftAbstractDao counterDao;
         CounterProperties counterProperties = propertyMeta.getCounterProperties();
-        PropertyMeta<?, ?> idMeta = counterProperties.getIdMeta();
+        PropertyMeta idMeta = counterProperties.getIdMeta();
         if (context.isClusteredEntity())
         {
             rowKey = invoker.getPartitionKey(primaryKey, idMeta);

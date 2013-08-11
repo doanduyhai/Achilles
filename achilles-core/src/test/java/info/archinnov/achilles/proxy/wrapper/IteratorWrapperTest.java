@@ -4,13 +4,10 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,39 +23,38 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class IteratorWrapperTest
 {
-	@Mock
-	private Map<Method, PropertyMeta<?, ?>> dirtyMap;
+    @Mock
+    private Map<Method, PropertyMeta> dirtyMap;
 
-	private Method setter;
+    private Method setter;
 
-	@Mock
-	private PropertyMeta<Void, Integer> propertyMeta;
+    @Mock
+    private PropertyMeta propertyMeta;
 
-	@Before
-	public void setUp() throws Exception
-	{
-		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
-	}
+    @Before
+    public void setUp() throws Exception
+    {
+        setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
+    }
 
-	@Test
-	public void should_mark_dirty_on_element_remove() throws Exception
-	{
+    @Test
+    public void should_mark_dirty_on_element_remove() throws Exception
+    {
 
-		List<Integer> list = new ArrayList<Integer>();
-		list.add(1);
-		list.add(2);
+        List<Object> list = new ArrayList<Object>();
+        list.add(1);
+        list.add(2);
 
-		IteratorWrapper<Integer> wrapper = new IteratorWrapper<Integer>(
-				list.iterator());
-		wrapper.setDirtyMap(dirtyMap);
-		wrapper.setSetter(setter);
-		wrapper.setPropertyMeta(propertyMeta);
+        IteratorWrapper wrapper = new IteratorWrapper(list.iterator());
+        wrapper.setDirtyMap(dirtyMap);
+        wrapper.setSetter(setter);
+        wrapper.setPropertyMeta(propertyMeta);
 
-		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
+        when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
-		wrapper.next();
-		wrapper.remove();
+        wrapper.next();
+        wrapper.remove();
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        verify(dirtyMap).put(setter, propertyMeta);
+    }
 }

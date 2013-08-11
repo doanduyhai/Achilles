@@ -10,17 +10,17 @@ import org.slf4j.LoggerFactory;
  * @author DuyHai DOAN
  * 
  */
-public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements ListIterator<V> {
+public class ListIteratorWrapper extends AbstractWrapper implements ListIterator<Object> {
     private static final Logger log = LoggerFactory.getLogger(ListIteratorWrapper.class);
 
-    private ListIterator<V> target;
+    private ListIterator<Object> target;
 
-    public ListIteratorWrapper(ListIterator<V> target) {
+    public ListIteratorWrapper(ListIterator<Object> target) {
         this.target = target;
     }
 
     @Override
-    public void add(V e) {
+    public void add(Object e) {
         log.trace("Mark list property {} of entity class {} dirty upon element addition",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
         this.target.add(proxifier.unwrap(e));
@@ -38,10 +38,10 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
     }
 
     @Override
-    public V next() {
+    public Object next() {
         log.trace("Return next element from list property {} of entity class {}", propertyMeta.getPropertyName(),
                 propertyMeta.getEntityClassName());
-        V entity = this.target.next();
+        Object entity = this.target.next();
         if (isJoin()) {
             return proxifier.buildProxy(entity, joinContext(entity));
         } else {
@@ -55,10 +55,10 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
     }
 
     @Override
-    public V previous() {
+    public Object previous() {
         log.trace("Return previous element from list property {} of entity class {}", propertyMeta.getPropertyName(),
                 propertyMeta.getEntityClassName());
-        V entity = this.target.previous();
+        Object entity = this.target.previous();
         if (isJoin()) {
             return proxifier.buildProxy(entity, joinContext(entity));
         } else {
@@ -80,7 +80,7 @@ public class ListIteratorWrapper<V> extends AbstractWrapper<Void, V> implements 
     }
 
     @Override
-    public void set(V e) {
+    public void set(Object e) {
         log.trace("Mark list property {} of entity class {} dirty upon element set at current position",
                 propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
         this.target.set(proxifier.unwrap(e));

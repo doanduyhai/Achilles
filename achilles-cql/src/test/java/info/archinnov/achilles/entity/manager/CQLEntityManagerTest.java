@@ -69,7 +69,7 @@ public class CQLEntityManagerTest
 
     private EntityMeta meta;
 
-    private PropertyMeta<?, ?> idMeta;
+    private PropertyMeta idMeta;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -90,7 +90,7 @@ public class CQLEntityManagerTest
         meta.setIdMeta(idMeta);
         meta.setTableName("table");
         meta.setEntityClass(CompleteBean.class);
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta<?, ?>>());
+        meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
         when(configContext.getConsistencyPolicy()).thenReturn(policy);
         when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);

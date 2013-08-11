@@ -40,14 +40,14 @@ public class CQLRowMethodInvokerTest
     private Row row;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private PropertyMeta<Integer, String> pm;
+    private PropertyMeta pm;
 
     @Before
     public void setUp()
     {
         when(pm.getPropertyName()).thenReturn("property");
-        when(pm.getKeyClass()).thenReturn(Integer.class);
-        when(pm.getValueClass()).thenReturn(String.class);
+        when((Class) pm.getKeyClass()).thenReturn(Integer.class);
+        when((Class) pm.getValueClass()).thenReturn(String.class);
         when(row.isNull("property")).thenReturn(false);
     }
 
