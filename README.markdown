@@ -21,7 +21,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.2</version>
+		<version>2.0.3</version>
 	</dependency>  
  
   For **Thrift** version:
@@ -29,7 +29,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.2</version>
+		<version>2.0.3</version>
 	</dependency> 
 
  
@@ -75,6 +75,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **2.0.3**:
+    * Fix buggy implementation of FactoryBean for Spring integration
+    * Fix bug in decoding enums for Slice Queries 
 * **2.0.2**:
     * Internal refactoring of PropertyMeta
     * Support for value-less entities
