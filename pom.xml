@@ -275,20 +275,20 @@
 		         </execution>
 		     </executions>
 		 </plugin>      
-		<plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-gpg-plugin</artifactId>
-	        <version>${maven.gpg.version}</version>
-	        <executions>
-	          <execution>
-	            <id>sign-artifacts</id>
-	            <phase>verify</phase>
-	            <goals>
-	              <goal>sign</goal>
-	            </goals>
-	          </execution>
-	        </executions>
-		</plugin>                
+<!-- 		<plugin> -->
+<!-- 	        <groupId>org.apache.maven.plugins</groupId> -->
+<!-- 	        <artifactId>maven-gpg-plugin</artifactId> -->
+<!-- 	        <version>${maven.gpg.version}</version> -->
+<!-- 	        <executions> -->
+<!-- 	          <execution> -->
+<!-- 	            <id>sign-artifacts</id> -->
+<!-- 	            <phase>verify</phase> -->
+<!-- 	            <goals> -->
+<!-- 	              <goal>sign</goal> -->
+<!-- 	            </goals> -->
+<!-- 	          </execution> -->
+<!-- 	        </executions> -->
+<!-- 		</plugin>                 -->
 		<plugin>
          	<groupId>org.apache.maven.plugins</groupId>
          	<artifactId>maven-surefire-plugin</artifactId>
@@ -340,7 +340,38 @@
 	        <version>${maven-scm-plugin}</version>
       </plugin>      		    
     </plugins> 
-  </build>  
+  </build>
+  <profiles>
+	<profile>
+		<id>release-sign-artifacts</id>
+		<activation>
+			<activeByDefault>false</activeByDefault>
+			<property>
+				<name>performRelease</name>
+				<value>true</value>
+			</property>
+		</activation>
+		<build>
+			<plugins>
+				<!-- Sign jars with pgp -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven.gpg.version}</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</build>
+	</profile>
+  </profiles>			    
 	<scm>
 		<url>https://github.com/doanduyhai/achilles</url>
 		<connection>scm:git:git@github.com:doanduyhai/Achilles</connection>
