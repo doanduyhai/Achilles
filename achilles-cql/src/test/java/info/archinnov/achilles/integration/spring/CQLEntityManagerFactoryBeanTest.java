@@ -2,7 +2,6 @@ package info.archinnov.achilles.integration.spring;
 
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.jboss.netty.channel.ChannelPipelineException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -137,7 +136,7 @@ public class CQLEntityManagerFactoryBeanTest {
         factory.setEnsureJoinConsistency(true);
         factory.setForceColumnFamilyCreation(true);
 
-        exception.expect(ChannelPipelineException.class);
+        exception.expect(Exception.class);
 
         factory.initialize();
     }
