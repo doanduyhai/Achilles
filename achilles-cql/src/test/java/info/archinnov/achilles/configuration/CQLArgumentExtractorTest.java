@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.exception.AchillesException;
 import java.util.HashMap;
 import java.util.Map;
-import org.jboss.netty.channel.ChannelPipelineException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,7 +40,7 @@ public class CQLArgumentExtractorTest
 
     private CQLArgumentExtractor extractor = new CQLArgumentExtractor();
 
-    @Test(expected = ChannelPipelineException.class)
+    @Test(expected = Exception.class)
     public void should_init_cluster_with_all_params() throws Exception
     {
         Map<String, Object> params = new HashMap<String, Object>();
