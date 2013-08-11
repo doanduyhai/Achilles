@@ -11,7 +11,7 @@ import java.util.Map;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 /**
  * ThriftEntityManagerFactoryBean
@@ -19,8 +19,9 @@ import org.springframework.beans.factory.FactoryBean;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEntityManagerFactoryBean implements FactoryBean<ThriftEntityManager>
+public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEntityManager>
 {
+    private static ThriftEntityManager em;
     private String entityPackages;
 
     private Cluster cluster;
@@ -41,9 +42,7 @@ public class ThriftEntityManagerFactoryBean implements FactoryBean<ThriftEntityM
     private boolean forceColumnFamilyCreation = false;
     private boolean ensureJoinConsistency = false;
 
-    private ThriftEntityManager em;
-
-    public void initialize()
+    protected void initialize()
     {
         Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -207,11 +206,6 @@ public class ThriftEntityManagerFactoryBean implements FactoryBean<ThriftEntityM
         this.ensureJoinConsistency = ensureJoinConsistency;
     }
 
-    public ThriftEntityManager getObject() throws Exception
-    {
-        return em;
-    }
-
     @Override
     public Class<?> getObjectType()
     {
@@ -222,6 +216,17 @@ public class ThriftEntityManagerFactoryBean implements FactoryBean<ThriftEntityM
     public boolean isSingleton()
     {
         return true;
+    }
+
+    @Override
+    protected ThriftEntityManager createInstance() throws Exception {
+        synchronized (this) {
+            if (em == null)
+            {
+                initialize();
+            }
+        }
+        return em;
     }
 
 }

@@ -139,6 +139,7 @@ public class ThriftCompoundKeyMapper
         {
             Serializer<Object> srz = serializers.get(i);
             Object value = columnComponents.get(i);
+
             if (i < lastNotNullIndex)
             {
                 composite.setComponent(i, value, srz, srz.getComparatorType().getTypeName(), EQUAL);

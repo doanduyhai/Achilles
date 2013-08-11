@@ -83,10 +83,11 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_clustering_from() throws Exception
     {
+
+        when(idMeta.encodeComponents(any(List.class))).thenReturn(Arrays.<Object> asList(10L, 11L, "a", 12));
         builder.partitionKeyInternal(10L).fromClusteringsInternal(11L, "a", 12);
 
         verify(compoundKeyValidator).validateClusteringKeys(idMeta, 11L, "a", 12);
-
         assertThat(builder.buildClusterQuery().getClusteringsFrom()).containsExactly(10L, 11L, "a",
                 12);
 
@@ -95,6 +96,7 @@ public class RootSliceQueryBuilderTest
     @Test
     public void should_set_clustering_to() throws Exception
     {
+        when(idMeta.encodeComponents(any(List.class))).thenReturn(Arrays.<Object> asList(10L, 11L, "a", 12));
         builder.partitionKeyInternal(10L).toClusteringsInternal(11L, "a", 12);
 
         verify(compoundKeyValidator).validateClusteringKeys(idMeta, 11L, "a", 12);

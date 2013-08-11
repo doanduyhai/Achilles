@@ -4,6 +4,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -63,9 +64,27 @@ public class CompoundTranscoderTest {
         when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(userId);
         when(invoker.getValueFromField(compound, nameGetter)).thenReturn(name);
 
-        List actual = transcoder.encodeToComponents(pm, compound);
+        List<Object> actual = transcoder.encodeToComponents(pm, compound);
 
         assertThat(actual).containsExactly(userId, name);
+    }
+
+    @Test
+    public void should_encode_components() throws Exception
+    {
+        Long userId = RandomUtils.nextLong();
+        String name = "name";
+
+        PropertyMeta pm = PropertyMetaTestBuilder
+                .valueClass(CompoundKey.class)
+                .type(EMBEDDED_ID)
+                .compClasses(Long.class, String.class, PropertyType.class)
+                .build();
+
+        List<Object> actual = transcoder.encodeComponents(pm,
+                Arrays.<Object> asList(userId, PropertyType.EMBEDDED_ID, name));
+
+        assertThat(actual).containsExactly(userId, "EMBEDDED_ID", name);
     }
 
     @Test

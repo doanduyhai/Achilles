@@ -83,7 +83,7 @@ public class CounterIT
 
         actual = thriftCounterDao.getCounterValue(keyComp, comp);
 
-        assertThat(actual).isEqualTo(0);
+        assertThat(actual).isNull();
     }
 
     private <T> Composite createCounterKey(Class<T> clazz, Long id)

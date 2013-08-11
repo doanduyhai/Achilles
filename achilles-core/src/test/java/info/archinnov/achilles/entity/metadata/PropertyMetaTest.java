@@ -1,21 +1,34 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.Sets;
 
 /**
@@ -24,10 +37,15 @@ import com.google.common.collect.Sets;
  * @author DuyHai DOAN
  * 
  */
+
+@RunWith(MockitoJUnitRunner.class)
 public class PropertyMetaTest
 {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    @Mock
+    private DataTranscoder transcoder;
 
     @Test
     public void should_get_value_from_string_with_correct_type() throws Exception
@@ -674,6 +692,89 @@ public class PropertyMetaTest
                 CompoundKey.class).type(ID).build();
 
         assertThat(idMeta.isEmbeddedId()).isFalse();
+    }
+
+    @Test
+    public void should_get_read_consistency() throws Exception
+    {
+        PropertyMeta pm = new PropertyMeta();
+
+        assertThat(pm.getReadConsistencyLevel()).isNull();
+        assertThat(pm.getWriteConsistencyLevel()).isNull();
+
+        pm.setConsistencyLevels(Pair.<ConsistencyLevel, ConsistencyLevel> create(QUORUM, QUORUM));
+
+        assertThat(pm.getReadConsistencyLevel()).isEqualTo(QUORUM);
+        assertThat(pm.getWriteConsistencyLevel()).isEqualTo(QUORUM);
+    }
+
+    @Test
+    public void should_decode() throws Exception
+    {
+        PropertyMeta pm = new PropertyMeta();
+        pm.setTranscoder(transcoder);
+
+        assertThat(pm.decode((Object) null)).isNull();
+        assertThat(pm.decodeKey((Object) null)).isNull();
+        assertThat(pm.decode((List<?>) null)).isNull();
+        assertThat(pm.decode((Set<?>) null)).isNull();
+        assertThat(pm.decode((Map<?, ?>) null)).isNull();
+        assertThat(pm.decodeFromComponents((List<?>) null)).isNull();
+
+        Object value = "";
+        List<Object> list = new ArrayList<Object>();
+        Set<Object> set = new HashSet<Object>();
+        Map<Object, Object> map = new HashMap<Object, Object>();
+
+        when(transcoder.decode(pm, value)).thenReturn(value);
+        when(transcoder.decodeKey(pm, value)).thenReturn(value);
+        when(transcoder.decode(pm, list)).thenReturn(list);
+        when(transcoder.decode(pm, set)).thenReturn(set);
+        when(transcoder.decode(pm, map)).thenReturn(map);
+        when(transcoder.decodeFromComponents(pm, list)).thenReturn(list);
+
+        assertThat(pm.decode(value)).isEqualTo(value);
+        assertThat(pm.decodeKey(value)).isEqualTo(value);
+        assertThat(pm.decode(list)).isEqualTo(list);
+        assertThat(pm.decode(set)).isEqualTo(set);
+        assertThat(pm.decode(map)).isEqualTo(map);
+        assertThat(pm.decodeFromComponents(list)).isEqualTo(list);
+    }
+
+    @Test
+    public void should_encode() throws Exception
+    {
+        PropertyMeta pm = new PropertyMeta();
+        pm.setTranscoder(transcoder);
+
+        assertThat(pm.encode((Object) null)).isNull();
+        assertThat(pm.encodeKey((Object) null)).isNull();
+        assertThat(pm.encode((List<?>) null)).isNull();
+        assertThat(pm.encode((Set<?>) null)).isNull();
+        assertThat(pm.encode((Map<?, ?>) null)).isNull();
+        assertThat(pm.encodeToComponents((List<?>) null)).isNull();
+        assertThat(pm.encodeComponents((List<?>) null)).isNull();
+
+        Object value = "";
+        List<Object> list = new ArrayList<Object>();
+        Set<Object> set = new HashSet<Object>();
+        Map<Object, Object> map = new HashMap<Object, Object>();
+
+        when(transcoder.encode(pm, value)).thenReturn(value);
+        when(transcoder.encodeKey(pm, value)).thenReturn(value);
+        when(transcoder.encode(pm, list)).thenReturn(list);
+        when(transcoder.encode(pm, set)).thenReturn(set);
+        when(transcoder.encode(pm, map)).thenReturn(map);
+        when(transcoder.encodeToComponents(pm, list)).thenReturn(list);
+        when(transcoder.encodeComponents(pm, list)).thenReturn(list);
+
+        assertThat(pm.encode(value)).isEqualTo(value);
+        assertThat(pm.encodeKey(value)).isEqualTo(value);
+        assertThat(pm.encode(list)).isEqualTo(list);
+        assertThat(pm.encode(set)).isEqualTo(set);
+        assertThat(pm.encode(map)).isEqualTo(map);
+        assertThat(pm.encodeToComponents(list)).isEqualTo(list);
+        assertThat(pm.encodeComponents(list)).isEqualTo(list);
     }
 
 }

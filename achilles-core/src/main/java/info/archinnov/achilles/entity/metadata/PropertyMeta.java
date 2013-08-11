@@ -367,6 +367,10 @@ public class PropertyMeta
         return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey);
     }
 
+    public List<Object> encodeComponents(List<?> components) {
+        return components == null ? null : transcoder.encodeComponents(this, components);
+    }
+
     public String forceEncodeToJSON(Object object)
     {
         return transcoder.forceEncodeToJSON(object);

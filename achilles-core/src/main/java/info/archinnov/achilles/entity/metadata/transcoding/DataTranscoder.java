@@ -26,6 +26,8 @@ public interface DataTranscoder {
 
     public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey);
 
+    public List<Object> encodeComponents(PropertyMeta pm, List<?> components);
+
     public String forceEncodeToJSON(Object object);
 
     //Decode

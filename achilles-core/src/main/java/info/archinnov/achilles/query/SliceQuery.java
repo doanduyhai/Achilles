@@ -1,6 +1,7 @@
 package info.archinnov.achilles.query;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
@@ -10,7 +11,7 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 
 /**
- * ClusteredQuery
+ * SliceQuery
  * 
  * @author DuyHai DOAN
  * 
@@ -44,12 +45,17 @@ public class SliceQuery<T>
 
         this.entityClass = entityClass;
         this.meta = meta;
+
         this.partitionKey = partitionKey;
         this.noComponent = clusteringsFrom == null && clusteringsTo == null;
-        this.clusteringsFrom = Arrays.<Object> asList(ArrayUtils.add(clusteringsFrom, 0,
+
+        PropertyMeta idMeta = meta.getIdMeta();
+        List<Object> componentsFrom = Arrays.<Object> asList(ArrayUtils.add(clusteringsFrom, 0,
                 partitionKey));
-        this.clusteringsTo = Arrays.<Object> asList(ArrayUtils.add(clusteringsTo, 0,
+        this.clusteringsFrom = idMeta.encodeComponents(componentsFrom);
+        List<Object> componentsTo = Arrays.<Object> asList(ArrayUtils.add(clusteringsTo, 0,
                 partitionKey));
+        this.clusteringsTo = idMeta.encodeComponents(componentsTo);
         this.ordering = ordering;
         this.bounding = bounding;
         this.consistencyLevel = consistencyLevel;

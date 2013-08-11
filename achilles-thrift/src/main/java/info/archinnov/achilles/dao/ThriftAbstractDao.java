@@ -11,7 +11,6 @@ import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
-import org.apache.cassandra.utils.Pair;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import me.prettyprint.cassandra.model.HCounterColumnImpl;
@@ -28,6 +27,7 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.CounterQuery;
 import me.prettyprint.hector.api.query.SliceCounterQuery;
 import me.prettyprint.hector.api.query.SliceQuery;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -518,7 +518,7 @@ public abstract class ThriftAbstractDao
         executeMutator(mutator);
     }
 
-    public <K> long getCounterValue(K key, Composite name)
+    public <K> Long getCounterValue(K key, Composite name)
     {
         if (log.isTraceEnabled())
         {
@@ -527,7 +527,7 @@ public abstract class ThriftAbstractDao
                     columnFamily);
         }
 
-        long counterValue = 0;
+        Long counterValue = null;
         HCounterColumn<Composite> counterColumn = getCounterColumn(key, name);
         if (counterColumn != null)
         {

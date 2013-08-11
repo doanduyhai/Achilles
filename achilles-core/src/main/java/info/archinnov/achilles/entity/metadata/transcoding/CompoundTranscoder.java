@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.metadata.transcoding;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.validation.Validator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -35,6 +36,26 @@ public class CompoundTranscoder extends AbstractTranscoder {
             }
         }
         return compoundComponents;
+    }
+
+    @Override
+    public List<Object> encodeComponents(PropertyMeta pm, List<?> components)
+    {
+        List<Object> encodedComponents = new ArrayList<Object>();
+        List<Class<?>> componentClasses = pm.getComponentClasses();
+        for (Object component : components)
+        {
+            if (component != null)
+            {
+                Class<?> componentClass = component.getClass();
+                Validator.validateTrue(componentClasses.contains(componentClass),
+                        "The component {} for embedded id {} has an unknown type. Valid types are {}", component, pm
+                                .getValueClass().getCanonicalName(), componentClasses);
+                Object encoded = super.encodeIgnoreJoin(componentClass, component);
+                encodedComponents.add(encoded);
+            }
+        }
+        return encodedComponents;
     }
 
     @Override

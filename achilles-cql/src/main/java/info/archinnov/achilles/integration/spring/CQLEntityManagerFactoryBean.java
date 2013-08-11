@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
@@ -23,8 +23,9 @@ import com.datastax.driver.core.policies.RetryPolicy;
  * @author DuyHai DOAN
  * 
  */
-public class CQLEntityManagerFactoryBean implements FactoryBean<CQLEntityManager>
+public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityManager>
 {
+    private static CQLEntityManager em;
     private String entityPackages;
 
     private String contactPoints;
@@ -52,9 +53,7 @@ public class CQLEntityManagerFactoryBean implements FactoryBean<CQLEntityManager
     private boolean forceColumnFamilyCreation = false;
     private boolean ensureJoinConsistency = false;
 
-    private CQLEntityManager em;
-
-    public void initialize()
+    protected void initialize()
     {
         Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -81,6 +80,8 @@ public class CQLEntityManagerFactoryBean implements FactoryBean<CQLEntityManager
 
         CQLEntityManagerFactory factory = new CQLEntityManagerFactory(configMap);
         em = factory.createEntityManager();
+
+        System.out.println(" CREATE " + this.toString());
     }
 
     private void fillEntityPackages(Map<String, Object> configMap)
@@ -303,11 +304,6 @@ public class CQLEntityManagerFactoryBean implements FactoryBean<CQLEntityManager
         this.ensureJoinConsistency = ensureJoinConsistency;
     }
 
-    public CQLEntityManager getObject() throws Exception
-    {
-        return em;
-    }
-
     @Override
     public Class<?> getObjectType()
     {
@@ -318,6 +314,17 @@ public class CQLEntityManagerFactoryBean implements FactoryBean<CQLEntityManager
     public boolean isSingleton()
     {
         return true;
+    }
+
+    @Override
+    protected CQLEntityManager createInstance() throws Exception {
+        synchronized (this) {
+            if (em == null)
+            {
+                initialize();
+            }
+        }
+        return em;
     }
 
 }

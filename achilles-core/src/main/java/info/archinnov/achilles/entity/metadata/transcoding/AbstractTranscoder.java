@@ -62,6 +62,13 @@ public abstract class AbstractTranscoder implements DataTranscoder {
     }
 
     @Override
+    public List<Object> encodeComponents(PropertyMeta pm, List<?> components)
+    {
+        throw new AchillesException("Transcoder cannot encode components value '" + components
+                + "'");
+    }
+
+    @Override
     public Object decode(PropertyMeta pm, Object cassandraValue) {
         throw new AchillesException("Transcoder cannot decode value '" + cassandraValue
                 + "' for type '" + pm.type().name() + "'");
