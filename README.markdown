@@ -10,7 +10,7 @@
  - Join columns with cascading support
  - Support for counters
  - Support for custom consistency levels
- - Batch mode to boost performance
+ - Batch mode for atomic commits (atomicity only available for **CQL** impl)
 
 # Installation #
 
