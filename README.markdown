@@ -60,6 +60,10 @@
 
  To boostrap quickly with **Achilles**, you can check the **[5 minutes tutorial]**
 
+# Quick Reference
+
+ To be productive quickly with **Achilles**. Most of useful examples are given in the **[Quick Reference]**
+ 
 # Advanced tutorial
 
  To get a deeper look on how you can use **Achilles Thrift version**, check out the **[Twitter Demo]** application and read the **[Advanced Tutorial]** section
@@ -146,6 +150,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 
 [5 minutes tutorial]: https://github.com/doanduyhai/Achilles/wiki/5-minutes-Tutorial
+[Quick Reference]: https://github.com/doanduyhai/Achilles/wiki/Quick-Reference
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
