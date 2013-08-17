@@ -1,19 +1,18 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,9 +30,12 @@ public class ClusteredEntityIT
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered");
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private ClusteredEntity entity;
 
@@ -583,11 +585,5 @@ public class ClusteredEntityIT
         ClusteredKey embeddedId = new ClusteredKey(partitionKey, count, name);
         ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
         em.persist(entity);
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("clustered");
     }
 }

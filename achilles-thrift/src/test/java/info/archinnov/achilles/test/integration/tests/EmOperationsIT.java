@@ -1,17 +1,17 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -30,7 +30,6 @@ import net.sf.cglib.proxy.Factory;
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,12 +45,16 @@ public class EmOperationsIT
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private ThriftGenericEntityDao dao = getEntityDao(
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "CompleteBean",
+            "achillesCounterCF");
+
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftGenericEntityDao dao = resource.getEntityDao(
             normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
-    private ThriftCounterDao counterDao = getCounterDao();
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    private ThriftCounterDao counterDao = resource.getCounterDao();
 
     private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
@@ -821,11 +824,5 @@ public class EmOperationsIT
     private KeyValue<Integer, String> readKeyValue(String value) throws Exception
     {
         return this.objectMapper.readValue(value, KeyValue.class);
-    }
-
-    @After
-    public void tearDown()
-    {
-        dao.truncate();
     }
 }

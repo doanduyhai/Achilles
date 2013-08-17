@@ -251,7 +251,6 @@ public class CQLPersistenceContext extends PersistenceContext
     @Override
     public <T> T initialize(T entity)
     {
-        proxifier.ensureProxy(entity);
         final EntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier
                 .getInterceptor(entity);
         initializer.initializeEntity(entity, entityMeta, interceptor);

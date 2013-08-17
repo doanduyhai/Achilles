@@ -1,15 +1,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import java.util.Iterator;
@@ -18,7 +18,6 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,11 +34,15 @@ public class ClusteredEntityIT
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private ThriftGenericWideRowDao dao = getColumnFamilyDao(
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "clustered");
+
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
             normalizerAndValidateColumnFamilyName("clustered"), Long.class,
             String.class);
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
 
     private ClusteredEntity entity;
 
@@ -764,11 +767,5 @@ public class ClusteredEntityIT
         ClusteredKey embeddedId = new ClusteredKey(partitionKey, count, name);
         ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
         em.persist(entity);
-    }
-
-    @After
-    public void tearDown()
-    {
-        dao.truncate();
     }
 }

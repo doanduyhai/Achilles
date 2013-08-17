@@ -34,7 +34,7 @@ public abstract class EntityManagerFactory
     protected List<String> entityPackages;
 
     private EntityParser entityParser = new EntityParser();
-    private EntityExplorer achillesEntityExplorer = new EntityExplorer();
+    private EntityExplorer entityExplorer = new EntityExplorer();
     private EntityParsingValidator validator = new EntityParsingValidator();
 
     protected EntityManagerFactory(Map<String, Object> configurationMap,
@@ -71,7 +71,7 @@ public abstract class EntityManagerFactory
                 StringUtils.join(entityPackages, ","));
         Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 
-        List<Class<?>> entities = achillesEntityExplorer.discoverEntities(entityPackages);
+        List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
         validator.validateAtLeastOneEntity(entities, entityPackages);
         boolean hasSimpleCounter = false;
         for (Class<?> entityClass : entities)
@@ -123,7 +123,7 @@ public abstract class EntityManagerFactory
 
     protected void setEntityExplorer(EntityExplorer achillesEntityExplorer)
     {
-        this.achillesEntityExplorer = achillesEntityExplorer;
+        this.entityExplorer = achillesEntityExplorer;
     }
 
     protected void setValidator(EntityParsingValidator validator)

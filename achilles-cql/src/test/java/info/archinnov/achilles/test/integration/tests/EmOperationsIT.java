@@ -1,10 +1,10 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -18,7 +18,6 @@ import java.util.Map;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,9 +35,12 @@ public class EmOperationsIT
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = em.getNativeSession();
 
     @Test
     public void should_persist() throws Exception
@@ -643,11 +645,5 @@ public class EmOperationsIT
         assertThat(entity.getPreferences()).isNull();
         assertThat(entity.getLabel()).isNull();
         assertThat(entity.getAge()).isNull();
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("CompleteBean");
     }
 }

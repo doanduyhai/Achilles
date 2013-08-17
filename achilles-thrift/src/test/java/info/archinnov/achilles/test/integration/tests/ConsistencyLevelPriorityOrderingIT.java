@@ -2,12 +2,13 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
@@ -29,13 +30,16 @@ public class ConsistencyLevelPriorityOrderingIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "clustered");
+
+    private ThriftEntityManagerFactory emf = resource.getFactory();
+
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
+
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
-
-    private ThriftEntityManagerFactory emf = ThriftCassandraDaoTest.getEmf();
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
-
-    private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
     // Normal type
     @Test

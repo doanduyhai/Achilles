@@ -1,9 +1,10 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.cglib.proxy.Factory;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -24,7 +25,11 @@ import org.junit.Test;
  */
 public class QueryIT {
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
+            AchillesCounter.CQL_COUNTER_TABLE);
+
+    private CQLEntityManager em = resource.getEm();
 
     @Test
     public void should_return_rows_for_native_query() throws Exception
@@ -562,12 +567,5 @@ public class QueryIT {
         assertThat(actual.getVersion()).isNull();
         assertThat(actual.getWelcomeTweet()).isNull();
 
-    }
-
-    @After
-    public void cleanUp()
-    {
-        truncateTable("CompleteBean");
-        truncateTable("achilles_counter_table");
     }
 }

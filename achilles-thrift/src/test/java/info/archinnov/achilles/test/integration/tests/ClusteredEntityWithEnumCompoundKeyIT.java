@@ -1,11 +1,11 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
@@ -13,19 +13,22 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCo
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import com.google.common.base.Optional;
 
 public class ClusteredEntityWithEnumCompoundKeyIT
 {
 
-    private ThriftGenericWideRowDao dao = getColumnFamilyDao(
-            normalizerAndValidateColumnFamilyName("clustered_with_enum_compound"),
-            Long.class,
-            String.class);
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "clustered_with_enum_compound");
 
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
+            normalizerAndValidateColumnFamilyName("clustered_with_enum_compound"),
+            Long.class, String.class);
 
     private ClusteredEntityWithEnumCompoundKey entity;
 
@@ -117,11 +120,5 @@ public class ClusteredEntityWithEnumCompoundKeyIT
         em.refresh(entity);
 
         assertThat(entity.getValue()).isEqualTo("new_clustered_value");
-    }
-
-    @After
-    public void tearDown()
-    {
-        dao.truncate();
     }
 }

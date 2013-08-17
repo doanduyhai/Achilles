@@ -2,12 +2,14 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
+import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -16,7 +18,6 @@ import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndRead
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
@@ -37,19 +38,19 @@ public class ConsistencyLevelIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "CompleteBean", "Tweet", "consistency_test1", "consistency_test2");
+
+    private ThriftEntityManagerFactory emf = resource.getFactory();
+
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
+
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
-    private ThriftEntityManagerFactory emf = ThriftCassandraDaoTest.getEmf();
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
-
-    private Cluster cluster = ThriftCassandraDaoTest.getCluster();
-
-    private String keyspaceName = ThriftCassandraDaoTest.getKeyspace().getKeyspaceName();
-
     private Long id = RandomUtils.nextLong();
-
-    private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
     @Test
     public void should_throw_exception_when_persisting_with_local_quorum_consistency()
@@ -389,16 +390,12 @@ public class ConsistencyLevelIT
     {
         policy.reinitCurrentConsistencyLevels();
         policy.reinitDefaultConsistencyLevels();
-        cluster.truncate(keyspaceName, "CompleteBean");
-        cluster.truncate(keyspaceName, "Tweet");
-        cluster.truncate(keyspaceName, "consistency_test1");
-        cluster.truncate(keyspaceName, "consistency_test2");
     }
 
     @AfterClass
     public static void cleanUp()
     {
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
+        ThriftEmbeddedServer.policy().reinitCurrentConsistencyLevels();
+        ThriftEmbeddedServer.policy().reinitDefaultConsistencyLevels();
     }
 }

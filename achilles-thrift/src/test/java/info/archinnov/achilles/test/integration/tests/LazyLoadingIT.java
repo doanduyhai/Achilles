@@ -1,17 +1,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import net.sf.cglib.proxy.Factory;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -22,10 +20,10 @@ import org.junit.Test;
  */
 public class LazyLoadingIT
 {
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "CompleteBean");
 
-    private ThriftGenericEntityDao dao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
+    private ThriftEntityManager em = resource.getEm();
 
     private CompleteBean bean;
 
@@ -72,11 +70,5 @@ public class LazyLoadingIT
         bean.setLabel("newLabel");
 
         assertThat(bean.getLabel()).isEqualTo("newLabel");
-    }
-
-    @After
-    public void tearDown()
-    {
-        dao.truncate();
     }
 }

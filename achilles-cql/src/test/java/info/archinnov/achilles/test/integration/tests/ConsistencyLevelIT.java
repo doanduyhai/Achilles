@@ -1,18 +1,16 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithLocalQuorumConsistency;
 import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadLocalQuorumConsistency;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,13 +29,15 @@ public class ConsistencyLevelIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
+            "consistency_test1", "consistency_test2");
+
+    private CQLEntityManager em = resource.getEm();
+
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
-
     private Long id = RandomUtils.nextLong();
-
-    private String name = RandomStringUtils.randomAlphabetic(5);
 
     @Test
     public void should_throw_exception_when_persisting_with_local_quorum_consistency()
@@ -335,14 +335,6 @@ public class ConsistencyLevelIT
                     .hasMessage(
                             "Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
         }
-    }
-
-    @After
-    public void cleanThreadLocals()
-    {
-        truncateTable("CompleteBean");
-        truncateTable("consistency_test1");
-        truncateTable("consistency_test2");
     }
 
 }

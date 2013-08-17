@@ -194,7 +194,6 @@ public class CQLTableCreator extends TableCreator {
                 builder.addColumn(componentName, componentClasses.get(i));
                 builder.addPrimaryKey(componentName);
             }
-            System.out.println(" builder.primaryKeys = " + builder.toString());
         }
         else
         {

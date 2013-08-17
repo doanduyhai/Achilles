@@ -1,8 +1,9 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity.CompoundKey;
 import info.archinnov.achilles.type.BoundingMode;
@@ -10,6 +11,7 @@ import info.archinnov.achilles.type.OrderingMode;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -19,7 +21,11 @@ import org.junit.Test;
  * 
  */
 public class ValuelessClusteredEntityIT {
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "ValuelessClusteredEntity");
+
+    private ThriftEntityManager em = resource.getEm();
 
     @Test
     public void should_persist_and_find() throws Exception

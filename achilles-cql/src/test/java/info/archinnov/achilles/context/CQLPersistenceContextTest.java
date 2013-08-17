@@ -432,7 +432,6 @@ public class CQLPersistenceContextTest
 
         assertThat(actual).isSameAs(entity);
 
-        verify(proxifier).ensureProxy(entity);
         verify(initializer).initializeEntity(entity, meta, interceptor);
     }
 }

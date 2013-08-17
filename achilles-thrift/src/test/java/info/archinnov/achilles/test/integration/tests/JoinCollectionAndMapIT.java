@@ -1,14 +1,14 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getEntityDao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.CompositeTestBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
@@ -16,7 +16,6 @@ import info.archinnov.achilles.test.integration.entity.EntityWithJoinCollectionA
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.type.KeyValue;
-import org.apache.cassandra.utils.Pair;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,9 +25,9 @@ import java.util.Set;
 import java.util.UUID;
 import me.prettyprint.hector.api.beans.Composite;
 import net.sf.cglib.proxy.Factory;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,18 +45,15 @@ public class JoinCollectionAndMapIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private ThriftGenericEntityDao tweetDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "Tweet", "User",
+            "EntityWithJoinCollectionAndMap");
 
-    private ThriftGenericEntityDao userDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()), Long.class);
+    private ThriftEntityManager em = resource.getEm();
 
-    private ThriftGenericEntityDao beanDao = getEntityDao(
+    private ThriftGenericEntityDao beanDao = resource.getEntityDao(
             normalizerAndValidateColumnFamilyName(EntityWithJoinCollectionAndMap.class
-                    .getCanonicalName()),
-            Long.class);
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+                    .getCanonicalName()), Long.class);
 
     private Tweet tweet1, tweet2, tweet3, tweet4, tweet5;
 
@@ -402,13 +398,5 @@ public class JoinCollectionAndMapIT
     private KeyValue<Integer, String> readKeyValue(String value) throws Exception
     {
         return (KeyValue<Integer, String>) this.objectMapper.readValue(value, KeyValue.class);
-    }
-
-    @After
-    public void tearDown()
-    {
-        tweetDao.truncate();
-        userDao.truncate();
-        beanDao.truncate();
     }
 }

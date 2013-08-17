@@ -1,15 +1,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.counter.AchillesCounter.THRIFT_COUNTER_CF;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,16 +25,14 @@ public class CounterIT
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private ThriftCounterDao thriftCounterDao = ThriftCassandraDaoTest.getCounterDao();
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource("CompleteBean", THRIFT_COUNTER_CF);
 
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftCounterDao thriftCounterDao = resource.getCounterDao();
+
     private CompleteBean bean;
-
-    @Before
-    public void setUp()
-    {
-        thriftCounterDao.truncateCounters();
-    }
 
     @Test
     public void should_persist_counter() throws Exception

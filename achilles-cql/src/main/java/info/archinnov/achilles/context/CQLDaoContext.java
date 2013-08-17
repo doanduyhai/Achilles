@@ -36,7 +36,7 @@ import com.google.common.cache.Cache;
  */
 public class CQLDaoContext
 {
-    private static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+    public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
 
     private static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 

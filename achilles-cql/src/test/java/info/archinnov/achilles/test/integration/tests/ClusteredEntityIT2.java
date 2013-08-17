@@ -1,10 +1,10 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessage;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId.Type;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.UUID;
 import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Session;
@@ -29,9 +29,13 @@ import com.datastax.driver.core.SimpleStatement;
  */
 public class ClusteredEntityIT2
 {
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ClusteredTweet",
+            "ClusteredMessage");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     @Test
     public void should_persist_and_find() throws Exception
@@ -206,12 +210,5 @@ public class ClusteredEntityIT2
         em.refresh(message, ConsistencyLevel.ALL);
 
         assertThat(message.getLabel()).isEqualTo("a pdf file");
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("ClusteredTweet");
-        truncateTable("ClusteredMessage");
     }
 }

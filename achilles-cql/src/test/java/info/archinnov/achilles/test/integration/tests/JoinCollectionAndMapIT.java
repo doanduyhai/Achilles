@@ -1,10 +1,10 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithJoinCollectionAndMap;
@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.UUID;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,9 +38,13 @@ public class JoinCollectionAndMapIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "EntityWithJoinCollectionAndMap",
+            "Tweet", "User");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private Tweet tweet1, tweet2, tweet3, tweet4, tweet5;
 
@@ -344,13 +347,5 @@ public class JoinCollectionAndMapIT
         assertThat(foundTimeline.get(4)).isNotInstanceOf(Factory.class);
         assertThat(foundTimeline.get(5)).isNotInstanceOf(Factory.class);
 
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("EntityWithJoinCollectionAndMap");
-        truncateTable("Tweet");
-        truncateTable("User");
     }
 }

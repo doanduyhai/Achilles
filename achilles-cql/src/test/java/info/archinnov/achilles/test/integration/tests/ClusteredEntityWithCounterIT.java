@@ -1,15 +1,16 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.ClusteredKey;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 
@@ -22,9 +23,12 @@ import com.datastax.driver.core.Session;
 public class ClusteredEntityWithCounterIT
 {
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered_with_counter_value");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private ClusteredEntityWithCounter entity;
 
@@ -261,11 +265,5 @@ public class ClusteredEntityWithCounterIT
         {
             insertClusteredEntity(partitionKey, namePrefix + i, new Long(i));
         }
-    }
-
-    @After
-    public void tearDown()
-    {
-        CQLCassandraDaoTest.truncateTable("clustered_with_counter_value");
     }
 }

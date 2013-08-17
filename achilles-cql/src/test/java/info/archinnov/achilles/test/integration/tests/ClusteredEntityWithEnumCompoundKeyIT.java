@@ -1,23 +1,26 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.Type;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 
 public class ClusteredEntityWithEnumCompoundKeyIT
 {
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered_with_enum_compound");
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private ClusteredEntityWithEnumCompoundKey entity;
 
@@ -105,11 +108,5 @@ public class ClusteredEntityWithEnumCompoundKeyIT
         em.refresh(entity);
 
         assertThat(entity.getValue()).isEqualTo("new_clustered_value");
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("clustered_with_enum_compound");
     }
 }

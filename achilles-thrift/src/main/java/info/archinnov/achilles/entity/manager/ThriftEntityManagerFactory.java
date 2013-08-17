@@ -32,6 +32,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 
     private ThriftDaoContext daoContext;
     private ThriftPersistenceContextFactory contextFactory;
+    private ThriftConsistencyLevelPolicy policy;
 
     /**
      * Create a new ThriftEntityManagerFactoryImpl with a configuration map
@@ -99,12 +100,17 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
         Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
                 .initWriteConsistencyMap(configurationMap);
 
-        return new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
+        policy = new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
                 readConsistencyMap, writeConsistencyMap);
+        return policy;
     }
 
     protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext) {
         this.daoContext = thriftDaoContext;
     }
 
+    public ThriftConsistencyLevelPolicy getConsistencyPolicy()
+    {
+        return policy;
+    }
 }

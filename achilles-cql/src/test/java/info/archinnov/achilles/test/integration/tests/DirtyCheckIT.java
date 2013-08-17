@@ -1,9 +1,9 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -16,8 +16,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -31,9 +31,13 @@ import com.datastax.driver.core.Session;
 public class DirtyCheckIT
 {
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
+
     private CompleteBean bean;
 
     @Before
@@ -535,11 +539,5 @@ public class DirtyCheckIT
         assertThat(persistedWelcomeTweet).isNotNull();
         assertThat(persistedWelcomeTweet.getContent()).isEqualTo("new_welcome_message");
 
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("CompleteBean");
     }
 }

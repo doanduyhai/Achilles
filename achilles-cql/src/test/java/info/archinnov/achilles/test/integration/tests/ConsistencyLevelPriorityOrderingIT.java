@@ -2,12 +2,13 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.context.CQLBatchingFlushContext;
 import info.archinnov.achilles.entity.manager.CQLBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
@@ -35,11 +36,14 @@ public class ConsistencyLevelPriorityOrderingIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered");
+
+    private CQLEntityManagerFactory emf = resource.getFactory();
+
+    private CQLEntityManager em = resource.getEm();
+
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
-
-    private CQLEntityManagerFactory emf = CQLCassandraDaoTest.getEmf();
-
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
 
     // Normal type
     @Test

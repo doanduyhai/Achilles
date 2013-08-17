@@ -18,6 +18,16 @@
 	               	<goals>
 	                   	<goal>test-jar</goal>
 	                </goals>
+	                <configuration>
+              			<includes>
+							<include>**/embedded/*</include>
+							<include>**/junit/*</include>              			
+                			<include>**/test/integration/**/*</include>
+                			<include>**/test/mapping/entity/*</include>
+                			<include>**/test/parser/entity/*</include>
+                			<include>**/test/builders/*</include>
+              			</includes>
+            		</configuration>	                
 	            </execution>
 	        </executions>
 	    </plugin>

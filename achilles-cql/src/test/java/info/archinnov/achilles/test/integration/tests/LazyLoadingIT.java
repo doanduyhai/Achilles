@@ -1,15 +1,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import net.sf.cglib.proxy.Factory;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -20,7 +20,10 @@ import org.junit.Test;
  */
 public class LazyLoadingIT
 {
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
+
+    private CQLEntityManager em = resource.getEm();
 
     private CompleteBean bean;
 
@@ -67,11 +70,5 @@ public class LazyLoadingIT
         bean.setLabel("newLabel");
 
         assertThat(bean.getLabel()).isEqualTo("newLabel");
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("CompleteBean");
     }
 }

@@ -17,8 +17,8 @@
   <licenses>
 	<license>
  		<name>Apache License, Version 2.0</name>
-            	<url>http://www.apache.org/licenses/LICENSE-2.0</url>
-            	<distribution>repo</distribution>
+       	<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+       	<distribution>repo</distribution>
 	</license>
   </licenses>
 
@@ -185,39 +185,39 @@
 	 	<groupId>org.slf4j</groupId>
 	 	<artifactId>slf4j-log4j12</artifactId>
 	 	<version>${slf4j.version}</version>
-	</dependency>	  	
+	</dependency>
+	
 	<!-- TEST  -->
-       <dependency>
-       	<groupId>org.easytesting</groupId>
-       	<artifactId>fest-assert-core</artifactId>
-       	<version>${fest.assert.version}</version>
-       	<scope>test</scope>
-       </dependency>
-		 <dependency>
-		 	<groupId>org.easytesting</groupId>
-		 	<artifactId>fest-util</artifactId>
-		 	<version>${fest.util.version}</version>
-		 	<scope>test</scope>
-		 </dependency>
-		<dependency>
-		 	<groupId>junit</groupId>
-		 	<artifactId>junit</artifactId>
-		 	<version>${junit.version}</version>
-		 	<scope>test</scope>
-		 </dependency>
+	<dependency>
+		<groupId>org.easytesting</groupId>
+		<artifactId>fest-assert-core</artifactId>
+		<version>${fest.assert.version}</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.easytesting</groupId>
+		<artifactId>fest-util</artifactId>
+		<version>${fest.util.version}</version>
+		<scope>test</scope>
+	</dependency>
   	<dependency>
   		<groupId>org.mockito</groupId>
   		<artifactId>mockito-core</artifactId>
   		<version>${mockito.version}</version>
   		<scope>test</scope>
   	</dependency>
-		 <dependency>
-		 	<groupId>org.powermock</groupId>
-		 	<artifactId>powermock-api-mockito</artifactId>
-		 	<version>${powermock.version}</version>
-		 	<scope>test</scope>
-		 </dependency>
-		
+	<dependency>
+		<groupId>org.powermock</groupId>
+		<artifactId>powermock-api-mockito</artifactId>
+		<version>${powermock.version}</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+	 	<groupId>junit</groupId>
+	 	<artifactId>junit</artifactId>
+	 	<version>${junit.version}</version>
+	 	<scope>test</scope>
+	 </dependency>		
 		<!-- Cassandra Unit --> 
 	<dependency>
          <groupId>org.cassandraunit</groupId>

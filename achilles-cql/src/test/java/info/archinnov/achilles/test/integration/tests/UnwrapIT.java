@@ -1,15 +1,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import net.sf.cglib.proxy.Factory;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -21,7 +21,10 @@ import org.junit.Test;
 public class UnwrapIT
 {
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean", "Tweet");
+
+    private CQLEntityManager em = resource.getEm();
 
     @Test
     public void should_unproxy_object() throws Exception
@@ -52,12 +55,5 @@ public class UnwrapIT
 
         assertThat(bean).isNotInstanceOf(Factory.class);
         assertThat(bean.getWelcomeTweet()).isNotInstanceOf(Factory.class);
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("CompleteBean");
-        truncateTable("Tweet");
     }
 }

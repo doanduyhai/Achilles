@@ -1,29 +1,26 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.getColumnFamilyDao;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
-import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithJoinEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithJoinEntity.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.User;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class ClusteredEntityWithJoinEntityIT
 {
 
-    private ThriftGenericWideRowDao dao = getColumnFamilyDao(
-            normalizerAndValidateColumnFamilyName("clustered_with_join_value"),
-            Long.class,
-            User.class);
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "clustered_with_join_value");
 
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
+    private ThriftEntityManager em = resource.getEm();
 
     private ClusteredEntityWithJoinEntity entity;
 
@@ -255,11 +252,5 @@ public class ClusteredEntityWithJoinEntityIT
             User user = new User(new Long(i), "firstname" + i, "lastname" + i);
             insertClusteredEntity(partitionKey, namePrefix + i, user);
         }
-    }
-
-    @After
-    public void tearDown()
-    {
-        dao.truncate();
     }
 }

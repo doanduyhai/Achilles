@@ -1,22 +1,23 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.ThriftCassandraDaoTest.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.ThriftCassandraDaoTest;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftBatchingFlushContext;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
+import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -24,14 +25,12 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
-import org.apache.cassandra.utils.Pair;
 import java.util.Map;
-import java.util.UUID;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,23 +50,21 @@ public class BatchModeIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private ThriftGenericEntityDao tweetDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(Tweet.class.getCanonicalName()), UUID.class);
+    @Rule
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "CompleteBean", "User", "Tweet");
 
-    private ThriftGenericEntityDao userDao = getEntityDao(
-            normalizerAndValidateColumnFamilyName(User.class.getCanonicalName()), Long.class);
+    private ThriftEntityManagerFactory emf = resource.getFactory();
 
-    private ThriftGenericEntityDao completeBeanDao = getEntityDao(
+    private ThriftEntityManager em = resource.getEm();
+
+    private ThriftCounterDao thriftCounterDao = resource.getCounterDao();
+
+    private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
+
+    private ThriftGenericEntityDao completeBeanDao = resource.getEntityDao(
             normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()),
             Long.class);
-
-    private ThriftCounterDao thriftCounterDao = getCounterDao();
-
-    private ThriftEntityManagerFactory emf = ThriftCassandraDaoTest.getEmf();
-
-    private ThriftEntityManager em = ThriftCassandraDaoTest.getEm();
-
-    private ThriftConsistencyLevelPolicy policy = ThriftCassandraDaoTest.getConsistencyPolicy();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -304,18 +301,10 @@ public class BatchModeIT
         return composite;
     }
 
-    @After
-    public void tearDown()
-    {
-        tweetDao.truncate();
-        userDao.truncate();
-        completeBeanDao.truncate();
-    }
-
     @AfterClass
     public static void cleanUp()
     {
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitCurrentConsistencyLevels();
-        ThriftCassandraDaoTest.getConsistencyPolicy().reinitDefaultConsistencyLevels();
+        ThriftEmbeddedServer.policy().reinitCurrentConsistencyLevels();
+        ThriftEmbeddedServer.policy().reinitDefaultConsistencyLevels();
     }
 }

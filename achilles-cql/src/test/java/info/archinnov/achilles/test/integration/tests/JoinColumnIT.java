@@ -1,17 +1,16 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.common.CQLCassandraDaoTest.truncateTable;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import net.sf.cglib.proxy.Factory;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,9 +30,12 @@ public class JoinColumnIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean", "Tweet");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private Tweet tweet;
     private User creator;
@@ -260,12 +262,5 @@ public class JoinColumnIT
         User foundReferrer = foundCreator.getReferrer();
         assertThat(foundReferrer.getId()).isEqualTo(referrer.getId());
         assertThat(foundReferrer.getFirstname()).isEqualTo("referrer");
-    }
-
-    @After
-    public void tearDown()
-    {
-        truncateTable("CompleteBean");
-        truncateTable("Tweet");
     }
 }

@@ -2,12 +2,13 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.common.CQLCassandraDaoTest;
 import info.archinnov.achilles.context.CQLBatchingFlushContext;
 import info.archinnov.achilles.entity.manager.CQLBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.junit.AchillesInternalCQLResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -18,7 +19,6 @@ import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,11 +41,14 @@ public class BatchModeIT
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private CQLEntityManagerFactory emf = CQLCassandraDaoTest.getEmf();
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean", "Tweet", "User");
 
-    private CQLEntityManager em = CQLCassandraDaoTest.getEm();
+    private CQLEntityManagerFactory emf = resource.getFactory();
 
-    private Session session = CQLCassandraDaoTest.getCqlSession();
+    private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -258,13 +261,4 @@ public class BatchModeIT
         assertThat(ttlO.isPresent()).isFalse();
         assertThat(boundStatements).isEmpty();
     }
-
-    @After
-    public void tearDown()
-    {
-        CQLCassandraDaoTest.truncateTable("CompleteBean");
-        CQLCassandraDaoTest.truncateTable("Tweet");
-        CQLCassandraDaoTest.truncateTable("User");
-    }
-
 }

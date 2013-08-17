@@ -218,7 +218,6 @@ public class ThriftPersistenceContext extends PersistenceContext
     public <T> T initialize(final T entity)
     {
         log.debug("Force lazy fields initialization for entity {}", entity);
-        proxifier.ensureProxy(entity);
         final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
                 .getInterceptor(entity);
 
