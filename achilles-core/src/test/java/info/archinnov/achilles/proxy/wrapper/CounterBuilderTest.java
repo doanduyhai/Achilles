@@ -52,7 +52,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.get(EACH_QUORUM);
     }
 
@@ -61,7 +61,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.incr();
     }
 
@@ -70,7 +70,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.incr(10L);
     }
 
@@ -79,7 +79,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.decr();
     }
 
@@ -88,7 +88,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.decr(10L);
     }
 
@@ -97,7 +97,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.incr(EACH_QUORUM);
     }
 
@@ -106,7 +106,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.incr(10L, EACH_QUORUM);
     }
 
@@ -115,7 +115,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.decr(EACH_QUORUM);
     }
 
@@ -124,7 +124,7 @@ public class CounterBuilderTest
     {
         Counter counter = CounterBuilder.incr();
         exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("This method is not mean to be called");
+        exception.expectMessage("This method is not meant to be called");
         counter.decr(10L, EACH_QUORUM);
     }
 }

@@ -42,47 +42,47 @@ public class CounterBuilder {
 
         @Override
         public Long get(ConsistencyLevel readLevel) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void incr() {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void incr(Long increment) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void decr() {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void decr(Long decrement) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void incr(ConsistencyLevel writeLevel) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void incr(Long increment, ConsistencyLevel writeLevel) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void decr(ConsistencyLevel writeLevel) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
         }
 
         @Override
         public void decr(Long decrement, ConsistencyLevel writeLevel) {
-            throw new UnsupportedOperationException("This method is not mean to be called");
+            throw new UnsupportedOperationException("This method is not meant to be called");
 
         }
     }
