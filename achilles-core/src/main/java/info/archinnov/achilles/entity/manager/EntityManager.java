@@ -509,6 +509,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public <T> T initialize(final T entity) {
         log.debug("Force lazy fields initialization for entity {}", entity);
+        proxifier.ensureProxy(entity);
         CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
         return context.initialize(entity);
     }

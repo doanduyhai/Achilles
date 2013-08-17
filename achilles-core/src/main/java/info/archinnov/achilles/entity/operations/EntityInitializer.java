@@ -48,7 +48,9 @@ public class EntityInitializer
             try
             {
                 propertyMeta.getGetter().invoke(entity);
-            } catch (Throwable e)
+            }
+
+            catch (Throwable e)
             {
                 log.error("Cannot initialize property '" + propertyMeta.getPropertyName()
                         + "' for entity '"

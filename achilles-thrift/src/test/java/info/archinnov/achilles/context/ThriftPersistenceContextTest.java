@@ -11,12 +11,14 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.entity.operations.ThriftEntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -91,6 +93,12 @@ public class ThriftPersistenceContextTest
 
     @Mock
     private ThriftEntityLoader loader;
+
+    @Mock
+    private EntityInitializer initializer;
+
+    @Mock
+    private ThriftEntityInterceptor<CompleteBean> interceptor;
 
     @Mock
     private EntityRefresher<ThriftPersistenceContext> refresher;
@@ -311,6 +319,23 @@ public class ThriftPersistenceContextTest
         voidExecCaptor.getValue().execute();
 
         verify(refresher).refresh(context);
+    }
+
+    @Test
+    public void should_initialize() throws Exception
+    {
+        Whitebox.setInternalState(context, "initializer", initializer);
+        Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
+
+        when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+
+        CompleteBean actual = context.initialize(entity);
+        assertThat(actual).isSameAs(entity);
+
+        verify(consistencyContext).executeWithReadConsistencyLevel(voidExecCaptor.capture());
+        voidExecCaptor.getValue().execute();
+
+        verify(initializer).initializeEntity(entity, entityMeta, interceptor);
     }
 
     @Test

@@ -410,6 +410,7 @@ public class EntityManagerTest {
         doCallRealMethod().when(em).initialize(entity);
         when(context.initialize(entity)).thenReturn(entity);
         CompleteBean actual = em.initialize(entity);
+        verify(proxifier).ensureProxy(entity);
         assertThat(actual).isSameAs(entity);
     }
 
