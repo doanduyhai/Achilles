@@ -1,6 +1,0 @@
-{
-    "name": "achilles",
-    "strategy": "org.apache.cassandra.locator.SimpleStrategy",
-    "replicationFactor": "1",
-    "columnFamilies": []
-}

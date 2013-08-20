@@ -13,7 +13,7 @@ import info.archinnov.achilles.test.integration.entity.ClusteredTweetId;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.Date;
 import java.util.UUID;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
+import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class ClusteredEntityIT2
     public void should_persist_and_find() throws Exception
     {
         Long userId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+        UUID tweetId = UUIDGen.getTimeUUID();
         Date creationDate = new Date();
 
         ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
@@ -63,7 +63,7 @@ public class ClusteredEntityIT2
         Long userId = RandomUtils.nextLong();
         Long originalAuthorId = RandomUtils.nextLong();
 
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+        UUID tweetId = UUIDGen.getTimeUUID();
         Date creationDate = new Date();
 
         ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
@@ -88,7 +88,7 @@ public class ClusteredEntityIT2
     public void should_remove() throws Exception
     {
         Long userId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+        UUID tweetId = UUIDGen.getTimeUUID();
         Date creationDate = new Date();
 
         ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
@@ -110,7 +110,7 @@ public class ClusteredEntityIT2
 
         Long userId = RandomUtils.nextLong();
         Long originalAuthorId = RandomUtils.nextLong();
-        UUID tweetId = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
+        UUID tweetId = UUIDGen.getTimeUUID();
         Date creationDate = new Date();
 
         ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);

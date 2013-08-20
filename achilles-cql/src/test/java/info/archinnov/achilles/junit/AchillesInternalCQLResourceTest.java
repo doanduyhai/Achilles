@@ -11,12 +11,9 @@ import org.junit.Test;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-public class AchillesCQLResourceTest {
-
+public class AchillesInternalCQLResourceTest {
     @Rule
-    public AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.test.integration.entity",
-            Steps.AFTER_TEST,
-            "User");
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "User");
 
     private CQLEntityManagerFactory emf = resource.getFactory();
     private CQLEntityManager em = resource.getEm();
@@ -40,7 +37,7 @@ public class AchillesCQLResourceTest {
     @Test
     public void should_create_resources_once() throws Exception
     {
-        AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.junit.test.entity");
+        AchillesInternalCQLResource resource = new AchillesInternalCQLResource();
 
         assertThat(resource.getFactory()).isSameAs(emf);
         assertThat(resource.getEm()).isSameAs(em);
@@ -51,11 +48,5 @@ public class AchillesCQLResourceTest {
     public void should_exception_when_null_entity_package_provided() throws Exception
     {
         new AchillesCQLResource(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void should_exception_when_no_entity_package_provided() throws Exception
-    {
-        new AchillesCQLResource("");
     }
 }

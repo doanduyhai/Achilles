@@ -49,29 +49,7 @@
 		<artifactId>achilles-core</artifactId>
 		<classifier>tests</classifier>
 		<scope>test</scope>  		
-	</dependency>
-	
-	<!-- Hector for Cassandra Unit -->
-	<dependency>
-	 	<groupId>org.hectorclient</groupId>
-	 	<artifactId>hector-core</artifactId>
-	 	<version>${hector.version}</version>
-	 	<exclusions>
-	 		<exclusion>
-	 			<groupId>org.apache.cassandra</groupId>
-	 			<artifactId>cassandra-thrift</artifactId>
-	 		</exclusion>
-	     		<exclusion>
-	     			<groupId>org.slf4j</groupId>
-	     			<artifactId>slf4j-api</artifactId>
-	     		</exclusion>
-	 		<exclusion>
-	 			<groupId>com.google.guava</groupId>
-	 			<artifactId>guava</artifactId>
-	 		</exclusion>        		
-	 	</exclusions>
-	 	<scope>test</scope>  		
- 	</dependency>	    	
+	</dependency>	
   </dependencies>
   <build>
 	<plugins>

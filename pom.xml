@@ -124,6 +124,12 @@
 		</exclusions>
 	</dependency>
 	
+	<!-- Embedded server & JUnit rule -->
+		<dependency>
+	 	<groupId>junit</groupId>
+	 	<artifactId>junit</artifactId>
+	 	<version>${junit.version}</version>
+	 </dependency>	
 	<!-- Utils -->
 	 <dependency>
 	 	<groupId>commons-io</groupId>
@@ -212,33 +218,6 @@
 		<version>${powermock.version}</version>
 		<scope>test</scope>
 	</dependency>
-	<dependency>
-	 	<groupId>junit</groupId>
-	 	<artifactId>junit</artifactId>
-	 	<version>${junit.version}</version>
-	 	<scope>test</scope>
-	 </dependency>		
-		<!-- Cassandra Unit --> 
-	<dependency>
-         <groupId>org.cassandraunit</groupId>
-         <artifactId>cassandra-unit</artifactId>
-         <version>${cassandra.unit.version}</version>
-         <scope>test</scope>
-         <exclusions>
-         	<exclusion>
-         		<artifactId>cassandra-all</artifactId>
-         		<groupId>org.apache.cassandra</groupId>
-         	</exclusion>
-         	<exclusion>
-         		<artifactId>hector-core</artifactId>
-         		<groupId>org.hectorclient</groupId>
-         	</exclusion>
-         	<exclusion>
-         		<artifactId>hector-core</artifactId>
-         		<groupId>org.hectorclient</groupId>
-         	</exclusion>
-         </exclusions>
-     </dependency>  		 
  </dependencies> 		   	
  <build>
   	<finalName>Achilles</finalName>

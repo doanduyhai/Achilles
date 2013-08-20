@@ -5,12 +5,21 @@ import static info.archinnov.achilles.configuration.ThriftConfigurationParameter
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import java.util.ArrayList;
 import java.util.Map;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.factory.HFactory;
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.TBinaryProtocol;
 import org.apache.commons.lang.StringUtils;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -19,7 +28,7 @@ import com.google.common.collect.ImmutableMap;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftEmbeddedServer extends AbstractEmbeddedServer {
+public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
     private static final Object SEMAPHORE = new Object();
 
@@ -50,11 +59,12 @@ public class ThriftEmbeddedServer extends AbstractEmbeddedServer {
         if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
             CassandraHostConfigurator hostConfigurator = new CassandraHostConfigurator(cassandraHost);
             cluster = HFactory.getOrCreateCluster("achilles", hostConfigurator);
-            keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
+            keyspace = HFactory.createKeyspace(CASSANDRA_TEST_KEYSPACE_NAME, cluster);
         } else {
+            createAchillesKeyspace();
             cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
                     + CASSANDRA_THRIFT_TEST_PORT);
-            keyspace = HFactory.createKeyspace(CASSANDRA_KEYSPACE_NAME, cluster);
+            keyspace = HFactory.createKeyspace(CASSANDRA_TEST_KEYSPACE_NAME, cluster);
         }
 
         Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, entityPackages, CLUSTER_PARAM,
@@ -65,6 +75,29 @@ public class ThriftEmbeddedServer extends AbstractEmbeddedServer {
         em = emf.createEntityManager();
         policy = emf.getConsistencyPolicy();
         initialized = true;
+    }
+
+    private void createAchillesKeyspace() {
+
+        TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
+        TProtocol proto = new TBinaryProtocol(tr);
+        Cassandra.Client client = new Cassandra.Client(proto);
+        try {
+            tr.open();
+            KsDef ksDef = new KsDef();
+            ksDef.name = CASSANDRA_TEST_KEYSPACE_NAME;
+            ksDef.replication_factor = 1;
+            ksDef.strategy_options = ImmutableMap.of("replication_factor", "1");
+            ksDef.strategy_class = "org.apache.cassandra.locator.SimpleStrategy";
+            ksDef.setCf_defs(new ArrayList<CfDef>());
+
+            client.system_add_keyspace(ksDef);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally
+        {
+            tr.close();
+        }
     }
 
     public Cluster getCluster() {

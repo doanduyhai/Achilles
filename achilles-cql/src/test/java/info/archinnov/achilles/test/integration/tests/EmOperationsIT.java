@@ -15,8 +15,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import me.prettyprint.cassandra.utils.TimeUUIDUtils;
 import net.sf.cglib.proxy.Factory;
+import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -105,7 +105,7 @@ public class EmOperationsIT
     {
         Tweet tweet = new Tweet();
         tweet.setContent("this is a welcome tweet");
-        tweet.setId(TimeUUIDUtils.getUniqueTimeUUIDinMillis());
+        tweet.setId(UUIDGen.getTimeUUID());
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
         entity.setWelcomeTweet(tweet);
@@ -205,7 +205,7 @@ public class EmOperationsIT
     {
         Tweet tweet = new Tweet();
         tweet.setContent("this is a welcome tweet");
-        tweet.setId(TimeUUIDUtils.getUniqueTimeUUIDinMillis());
+        tweet.setId(UUIDGen.getTimeUUID());
 
         CompleteBean entity = CompleteBeanTestBuilder.builder()
                 .randomId()
