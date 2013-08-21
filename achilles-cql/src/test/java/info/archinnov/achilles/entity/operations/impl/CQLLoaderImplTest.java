@@ -1,7 +1,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -16,7 +16,6 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import org.apache.cassandra.utils.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,7 +93,7 @@ public class CQLLoaderImplTest
                 .accessors()
                 .build();
 
-        when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
+        when(entityMeta.getIdMeta()).thenReturn(idMeta);
         when(entityMeta.isClusteredCounter()).thenReturn(false);
     }
 
@@ -133,7 +133,7 @@ public class CQLLoaderImplTest
                 .type(PropertyType.COUNTER)
                 .build();
         when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
         when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 
@@ -156,7 +156,7 @@ public class CQLLoaderImplTest
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
                 .build();
         when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
         when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 
@@ -177,7 +177,7 @@ public class CQLLoaderImplTest
                 .build();
 
         when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+        when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
         when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(null);
 
@@ -223,6 +223,22 @@ public class CQLLoaderImplTest
         loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
 
         verify(mapper).setJoinValueToEntity(userBean, pm, entity);
+    }
+
+    @Test
+    public void should_load_join_property_if_row_null() throws Exception
+    {
+        PropertyMeta pm = PropertyMetaTestBuilder
+                .valueClass(UserBean.class)
+                .field("name")
+                .type(PropertyType.JOIN_SIMPLE)
+                .joinMeta(entityMeta)
+                .build();
+
+        when(context.loadProperty(pm)).thenReturn(null);
+        loaderImpl.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
+
+        verifyZeroInteractions(entityLoader, cqlRowInvoker, mapper);
     }
 
     @Test

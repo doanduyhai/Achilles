@@ -70,30 +70,34 @@ public class CQLLoaderImpl
             PropertyMeta pm, Object entity)
     {
         Row row = context.loadProperty(pm);
-        EntityMeta joinMeta = pm.getJoinProperties().getEntityMeta();
-        PropertyMeta joinIdMeta = joinMeta.getIdMeta();
 
-        Object joinValue = null;
-        switch (pm.type())
+        if (row != null)
         {
-            case JOIN_SIMPLE:
-                joinValue = loadJoinSimple(loader, context, pm, row, joinMeta, joinIdMeta,
-                        joinValue);
-                break;
-            case JOIN_LIST:
-                joinValue = loadJoinList(loader, context, pm, row, joinMeta, joinIdMeta, joinValue);
-                break;
-            case JOIN_SET:
-                joinValue = loadJoinSet(loader, context, pm, row, joinMeta, joinIdMeta, joinValue);
-                break;
-            case JOIN_MAP:
-                joinValue = loadJoinMap(loader, context, pm, row, joinMeta, joinValue);
-                break;
-            default:
-                break;
-        }
+            EntityMeta joinMeta = pm.getJoinProperties().getEntityMeta();
+            PropertyMeta joinIdMeta = joinMeta.getIdMeta();
 
-        mapper.setJoinValueToEntity(joinValue, pm, entity);
+            Object joinValue = null;
+            switch (pm.type())
+            {
+                case JOIN_SIMPLE:
+                    joinValue = loadJoinSimple(loader, context, pm, row, joinMeta, joinIdMeta,
+                            joinValue);
+                    break;
+                case JOIN_LIST:
+                    joinValue = loadJoinList(loader, context, pm, row, joinMeta, joinIdMeta, joinValue);
+                    break;
+                case JOIN_SET:
+                    joinValue = loadJoinSet(loader, context, pm, row, joinMeta, joinIdMeta, joinValue);
+                    break;
+                case JOIN_MAP:
+                    joinValue = loadJoinMap(loader, context, pm, row, joinMeta, joinValue);
+                    break;
+                default:
+                    break;
+            }
+
+            mapper.setJoinValueToEntity(joinValue, pm, entity);
+        }
     }
 
     private Object loadJoinList(CQLEntityLoader loader, CQLPersistenceContext context,
