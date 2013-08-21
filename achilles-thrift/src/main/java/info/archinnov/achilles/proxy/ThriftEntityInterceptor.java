@@ -56,16 +56,13 @@ public class ThriftEntityInterceptor<T> extends
             counterDao = context.getCounterDao();
         }
 
-        ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
-                .getReadConsistencyLevel().get() : propertyMeta.getReadConsistencyLevel();
-        ConsistencyLevel writeLevel = context.getWriteConsistencyLevel().isPresent() ? context
-                .getWriteConsistencyLevel().get() : propertyMeta.getWriteConsistencyLevel();
+        ConsistencyLevel consistencyLevel = context.getConsistencyLevel().isPresent() ? context
+                .getConsistencyLevel().get() : propertyMeta.getReadConsistencyLevel();
 
         result = ThriftCounterWrapperBuilder.builder(context) //
                 .counterDao(counterDao)
                 .columnName(comp)
-                .readLevel(readLevel)
-                .writeLevel(writeLevel)
+                .consistencyLevel(consistencyLevel)
                 .key(rowKey)
                 .build();
         return result;

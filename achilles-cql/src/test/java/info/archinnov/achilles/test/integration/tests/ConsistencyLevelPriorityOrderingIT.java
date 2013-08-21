@@ -58,7 +58,7 @@ public class ConsistencyLevelPriorityOrderingIT
         em.persist(entity);
 
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
         logAsserter.prepareLogLevel();
 
         entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
@@ -86,7 +86,7 @@ public class ConsistencyLevelPriorityOrderingIT
 
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
 
-        batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+        batchEm.startBatch(EACH_QUORUM);
 
         expectedEx.expect(AchillesException.class);
         expectedEx
@@ -121,7 +121,7 @@ public class ConsistencyLevelPriorityOrderingIT
         entity.setName("name");
 
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(THREE, ONE);
+        batchEm.startBatch(THREE);
         entity = batchEm.merge(entity);
 
         Counter counter = entity.getCount();
@@ -161,7 +161,7 @@ public class ConsistencyLevelPriorityOrderingIT
         entity.setName("name");
 
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
         entity = batchEm.merge(entity);
 
         Counter counter = entity.getCount();
@@ -181,7 +181,7 @@ public class ConsistencyLevelPriorityOrderingIT
     {
 
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
 
         expectedEx.expect(InvalidQueryException.class);
         expectedEx
@@ -196,14 +196,10 @@ public class ConsistencyLevelPriorityOrderingIT
     private void assertThatBatchContextHasBeenReset(CQLBatchingEntityManager batchEm)
     {
         CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
-        Optional<ConsistencyLevel> readLevelO = Whitebox.getInternalState(flushContext, "readLevelO");
-        Optional<ConsistencyLevel> writeLevelO = Whitebox.getInternalState(flushContext, "writeLevelO");
-        Optional<Integer> ttlO = Whitebox.getInternalState(flushContext, "ttlO");
+        Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
         List<BoundStatement> boundStatements = Whitebox.getInternalState(flushContext, "boundStatements");
 
-        assertThat(readLevelO.isPresent()).isFalse();
-        assertThat(writeLevelO.isPresent()).isFalse();
-        assertThat(ttlO.isPresent()).isFalse();
+        assertThat(consistencyLevel).isNull();
         assertThat(boundStatements).isEmpty();
     }
 

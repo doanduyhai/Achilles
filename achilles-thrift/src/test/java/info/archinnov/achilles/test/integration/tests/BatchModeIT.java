@@ -16,8 +16,8 @@ import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -217,7 +217,7 @@ public class BatchModeIT
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
-        batchEm.startBatch(QUORUM, ALL);
+        batchEm.startBatch(QUORUM);
 
         logAsserter.prepareLogLevel();
 
@@ -230,7 +230,7 @@ public class BatchModeIT
 
         batchEm.endBatch();
 
-        logAsserter.assertConsistencyLevels(QUORUM, ALL);
+        logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
         assertThatBatchContextHasBeenReset(batchEm);
         assertThatConsistencyLevelHasBeenReset();
     }
@@ -247,7 +247,7 @@ public class BatchModeIT
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
-        batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+        batchEm.startBatch(EACH_QUORUM);
         batchEm.persist(tweet2);
 
         try

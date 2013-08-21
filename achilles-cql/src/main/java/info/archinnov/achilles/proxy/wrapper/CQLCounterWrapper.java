@@ -110,13 +110,13 @@ public class CQLCounterWrapper implements Counter {
 
     private ConsistencyLevel getReadRuntimeConsistencyIfPossible()
     {
-        return context.getReadConsistencyLevel().isPresent() ? context.getReadConsistencyLevel().get() : counterMeta
+        return context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : counterMeta
                 .getReadConsistencyLevel();
     }
 
     private ConsistencyLevel getWriteRuntimeConsistencyIfPossible()
     {
-        return context.getWriteConsistencyLevel().isPresent() ? context.getWriteConsistencyLevel().get() : counterMeta
+        return context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : counterMeta
                 .getWriteConsistencyLevel();
     }
 }

@@ -48,7 +48,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.base.Optional;
 
 /**
  * ThriftEntityInterceptorTest
@@ -163,8 +162,7 @@ public class ThriftEntityInterceptorTest
         entityMeta.setClusteredEntity(false);
         entityMeta.setEagerGetters(eagerGetters);
 
-        when(flushContext.getReadConsistencyLevel()).thenReturn(Optional.fromNullable(ONE));
-        when(flushContext.getWriteConsistencyLevel()).thenReturn(Optional.fromNullable(ONE));
+        when(flushContext.getConsistencyLevel()).thenReturn(ONE);
 
         context = ThriftPersistenceContextTestBuilder //
                 .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
@@ -181,7 +179,7 @@ public class ThriftEntityInterceptorTest
         interceptor.setDirtyMap(dirtyMap);
         interceptor.setContext(context);
         when(entityDaosMap.get("join_cf")).thenReturn(entityDao);
-        when(flushContext.duplicateWithoutTtl()).thenReturn(flushContext);
+        when(flushContext.duplicate()).thenReturn(flushContext);
 
         Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
         Whitebox.setInternalState(context, ThriftAbstractFlushContext.class, flushContext);

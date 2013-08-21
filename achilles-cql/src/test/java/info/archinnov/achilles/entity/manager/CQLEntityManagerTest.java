@@ -21,6 +21,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
@@ -107,10 +108,9 @@ public class CQLEntityManagerTest
     public void should_init_persistence_context_with_entity() throws Exception
     {
         CQLPersistenceContext context = mock(CQLPersistenceContext.class);
-        when(contextFactory.newContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(context);
+        when(contextFactory.newContext(entity, OptionsBuilder.noOptions())).thenReturn(context);
 
-        CQLPersistenceContext actual = manager.initPersistenceContext(entity, noConsistency,
-                noConsistency, noTtl);
+        CQLPersistenceContext actual = manager.initPersistenceContext(entity, OptionsBuilder.noOptions());
 
         assertThat(actual).isSameAs(context);
 
@@ -120,12 +120,11 @@ public class CQLEntityManagerTest
     public void should_init_persistence_context_with_type_and_id() throws Exception
     {
         CQLPersistenceContext context = mock(CQLPersistenceContext.class);
-        when(contextFactory.newContext(CompleteBean.class, entity.getId(), noConsistency, noConsistency, noTtl))
-                .thenReturn(
-                        context);
+        when(contextFactory.newContext(CompleteBean.class, entity.getId(), OptionsBuilder.noOptions())).thenReturn(
+                context);
 
-        CQLPersistenceContext actual = manager.initPersistenceContext(CompleteBean.class,
-                entity.getId(), noConsistency, noConsistency, noTtl);
+        CQLPersistenceContext actual = manager.initPersistenceContext(CompleteBean.class, entity.getId(),
+                OptionsBuilder.noOptions());
 
         assertThat(actual).isSameAs(context);
     }

@@ -15,6 +15,7 @@ import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -96,14 +97,14 @@ public class ThriftEntityManagerTest
     public void should_init_persistence_context_with_class_and_primary_key() throws Exception
     {
         ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
-        when(contextFactory.newContext(CompleteBean.class, entity.getId(), noConsistency, noConsistency, noTtl))
+        when(contextFactory.newContext(CompleteBean.class, entity.getId(), OptionsBuilder.noOptions()))
                 .thenReturn(context);
 
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
         when(daoContext.findEntityDao("table")).thenReturn(entityDao);
 
         ThriftPersistenceContext actual = em.initPersistenceContext(CompleteBean.class,
-                entity.getId(), noConsistency, noConsistency, noTtl);
+                entity.getId(), OptionsBuilder.noOptions());
 
         assertThat(actual).isSameAs(context);
     }
@@ -112,10 +113,9 @@ public class ThriftEntityManagerTest
     public void should_init_persistence_context_with_entity() throws Exception
     {
         ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
-        when(contextFactory.newContext(entity, noConsistency, noConsistency, noTtl)).thenReturn(context);
+        when(contextFactory.newContext(entity, OptionsBuilder.noOptions())).thenReturn(context);
 
-        ThriftPersistenceContext actual = em.initPersistenceContext(entity, noConsistency,
-                noConsistency, noTtl);
+        ThriftPersistenceContext actual = em.initPersistenceContext(entity, OptionsBuilder.noOptions());
 
         assertThat(actual).isSameAs(context);
 

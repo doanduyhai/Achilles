@@ -8,8 +8,8 @@ import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -18,6 +18,7 @@ import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndRead
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
@@ -128,7 +129,7 @@ public class ConsistencyLevelIT
 
         try
         {
-            em.persist(entity, ConsistencyLevel.EACH_QUORUM);
+            em.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
         } catch (HInvalidRequestException e)
         {
             assertThat(e)
@@ -139,7 +140,7 @@ public class ConsistencyLevelIT
         assertThatConsistencyLevelsAreReinitialized();
 
         logAsserter.prepareLogLevel();
-        em.persist(entity, ConsistencyLevel.ALL);
+        em.persist(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = em.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name zerferg");
         logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
@@ -157,7 +158,7 @@ public class ConsistencyLevelIT
 
         try
         {
-            em.merge(entity, ConsistencyLevel.EACH_QUORUM);
+            em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
         } catch (HInvalidRequestException e)
         {
             assertThat(e)
@@ -167,7 +168,7 @@ public class ConsistencyLevelIT
         assertThatConsistencyLevelsAreReinitialized();
 
         logAsserter.prepareLogLevel();
-        em.merge(entity, ConsistencyLevel.ALL);
+        em.merge(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = em.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name zeruioze");
         logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
@@ -263,7 +264,7 @@ public class ConsistencyLevelIT
                 .buid();
         try
         {
-            em.merge(entity, ConsistencyLevel.EACH_QUORUM);
+            em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
         } catch (HInvalidRequestException e)
         {
             assertThat(e)
@@ -272,7 +273,7 @@ public class ConsistencyLevelIT
         }
         assertThatConsistencyLevelsAreReinitialized();
         logAsserter.prepareLogLevel();
-        em.merge(entity, ConsistencyLevel.ALL);
+        em.merge(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = em.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name qzerferf");
         logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
@@ -286,12 +287,12 @@ public class ConsistencyLevelIT
 
         logAsserter.prepareLogLevel();
         ThriftBatchingEntityManager batchingEm = emf.createBatchingEntityManager();
-        batchingEm.startBatch(ONE, QUORUM);
+        batchingEm.startBatch(ONE);
         batchingEm.persist(entity);
         batchingEm.persist(tweet);
 
         batchingEm.endBatch();
-        logAsserter.assertConsistencyLevels(ONE, QUORUM);
+        logAsserter.assertConsistencyLevels(ONE, ONE);
     }
 
     @Test

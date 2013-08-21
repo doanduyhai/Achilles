@@ -4,7 +4,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.FlushContext.FlushType;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -17,7 +16,6 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.google.common.base.Optional;
 
 /**
  * CQLImmediateFlushContextTest
@@ -47,10 +45,7 @@ public class CQLImmediateFlushContextTest
     @Before
     public void setUp()
     {
-        context = new CQLImmediateFlushContext(daoContext,
-                Optional.<ConsistencyLevel> absent(),
-                Optional.<ConsistencyLevel> absent(),
-                Optional.<Integer> absent());
+        context = new CQLImmediateFlushContext(daoContext, null);
     }
 
     @Test
@@ -78,7 +73,7 @@ public class CQLImmediateFlushContextTest
         List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
         Whitebox.setInternalState(context, "boundStatements", boundStatements);
 
-        context.setWriteConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
+        context.setConsistencyLevel(LOCAL_QUORUM);
         context.pushBoundStatement(bs, EACH_QUORUM);
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
@@ -104,7 +99,7 @@ public class CQLImmediateFlushContextTest
         List<Statement> statements = new ArrayList<Statement>();
         Whitebox.setInternalState(context, "statements", statements);
 
-        context.setWriteConsistencyLevel(Optional.fromNullable(LOCAL_QUORUM));
+        context.setConsistencyLevel(LOCAL_QUORUM);
         context.pushStatement(statement, EACH_QUORUM);
 
         verify(statement).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
@@ -143,15 +138,12 @@ public class CQLImmediateFlushContextTest
     }
 
     @Test
-    public void should_duplicate_without_ttl() throws Exception
+    public void should_duplicate() throws Exception
     {
-        context = new CQLImmediateFlushContext(daoContext,
-                Optional.fromNullable(LOCAL_QUORUM),
-                Optional.fromNullable(EACH_QUORUM),
-                Optional.fromNullable(10));
-        CQLImmediateFlushContext actual = context.duplicateWithoutTtl();
+        context = new CQLImmediateFlushContext(daoContext, LOCAL_QUORUM);
+        CQLImmediateFlushContext actual = context.duplicate();
 
-        assertThat(actual.ttlO.isPresent()).isFalse();
+        assertThat(actual.consistencyLevel).isEqualTo(LOCAL_QUORUM);
     }
 
     @Test(expected = UnsupportedOperationException.class)

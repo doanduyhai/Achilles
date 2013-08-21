@@ -11,7 +11,7 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import java.util.List;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +22,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.base.Optional;
 
 /**
  * CQLBatchingEntityManagerTest
@@ -58,7 +57,7 @@ public class CQLBatchingEntityManagerTest {
     private EntityManagerFactory emf;
 
     @Captor
-    private ArgumentCaptor<Optional<ConsistencyLevel>> consistencyCaptor;
+    private ArgumentCaptor<ConsistencyLevel> consistencyCaptor;
 
     @Before
     public void setUp()
@@ -78,14 +77,11 @@ public class CQLBatchingEntityManagerTest {
     @Test
     public void should_start_batch_with_consistency_level() throws Exception
     {
-        em.startBatch(EACH_QUORUM, LOCAL_QUORUM);
+        em.startBatch(EACH_QUORUM);
         verify(flushContext).startBatch();
-        verify(flushContext).setReadConsistencyLevel(consistencyCaptor.capture());
-        verify(flushContext).setWriteConsistencyLevel(consistencyCaptor.capture());
+        verify(flushContext).setConsistencyLevel(consistencyCaptor.capture());
 
-        List<Optional<ConsistencyLevel>> allValues = consistencyCaptor.getAllValues();
-        assertThat(allValues.get(0).get()).isSameAs(EACH_QUORUM);
-        assertThat(allValues.get(1).get()).isSameAs(LOCAL_QUORUM);
+        assertThat(consistencyCaptor.getValue()).isSameAs(EACH_QUORUM);
     }
 
     @Test
@@ -123,17 +119,7 @@ public class CQLBatchingEntityManagerTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-        em.persist(new CompleteBean(), ONE);
-    }
-
-    @Test
-    public void should_exception_when_persist_with_ttl_andconsistency() throws Exception
-    {
-        exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-
-        em.persist(new CompleteBean(), 11, ONE);
+        em.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test
@@ -143,17 +129,7 @@ public class CQLBatchingEntityManagerTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-        em.merge(new CompleteBean(), ONE);
-    }
-
-    @Test
-    public void should_exception_when_merge_with_ttl_and_consistency() throws Exception
-    {
-        exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-
-        em.merge(new CompleteBean(), 11, ONE);
+        em.merge(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test

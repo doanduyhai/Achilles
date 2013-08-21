@@ -10,8 +10,8 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -19,6 +19,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.KeyValue;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +47,8 @@ public class EmOperationsIT
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "CompleteBean",
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "CompleteBean",
             "achillesCounterCF");
 
     private ThriftEntityManager em = resource.getEm();
@@ -194,7 +196,7 @@ public class EmOperationsIT
         entity.setWelcomeTweet(tweet);
 
         // Persist entity with ttl = 2 secs
-        em.persist(entity, 2);
+        em.persist(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 
@@ -297,7 +299,7 @@ public class EmOperationsIT
         entity.setName("DuyHai2");
 
         // Merge with ttl = 2 secs
-        em.merge(entity, 2);
+        em.merge(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 

@@ -13,11 +13,10 @@ import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.CQLTypedQueryBuilder;
 import info.archinnov.achilles.query.typed.CQLTypedQueryValidator;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.validation.Validator;
 import java.util.Map;
 import com.datastax.driver.core.Session;
-import com.google.common.base.Optional;
 
 /**
  * CqlEntityManager
@@ -122,18 +121,15 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext>
     }
 
     @Override
-    protected CQLPersistenceContext initPersistenceContext(Object entity, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    protected CQLPersistenceContext initPersistenceContext(Object entity, Options options)
     {
-        return contextFactory.newContext(entity, readLevelO, writeLevelO, ttlO);
+        return contextFactory.newContext(entity, options);
     }
 
     @Override
-    protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+    protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options)
     {
-        return contextFactory.newContext(entityClass, primaryKey, readLevelO, writeLevelO, ttlO);
+        return contextFactory.newContext(entityClass, primaryKey, options);
     }
 
     public Session getNativeSession()

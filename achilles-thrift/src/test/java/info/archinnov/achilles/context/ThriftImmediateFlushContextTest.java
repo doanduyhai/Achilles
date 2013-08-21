@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.base.Optional;
 
 /**
  * ThriftImmediateFlushContextTest
@@ -65,14 +64,12 @@ public class ThriftImmediateFlushContextTest
 
     private Boolean hasCustomConsistencyLevels = false;
 
-    private Optional<Integer> ttlO = Optional.<Integer> absent();
-
     @Before
     public void setUp()
     {
         context = new ThriftImmediateFlushContext(thriftDaoContext, thriftConsistencyContext,
                 new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-                hasCustomConsistencyLevels, ttlO);
+                hasCustomConsistencyLevels);
 
         Whitebox.setInternalState(context, ThriftConsistencyContext.class, thriftConsistencyContext);
         Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
@@ -197,15 +194,15 @@ public class ThriftImmediateFlushContextTest
     }
 
     @Test
-    public void should_duplicate_without_ttl() throws Exception
+    public void should_duplicate() throws Exception
     {
         context = new ThriftImmediateFlushContext(thriftDaoContext,
                 thriftConsistencyContext,
                 new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-                true,
-                Optional.fromNullable(10));
-        ThriftImmediateFlushContext actual = context.duplicateWithoutTtl();
+                true);
+        ThriftImmediateFlushContext actual = context.duplicate();
 
-        assertThat(actual.ttlO.isPresent()).isFalse();
+        assertThat(actual).isNotNull();
+        assertThat(actual.consistencyLevel).isNull();
     }
 }

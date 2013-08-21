@@ -134,7 +134,7 @@ public class CQLLoaderImplTest
                 .build();
         when(entityMeta.isClusteredCounter()).thenReturn(true);
         when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 
         CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
@@ -157,7 +157,7 @@ public class CQLLoaderImplTest
                 .build();
         when(entityMeta.isClusteredCounter()).thenReturn(true);
         when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 
         CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
@@ -178,7 +178,7 @@ public class CQLLoaderImplTest
 
         when(entityMeta.isClusteredCounter()).thenReturn(true);
         when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(null);
 
         CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);

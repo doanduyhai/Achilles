@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.base.Optional;
 
 /**
  * ThriftBatchingFlushContextTest
@@ -57,14 +56,12 @@ public class ThriftBatchingFlushContextTest
 
     private Boolean hasCustomConsistencyLevels = false;
 
-    private Optional<Integer> ttlO = Optional.<Integer> absent();
-
     @Before
     public void setUp()
     {
         context = new ThriftBatchingFlushContext(thriftDaoContext, consistencyContext,
                 new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-                hasCustomConsistencyLevels, ttlO);
+                hasCustomConsistencyLevels);
 
         Whitebox.setInternalState(context, ThriftConsistencyContext.class, consistencyContext);
         Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
@@ -113,11 +110,11 @@ public class ThriftBatchingFlushContextTest
         context = new ThriftBatchingFlushContext(thriftDaoContext,
                 consistencyContext,
                 new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-                true,
-                Optional.fromNullable(10));
-        ThriftBatchingFlushContext actual = context.duplicateWithoutTtl();
+                true);
+        ThriftBatchingFlushContext actual = context.duplicate();
 
-        assertThat(actual.ttlO.isPresent()).isFalse();
+        assertThat(actual).isNotNull();
+        assertThat(actual.consistencyLevel).isNull();
     }
 
 }

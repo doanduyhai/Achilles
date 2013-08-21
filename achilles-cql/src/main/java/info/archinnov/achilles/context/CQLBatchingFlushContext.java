@@ -5,7 +5,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;
-import com.google.common.base.Optional;
 
 /**
  * CQLBatchingFlushContext
@@ -16,16 +15,14 @@ import com.google.common.base.Optional;
 public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatchingFlushContext> {
     private static final Logger log = LoggerFactory.getLogger(CQLBatchingFlushContext.class);
 
-    public CQLBatchingFlushContext(CQLDaoContext daoContext,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+    public CQLBatchingFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel)
     {
-        super(daoContext, readLevelO, writeLevelO, ttlO);
+        super(daoContext, consistencyLevel);
     }
 
     private CQLBatchingFlushContext(CQLDaoContext daoContext, List<BoundStatement> boundStatements,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
-        super(daoContext, boundStatements, readLevelO, writeLevelO, ttlO);
+            ConsistencyLevel consistencyLevel) {
+        super(daoContext, boundStatements, consistencyLevel);
     }
 
     @Override
@@ -54,9 +51,8 @@ public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatching
     }
 
     @Override
-    public CQLBatchingFlushContext duplicateWithoutTtl() {
-        return new CQLBatchingFlushContext(daoContext, boundStatements, readLevelO, writeLevelO,
-                Optional.<Integer> absent());
+    public CQLBatchingFlushContext duplicate() {
+        return new CQLBatchingFlushContext(daoContext, boundStatements, consistencyLevel);
     }
 
 }

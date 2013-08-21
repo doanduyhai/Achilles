@@ -7,6 +7,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity.CompoundKey;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.OrderingMode;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,8 @@ import org.junit.Test;
 public class ValuelessClusteredEntityIT {
 
     @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ValuelessClusteredEntity");
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+            "ValuelessClusteredEntity");
 
     private CQLEntityManager em = resource.getEm();
 
@@ -65,7 +67,7 @@ public class ValuelessClusteredEntityIT {
         CompoundKey compoundKey = new CompoundKey(id, name);
         ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-        em.persist(entity, 2);
+        em.persist(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 
@@ -80,7 +82,7 @@ public class ValuelessClusteredEntityIT {
         CompoundKey compoundKey = new CompoundKey(id, name);
         ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-        em.merge(entity, 2);
+        em.merge(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 

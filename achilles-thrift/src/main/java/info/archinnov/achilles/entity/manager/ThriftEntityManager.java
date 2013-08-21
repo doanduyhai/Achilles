@@ -10,11 +10,10 @@ import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Optional;
 
 /**
  * ThriftEntityManager
@@ -69,17 +68,15 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     }
 
     @Override
-    protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options)
     {
-        return contextFactory.newContext(entityClass, primaryKey, readLevelO, writeLevelO, ttlO);
+        return contextFactory.newContext(entityClass, primaryKey, options);
     }
 
     @Override
-    protected ThriftPersistenceContext initPersistenceContext(Object entity,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    protected ThriftPersistenceContext initPersistenceContext(Object entity, Options options)
     {
-        return contextFactory.newContext(entity, readLevelO, writeLevelO, ttlO);
+        return contextFactory.newContext(entity, options);
     }
 
     protected void setThriftDaoContext(ThriftDaoContext thriftDaoContext) {

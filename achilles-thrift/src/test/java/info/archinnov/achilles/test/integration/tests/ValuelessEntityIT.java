@@ -2,9 +2,10 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessEntity;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,7 +19,8 @@ import org.junit.Test;
 public class ValuelessEntityIT {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "ValuelessEntity");
+    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+            "ValuelessEntity");
 
     private ThriftEntityManager em = resource.getEm();
 
@@ -54,7 +56,7 @@ public class ValuelessEntityIT {
         Long id = RandomUtils.nextLong();
         ValuelessEntity entity = new ValuelessEntity(id);
 
-        em.persist(entity, 2);
+        em.persist(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 
@@ -67,7 +69,7 @@ public class ValuelessEntityIT {
         Long id = RandomUtils.nextLong();
         ValuelessEntity entity = new ValuelessEntity(id);
 
-        em.merge(entity, 2);
+        em.merge(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 

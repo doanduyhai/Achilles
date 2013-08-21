@@ -1,7 +1,6 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
-import com.google.common.base.Optional;
 
 /**
  * FlushContext
@@ -11,16 +10,6 @@ import com.google.common.base.Optional;
  */
 public abstract class FlushContext<T extends FlushContext<T>>
 {
-    protected Optional<Integer> ttlO;
-
-    public FlushContext(Optional<Integer> ttlO) {
-        this.ttlO = ttlO;
-    }
-
-    public Optional<Integer> getTtlO()
-    {
-        return ttlO;
-    }
 
     public abstract void startBatch();
 
@@ -30,19 +19,13 @@ public abstract class FlushContext<T extends FlushContext<T>>
 
     public abstract void cleanUp();
 
-    public abstract Optional<ConsistencyLevel> getReadConsistencyLevel();
-
-    public abstract Optional<ConsistencyLevel> getWriteConsistencyLevel();
-
-    public abstract void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO);
-
-    public abstract void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO);
-
-    public abstract void reinitConsistencyLevels();
-
     public abstract FlushType type();
 
-    public abstract T duplicateWithoutTtl();
+    public abstract T duplicate();
+
+    public abstract void setConsistencyLevel(ConsistencyLevel consistencyLevel);
+
+    public abstract ConsistencyLevel getConsistencyLevel();
 
     public static enum FlushType
     {

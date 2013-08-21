@@ -10,6 +10,8 @@ import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import java.util.Map;
@@ -56,39 +58,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     public void persist(Object entity) {
         log.debug("Persisting entity '{}'", entity);
 
-        persist(entity, NO_CONSISTENCY_LEVEL, NO_TTL);
-    }
-
-    /**
-     * Persist an entity with the given Consistency Level for write. All join entities with CascadeType.PERSIST or
-     * CascadeType.ALL
-     * 
-     * will be also persisted with the same Consistency Level, overriding their current state in Cassandra
-     * 
-     * @param entity
-     *            Entity to be persisted
-     * @param writeLevel
-     *            Consistency Level for write
-     */
-    public void persist(final Object entity, ConsistencyLevel writeLevel) {
-        log.debug("Persisting entity '{}' with write consistency level {}", entity, writeLevel);
-
-        persist(entity, Optional.fromNullable(writeLevel), NO_TTL);
-    }
-
-    /**
-     * Persist an entity with the given time-to-live. All join entities with CascadeType.PERSIST or CascadeType.ALL
-     * 
-     * will be also persisted <strong>but the time-to-live will not be cascaded</strong>
-     * 
-     * @param entity
-     *            Entity to be persisted
-     * @param ttl
-     *            Time to live
-     */
-    public void persist(final Object entity, int ttl) {
-        log.debug("Persisting entity '{}' with ttl {}", entity, ttl);
-        persist(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
+        persist(entity, OptionsBuilder.noOptions());
     }
 
     /**
@@ -100,21 +70,16 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * 
      * @param entity
      *            Entity to be persisted
-     * @param ttl
-     *            Time to live
-     * @param writeLevel
-     *            Consistency Level for write
+     * @param Options
+     *            options for consistency level, ttl and timestamp
      */
-    public void persist(final Object entity, int ttl, ConsistencyLevel writeLevel) {
-        log.debug("Persisting entity '{}' with ttl {} and consistency level {}", entity, ttl, writeLevel);
+    public void persist(final Object entity, Options options) {
+        if (log.isDebugEnabled())
+            log.debug("Persisting entity '{}' with options {} ", entity, options);
 
-        persist(entity, Optional.fromNullable(writeLevel), Optional.fromNullable(ttl));
-    }
-
-    void persist(final Object entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
 
-        if (ttlO.isPresent())
+        if (options.getTtl().isPresent())
         {
             entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
         }
@@ -123,7 +88,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
                     "Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
         }
 
-        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, ttlO);
+        CONTEXT context = initPersistenceContext(entity, options);
         context.persist();
     }
 
@@ -151,78 +116,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * @return Merged entity or a new proxified entity
      */
     public <T> T merge(T entity) {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Merging entity '{}'", proxifier.unwrap(entity));
-        }
-        return merge(entity, NO_CONSISTENCY_LEVEL, NO_TTL);
-    }
 
-    /**
-     * Merge an entity with the given Consistency Level for write. All join entities with CascadeType.MERGE or
-     * CascadeType.ALL
-     * 
-     * will be also merged, updating their current state in Cassandra.
-     * 
-     * Calling merge on a transient entity will persist it and returns a managed
-     * 
-     * instance.
-     * 
-     * <strong>Unlike the JPA specs, Achilles returns the same entity passed
-     * 
-     * in parameter if the latter is in managed state. It was designed on purpose
-     * 
-     * so you do not loose the reference of the passed entity. For transient
-     * 
-     * entity, the return value is a new proxy object
-     * 
-     * </strong>
-     * 
-     * @param entity
-     *            Entity to be merged
-     * @param writeLevel
-     *            Consistency Level for write
-     * @return Merged entity or a new proxified entity
-     */
-    public <T> T merge(final T entity, ConsistencyLevel writeLevel) {
-        if (log.isDebugEnabled()) {
-            log.debug("Merging entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
-        }
-        return this.merge(entity, Optional.fromNullable(writeLevel), NO_TTL);
-
-    }
-
-    /**
-     * Merge an entity with the given time-to-live. All join entities with CascadeType.MERGE or CascadeType.ALL
-     * 
-     * will be also merged <strong>but the time-to-live will not be cascaded</strong>, updating their current state in
-     * Cassandra.
-     * 
-     * Calling merge on a transient entity will persist it and returns a managed
-     * 
-     * instance.
-     * 
-     * <strong>Unlike the JPA specs, Achilles returns the same entity passed
-     * 
-     * in parameter if the latter is in managed state. It was designed on purpose
-     * 
-     * so you do not loose the reference of the passed entity. For transient
-     * 
-     * entity, the return value is a new proxy object
-     * 
-     * </strong>
-     * 
-     * @param entity
-     *            Entity to be merged
-     * @param ttl
-     *            Time to live
-     * @return Merged entity or a new proxified entity
-     */
-    public <T> T merge(final T entity, int ttl) {
-        if (log.isDebugEnabled()) {
-            log.debug("Merging entity '{}' with ttl {}", proxifier.unwrap(entity), ttl);
-        }
-        return this.merge(entity, NO_CONSISTENCY_LEVEL, Optional.fromNullable(ttl));
-
+        return merge(entity, OptionsBuilder.noOptions());
     }
 
     /**
@@ -246,28 +143,20 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      * 
      * @param entity
      *            Entity to be merged
-     * @param ttl
-     *            Time to live
-     * @param writeLevel
-     *            Consistency Level for write
+     * @param Options
+     *            options for consistency level, ttl and timestamp
      * @return Merged entity or a new proxified entity
      */
-    public <T> T merge(final T entity, int ttl, ConsistencyLevel writeLevel) {
+    public <T> T merge(final T entity, Options options) {
         if (log.isDebugEnabled()) {
-            log.debug("Merging entity '{}' with ttl {} and consistency level {}", proxifier.unwrap(entity), ttl,
-                    writeLevel);
+            log.debug("Merging entity '{}' with options {} ", proxifier.unwrap(entity), options);
         }
-        return this.merge(entity, Optional.fromNullable(writeLevel), Optional.fromNullable(ttl));
-
-    }
-
-    <T> T merge(final T entity, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO) {
         entityValidator.validateEntity(entity, entityMetaMap);
-        if (ttlO.isPresent())
+        if (options.getTtl().isPresent())
         {
             entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
         }
-        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, ttlO);
+        CONTEXT context = initPersistenceContext(entity, options);
         return context.<T> merge(entity);
 
     }
@@ -285,10 +174,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Entity to be removed
      */
     public void remove(Object entity) {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Removing entity '{}'", proxifier.unwrap(entity));
-        }
-        this.remove(entity, NO_CONSISTENCY_LEVEL);
+
+        remove(entity, null);
     }
 
     /**
@@ -313,8 +202,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
         if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
         }
-        CONTEXT context = initPersistenceContext(entityClass, primaryKey, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL,
-                NO_TTL);
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.noOptions());
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
@@ -334,10 +222,13 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Consistency Level for write
      */
     public void remove(final Object entity, ConsistencyLevel writeLevel) {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
-        }
-        this.remove(entity, Optional.fromNullable(writeLevel));
+
+        entityValidator.validateEntity(entity, entityMetaMap);
+        proxifier.ensureProxy(entity);
+        CONTEXT context = initPersistenceContext(entity, OptionsBuilder.withConsistency(writeLevel));
+        context.remove();
     }
 
     /**
@@ -359,19 +250,11 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
         Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
         Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        }
-        CONTEXT context = initPersistenceContext(entityClass, primaryKey, Optional.fromNullable(writeLevel),
-                Optional.fromNullable(writeLevel), NO_TTL);
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.remove();
-    }
 
-    void remove(final Object entity, Optional<ConsistencyLevel> writeLevelO) {
-        entityValidator.validateEntity(entity, entityMetaMap);
-        proxifier.ensureProxy(entity);
-        CONTEXT context = initPersistenceContext(entity, writeLevelO, writeLevelO, NO_TTL);
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(writeLevel));
+        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
 
@@ -387,7 +270,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-        return this.find(entityClass, primaryKey, NO_CONSISTENCY_LEVEL);
+        return find(entityClass, primaryKey, null);
     }
 
     /**
@@ -405,13 +288,9 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
         log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass,
                 primaryKey, readLevel);
-        return this.find(entityClass, primaryKey, Optional.fromNullable(readLevel));
-    }
-
-    <T> T find(final Class<T> entityClass, final Object primaryKey, Optional<ConsistencyLevel> readLevelO) {
         Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-        CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> find(entityClass);
     }
@@ -428,8 +307,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Proxified empty entity
      */
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-        log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
-        return this.getReference(entityClass, primaryKey, NO_CONSISTENCY_LEVEL);
+        if (log.isDebugEnabled())
+            log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
+
+        return getReference(entityClass, primaryKey, null);
     }
 
     /**
@@ -446,15 +327,13 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Proxified empty entity
      */
     public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
-                entityClass, primaryKey, readLevel);
-        return this.getReference(entityClass, primaryKey, Optional.fromNullable(readLevel));
-    }
+        if (log.isDebugEnabled())
+            log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
+                    entityClass, primaryKey, readLevel);
 
-    <T> T getReference(final Class<T> entityClass, final Object primaryKey, Optional<ConsistencyLevel> readLevelO) {
         Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        CONTEXT context = initPersistenceContext(entityClass, primaryKey, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
+        CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.<T> getReference(entityClass);
     }
@@ -468,11 +347,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Entity to be refreshed
      */
     public void refresh(Object entity) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
-        }
 
-        this.refresh(entity, NO_CONSISTENCY_LEVEL);
+        refresh(entity, null);
     }
 
     /**
@@ -487,17 +365,12 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      *            Consistency Level for read
      */
     public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
             log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
-        }
 
-        this.refresh(entity, Optional.fromNullable(readLevel));
-    }
-
-    void refresh(final Object entity, Optional<ConsistencyLevel> readLevelO) throws AchillesStaleObjectStateException {
         entityValidator.validateEntity(entity, entityMetaMap);
         proxifier.ensureProxy(entity);
-        CONTEXT context = initPersistenceContext(entity, readLevelO, NO_CONSISTENCY_LEVEL, NO_TTL);
+        CONTEXT context = initPersistenceContext(entity, OptionsBuilder.withConsistency(readLevel));
         context.refresh();
     }
 
@@ -510,7 +383,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
     public <T> T initialize(final T entity) {
         log.debug("Force lazy fields initialization for entity {}", entity);
         proxifier.ensureProxy(entity);
-        CONTEXT context = initPersistenceContext(entity, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
+        CONTEXT context = initPersistenceContext(entity, OptionsBuilder.noOptions());
         return context.initialize(entity);
     }
 
@@ -623,11 +496,10 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
      */
     public abstract <T> SliceQueryBuilder<CONTEXT, T> sliceQuery(Class<T> entityClass);
 
-    protected abstract CONTEXT initPersistenceContext(Object entity, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttl);
+    protected abstract CONTEXT initPersistenceContext(Object entity, Options options);
 
     protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttl);
+            Options options);
 
     protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
         return entityMetaMap;

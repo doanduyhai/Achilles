@@ -10,6 +10,7 @@ import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
@@ -63,7 +64,7 @@ public class ClusteredEntityIT
 
         entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-        em.persist(entity, 2);
+        em.persist(entity, OptionsBuilder.withTtl(2));
 
         assertThat(em.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -92,7 +93,7 @@ public class ClusteredEntityIT
     {
         compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
         entity = new ClusteredEntity(compoundKey, "clustered_value");
-        entity = em.merge(entity, 2);
+        entity = em.merge(entity, OptionsBuilder.withTtl(2));
 
         assertThat(em.find(ClusteredEntity.class, compoundKey)).isNotNull();
 

@@ -7,6 +7,8 @@ import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import java.util.Set;
@@ -32,23 +34,25 @@ public abstract class PersistenceContext
     protected FlushContext<?> flushContext;
     protected Set<String> entitiesIdentity;
 
+    protected Options options = OptionsBuilder.noOptions();
     protected boolean loadEagerFields = true;
 
     private PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            FlushContext<?> flushContext, Class<?> entityClass, Set<String> entitiesIdentity)
+            FlushContext<?> flushContext, Class<?> entityClass, Options options, Set<String> entitiesIdentity)
     {
         this.entityMeta = entityMeta;
         this.configContext = configContext;
         this.flushContext = flushContext;
         this.entityClass = entityClass;
+        this.options = options;
         this.entitiesIdentity = entitiesIdentity;
 
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Object entity, FlushContext<?> flushContext, Set<String> entitiesIdentity)
+            Object entity, FlushContext<?> flushContext, Options options, Set<String> entitiesIdentity)
     {
-        this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), entitiesIdentity);
+        this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), options, entitiesIdentity);
         Validator.validateNotNull(entity, "The entity should not be null for persistence context creation");
         this.entity = entity;
         this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
@@ -58,9 +62,10 @@ public abstract class PersistenceContext
     }
 
     protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
-            Class<?> entityClass, Object primaryKey, FlushContext<?> flushContext, Set<String> entitiesIdentity)
+            Class<?> entityClass, Object primaryKey, FlushContext<?> flushContext, Options options,
+            Set<String> entitiesIdentity)
     {
-        this(entityMeta, configContext, flushContext, entityClass, entitiesIdentity);
+        this(entityMeta, configContext, flushContext, entityClass, options, entitiesIdentity);
 
         this.primaryKey = primaryKey;
         this.flushContext = flushContext;
@@ -157,26 +162,6 @@ public abstract class PersistenceContext
         flushContext.endBatch();
     }
 
-    public void setReadConsistencyLevelO(Optional<ConsistencyLevel> readLevelO)
-    {
-        flushContext.setReadConsistencyLevel(readLevelO);
-    }
-
-    public void setWriteConsistencyLevelO(Optional<ConsistencyLevel> writeLevelO)
-    {
-        flushContext.setWriteConsistencyLevel(writeLevelO);
-    }
-
-    public void reinitConsistencyLevels()
-    {
-        flushContext.reinitConsistencyLevels();
-    }
-
-    public Optional<Integer> getTttO()
-    {
-        return flushContext.getTtlO();
-    }
-
     public EntityMeta getEntityMeta()
     {
         return entityMeta;
@@ -246,14 +231,19 @@ public abstract class PersistenceContext
         this.loadEagerFields = loadEagerFields;
     }
 
-    public Optional<ConsistencyLevel> getReadConsistencyLevel()
+    public Optional<Integer> getTtt()
     {
-        return flushContext.getReadConsistencyLevel();
+        return options.getTtl();
     }
 
-    public Optional<ConsistencyLevel> getWriteConsistencyLevel()
+    public Optional<Long> getTimestamp()
     {
-        return flushContext.getReadConsistencyLevel();
+        return options.getTimestamp();
+    }
+
+    public Optional<ConsistencyLevel> getConsistencyLevel()
+    {
+        return Optional.fromNullable(flushContext.getConsistencyLevel());
     }
 
 }

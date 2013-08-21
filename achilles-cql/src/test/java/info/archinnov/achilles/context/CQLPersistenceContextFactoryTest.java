@@ -9,6 +9,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.google.common.base.Optional;
 
 /**
  * CQLPersistenceContextFactoryTest
@@ -80,10 +80,8 @@ public class CQLPersistenceContextFactoryTest {
 
         when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 
-        CQLPersistenceContext actual = factory.newContext(entity,
-                Optional.fromNullable(EACH_QUORUM),
-                Optional.fromNullable(LOCAL_QUORUM),
-                Optional.<Integer> fromNullable(95));
+        CQLPersistenceContext actual = factory
+                .newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
 
         assertThat(actual.getEntity()).isSameAs(entity);
         assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
@@ -91,7 +89,7 @@ public class CQLPersistenceContextFactoryTest {
         assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(actual.getEntityMeta()).isSameAs(meta);
         assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(actual.getTttO().get()).isEqualTo(95);
+        assertThat(actual.getTtt().get()).isEqualTo(95);
     }
 
     @Test
@@ -109,23 +107,22 @@ public class CQLPersistenceContextFactoryTest {
         assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(actual.getEntityMeta()).isSameAs(meta);
         assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(actual.getTttO()).isSameAs(CQLPersistenceContextFactory.NO_TTL);
+        assertThat(actual.getTtt()).isSameAs(CQLPersistenceContextFactory.NO_TTL);
     }
 
     @Test
     public void should_create_new_context_with_primary_key() throws Exception
     {
         Object primaryKey = RandomUtils.nextLong();
-        CQLPersistenceContext context = factory.newContext(CompleteBean.class, primaryKey,
-                Optional.fromNullable(EACH_QUORUM),
-                Optional.fromNullable(LOCAL_QUORUM), Optional.fromNullable(98));
+        CQLPersistenceContext context = factory.newContext(CompleteBean.class, primaryKey, OptionsBuilder
+                .withConsistency(LOCAL_QUORUM).ttl(98));
 
         assertThat(context.getEntity()).isNull();
         assertThat(context.getPrimaryKey()).isSameAs(primaryKey);
         assertThat(context.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(context.getEntityMeta()).isSameAs(meta);
         assertThat(context.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(context.getTttO().get()).isEqualTo(98);
+        assertThat(context.getTtt().get()).isEqualTo(98);
     }
 
     @Test
@@ -134,8 +131,7 @@ public class CQLPersistenceContextFactoryTest {
         Long primaryKey = RandomUtils.nextLong();
         CompleteBean entity = new CompleteBean(primaryKey);
         when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-        when(flushContext.duplicateWithoutTtl()).thenReturn(flushContext);
-        when(flushContext.getTtlO()).thenReturn(Optional.fromNullable(88));
+        when(flushContext.duplicate()).thenReturn(flushContext);
         CQLPersistenceContext actual = factory.newContextForJoin(entity, flushContext, new HashSet<String>());
 
         assertThat(actual.getEntity()).isSameAs(entity);
@@ -143,15 +139,15 @@ public class CQLPersistenceContextFactoryTest {
         assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(actual.getEntityMeta()).isSameAs(meta);
         assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(actual.getTttO().get()).isEqualTo(88);
+        assertThat(actual.getTtt().isPresent()).isFalse();
+        assertThat(actual.getTimestamp().isPresent()).isFalse();
     }
 
     @Test
     public void should_create_new_join_context_with_join_id() throws Exception
     {
         Long primaryKey = RandomUtils.nextLong();
-        when(flushContext.duplicateWithoutTtl()).thenReturn(flushContext);
-        when(flushContext.getTtlO()).thenReturn(Optional.fromNullable(78));
+        when(flushContext.duplicate()).thenReturn(flushContext);
         CQLPersistenceContext actual = factory.newContextForJoin(CompleteBean.class,
                 primaryKey, flushContext, new HashSet<String>());
 
@@ -160,7 +156,8 @@ public class CQLPersistenceContextFactoryTest {
         assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(actual.getEntityMeta()).isSameAs(meta);
         assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(actual.getTttO().get()).isEqualTo(78);
+        assertThat(actual.getTtt().isPresent()).isFalse();
+        assertThat(actual.getTimestamp().isPresent()).isFalse();
     }
 
     @Test
@@ -177,6 +174,6 @@ public class CQLPersistenceContextFactoryTest {
         assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
         assertThat(actual.getEntityMeta()).isSameAs(meta);
         assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-        assertThat(actual.getTttO().isPresent()).isFalse();
+        assertThat(actual.getTtt().isPresent()).isFalse();
     }
 }

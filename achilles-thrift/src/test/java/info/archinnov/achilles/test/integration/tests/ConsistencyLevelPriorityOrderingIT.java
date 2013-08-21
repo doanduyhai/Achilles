@@ -7,8 +7,8 @@ import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
@@ -54,7 +54,7 @@ public class ConsistencyLevelPriorityOrderingIT
         em.persist(entity);
 
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
         logAsserter.prepareLogLevel();
 
         entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
@@ -86,7 +86,7 @@ public class ConsistencyLevelPriorityOrderingIT
 
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
 
-        batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+        batchEm.startBatch(EACH_QUORUM);
 
         expectedEx.expect(AchillesException.class);
         expectedEx
@@ -122,7 +122,7 @@ public class ConsistencyLevelPriorityOrderingIT
         entity.setName("name");
 
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(EACH_QUORUM, ONE);
+        batchEm.startBatch(EACH_QUORUM);
         entity = batchEm.merge(entity);
 
         expectedEx.expect(HInvalidRequestException.class);
@@ -163,7 +163,7 @@ public class ConsistencyLevelPriorityOrderingIT
         entity.setName("name");
 
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
         entity = batchEm.merge(entity);
 
         Counter counter = entity.getCount();
@@ -183,7 +183,7 @@ public class ConsistencyLevelPriorityOrderingIT
     {
 
         ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
-        batchEm.startBatch(ONE, ONE);
+        batchEm.startBatch(ONE);
 
         expectedEx.expect(HInvalidRequestException.class);
         expectedEx

@@ -23,6 +23,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.HashSet;
 import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.commons.lang.math.RandomUtils;
@@ -140,7 +141,7 @@ public class ThriftPersistenceContextTest
         when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 
         context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-                flushContext, entity, new HashSet<String>());
+                flushContext, entity, OptionsBuilder.noOptions(), new HashSet<String>());
     }
 
     @Test
@@ -160,7 +161,7 @@ public class ThriftPersistenceContextTest
         when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
 
         context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-                flushContext, CompleteBean.class, entity.getId(), new HashSet<String>());
+                flushContext, CompleteBean.class, entity.getId(), OptionsBuilder.noOptions(), new HashSet<String>());
 
         assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
         assertThat(context.getEntity()).isNull();
@@ -291,7 +292,7 @@ public class ThriftPersistenceContextTest
     public void should_get_reference() throws Exception
     {
         context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext,
-                flushContext, entity, new HashSet<String>());
+                flushContext, entity, OptionsBuilder.noOptions(), new HashSet<String>());
 
         Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
         Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);

@@ -73,7 +73,7 @@ public class CQLDaoContext
     {
         EntityMeta entityMeta = context.getEntityMeta();
         Class<?> entityClass = context.getEntityClass();
-        Optional<Integer> ttlO = context.getTttO();
+        Optional<Integer> ttlO = context.getTtt();
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
         if (ttlO.isPresent())
         {
@@ -93,7 +93,7 @@ public class CQLDaoContext
     {
         EntityMeta entityMeta = context.getEntityMeta();
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-        Optional<Integer> ttlO = context.getTttO();
+        Optional<Integer> ttlO = context.getTtt();
         if (ttlO.isPresent())
         {
             Assignments update = statementGenerator.generateUpdateFields(context.getEntity(), entityMeta, pms);
@@ -343,26 +343,26 @@ public class CQLDaoContext
     }
 
     private ConsistencyLevel getReadConsistencyLevel(CQLPersistenceContext context, EntityMeta entityMeta) {
-        ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
-                .getReadConsistencyLevel().get() : entityMeta.getReadConsistencyLevel();
+        ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context
+                .getConsistencyLevel().get() : entityMeta.getReadConsistencyLevel();
         return readLevel;
     }
 
     private ConsistencyLevel getWriteConsistencyLevel(CQLPersistenceContext context, EntityMeta entityMeta) {
-        ConsistencyLevel writeLevel = context.getWriteConsistencyLevel().isPresent() ? context
-                .getWriteConsistencyLevel().get() : entityMeta.getWriteConsistencyLevel();
+        ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context
+                .getConsistencyLevel().get() : entityMeta.getWriteConsistencyLevel();
         return writeLevel;
     }
 
     private ConsistencyLevel getReadConsistencyLevel(CQLPersistenceContext context, PropertyMeta pm) {
-        ConsistencyLevel consistency = context.getReadConsistencyLevel().isPresent() ? context
-                .getReadConsistencyLevel().get() : pm.getReadConsistencyLevel();
+        ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context
+                .getConsistencyLevel().get() : pm.getReadConsistencyLevel();
         return consistency;
     }
 
     private ConsistencyLevel getWriteConsistencyLevel(CQLPersistenceContext context, PropertyMeta counterMeta) {
-        ConsistencyLevel consistency = context.getWriteConsistencyLevel().isPresent() ? context
-                .getWriteConsistencyLevel().get() : counterMeta.getWriteConsistencyLevel();
+        ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context
+                .getConsistencyLevel().get() : counterMeta.getWriteConsistencyLevel();
         return consistency;
     }
 

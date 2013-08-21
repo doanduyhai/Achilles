@@ -136,7 +136,7 @@ public class ThriftPersisterImplTest {
                 .entityDaosMap(entityDaosMap)
                 .build();
         when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
+        when(flushContext.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
         entityDaosMap.clear();
         wideRowDaosMap.clear();
@@ -146,7 +146,6 @@ public class ThriftPersisterImplTest {
     public void should_persist_clustered_entity() throws Exception {
         Object partitionKey = 10L;
         String clusteredValue = "clusteredValue";
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
@@ -168,7 +167,6 @@ public class ThriftPersisterImplTest {
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
         verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
@@ -178,7 +176,6 @@ public class ThriftPersisterImplTest {
     public void should_persist_counter_clustered_entity() throws Exception {
         Object partitionKey = 10L;
         Counter clusteredValue = CounterBuilder.incr(10L);
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
@@ -196,7 +193,6 @@ public class ThriftPersisterImplTest {
         Composite comp = new Composite();
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
         verify(wideRowDao).incrementCounter(partitionKey, comp, 10L);
@@ -208,8 +204,6 @@ public class ThriftPersisterImplTest {
         Long joinId = 11L;
         UserBean clusteredValue = new UserBean();
         clusteredValue.setUserId(joinId);
-
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
         PropertyMeta idMeta = PropertyMetaTestBuilder
@@ -240,8 +234,6 @@ public class ThriftPersisterImplTest {
         when(invoker.getValueFromField(clusteredValue, idGetter)).thenReturn(joinId);
         when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
 
-        when(flushContext.getTtlO()).thenReturn(ttlO);
-
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
         verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, wideRowMutator);
@@ -258,7 +250,6 @@ public class ThriftPersisterImplTest {
     public void should_persist_value_less_clustered_entity() throws Exception {
         Object partitionKey = 10L;
         String clusteredValue = "";
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
@@ -273,7 +264,6 @@ public class ThriftPersisterImplTest {
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
         verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
@@ -283,7 +273,6 @@ public class ThriftPersisterImplTest {
     public void should_persist_simple_clustered_value_batch() throws Exception {
         Object partitionKey = 10L;
         String clusteredValue = "clusteredValue";
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         PropertyMeta idMeta = PropertyMetaTestBuilder
                 .valueClass(CompoundKey.class)
@@ -302,7 +291,6 @@ public class ThriftPersisterImplTest {
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
         persisterImpl.persistClusteredValueBatch(context, partitionKey, clusteredValue, persister);
 
         verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
@@ -314,8 +302,6 @@ public class ThriftPersisterImplTest {
         Long joinId = RandomUtils.nextLong();
         UserBean clusteredValue = new UserBean();
         clusteredValue.setUserId(joinId);
-
-        Optional<Integer> ttlO = Optional.fromNullable(10);
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
 
@@ -338,7 +324,6 @@ public class ThriftPersisterImplTest {
         when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
         wideRowDaosMap.put("cf", wideRowDao);
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        when(flushContext.getTtlO()).thenReturn(ttlO);
 
         when(invoker.getPrimaryKey(clusteredValue, joinIdMeta)).thenReturn(joinId);
         when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);

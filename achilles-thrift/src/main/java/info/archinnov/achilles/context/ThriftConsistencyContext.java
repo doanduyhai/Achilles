@@ -3,7 +3,6 @@ package info.archinnov.achilles.context;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import com.google.common.base.Optional;
 
 /**
  * ThriftConsistencyContext
@@ -11,26 +10,23 @@ import com.google.common.base.Optional;
  * @author DuyHai DOAN
  * 
  */
-public class ThriftConsistencyContext implements ConsistencyContext
+public class ThriftConsistencyContext
 {
     private final AchillesConsistencyLevelPolicy policy;
 
-    private Optional<ConsistencyLevel> readLevelO;
-    private Optional<ConsistencyLevel> writeLevelO;
+    private ConsistencyLevel consistencyLevel;
 
-    public ThriftConsistencyContext(AchillesConsistencyLevelPolicy policy,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO)
+    public ThriftConsistencyContext(AchillesConsistencyLevelPolicy policy, ConsistencyLevel consistencyLevel)
     {
         this.policy = policy;
-        this.readLevelO = readLevelO;
-        this.writeLevelO = writeLevelO;
+        this.consistencyLevel = consistencyLevel;
     }
 
     public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context)
     {
-        if (readLevelO.isPresent())
+        if (consistencyLevel != null)
         {
-            policy.setCurrentReadLevel(readLevelO.get());
+            policy.setCurrentReadLevel(consistencyLevel);
             return reinitConsistencyLevels(context);
         }
         else
@@ -56,9 +52,9 @@ public class ThriftConsistencyContext implements ConsistencyContext
 
     public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context)
     {
-        if (writeLevelO.isPresent())
+        if (consistencyLevel != null)
         {
-            policy.setCurrentWriteLevel(writeLevelO.get());
+            policy.setCurrentWriteLevel(consistencyLevel);
             return reinitConsistencyLevels(context);
         }
         else
@@ -82,57 +78,32 @@ public class ThriftConsistencyContext implements ConsistencyContext
         }
     }
 
-    @Override
-    public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO)
+    public void setConsistencyLevel(ConsistencyLevel consistencyLevel)
     {
-        if (readLevelO.isPresent())
+        if (consistencyLevel != null)
         {
-            this.readLevelO = readLevelO;
-            policy.setCurrentReadLevel(readLevelO.get());
+            this.consistencyLevel = consistencyLevel;
+            policy.setCurrentReadLevel(consistencyLevel);
         }
     }
 
-    public void setReadConsistencyLevel()
+    public void setConsistencyLevel()
     {
-        if (readLevelO.isPresent())
+        if (consistencyLevel != null)
         {
-            policy.setCurrentReadLevel(readLevelO.get());
+            policy.setCurrentReadLevel(consistencyLevel);
         }
     }
 
-    @Override
-    public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO)
-    {
-        if (writeLevelO.isPresent())
-        {
-            this.writeLevelO = writeLevelO;
-            policy.setCurrentWriteLevel(writeLevelO.get());
-        }
-    }
-
-    public void setWriteConsistencyLevel()
-    {
-        if (writeLevelO.isPresent())
-        {
-            policy.setCurrentWriteLevel(writeLevelO.get());
-        }
-    }
-
-    @Override
     public void reinitConsistencyLevels()
     {
         policy.reinitCurrentConsistencyLevels();
         policy.reinitDefaultConsistencyLevels();
     }
 
-    public Optional<ConsistencyLevel> getReadLevelO()
+    public ConsistencyLevel getConsistencyLevel()
     {
-        return readLevelO;
-    }
-
-    public Optional<ConsistencyLevel> getWriteLevelO()
-    {
-        return writeLevelO;
+        return consistencyLevel;
     }
 
     private <T> T reinitConsistencyLevels(SafeExecutionContext<T> context)

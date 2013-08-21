@@ -1,6 +1,7 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
 import com.google.common.base.Optional;
 
 /**
@@ -15,16 +16,11 @@ public interface PersistenceContextFactory {
             .<ConsistencyLevel> absent();
     public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
-    public PersistenceContext newContext(Object entity, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO);
+    public PersistenceContext newContext(Object entity, Options options);
 
     public PersistenceContext newContext(Object entity);
 
-    public PersistenceContext newContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO);
+    public PersistenceContext newContext(Class<?> entityClass, Object primaryKey, Options options);
 
     public PersistenceContext newContextForSliceQuery(Class<?> entityClass, Object partitionKey,
             ConsistencyLevel cl);

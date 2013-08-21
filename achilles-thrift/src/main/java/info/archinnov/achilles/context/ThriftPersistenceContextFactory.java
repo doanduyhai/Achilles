@@ -5,13 +5,14 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Optional;
 
 /**
  * ThriftPersistenceContextFactory
@@ -45,7 +46,7 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
         EntityMeta joinMeta = entityMetaMap.get(entityClass);
 
         return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(), joinEntity, entitiesIdentity);
+                flushContext.duplicate(), joinEntity, OptionsBuilder.noOptions(), entitiesIdentity);
     }
 
     public ThriftPersistenceContext newContextForJoin(Class<?> entityClass, Object joinId,
@@ -55,63 +56,61 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
         Validator.validateNotNull(joinId, "joinId should not be null for persistence context creation");
         EntityMeta joinMeta = entityMetaMap.get(entityClass);
         return new ThriftPersistenceContext(joinMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(), entityClass, joinId, entitiesIdentity);
+                flushContext.duplicate(), entityClass, joinId, OptionsBuilder.noOptions(), entitiesIdentity);
     }
 
-    public ThriftPersistenceContext newContextForBatch(Object entity, ThriftAbstractFlushContext<?> flushContext)
-    {
-        Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
-        Class<?> entityClass = proxifier.deriveBaseClass(entity);
-        EntityMeta meta = entityMetaMap.get(entityClass);
+    //    public ThriftPersistenceContext newContextForBatch(Object entity, ThriftAbstractFlushContext<?> flushContext)
+    //    {
+    //        Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
+    //        Class<?> entityClass = proxifier.deriveBaseClass(entity);
+    //        EntityMeta meta = entityMetaMap.get(entityClass);
+    //
+    //        return new ThriftPersistenceContext(meta, configContext, daoContext,
+    //                flushContext, entity, new HashSet<String>());
+    //    }
 
-        return new ThriftPersistenceContext(meta, configContext, daoContext,
-                flushContext, entity, new HashSet<String>());
-    }
-
-    public ThriftPersistenceContext newContextForBatch(Class<?> entityClass,
-            Object primaryKey, ThriftAbstractFlushContext<?> flushContext)
-    {
-        log.trace("Initializing new persistence context for entity class {} and primary key {}",
-                entityClass.getCanonicalName(), primaryKey);
-
-        Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
-        Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
-        EntityMeta meta = entityMetaMap.get(entityClass);
-        return new ThriftPersistenceContext(meta, configContext, daoContext,
-                flushContext, entityClass, primaryKey, new HashSet<String>());
-    }
+    //    public ThriftPersistenceContext newContextForBatch(Class<?> entityClass,
+    //            Object primaryKey, ThriftAbstractFlushContext<?> flushContext)
+    //    {
+    //        log.trace("Initializing new persistence context for entity class {} and primary key {}",
+    //                entityClass.getCanonicalName(), primaryKey);
+    //
+    //        Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
+    //        Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
+    //        EntityMeta meta = entityMetaMap.get(entityClass);
+    //        return new ThriftPersistenceContext(meta, configContext, daoContext,
+    //                flushContext, entityClass, primaryKey, OptionsBuilder.noOptions(), new HashSet<String>());
+    //    }
 
     @Override
-    public ThriftPersistenceContext newContext(Object entity, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    public ThriftPersistenceContext newContext(Object entity, Options options)
     {
         log.trace("Initializing new persistence context for entity {}", entity);
         Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
         Class<?> entityClass = proxifier.deriveBaseClass(entity);
         EntityMeta meta = entityMetaMap.get(entityClass);
-        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(readLevelO, writeLevelO, ttlO);
+        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
         return new ThriftPersistenceContext(meta, configContext, daoContext,
-                flushContext, entity, new HashSet<String>());
+                flushContext, entity, options, new HashSet<String>());
     }
 
     @Override
     public ThriftPersistenceContext newContext(Object entity)
     {
-        return newContext(entity, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL, NO_TTL);
+        return newContext(entity, OptionsBuilder.noOptions());
     }
 
     @Override
-    public ThriftPersistenceContext newContext(Class<?> entityClass, Object primaryKey,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    public ThriftPersistenceContext newContext(Class<?> entityClass, Object primaryKey, Options options)
     {
         Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
         Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
         EntityMeta meta = entityMetaMap.get(entityClass);
-        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(readLevelO, writeLevelO, ttlO);
+        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
         return new ThriftPersistenceContext(meta, configContext, daoContext,
-                flushContext, entityClass, primaryKey, new HashSet<String>());
+                flushContext, entityClass, primaryKey, options, new HashSet<String>());
     }
 
     @Override
@@ -122,19 +121,16 @@ public class ThriftPersistenceContextFactory implements PersistenceContextFactor
         PropertyMeta idMeta = meta.getIdMeta();
         Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
 
-        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(Optional.fromNullable(cl),
-                Optional.fromNullable(cl), NO_TTL);
+        ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(OptionsBuilder.withConsistency(cl));
 
         return new ThriftPersistenceContext(meta, configContext, daoContext, flushContext, entityClass,
-                embeddedId, new HashSet<String>());
+                embeddedId, OptionsBuilder.withConsistency(cl), new HashSet<String>());
     }
 
-    private ThriftImmediateFlushContext buildImmediateFlushContext(Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+    private ThriftImmediateFlushContext buildImmediateFlushContext(Options options)
     {
-        return new ThriftImmediateFlushContext(daoContext, configContext.getConsistencyPolicy(), readLevelO,
-                writeLevelO, ttlO);
+        return new ThriftImmediateFlushContext(daoContext, configContext.getConsistencyPolicy(), options
+                .getConsistencyLevel().orNull());
     }
 
 }

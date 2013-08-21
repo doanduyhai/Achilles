@@ -17,6 +17,7 @@ import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
@@ -102,6 +103,7 @@ public class CQLPersistenceContextTest
         Whitebox.setInternalState(context, EntityRefresher.class, refresher);
         Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
         Whitebox.setInternalState(context, "initializer", initializer);
+        Whitebox.setInternalState(context, "options", OptionsBuilder.noOptions());
         Whitebox.setInternalState(context, CQLAbstractFlushContext.class, flushContext);
     }
 

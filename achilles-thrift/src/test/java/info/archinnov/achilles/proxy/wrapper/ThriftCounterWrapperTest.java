@@ -1,6 +1,6 @@
 package info.archinnov.achilles.proxy.wrapper;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -54,8 +54,7 @@ public class ThriftCounterWrapperTest
     @Mock
     private SafeExecutionContext<Long> execContext;
 
-    private ConsistencyLevel readLevel = EACH_QUORUM;
-    private ConsistencyLevel writeLevel = LOCAL_QUORUM;
+    private ConsistencyLevel consistencyLevel = EACH_QUORUM;
 
     @Before
     public void setUp()
@@ -64,8 +63,7 @@ public class ThriftCounterWrapperTest
         Whitebox.setInternalState(wrapper, "key", key);
         wrapper.setColumnName(columnName);
         wrapper.setCounterDao(counterDao);
-        wrapper.setReadLevel(readLevel);
-        wrapper.setWriteLevel(writeLevel);
+        wrapper.setConsistencyLevel(consistencyLevel);
         when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
     }
 
@@ -73,7 +71,7 @@ public class ThriftCounterWrapperTest
     public void should_get_counter() throws Exception
     {
         when(counterDao.getCounterValue(key, columnName)).thenReturn(10L);
-        when(context.executeWithReadConsistencyLevel(longExecCaptor.capture(), eq(readLevel)))
+        when(context.executeWithReadConsistencyLevel(longExecCaptor.capture(), eq(consistencyLevel)))
                 .thenReturn(10L);
         Long value = wrapper.get();
 
@@ -98,7 +96,7 @@ public class ThriftCounterWrapperTest
     {
         wrapper.incr();
 
-        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(writeLevel));
+        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
         voidExecCaptor.getValue().execute();
 
         verify(counterDao).incrementCounter(key, columnName, 1L);
@@ -121,7 +119,7 @@ public class ThriftCounterWrapperTest
     {
         wrapper.incr(10L);
 
-        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(writeLevel));
+        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
         voidExecCaptor.getValue().execute();
 
         verify(counterDao).incrementCounter(key, columnName, 10L);
@@ -143,7 +141,7 @@ public class ThriftCounterWrapperTest
     {
         wrapper.decr();
 
-        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(writeLevel));
+        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
         voidExecCaptor.getValue().execute();
 
         verify(counterDao).decrementCounter(key, columnName, 1L);
@@ -165,7 +163,7 @@ public class ThriftCounterWrapperTest
     {
         wrapper.decr(10L);
 
-        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(writeLevel));
+        verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
         voidExecCaptor.getValue().execute();
 
         verify(counterDao).decrementCounter(key, columnName, 10L);

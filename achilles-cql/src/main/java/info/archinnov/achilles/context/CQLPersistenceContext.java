@@ -11,6 +11,7 @@ import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
 import java.util.List;
@@ -39,18 +40,17 @@ public class CQLPersistenceContext extends PersistenceContext
 
     public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
             CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext,
-            Class<?> entityClass,
-            Object primaryKey, Set<String> entitiesIdentity)
+            Class<?> entityClass, Object primaryKey, Options options, Set<String> entitiesIdentity)
     {
-        super(entityMeta, configContext, entityClass, primaryKey, flushContext, entitiesIdentity);
+        super(entityMeta, configContext, entityClass, primaryKey, flushContext, options, entitiesIdentity);
         initCollaborators(daoContext, flushContext);
     }
 
     public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
             CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext, Object entity,
-            Set<String> entitiesIdentity)
+            Options options, Set<String> entitiesIdentity)
     {
-        super(entityMeta, configContext, entity, flushContext, entitiesIdentity);
+        super(entityMeta, configContext, entity, flushContext, options, entitiesIdentity);
         initCollaborators(daoContext, flushContext);
     }
 
@@ -66,8 +66,7 @@ public class CQLPersistenceContext extends PersistenceContext
     {
         Validator.validateNotNull(joinEntity, "join entity should not be null");
         return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(),
-                joinEntity, entitiesIdentity);
+                flushContext.duplicate(), joinEntity, options.duplicateWithoutTtlAndTimestamp(), entitiesIdentity);
     }
 
     @Override
@@ -77,15 +76,15 @@ public class CQLPersistenceContext extends PersistenceContext
         Validator.validateNotNull(entityClass, "entityClass should not be null");
         Validator.validateNotNull(joinId, "joinId should not be null");
         return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-                flushContext.duplicateWithoutTtl(),
-                entityClass, joinId, entitiesIdentity);
+                flushContext.duplicate(), entityClass, joinId, options.duplicateWithoutTtlAndTimestamp(),
+                entitiesIdentity);
     }
 
     @Override
     public CQLPersistenceContext duplicate(Object entity)
     {
-        return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicateWithoutTtl(),
-                entity, new HashSet<String>());
+        return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicate(),
+                entity, options.duplicateWithoutTtlAndTimestamp(), new HashSet<String>());
     }
 
     public boolean checkForEntityExistence()

@@ -39,8 +39,8 @@ public class CQLLoaderImpl
         if (entityMeta.isClusteredCounter())
         {
             PropertyMeta counterMeta = entityMeta.getFirstMeta();
-            ConsistencyLevel readLevel = context.getReadConsistencyLevel().isPresent() ? context
-                    .getReadConsistencyLevel().get() : counterMeta.getReadConsistencyLevel();
+            ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context
+                    .getConsistencyLevel().get() : counterMeta.getReadConsistencyLevel();
             Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
             if (counterValue != null)
             {

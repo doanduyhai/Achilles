@@ -25,8 +25,7 @@ public class ThriftCounterWrapper implements Counter
     private Composite columnName;
     private ThriftAbstractDao counterDao;
     private ThriftPersistenceContext context;
-    private ConsistencyLevel readLevel;
-    private ConsistencyLevel writeLevel;
+    private ConsistencyLevel consistencyLevel;
 
     public ThriftCounterWrapper(ThriftPersistenceContext context) {
         this.context = context;
@@ -44,7 +43,7 @@ public class ThriftCounterWrapper implements Counter
             {
                 return counterDao.getCounterValue(key, columnName);
             }
-        }, readLevel);
+        }, consistencyLevel);
     }
 
     @Override
@@ -80,13 +79,13 @@ public class ThriftCounterWrapper implements Counter
                 counterDao.incrementCounter(key, columnName, 1L);
                 return null;
             }
-        }, writeLevel);
+        }, consistencyLevel);
 
     }
 
     public void incr(ConsistencyLevel writeLevel)
     {
-        Validator.validateNotNull(readLevel, "Write consistency level for counter incr should not be null");
+        Validator.validateNotNull(consistencyLevel, "Write consistency level for counter incr should not be null");
 
         log.trace("Increment counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
@@ -119,13 +118,13 @@ public class ThriftCounterWrapper implements Counter
                 counterDao.incrementCounter(key, columnName, increment);
                 return null;
             }
-        }, writeLevel);
+        }, consistencyLevel);
     }
 
     @Override
     public void incr(final Long increment, ConsistencyLevel writeLevel)
     {
-        Validator.validateNotNull(readLevel, "Write consistency level for counter incr should not be null");
+        Validator.validateNotNull(consistencyLevel, "Write consistency level for counter incr should not be null");
 
         log.trace(
                 "Increment counter value for property {} of entity {} of {}  with consistency {}",
@@ -157,14 +156,14 @@ public class ThriftCounterWrapper implements Counter
                 counterDao.decrementCounter(key, columnName, 1L);
                 return null;
             }
-        }, writeLevel);
+        }, consistencyLevel);
 
     }
 
     @Override
     public void decr(ConsistencyLevel writeLevel)
     {
-        Validator.validateNotNull(readLevel, "Write consistency level for counter decr should not be null");
+        Validator.validateNotNull(consistencyLevel, "Write consistency level for counter decr should not be null");
 
         log.trace("Decrement counter value for property {} of entity {} with consistency {}",
                 columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(),
@@ -196,13 +195,13 @@ public class ThriftCounterWrapper implements Counter
                 counterDao.decrementCounter(key, columnName, decrement);
                 return null;
             }
-        }, writeLevel);
+        }, consistencyLevel);
     }
 
     @Override
     public void decr(final Long decrement, ConsistencyLevel writeLevel)
     {
-        Validator.validateNotNull(readLevel, "Write consistency level for counter decr should not be null");
+        Validator.validateNotNull(consistencyLevel, "Write consistency level for counter decr should not be null");
 
         log.trace(
                 "Decrement counter value for property {} of entity {} pof {} with consistency {}",
@@ -230,14 +229,9 @@ public class ThriftCounterWrapper implements Counter
         this.columnName = columnName;
     }
 
-    public void setReadLevel(ConsistencyLevel readLevel)
+    public void setConsistencyLevel(ConsistencyLevel readLevel)
     {
-        this.readLevel = readLevel;
-    }
-
-    public void setWriteLevel(ConsistencyLevel writeLevel)
-    {
-        this.writeLevel = writeLevel;
+        this.consistencyLevel = readLevel;
     }
 
     public void setKey(Object key)

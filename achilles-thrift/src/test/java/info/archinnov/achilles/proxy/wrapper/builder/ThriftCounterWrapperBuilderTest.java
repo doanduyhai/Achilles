@@ -6,7 +6,6 @@ import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import me.prettyprint.hector.api.beans.Composite;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,36 +24,33 @@ import org.powermock.reflect.Whitebox;
 public class ThriftCounterWrapperBuilderTest
 {
 
-	private Long key = RandomUtils.nextLong();
+    private Long key = RandomUtils.nextLong();
 
-	@Mock
-	private Composite columnName;
+    @Mock
+    private Composite columnName;
 
-	@Mock
-	private ThriftAbstractDao counterDao;
+    @Mock
+    private ThriftAbstractDao counterDao;
 
-	@Mock
-	private ThriftPersistenceContext context;
+    @Mock
+    private ThriftPersistenceContext context;
 
-	private ConsistencyLevel readLevel = ConsistencyLevel.ALL;
-	private ConsistencyLevel writeLevel = ConsistencyLevel.ANY;
+    private ConsistencyLevel consistencyLevel = ConsistencyLevel.ALL;
 
-	@Test
-	public void should_build() throws Exception
-	{
-		ThriftCounterWrapper built = ThriftCounterWrapperBuilder.builder(context) //
-				.columnName(columnName)
-				.key(key)
-				.counterDao(counterDao)
-				.readLevel(readLevel)
-				.writeLevel(writeLevel)
-				.build();
+    @Test
+    public void should_build() throws Exception
+    {
+        ThriftCounterWrapper built = ThriftCounterWrapperBuilder.builder(context) //
+                .columnName(columnName)
+                .key(key)
+                .counterDao(counterDao)
+                .consistencyLevel(consistencyLevel)
+                .build();
 
-		assertThat(Whitebox.getInternalState(built, "key")).isSameAs(key);
-		assertThat(Whitebox.getInternalState(built, "columnName")).isSameAs(columnName);
-		assertThat(Whitebox.getInternalState(built, "context")).isSameAs(context);
-		assertThat(Whitebox.getInternalState(built, "counterDao")).isSameAs(counterDao);
-		assertThat(Whitebox.getInternalState(built, "readLevel")).isSameAs(readLevel);
-		assertThat(Whitebox.getInternalState(built, "writeLevel")).isSameAs(writeLevel);
-	}
+        assertThat(Whitebox.getInternalState(built, "key")).isSameAs(key);
+        assertThat(Whitebox.getInternalState(built, "columnName")).isSameAs(columnName);
+        assertThat(Whitebox.getInternalState(built, "context")).isSameAs(context);
+        assertThat(Whitebox.getInternalState(built, "counterDao")).isSameAs(counterDao);
+        assertThat(Whitebox.getInternalState(built, "consistencyLevel")).isSameAs(consistencyLevel);
+    }
 }

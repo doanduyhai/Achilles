@@ -1,8 +1,8 @@
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.FlushContext.FlushType;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
-import com.google.common.base.Optional;
 
 /**
  * CQLBatchingFlushContextTest
@@ -35,26 +34,18 @@ public class CQLBatchingFlushContextTest {
     @Before
     public void setUp()
     {
-        context = new CQLBatchingFlushContext(daoContext,
-                Optional.fromNullable(ConsistencyLevel.EACH_QUORUM),
-                Optional.fromNullable(ConsistencyLevel.LOCAL_QUORUM),
-                Optional.fromNullable(11));
+        context = new CQLBatchingFlushContext(daoContext, EACH_QUORUM);
     }
 
     @Test
     public void should_start_batch() throws Exception
     {
         context.boundStatements.add(bs);
-        context.readLevelO = Optional.fromNullable(ConsistencyLevel.ALL);
-        context.writeLevelO = Optional.fromNullable(ConsistencyLevel.ALL);
-        context.ttlO = Optional.fromNullable(10);
 
         context.startBatch();
 
         assertThat(context.boundStatements).isEmpty();
-        assertThat(context.readLevelO.isPresent()).isFalse();
-        assertThat(context.writeLevelO.isPresent()).isFalse();
-        assertThat(context.ttlO.isPresent()).isFalse();
+        assertThat(context.consistencyLevel).isNull();
     }
 
     @Test
@@ -71,16 +62,11 @@ public class CQLBatchingFlushContextTest {
     public void should_end_batch() throws Exception
     {
         context.boundStatements.add(bs);
-        context.readLevelO = Optional.fromNullable(ConsistencyLevel.ALL);
-        context.writeLevelO = Optional.fromNullable(ConsistencyLevel.ALL);
-        context.ttlO = Optional.fromNullable(10);
 
         context.endBatch();
 
         assertThat(context.boundStatements).isEmpty();
-        assertThat(context.readLevelO.isPresent()).isFalse();
-        assertThat(context.writeLevelO.isPresent()).isFalse();
-        assertThat(context.ttlO.isPresent()).isFalse();
+        assertThat(context.consistencyLevel).isNull();
     }
 
     @Test
@@ -90,15 +76,13 @@ public class CQLBatchingFlushContextTest {
     }
 
     @Test
-    public void should_duplicate() throws Exception
+    public void should_duplicate_without_ttl() throws Exception
     {
         context.boundStatements.add(bs);
 
-        CQLBatchingFlushContext duplicate = context.duplicateWithoutTtl();
+        CQLBatchingFlushContext duplicate = context.duplicate();
 
         assertThat(duplicate.boundStatements).containsOnly(bs);
-        assertThat(duplicate.readLevelO.get()).isSameAs(ConsistencyLevel.EACH_QUORUM);
-        assertThat(duplicate.writeLevelO.get()).isSameAs(ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(duplicate.ttlO.isPresent()).isFalse();
+        assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);
     }
 }

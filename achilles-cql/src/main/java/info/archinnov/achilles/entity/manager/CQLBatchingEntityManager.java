@@ -7,12 +7,13 @@ import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
 import java.util.HashSet;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Optional;
 
 /**
  * CQLBatchingEntityManager
@@ -29,8 +30,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
     CQLBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap,
             CQLPersistenceContextFactory contextFactory, CQLDaoContext daoContext, ConfigurationContext configContext) {
         super(entityMetaMap, contextFactory, daoContext, configContext);
-        this.flushContext = new CQLBatchingFlushContext(daoContext, NO_CONSISTENCY_LEVEL, NO_CONSISTENCY_LEVEL,
-                NO_TTL);
+        this.flushContext = new CQLBatchingFlushContext(daoContext, null);
     }
 
     /**
@@ -43,14 +43,13 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
     }
 
     /**
-     * Start a batch session with read/write consistency levels using a Hector mutator.
+     * Start a batch session with read/write consistency levels
      */
-    public void startBatch(ConsistencyLevel readLevel, ConsistencyLevel writeLevel)
+    public void startBatch(ConsistencyLevel consistencyLevel)
     {
-        log.debug("Starting batch mode with write consistency level {}", writeLevel.name());
+        log.debug("Starting batch mode with consistency level {}", consistencyLevel.name());
         startBatch();
-        flushContext.setReadConsistencyLevel(Optional.fromNullable(readLevel));
-        flushContext.setWriteConsistencyLevel(Optional.fromNullable(writeLevel));
+        flushContext.setConsistencyLevel(consistencyLevel);
 
     }
 
@@ -83,92 +82,115 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
     }
 
     @Override
-    public void persist(final Object entity, ConsistencyLevel writeLevel)
+    public void persist(final Object entity, Options options)
     {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (options.getConsistencyLevel().isPresent())
+        {
+            flushContext.cleanUp();
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            super.persist(entity, options);
+        }
     }
 
     @Override
-    public void persist(final Object entity, int ttl, ConsistencyLevel writeLevel)
+    public <T> T merge(final T entity, Options options)
     {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-    }
-
-    @Override
-    public <T> T merge(final T entity, ConsistencyLevel writeLevel)
-    {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
-    }
-
-    @Override
-    public <T> T merge(final T entity, int ttl, ConsistencyLevel writeLevel)
-    {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (options.getConsistencyLevel().isPresent())
+        {
+            flushContext.cleanUp();
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            return super.merge(entity, options);
+        }
     }
 
     @Override
     public void remove(final Object entity, ConsistencyLevel writeLevel)
     {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (writeLevel != null)
+        {
+            flushContext.cleanUp();
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            super.remove(entity, null);
+        }
     }
 
     @Override
     public <T> T find(final Class<T> entityClass, final Object primaryKey,
             ConsistencyLevel readLevel)
     {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (readLevel != null)
+        {
+            flushContext.cleanUp();
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            return super.find(entityClass, primaryKey, null);
+        }
     }
 
     @Override
     public <T> T getReference(final Class<T> entityClass, final Object primaryKey,
             ConsistencyLevel readLevel)
     {
-        flushContext.cleanUp();
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (readLevel != null)
+        {
+            flushContext.cleanUp();
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            return super.getReference(entityClass, primaryKey, null);
+        }
     }
 
     @Override
-    public void refresh(final Object entity, ConsistencyLevel readLevel)
+    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException
     {
-        throw new AchillesException(
-                "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        if (readLevel != null)
+        {
+            throw new AchillesException(
+                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+        }
+        else
+        {
+            super.refresh(entity, null);
+        }
     }
 
     @Override
     protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass,
-            Object primaryKey, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+            Object primaryKey, Options options)
     {
         log.trace("Initializing new persistence context for entity class {} and primary key {}",
                 entityClass.getCanonicalName(), primaryKey);
 
         EntityMeta entityMeta = entityMetaMap.get(entityClass);
         return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-                flushContext, entityClass, primaryKey, new HashSet<String>());
+                flushContext, entityClass, primaryKey, options, new HashSet<String>());
     }
 
     @Override
-    protected CQLPersistenceContext initPersistenceContext(Object entity,
-            Optional<ConsistencyLevel> readLevelO, Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+    protected CQLPersistenceContext initPersistenceContext(Object entity, Options options)
     {
         log.trace("Initializing new persistence context for entity {}", entity);
 
         EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
         return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-                flushContext, entity, new HashSet<String>());
+                flushContext, entity, options, new HashSet<String>());
     }
 }

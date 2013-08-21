@@ -10,6 +10,7 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.type.OptionsBuilder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -76,7 +77,9 @@ public class ThriftPersistenceContextTestBuilder
                 configContext, //
                 thriftDaoContext, //
                 thriftImmediateFlushContext, //
-                entityClass, primaryKey, new HashSet<String>());
+                entityClass, primaryKey,
+                OptionsBuilder.noOptions(),
+                new HashSet<String>());
 
         context.setEntity(entity);
         Whitebox.setInternalState(context, ThriftGenericEntityDao.class, entityDao);

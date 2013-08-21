@@ -14,7 +14,6 @@ import me.prettyprint.hector.api.mutation.Mutator;
 import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Optional;
 
 /**
  * ThriftAbstractFlushContext
@@ -32,23 +31,20 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 
     protected Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap = new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>();
     protected boolean hasCustomConsistencyLevels = false;
+    protected ConsistencyLevel consistencyLevel;
 
     protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
-            AchillesConsistencyLevelPolicy policy, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+            AchillesConsistencyLevelPolicy policy, ConsistencyLevel consistencyLevel)
     {
-        super(ttlO);
         this.thriftDaoContext = thriftDaoContext;
-        this.consistencyContext = new ThriftConsistencyContext(policy, readLevelO, writeLevelO);
+        this.consistencyContext = new ThriftConsistencyContext(policy, consistencyLevel);
     }
 
     protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
             ThriftConsistencyContext consistencyContext,
             Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap,
-            boolean hasCustomConsistencyLevels,
-            Optional<Integer> ttlO)
+            boolean hasCustomConsistencyLevels)
     {
-        super(ttlO);
         this.thriftDaoContext = thriftDaoContext;
         this.consistencyContext = consistencyContext;
         this.mutatorMap = mutatorMap;
@@ -83,20 +79,12 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
     }
 
     @Override
-    public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO)
+    public void setConsistencyLevel(ConsistencyLevel consistencyLevel)
     {
         hasCustomConsistencyLevels = true;
-        consistencyContext.setWriteConsistencyLevel(writeLevelO);
+        consistencyContext.setConsistencyLevel(consistencyLevel);
     }
 
-    @Override
-    public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO)
-    {
-        hasCustomConsistencyLevels = true;
-        consistencyContext.setReadConsistencyLevel(readLevelO);
-    }
-
-    @Override
     public void reinitConsistencyLevels()
     {
         if (!hasCustomConsistencyLevels)
@@ -169,14 +157,8 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
     }
 
     @Override
-    public Optional<ConsistencyLevel> getReadConsistencyLevel()
+    public ConsistencyLevel getConsistencyLevel()
     {
-        return consistencyContext.getReadLevelO();
-    }
-
-    @Override
-    public Optional<ConsistencyLevel> getWriteConsistencyLevel()
-    {
-        return consistencyContext.getReadLevelO();
+        return consistencyContext.getConsistencyLevel();
     }
 }

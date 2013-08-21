@@ -39,8 +39,7 @@ public class CQLCounterWrapperTest {
         when(counterMeta.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
         when(counterMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(ONE));
-        when(context.getWriteConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(ALL));
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(ONE));
 
     }
 
@@ -51,7 +50,7 @@ public class CQLCounterWrapperTest {
         when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
-        when(context.getReadConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(context.getSimpleCounter(counterMeta, LOCAL_QUORUM)).thenReturn(counterValue);
 
         assertThat(wrapper.get()).isEqualTo(counterValue);
@@ -112,7 +111,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.incr();
-        verify(context).incrementSimpleCounter(counterMeta, 1L, ALL);
+        verify(context).incrementSimpleCounter(counterMeta, 1L, ONE);
     }
 
     @Test
@@ -122,7 +121,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.incr();
-        verify(context).incrementClusteredCounter(counterMeta, 1L, ALL);
+        verify(context).incrementClusteredCounter(counterMeta, 1L, ONE);
     }
 
     @Test
@@ -153,7 +152,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.incr(counterValue);
-        verify(context).incrementSimpleCounter(counterMeta, counterValue, ALL);
+        verify(context).incrementSimpleCounter(counterMeta, counterValue, ONE);
     }
 
     @Test
@@ -164,7 +163,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.incr(counterValue);
-        verify(context).incrementClusteredCounter(counterMeta, counterValue, ALL);
+        verify(context).incrementClusteredCounter(counterMeta, counterValue, ONE);
     }
 
     @Test
@@ -196,7 +195,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.decr();
-        verify(context).decrementSimpleCounter(counterMeta, 1L, ALL);
+        verify(context).decrementSimpleCounter(counterMeta, 1L, ONE);
     }
 
     @Test
@@ -206,7 +205,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.decr();
-        verify(context).decrementClusteredCounter(counterMeta, 1L, ALL);
+        verify(context).decrementClusteredCounter(counterMeta, 1L, ONE);
     }
 
     @Test
@@ -237,7 +236,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.decr(counterValue);
-        verify(context).decrementSimpleCounter(counterMeta, counterValue, ALL);
+        verify(context).decrementSimpleCounter(counterMeta, counterValue, ONE);
     }
 
     @Test
@@ -248,7 +247,7 @@ public class CQLCounterWrapperTest {
         wrapper = new CQLCounterWrapper(context, counterMeta);
 
         wrapper.decr(counterValue);
-        verify(context).decrementClusteredCounter(counterMeta, counterValue, ALL);
+        verify(context).decrementClusteredCounter(counterMeta, counterValue, ONE);
     }
 
     @Test

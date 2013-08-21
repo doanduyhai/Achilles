@@ -8,7 +8,6 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
-import com.google.common.base.Optional;
 
 /**
  * CQLFlushContext
@@ -19,43 +18,34 @@ import com.google.common.base.Optional;
 public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>> extends
         FlushContext<T>
 {
-
-    protected Optional<ConsistencyLevel> readLevelO;
-    protected Optional<ConsistencyLevel> writeLevelO;
     protected CQLDaoContext daoContext;
 
     protected List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
     protected List<Statement> statements = new ArrayList<Statement>();
 
-    public CQLAbstractFlushContext(CQLDaoContext daoContext, Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO, Optional<Integer> ttlO)
+    protected ConsistencyLevel consistencyLevel;
+
+    public CQLAbstractFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel)
     {
-        super(ttlO);
         this.daoContext = daoContext;
-        this.readLevelO = readLevelO;
-        this.writeLevelO = writeLevelO;
+        this.consistencyLevel = consistencyLevel;
     }
 
     protected CQLAbstractFlushContext(CQLDaoContext daoContext,
             List<BoundStatement> boundStatements,
-            Optional<ConsistencyLevel> readLevelO,
-            Optional<ConsistencyLevel> writeLevelO,
-            Optional<Integer> ttlO)
+            ConsistencyLevel consistencyLevel)
     {
-        super(ttlO);
         this.boundStatements = boundStatements;
         this.daoContext = daoContext;
-        this.readLevelO = readLevelO;
-        this.writeLevelO = writeLevelO;
+        this.consistencyLevel = consistencyLevel;
     }
 
     @Override
     public void cleanUp()
     {
-        reinitConsistencyLevels();
         boundStatements.clear();
         statements.clear();
-        ttlO = Optional.<Integer> absent();
+        consistencyLevel = null;
     }
 
     protected void doFlush()
@@ -73,32 +63,12 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 
     }
 
-    @Override
-    public void setWriteConsistencyLevel(Optional<ConsistencyLevel> writeLevelO)
-    {
-        this.writeLevelO = writeLevelO;
-    }
-
-    @Override
-    public void setReadConsistencyLevel(Optional<ConsistencyLevel> readLevelO)
-    {
-        this.readLevelO = readLevelO;
-    }
-
-    @Override
-    public void reinitConsistencyLevels()
-    {
-        readLevelO = Optional.<ConsistencyLevel> absent();
-        writeLevelO = Optional.<ConsistencyLevel> absent();
-
-    }
-
     public void pushBoundStatement(BoundStatement boundStatement,
             ConsistencyLevel writeConsistencyLevel)
     {
-        if (writeLevelO.isPresent())
+        if (consistencyLevel != null)
         {
-            boundStatement.setConsistencyLevel(getCQLLevel(writeLevelO.get()));
+            boundStatement.setConsistencyLevel(getCQLLevel(consistencyLevel));
         }
         else
         {
@@ -110,9 +80,10 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     public void pushStatement(Statement statement,
             ConsistencyLevel writeConsistencyLevel)
     {
-        if (writeLevelO.isPresent())
+
+        if (consistencyLevel != null)
         {
-            statement.setConsistencyLevel(getCQLLevel(writeLevelO.get()));
+            statement.setConsistencyLevel(getCQLLevel(consistencyLevel));
         }
         else
         {
@@ -134,13 +105,13 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     }
 
     @Override
-    public Optional<ConsistencyLevel> getReadConsistencyLevel() {
-        return readLevelO;
+    public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+        this.consistencyLevel = consistencyLevel;
     }
 
     @Override
-    public Optional<ConsistencyLevel> getWriteConsistencyLevel() {
-        return writeLevelO;
+    public ConsistencyLevel getConsistencyLevel() {
+        return consistencyLevel;
     }
 
 }

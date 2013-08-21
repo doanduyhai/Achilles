@@ -5,6 +5,7 @@ import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ValuelessEntity;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class ValuelessEntityIT {
         Long id = RandomUtils.nextLong();
         ValuelessEntity entity = new ValuelessEntity(id);
 
-        em.persist(entity, 2);
+        em.persist(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 
@@ -67,7 +68,7 @@ public class ValuelessEntityIT {
         Long id = RandomUtils.nextLong();
         ValuelessEntity entity = new ValuelessEntity(id);
 
-        em.merge(entity, 2);
+        em.merge(entity, OptionsBuilder.withTtl(2));
 
         Thread.sleep(3000);
 

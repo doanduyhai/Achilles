@@ -42,7 +42,8 @@ public class BatchModeIT
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean", "Tweet", "User");
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
+            "Tweet", "User");
 
     private CQLEntityManagerFactory emf = resource.getFactory();
 
@@ -201,7 +202,7 @@ public class BatchModeIT
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
-        batchEm.startBatch(QUORUM, ALL);
+        batchEm.startBatch(QUORUM);
 
         logAsserter.prepareLogLevel();
 
@@ -214,7 +215,7 @@ public class BatchModeIT
 
         batchEm.endBatch();
 
-        logAsserter.assertConsistencyLevels(QUORUM, ALL);
+        logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
         assertThatBatchContextHasBeenReset(batchEm);
     }
 
@@ -230,7 +231,7 @@ public class BatchModeIT
         CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
         batchEm.startBatch();
 
-        batchEm.startBatch(EACH_QUORUM, EACH_QUORUM);
+        batchEm.startBatch(EACH_QUORUM);
         batchEm.persist(tweet2);
 
         try
@@ -251,14 +252,10 @@ public class BatchModeIT
     private void assertThatBatchContextHasBeenReset(CQLBatchingEntityManager batchEm)
     {
         CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
-        Optional<ConsistencyLevel> readLevelO = Whitebox.getInternalState(flushContext, "readLevelO");
-        Optional<ConsistencyLevel> writeLevelO = Whitebox.getInternalState(flushContext, "writeLevelO");
-        Optional<Integer> ttlO = Whitebox.getInternalState(flushContext, "ttlO");
+        Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
         List<BoundStatement> boundStatements = Whitebox.getInternalState(flushContext, "boundStatements");
 
-        assertThat(readLevelO.isPresent()).isFalse();
-        assertThat(writeLevelO.isPresent()).isFalse();
-        assertThat(ttlO.isPresent()).isFalse();
+        assertThat(consistencyLevel).isNull();
         assertThat(boundStatements).isEmpty();
     }
 }
