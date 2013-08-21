@@ -95,7 +95,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
     private void createAchillesKeyspace() {
 
         TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
-        TProtocol proto = new TBinaryProtocol(tr);
+        TProtocol proto = new TBinaryProtocol(tr, true, true);
         Cassandra.Client client = new Cassandra.Client(proto);
         try {
             tr.open();

@@ -26,6 +26,14 @@
 			 	<groupId>com.google.guava</groupId>
 			 	<artifactId>guava</artifactId>
 			</exclusion>
+		  	<exclusion>
+			 	<groupId>org.apache.cassandra</groupId>
+			 	<artifactId>cassandra-thrift</artifactId>
+			</exclusion>
+		  	<exclusion>
+			 	<groupId>org.apache.cassandra</groupId>
+			 	<artifactId>cassandra-all</artifactId>
+			</exclusion>
 		  </exclusions>
 	 </dependency>
 
