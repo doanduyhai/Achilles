@@ -111,19 +111,25 @@ public abstract class ThriftAbstractDao
     }
 
     public <K, V> void insertColumnBatch(K key, Composite name, V value, Optional<Integer> ttlO,
-            Mutator<K> mutator)
+            Optional<Long> timestampO, Mutator<K> mutator)
     {
         if (log.isTraceEnabled())
-        {
             log.trace("Insert column {} into column family {} with key {}", format(name),
                     columnFamily, key);
-        }
 
         HColumn<Composite, V> column;
-        if (ttlO.isPresent())
+        if (ttlO.isPresent() && timestampO.isPresent())
         {
-            column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer,
+            column = HFactory.createColumn(name, value, timestampO.get(), ttlO.get(), columnNameSerializer,
                     this.<V> valSrz());
+        }
+        else if (ttlO.isPresent())
+        {
+            column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer, this.<V> valSrz());
+        }
+        else if (timestampO.isPresent())
+        {
+            column = HFactory.createColumn(name, value, timestampO.get(), columnNameSerializer, this.<V> valSrz());
         }
         else
         {
@@ -184,12 +190,12 @@ public abstract class ThriftAbstractDao
                 columnFamily, key, name);
 
         Mutator<K> mutator = HFactory.createMutator(keyspace, this.<K> rowSrz());
-        this.setValueBatch(key, name, value, Optional.<Integer> absent(), mutator);
+        this.setValueBatch(key, name, value, Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
         this.executeMutator(mutator);
     }
 
     public <K, V> void setValueBatch(K key, Composite name, V value, Optional<Integer> ttlO,
-            Mutator<K> mutator)
+            Optional<Long> timestampO, Mutator<K> mutator)
     {
         if (log.isTraceEnabled())
         {
@@ -198,10 +204,18 @@ public abstract class ThriftAbstractDao
                             value, columnFamily, key, format(name), ttlO);
         }
         HColumn<Composite, V> column;
-        if (ttlO.isPresent())
+        if (ttlO.isPresent() && timestampO.isPresent())
         {
-            column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer,
+            column = HFactory.createColumn(name, value, timestampO.get(), ttlO.get(), columnNameSerializer,
                     this.<V> valSrz());
+        }
+        else if (ttlO.isPresent())
+        {
+            column = HFactory.createColumn(name, value, ttlO.get(), columnNameSerializer, this.<V> valSrz());
+        }
+        else if (timestampO.isPresent())
+        {
+            column = HFactory.createColumn(name, value, timestampO.get(), columnNameSerializer, this.<V> valSrz());
         }
         else
         {

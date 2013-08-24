@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import net.sf.cglib.proxy.Factory;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
@@ -102,7 +103,7 @@ public class EmOperationsIT
     }
 
     @Test
-    public void should_cascade_persist_with_ttl() throws Exception
+    public void should_cascade_persist_without_ttl() throws Exception
     {
         Tweet tweet = new Tweet();
         tweet.setContent("this is a welcome tweet");
@@ -124,6 +125,39 @@ public class EmOperationsIT
 
         assertThat(foundTweet).isNotNull();
         assertThat(foundTweet.getContent()).isEqualTo(tweet.getContent());
+    }
+
+    @Test
+    public void should_cascade_persist_without_timestamp() throws Exception
+    {
+        Long id = RandomUtils.nextLong();
+        UUID uuid = UUIDGen.getTimeUUID();
+        Long timestamp1 = System.currentTimeMillis();
+        Long timestamp2 = timestamp1 + 100000000;
+
+        Tweet tweet1 = new Tweet();
+        tweet1.setContent("this is a welcome tweet 1");
+        tweet1.setId(uuid);
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().id(id).name("name1").buid();
+        entity1.setWelcomeTweet(tweet1);
+
+        Tweet tweet2 = new Tweet();
+        tweet2.setContent("this is a welcome tweet 2");
+        tweet2.setId(uuid);
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().id(id).name("name2").buid();
+        entity2.setWelcomeTweet(tweet2);
+
+        // Persist entity2 with timestamp2
+        em.persist(entity2, OptionsBuilder.withTimestamp(timestamp2));
+
+        // Persist entity1 with timestamp1
+        em.persist(entity1, OptionsBuilder.withTimestamp(timestamp1));
+
+        CompleteBean foundEntity = em.find(CompleteBean.class, id);
+        assertThat(foundEntity.getName()).isEqualTo("name2");
+
+        Tweet foundTweet = em.find(Tweet.class, uuid);
+        assertThat(foundTweet.getContent()).isEqualTo("this is a welcome tweet 1");
     }
 
     @Test
@@ -202,7 +236,7 @@ public class EmOperationsIT
     }
 
     @Test
-    public void should_cascade_merge_with_ttl() throws Exception
+    public void should_cascade_merge_without_ttl() throws Exception
     {
         Tweet tweet = new Tweet();
         tweet.setContent("this is a welcome tweet");
@@ -233,6 +267,51 @@ public class EmOperationsIT
         Tweet foundTweet = em.find(Tweet.class, tweet.getId());
 
         assertThat(foundTweet.getContent()).isEqualTo("modified welcomed tweet");
+    }
+
+    @Test
+    public void should_cascade_merge_without_timestamp() throws Exception
+    {
+
+        Long id = RandomUtils.nextLong();
+        UUID uuid = UUIDGen.getTimeUUID();
+        Long timestamp0 = System.currentTimeMillis();
+        Long timestamp1 = timestamp0 + 1;
+        Long timestamp2 = timestamp1 + 100000000;
+
+        Tweet tweet = new Tweet();
+        tweet.setContent("this is a welcome tweet");
+        tweet.setId(uuid);
+
+        CompleteBean entity = CompleteBeanTestBuilder.builder()
+                .id(id)
+                .name("DuyHai")
+                .buid();
+        entity.setWelcomeTweet(tweet);
+
+        em.persist(entity, OptionsBuilder.withTimestamp(timestamp0));
+
+        entity = em.find(CompleteBean.class, entity.getId());
+
+        entity.getWelcomeTweet().setContent("modified welcomed tweet 2");
+        entity.setName("DuyHai2");
+
+        // Merge with timestamp2
+        em.merge(entity, OptionsBuilder.withTimestamp(timestamp2));
+
+        entity.getWelcomeTweet().setContent("modified welcomed tweet 1");
+        entity.setName("DuyHai1");
+
+        // Merge with timestamp1
+        em.merge(entity, OptionsBuilder.withTimestamp(timestamp1));
+
+        CompleteBean foundEntity = em.find(CompleteBean.class, entity.getId());
+
+        assertThat(foundEntity.getName()).isEqualTo("DuyHai2");
+
+        Tweet foundTweet = em.find(Tweet.class, tweet.getId());
+
+        assertThat(foundTweet.getContent()).isEqualTo("modified welcomed tweet 1");
     }
 
     @Test

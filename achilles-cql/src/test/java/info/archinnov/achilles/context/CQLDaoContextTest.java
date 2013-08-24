@@ -151,9 +151,10 @@ public class CQLDaoContextTest
     }
 
     @Test
-    public void should_push_insert_without_ttl() throws Exception
+    public void should_push_insert() throws Exception
     {
         when(context.getTtt()).thenReturn(Optional.<Integer> absent());
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
         when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
         when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bs);
@@ -167,6 +168,7 @@ public class CQLDaoContextTest
     {
         int ttl = 115;
         when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         when(context.getEntity()).thenReturn(entity);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
 
@@ -181,7 +183,49 @@ public class CQLDaoContextTest
     }
 
     @Test
-    public void should_push_update_without_ttl() throws Exception
+    public void should_push_insert_with_timestamp() throws Exception
+    {
+        long timestamp = 115L;
+        when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+
+        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
+
+        when(statementGenerator.generateInsert(entity, entityMeta)).thenReturn(insert);
+        when(insert.using(usingCaptor.capture())).thenReturn(insertOptions);
+
+        daoContext.pushInsertStatement(context);
+        verify(context).pushStatement(insertOptions, ALL);
+        assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(timestamp));
+    }
+
+    @Test
+    public void should_push_insert_with_ttl_and_timestamp() throws Exception
+    {
+        int ttl = 115;
+        long timestamp = 115L;
+        when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+
+        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
+
+        when(statementGenerator.generateInsert(entity, entityMeta)).thenReturn(insert);
+        when(insert.using(usingCaptor.capture())).thenReturn(insertOptions);
+        when(insertOptions.and(usingCaptor.capture())).thenReturn(insertOptions);
+
+        daoContext.pushInsertStatement(context);
+        verify(context).pushStatement(insertOptions, ALL);
+        List<Using> usings = usingCaptor.getAllValues();
+        assertThat(Whitebox.getInternalState(usings.get(0), "value")).isEqualTo(new Long(ttl));
+        assertThat(Whitebox.getInternalState(usings.get(1), "value")).isEqualTo(new Long(timestamp));
+    }
+
+    @Test
+    public void should_push_update() throws Exception
     {
         PropertyMeta nameMeta = PropertyMetaTestBuilder
                 .valueClass(String.class)
@@ -195,6 +239,7 @@ public class CQLDaoContextTest
 
         List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
         when(context.getTtt()).thenReturn(Optional.<Integer> absent());
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms))
                 .thenReturn(ps);
         when(binder.bindForUpdate(ps, entityMeta, pms, entity)).thenReturn(bs);
@@ -222,6 +267,7 @@ public class CQLDaoContextTest
 
         int ttl = 15465;
         when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         when(context.getEntity()).thenReturn(entity);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 
@@ -231,6 +277,69 @@ public class CQLDaoContextTest
         daoContext.pushUpdateStatement(context, pms);
         verify(context).pushStatement(updateOptions, EACH_QUORUM);
         assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
+    }
+
+    @Test
+    public void should_push_update_with_timestamp() throws Exception
+    {
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("age")
+                .build();
+
+        List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
+
+        long timestamp = 15465;
+        when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+
+        when(statementGenerator.generateUpdateFields(entity, entityMeta, pms)).thenReturn(update);
+        when(update.using(usingCaptor.capture())).thenReturn(updateOptions);
+
+        daoContext.pushUpdateStatement(context, pms);
+        verify(context).pushStatement(updateOptions, EACH_QUORUM);
+        assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(timestamp));
+    }
+
+    @Test
+    public void should_push_update_with_ttl_and_timestamp() throws Exception
+    {
+        PropertyMeta nameMeta = PropertyMetaTestBuilder
+                .valueClass(String.class)
+                .field("name")
+                .build();
+
+        PropertyMeta ageMeta = PropertyMetaTestBuilder
+                .valueClass(Long.class)
+                .field("age")
+                .build();
+
+        List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
+
+        int ttl = 54321;
+        long timestamp = 15465;
+        when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
+        when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+
+        when(statementGenerator.generateUpdateFields(entity, entityMeta, pms)).thenReturn(update);
+        when(update.using(usingCaptor.capture())).thenReturn(updateOptions);
+        when(updateOptions.and(usingCaptor.capture())).thenReturn(updateOptions);
+
+        daoContext.pushUpdateStatement(context, pms);
+        verify(context).pushStatement(updateOptions, EACH_QUORUM);
+
+        List<Using> usings = usingCaptor.getAllValues();
+        assertThat(Whitebox.getInternalState(usings.get(0), "value")).isEqualTo(new Long(ttl));
+        assertThat(Whitebox.getInternalState(usings.get(1), "value")).isEqualTo(new Long(timestamp));
     }
 
     @Test

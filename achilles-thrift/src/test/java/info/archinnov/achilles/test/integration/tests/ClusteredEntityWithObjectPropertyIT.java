@@ -5,8 +5,8 @@ import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndVal
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.Holder;
@@ -122,8 +122,7 @@ public class ClusteredEntityWithObjectPropertyIT
         ObjectMapper mapper = new ObjectMapper();
 
         dao.insertColumnBatch(partitionKey, comp, mapper.writeValueAsString(newHolder),
-                Optional.<Integer> absent(),
-                mutator);
+                Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
         dao.executeMutator(mutator);
 
         em.refresh(entity);

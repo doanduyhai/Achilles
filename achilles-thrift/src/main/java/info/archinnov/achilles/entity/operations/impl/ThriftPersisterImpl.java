@@ -52,7 +52,7 @@ public class ThriftPersisterImpl {
                         context.getPrimaryKey(), format(name));
             }
             context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, context.getTtt(),
-                    context.getEntityMutator(context.getTableName()));
+                    context.getTimestamp(), context.getEntityMutator(context.getTableName()));
         }
     }
 
@@ -98,7 +98,7 @@ public class ThriftPersisterImpl {
                             context.getPrimaryKey(), format(name));
                 }
                 context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, stringValue,
-                        context.getTtt(), context.getEntityMutator(context.getTableName()));
+                        context.getTtt(), context.getTimestamp(), context.getEntityMutator(context.getTableName()));
             }
             count++;
         }
@@ -117,7 +117,7 @@ public class ThriftPersisterImpl {
                             context.getPrimaryKey(), format(name));
                 }
                 context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, stringValue,
-                        context.getTtt(), context.getEntityMutator(context.getTableName()));
+                        context.getTtt(), context.getTimestamp(), context.getEntityMutator(context.getTableName()));
             }
         }
     }
@@ -137,7 +137,7 @@ public class ThriftPersisterImpl {
                         context.getPrimaryKey(), format(name));
             }
             context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, context.getTtt(),
-                    context.getEntityMutator(context.getTableName()));
+                    context.getTimestamp(), context.getEntityMutator(context.getTableName()));
         }
     }
 
@@ -152,7 +152,7 @@ public class ThriftPersisterImpl {
 
         Composite joinComposite = thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta);
         context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), joinComposite, joinIdString,
-                context.getTtt(), context.getEntityMutator(context.getTableName()));
+                context.getTtt(), context.getTimestamp(), context.getEntityMutator(context.getTableName()));
 
         ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(propertyMeta.joinMeta(),
                 proxifier.unwrap(joinEntity));
@@ -186,7 +186,7 @@ public class ThriftPersisterImpl {
                             context.getPrimaryKey(), format(name));
                 }
                 context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, joinEntityIdStringValue,
-                        context.getTtt(), context.getEntityMutator(context.getTableName()));
+                        context.getTtt(), context.getTimestamp(), context.getEntityMutator(context.getTableName()));
 
                 ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(
                         propertyMeta.joinMeta(), proxifier.unwrap(joinEntity));
@@ -214,7 +214,7 @@ public class ThriftPersisterImpl {
             String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry.getKey(),
                     joinEntityIdStringValue));
             context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, context.getTtt(),
-                    context.getEntityMutator(context.getTableName()));
+                    context.getTimestamp(), context.getEntityMutator(context.getTableName()));
 
             ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(propertyMeta.joinMeta(),
                     proxifier.unwrap(joinEntity));
@@ -244,7 +244,7 @@ public class ThriftPersisterImpl {
 
         if (context.isValueless())
         {
-            dao.setValueBatch(partitionKey, comp, "", context.getTtt(), mutator);
+            dao.setValueBatch(partitionKey, comp, "", context.getTtt(), context.getTimestamp(), mutator);
         }
         else
         {
@@ -255,7 +255,7 @@ public class ThriftPersisterImpl {
                 Validator.validateNotNull(joinId, "Primary key for join clustered value '%s' should not be null",
                         clusteredValue);
 
-                dao.setValueBatch(partitionKey, comp, joinId, context.getTtt(), mutator);
+                dao.setValueBatch(partitionKey, comp, joinId, context.getTtt(), context.getTimestamp(), mutator);
 
                 ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(pm.joinMeta(),
                         proxifier.unwrap(clusteredValue));
@@ -271,7 +271,8 @@ public class ThriftPersisterImpl {
                 dao.incrementCounter(partitionKey, comp, counterValue.get());
             } else {
                 Object persistentValue = pm.writeValueAsSupportedTypeOrString(clusteredValue);
-                dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), mutator);
+                dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), context.getTimestamp(),
+                        mutator);
             }
         }
     }
@@ -291,7 +292,7 @@ public class ThriftPersisterImpl {
         if (pm.isJoin()) {
             PropertyMeta joinIdMeta = pm.joinIdMeta();
             persistentValue = invoker.getPrimaryKey(clusteredValue, joinIdMeta);
-            dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), mutator);
+            dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), context.getTimestamp(), mutator);
 
             ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(pm.joinMeta(),
                     proxifier.unwrap(clusteredValue));
@@ -306,7 +307,7 @@ public class ThriftPersisterImpl {
 
         } else {
             persistentValue = pm.writeValueAsSupportedTypeOrString(clusteredValue);
-            dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), mutator);
+            dao.setValueBatch(partitionKey, comp, persistentValue, context.getTtt(), context.getTimestamp(), mutator);
         }
     }
 

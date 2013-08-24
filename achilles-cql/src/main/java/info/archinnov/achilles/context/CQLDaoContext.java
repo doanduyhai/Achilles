@@ -1,6 +1,6 @@
 package info.archinnov.achilles.context;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -74,11 +74,20 @@ public class CQLDaoContext
         EntityMeta entityMeta = context.getEntityMeta();
         Class<?> entityClass = context.getEntityClass();
         Optional<Integer> ttlO = context.getTtt();
+        Optional<Long> timestampO = context.getTimestamp();
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-        if (ttlO.isPresent())
+        if (ttlO.isPresent() || timestampO.isPresent())
         {
             Insert insert = statementGenerator.generateInsert(context.getEntity(), entityMeta);
-            Insert.Options options = insert.using(ttl(ttlO.get()));
+            Insert.Options options = null;
+
+            if (ttlO.isPresent() && timestampO.isPresent())
+                options = insert.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
+            else if (ttlO.isPresent())
+                options = insert.using(ttl(ttlO.get()));
+            else if (timestampO.isPresent())
+                options = insert.using(timestamp(timestampO.get()));
+
             context.pushStatement(options, writeLevel);
         }
         else
@@ -92,12 +101,21 @@ public class CQLDaoContext
     public void pushUpdateStatement(CQLPersistenceContext context, List<PropertyMeta> pms)
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
         Optional<Integer> ttlO = context.getTtt();
-        if (ttlO.isPresent())
+        Optional<Long> timestampO = context.getTimestamp();
+        ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
+        if (ttlO.isPresent() || timestampO.isPresent())
         {
             Assignments update = statementGenerator.generateUpdateFields(context.getEntity(), entityMeta, pms);
-            Update.Options options = update.using(ttl(ttlO.get()));
+            Update.Options options = null;
+
+            if (ttlO.isPresent() && timestampO.isPresent())
+                options = update.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
+            else if (ttlO.isPresent())
+                options = update.using(ttl(ttlO.get()));
+            else if (timestampO.isPresent())
+                options = update.using(timestamp(timestampO.get()));
+
             context.pushStatement(options, writeLevel);
         }
         else

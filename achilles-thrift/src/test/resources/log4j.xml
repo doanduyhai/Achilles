@@ -19,7 +19,7 @@
 	</logger>
 	
 	
-	<logger name="info.archinnov.achilles.common.AbstractCassandraDaoTest">
+	<logger name="info.archinnov.achilles.embedded">
 		<level value="INFO" />
 	</logger>	
 	

@@ -113,6 +113,8 @@ public class ThriftPersisterImplTest {
 
     private Optional<Integer> ttlO = Optional.<Integer> absent();
 
+    private Optional<Long> timestampO = Optional.<Long> absent();
+
     @Captor
     private ArgumentCaptor<Composite> compositeCaptor;
 
@@ -169,7 +171,7 @@ public class ThriftPersisterImplTest {
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
+        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
     }
 
     @Test
@@ -236,7 +238,7 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
-        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, wideRowMutator);
+        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, timestampO, wideRowMutator);
 
         ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
                 .forClass(ThriftPersistenceContext.class);
@@ -266,7 +268,7 @@ public class ThriftPersisterImplTest {
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
 
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
+        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
     }
 
     @Test
@@ -293,7 +295,7 @@ public class ThriftPersisterImplTest {
         when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
         persisterImpl.persistClusteredValueBatch(context, partitionKey, clusteredValue, persister);
 
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, wideRowMutator);
+        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
     }
 
     @Test
@@ -333,7 +335,7 @@ public class ThriftPersisterImplTest {
         ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
                 .forClass(ThriftPersistenceContext.class);
 
-        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, wideRowMutator);
+        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, timestampO, wideRowMutator);
         verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(clusteredValue),
                 any(JoinProperties.class));
 
@@ -356,7 +358,7 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
 
-        verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue", ttlO, entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue", ttlO, timestampO, entityMutator);
 
     }
 
@@ -405,8 +407,8 @@ public class ThriftPersisterImplTest {
         persisterImpl.batchPersistList(Arrays.asList("foo", "bar"), context, propertyMeta);
 
         InOrder inOrder = inOrder(entityDao);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "foo", ttlO, entityMutator);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "bar", ttlO, entityMutator);
+        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "foo", ttlO, timestampO, entityMutator);
+        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "bar", ttlO, timestampO, entityMutator);
 
     }
 
@@ -426,8 +428,8 @@ public class ThriftPersisterImplTest {
         persisterImpl.batchPersistSet(followers, context, propertyMeta);
 
         InOrder inOrder = inOrder(entityDao);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "John", ttlO, entityMutator);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "Helen", ttlO, entityMutator);
+        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "John", ttlO, timestampO, entityMutator);
+        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "Helen", ttlO, timestampO, entityMutator);
 
     }
 
@@ -453,7 +455,7 @@ public class ThriftPersisterImplTest {
         ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()), any(Composite.class),
-                keyValueHolderCaptor.capture(), eq(ttlO), eq(entityMutator));
+                keyValueHolderCaptor.capture(), eq(ttlO), eq(timestampO), eq(entityMutator));
 
         assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
 
@@ -498,7 +500,7 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.batchPersistJoinEntity(context, propertyMeta, user, persister);
 
-        verify(entityDao).insertColumnBatch(entity.getId(), comp, joinId.toString(), ttlO, entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp, joinId.toString(), ttlO, timestampO, entityMutator);
 
         ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
                 .forClass(ThriftPersistenceContext.class);
@@ -535,8 +537,10 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.batchPersistJoinCollection(context, propertyMeta, Arrays.asList(user1, user2), persister);
 
-        verify(entityDao).insertColumnBatch(entity.getId(), comp1, joinId1.toString(), ttlO, entityMutator);
-        verify(entityDao).insertColumnBatch(entity.getId(), comp2, joinId2.toString(), ttlO, entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp1, joinId1.toString(), ttlO, timestampO,
+                entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp2, joinId2.toString(), ttlO, timestampO,
+                entityMutator);
 
         ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
                 .forClass(ThriftPersistenceContext.class);
@@ -585,8 +589,8 @@ public class ThriftPersisterImplTest {
 
         persisterImpl.batchPersistJoinMap(context, propertyMeta, joinMap, persister);
 
-        verify(entityDao).insertColumnBatch(entity.getId(), comp1, writeString(kv1), ttlO, entityMutator);
-        verify(entityDao).insertColumnBatch(entity.getId(), comp2, writeString(kv2), ttlO, entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp1, writeString(kv1), ttlO, timestampO, entityMutator);
+        verify(entityDao).insertColumnBatch(entity.getId(), comp2, writeString(kv2), ttlO, timestampO, entityMutator);
 
         ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
                 .forClass(ThriftPersistenceContext.class);

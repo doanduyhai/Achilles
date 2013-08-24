@@ -174,7 +174,7 @@ public class ClusteredEntityIT
         comp.setComponent(1, name, STRING_SRZ);
         Mutator<Long> mutator = dao.buildMutator();
         dao.insertColumnBatch(partitionKey, comp, "new_clustered_value",
-                Optional.<Integer> absent(), mutator);
+                Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
         dao.executeMutator(mutator);
 
         em.refresh(entity);

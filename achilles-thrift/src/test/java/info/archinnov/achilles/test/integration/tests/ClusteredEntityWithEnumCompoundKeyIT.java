@@ -4,8 +4,8 @@ import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndVal
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.junit.AchillesThriftInternalResource;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
@@ -114,7 +114,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT
         comp.setComponent(0, "FILE", ThriftSerializerUtils.STRING_SRZ);
         Mutator<Long> mutator = dao.buildMutator();
         dao.insertColumnBatch(partitionKey, comp, "new_clustered_value",
-                Optional.<Integer> absent(), mutator);
+                Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
         dao.executeMutator(mutator);
 
         em.refresh(entity);
