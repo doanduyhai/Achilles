@@ -32,6 +32,9 @@ public class AchillesThriftResource extends AchillesTestResource {
     /**
      * Initialize a new embedded Cassandra server
      * 
+     * @param entityPackages
+     *            packages to scan for entity discovery, comma separated
+     * 
      * @param tables
      *            list of tables to truncate before and after tests
      */
@@ -50,6 +53,9 @@ public class AchillesThriftResource extends AchillesTestResource {
 
     /**
      * Initialize a new embedded Cassandra server
+     * 
+     * @param entityPackages
+     *            packages to scan for entity discovery, comma separated
      * 
      * @param cleanUpSteps
      *            when to truncate tables for clean up. Possible values are : Steps.BEFORE_TEST, Steps.AFTER_TEST and
