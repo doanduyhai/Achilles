@@ -25,7 +25,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.3</version>
+		<version>2.0.4</version>
 	</dependency>  
  
   For **Thrift** version:
@@ -33,22 +33,14 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.3</version>
+		<version>2.0.4</version>
 	</dependency> 
 
  
- The framework has been released on **Sonatype OSS** repository so make sure you have the following
- entry in your **pom.xml**:
- 
- 	<repository>
-		<id>Sonatype</id>
-		<name>oss.sonatype.org</name>
-		<url>http://oss.sonatype.org</url>
-	</repository>
  
  For now, **Achilles** depends on the following libraries:
  
- 1. cassandra 1.2.4
+ 1. cassandra 1.2.8
  2. cassandra-driver-core 1.0.2 for the **CQL** version
  3. hector-core 1.1-2 for the **Thrift** version
  3. CGLIB nodep 2.2.2 for proxy building
@@ -83,6 +75,11 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **2.0.4**:
+    * Migrate to Cassandra 1.2.8
+    * Fix NPE when no join entity in collection/map for CQL
+    * Remove Cassandra Unit library to avoid dependency on Hector for CQL version
+    * Add Cassandra Embedded server. Add JUnit rule to bootstrap Cassandra embedded server and Achilles together
 * **2.0.3**:
     * Fix buggy implementation of FactoryBean for Spring integration
     * Fix bug in decoding enums for Slice Queries 
