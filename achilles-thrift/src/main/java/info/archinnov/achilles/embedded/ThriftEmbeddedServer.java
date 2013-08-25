@@ -20,6 +20,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -31,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
     private static final Object SEMAPHORE = new Object();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThriftEmbeddedServer.class);
 
     private static String entityPackages;
     private static boolean initialized = false;
@@ -84,6 +87,16 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
         Cassandra.Client client = new Cassandra.Client(proto);
         try {
             tr.open();
+
+            for (KsDef ksDef : client.describe_keyspaces())
+            {
+                if (StringUtils.equals(ksDef.getName(), CASSANDRA_TEST_KEYSPACE_NAME))
+                {
+                    return;
+                }
+            }
+            LOGGER.info("Create keyspace " + CASSANDRA_TEST_KEYSPACE_NAME);
+
             KsDef ksDef = new KsDef();
             ksDef.name = CASSANDRA_TEST_KEYSPACE_NAME;
             ksDef.replication_factor = 1;

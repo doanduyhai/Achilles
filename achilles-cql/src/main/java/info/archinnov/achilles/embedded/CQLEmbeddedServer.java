@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Compression;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.TBinaryProtocol;
 import org.apache.commons.lang.StringUtils;
 import org.apache.thrift.protocol.TProtocol;
@@ -30,7 +31,8 @@ import com.datastax.driver.core.SimpleStatement;
  */
 public class CQLEmbeddedServer extends AchillesEmbeddedServer {
     private static final Object SEMAPHORE = new Object();
-    private static final Logger logger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CQLEmbeddedServer.class);
+    private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
     private static String entityPackages;
     private static boolean initialized = false;
@@ -99,10 +101,21 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
         Cassandra.Client client = new Cassandra.Client(proto);
         try {
             tr.open();
-            String cql = "CREATE keyspace " + CASSANDRA_TEST_KEYSPACE_NAME
-                    + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}";
 
-            client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()), Compression.NONE, ConsistencyLevel.ONE);
+            String checkKeyspace = "SELECT keyspace_name from system.schema_keyspaces WHERE keyspace_name='"
+                    + CASSANDRA_TEST_KEYSPACE_NAME + "'";
+            CqlResult cqlResult = client.execute_cql3_query(ByteBuffer.wrap(checkKeyspace.getBytes()),
+                    Compression.NONE, ConsistencyLevel.ONE);
+
+            if (cqlResult.getRowsSize() == 0)
+            {
+                LOGGER.info("Create keyspace " + CASSANDRA_TEST_KEYSPACE_NAME);
+
+                String cql = "CREATE keyspace " + CASSANDRA_TEST_KEYSPACE_NAME
+                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}";
+
+                client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()), Compression.NONE, ConsistencyLevel.ONE);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally
@@ -114,6 +127,6 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
     public void truncateTable(String tableName) {
         String query = "truncate " + tableName;
         session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
-        logger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "Simple query", query, "ALL");
+        DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "Simple query", query, "ALL");
     }
 }

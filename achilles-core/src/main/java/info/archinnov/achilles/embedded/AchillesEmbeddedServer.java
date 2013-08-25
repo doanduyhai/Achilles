@@ -2,12 +2,7 @@ package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.embedded.CassandraEmbedded.CASSANDRA_EMBEDDED;
 import java.io.File;
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.KsDef;
-import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,16 +37,6 @@ public class AchillesEmbeddedServer {
             CASSANDRA_EMBEDDED.start(cassandraConfig);
 
         }
-    }
-
-    public static void createKeySpace(Cassandra.Client client) throws InvalidRequestException, TException,
-            SchemaDisagreementException {
-        KsDef ksDef = new KsDef();
-        ksDef.name = CASSANDRA_TEST_KEYSPACE_NAME;
-        ksDef.replication_factor = 1;
-        ksDef.strategy_class = "org.apache.cassandra.locator.SimpleStrategy";
-        client.system_add_keyspace(ksDef);
-
     }
 
 }

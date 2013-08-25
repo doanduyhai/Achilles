@@ -9,7 +9,6 @@
 package info.archinnov.achilles.embedded;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +21,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import org.apache.cassandra.service.CassandraDaemon;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +34,6 @@ public enum CassandraEmbedded {
 
     public void start(final CassandraConfig config) {
         this.config = config;
-
-        final File cassandraHome = config.getCassandraHome();
-        cleanUpExistingData(cassandraHome);
 
         if (isAlreadyRunning()) {
             log.info("Cassandra is already running, not starting new one");
@@ -58,17 +53,6 @@ public enum CassandraEmbedded {
                 CassandraDaemon cassandraDaemon = new CassandraDaemon();
                 cassandraDaemon.activate();
                 startupLatch.countDown();
-            }
-        });
-
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                FileUtils.deleteQuietly(cassandraHome);
-                log.info("Shutting down cassandra and cleaning embedded Cassandra home '{}'",
-                        cassandraHome.getAbsolutePath());
             }
         });
 
@@ -103,14 +87,5 @@ public enum CassandraEmbedded {
     public CassandraConfig getConfig() {
         config.load();
         return config;
-    }
-
-    private void cleanUpExistingData(File cassandraHome)
-    {
-        if (cassandraHome.exists() && cassandraHome.isDirectory())
-        {
-            log.info("Cleaning up embedded Cassandra home '{}' before starting", cassandraHome.getAbsolutePath());
-            FileUtils.deleteQuietly(cassandraHome);
-        }
     }
 }
