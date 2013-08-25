@@ -189,9 +189,9 @@ public class CQLPersistenceContext extends PersistenceContext
         flushContext.pushBoundStatement(boundStatement, writeLevel);
     }
 
-    public void pushStatement(Statement boundStatement, ConsistencyLevel writeLevel)
+    public void pushStatement(Statement statement, ConsistencyLevel writeLevel)
     {
-        flushContext.pushStatement(boundStatement, writeLevel);
+        flushContext.pushStatement(statement, writeLevel);
     }
 
     public ResultSet executeImmediateWithConsistency(BoundStatement bs,

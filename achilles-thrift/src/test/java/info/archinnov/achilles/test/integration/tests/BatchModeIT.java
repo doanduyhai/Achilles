@@ -17,7 +17,7 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -51,7 +51,7 @@ public class BatchModeIT
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
             "CompleteBean", "User", "Tweet");
 
     private ThriftEntityManagerFactory emf = resource.getFactory();

@@ -82,8 +82,8 @@ public enum PropertyType {
     public static PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
 
     public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
-    public static PropertyTypeFilter lazyNonProxyType = new PropertyTypeFilter(SIMPLE, LAZY_SIMPLE, LIST, LAZY_LIST,
-            SET, LAZY_SET, MAP, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP);
+    public static PropertyTypeFilter lazyType = new PropertyTypeFilter(LAZY_SIMPLE, LAZY_LIST,
+            LAZY_SET, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP, COUNTER);
 
     public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
 

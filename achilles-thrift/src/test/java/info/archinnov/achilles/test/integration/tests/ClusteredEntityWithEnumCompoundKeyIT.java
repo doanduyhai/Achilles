@@ -5,7 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
@@ -21,7 +21,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT
 {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
             "clustered_with_enum_compound");
 
     private ThriftEntityManager em = resource.getEm();

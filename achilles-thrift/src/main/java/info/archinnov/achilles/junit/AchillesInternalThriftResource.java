@@ -18,7 +18,7 @@ import org.apache.cassandra.utils.Pair;
  * @author DuyHai DOAN
  * 
  */
-public class AchillesThriftInternalResource extends AchillesTestResource {
+public class AchillesInternalThriftResource extends AchillesTestResource {
 
     private static final String ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 
@@ -36,7 +36,7 @@ public class AchillesThriftInternalResource extends AchillesTestResource {
      * @param tables
      *            list of tables to truncate before and after tests
      */
-    public AchillesThriftInternalResource(String... tables) {
+    public AchillesInternalThriftResource(String... tables) {
         super(tables);
         server = new ThriftEmbeddedServer(ENTITY_PACKAGES);
         cluster = server.getCluster();
@@ -58,7 +58,7 @@ public class AchillesThriftInternalResource extends AchillesTestResource {
      *            list of tables to truncate before, after or before and after tests, depending on the 'cleanUpSteps'
      *            parameters
      */
-    public AchillesThriftInternalResource(Steps cleanUpSteps, String... tables) {
+    public AchillesInternalThriftResource(Steps cleanUpSteps, String... tables) {
         super(cleanUpSteps, tables);
         server = new ThriftEmbeddedServer(ENTITY_PACKAGES);
         cluster = server.getCluster();

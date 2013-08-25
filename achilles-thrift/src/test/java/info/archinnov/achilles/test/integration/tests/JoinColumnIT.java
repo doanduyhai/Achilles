@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
@@ -38,7 +38,7 @@ public class JoinColumnIT
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "Tweet", "User");
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "Tweet", "User");
 
     private ThriftEntityManager em = resource.getEm();
 

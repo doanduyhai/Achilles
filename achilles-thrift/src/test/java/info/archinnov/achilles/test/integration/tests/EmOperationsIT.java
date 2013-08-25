@@ -11,7 +11,7 @@ import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -51,7 +51,7 @@ public class EmOperationsIT
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
             "CompleteBean", "Tweet", "User", "achillesCounterCF");
 
     private ThriftEntityManager em = resource.getEm();

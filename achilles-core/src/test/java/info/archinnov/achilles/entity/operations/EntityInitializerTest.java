@@ -2,26 +2,30 @@ package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -40,22 +44,25 @@ public class EntityInitializerTest
 
     private EntityInitializer initializer = new EntityInitializer();
 
+    @Mock
+    private EntityProxifier<PersistenceContext> proxifier;
+
+    @Mock
+    private ReflectionInvoker invoker = new ReflectionInvoker();
+
     private final List<String> calledMethods = new ArrayList<String>();
 
     @Mock
     private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
-    private CompleteBean bean = new CompleteBean()
+    @Before
+    public void setUp()
     {
+        Whitebox.setInternalState(initializer, "proxifier", proxifier);
+        Whitebox.setInternalState(initializer, "invoker", invoker);
+    }
 
-        @Override
-        public Set<String> getFollowers()
-        {
-            calledMethods.add("getFollowers");
-            return Sets.newHashSet("followers");
-        }
-
-    };
+    private CompleteBean bean = new CompleteBean();
 
     @Test
     public void should_initialize_entity() throws Exception
@@ -98,34 +105,79 @@ public class EntityInitializerTest
 
         initializer.initializeEntity(bean, entityMeta, interceptor);
 
-        assertThat(calledMethods).containsExactly("getFollowers");
+        verify(invoker).getValueFromField(bean, followersMeta.getGetter());
     }
 
     @Test
-    public void should_throw_exception_when_error_initializing() throws Exception
+    public void should_initialize_and_set_counter_value_for_entity() throws Exception
     {
-        CompleteBean bean = new CompleteBean()
-        {
+        Class<? extends CompleteBean> beanClass = bean.getClass();
 
-            public Long getId()
-            {
-                throw new RuntimeException();
-            }
-        };
+        PropertyMeta counterMeta = new PropertyMeta();
+        counterMeta.setEntityClassName("beanClass");
+        counterMeta.setType(COUNTER);
+        counterMeta.setGetter(beanClass.getMethod("getCount"));
+        counterMeta.setSetter(beanClass.getMethod("setCount", Counter.class));
 
-        PropertyMeta pm = new PropertyMeta();
-        pm.setType(PropertyType.LAZY_SIMPLE);
-        pm.setGetter(bean.getClass().getMethod("getId"));
+        Set<Method> alreadyLoaded = Sets.newHashSet();
+
+        Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(
+                counterMeta.getGetter(), counterMeta);
+
+        Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of(
+                "count", counterMeta);
 
         EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id", pm));
+        entityMeta.setPropertyMetas(allMetas);
+        entityMeta.setGetterMetas(getterMetas);
 
-        entityMeta.setGetterMetas(ImmutableMap.<Method, PropertyMeta> of(pm.getGetter(), pm));
+        when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
+        when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
 
-        when(interceptor.getAlreadyLoaded()).thenReturn(new HashSet<Method>());
-
-        exception.expect(AchillesException.class);
         initializer.initializeEntity(bean, entityMeta, interceptor);
+
+        ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor.forClass(Counter.class);
+
+        verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()), counterCaptor.capture());
+
+        assertThat(counterCaptor.getValue().get()).isEqualTo(10L);
+    }
+
+    @Test
+    public void should_initialize_and_set_counter_value_for_entity_even_if_already_loaded() throws Exception
+    {
+        Class<? extends CompleteBean> beanClass = bean.getClass();
+
+        PropertyMeta counterMeta = new PropertyMeta();
+        counterMeta.setEntityClassName("beanClass");
+        counterMeta.setType(COUNTER);
+        counterMeta.setGetter(beanClass.getMethod("getCount"));
+        counterMeta.setSetter(beanClass.getMethod("setCount", Counter.class));
+
+        Set<Method> alreadyLoaded = Sets.newHashSet(counterMeta.getGetter());
+
+        Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(
+                counterMeta.getGetter(), counterMeta);
+
+        Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of(
+                "count", counterMeta);
+
+        EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setPropertyMetas(allMetas);
+        entityMeta.setGetterMetas(getterMetas);
+
+        when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
+        when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
+
+        initializer.initializeEntity(bean, entityMeta, interceptor);
+
+        ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor.forClass(Counter.class);
+
+        verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()), counterCaptor.capture());
+
+        assertThat(counterCaptor.getValue().get()).isEqualTo(10L);
     }
 
 }

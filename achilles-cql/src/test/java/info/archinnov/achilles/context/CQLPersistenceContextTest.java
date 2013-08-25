@@ -32,6 +32,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 
 /**
  * CQLPersistenceContextTest
@@ -341,6 +342,16 @@ public class CQLPersistenceContextTest
         context.pushBoundStatement(bs, EACH_QUORUM);
 
         verify(flushContext).pushBoundStatement(bs, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_push_statement() throws Exception
+    {
+        Statement statement = mock(Statement.class);
+
+        context.pushStatement(statement, EACH_QUORUM);
+
+        verify(flushContext).pushStatement(statement, EACH_QUORUM);
     }
 
     @Test

@@ -5,7 +5,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -26,7 +26,7 @@ public class CounterIT
     public ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource("CompleteBean", THRIFT_COUNTER_CF);
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource("CompleteBean", THRIFT_COUNTER_CF);
 
     private ThriftEntityManager em = resource.getEm();
 

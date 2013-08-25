@@ -3,7 +3,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity.CompoundKey;
 import info.archinnov.achilles.type.BoundingMode;
@@ -24,7 +24,7 @@ import org.junit.Test;
 public class ValuelessClusteredEntityIT {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
             "ValuelessClusteredEntity");
 
     private ThriftEntityManager em = resource.getEm();

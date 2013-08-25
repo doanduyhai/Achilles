@@ -2,7 +2,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -21,7 +21,7 @@ import org.junit.Test;
 public class LazyLoadingIT
 {
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "CompleteBean");
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "CompleteBean");
 
     private ThriftEntityManager em = resource.getEm();
 

@@ -3,7 +3,7 @@ package info.archinnov.achilles.dao;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.mockito.Mockito.verify;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -29,7 +29,7 @@ public class ThriftAbstractDaoTest
 {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource("CompleteBean");
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource("CompleteBean");
 
     private ThriftGenericEntityDao abstractDao;
 

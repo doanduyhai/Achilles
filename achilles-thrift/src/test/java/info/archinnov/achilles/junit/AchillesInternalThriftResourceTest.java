@@ -17,10 +17,10 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class AchillesThriftInternalResourceTest {
+public class AchillesInternalThriftResourceTest {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST, "User");
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "User");
 
     private Cluster cluster = resource.getCluster();
     private Keyspace keyspace = resource.getKeyspace();
@@ -62,7 +62,7 @@ public class AchillesThriftInternalResourceTest {
     @Test
     public void should_create_resources_once() throws Exception
     {
-        AchillesThriftInternalResource resource = new AchillesThriftInternalResource();
+        AchillesInternalThriftResource resource = new AchillesInternalThriftResource();
 
         assertThat(resource.getCluster()).isSameAs(cluster);
         assertThat(resource.getKeyspace()).isSameAs(keyspace);

@@ -6,7 +6,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.junit.AchillesThriftInternalResource;
+import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.Holder;
@@ -24,7 +24,7 @@ public class ClusteredEntityWithObjectPropertyIT
 {
 
     @Rule
-    public AchillesThriftInternalResource resource = new AchillesThriftInternalResource(Steps.AFTER_TEST,
+    public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
             "clustered_with_object_value");
 
     private ThriftEntityManager em = resource.getEm();
