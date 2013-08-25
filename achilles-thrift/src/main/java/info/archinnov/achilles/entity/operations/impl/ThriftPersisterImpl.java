@@ -173,27 +173,31 @@ public class ThriftPersisterImpl {
         PropertyMeta joinIdMeta = joinEntityMeta.getIdMeta();
         int count = 0;
         for (V joinEntity : joinCollection) {
-            Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
+            if (joinEntity != null)
+            {
+                Composite name = thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, count);
 
-            Object joinEntityId = invoker.getValueFromField(joinEntity, joinIdMeta.getGetter());
+                Object joinEntityId = invoker.getValueFromField(joinEntity, joinIdMeta.getGetter());
 
-            String joinEntityIdStringValue = joinIdMeta.writeValueToString(joinEntityId);
-            if (joinEntityIdStringValue != null) {
-                if (log.isTraceEnabled()) {
-                    log.trace(
-                            "Batch persisting join primary keys for property {} from entity of class {} and primary key {} with column name {}",
-                            propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
-                            context.getPrimaryKey(), format(name));
+                String joinEntityIdStringValue = joinIdMeta.writeValueToString(joinEntityId);
+                if (joinEntityIdStringValue != null) {
+                    if (log.isTraceEnabled()) {
+                        log.trace(
+                                "Batch persisting join primary keys for property {} from entity of class {} and primary key {} with column name {}",
+                                propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+                                context.getPrimaryKey(), format(name));
+                    }
+                    context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, joinEntityIdStringValue,
+                            context.getTtt(), context.getTimestamp(),
+                            context.getEntityMutator(context.getTableName()));
+
+                    ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(
+                            propertyMeta.joinMeta(), proxifier.unwrap(joinEntity));
+
+                    persister.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
                 }
-                context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, joinEntityIdStringValue,
-                        context.getTtt(), context.getTimestamp(), context.getEntityMutator(context.getTableName()));
-
-                ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(
-                        propertyMeta.joinMeta(), proxifier.unwrap(joinEntity));
-
-                persister.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
+                count++;
             }
-            count++;
         }
     }
 
@@ -208,24 +212,28 @@ public class ThriftPersisterImpl {
                     .hashCode());
 
             V joinEntity = entry.getValue();
-            Object joinEntityId = invoker.getValueFromField(joinEntity, idMeta.getGetter());
-            String joinEntityIdStringValue = idMeta.writeValueToString(joinEntityId);
+            if (joinEntity != null)
+            {
+                Object joinEntityId = invoker.getValueFromField(joinEntity, idMeta.getGetter());
+                String joinEntityIdStringValue = idMeta.writeValueToString(joinEntityId);
 
-            String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry.getKey(),
-                    joinEntityIdStringValue));
-            context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, context.getTtt(),
-                    context.getTimestamp(), context.getEntityMutator(context.getTableName()));
+                String value = propertyMeta.writeValueToString(new KeyValue<K, String>(entry.getKey(),
+                        joinEntityIdStringValue));
+                context.getEntityDao().insertColumnBatch(context.getPrimaryKey(), name, value, context.getTtt(),
+                        context.getTimestamp(), context.getEntityMutator(context.getTableName()));
 
-            ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(propertyMeta.joinMeta(),
-                    proxifier.unwrap(joinEntity));
+                ThriftPersistenceContext joinPersistenceContext = context.createContextForJoin(
+                        propertyMeta.joinMeta(),
+                        proxifier.unwrap(joinEntity));
 
-            if (log.isTraceEnabled()) {
-                log.trace(
-                        "Batch persisting join primary keys for property {} from entity of class {} and primary key {} with column name {}",
-                        propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
-                        context.getPrimaryKey(), format(name));
+                if (log.isTraceEnabled()) {
+                    log.trace(
+                            "Batch persisting join primary keys for property {} from entity of class {} and primary key {} with column name {}",
+                            propertyMeta.getPropertyName(), context.getEntityClass().getCanonicalName(),
+                            context.getPrimaryKey(), format(name));
+                }
+                persiter.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
             }
-            persiter.cascadePersistOrEnsureExists(joinPersistenceContext, joinEntity, joinProperties);
         }
     }
 

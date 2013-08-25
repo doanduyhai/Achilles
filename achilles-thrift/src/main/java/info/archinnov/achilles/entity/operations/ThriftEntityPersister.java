@@ -146,7 +146,7 @@ public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceC
 
             persist(context);
         }
-        else if (context.getConfigContext().isEnsureJoinConsistency())
+        else if (context.isEnsureJoinConsistency() && context.addToProcessingList(joinEntity))
         {
 
             log.debug("Consistency check for join entity of class {} and primary key {} ", context

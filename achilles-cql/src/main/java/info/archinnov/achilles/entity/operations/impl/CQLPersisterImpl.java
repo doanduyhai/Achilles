@@ -154,19 +154,22 @@ public class CQLPersisterImpl
             PropertyMeta joinPM = pair.right;
             for (Object joinEntity : joinValues)
             {
-                EntityMeta joinMeta = joinPM.getJoinProperties().getEntityMeta();
-                CQLPersistenceContext joinContext = context.createContextForJoin(joinMeta,
-                        joinEntity);
-                boolean entityExist = joinContext.checkForEntityExistence();
+                if (joinEntity != null && context.addToProcessingList(joinEntity))
+                {
+                    EntityMeta joinMeta = joinPM.getJoinProperties().getEntityMeta();
+                    CQLPersistenceContext joinContext = context.createContextForJoin(joinMeta,
+                            joinEntity);
+                    boolean entityExist = joinContext.checkForEntityExistence();
 
-                Validator
-                        .validateTrue(
-                                entityExist,
-                                "The entity '"
-                                        + joinMeta.getClassName()
-                                        + "' with id '"
-                                        + invoker.getPrimaryKey(joinEntity, joinMeta.getIdMeta())
-                                        + "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
+                    Validator
+                            .validateTrue(
+                                    entityExist,
+                                    "The entity '"
+                                            + joinMeta.getClassName()
+                                            + "' with id '"
+                                            + invoker.getPrimaryKey(joinEntity, joinMeta.getIdMeta())
+                                            + "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
+                }
             }
         }
 

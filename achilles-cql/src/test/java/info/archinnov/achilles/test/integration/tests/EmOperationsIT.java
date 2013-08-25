@@ -8,9 +8,11 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
+import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
+import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.type.OptionsBuilder;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -100,6 +102,23 @@ public class EmOperationsIT
 
         assertThat(found).isNotNull();
         assertThat(found.getId()).isEqualTo(entity.getId());
+    }
+
+    @Test
+    public void should_cascade_persist_bi_directional_join() throws Exception
+    {
+        Long userId = RandomUtils.nextLong();
+        Long referrerId = RandomUtils.nextLong();
+        User referrer = UserTestBuilder.user().id(referrerId).firstname("ref_fn").lastname("ref_ln").buid();
+        User user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
+
+        user.setReferrer(referrer);
+        referrer.setReferree(user);
+
+        em.persist(user);
+
+        assertThat(em.find(User.class, userId)).isNotNull();
+        assertThat(em.find(User.class, referrerId)).isNotNull();
     }
 
     @Test
@@ -233,6 +252,23 @@ public class EmOperationsIT
         entity = em.find(CompleteBean.class, entity.getId());
         assertThat(entity.getFavoriteTweets()).isNull();
 
+    }
+
+    @Test
+    public void should_cascade_merge_bi_directional_join() throws Exception
+    {
+        Long userId = RandomUtils.nextLong();
+        Long referrerId = RandomUtils.nextLong();
+        User referrer = UserTestBuilder.user().id(referrerId).firstname("ref_fn").lastname("ref_ln").buid();
+        User user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
+
+        user.setReferrer(referrer);
+        referrer.setReferree(user);
+
+        em.merge(user);
+
+        assertThat(em.find(User.class, userId)).isNotNull();
+        assertThat(em.find(User.class, referrerId)).isNotNull();
     }
 
     @Test

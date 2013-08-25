@@ -1,6 +1,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -175,7 +176,60 @@ public class ThriftEntityPersisterTest {
         when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
         context.getConfigContext().setEnsureJoinConsistency(true);
 
-        persister.cascadePersistOrEnsureExists(context, entity, joinProperties);
+        Object actual = persister.cascadePersistOrEnsureExists(context, entity, joinProperties);
+        assertThat(actual).isEqualTo(joinId);
+
+        verify(loader).loadPrimaryKey(context, joinIdMeta);
+    }
+
+    @Test
+    public void should_not_ensure_join_entity_exist_if_join_consistency_flag_false() throws Exception {
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
+        EntityMeta joinMeta = new EntityMeta();
+        joinMeta.setIdMeta(joinIdMeta);
+        joinMeta.setTableName("cfName");
+        ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
+        entityDaosMap.put("cfName", entityDao);
+        Long joinId = RandomUtils.nextLong();
+        JoinProperties joinProperties = new JoinProperties();
+        joinProperties.setEntityMeta(joinMeta);
+
+        when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
+        when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
+        context.getConfigContext().setEnsureJoinConsistency(false);
+
+        Object actual = persister.cascadePersistOrEnsureExists(context, entity, joinProperties);
+
+        assertThat(actual).isEqualTo(joinId);
+
+        verifyZeroInteractions(loader);
+
+    }
+
+    @Test
+    public void should_not_ensure_join_entity_exist_if_already_processed() throws Exception {
+        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
+                .completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
+        EntityMeta joinMeta = new EntityMeta();
+        joinMeta.setIdMeta(joinIdMeta);
+        joinMeta.setTableName("cfName");
+        ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
+        entityDaosMap.put("cfName", entityDao);
+        Long joinId = RandomUtils.nextLong();
+        JoinProperties joinProperties = new JoinProperties();
+        joinProperties.setEntityMeta(joinMeta);
+
+        when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
+        when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
+        context.getConfigContext().setEnsureJoinConsistency(true);
+        context.addToProcessingList(entity);
+
+        Object actual = persister.cascadePersistOrEnsureExists(context, entity, joinProperties);
+
+        assertThat(actual).isEqualTo(joinId);
+
+        verifyZeroInteractions(loader);
 
     }
 

@@ -28,6 +28,10 @@ public class User {
     @JoinColumn
     private User referrer;
 
+    @OneToOne
+    @JoinColumn
+    private User referree;
+
     public User() {
     }
 
@@ -67,6 +71,14 @@ public class User {
 
     public void setReferrer(User referrer) {
         this.referrer = referrer;
+    }
+
+    public User getReferree() {
+        return referree;
+    }
+
+    public void setReferree(User referree) {
+        this.referree = referree;
     }
 
     @Override

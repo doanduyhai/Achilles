@@ -60,7 +60,7 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 
         persisterImpl.cascadePersist(this, context, joinPMsWithCascade);
 
-        if (context.getConfigContext().isEnsureJoinConsistency())
+        if (context.isEnsureJoinConsistency())
         {
             Set<PropertyMeta> joinPMs = FluentIterable
                     .from(allMetas)

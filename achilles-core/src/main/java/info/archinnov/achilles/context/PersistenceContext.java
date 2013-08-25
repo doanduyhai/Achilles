@@ -246,4 +246,9 @@ public abstract class PersistenceContext
         return Optional.fromNullable(flushContext.getConsistencyLevel());
     }
 
+    public boolean isEnsureJoinConsistency()
+    {
+        return configContext.isEnsureJoinConsistency();
+    }
+
 }

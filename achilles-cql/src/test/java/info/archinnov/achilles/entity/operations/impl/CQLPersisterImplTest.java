@@ -202,9 +202,56 @@ public class CQLPersisterImplTest
         when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
 
         when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
+        when(context.addToProcessingList(user)).thenReturn(true);
         when(joinContext.checkForEntityExistence()).thenReturn(true);
         persisterImpl.ensureEntitiesExist(context, joinMetas);
 
+        verify(joinContext).checkForEntityExistence();
+    }
+
+    @Test
+    public void should_not_check_for_entity_existence_if_join_already_processed() throws Exception
+    {
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.JOIN_SIMPLE)
+                .accessors()
+                .joinMeta(joinMeta)
+                .cascadeType(CascadeType.ALL)
+                .build();
+
+        joinMetas.add(joinSimpleMeta);
+        UserBean user = new UserBean();
+        entity.setUser(user);
+        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+
+        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
+        when(context.addToProcessingList(user)).thenReturn(false);
+
+        persisterImpl.ensureEntitiesExist(context, joinMetas);
+
+        verify(joinContext, never()).checkForEntityExistence();
+    }
+
+    @Test
+    public void should_not_check_for_entity_existence_if_null_join_entity() throws Exception
+    {
+        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+                .completeBean(Void.class, UserBean.class)
+                .field("user")
+                .type(PropertyType.JOIN_SIMPLE)
+                .accessors()
+                .joinMeta(joinMeta)
+                .cascadeType(CascadeType.ALL)
+                .build();
+
+        joinMetas.add(joinSimpleMeta);
+        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(null);
+
+        persisterImpl.ensureEntitiesExist(context, joinMetas);
+
+        verify(joinContext, never()).checkForEntityExistence();
     }
 
     @Test

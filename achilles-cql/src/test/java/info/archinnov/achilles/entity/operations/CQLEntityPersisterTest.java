@@ -158,7 +158,7 @@ public class CQLEntityPersisterTest
     public void should_ensure_entity_exist() throws Exception
     {
         when(entityMeta.isClusteredCounter()).thenReturn(false);
-        when(context.getConfigContext().isEnsureJoinConsistency()).thenReturn(true);
+        when(context.isEnsureJoinConsistency()).thenReturn(true);
         when(context.addToProcessingList(entity)).thenReturn(true);
 
         PropertyMeta joinMeta = PropertyMetaTestBuilder
