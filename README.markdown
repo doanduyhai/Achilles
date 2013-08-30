@@ -25,7 +25,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.4</version>
+		<version>2.0.5</version>
 	</dependency>  
  
   For **Thrift** version:
@@ -33,7 +33,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.4</version>
+		<version>2.0.5</version>
 	</dependency> 
 
  
@@ -74,7 +74,13 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 # Changes log
- 
+
+* **2.0.5**:
+    * Minor refactor for embedded Cassandra server and test resources
+    * Display bound values in DML debug messages for bound statements
+    * Introduce Options to simplify setting of TTL and Timestamp
+    * Force initialization of counter type when calling `initialize()`
+    * Bug with bi-directional relation with a cascade persist/merge and 'achilles.consistency.join.check' option set to true 
 * **2.0.4**:
     * Migrate to Cassandra 1.2.8
     * Fix NPE when no join entity in collection/map for CQL
