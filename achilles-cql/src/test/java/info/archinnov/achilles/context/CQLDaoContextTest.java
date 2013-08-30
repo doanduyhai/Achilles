@@ -10,6 +10,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -114,12 +115,17 @@ public class CQLDaoContextTest
     private PreparedStatement ps;
 
     @Mock
+    private BoundStatementWrapper bsWrapper;
+
+    @Mock
     private BoundStatement bs;
 
     @Captor
     ArgumentCaptor<Using> usingCaptor;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+
+    private Object[] boundValues = new Object[1];
 
     @Before
     public void setUp()
@@ -148,6 +154,9 @@ public class CQLDaoContextTest
         insertPSs.clear();
         selectEagerPSs.clear();
         removePSs.clear();
+
+        when(bsWrapper.getBs()).thenReturn(bs);
+        when(bsWrapper.getValues()).thenReturn(boundValues);
     }
 
     @Test
@@ -157,10 +166,10 @@ public class CQLDaoContextTest
         when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
         when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
-        when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bs);
+        when(binder.bindForInsert(ps, entityMeta, entity)).thenReturn(bsWrapper);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         daoContext.pushInsertStatement(context);
-        verify(context).pushBoundStatement(bs, ALL);
+        verify(context).pushBoundStatement(bsWrapper, ALL);
     }
 
     @Test
@@ -242,11 +251,11 @@ public class CQLDaoContextTest
         when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
         when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms))
                 .thenReturn(ps);
-        when(binder.bindForUpdate(ps, entityMeta, pms, entity)).thenReturn(bs);
+        when(binder.bindForUpdate(ps, entityMeta, pms, entity)).thenReturn(bsWrapper);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 
         daoContext.pushUpdateStatement(context, pms);
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
 
     }
 
@@ -355,10 +364,10 @@ public class CQLDaoContextTest
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, idMeta))
                 .thenReturn(ps);
         when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         ResultSet resultSet = mock(ResultSet.class);
-        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(Arrays.asList(mock(Row.class)));
 
         boolean actual = daoContext.checkForEntityExistence(context);
@@ -371,12 +380,12 @@ public class CQLDaoContextTest
     {
         when(removePSs.get(CompleteBean.class)).thenReturn(ImmutableMap.of("table", ps));
         when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 
         daoContext.bindForRemoval(context, "table");
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -396,12 +405,12 @@ public class CQLDaoContextTest
         entityMeta.setConsistencyLevels(Pair.create(LOCAL_QUORUM, LOCAL_QUORUM));
         when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
         when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
         when(resultSet.all()).thenReturn(Arrays.asList(row));
-        when(context.executeImmediateWithConsistency(bs, LOCAL_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, LOCAL_QUORUM)).thenReturn(resultSet);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
 
         Row actual = daoContext.eagerLoadEntity(context);
@@ -423,11 +432,11 @@ public class CQLDaoContextTest
                 ps);
 
         when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
         when(resultSet.all()).thenReturn(Arrays.asList(row));
-        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM)).thenReturn(resultSet);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         Row actual = daoContext.loadProperty(context, pm);
 
@@ -447,10 +456,10 @@ public class CQLDaoContextTest
                 ps);
 
         when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId()))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
         ResultSet resultSet = mock(ResultSet.class);
         when(resultSet.all()).thenReturn(Lists.<Row> newLinkedList());
-        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM)).thenReturn(resultSet);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
         assertThat(daoContext.loadProperty(context, pm)).isNull();
     }
@@ -462,7 +471,7 @@ public class CQLDaoContextTest
         when(session.execute(bs)).thenReturn(resultSet);
         when(bs.preparedStatement()).thenReturn(ps);
 
-        ResultSet actual = daoContext.execute(bs);
+        ResultSet actual = daoContext.execute(bs, boundValues);
 
         assertThat(actual).isSameAs(resultSet);
     }
@@ -480,11 +489,11 @@ public class CQLDaoContextTest
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
         when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -499,11 +508,11 @@ public class CQLDaoContextTest
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
         when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
 
-        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, LOCAL_QUORUM);
     }
 
     @Test
@@ -516,11 +525,11 @@ public class CQLDaoContextTest
                 .build();
         when(counterQueryMap.get(CQLQueryType.INCR)).thenReturn(ps);
         when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.incrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
 
-        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+        verify(context).executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -533,11 +542,11 @@ public class CQLDaoContextTest
                 .build();
         when(counterQueryMap.get(CQLQueryType.DECR)).thenReturn(ps);
         when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.decrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
 
-        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+        verify(context).executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -550,11 +559,11 @@ public class CQLDaoContextTest
                 .build();
 
         when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
-        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bs);
+        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, entity.getId())).thenReturn(bsWrapper);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
 
         Row actual = daoContext.getSimpleCounter(context, pm, EACH_QUORUM);
@@ -572,11 +581,11 @@ public class CQLDaoContextTest
                 .build();
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
-        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bsWrapper);
 
         daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -589,11 +598,11 @@ public class CQLDaoContextTest
                 .build();
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
-        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bs);
+        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L)).thenReturn(bsWrapper);
 
         daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
 
-        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, LOCAL_QUORUM);
     }
 
     //Clustered counter
@@ -610,11 +619,11 @@ public class CQLDaoContextTest
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
         when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(), 2L))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -630,11 +639,11 @@ public class CQLDaoContextTest
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.INCR, ps));
         when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(), 2L))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
-        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, LOCAL_QUORUM);
     }
 
     @Test
@@ -649,11 +658,11 @@ public class CQLDaoContextTest
         when(
                 binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(),
                         counterValue))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.incrementClusteredCounter(context, entityMeta, counterMeta, counterValue, EACH_QUORUM);
 
-        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+        verify(context).executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -668,11 +677,11 @@ public class CQLDaoContextTest
         when(
                 binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, counterMeta, entity.getId(),
                         counterValue))
-                .thenReturn(bs);
+                .thenReturn(bsWrapper);
 
         daoContext.decrementClusteredCounter(context, entityMeta, counterMeta, counterValue, EACH_QUORUM);
 
-        verify(context).executeImmediateWithConsistency(bs, EACH_QUORUM);
+        verify(context).executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -685,11 +694,11 @@ public class CQLDaoContextTest
                 .build();
 
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.SELECT, ps));
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, counterMeta, entity.getId())).thenReturn(bs);
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, counterMeta, entity.getId())).thenReturn(bsWrapper);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        when(context.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
+        when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(Arrays.<Row> asList(row));
 
         Row actual = daoContext.getClusteredCounter(context, counterMeta, EACH_QUORUM);
@@ -707,11 +716,11 @@ public class CQLDaoContextTest
                 .build();
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bs);
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bsWrapper);
 
         daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
-        verify(context).pushBoundStatement(bs, EACH_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -724,11 +733,11 @@ public class CQLDaoContextTest
                 .build();
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.of(CQLQueryType.DELETE, ps));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bs);
+        when(binder.bindForClusteredCounterDelete(ps, entityMeta, counterMeta, 11L)).thenReturn(bsWrapper);
 
         daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
-        verify(context).pushBoundStatement(bs, LOCAL_QUORUM);
+        verify(context).pushBoundStatement(bsWrapper, LOCAL_QUORUM);
     }
 
     @Test

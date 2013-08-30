@@ -1,10 +1,10 @@
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.BoundStatement;
 
 /**
  * CQLBatchingFlushContext
@@ -20,9 +20,9 @@ public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatching
         super(daoContext, consistencyLevel);
     }
 
-    private CQLBatchingFlushContext(CQLDaoContext daoContext, List<BoundStatement> boundStatements,
+    private CQLBatchingFlushContext(CQLDaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
             ConsistencyLevel consistencyLevel) {
-        super(daoContext, boundStatements, consistencyLevel);
+        super(daoContext, boundStatementWrappers, consistencyLevel);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatching
 
     @Override
     public CQLBatchingFlushContext duplicate() {
-        return new CQLBatchingFlushContext(daoContext, boundStatements, consistencyLevel);
+        return new CQLBatchingFlushContext(daoContext, boundStatementWrappers, consistencyLevel);
     }
 
 }

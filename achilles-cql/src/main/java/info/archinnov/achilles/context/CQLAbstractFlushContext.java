@@ -1,6 +1,7 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 {
     protected CQLDaoContext daoContext;
 
-    protected List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
+    protected List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
     protected List<Statement> statements = new ArrayList<Statement>();
 
     protected ConsistencyLevel consistencyLevel;
@@ -32,10 +33,10 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     }
 
     protected CQLAbstractFlushContext(CQLDaoContext daoContext,
-            List<BoundStatement> boundStatements,
+            List<BoundStatementWrapper> boundStatementWrappers,
             ConsistencyLevel consistencyLevel)
     {
-        this.boundStatements = boundStatements;
+        this.boundStatementWrappers = boundStatementWrappers;
         this.daoContext = daoContext;
         this.consistencyLevel = consistencyLevel;
     }
@@ -43,16 +44,17 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     @Override
     public void cleanUp()
     {
-        boundStatements.clear();
+        boundStatementWrappers.clear();
         statements.clear();
         consistencyLevel = null;
     }
 
     protected void doFlush()
     {
-        for (BoundStatement bs : boundStatements)
+        for (BoundStatementWrapper wrapper : boundStatementWrappers)
         {
-            daoContext.execute(bs);
+
+            daoContext.execute(wrapper.getBs(), wrapper.getValues());
         }
         for (Statement statement : statements)
         {
@@ -63,9 +65,10 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 
     }
 
-    public void pushBoundStatement(BoundStatement boundStatement,
+    public void pushBoundStatement(BoundStatementWrapper bsWrapper,
             ConsistencyLevel writeConsistencyLevel)
     {
+        BoundStatement boundStatement = bsWrapper.getBs();
         if (consistencyLevel != null)
         {
             boundStatement.setConsistencyLevel(getCQLLevel(consistencyLevel));
@@ -74,7 +77,7 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
         {
             boundStatement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
         }
-        boundStatements.add(boundStatement);
+        boundStatementWrappers.add(bsWrapper);
     }
 
     public void pushStatement(Statement statement,
@@ -93,15 +96,15 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
     }
 
     public ResultSet executeImmediateWithConsistency(Query query,
-            ConsistencyLevel readConsistencyLevel)
+            ConsistencyLevel readConsistencyLevel, Object... boundValues)
     {
         query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
-        return daoContext.execute(query);
+        return daoContext.execute(query, boundValues);
     }
 
-    public List<BoundStatement> getBoundStatements()
+    public List<BoundStatementWrapper> getBoundStatementWrappers()
     {
-        return boundStatements;
+        return boundStatementWrappers;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.BoundStatement;
 
 /**
  * CQLImmediateFlushContext
@@ -22,9 +22,9 @@ public class CQLImmediateFlushContext extends CQLAbstractFlushContext<CQLImmedia
     }
 
     private CQLImmediateFlushContext(CQLDaoContext daoContext,
-            List<BoundStatement> boundStatements, ConsistencyLevel consistencyLevel)
+            List<BoundStatementWrapper> boundStatementWrappers, ConsistencyLevel consistencyLevel)
     {
-        super(daoContext, boundStatements, consistencyLevel);
+        super(daoContext, boundStatementWrappers, consistencyLevel);
     }
 
     @Override
@@ -58,6 +58,6 @@ public class CQLImmediateFlushContext extends CQLAbstractFlushContext<CQLImmedia
     public CQLImmediateFlushContext duplicate()
     {
         return new CQLImmediateFlushContext(daoContext,
-                boundStatements, consistencyLevel);
+                boundStatementWrappers, consistencyLevel);
     }
 }

@@ -14,7 +14,6 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 
@@ -60,8 +57,6 @@ public class CQLPreparedStatementBinderTest
     @Mock
     private ObjectMapper objectMapper;
 
-    private List<Object> boundValues = new ArrayList<Object>();
-
     private EntityMeta entityMeta;
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
@@ -70,7 +65,6 @@ public class CQLPreparedStatementBinderTest
     public void setUp()
     {
         entityMeta = new EntityMeta();
-        boundValues.clear();
     }
 
     @Test
@@ -122,23 +116,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(nameMeta, name)).thenReturn(name);
         when(transcoder.encode(ageMeta, age)).thenReturn(age);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+        BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(primaryKey, name, age);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, age);
 
     }
 
@@ -191,23 +174,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(nameMeta, name)).thenReturn(name);
         when(transcoder.encode(userMeta, user)).thenReturn(joinId);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+        BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(primaryKey, name, joinId);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, joinId);
 
     }
 
@@ -251,23 +223,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(nameMeta, name)).thenReturn(name);
         when(transcoder.encode(eq(ageMeta), any())).thenReturn(null);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+        BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(primaryKey, name, null);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, null);
 
     }
 
@@ -305,23 +266,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn((List) Arrays.asList(userId, name));
         when(transcoder.encode(ageMeta, age)).thenReturn(age);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindForInsert(ps, entityMeta, entity);
+        BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(userId, name, age);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(userId, name, age);
     }
 
     @Test
@@ -339,23 +289,12 @@ public class CQLPreparedStatementBinderTest
 
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, primaryKey);
+        BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, primaryKey);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(primaryKey);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
     }
 
     @Test
@@ -399,24 +338,13 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(nameMeta, name)).thenReturn(name);
         when(transcoder.encode(ageMeta, age)).thenReturn(age);
 
-        when(ps.bind(Matchers.<Object> anyVararg())).thenAnswer(new Answer<BoundStatement>()
-        {
-            @Override
-            public BoundStatement answer(InvocationOnMock invocation) throws Throwable
-            {
-                for (Object value : invocation.getArguments())
-                {
-                    boundValues.add(value);
-                }
-                return bs;
-            }
-        });
+        when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-        BoundStatement actual = binder.bindForUpdate(ps, entityMeta,
+        BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta,
                 Arrays.asList(nameMeta, ageMeta), entity);
 
-        assertThat(actual).isSameAs(bs);
-        assertThat(boundValues).containsExactly(name, age, primaryKey);
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(name, age, primaryKey);
     }
 
     @Test
@@ -445,8 +373,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.forceEncodeToJSON(counter)).thenReturn(counter.toString());
         when(ps.bind(counter, "CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
-        assertThat(binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta, primaryKey, counter))
-                .isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
+                primaryKey, counter);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(counter, "CompleteBean", primaryKey.toString(),
+                "counter");
     }
 
     @Test
@@ -473,7 +405,11 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
         when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
-        assertThat(binder.bindForSimpleCounterSelect(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForSimpleCounterSelect(ps, meta, counterMeta, primaryKey);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(),
+                "counter");
     }
 
     @Test
@@ -500,7 +436,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
         when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
-        assertThat(binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(),
+                "counter");
+
     }
 
     @Test
@@ -529,8 +470,12 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(ps.bind(counter, primaryKey)).thenReturn(bs);
 
-        assertThat(binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta, primaryKey, counter))
-                .isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
+                primaryKey, counter);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(counter, primaryKey);
+
     }
 
     @Test
@@ -558,7 +503,11 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(ps.bind(primaryKey)).thenReturn(bs);
 
-        assertThat(binder.bindForClusteredCounterSelect(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(ps, meta, counterMeta, primaryKey);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
+
     }
 
     @Test
@@ -586,6 +535,10 @@ public class CQLPreparedStatementBinderTest
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(ps.bind(primaryKey)).thenReturn(bs);
 
-        assertThat(binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey)).isSameAs(bs);
+        BoundStatementWrapper actual = binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey);
+
+        assertThat(actual.getBs()).isSameAs(bs);
+
+        assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
     }
 }

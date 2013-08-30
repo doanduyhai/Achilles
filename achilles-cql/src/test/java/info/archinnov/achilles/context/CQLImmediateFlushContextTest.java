@@ -4,6 +4,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.FlushContext.FlushType;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -34,6 +35,9 @@ public class CQLImmediateFlushContextTest
     private CQLDaoContext daoContext;
 
     @Mock
+    private BoundStatementWrapper bsWrapper;
+
+    @Mock
     private BoundStatement bs;
 
     @Mock
@@ -46,6 +50,7 @@ public class CQLImmediateFlushContextTest
     public void setUp()
     {
         context = new CQLImmediateFlushContext(daoContext, null);
+        when(bsWrapper.getBs()).thenReturn(bs);
     }
 
     @Test
@@ -57,27 +62,27 @@ public class CQLImmediateFlushContextTest
     @Test
     public void should_push_bound_statement_with_consistency() throws Exception
     {
-        List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-        Whitebox.setInternalState(context, "boundStatements", boundStatements);
+        List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
+        Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
 
-        context.pushBoundStatement(bs, EACH_QUORUM);
+        context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-        assertThat(boundStatements).containsOnly(bs);
+        assertThat(boundStatementWrappers).containsOnly(bsWrapper);
     }
 
     @Test
     public void should_push_bound_statement_with_consistency_overriden_by_current_level()
             throws Exception
     {
-        List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-        Whitebox.setInternalState(context, "boundStatements", boundStatements);
+        List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
+        Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
 
         context.setConsistencyLevel(LOCAL_QUORUM);
-        context.pushBoundStatement(bs, EACH_QUORUM);
+        context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(boundStatements).containsOnly(bs);
+        assertThat(boundStatementWrappers).containsOnly(bsWrapper);
     }
 
     @Test
@@ -121,19 +126,21 @@ public class CQLImmediateFlushContextTest
     @Test
     public void should_flush() throws Exception
     {
-        List<BoundStatement> boundStatements = new ArrayList<BoundStatement>();
-        boundStatements.add(bs);
+        List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
+        boundStatementWrappers.add(bsWrapper);
         List<Statement> statements = new ArrayList<Statement>();
         statements.add(statement);
 
-        Whitebox.setInternalState(context, "boundStatements", boundStatements);
+        Object[] boundValues = new Object[1];
+        when(bsWrapper.getValues()).thenReturn(boundValues);
+        Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
         Whitebox.setInternalState(context, "statements", statements);
 
         context.flush();
 
-        verify(daoContext).execute(bs);
+        verify(daoContext).execute(bs, boundValues);
         verify(daoContext).execute(statement);
-        assertThat(boundStatements).isEmpty();
+        assertThat(boundStatementWrappers).isEmpty();
         assertThat(statements).isEmpty();
     }
 

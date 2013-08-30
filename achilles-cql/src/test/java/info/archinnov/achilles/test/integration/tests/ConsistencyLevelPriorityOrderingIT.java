@@ -9,6 +9,7 @@ import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
@@ -20,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 import com.google.common.base.Optional;
@@ -197,10 +197,11 @@ public class ConsistencyLevelPriorityOrderingIT
     {
         CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
         Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
-        List<BoundStatement> boundStatements = Whitebox.getInternalState(flushContext, "boundStatements");
+        List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
+                "boundStatementWrappers");
 
         assertThat(consistencyLevel).isNull();
-        assertThat(boundStatements).isEmpty();
+        assertThat(boundStatementWrappers).isEmpty();
     }
 
 }

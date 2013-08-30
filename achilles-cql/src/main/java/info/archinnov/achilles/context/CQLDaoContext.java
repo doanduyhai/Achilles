@@ -9,8 +9,10 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.statement.prepared.CQLPreparedStatementBinder;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -93,8 +95,8 @@ public class CQLDaoContext
         else
         {
             PreparedStatement ps = insertPSs.get(entityClass);
-            BoundStatement bs = binder.bindForInsert(ps, entityMeta, context.getEntity());
-            context.pushBoundStatement(bs, writeLevel);
+            BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity());
+            context.pushBoundStatement(bsWrapper, writeLevel);
         }
     }
 
@@ -122,8 +124,8 @@ public class CQLDaoContext
         {
             PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache,
                     context, pms);
-            BoundStatement bs = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
-            context.pushBoundStatement(bs, writeLevel);
+            BoundStatementWrapper bsWrapper = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
+            context.pushBoundStatement(bsWrapper, writeLevel);
         }
     }
 
@@ -154,10 +156,10 @@ public class CQLDaoContext
 
         if (psMap.containsKey(tableName))
         {
-            BoundStatement bs = binder.bindStatementWithOnlyPKInWhereClause(psMap.get(tableName),
+            BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(psMap.get(tableName),
                     entityMeta, context.getPrimaryKey());
             ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-            context.pushBoundStatement(bs, writeLevel);
+            context.pushBoundStatement(bsWrapper, writeLevel);
         }
         else
         {
@@ -171,38 +173,38 @@ public class CQLDaoContext
             PropertyMeta counterMeta, Long increment)
     {
         PreparedStatement ps = counterQueryMap.get(INCR);
-        BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), increment);
 
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-        context.pushBoundStatement(bs, writeLevel);
+        context.pushBoundStatement(bsWrapper, writeLevel);
     }
 
     public void incrementSimpleCounter(CQLPersistenceContext context, EntityMeta meta,
             PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(INCR);
-        BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), increment);
-        context.executeImmediateWithConsistency(bs, consistencyLevel);
+        context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
     }
 
     public void decrementSimpleCounter(CQLPersistenceContext context, EntityMeta meta,
             PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(DECR);
-        BoundStatement bs = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), decrement);
-        context.executeImmediateWithConsistency(bs, consistencyLevel);
+        context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
     }
 
     public Row getSimpleCounter(CQLPersistenceContext context, PropertyMeta counterMeta,
             ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = counterQueryMap.get(SELECT);
-        BoundStatement bs = binder.bindForSimpleCounterSelect(ps, context.getEntityMeta(), counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(ps, context.getEntityMeta(), counterMeta,
                 context.getPrimaryKey());
-        ResultSet resultSet = context.executeImmediateWithConsistency(bs, consistencyLevel);
+        ResultSet resultSet = context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
 
         return returnFirstRowOrNull(resultSet.all());
     }
@@ -211,10 +213,10 @@ public class CQLDaoContext
             PropertyMeta counterMeta, Object primaryKey)
     {
         PreparedStatement ps = counterQueryMap.get(DELETE);
-        BoundStatement bs = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
+        BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
 
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-        context.pushBoundStatement(bs, writeLevel);
+        context.pushBoundStatement(bsWrapper, writeLevel);
     }
 
     // Clustered counter
@@ -223,27 +225,27 @@ public class CQLDaoContext
     {
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
-        BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), increment);
-        context.pushBoundStatement(bs, writeLevel);
+        context.pushBoundStatement(bsWrapper, writeLevel);
     }
 
     public void incrementClusteredCounter(CQLPersistenceContext context, EntityMeta meta,
             PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
-        BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), increment);
-        context.executeImmediateWithConsistency(bs, consistencyLevel);
+        context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
     }
 
     public void decrementClusteredCounter(CQLPersistenceContext context, EntityMeta meta,
             PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
-        BoundStatement bs = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta, counterMeta,
                 context.getPrimaryKey(), decrement);
-        context.executeImmediateWithConsistency(bs, consistencyLevel);
+        context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
     }
 
     public Row getClusteredCounter(CQLPersistenceContext context, PropertyMeta counterMeta,
@@ -251,9 +253,9 @@ public class CQLDaoContext
     {
         EntityMeta entityMeta = context.getEntityMeta();
         PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT);
-        BoundStatement bs = binder.bindForClusteredCounterSelect(ps, entityMeta, counterMeta,
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, counterMeta,
                 context.getPrimaryKey());
-        ResultSet resultSet = context.executeImmediateWithConsistency(bs, consistencyLevel);
+        ResultSet resultSet = context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
 
         return returnFirstRowOrNull(resultSet.all());
     }
@@ -262,9 +264,9 @@ public class CQLDaoContext
             PropertyMeta counterMeta, Object primaryKey)
     {
         PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
-        BoundStatement bs = binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey);
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, counterMeta, primaryKey);
         ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-        context.pushBoundStatement(bs, writeLevel);
+        context.pushBoundStatement(bsWrapper, writeLevel);
     }
 
     public Row eagerLoadEntity(CQLPersistenceContext context)
@@ -282,10 +284,10 @@ public class CQLDaoContext
             PreparedStatement ps, ConsistencyLevel readLevel)
     {
         EntityMeta entityMeta = context.getEntityMeta();
-        BoundStatement boundStatement = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta,
+        BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta,
                 context.getPrimaryKey());
 
-        return context.executeImmediateWithConsistency(boundStatement, readLevel).all();
+        return context.executeImmediateWithConsistency(bsWrapper, readLevel).all();
     }
 
     private Row returnFirstRowOrNull(List<Row> rows)
@@ -300,9 +302,9 @@ public class CQLDaoContext
         }
     }
 
-    public ResultSet execute(Query query)
+    public ResultSet execute(Query query, Object... boundValues)
     {
-        logDMLStatement(query);
+        logDMLStatement(query, boundValues);
         return session.execute(query);
     }
 
@@ -324,7 +326,7 @@ public class CQLDaoContext
         return session;
     }
 
-    private void logDMLStatement(Query query)
+    private void logDMLStatement(Query query, Object... boundValues)
     {
         if (dmlLogger.isDebugEnabled())
         {
@@ -338,6 +340,7 @@ public class CQLDaoContext
                 queryString = ps.getQueryString();
                 consistencyLevel = query.getConsistencyLevel() == null ? "DEFAULT" : query.getConsistencyLevel()
                         .name();
+
             }
             else if (Statement.class.isInstance(query))
             {
@@ -356,6 +359,11 @@ public class CQLDaoContext
 
             dmlLogger
                     .debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+            if (boundValues != null && boundValues.length > 0)
+            {
+                dmlLogger
+                        .debug("\t bound values: {}", Arrays.asList(boundValues));
+            }
 
         }
     }

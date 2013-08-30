@@ -14,6 +14,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -337,11 +338,11 @@ public class CQLPersistenceContextTest
     @Test
     public void should_push_bound_statement() throws Exception
     {
-        BoundStatement bs = mock(BoundStatement.class);
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-        context.pushBoundStatement(bs, EACH_QUORUM);
+        context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
-        verify(flushContext).pushBoundStatement(bs, EACH_QUORUM);
+        verify(flushContext).pushBoundStatement(bsWrapper, EACH_QUORUM);
     }
 
     @Test
@@ -357,11 +358,17 @@ public class CQLPersistenceContextTest
     @Test
     public void should_execute_immediate_with_consistency() throws Exception
     {
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
         BoundStatement bs = mock(BoundStatement.class);
-        ResultSet resultSet = mock(ResultSet.class);
-        when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM)).thenReturn(resultSet);
 
-        ResultSet actual = context.executeImmediateWithConsistency(bs, EACH_QUORUM);
+        Object[] boundValues = new Object[1];
+        when(bsWrapper.getBs()).thenReturn(bs);
+        when(bsWrapper.getValues()).thenReturn(boundValues);
+
+        ResultSet resultSet = mock(ResultSet.class);
+        when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM, boundValues)).thenReturn(resultSet);
+
+        ResultSet actual = context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
 
         assertThat(actual).isSameAs(resultSet);
     }

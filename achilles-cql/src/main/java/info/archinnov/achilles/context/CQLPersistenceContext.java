@@ -10,13 +10,13 @@ import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.validation.Validator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -184,9 +184,9 @@ public class CQLPersistenceContext extends PersistenceContext
         return daoContext.bindAndExecute(ps, params);
     }
 
-    public void pushBoundStatement(BoundStatement boundStatement, ConsistencyLevel writeLevel)
+    public void pushBoundStatement(BoundStatementWrapper bsWrapper, ConsistencyLevel writeLevel)
     {
-        flushContext.pushBoundStatement(boundStatement, writeLevel);
+        flushContext.pushBoundStatement(bsWrapper, writeLevel);
     }
 
     public void pushStatement(Statement statement, ConsistencyLevel writeLevel)
@@ -194,10 +194,11 @@ public class CQLPersistenceContext extends PersistenceContext
         flushContext.pushStatement(statement, writeLevel);
     }
 
-    public ResultSet executeImmediateWithConsistency(BoundStatement bs,
+    public ResultSet executeImmediateWithConsistency(BoundStatementWrapper bsWrapper,
             ConsistencyLevel readConsistencyLevel)
     {
-        return flushContext.executeImmediateWithConsistency(bs, readConsistencyLevel);
+        return flushContext.executeImmediateWithConsistency(bsWrapper.getBs(), readConsistencyLevel,
+                bsWrapper.getValues());
     }
 
     @Override

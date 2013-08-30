@@ -24,7 +24,7 @@ public class CQLPreparedStatementBinder
 {
     private ReflectionInvoker invoker = new ReflectionInvoker();
 
-    public BoundStatement bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
+    public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity)
     {
         List<Object> values = new ArrayList<Object>();
         PropertyMeta idMeta = entityMeta.getIdMeta();
@@ -44,10 +44,14 @@ public class CQLPreparedStatementBinder
             value = encodeValueForCassandra(pm, value);
             values.add(value);
         }
-        return ps.bind(values.toArray(new Object[values.size()]));
+
+        Object[] boundValues = new Object[values.size()];
+        BoundStatement bs = ps.bind(values.toArray(boundValues));
+
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindForUpdate(PreparedStatement ps, EntityMeta entityMeta,
+    public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta,
             List<PropertyMeta> pms, Object entity)
     {
         List<Object> values = new ArrayList<Object>();
@@ -60,58 +64,83 @@ public class CQLPreparedStatementBinder
         }
         Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
         values.addAll(bindPrimaryKey(primaryKey, idMeta));
-        return ps.bind(values.toArray(new Object[values.size()]));
+
+        Object[] boundValues = new Object[values.size()];
+        BoundStatement bs = ps.bind(values.toArray(boundValues));
+
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindStatementWithOnlyPKInWhereClause(PreparedStatement ps,
+    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PreparedStatement ps,
             EntityMeta entityMeta, Object primaryKey)
     {
         PropertyMeta idMeta = entityMeta.getIdMeta();
         List<Object> values = bindPrimaryKey(primaryKey, idMeta);
-        return ps.bind(values.toArray(new Object[values.size()]));
+
+        Object[] boundValues = new Object[values.size()];
+        BoundStatement bs = ps.bind(values.toArray(boundValues));
+
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindForSimpleCounterIncrementDecrement(PreparedStatement ps,
+    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PreparedStatement ps,
             EntityMeta entityMeta, PropertyMeta pm, Object primaryKey, Long increment)
     {
-        Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-        return ps.bind(ArrayUtils.add(values, 0, increment));
+        Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0,
+                increment);
+
+        BoundStatement bs = ps.bind(boundValues);
+
+        return new BoundStatementWrapper(bs, boundValues);
+
     }
 
-    public BoundStatement bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+    public BoundStatementWrapper bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
             PropertyMeta pm, Object primaryKey)
     {
-        Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-        return ps.bind(values);
+        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+    public BoundStatementWrapper bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
             PropertyMeta pm, Object primaryKey)
     {
-        Object[] values = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-        return ps.bind(values);
+        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindForClusteredCounterIncrementDecrement(PreparedStatement ps,
+    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PreparedStatement ps,
             EntityMeta entityMeta, PropertyMeta pm, Object primaryKey, Long increment)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-        Object[] keys = primarykeys.toArray(new Object[primarykeys.size()]);
-        return ps.bind(ArrayUtils.add(keys, 0, increment));
+        Object[] keys = ArrayUtils.add(primarykeys.toArray(new Object[primarykeys.size()]), 0, increment);
+
+        BoundStatement bs = ps.bind(keys);
+
+        return new BoundStatementWrapper(bs, keys);
     }
 
-    public BoundStatement bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+    public BoundStatementWrapper bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
             PropertyMeta pm, Object primaryKey)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-        return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
+        Object[] boundValues = primarykeys.toArray(new Object[primarykeys.size()]);
+
+        BoundStatement bs = ps.bind(boundValues);
+
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
-    public BoundStatement bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+    public BoundStatementWrapper bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
             PropertyMeta pm, Object primaryKey)
     {
         List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-        return ps.bind(primarykeys.toArray(new Object[primarykeys.size()]));
+        Object[] boundValues = primarykeys.toArray(new Object[primarykeys.size()]);
+        BoundStatement bs = ps.bind(boundValues);
+
+        return new BoundStatementWrapper(bs, boundValues);
     }
 
     private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta)
