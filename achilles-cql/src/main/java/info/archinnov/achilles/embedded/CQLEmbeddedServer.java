@@ -2,7 +2,7 @@ package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.context.CQLDaoContext.ACHILLES_DML_STATEMENT;
+import static info.archinnov.achilles.context.CQLDaoContext.*;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 import java.nio.ByteBuffer;
@@ -41,7 +41,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
     private static CQLEntityManagerFactory emf;
     private static CQLEntityManager em;
 
-    public CQLEmbeddedServer(String entityPackages) {
+    public CQLEmbeddedServer(String entityPackages, String keyspaceName) {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
@@ -49,12 +49,12 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
             if (!initialized)
             {
                 CQLEmbeddedServer.entityPackages = entityPackages;
-                initialize();
+                initialize(keyspaceName);
             }
         }
     }
 
-    private void initialize() {
+    private void initialize(String keyspaceName) {
 
         Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -66,7 +66,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
         }
         else
         {
-            createAchillesKeyspace();
+            createAchillesKeyspace(keyspaceName);
             configMap.put(CONNECTION_CONTACT_POINTS_PARAM, CASSANDRA_TEST_HOST);
             configMap.put(CONNECTION_PORT_PARAM, CASSANDRA_CQL_TEST_PORT);
         }
@@ -94,7 +94,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
         return em;
     }
 
-    private void createAchillesKeyspace() {
+    private void createAchillesKeyspace(String keyspaceName) {
 
         TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
         TProtocol proto = new TBinaryProtocol(tr, true, true);
@@ -103,15 +103,15 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
             tr.open();
 
             String checkKeyspace = "SELECT keyspace_name from system.schema_keyspaces WHERE keyspace_name='"
-                    + CASSANDRA_TEST_KEYSPACE_NAME + "'";
+                    + keyspaceName + "'";
             CqlResult cqlResult = client.execute_cql3_query(ByteBuffer.wrap(checkKeyspace.getBytes()),
                     Compression.NONE, ConsistencyLevel.ONE);
 
             if (cqlResult.getRowsSize() == 0)
             {
-                LOGGER.info("Create keyspace " + CASSANDRA_TEST_KEYSPACE_NAME);
+                LOGGER.info("Create keyspace " + keyspaceName);
 
-                String cql = "CREATE keyspace " + CASSANDRA_TEST_KEYSPACE_NAME
+                String cql = "CREATE keyspace " + keyspaceName
                         + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}";
 
                 client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()), Compression.NONE, ConsistencyLevel.ONE);
@@ -126,7 +126,9 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 
     public void truncateTable(String tableName) {
         String query = "truncate " + tableName;
-        session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
+        session
+                .execute(new SimpleStatement(query)
+                        .setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
         DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "Simple query", query, "ALL");
     }
 }

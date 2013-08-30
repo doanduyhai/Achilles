@@ -1,6 +1,6 @@
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.embedded.CassandraEmbedded.CASSANDRA_EMBEDDED;
+import static info.archinnov.achilles.embedded.CassandraEmbedded.*;
 import java.io.File;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 
 public class AchillesEmbeddedServer {
 
+    public static final String CASSANDRA_TEST_KEYSPACE_NAME = "achilles_test";
     private static final String CASSANDRA_EMBEDDED_HOME = "target/cassandra_embedded";
     private static final String CASSANDRA_TEST_CLUSTER_NAME = "Achilles Test Cassandra Cluster";
-    protected static final String CASSANDRA_TEST_KEYSPACE_NAME = "achilles";
     protected static final String CASSANDRA_TEST_HOST = "localhost";
     protected static final String CASSANDRA_HOST = "cassandraHost";
     protected static int CASSANDRA_THRIFT_TEST_PORT = 9160;

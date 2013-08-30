@@ -1,9 +1,9 @@
 package info.archinnov.achilles.junit;
 
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
-import info.archinnov.achilles.junit.AchillesTestResource;
 import com.datastax.driver.core.Session;
 
 /**
@@ -30,7 +30,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     public AchillesInternalCQLResource(String... tables) {
         super(tables);
 
-        server = new CQLEmbeddedServer(ENTITY_PACKAGES);
+        server = new CQLEmbeddedServer(ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
         factory = server.getEmf();
         em = server.getEm();
         session = em.getNativeSession();
@@ -51,7 +51,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     public AchillesInternalCQLResource(Steps cleanUpSteps, String... tables) {
         super(cleanUpSteps, tables);
 
-        server = new CQLEmbeddedServer(ENTITY_PACKAGES);
+        server = new CQLEmbeddedServer(ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
         factory = server.getEmf();
         em = server.getEm();
         session = em.getNativeSession();
@@ -88,6 +88,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         return session;
     }
 
+    @Override
     protected void truncateTables() {
         if (tables != null)
         {

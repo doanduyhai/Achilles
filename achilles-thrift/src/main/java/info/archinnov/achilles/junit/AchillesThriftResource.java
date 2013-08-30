@@ -1,5 +1,6 @@
 package info.archinnov.achilles.junit;
 
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
@@ -43,7 +44,7 @@ public class AchillesThriftResource extends AchillesTestResource {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
-        server = new ThriftEmbeddedServer(entityPackages);
+        server = new ThriftEmbeddedServer(entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
         cluster = server.getCluster();
         keyspace = server.getKeyspace();
         policy = server.getConsistencyPolicy();
@@ -71,7 +72,7 @@ public class AchillesThriftResource extends AchillesTestResource {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
-        server = new ThriftEmbeddedServer(entityPackages);
+        server = new ThriftEmbeddedServer(entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
         cluster = server.getCluster();
         keyspace = server.getKeyspace();
         policy = server.getConsistencyPolicy();
