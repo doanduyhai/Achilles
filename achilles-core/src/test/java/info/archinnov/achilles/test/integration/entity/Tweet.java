@@ -30,6 +30,14 @@ public class Tweet
     @Column
     private Counter favoriteCount;
 
+    public Tweet() {
+    }
+
+    public Tweet(UUID id, String content) {
+        this.id = id;
+        this.content = content;
+    }
+
     public UUID getId()
     {
         return id;

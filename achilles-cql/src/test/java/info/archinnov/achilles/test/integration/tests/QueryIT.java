@@ -10,12 +10,18 @@ import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.OptionsBuilder;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import net.sf.cglib.proxy.Factory;
+import org.apache.cassandra.utils.UUIDGen;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import com.datastax.driver.core.Session;
 
 /**
  * QueryIT
@@ -30,6 +36,8 @@ public class QueryIT {
             AchillesCounter.CQL_COUNTER_TABLE);
 
     private CQLEntityManager em = resource.getEm();
+
+    private Session session = resource.getNativeSession();
 
     @Test
     public void should_return_rows_for_native_query() throws Exception
@@ -88,6 +96,64 @@ public class QueryIT {
         Map<Integer, String> preferences2 = (Map<Integer, String>) row2.get("preferences");
         assertThat(preferences2.get(1)).isEqualTo("US");
         assertThat(preferences2.get(2)).isEqualTo("NewYork");
+    }
+
+    @Test
+    public void should_return_count_for_native_query() throws Exception
+    {
+        CompleteBean entity = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("DuyHai")
+                .buid();
+
+        em.persist(entity);
+
+        Long count = (Long) em.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
+                .get("count");
+
+        assertThat(count).isEqualTo(1L);
+    }
+
+    @Test
+    public void should_return_ttl_and_timestamp_for_native_query() throws Exception
+    {
+        CompleteBean entity = CompleteBeanTestBuilder
+                .builder()
+                .randomId()
+                .name("DuyHai")
+                .age(32L)
+                .buid();
+
+        Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
+
+        em.persist(entity, OptionsBuilder.withTtl(1000).timestamp(timestamp));
+
+        Map<String, Object> result = em.nativeQuery(
+                "SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
+
+        assertThat(result.get("ttl(name)")).isEqualTo(1000);
+        assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
+    }
+
+    @Test
+    public void should_return_cql_functions_for_native_query() throws Exception
+    {
+
+        Long id = RandomUtils.nextLong();
+        UUID date = UUIDGen.getTimeUUID();
+
+        session.execute("CREATE TABLE test_functions(id bigint PRIMARY KEY,date timeuuid)");
+        session.execute("INSERT INTO test_functions(id,date) VALUES(" + id + "," + date + ")");
+
+        Map<String, Object> result = em.nativeQuery(
+                "SELECT now(),dateOf(date),unixTimestampOf(date) FROM test_functions WHERE id="
+                        + id).first();
+        session.execute("DROP TABLE test_functions");
+
+        assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
+        assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
+        assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
     }
 
     @Test
