@@ -44,13 +44,14 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
     private static ThriftEntityManagerFactory emf;
     private static ThriftEntityManager em;
 
-    public ThriftEmbeddedServer(String entityPackages, String keyspaceName) {
+    public ThriftEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
         synchronized (SEMAPHORE) {
             if (!initialized)
             {
+                startServer(cleanCassandraDataFile);
                 ThriftEmbeddedServer.entityPackages = entityPackages;
                 initialize(keyspaceName);
             }

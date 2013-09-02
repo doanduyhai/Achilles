@@ -112,7 +112,7 @@ public class CassandraConfig {
         config.server_encryption_options.keystore = absolutePath + "/keystore";
         config.server_encryption_options.truststore = absolutePath + "/truststore";
         config.client_encryption_options.keystore = absolutePath + "/keystore";
-        config.saved_caches_directory = absolutePath + "saved_caches";
+        config.saved_caches_directory = absolutePath + "/saved_caches";
     }
 
     public void load() {
@@ -177,13 +177,6 @@ public class CassandraConfig {
         return yaml;
     }
 
-    public Config underlyingConfig() {
-        return config;
-    }
-
-    public File getCassandraHome() {
-        return cassandraHome;
-    }
 
     public File getConfigFile() {
         return configFile;
@@ -197,19 +190,6 @@ public class CassandraConfig {
         return config.rpc_port;
     }
 
-    public String getCqlHost() {
-        return config.listen_address;
-    }
-
-    public CassandraConfig cqlPort(int port) {
-        config.native_transport_port = port;
-        return this;
-    }
-
-    public CassandraConfig thriftPort(int port) {
-        config.rpc_port = port;
-        return this;
-    }
 
     public CassandraConfig randomPorts() {
         storageRandomPort();

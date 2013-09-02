@@ -92,5 +92,4 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
         return new CQLConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
                 readConsistencyMap, writeConsistencyMap);
     }
-
 }

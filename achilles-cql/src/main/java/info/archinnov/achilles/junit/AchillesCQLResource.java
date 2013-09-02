@@ -1,6 +1,6 @@
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.CASSANDRA_TEST_KEYSPACE_NAME;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
@@ -33,7 +33,7 @@ public class AchillesCQLResource extends AchillesTestResource {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
-        server = new CQLEmbeddedServer(entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
+        server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
         factory = server.getEmf();
         em = server.getEm();
         session = em.getNativeSession();
@@ -59,7 +59,7 @@ public class AchillesCQLResource extends AchillesTestResource {
         if (StringUtils.isEmpty(entityPackages))
             throw new IllegalArgumentException("Entity packages should be provided");
 
-        server = new CQLEmbeddedServer(entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
+        server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
         factory = server.getEmf();
         em = server.getEm();
         session = em.getNativeSession();

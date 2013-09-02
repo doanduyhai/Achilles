@@ -58,6 +58,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
         daoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap, configContext,
                 hasSimpleCounter);
         contextFactory = new ThriftPersistenceContextFactory(daoContext, configContext, entityMetaMap);
+
     }
 
     /**

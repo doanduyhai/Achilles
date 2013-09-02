@@ -18,14 +18,6 @@ import org.slf4j.LoggerFactory;
 /**
  * ThriftEntityManager
  * 
- * Thrift-based Entity Manager for Achilles. This entity manager is perfectly thread-safe and
- * 
- * can be used as a singleton. Entity state is stored in proxy object, which is obviously not
- * 
- * thread-safe.
- * 
- * Internally the ThriftEntityManager relies on Hector API for common operations
- * 
  * @author DuyHai DOAN
  * 
  */
@@ -38,6 +30,12 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
     private ThriftSliceQueryExecutor sliceQueryExecutor;
     private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
+    /**
+     * Create a new ThriftEntityManager with a configuration map
+     * 
+     * @param configurationMap
+     *            Check documentation for more details on configuration parameters
+     */
     ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
             ThriftPersistenceContextFactory contextFactory,
             ThriftDaoContext daoContext, //
