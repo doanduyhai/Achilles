@@ -8,6 +8,9 @@
   <artifactId>achilles-thrift</artifactId>
   <name>Achilles Thrift</name>
   <description>Thrift implementation for Achilles using Hector library</description>
+  <properties>
+    <hector.version>1.1-4</hector.version>
+  </properties>  
   <dependencies>
   	<!-- Achilles Core -->
   	<dependency>
