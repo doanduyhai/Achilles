@@ -50,6 +50,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 
         daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap, hasSimpleCounter);
         contextFactory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
+        registerShutdownHook(cluster);
     }
 
     /**
@@ -91,5 +92,17 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 
         return new CQLConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
                 readConsistencyMap, writeConsistencyMap);
+    }
+
+    private void registerShutdownHook(final Cluster cluster)
+    {
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                cluster.shutdown();
+            }
+        });
     }
 }
