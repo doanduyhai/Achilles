@@ -42,7 +42,7 @@
  
  1. cassandra 1.2.8
  2. cassandra-driver-core 1.0.2 for the **CQL** version
- 3. hector-core 1.1-2 for the **Thrift** version
+ 3. hector-core 1.1-4 for the **Thrift** version
  3. CGLIB nodep 2.2.2 for proxy building
  4. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
  5. Jackson asl, mapper & xc 1.9.3 
@@ -75,6 +75,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 
+* **2.0.6**:
+    * Add cleaning of embedded Cassandra data files before launching the server in JUnit rule
+    * Upgrade to Hector 1.1-4 for Achilles Thrift
 * **2.0.5**:
     * Minor refactor for embedded Cassandra server and test resources
     * Display bound values in DML debug messages for bound statements
