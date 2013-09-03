@@ -6,15 +6,17 @@
 # Presentation #
 
  Achilles is an open source Entity Manager for Apache Cassandra. Among all the features:
- 
+ - 2 implementations: Thrift & CQL3
  - Dirty check for simple and collection/map type properties
- - Lazy loading 
+ - Lazy loading
  - Collections and map support
- - Support for Cassandra clustered entities with compound primary key
+ - Support for clustered entities in Thrift & CQL
  - Join columns with cascading support
  - Support for counters
- - Support for custom consistency levels
- - Batch mode for atomic commits (atomicity only available for **CQL** impl)
+ - Advanced queries (slice, native or typed) in CQL3
+ - Support for counters
+ - Support for runtime setting of consistency level, ttl and timestamp
+ - Batch mode for atomic commits soon (atomicity only available for **CQL** impl)
 
 # Installation #
 
