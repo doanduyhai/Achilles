@@ -1,13 +1,22 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.metadata;
 
-/**
- * CounterProperties
- * 
- * @author DuyHai DOAN
- * 
- */
-public class CounterProperties
-{
+public class CounterProperties {
 	private String fqcn;
 	private PropertyMeta idMeta;
 
@@ -20,24 +29,20 @@ public class CounterProperties
 		this.idMeta = idMeta;
 	}
 
-	public String getFqcn()
-	{
+	public String getFqcn() {
 		return fqcn;
 	}
 
-	public PropertyMeta getIdMeta()
-	{
+	public PropertyMeta getIdMeta() {
 		return idMeta;
 	}
 
-	public void setIdMeta(PropertyMeta idMeta)
-	{
+	public void setIdMeta(PropertyMeta idMeta) {
 		this.idMeta = idMeta;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "CounterProperties [fqcn=" + fqcn + ", idMeta=" + idMeta + "]";
 	}
 }

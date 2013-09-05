@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.proxy;
 
 import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
@@ -20,14 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/**
- * AchillesMethodInvokerTest
- * 
- * @author DuyHai DOAN
- * 
- */
-public class ReflectionInvokerTest
-{
+public class ReflectionInvokerTest {
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
@@ -37,28 +46,28 @@ public class ReflectionInvokerTest
 	private EntityIntrospector introspector = new EntityIntrospector();
 
 	@Test
-	public void should_get_value_from_field() throws Exception
-	{
+	public void should_get_value_from_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+		Method getter = Bean.class
+				.getDeclaredMethod("getComplicatedAttributeName");
 
 		String value = (String) invoker.getValueFromField(bean, getter);
 		assertThat(value).isEqualTo("test");
 	}
 
 	@Test
-	public void should_get_value_from_null_field() throws Exception
-	{
-		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+	public void should_get_value_from_null_field() throws Exception {
+		Method getter = Bean.class
+				.getDeclaredMethod("getComplicatedAttributeName");
 		assertThat(invoker.getValueFromField(null, getter)).isNull();
 	}
 
 	@Test
-	public void should_set_value_to_field() throws Exception
-	{
+	public void should_set_value_to_field() throws Exception {
 		Bean bean = new Bean();
-		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+		Method setter = Bean.class.getDeclaredMethod(
+				"setComplicatedAttributeName", String.class);
 
 		invoker.setValueToField(bean, setter, "fecezzef");
 
@@ -66,36 +75,33 @@ public class ReflectionInvokerTest
 	}
 
 	@Test
-	public void should_not_set_value_when_null_field() throws Exception
-	{
-		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+	public void should_not_set_value_when_null_field() throws Exception {
+		Method setter = Bean.class.getDeclaredMethod(
+				"setComplicatedAttributeName", String.class);
 		invoker.setValueToField(null, setter, "fecezzef");
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_get_value_from_collection_field() throws Exception
-	{
+	public void should_get_value_from_collection_field() throws Exception {
 		ComplexBean bean = new ComplexBean();
 		bean.setFriends(Arrays.asList("foo", "bar"));
 		Method getter = ComplexBean.class.getDeclaredMethod("getFriends");
 
-		List<String> value = (List<String>) invoker.getValueFromField(bean, getter);
+		List<String> value = (List<String>) invoker.getValueFromField(bean,
+				getter);
 		assertThat(value).containsExactly("foo", "bar");
 	}
 
 	@Test
-	public void should_get_key() throws Exception
-	{
+	public void should_get_key() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
 
 		Method[] accessors = introspector.findAccessors(Bean.class,
 				Bean.class.getDeclaredField("complicatedAttributeName"));
-		PropertyMeta idMeta = factory()
-				.type(SIMPLE)
-				.propertyName("complicatedAttributeName")
-				.accessors(accessors)
+		PropertyMeta idMeta = factory().type(SIMPLE)
+				.propertyName("complicatedAttributeName").accessors(accessors)
 				.build(Void.class, String.class);
 
 		Object key = invoker.getPrimaryKey(bean, idMeta);
@@ -103,50 +109,43 @@ public class ReflectionInvokerTest
 	}
 
 	@Test
-	public void should_return_null_key_when_null_entity() throws Exception
-	{
-		PropertyMeta idMeta = PropertyMetaTestBuilder //
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.accessors()
+	public void should_return_null_key_when_null_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, Long.class).field("id").accessors()
 				.build();
 		assertThat(invoker.getPrimaryKey(null, idMeta)).isNull();
 	}
 
 	@Test
-	public void should_get_partition_key() throws Exception
-	{
+	public void should_get_partition_key() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compGetters(userIdGetter)
-				.type(PropertyType.EMBEDDED_ID)
-				.build();
+				.valueClass(CompoundKey.class).compGetters(userIdGetter)
+				.type(PropertyType.EMBEDDED_ID).build();
 
 		CompoundKey compoundKey = new CompoundKey(partitionKey, "name");
 
-		assertThat(invoker.getPartitionKey(compoundKey, idMeta)).isEqualTo(partitionKey);
+		assertThat(invoker.getPartitionKey(compoundKey, idMeta)).isEqualTo(
+				partitionKey);
 	}
 
 	@Test
-	public void should_return_null_for_partition_key_if_not_embedded_id() throws Exception
-	{
+	public void should_return_null_for_partition_key_if_not_embedded_id()
+			throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compGetters(userIdGetter)
-				.type(PropertyType.ID)
-				.build();
+				.valueClass(CompoundKey.class).compGetters(userIdGetter)
+				.type(PropertyType.ID).build();
 
 		CompoundKey compoundKey = new CompoundKey(partitionKey, "name");
 		assertThat(invoker.getPartitionKey(compoundKey, idMeta)).isNull();
 	}
 
 	@Test
-	public void should_instanciate_entity_from_class() throws Exception
-	{
+	public void should_instanciate_entity_from_class() throws Exception {
 		CompoundKey actual = invoker.instanciate(CompoundKey.class);
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isNull();
@@ -154,8 +153,7 @@ public class ReflectionInvokerTest
 	}
 
 	@Test
-	public void should_instanciate_using_default_constructor() throws Exception
-	{
+	public void should_instanciate_using_default_constructor() throws Exception {
 		Constructor<CompoundKey> constructor = CompoundKey.class
 				.getDeclaredConstructor();
 
@@ -166,18 +164,14 @@ public class ReflectionInvokerTest
 	}
 
 	@Test
-	public void should_instanciate_using_custom_constructor() throws Exception
-	{
+	public void should_instanciate_using_custom_constructor() throws Exception {
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
 		Constructor<CompoundKey> constructor = CompoundKey.class
 				.getDeclaredConstructor(Long.class, String.class);
 
-		CompoundKey actual = invoker.instanciate(constructor, new Object[]
-		{
-				userId,
-				name
-		});
+		CompoundKey actual = invoker.instanciate(constructor, new Object[] {
+				userId, name });
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isEqualTo(userId);
 		assertThat(actual.getName()).isEqualTo(name);
@@ -185,22 +179,19 @@ public class ReflectionInvokerTest
 
 	@Test
 	public void should_instanciate_embedded_id_with_partition_key_using_custom_constructor()
-			throws Exception
-	{
+			throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKeyByConstructor.class)
-				.type(PropertyType.EMBEDDED_ID)
-				.compNames("toto")
-				.build();
+				.type(PropertyType.EMBEDDED_ID).compNames("toto").build();
 
 		Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
 				.getDeclaredConstructor(Long.class, String.class);
 		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
-		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(
-				idMeta, partitionKey);
+		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta,
+				partitionKey);
 		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
 		assertThat(actual).isNotNull();
@@ -211,20 +202,20 @@ public class ReflectionInvokerTest
 
 	@Test
 	public void should_instanciate_embedded_id_with_partition_key_using_default_constructor()
-			throws Exception
-	{
+			throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 
-		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
+		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId",
+				Long.class);
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compSetters(userIdSetter)
+				.valueClass(CompoundKey.class).compSetters(userIdSetter)
 				.build();
 		Constructor<CompoundKey> constructor = CompoundKey.class
 				.getDeclaredConstructor();
 		idMeta.getEmbeddedIdProperties().setConstructor(constructor);
 
-		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, partitionKey);
+		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta,
+				partitionKey);
 
 		assertThat(actual).isNotNull();
 		CompoundKey compoundKey = (CompoundKey) actual;
@@ -232,33 +223,27 @@ public class ReflectionInvokerTest
 		assertThat(compoundKey.getName()).isNull();
 	}
 
-	class Bean
-	{
+	class Bean {
 
 		private String complicatedAttributeName;
 
-		public String getComplicatedAttributeName()
-		{
+		public String getComplicatedAttributeName() {
 			return complicatedAttributeName;
 		}
 
-		public void setComplicatedAttributeName(String complicatedAttributeName)
-		{
+		public void setComplicatedAttributeName(String complicatedAttributeName) {
 			this.complicatedAttributeName = complicatedAttributeName;
 		}
 	}
 
-	class ComplexBean
-	{
+	class ComplexBean {
 		private List<String> friends;
 
-		public List<String> getFriends()
-		{
+		public List<String> getFriends() {
 			return friends;
 		}
 
-		public void setFriends(List<String> friends)
-		{
+		public void setFriends(List<String> friends) {
 			this.friends = friends;
 		}
 	}

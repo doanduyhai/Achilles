@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static org.mockito.Mockito.when;
@@ -10,9 +26,11 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,111 +42,116 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-/**
- * AchillesEntityValidatorTest
- * 
- * @author DuyHai DOAN
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
 public class EntityValidatorTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
-    private EntityValidator<PersistenceContext> entityValidator;
+	@InjectMocks
+	private EntityValidator<PersistenceContext> entityValidator;
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private EntityProxifier<PersistenceContext> proxifier;
+	@Mock
+	private EntityProxifier<PersistenceContext> proxifier;
 
-    @Mock
-    private Map<Class<?>, EntityMeta> entityMetaMap;
+	@Mock
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
-    @Mock
-    private EntityMeta entityMeta;
+	@Mock
+	private EntityMeta entityMeta;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private PropertyMeta idMeta;
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
+	private PropertyMeta idMeta;
 
-    @Mock
-    private PersistenceContext context;
+	@Mock
+	private PersistenceContext context;
 
-    @Before
-    public void setUp() {
-        Whitebox.setInternalState(entityValidator, ReflectionInvoker.class, invoker);
-        when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
-    }
+	@Before
+	public void setUp() {
+		Whitebox.setInternalState(entityValidator, ReflectionInvoker.class,
+				invoker);
+		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
+	}
 
-    @Test
-    public void should_validate() throws Exception {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+	@Test
+	public void should_validate() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
+		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
+				CompleteBean.class);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
 
-        entityValidator.validateEntity(bean, entityMetaMap);
-    }
+		entityValidator.validateEntity(bean, entityMetaMap);
+	}
 
-    @Test
-    public void should_exception_when_no_id() throws Exception {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+	@Test
+	public void should_exception_when_no_id() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-        when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(null);
+		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
+				CompleteBean.class);
+		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(null);
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("Cannot get primary key for entity "
+				+ CompleteBean.class.getCanonicalName());
 
-        entityValidator.validateEntity(bean, entityMetaMap);
-    }
+		entityValidator.validateEntity(bean, entityMetaMap);
+	}
 
-    @Test
-    public void should_validate_clustered_id() throws Exception {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-        CompoundKey clusteredId = new CompoundKey(11L, "name");
+	@Test
+	public void should_validate_clustered_id() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		CompoundKey clusteredId = new CompoundKey(11L, "name");
 
-        when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(clusteredId);
-        when(idMeta.isEmbeddedId()).thenReturn(true);
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(clusteredId);
+		when(idMeta.isEmbeddedId()).thenReturn(true);
 
-        Method userIdGetter = CompoundKey.class.getMethod("getUserId");
-        Method nameGetter = CompoundKey.class.getMethod("getName");
+		Method userIdGetter = CompoundKey.class.getMethod("getUserId");
+		Method nameGetter = CompoundKey.class.getMethod("getName");
 
-        when(idMeta.getComponentGetters()).thenReturn(Arrays.asList(userIdGetter, nameGetter));
+		when(idMeta.getComponentGetters()).thenReturn(
+				Arrays.asList(userIdGetter, nameGetter));
 
-        when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(11L);
-        when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn("name");
+		when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(
+				11L);
+		when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn(
+				"name");
 
-        entityValidator.validateEntity(bean, entityMeta);
-    }
+		entityValidator.validateEntity(bean, entityMeta);
+	}
 
-    @Test
-    public void should_validate_simple_id() throws Exception {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-        when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
-        when(idMeta.isEmbeddedId()).thenReturn(false);
+	@Test
+	public void should_validate_simple_id() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
+		when(idMeta.isEmbeddedId()).thenReturn(false);
 
-        entityValidator.validateEntity(bean, entityMeta);
-    }
+		entityValidator.validateEntity(bean, entityMeta);
+	}
 
-    @Test
-    public void should_validate_not_clustered_counter() throws Exception
-    {
-        ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
-        when((Class<ClusteredEntityWithCounter>) proxifier.deriveBaseClass(entity)).thenReturn(
-                ClusteredEntityWithCounter.class);
-        when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
+	@Test
+	public void should_validate_not_clustered_counter() throws Exception {
+		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
+		when(
+				(Class<ClusteredEntityWithCounter>) proxifier
+						.deriveBaseClass(entity)).thenReturn(
+				ClusteredEntityWithCounter.class);
+		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(
+				entityMeta);
+		when(entityMeta.isClusteredCounter()).thenReturn(true);
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage("The entity '" + entity
-                + "' is a clustered counter and does not support insert/update with TTL");
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("The entity '"
+						+ entity
+						+ "' is a clustered counter and does not support insert/update with TTL");
 
-        entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
-    }
+		entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+	}
 
 }

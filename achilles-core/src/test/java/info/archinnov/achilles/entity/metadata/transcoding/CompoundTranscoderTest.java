@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.metadata.transcoding;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
@@ -8,10 +24,12 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -20,126 +38,114 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * CompoundTranscoderTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
 public class CompoundTranscoderTest {
 
-    private CompoundTranscoder transcoder;
+	private CompoundTranscoder transcoder;
 
-    @Mock
-    private ObjectMapper objectMapper;
+	@Mock
+	private ObjectMapper objectMapper;
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Before
-    public void setUp()
-    {
-        transcoder = new CompoundTranscoder(objectMapper);
-    }
+	@Before
+	public void setUp() {
+		transcoder = new CompoundTranscoder(objectMapper);
+	}
 
-    @Test
-    public void should_encode_to_components() throws Exception
-    {
-        Long userId = RandomUtils.nextLong();
-        String name = "name";
-        CompoundKey compound = new CompoundKey(userId, name);
+	@Test
+	public void should_encode_to_components() throws Exception {
+		Long userId = RandomUtils.nextLong();
+		String name = "name";
+		CompoundKey compound = new CompoundKey(userId, name);
 
-        Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-        Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .type(EMBEDDED_ID)
-                .compClasses(Long.class, String.class)
-                .compGetters(userIdGetter, nameGetter)
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
+				.compGetters(userIdGetter, nameGetter).build();
 
-        when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(userId);
-        when(invoker.getValueFromField(compound, nameGetter)).thenReturn(name);
+		when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(
+				userId);
+		when(invoker.getValueFromField(compound, nameGetter)).thenReturn(name);
 
-        List<Object> actual = transcoder.encodeToComponents(pm, compound);
+		List<Object> actual = transcoder.encodeToComponents(pm, compound);
 
-        assertThat(actual).containsExactly(userId, name);
-    }
+		assertThat(actual).containsExactly(userId, name);
+	}
 
-    @Test
-    public void should_encode_components() throws Exception
-    {
-        Long userId = RandomUtils.nextLong();
-        String name = "name";
+	@Test
+	public void should_encode_components() throws Exception {
+		Long userId = RandomUtils.nextLong();
+		String name = "name";
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .type(EMBEDDED_ID)
-                .compClasses(Long.class, String.class, PropertyType.class)
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+				.type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class, PropertyType.class)
+				.build();
 
-        List<Object> actual = transcoder.encodeComponents(pm,
-                Arrays.<Object> asList(userId, PropertyType.EMBEDDED_ID, name));
+		List<Object> actual = transcoder.encodeComponents(pm,
+				Arrays.<Object> asList(userId, PropertyType.EMBEDDED_ID, name));
 
-        assertThat(actual).containsExactly(userId, "EMBEDDED_ID", name);
-    }
+		assertThat(actual).containsExactly(userId, "EMBEDDED_ID", name);
+	}
 
-    @Test
-    public void should_decode_from_components_with_injection_by_setters() throws Exception
-    {
-        Long userId = RandomUtils.nextLong();
-        String name = "name";
+	@Test
+	public void should_decode_from_components_with_injection_by_setters()
+			throws Exception {
+		Long userId = RandomUtils.nextLong();
+		String name = "name";
 
-        Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId", Long.class);
-        Method namesetter = CompoundKey.class.getDeclaredMethod("setName", String.class);
+		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId",
+				Long.class);
+		Method namesetter = CompoundKey.class.getDeclaredMethod("setName",
+				String.class);
 
-        Constructor<CompoundKey> constructor = CompoundKey.class.getDeclaredConstructor();
+		Constructor<CompoundKey> constructor = CompoundKey.class
+				.getDeclaredConstructor();
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .type(EMBEDDED_ID)
-                .compClasses(Long.class, String.class)
-                .compSetters(userIdSetter, namesetter)
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
+				.compSetters(userIdSetter, namesetter).build();
 
-        pm.getEmbeddedIdProperties().setConstructor(constructor);
+		pm.getEmbeddedIdProperties().setConstructor(constructor);
 
-        Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
+		Object actual = transcoder.decodeFromComponents(pm,
+				Arrays.<Object> asList(userId, name));
 
-        assertThat(actual).isInstanceOf(CompoundKey.class);
+		assertThat(actual).isInstanceOf(CompoundKey.class);
 
-        CompoundKey compound = (CompoundKey) actual;
+		CompoundKey compound = (CompoundKey) actual;
 
-        assertThat(compound.getUserId()).isEqualTo(userId);
-        assertThat(compound.getName()).isEqualTo(name);
-    }
+		assertThat(compound.getUserId()).isEqualTo(userId);
+		assertThat(compound.getName()).isEqualTo(name);
+	}
 
-    @Test
-    public void should_decode_from_components_with_injection_by_constructor() throws Exception
-    {
-        Long userId = RandomUtils.nextLong();
-        String name = "name";
+	@Test
+	public void should_decode_from_components_with_injection_by_constructor()
+			throws Exception {
+		Long userId = RandomUtils.nextLong();
+		String name = "name";
 
-        Constructor<CompoundKey> constructor = CompoundKey.class.getDeclaredConstructor(Long.class, String.class);
+		Constructor<CompoundKey> constructor = CompoundKey.class
+				.getDeclaredConstructor(Long.class, String.class);
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .type(EMBEDDED_ID)
-                .compClasses(Long.class, String.class)
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
+				.build();
 
-        pm.getEmbeddedIdProperties().setConstructor(constructor);
+		pm.getEmbeddedIdProperties().setConstructor(constructor);
 
-        Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
+		Object actual = transcoder.decodeFromComponents(pm,
+				Arrays.<Object> asList(userId, name));
 
-        assertThat(actual).isInstanceOf(CompoundKey.class);
+		assertThat(actual).isInstanceOf(CompoundKey.class);
 
-        CompoundKey compound = (CompoundKey) actual;
+		CompoundKey compound = (CompoundKey) actual;
 
-        assertThat(compound.getUserId()).isEqualTo(userId);
-        assertThat(compound.getName()).isEqualTo(name);
-    }
+		assertThat(compound.getUserId()).isEqualTo(userId);
+		assertThat(compound.getName()).isEqualTo(name);
+	}
 }

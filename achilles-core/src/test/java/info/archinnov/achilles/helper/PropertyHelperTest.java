@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.helper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -6,10 +22,12 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,124 +36,106 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * PropertyHelperTest
- * 
- * @author DuyHai DOAN
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
-public class PropertyHelperTest
-{
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
+public class PropertyHelperTest {
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
-    @InjectMocks
-    private PropertyHelper helper;
+	@InjectMocks
+	private PropertyHelper helper;
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private AchillesConsistencyLevelPolicy policy;
+	@Mock
+	private AchillesConsistencyLevelPolicy policy;
 
-    @Mock
-    private List<Method> componentGetters;
+	@Mock
+	private List<Method> componentGetters;
 
-    @Test
-    public void should_infer_value_class_from_list() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            private List<String> friends;
-        }
+	@Test
+	public void should_infer_value_class_from_list() throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			private List<String> friends;
+		}
 
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-        Class<String> infered = helper.inferValueClassForListOrSet(type, Test.class);
+		Class<String> infered = helper.inferValueClassForListOrSet(type,
+				Test.class);
 
-        assertThat(infered).isEqualTo(String.class);
-    }
+		assertThat(infered).isEqualTo(String.class);
+	}
 
-    @Test
-    public void should_infer_parameterized_value_class_from_list() throws Exception
-    {
-        @SuppressWarnings("unused")
-        class Test
-        {
-            private List<Class<Void>> friends;
-        }
+	@Test
+	public void should_infer_parameterized_value_class_from_list()
+			throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			private List<Class<Void>> friends;
+		}
 
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-        Class<Class> infered = helper.inferValueClassForListOrSet(type, Test.class);
+		Class<Class> infered = helper.inferValueClassForListOrSet(type,
+				Test.class);
 
-        assertThat(infered).isEqualTo(Class.class);
-    }
+		assertThat(infered).isEqualTo(Class.class);
+	}
 
-    @Test
-    public void should_exception_when_infering_value_type_from_raw_list() throws Exception
-    {
-        @SuppressWarnings(
-        {
-                "rawtypes",
-                "unused"
-        })
-        class Test
-        {
-            private List friends;
-        }
+	@Test
+	public void should_exception_when_infering_value_type_from_raw_list()
+			throws Exception {
+		@SuppressWarnings({ "rawtypes", "unused" })
+		class Test {
+			private List friends;
+		}
 
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
-                + "' of the entity 'null' should be parameterized");
+		expectedEx.expect(AchillesBeanMappingException.class);
+		expectedEx.expectMessage("The type '"
+				+ type.getClass().getCanonicalName()
+				+ "' of the entity 'null' should be parameterized");
 
-        helper.inferValueClassForListOrSet(type, Test.class);
+		helper.inferValueClassForListOrSet(type, Test.class);
 
-    }
+	}
 
-    @Test
-    public void should_find_lazy() throws Exception
-    {
+	@Test
+	public void should_find_lazy() throws Exception {
 
-        class Test
-        {
-            @Lazy
-            private String name;
-        }
+		class Test {
+			@Lazy
+			private String name;
+		}
 
-        Field field = Test.class.getDeclaredField("name");
+		Field field = Test.class.getDeclaredField("name");
 
-        assertThat(helper.isLazy(field)).isTrue();
-    }
+		assertThat(helper.isLazy(field)).isTrue();
+	}
 
-    @Test
-    public void should_check_consistency_annotation() throws Exception
-    {
-        class Test
-        {
-            @Consistency
-            private String consistency;
-        }
+	@Test
+	public void should_check_consistency_annotation() throws Exception {
+		class Test {
+			@Consistency
+			private String consistency;
+		}
 
-        Field field = Test.class.getDeclaredField("consistency");
+		Field field = Test.class.getDeclaredField("consistency");
 
-        assertThat(helper.hasConsistencyAnnotation(field)).isTrue();
-    }
+		assertThat(helper.hasConsistencyAnnotation(field)).isTrue();
+	}
 
-    @Test
-    public void should_not_find_counter_if_not_long_type() throws Exception
-    {
+	@Test
+	public void should_not_find_counter_if_not_long_type() throws Exception {
 
-    }
+	}
 
-    @Test
-    public void should_return_true_when_type_supported() throws Exception
-    {
-        assertThat(PropertyHelper.isSupportedType(Long.class)).isTrue();
-    }
+	@Test
+	public void should_return_true_when_type_supported() throws Exception {
+		assertThat(PropertyHelper.isSupportedType(Long.class)).isTrue();
+	}
 
 }

@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
@@ -14,12 +30,14 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,102 +46,95 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-/**
- * EntityMergerTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMergerTest {
 
-    @InjectMocks
-    private EntityMerger<PersistenceContext> entityMerger = new EntityMerger<PersistenceContext>() {
-    };
+	@InjectMocks
+	private EntityMerger<PersistenceContext> entityMerger = new EntityMerger<PersistenceContext>() {
+	};
 
-    @Mock
-    private Merger<PersistenceContext> merger;
+	@Mock
+	private Merger<PersistenceContext> merger;
 
-    @Mock
-    private EntityPersister<PersistenceContext> persister;
+	@Mock
+	private EntityPersister<PersistenceContext> persister;
 
-    @Mock
-    private EntityProxifier<PersistenceContext> proxifier;
+	@Mock
+	private EntityProxifier<PersistenceContext> proxifier;
 
-    @Mock
-    private PersistenceContext context;
+	@Mock
+	private PersistenceContext context;
 
-    @Mock
-    private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
+	@Mock
+	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+			.buid();
 
-    private EntityMeta meta = new EntityMeta();
+	private EntityMeta meta = new EntityMeta();
 
-    private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
+	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-    private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
+	private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
 
-    @Before
-    public void setUp() {
-        Whitebox.setInternalState(entityMerger, Merger.class, merger);
-        Whitebox.setInternalState(entityMerger, EntityPersister.class, persister);
-        Whitebox.setInternalState(entityMerger, EntityProxifier.class, proxifier);
+	@Before
+	public void setUp() {
+		Whitebox.setInternalState(entityMerger, Merger.class, merger);
+		Whitebox.setInternalState(entityMerger, EntityPersister.class,
+				persister);
+		Whitebox.setInternalState(entityMerger, EntityProxifier.class,
+				proxifier);
 
-        when(context.getEntity()).thenReturn(entity);
-        when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
-        when(context.getEntityMeta()).thenReturn(meta);
-        when(context.addToProcessingList(entity)).thenReturn(true);
+		when(context.getEntity()).thenReturn(entity);
+		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.getEntityMeta()).thenReturn(meta);
+		when(context.addToProcessingList(entity)).thenReturn(true);
 
-        allMetas.clear();
-        dirtyMap.clear();
-    }
+		allMetas.clear();
+		dirtyMap.clear();
+	}
 
-    @Test
-    public void should_merge_proxified_entity() throws Exception {
-        when(proxifier.isProxy(entity)).thenReturn(true);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
-        when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
-        when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-        when(context.addToProcessingList(entity)).thenReturn(true, false);
+	@Test
+	public void should_merge_proxified_entity() throws Exception {
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(context.addToProcessingList(entity)).thenReturn(true, false);
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(JOIN_SIMPLE)
-                .cascadeType(ALL)
-                .accessors()
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(JOIN_SIMPLE).cascadeType(ALL).accessors().build();
 
-        meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
+		meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
 
-        dirtyMap.put(pm.getSetter(), pm);
+		dirtyMap.put(pm.getSetter(), pm);
 
-        CompleteBean actual = entityMerger.merge(context, entity);
-        CompleteBean actual2 = entityMerger.merge(context, entity);
+		CompleteBean actual = entityMerger.merge(context, entity);
+		CompleteBean actual2 = entityMerger.merge(context, entity);
 
-        assertThat(actual2).isSameAs(entity);
-        assertThat(actual).isSameAs(entity);
-        verify(context, times(2)).setEntity(entity);
-        verify(merger).merge(context, dirtyMap);
-        verify(merger).cascadeMerge(eq(entityMerger), eq(context), any(List.class));
+		assertThat(actual2).isSameAs(entity);
+		assertThat(actual).isSameAs(entity);
+		verify(context, times(2)).setEntity(entity);
+		verify(merger).merge(context, dirtyMap);
+		verify(merger).cascadeMerge(eq(entityMerger), eq(context),
+				any(List.class));
 
-        verify(interceptor).setContext(context);
-        verify(interceptor).setTarget(entity);
+		verify(interceptor).setContext(context);
+		verify(interceptor).setTarget(entity);
 
-    }
+	}
 
-    @Test
-    public void should_persist_transient_entity() throws Exception {
-        when(proxifier.isProxy(entity)).thenReturn(false);
-        when(context.isClusteredEntity()).thenReturn(false);
-        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+	@Test
+	public void should_persist_transient_entity() throws Exception {
+		when(proxifier.isProxy(entity)).thenReturn(false);
+		when(context.isClusteredEntity()).thenReturn(false);
+		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
-        CompleteBean actual = entityMerger.merge(context, entity);
+		CompleteBean actual = entityMerger.merge(context, entity);
 
-        assertThat(actual).isSameAs(entity);
-        verify(persister).persist(context);
-    }
+		assertThat(actual).isSameAs(entity);
+		verify(persister).persist(context);
+	}
 
 }

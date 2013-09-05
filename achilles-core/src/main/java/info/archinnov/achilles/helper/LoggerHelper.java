@@ -1,25 +1,36 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.helper;
 
 import java.lang.reflect.Field;
+
 import com.google.common.base.Function;
 
-/**
- * LoggerHelper
- * 
- * @author DuyHai DOAN
- * 
- */
 public class LoggerHelper {
-    public static Function<Class<?>, String> fqcnToStringFn = new Function<Class<?>, String>() {
-        @Override
-        public String apply(Class<?> clazz) {
-            return clazz.getCanonicalName();
-        }
-    };
-    public static Function<Field, String> fieldToStringFn = new Function<Field, String>() {
-        @Override
-        public String apply(Field field) {
-            return field.getName();
-        }
-    };
+	public static Function<Class<?>, String> fqcnToStringFn = new Function<Class<?>, String>() {
+		@Override
+		public String apply(Class<?> clazz) {
+			return clazz.getCanonicalName();
+		}
+	};
+	public static Function<Field, String> fieldToStringFn = new Function<Field, String>() {
+		@Override
+		public String apply(Field field) {
+			return field.getName();
+		}
+	};
 }

@@ -1,95 +1,110 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
+
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * JoinPropertyParser
- * 
- * @author DuyHai DOAN
- * 
- */
 public class JoinPropertyParser {
-    private static final Logger log = LoggerFactory.getLogger(JoinPropertyParser.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(JoinPropertyParser.class);
 
-    private PropertyFilter filter = new PropertyFilter();
-    private PropertyParser parser = new PropertyParser();
+	private PropertyFilter filter = new PropertyFilter();
+	private PropertyParser parser = new PropertyParser();
 
-    public PropertyMeta parseJoin(PropertyParsingContext context) {
+	public PropertyMeta parseJoin(PropertyParsingContext context) {
 
-        Class<?> entityClass = context.getCurrentEntityClass();
-        Field field = context.getCurrentField();
+		Class<?> entityClass = context.getCurrentEntityClass();
+		Field field = context.getCurrentField();
 
-        PropertyMeta joinPropertyMeta = this.parser.parse(context);
+		PropertyMeta joinPropertyMeta = this.parser.parse(context);
 
-        log.debug("Parsing join property meta {} for entity {}", joinPropertyMeta.getPropertyName(), context
-                .getCurrentEntityClass()
-                .getCanonicalName());
+		log.debug("Parsing join property meta {} for entity {}",
+				joinPropertyMeta.getPropertyName(), context
+						.getCurrentEntityClass().getCanonicalName());
 
-        joinPropertyMeta.setJoinProperties(findCascadeType(entityClass.getCanonicalName(), field));
+		joinPropertyMeta.setJoinProperties(findCascadeType(
+				entityClass.getCanonicalName(), field));
 
-        // Override each type by their JOIN type counterpart
-        switch (joinPropertyMeta.type()) {
-            case SIMPLE:
-            case LAZY_SIMPLE:
-                joinPropertyMeta.setType(JOIN_SIMPLE);
-                break;
-            case LIST:
-            case LAZY_LIST:
-                joinPropertyMeta.setType(JOIN_LIST);
-                break;
-            case SET:
-            case LAZY_SET:
-                joinPropertyMeta.setType(JOIN_SET);
-                break;
-            case MAP:
-            case LAZY_MAP:
-                joinPropertyMeta.setType(JOIN_MAP);
-                break;
-            default:
-                break;
-        }
+		// Override each type by their JOIN type counterpart
+		switch (joinPropertyMeta.type()) {
+		case SIMPLE:
+		case LAZY_SIMPLE:
+			joinPropertyMeta.setType(JOIN_SIMPLE);
+			break;
+		case LIST:
+		case LAZY_LIST:
+			joinPropertyMeta.setType(JOIN_LIST);
+			break;
+		case SET:
+		case LAZY_SET:
+			joinPropertyMeta.setType(JOIN_SET);
+			break;
+		case MAP:
+		case LAZY_MAP:
+			joinPropertyMeta.setType(JOIN_MAP);
+			break;
+		default:
+			break;
+		}
 
-        context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta, joinPropertyMeta.getValueClass());
+		context.getJoinPropertyMetaToBeFilled().put(joinPropertyMeta,
+				joinPropertyMeta.getValueClass());
 
-        return joinPropertyMeta;
-    }
+		return joinPropertyMeta;
+	}
 
-    private JoinProperties findCascadeType(String entityFQN, Field field) {
-        log.trace("Find cascade type for property {} of entity class {}", field.getName(), field
-                .getDeclaringClass()
-                .getCanonicalName());
+	private JoinProperties findCascadeType(String entityFQN, Field field) {
+		log.trace("Find cascade type for property {} of entity class {}",
+				field.getName(), field.getDeclaringClass().getCanonicalName());
 
-        JoinProperties joinProperties = new JoinProperties();
+		JoinProperties joinProperties = new JoinProperties();
 
-        if (filter.hasAnnotation(field, OneToOne.class)) {
-            OneToOne oneToOne = field.getAnnotation(OneToOne.class);
-            joinProperties.addCascadeType(Arrays.asList(oneToOne.cascade()));
-        } else if (filter.hasAnnotation(field, OneToMany.class)) {
-            OneToMany oneToMany = field.getAnnotation(OneToMany.class);
-            joinProperties.addCascadeType(Arrays.asList(oneToMany.cascade()));
-        }
-        if (filter.hasAnnotation(field, ManyToOne.class)) {
-            ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
-            joinProperties.addCascadeType(Arrays.asList(manyToOne.cascade()));
-        } else if (filter.hasAnnotation(field, ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
-            joinProperties.addCascadeType(Arrays.asList(manyToMany.cascade()));
-        }
+		if (filter.hasAnnotation(field, OneToOne.class)) {
+			OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+			joinProperties.addCascadeType(Arrays.asList(oneToOne.cascade()));
+		} else if (filter.hasAnnotation(field, OneToMany.class)) {
+			OneToMany oneToMany = field.getAnnotation(OneToMany.class);
+			joinProperties.addCascadeType(Arrays.asList(oneToMany.cascade()));
+		}
+		if (filter.hasAnnotation(field, ManyToOne.class)) {
+			ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+			joinProperties.addCascadeType(Arrays.asList(manyToOne.cascade()));
+		} else if (filter.hasAnnotation(field, ManyToMany.class)) {
+			ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+			joinProperties.addCascadeType(Arrays.asList(manyToMany.cascade()));
+		}
 
-        log.trace("Built join properties for property {} of entity class {}", joinProperties, field.getName(), field
-                .getDeclaringClass()
-                .getCanonicalName());
-        return joinProperties;
-    }
+		log.trace("Built join properties for property {} of entity class {}",
+				joinProperties, field.getName(), field.getDeclaringClass()
+						.getCanonicalName());
+		return joinProperties;
+	}
 }
