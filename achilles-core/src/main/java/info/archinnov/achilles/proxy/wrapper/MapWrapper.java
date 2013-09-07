@@ -108,7 +108,6 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 
-			@SuppressWarnings({ "rawtypes", "unchecked" })
 			KeySetWrapper keySetWrapper = KeySetWrapperBuilder
 					.builder(context, keySet).dirtyMap(dirtyMap).setter(setter)
 					.propertyMeta((PropertyMeta) propertyMeta)
@@ -174,7 +173,6 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 
-			@SuppressWarnings({ "rawtypes", "unchecked" })
 			ValueCollectionWrapper collectionWrapper = ValueCollectionWrapperBuilder
 					//
 					.builder(context, values).dirtyMap(dirtyMap).setter(setter)
