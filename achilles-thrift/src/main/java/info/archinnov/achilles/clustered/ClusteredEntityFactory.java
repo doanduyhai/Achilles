@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.clustered;
 
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
@@ -6,94 +22,90 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-public class ClusteredEntityFactory
-{
+public class ClusteredEntityFactory {
 
-    private ThriftCompositeTransformer transformer = new ThriftCompositeTransformer();
-    private ThriftJoinEntityLoader joinHelper = new ThriftJoinEntityLoader();
+	private ThriftCompositeTransformer transformer = new ThriftCompositeTransformer();
+	private ThriftJoinEntityLoader joinHelper = new ThriftJoinEntityLoader();
 
-    public <T> List<T> buildClusteredEntities(Class<T> entityClass,
-            ThriftPersistenceContext context,
-            List<HColumn<Composite, Object>> hColumns)
-    {
-        boolean isJoin = context.isValueless() ? false : context.getFirstMeta().isJoin();
-        if (hColumns.isEmpty())
-        {
-            return new ArrayList<T>();
-        }
-        else if (isJoin)
-        {
-            return buildJoinClusteredEntities(entityClass, context, hColumns);
-        }
-        else
-        {
-            return buildSimpleClusteredEntities(entityClass, context, hColumns);
-        }
-    }
+	public <T> List<T> buildClusteredEntities(Class<T> entityClass,
+			ThriftPersistenceContext context,
+			List<HColumn<Composite, Object>> hColumns) {
+		boolean isJoin = context.isValueless() ? false : context.getFirstMeta()
+				.isJoin();
+		if (hColumns.isEmpty()) {
+			return new ArrayList<T>();
+		} else if (isJoin) {
+			return buildJoinClusteredEntities(entityClass, context, hColumns);
+		} else {
+			return buildSimpleClusteredEntities(entityClass, context, hColumns);
+		}
+	}
 
-    private <T> List<T> buildSimpleClusteredEntities(Class<T> entityClass,
-            ThriftPersistenceContext context,
-            List<HColumn<Composite, Object>> hColumns)
-    {
-        Function<HColumn<Composite, Object>, T> function;
-        if (context.isValueless())
-        {
+	private <T> List<T> buildSimpleClusteredEntities(Class<T> entityClass,
+			ThriftPersistenceContext context,
+			List<HColumn<Composite, Object>> hColumns) {
+		Function<HColumn<Composite, Object>, T> function;
+		if (context.isValueless()) {
 
-            function = transformer.valuelessClusteredEntityTransformer(entityClass, context);
-        }
-        else
-        {
-            function = transformer.clusteredEntityTransformer(entityClass, context);
-        }
+			function = transformer.valuelessClusteredEntityTransformer(
+					entityClass, context);
+		} else {
+			function = transformer.clusteredEntityTransformer(entityClass,
+					context);
+		}
 
-        return Lists.transform(hColumns, function);
-    }
+		return Lists.transform(hColumns, function);
+	}
 
-    private <T> List<T> buildJoinClusteredEntities(Class<T> entityClass,
-            ThriftPersistenceContext context,
-            List<HColumn<Composite, Object>> hColumns)
-    {
-        PropertyMeta pm = context.getFirstMeta();
-        EntityMeta joinMeta = pm.joinMeta();
+	private <T> List<T> buildJoinClusteredEntities(Class<T> entityClass,
+			ThriftPersistenceContext context,
+			List<HColumn<Composite, Object>> hColumns) {
+		PropertyMeta pm = context.getFirstMeta();
+		EntityMeta joinMeta = pm.joinMeta();
 
-        List<Object> joinIds = Lists.transform(hColumns, transformer.buildRawValueTransformer());
-        Map<Object, Object> joinEntitiesMap = loadJoinEntities(context, pm, joinMeta, joinIds);
+		List<Object> joinIds = Lists.transform(hColumns,
+				transformer.buildRawValueTransformer());
+		Map<Object, Object> joinEntitiesMap = loadJoinEntities(context, pm,
+				joinMeta, joinIds);
 
-        Function<HColumn<Composite, Object>, T> function = transformer
-                .joinClusteredEntityTransformer(entityClass, context, joinEntitiesMap);
+		Function<HColumn<Composite, Object>, T> function = transformer
+				.joinClusteredEntityTransformer(entityClass, context,
+						joinEntitiesMap);
 
-        return Lists.transform(hColumns, function);
-    }
+		return Lists.transform(hColumns, function);
+	}
 
-    public <T> List<T> buildCounterClusteredEntities(Class<T> entityClass,
-            ThriftPersistenceContext context,
-            List<HCounterColumn<Composite>> hColumns)
-    {
-        Function<HCounterColumn<Composite>, T> function = transformer
-                .counterClusteredEntityTransformer(
-                        entityClass, context);
+	public <T> List<T> buildCounterClusteredEntities(Class<T> entityClass,
+			ThriftPersistenceContext context,
+			List<HCounterColumn<Composite>> hColumns) {
+		Function<HCounterColumn<Composite>, T> function = transformer
+				.counterClusteredEntityTransformer(entityClass, context);
 
-        return Lists.transform(hColumns, function);
-    }
+		return Lists.transform(hColumns, function);
+	}
 
-    private Map<Object, Object> loadJoinEntities(ThriftPersistenceContext context,
-            PropertyMeta pm,
-            EntityMeta joinMeta, List<Object> joinIds)
-    {
-        ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta.getTableName());
+	private Map<Object, Object> loadJoinEntities(
+			ThriftPersistenceContext context, PropertyMeta pm,
+			EntityMeta joinMeta, List<Object> joinIds) {
+		ThriftGenericEntityDao joinEntityDao = context.findEntityDao(joinMeta
+				.getTableName());
 
-        Map<Object, Object> joinEntities = joinHelper.loadJoinEntities((Class<Object>) pm.getValueClass(), joinIds,
-                joinMeta, joinEntityDao);
+		Map<Object, Object> joinEntities = joinHelper.loadJoinEntities(
+				(Class<Object>) pm.getValueClass(), joinIds, joinMeta,
+				joinEntityDao);
 
-        return joinEntities;
-    }
+		return joinEntities;
+	}
 }

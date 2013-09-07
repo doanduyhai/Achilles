@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -19,12 +35,15 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import me.prettyprint.cassandra.model.ExecutingKeyspace;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,304 +54,290 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-/**
- * ThriftEntityLoaderTest
- * 
- * @author DuyHai DOAN
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftEntityLoaderTest
-{
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+public class ThriftEntityLoaderTest {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
-    private ThriftEntityLoader loader;
+	@InjectMocks
+	private ThriftEntityLoader loader;
 
-    @Mock
-    private ExecutingKeyspace keyspace;
+	@Mock
+	private ExecutingKeyspace keyspace;
 
-    @Mock
-    private EntityMeta entityMeta;
+	@Mock
+	private EntityMeta entityMeta;
 
-    @Mock
-    private PropertyMeta idMeta;
+	@Mock
+	private PropertyMeta idMeta;
 
-    @Mock
-    private PropertyMeta propertyMeta;
+	@Mock
+	private PropertyMeta propertyMeta;
 
-    @Mock
-    private EntityMeta joinMeta;
+	@Mock
+	private EntityMeta joinMeta;
 
-    @Mock
-    private PropertyMeta joinIdMeta;
+	@Mock
+	private PropertyMeta joinIdMeta;
 
-    @Mock
-    private EntityMapper mapper;
+	@Mock
+	private EntityMapper mapper;
 
-    @Mock
-    private ThriftGenericEntityDao dao;
+	@Mock
+	private ThriftGenericEntityDao dao;
 
-    @Mock
-    private ThriftCounterDao thriftCounterDao;
+	@Mock
+	private ThriftCounterDao thriftCounterDao;
 
-    @Mock
-    private ThriftCompositeFactory thriftCompositeFactory;
+	@Mock
+	private ThriftCompositeFactory thriftCompositeFactory;
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private ThriftJoinLoaderImpl joinLoaderImpl;
+	@Mock
+	private ThriftJoinLoaderImpl joinLoaderImpl;
 
-    @Mock
-    private ThriftLoaderImpl loaderImpl;
+	@Mock
+	private ThriftLoaderImpl loaderImpl;
 
-    @Mock
-    private ThriftConsistencyLevelPolicy policy;
+	@Mock
+	private ThriftConsistencyLevelPolicy policy;
 
-    @Captor
-    ArgumentCaptor<Long> idCaptor;
+	@Captor
+	ArgumentCaptor<Long> idCaptor;
 
-    private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
+			.buid();
 
-    private ThriftPersistenceContext context;
+	private ThriftPersistenceContext context;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        context = ThriftPersistenceContextTestBuilder
-                .context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId())
-                .entity(bean)
-                .build();
-    }
+	@Before
+	public void setUp() throws Exception {
+		context = ThriftPersistenceContextTestBuilder
+				.context(entityMeta, thriftCounterDao, policy,
+						CompleteBean.class, bean.getId()).entity(bean).build();
+	}
 
-    @Test
-    public void should_load_entity() throws Exception
-    {
-        when(entityMeta.isClusteredEntity()).thenReturn(false);
-        when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
+	@Test
+	public void should_load_entity() throws Exception {
+		when(entityMeta.isClusteredEntity()).thenReturn(false);
+		when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
 
-        Object actual = loader.load(context, CompleteBean.class);
+		Object actual = loader.load(context, CompleteBean.class);
 
-        assertThat(actual).isSameAs(bean);
-    }
+		assertThat(actual).isSameAs(bean);
+	}
 
-    @Test
-    public void should_not_load_entity() throws Exception
-    {
-        Method idSetter = CompleteBean.class.getDeclaredMethod("setId", Long.class);
-        when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(idMeta.getSetter()).thenReturn(idSetter);
+	@Test
+	public void should_not_load_entity() throws Exception {
+		Method idSetter = CompleteBean.class.getDeclaredMethod("setId",
+				Long.class);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(idMeta.getSetter()).thenReturn(idSetter);
 
-        when(entityMeta.isClusteredEntity()).thenReturn(false);
-        when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
-        context.setLoadEagerFields(false);
+		when(entityMeta.isClusteredEntity()).thenReturn(false);
+		when(loaderImpl.load(context, CompleteBean.class)).thenReturn(bean);
+		context.setLoadEagerFields(false);
 
-        Object actual = loader.load(context, CompleteBean.class);
+		Object actual = loader.load(context, CompleteBean.class);
 
-        assertThat(actual).isNotSameAs(bean);
+		assertThat(actual).isNotSameAs(bean);
 
-        verify(invoker).setValueToField(any(CompleteBean.class), eq(idSetter), eq(bean.getId()));
-        verifyZeroInteractions(loaderImpl);
+		verify(invoker).setValueToField(any(CompleteBean.class), eq(idSetter),
+				eq(bean.getId()));
+		verifyZeroInteractions(loaderImpl);
 
-    }
+	}
 
-    @Test
-    public void should_load_simple() throws Exception
-    {
-        String value = "val";
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
-        when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(value);
+	@Test
+	public void should_load_simple() throws Exception {
+		String value = "val";
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.SIMPLE);
+		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-        verify(invoker).setValueToField(bean, setter, value);
-    }
-
-    @Test
-    public void should_load_lazy_simple() throws Exception
-    {
-        String value = "val";
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
-        when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(value);
-
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
-
-    @Test
-    public void should_load_list() throws Exception
-    {
-        List<Object> value = Arrays.<Object> asList("val");
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.LIST);
-        when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(value);
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+	@Test
+	public void should_load_lazy_simple() throws Exception {
+		String value = "val";
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SIMPLE);
+		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_lazy_list() throws Exception
-    {
-        List<Object> value = Arrays.<Object> asList("val");
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.LAZY_LIST);
-        when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(value);
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+	@Test
+	public void should_load_list() throws Exception {
+		List<Object> value = Arrays.<Object> asList("val");
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
+		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_set() throws Exception
-    {
-        Set<Object> value = Sets.<Object> newHashSet("val");
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.SET);
-        when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(value);
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+	@Test
+	public void should_load_lazy_list() throws Exception {
+		List<Object> value = Arrays.<Object> asList("val");
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_LIST);
+		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_lazy_set() throws Exception
-    {
-        Set<Object> value = Sets.<Object> newHashSet("val");
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SET);
-        when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(value);
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+	@Test
+	public void should_load_set() throws Exception {
+		Set<Object> value = Sets.<Object> newHashSet("val");
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.SET);
+		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_map() throws Exception
-    {
-        Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.MAP);
-        when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(value);
+	@Test
+	public void should_load_lazy_set() throws Exception {
+		Set<Object> value = Sets.<Object> newHashSet("val");
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_SET);
+		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_lazy_map() throws Exception
-    {
-        Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.LAZY_MAP);
-        when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(
-                value);
+	@Test
+	public void should_load_map() throws Exception {
+		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.MAP);
+		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_join_simple() throws Exception
-    {
-        String value = "val";
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
-        when(loaderImpl.loadJoinSimple(context, propertyMeta, loader)).thenReturn(value);
+	@Test
+	public void should_load_lazy_map() throws Exception {
+		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.LAZY_MAP);
+		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(
+				value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_join_list() throws Exception
-    {
-        List<Object> value = Arrays.<Object> asList("val");
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-        when(joinLoaderImpl.loadJoinListProperty(context, propertyMeta)).thenReturn(value);
+	@Test
+	public void should_load_join_simple() throws Exception {
+		String value = "val";
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
+		when(loaderImpl.loadJoinSimple(context, propertyMeta, loader))
+				.thenReturn(value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_join_set() throws Exception
-    {
-        Set<Object> value = Sets.<Object> newHashSet("val");
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
-        when(joinLoaderImpl.loadJoinSetProperty(context, propertyMeta)).thenReturn(value);
+	@Test
+	public void should_load_join_list() throws Exception {
+		List<Object> value = Arrays.<Object> asList("val");
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
+		when(joinLoaderImpl.loadJoinListProperty(context, propertyMeta))
+				.thenReturn(value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_load_join_map() throws Exception
-    {
-        Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        Method setter = prepareSetter();
-        when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
-        when(joinLoaderImpl.loadJoinMapProperty(context, propertyMeta))
-                .thenReturn(value);
+	@Test
+	public void should_load_join_set() throws Exception {
+		Set<Object> value = Sets.<Object> newHashSet("val");
 
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
+		when(joinLoaderImpl.loadJoinSetProperty(context, propertyMeta))
+				.thenReturn(value);
 
-        verify(invoker).setValueToField(bean, setter, value);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    @Test
-    public void should_not_load() throws Exception
-    {
-        when(propertyMeta.type()).thenReturn(PropertyType.COUNTER);
-        loader.loadPropertyIntoObject(context, bean, propertyMeta);
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        verifyZeroInteractions(loaderImpl, joinLoaderImpl, invoker);
-    }
+	@Test
+	public void should_load_join_map() throws Exception {
+		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
 
-    @Test
-    public void should_load_primary_key() throws Exception
-    {
-        loader.loadPrimaryKey(context, propertyMeta);
+		Method setter = prepareSetter();
+		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
+		when(joinLoaderImpl.loadJoinMapProperty(context, propertyMeta))
+				.thenReturn(value);
 
-        verify(loaderImpl).loadSimpleProperty(context, propertyMeta);
-    }
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-    private Method prepareSetter() throws Exception
-    {
-        PropertyMeta tempMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, String.class)
-                .field("name")
-                .accessors()
-                .build();
+		verify(invoker).setValueToField(bean, setter, value);
+	}
 
-        when(propertyMeta.getSetter()).thenReturn(tempMeta.getSetter());
+	@Test
+	public void should_not_load() throws Exception {
+		when(propertyMeta.type()).thenReturn(PropertyType.COUNTER);
+		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-        return tempMeta.getSetter();
-    }
+		verifyZeroInteractions(loaderImpl, joinLoaderImpl, invoker);
+	}
+
+	@Test
+	public void should_load_primary_key() throws Exception {
+		loader.loadPrimaryKey(context, propertyMeta);
+
+		verify(loaderImpl).loadSimpleProperty(context, propertyMeta);
+	}
+
+	private Method prepareSetter() throws Exception {
+		PropertyMeta tempMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("name")
+				.accessors().build();
+
+		when(propertyMeta.getSetter()).thenReturn(tempMeta.getSetter());
+
+		return tempMeta.getSetter();
+	}
 }

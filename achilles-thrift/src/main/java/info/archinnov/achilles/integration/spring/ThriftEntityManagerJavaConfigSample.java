@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
@@ -6,120 +22,112 @@ import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
+
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * ThriftEntityManagerJavaConfigSample
- * 
- * @author DuyHai DOAN
- * 
- */
 @Configuration
-public class ThriftEntityManagerJavaConfigSample
-{
+public class ThriftEntityManagerJavaConfigSample {
 
-    @Value("#{cassandraProperties['achilles.entity.packages']}")
-    private String entityPackages;
+	@Value("#{cassandraProperties['achilles.entity.packages']}")
+	private String entityPackages;
 
-    @Autowired(required = true)
-    private Cluster cluster;
+	@Autowired(required = true)
+	private Cluster cluster;
 
-    @Autowired(required = true)
-    private Keyspace keyspace;
+	@Autowired(required = true)
+	private Keyspace keyspace;
 
-    @Autowired
-    private ObjectMapperFactory objecMapperFactory;
+	@Autowired
+	private ObjectMapperFactory objecMapperFactory;
 
-    @Value("#{cassandraProperties['achilles.consistency.read.default']}")
-    private String consistencyLevelReadDefault;
+	@Value("#{cassandraProperties['achilles.consistency.read.default']}")
+	private String consistencyLevelReadDefault;
 
-    @Value("#{cassandraProperties['achilles.consistency.write.default']}")
-    private String consistencyLevelWriteDefault;
+	@Value("#{cassandraProperties['achilles.consistency.write.default']}")
+	private String consistencyLevelWriteDefault;
 
-    @Value("#{cassandraProperties['achilles.consistency.read.map']}")
-    private String consistencyLevelReadMap;
+	@Value("#{cassandraProperties['achilles.consistency.read.map']}")
+	private String consistencyLevelReadMap;
 
-    @Value("#{cassandraProperties['achilles.consistency.write.map']}")
-    private String consistencyLevelWriteMap;
+	@Value("#{cassandraProperties['achilles.consistency.write.map']}")
+	private String consistencyLevelWriteMap;
 
-    @Value("#{cassandraProperties['achilles.ddl.force.column.family.creation']}")
-    private String forceColumnFamilyCreation;
+	@Value("#{cassandraProperties['achilles.ddl.force.column.family.creation']}")
+	private String forceColumnFamilyCreation;
 
-    @Value("#{cassandraProperties['achilles.consistency.join.check']}")
-    private String ensureJoinConsistency;
+	@Value("#{cassandraProperties['achilles.consistency.join.check']}")
+	private String ensureJoinConsistency;
 
-    private ThriftEntityManagerFactory emf;
+	private ThriftEntityManagerFactory emf;
 
-    @PostConstruct
-    public void initialize()
-    {
-        Map<String, Object> configMap = extractConfigParams();
-        emf = new ThriftEntityManagerFactory(configMap);
-    }
+	@PostConstruct
+	public void initialize() {
+		Map<String, Object> configMap = extractConfigParams();
+		emf = new ThriftEntityManagerFactory(configMap);
+	}
 
-    @Bean
-    public ThriftEntityManager getEntityManager()
-    {
-        return emf.createEntityManager();
-    }
+	@Bean
+	public ThriftEntityManager getEntityManager() {
+		return emf.createEntityManager();
+	}
 
-    private Map<String, Object> extractConfigParams()
-    {
-        Map<String, Object> configMap = new HashMap<String, Object>();
-        configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+	private Map<String, Object> extractConfigParams() {
+		Map<String, Object> configMap = new HashMap<String, Object>();
+		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 
-        configMap.put(CLUSTER_PARAM, cluster);
-        configMap.put(KEYSPACE_NAME_PARAM, keyspace);
+		configMap.put(CLUSTER_PARAM, cluster);
+		configMap.put(KEYSPACE_NAME_PARAM, keyspace);
 
-        configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objecMapperFactory);
+		configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objecMapperFactory);
 
-        if (isNotBlank(consistencyLevelReadDefault))
-        {
-            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
-        }
-        if (isNotBlank(consistencyLevelWriteDefault))
-        {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
-        }
+		if (isNotBlank(consistencyLevelReadDefault)) {
+			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM,
+					consistencyLevelReadDefault);
+		}
+		if (isNotBlank(consistencyLevelWriteDefault)) {
+			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM,
+					consistencyLevelWriteDefault);
+		}
 
-        if (isNotBlank(consistencyLevelReadMap))
-        {
-            configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
-                    extractConsistencyMap(consistencyLevelReadMap));
-        }
-        if (isNotBlank(consistencyLevelWriteMap))
-        {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
-                    extractConsistencyMap(consistencyLevelWriteMap));
-        }
+		if (isNotBlank(consistencyLevelReadMap)) {
+			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
+					extractConsistencyMap(consistencyLevelReadMap));
+		}
+		if (isNotBlank(consistencyLevelWriteMap)) {
+			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
+					extractConsistencyMap(consistencyLevelWriteMap));
+		}
 
-        configMap.put(FORCE_CF_CREATION_PARAM, Boolean.parseBoolean(forceColumnFamilyCreation));
-        configMap
-                .put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, Boolean.parseBoolean(ensureJoinConsistency));
+		configMap.put(FORCE_CF_CREATION_PARAM,
+				Boolean.parseBoolean(forceColumnFamilyCreation));
+		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM,
+				Boolean.parseBoolean(ensureJoinConsistency));
 
-        return configMap;
-    }
+		return configMap;
+	}
 
-    private Map<String, String> extractConsistencyMap(String consistencyMapProperty)
-    {
-        Map<String, String> consistencyMap = new HashMap<String, String>();
+	private Map<String, String> extractConsistencyMap(
+			String consistencyMapProperty) {
+		Map<String, String> consistencyMap = new HashMap<String, String>();
 
-        for (String entry : split(consistencyMapProperty, ","))
-        {
-            String[] entryValue = StringUtils.split(entry, ":");
-            assert entryValue.length == 2 : "Invalid map value : " + entry + " for the property : "
-                    + consistencyMapProperty;
-            consistencyMap.put(entryValue[0], entryValue[1]);
-        }
-        return consistencyMap;
-    }
+		for (String entry : split(consistencyMapProperty, ",")) {
+			String[] entryValue = StringUtils.split(entry, ":");
+			assert entryValue.length == 2 : "Invalid map value : " + entry
+					+ " for the property : " + consistencyMapProperty;
+			consistencyMap.put(entryValue[0], entryValue[1]);
+		}
+		return consistencyMap;
+	}
 }

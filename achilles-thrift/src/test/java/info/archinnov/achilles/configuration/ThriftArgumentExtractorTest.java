@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
@@ -22,16 +38,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * ThriftArgumentExtractorTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftArgumentExtractorTest
-{
+public class ThriftArgumentExtractorTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
@@ -49,14 +57,12 @@ public class ThriftArgumentExtractorTest
 	private Map<String, Object> configMap = new HashMap<String, Object>();
 
 	@Before
-	public void setUp()
-	{
+	public void setUp() {
 		configMap.clear();
 	}
 
 	@Test
-	public void should_init_cluster() throws Exception
-	{
+	public void should_init_cluster() throws Exception {
 		configMap.put(CLUSTER_PARAM, cluster);
 
 		Cluster actual = extractor.initCluster(configMap);
@@ -65,8 +71,8 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_init_cluster_from_hostname_and_clustername() throws Exception
-	{
+	public void should_init_cluster_from_hostname_and_clustername()
+			throws Exception {
 		configMap.put(HOSTNAME_PARAM, "localhost:9160");
 		configMap.put(CLUSTER_NAME_PARAM, "Test Cluster");
 
@@ -78,8 +84,8 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_exception_when_cluster_and_hostname_not_set() throws Exception
-	{
+	public void should_exception_when_cluster_and_hostname_not_set()
+			throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Either '"
@@ -93,8 +99,8 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_exception_when_cluster_and_clustername_not_set() throws Exception
-	{
+	public void should_exception_when_cluster_and_clustername_not_set()
+			throws Exception {
 		configMap.put(HOSTNAME_PARAM, "localhost:9160");
 
 		exception.expect(AchillesException.class);
@@ -110,8 +116,7 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_init_keyspace() throws Exception
-	{
+	public void should_init_keyspace() throws Exception {
 		configMap.put(KEYSPACE_PARAM, keyspace);
 
 		Keyspace actual = extractor.initKeyspace(null, policy, configMap);
@@ -121,8 +126,7 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_init_keyspace_from_keyspacename() throws Exception
-	{
+	public void should_init_keyspace_from_keyspacename() throws Exception {
 		configMap.put(KEYSPACE_NAME_PARAM, "achilles");
 
 		Cluster cluster = HFactory.getOrCreateCluster("Test Cluster",
@@ -136,8 +140,8 @@ public class ThriftArgumentExtractorTest
 	}
 
 	@Test
-	public void should_exception_when_keyspace_and_keyspacename_not_set() throws Exception
-	{
+	public void should_exception_when_keyspace_and_keyspacename_not_set()
+			throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Either '"

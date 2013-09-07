@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -9,13 +25,16 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import me.prettyprint.hector.api.beans.Composite;
+
 import org.apache.cassandra.utils.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,100 +44,95 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * ThriftJoinEntityHelperTest
- * 
- * @author DuyHai DOAN
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftJoinEntityLoaderTest
-{
+public class ThriftJoinEntityLoaderTest {
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private ThriftEntityMapper mapper;
+	@Mock
+	private ThriftEntityMapper mapper;
 
-    @InjectMocks
-    private ThriftJoinEntityLoader joinHelper;
+	@InjectMocks
+	private ThriftJoinEntityLoader joinHelper;
 
-    @Mock
-    private ThriftGenericEntityDao dao;
+	@Mock
+	private ThriftGenericEntityDao dao;
 
-    @Mock
-    private EntityMeta joinMeta;
+	@Mock
+	private EntityMeta joinMeta;
 
-    @Mock
-    private PropertyMeta joinIdMeta;
+	@Mock
+	private PropertyMeta joinIdMeta;
 
-    @Captor
-    ArgumentCaptor<UserBean> userCaptor;
+	@Captor
+	ArgumentCaptor<UserBean> userCaptor;
 
-    private List<Long> keys = Arrays.asList(11L);
+	private List<Long> keys = Arrays.asList(11L);
 
-    @Test
-    public void should_load_join_entities() throws Exception
-    {
-        Method idSetter = UserBean.class.getDeclaredMethod("setUserId", Long.class);
+	@Test
+	public void should_load_join_entities() throws Exception {
+		Method idSetter = UserBean.class.getDeclaredMethod("setUserId",
+				Long.class);
 
-        Composite start = new Composite();
-        Composite end = new Composite();
+		Composite start = new Composite();
+		Composite end = new Composite();
 
-        List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
-        columns1.add(Pair.create(start, "foo"));
-        columns1.add(Pair.create(end, "bar"));
+		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
+		columns1.add(Pair.create(start, "foo"));
+		columns1.add(Pair.create(end, "bar"));
 
-        List<Pair<Composite, String>> columns2 = new ArrayList<Pair<Composite, String>>();
-        columns2.add(Pair.create(start, "john"));
-        columns2.add(Pair.create(end, "helen"));
+		List<Pair<Composite, String>> columns2 = new ArrayList<Pair<Composite, String>>();
+		columns2.add(Pair.create(start, "john"));
+		columns2.add(Pair.create(end, "helen"));
 
-        Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
-        rows.put(11L, columns1);
-        rows.put(12L, columns2);
+		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
+		rows.put(11L, columns1);
+		rows.put(12L, columns2);
 
-        when(dao.eagerFetchEntities(keys)).thenReturn(rows);
+		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
-        when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
-        when(joinIdMeta.getSetter()).thenReturn(idSetter);
+		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
+		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
-        Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta,
-                dao);
+		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(
+				UserBean.class, keys, joinMeta, dao);
 
-        verify(mapper).setEagerPropertiesToEntity(eq(11L), eq(columns1), eq(joinMeta),
-                userCaptor.capture());
-        verify(mapper).setEagerPropertiesToEntity(eq(12L), eq(columns2), eq(joinMeta),
-                userCaptor.capture());
+		verify(mapper).setEagerPropertiesToEntity(eq(11L), eq(columns1),
+				eq(joinMeta), userCaptor.capture());
+		verify(mapper).setEagerPropertiesToEntity(eq(12L), eq(columns2),
+				eq(joinMeta), userCaptor.capture());
 
-        verify(invoker).setValueToField(any(UserBean.class), eq(idSetter), eq(11L));
-        verify(invoker).setValueToField(any(UserBean.class), eq(idSetter), eq(12L));
+		verify(invoker).setValueToField(any(UserBean.class), eq(idSetter),
+				eq(11L));
+		verify(invoker).setValueToField(any(UserBean.class), eq(idSetter),
+				eq(12L));
 
-        assertThat(userCaptor.getAllValues()).hasSize(2);
-        UserBean user1 = userCaptor.getAllValues().get(0);
-        UserBean user2 = userCaptor.getAllValues().get(1);
+		assertThat(userCaptor.getAllValues()).hasSize(2);
+		UserBean user1 = userCaptor.getAllValues().get(0);
+		UserBean user2 = userCaptor.getAllValues().get(1);
 
-        assertThat(actual.get(11L)).isSameAs(user1);
-        assertThat(actual.get(12L)).isSameAs(user2);
-    }
+		assertThat(actual.get(11L)).isSameAs(user1);
+		assertThat(actual.get(12L)).isSameAs(user2);
+	}
 
-    @Test
-    public void should_return_empty_map_when_no_join_entity_found() throws Exception
-    {
-        Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
-        List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
-        rows.put(11L, columns1);
+	@Test
+	public void should_return_empty_map_when_no_join_entity_found()
+			throws Exception {
+		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
+		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
+		rows.put(11L, columns1);
 
-        when(dao.eagerFetchEntities(keys)).thenReturn(rows);
+		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
-        Map<Long, UserBean> actual = joinHelper.loadJoinEntities(UserBean.class, keys, joinMeta,
-                dao);
+		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(
+				UserBean.class, keys, joinMeta, dao);
 
-        verifyZeroInteractions(mapper);
+		verifyZeroInteractions(mapper);
 
-        verify(invoker, never()).setValueToField(any(UserBean.class), any(Method.class),
-                any(Long.class));
-        assertThat(actual).isEmpty();
+		verify(invoker, never()).setValueToField(any(UserBean.class),
+				any(Method.class), any(Long.class));
+		assertThat(actual).isEmpty();
 
-    }
+	}
 }

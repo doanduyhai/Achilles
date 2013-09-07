@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
@@ -28,15 +44,18 @@ import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.KeyValue;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
+
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -51,706 +70,797 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-/**
- * ThriftPersisterImplTest
- * 
- * @author DuyHai DOAN
- * 
- */
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftPersisterImplTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
-    private ThriftPersisterImpl persisterImpl;
+	@InjectMocks
+	private ThriftPersisterImpl persisterImpl;
 
-    @Mock
-    private ThriftEntityPersister persister;
+	@Mock
+	private ThriftEntityPersister persister;
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private EntityProxifier<ThriftPersistenceContext> proxifier;
+	@Mock
+	private EntityProxifier<ThriftPersistenceContext> proxifier;
 
-    @Mock
-    private ThriftGenericEntityDao entityDao;
+	@Mock
+	private ThriftGenericEntityDao entityDao;
 
-    @Mock
-    private ThriftGenericWideRowDao wideRowDao;
+	@Mock
+	private ThriftGenericWideRowDao wideRowDao;
 
-    @Mock
-    private ThriftCounterDao counterDao;
+	@Mock
+	private ThriftCounterDao counterDao;
 
-    private EntityMeta entityMeta;
+	private EntityMeta entityMeta;
 
-    @Mock
-    private ThriftCompositeFactory thriftCompositeFactory;
+	@Mock
+	private ThriftCompositeFactory thriftCompositeFactory;
 
-    @Mock
-    private Mutator<Object> entityMutator;
+	@Mock
+	private Mutator<Object> entityMutator;
 
-    @Mock
-    private Mutator<Object> wideRowMutator;
+	@Mock
+	private Mutator<Object> wideRowMutator;
 
-    @Mock
-    private Mutator<Object> counterMutator;
+	@Mock
+	private Mutator<Object> counterMutator;
 
-    @Mock
-    private ThriftConsistencyLevelPolicy policy;
+	@Mock
+	private ThriftConsistencyLevelPolicy policy;
 
-    private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
+	private Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
 
-    private Map<String, ThriftGenericWideRowDao> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
+	private Map<String, ThriftGenericWideRowDao> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 
-    @Mock
-    private ThriftImmediateFlushContext flushContext;
+	@Mock
+	private ThriftImmediateFlushContext flushContext;
 
-    private Optional<Integer> ttlO = Optional.<Integer> absent();
+	private Optional<Integer> ttlO = Optional.<Integer> absent();
 
-    private Optional<Long> timestampO = Optional.<Long> absent();
+	private Optional<Long> timestampO = Optional.<Long> absent();
 
-    @Captor
-    private ArgumentCaptor<Composite> compositeCaptor;
+	@Captor
+	private ArgumentCaptor<Composite> compositeCaptor;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+	private ObjectMapper objectMapper = new ObjectMapper();
 
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+			.buid();
 
-    private ThriftPersistenceContext context;
+	private ThriftPersistenceContext context;
 
-    @Before
-    public void setUp() {
-        entityMeta = new EntityMeta();
-        entityMeta.setTableName("cf");
-        context = ThriftPersistenceContextTestBuilder
-                .context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId())
-                .entity(entity)
-                .thriftImmediateFlushContext(flushContext)
-                .entityDao(entityDao)
-                .wideRowDao(wideRowDao)
-                .wideRowDaosMap(wideRowDaosMap)
-                .entityDaosMap(entityDaosMap)
-                .build();
-        when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
-        when(flushContext.getConsistencyLevel()).thenReturn(EACH_QUORUM);
+	@Before
+	public void setUp() {
+		entityMeta = new EntityMeta();
+		entityMeta.setTableName("cf");
+		context = ThriftPersistenceContextTestBuilder
+				.context(entityMeta, counterDao, policy, CompleteBean.class,
+						entity.getId()).entity(entity)
+				.thriftImmediateFlushContext(flushContext).entityDao(entityDao)
+				.wideRowDao(wideRowDao).wideRowDaosMap(wideRowDaosMap)
+				.entityDaosMap(entityDaosMap).build();
+		when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
+		when(flushContext.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-        entityDaosMap.clear();
-        wideRowDaosMap.clear();
-    }
+		entityDaosMap.clear();
+		wideRowDaosMap.clear();
+	}
 
-    @Test
-    public void should_persist_clustered_entity() throws Exception {
-        Object partitionKey = 10L;
-        String clusteredValue = "clusteredValue";
+	@Test
+	public void should_persist_clustered_entity() throws Exception {
+		Object partitionKey = 10L;
+		String clusteredValue = "clusteredValue";
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
 
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(Integer.class)
-                .type(SIMPLE)
-                .build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Integer.class)
+				.type(SIMPLE).build();
 
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
-
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
-    }
-
-    @Test
-    public void should_persist_counter_clustered_entity() throws Exception {
-        Object partitionKey = 10L;
-        Counter clusteredValue = CounterBuilder.incr(10L);
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(COUNTER).build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
-
-        verify(wideRowDao).incrementCounter(partitionKey, comp, 10L);
-    }
-
-    @Test
-    public void should_persist_join_clustered_entity() throws Exception {
-        Object partitionKey = 10L;
-        Long joinId = 11L;
-        UserBean clusteredValue = new UserBean();
-        clusteredValue.setUserId(joinId);
-
-        Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        PropertyMeta joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-        joinIdMeta.setGetter(idGetter);
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(JOIN_SIMPLE)
-                .joinMeta(joinMeta).build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when((Mutator) flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-
-        when(invoker.getValueFromField(clusteredValue, idGetter)).thenReturn(joinId);
-        when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
-
-        persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
-
-        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, timestampO, wideRowMutator);
-
-        ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
-                .forClass(ThriftPersistenceContext.class);
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(clusteredValue),
-                eq(pm.getJoinProperties()));
-        assertThat(contextCaptor.getValue().getEntity()).isSameAs(clusteredValue);
-
-    }
-
-    @Test
-    public void should_persist_value_less_clustered_entity() throws Exception {
-        Object partitionKey = 10L;
-        String clusteredValue = "";
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
 
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        persisterImpl.persistClusteredEntity(persister, context, partitionKey, clusteredValue);
-
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
-    }
-
-    @Test
-    public void should_persist_simple_clustered_value_batch() throws Exception {
-        Object partitionKey = 10L;
-        String clusteredValue = "clusteredValue";
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-        persisterImpl.persistClusteredValueBatch(context, partitionKey, clusteredValue, persister);
-
-        verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue, ttlO, timestampO, wideRowMutator);
-    }
-
-    @Test
-    public void should_persist_clustered_join_value_batch() throws Exception {
-        Long partitionKey = RandomUtils.nextLong();
-        Long joinId = RandomUtils.nextLong();
-        UserBean clusteredValue = new UserBean();
-        clusteredValue.setUserId(joinId);
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).build();
-
-        Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
-        PropertyMeta joinIdMeta = PropertyMetaTestBuilder.valueClass(Long.class).build();
-        joinIdMeta.setGetter(userIdGetter);
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).joinMeta(joinMeta)
-                .type(JOIN_SIMPLE).build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, entity.getId())).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-
-        when(invoker.getPrimaryKey(clusteredValue, joinIdMeta)).thenReturn(joinId);
-        when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
-
-        persisterImpl.persistClusteredValueBatch(context, partitionKey, clusteredValue, persister);
-
-        ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
-                .forClass(ThriftPersistenceContext.class);
-
-        verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO, timestampO, wideRowMutator);
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(clusteredValue),
-                any(JoinProperties.class));
-
-        assertThat(contextCaptor.getValue().getEntityMeta()).isEqualTo(joinMeta);
-    }
-
-    @Test
-    public void should_batch_simple_property() throws Exception {
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class)
-                .field("name")
-                .accessors()
-                .build();
-
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
-
-        when(invoker.getValueFromField(entity, propertyMeta.getGetter())).thenReturn("testValue");
-
-        persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
-
-        verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue", ttlO, timestampO, entityMutator);
-
-    }
-
-    @Test
-    public void should_persist_counter_property() throws Exception {
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder.
-                completeBean(Void.class, Long.class)
-                .field("id")
-                .type(ID)
-                .build();
-
-        entityMeta.setIdMeta(idMeta);
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .fqcn("fqcn")
-                .accessors()
-                .build();
-
-        Counter counterValue = CounterBuilder.incr(10L);
-        when(invoker.getValueFromField(entity, propertyMeta.getGetter())).thenReturn(counterValue);
-
-        Composite rowKey = new Composite();
-        Composite name = new Composite();
-        when(thriftCompositeFactory.createKeyForCounter("fqcn", entity.getId(), idMeta)).thenReturn(rowKey);
-        when(thriftCompositeFactory.createBaseForCounterGet(propertyMeta)).thenReturn(name);
-
-        persisterImpl.persistCounter(context, propertyMeta);
-
-        verify(counterDao).incrementCounter(rowKey, name, 10L);
-
-    }
-
-    @Test
-    public void should_batch_list_property() throws Exception {
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class).field("friends").accessors().build();
-
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
-
-        persisterImpl.batchPersistList(Arrays.asList("foo", "bar"), context, propertyMeta);
-
-        InOrder inOrder = inOrder(entityDao);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "foo", ttlO, timestampO, entityMutator);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "bar", ttlO, timestampO, entityMutator);
-
-    }
-
-    @Test
-    public void should_batch_set_property() throws Exception {
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class).field("followers").accessors().build();
-
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, "John".hashCode()))
-                .thenReturn(comp1);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, "Helen".hashCode())).thenReturn(
-                comp2);
-
-        Set<String> followers = ImmutableSet.of("John", "Helen");
-        persisterImpl.batchPersistSet(followers, context, propertyMeta);
-
-        InOrder inOrder = inOrder(entityDao);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "John", ttlO, timestampO, entityMutator);
-        inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "Helen", ttlO, timestampO, entityMutator);
-
-    }
-
-    @Test
-    public void should_batch_map_property() throws Exception {
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Integer.class, String.class).field("preferences").type(MAP).accessors().build();
-
-        Map<Integer, String> map = new HashMap<Integer, String>();
-        map.put(1, "FR");
-        map.put(2, "Paris");
-        map.put(3, "75014");
-
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-        Composite comp3 = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 3)).thenReturn(comp3);
-
-        persisterImpl.batchPersistMap(map, context, propertyMeta);
-
-        ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()), any(Composite.class),
-                keyValueHolderCaptor.capture(), eq(ttlO), eq(timestampO), eq(entityMutator));
-
-        assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
-
-        List<String> keyValues = keyValueHolderCaptor.getAllValues();
-
-        KeyValue<Integer, String> holder1 = readKeyValue(keyValues.get(0));
-        KeyValue<Integer, String> holder2 = readKeyValue(keyValues.get(1));
-        KeyValue<Integer, String> holder3 = readKeyValue(keyValues.get(2));
-
-        assertThat(holder1.getKey()).isEqualTo(1);
-        assertThat(holder1.getValue()).isEqualTo("FR");
-
-        assertThat(holder2.getKey()).isEqualTo(2);
-        assertThat(holder2.getValue()).isEqualTo("Paris");
-
-        assertThat(holder3.getKey()).isEqualTo(3);
-        assertThat(holder3.getValue()).isEqualTo("75014");
-    }
-
-    @Test
-    public void should_batch_persist_join_entity() throws Exception {
-        Long joinId = 154654L;
-        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
-                .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder
-                //
-                .completeBean(Void.class, UserBean.class).field("user").type(JOIN_SIMPLE).joinMeta(joinMeta)
-                .accessors().build();
-
-        UserBean user = new UserBean();
-        user.setUserId(joinId);
-
-        when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(joinId);
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertSingleValue(propertyMeta)).thenReturn(comp);
-
-        when(proxifier.unwrap(user)).thenReturn(user);
-
-        persisterImpl.batchPersistJoinEntity(context, propertyMeta, user, persister);
-
-        verify(entityDao).insertColumnBatch(entity.getId(), comp, joinId.toString(), ttlO, timestampO, entityMutator);
-
-        ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
-                .forClass(ThriftPersistenceContext.class);
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user),
-                eq(propertyMeta.getJoinProperties()));
-        assertThat(contextCaptor.getValue().getEntity()).isSameAs(user);
-    }
-
-    @Test
-    public void should_batch_persist_join_collection() throws Exception {
-        Long joinId1 = 54351L, joinId2 = 4653L;
-        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
-                .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, UserBean.class).field("user").joinMeta(joinMeta).build();
-
-        UserBean user1 = new UserBean(), user2 = new UserBean();
-        user1.setUserId(joinId1);
-        user2.setUserId(joinId2);
-
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 0)).thenReturn(comp1);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp2);
-        when(invoker.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
-        when(invoker.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
-
-        when(proxifier.unwrap(user1)).thenReturn(user1);
-        when(proxifier.unwrap(user2)).thenReturn(user2);
-
-        persisterImpl.batchPersistJoinCollection(context, propertyMeta, Arrays.asList(user1, user2), persister);
-
-        verify(entityDao).insertColumnBatch(entity.getId(), comp1, joinId1.toString(), ttlO, timestampO,
-                entityMutator);
-        verify(entityDao).insertColumnBatch(entity.getId(), comp2, joinId2.toString(), ttlO, timestampO,
-                entityMutator);
-
-        ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
-                .forClass(ThriftPersistenceContext.class);
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user1),
-                eq(propertyMeta.getJoinProperties()));
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user2),
-                eq(propertyMeta.getJoinProperties()));
-
-        List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
-
-        assertThat(contextes.get(0).getEntity()).isSameAs(user1);
-        assertThat(contextes.get(1).getEntity()).isSameAs(user2);
-
-    }
-
-    @Test
-    public void should_batch_persist_join_map() throws Exception {
-        Long joinId1 = 54351L, joinId2 = 4653L;
-        PropertyMeta joinIdMeta = PropertyMetaTestBuilder //
-                .of(UserBean.class, Void.class, Long.class).field("userId").type(SIMPLE).accessors().build();
-
-        EntityMeta joinMeta = new EntityMeta();
-        joinMeta.setIdMeta(joinIdMeta);
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Integer.class, UserBean.class).joinMeta(joinMeta).build();
-
-        UserBean user1 = new UserBean(), user2 = new UserBean();
-        user1.setUserId(joinId1);
-        user2.setUserId(joinId2);
-
-        Map<Integer, UserBean> joinMap = ImmutableMap.of(1, user1, 2, user2);
-        KeyValue<Integer, String> kv1 = new KeyValue<Integer, String>(1, joinId1.toString());
-        KeyValue<Integer, String> kv2 = new KeyValue<Integer, String>(2, joinId2.toString());
-
-        Composite comp1 = new Composite();
-        Composite comp2 = new Composite();
-
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 1)).thenReturn(comp1);
-        when(thriftCompositeFactory.createForBatchInsertMultiValue(propertyMeta, 2)).thenReturn(comp2);
-        when(invoker.getValueFromField(user1, joinIdMeta.getGetter())).thenReturn(joinId1);
-        when(invoker.getValueFromField(user2, joinIdMeta.getGetter())).thenReturn(joinId2);
-
-        when(proxifier.unwrap(user1)).thenReturn(user1);
-        when(proxifier.unwrap(user2)).thenReturn(user2);
-
-        persisterImpl.batchPersistJoinMap(context, propertyMeta, joinMap, persister);
-
-        verify(entityDao).insertColumnBatch(entity.getId(), comp1, writeString(kv1), ttlO, timestampO, entityMutator);
-        verify(entityDao).insertColumnBatch(entity.getId(), comp2, writeString(kv2), ttlO, timestampO, entityMutator);
-
-        ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
-                .forClass(ThriftPersistenceContext.class);
-
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user1),
-                eq(propertyMeta.getJoinProperties()));
-        verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(), eq(user2),
-                eq(propertyMeta.getJoinProperties()));
-
-        List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
-
-        assertThat(contextes.get(0).getEntity()).isSameAs(user1);
-        assertThat(contextes.get(1).getEntity()).isSameAs(user2);
-    }
-
-    @Test
-    public void should_remove_entity_having_simple_counter() throws Exception {
-        String fqcn = CompleteBean.class.getCanonicalName();
-
-        PropertyMeta counterIdMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, Long.class).field("id").accessors().build();
-
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Counter.class).field("count").type(PropertyType.COUNTER).accessors()
-                .counterIdMeta(counterIdMeta).fqcn(fqcn)
-                .consistencyLevels(Pair.create(ONE, ALL)).build();
-
-        entityMeta.setClusteredEntity(false);
-        entityMeta.setPropertyMetas(ImmutableMap.of("pm", propertyMeta));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(propertyMeta));
-        entityMeta.setFirstMeta(propertyMeta);
-
-        Composite keyComp = new Composite();
-        Composite comp = new Composite();
-        when(thriftCompositeFactory.createKeyForCounter(fqcn, entity.getId(), counterIdMeta)).thenReturn(keyComp);
-        when(thriftCompositeFactory.createForBatchInsertSingleCounter(propertyMeta)).thenReturn(comp);
-        when(flushContext.getCounterMutator()).thenReturn(counterMutator);
-
-        persisterImpl.remove(context);
-
-        verify(counterDao).removeCounterBatch(keyComp, comp, counterMutator);
-
-    }
-
-    @Test
-    public void should_remove_entity_batch() throws Exception {
-        Object primaryKey = entity.getId();
-        when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
-
-        persisterImpl.removeEntityBatch(context);
-
-        verify(entityDao).removeRowBatch(primaryKey, entityMutator);
-    }
-
-    @Test
-    public void should_remove_clustered_entity() throws Exception {
-        Object compoundKey = entity.getId();
-        Object partitionKey = 10L;
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(Integer.class)
-                .type(SIMPLE)
-                .build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-
-        persisterImpl.removeClusteredEntity(context, partitionKey);
-        verify(wideRowDao).removeColumnBatch(partitionKey, comp, wideRowMutator);
-    }
-
-    @Test
-    public void should_remove_value_less_clustered_entity() throws Exception {
-        Object compoundKey = entity.getId();
-        Object partitionKey = 10L;
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
-
-        Composite comp = new Composite();
-
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-
-        persisterImpl.removeClusteredEntity(context, partitionKey);
-        verify(wideRowDao).removeColumnBatch(partitionKey, comp, wideRowMutator);
-    }
-
-    @Test
-    public void should_remove_counter_clustered_entity() throws Exception {
-        Object compoundKey = entity.getId();
-        Object partitionKey = 10L;
-
-        PropertyMeta idMeta = PropertyMetaTestBuilder
-                .valueClass(CompoundKey.class)
-                .field("id")
-                .type(EMBEDDED_ID)
-                .build();
-
-        PropertyMeta pm = PropertyMetaTestBuilder
-                .valueClass(Long.class)
-                .type(COUNTER).build();
-
-        entityMeta.setIdMeta(idMeta);
-        entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-        entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-        entityMeta.setFirstMeta(pm);
-
-        Composite comp = new Composite();
-
-        when(thriftCompositeFactory.createCompositeForClustered(idMeta, compoundKey)).thenReturn(comp);
-        wideRowDaosMap.put("cf", wideRowDao);
-        when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
-
-        persisterImpl.removeClusteredEntity(context, partitionKey);
-        verify(wideRowDao).removeCounterBatch(partitionKey, comp, wideRowMutator);
-    }
-
-    @Test
-    public void should_batch_remove_property() throws Exception {
-        PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-                .completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).accessors().build();
-
-        Composite start = new Composite(), end = new Composite();
-        when(thriftCompositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.EQUAL)).thenReturn(start);
-        when(thriftCompositeFactory.createBaseForQuery(propertyMeta, ComponentEquality.GREATER_THAN_EQUAL))
-                .thenReturn(end);
-
-        persisterImpl.removePropertyBatch(context, propertyMeta);
-
-        verify(entityDao).removeColumnRangeBatch(entity.getId(), start, end, entityMutator);
-    }
-
-    @SuppressWarnings("unchecked")
-    private KeyValue<Integer, String> readKeyValue(String value) throws Exception {
-        return objectMapper.readValue(value, KeyValue.class);
-    }
-
-    private String writeString(Object value) throws Exception {
-        return objectMapper.writeValueAsString(value);
-    }
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+		persisterImpl.persistClusteredEntity(persister, context, partitionKey,
+				clusteredValue);
+
+		verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue,
+				ttlO, timestampO, wideRowMutator);
+	}
+
+	@Test
+	public void should_persist_counter_clustered_entity() throws Exception {
+		Object partitionKey = 10L;
+		Counter clusteredValue = CounterBuilder.incr(10L);
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
+				.type(COUNTER).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		persisterImpl.persistClusteredEntity(persister, context, partitionKey,
+				clusteredValue);
+
+		verify(wideRowDao).incrementCounter(partitionKey, comp, 10L);
+	}
+
+	@Test
+	public void should_persist_join_clustered_entity() throws Exception {
+		Object partitionKey = 10L;
+		Long joinId = 11L;
+		UserBean clusteredValue = new UserBean();
+		clusteredValue.setUserId(joinId);
+
+		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class).build();
+		joinIdMeta.setGetter(idGetter);
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when((Mutator) flushContext.getWideRowMutator("cf")).thenReturn(
+				wideRowMutator);
+
+		when(invoker.getValueFromField(clusteredValue, idGetter)).thenReturn(
+				joinId);
+		when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
+
+		persisterImpl.persistClusteredEntity(persister, context, partitionKey,
+				clusteredValue);
+
+		verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO,
+				timestampO, wideRowMutator);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(clusteredValue), eq(pm.getJoinProperties()));
+		assertThat(contextCaptor.getValue().getEntity()).isSameAs(
+				clusteredValue);
+
+	}
+
+	@Test
+	public void should_persist_value_less_clustered_entity() throws Exception {
+		Object partitionKey = 10L;
+		String clusteredValue = "";
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+		persisterImpl.persistClusteredEntity(persister, context, partitionKey,
+				clusteredValue);
+
+		verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue,
+				ttlO, timestampO, wideRowMutator);
+	}
+
+	@Test
+	public void should_persist_simple_clustered_value_batch() throws Exception {
+		Object partitionKey = 10L;
+		String clusteredValue = "clusteredValue";
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(SIMPLE).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+		persisterImpl.persistClusteredValueBatch(context, partitionKey,
+				clusteredValue, persister);
+
+		verify(wideRowDao).setValueBatch(partitionKey, comp, clusteredValue,
+				ttlO, timestampO, wideRowMutator);
+	}
+
+	@Test
+	public void should_persist_clustered_join_value_batch() throws Exception {
+		Long partitionKey = RandomUtils.nextLong();
+		Long joinId = RandomUtils.nextLong();
+		UserBean clusteredValue = new UserBean();
+		clusteredValue.setUserId(joinId);
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
+				CompoundKey.class).build();
+
+		Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class).build();
+		joinIdMeta.setGetter(userIdGetter);
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
+				.joinMeta(joinMeta).type(JOIN_SIMPLE).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						entity.getId())).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+
+		when(invoker.getPrimaryKey(clusteredValue, joinIdMeta)).thenReturn(
+				joinId);
+		when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
+
+		persisterImpl.persistClusteredValueBatch(context, partitionKey,
+				clusteredValue, persister);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+
+		verify(wideRowDao).setValueBatch(partitionKey, comp, joinId, ttlO,
+				timestampO, wideRowMutator);
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(clusteredValue), any(JoinProperties.class));
+
+		assertThat(contextCaptor.getValue().getEntityMeta())
+				.isEqualTo(joinMeta);
+	}
+
+	@Test
+	public void should_batch_simple_property() throws Exception {
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, String.class).field("name")
+				.accessors().build();
+
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory
+						.createForBatchInsertSingleValue(propertyMeta))
+				.thenReturn(comp);
+
+		when(invoker.getValueFromField(entity, propertyMeta.getGetter()))
+				.thenReturn("testValue");
+
+		persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
+
+		verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue",
+				ttlO, timestampO, entityMutator);
+
+	}
+
+	@Test
+	public void should_persist_counter_property() throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, Long.class).field("count")
+				.fqcn("fqcn").accessors().build();
+
+		Counter counterValue = CounterBuilder.incr(10L);
+		when(invoker.getValueFromField(entity, propertyMeta.getGetter()))
+				.thenReturn(counterValue);
+
+		Composite rowKey = new Composite();
+		Composite name = new Composite();
+		when(
+				thriftCompositeFactory.createKeyForCounter("fqcn",
+						entity.getId(), idMeta)).thenReturn(rowKey);
+		when(thriftCompositeFactory.createBaseForCounterGet(propertyMeta))
+				.thenReturn(name);
+
+		persisterImpl.persistCounter(context, propertyMeta);
+
+		verify(counterDao).incrementCounter(rowKey, name, 10L);
+
+	}
+
+	@Test
+	public void should_batch_list_property() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, String.class).field("friends")
+				.accessors().build();
+
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 0)).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 1)).thenReturn(comp2);
+
+		persisterImpl.batchPersistList(Arrays.asList("foo", "bar"), context,
+				propertyMeta);
+
+		InOrder inOrder = inOrder(entityDao);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1,
+				"foo", ttlO, timestampO, entityMutator);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2,
+				"bar", ttlO, timestampO, entityMutator);
+
+	}
+
+	@Test
+	public void should_batch_set_property() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, String.class).field("followers")
+				.accessors().build();
+
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, "John".hashCode())).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, "Helen".hashCode())).thenReturn(comp2);
+
+		Set<String> followers = ImmutableSet.of("John", "Helen");
+		persisterImpl.batchPersistSet(followers, context, propertyMeta);
+
+		InOrder inOrder = inOrder(entityDao);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1,
+				"John", ttlO, timestampO, entityMutator);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2,
+				"Helen", ttlO, timestampO, entityMutator);
+
+	}
+
+	@Test
+	public void should_batch_map_property() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Integer.class, String.class).field("preferences")
+				.type(MAP).accessors().build();
+
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1, "FR");
+		map.put(2, "Paris");
+		map.put(3, "75014");
+
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		Composite comp3 = new Composite();
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 1)).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 2)).thenReturn(comp2);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 3)).thenReturn(comp3);
+
+		persisterImpl.batchPersistMap(map, context, propertyMeta);
+
+		ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor
+				.forClass(String.class);
+
+		verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()),
+				any(Composite.class), keyValueHolderCaptor.capture(), eq(ttlO),
+				eq(timestampO), eq(entityMutator));
+
+		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
+
+		List<String> keyValues = keyValueHolderCaptor.getAllValues();
+
+		KeyValue<Integer, String> holder1 = readKeyValue(keyValues.get(0));
+		KeyValue<Integer, String> holder2 = readKeyValue(keyValues.get(1));
+		KeyValue<Integer, String> holder3 = readKeyValue(keyValues.get(2));
+
+		assertThat(holder1.getKey()).isEqualTo(1);
+		assertThat(holder1.getValue()).isEqualTo("FR");
+
+		assertThat(holder2.getKey()).isEqualTo(2);
+		assertThat(holder2.getValue()).isEqualTo("Paris");
+
+		assertThat(holder3.getKey()).isEqualTo(3);
+		assertThat(holder3.getValue()).isEqualTo("75014");
+	}
+
+	@Test
+	public void should_batch_persist_join_entity() throws Exception {
+		Long joinId = 154654L;
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				//
+				.of(UserBean.class, Void.class, Long.class).field("userId")
+				.type(SIMPLE).accessors().build();
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).accessors().build();
+
+		UserBean user = new UserBean();
+		user.setUserId(joinId);
+
+		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(joinId);
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory
+						.createForBatchInsertSingleValue(propertyMeta))
+				.thenReturn(comp);
+
+		when(proxifier.unwrap(user)).thenReturn(user);
+
+		persisterImpl.batchPersistJoinEntity(context, propertyMeta, user,
+				persister);
+
+		verify(entityDao).insertColumnBatch(entity.getId(), comp,
+				joinId.toString(), ttlO, timestampO, entityMutator);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user), eq(propertyMeta.getJoinProperties()));
+		assertThat(contextCaptor.getValue().getEntity()).isSameAs(user);
+	}
+
+	@Test
+	public void should_batch_persist_join_collection() throws Exception {
+		Long joinId1 = 54351L, joinId2 = 4653L;
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				//
+				.of(UserBean.class, Void.class, Long.class).field("userId")
+				.type(SIMPLE).accessors().build();
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, UserBean.class).field("user")
+				.joinMeta(joinMeta).build();
+
+		UserBean user1 = new UserBean(), user2 = new UserBean();
+		user1.setUserId(joinId1);
+		user2.setUserId(joinId2);
+
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 0)).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 1)).thenReturn(comp2);
+		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
+				.thenReturn(joinId1);
+		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
+				.thenReturn(joinId2);
+
+		when(proxifier.unwrap(user1)).thenReturn(user1);
+		when(proxifier.unwrap(user2)).thenReturn(user2);
+
+		persisterImpl.batchPersistJoinCollection(context, propertyMeta,
+				Arrays.asList(user1, user2), persister);
+
+		verify(entityDao).insertColumnBatch(entity.getId(), comp1,
+				joinId1.toString(), ttlO, timestampO, entityMutator);
+		verify(entityDao).insertColumnBatch(entity.getId(), comp2,
+				joinId2.toString(), ttlO, timestampO, entityMutator);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user1), eq(propertyMeta.getJoinProperties()));
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user2), eq(propertyMeta.getJoinProperties()));
+
+		List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
+
+		assertThat(contextes.get(0).getEntity()).isSameAs(user1);
+		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
+
+	}
+
+	@Test
+	public void should_batch_persist_join_map() throws Exception {
+		Long joinId1 = 54351L, joinId2 = 4653L;
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				//
+				.of(UserBean.class, Void.class, Long.class).field("userId")
+				.type(SIMPLE).accessors().build();
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Integer.class, UserBean.class).joinMeta(joinMeta)
+				.build();
+
+		UserBean user1 = new UserBean(), user2 = new UserBean();
+		user1.setUserId(joinId1);
+		user2.setUserId(joinId2);
+
+		Map<Integer, UserBean> joinMap = ImmutableMap.of(1, user1, 2, user2);
+		KeyValue<Integer, String> kv1 = new KeyValue<Integer, String>(1,
+				joinId1.toString());
+		KeyValue<Integer, String> kv2 = new KeyValue<Integer, String>(2,
+				joinId2.toString());
+
+		Composite comp1 = new Composite();
+		Composite comp2 = new Composite();
+
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 1)).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertMultiValue(
+						propertyMeta, 2)).thenReturn(comp2);
+		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
+				.thenReturn(joinId1);
+		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
+				.thenReturn(joinId2);
+
+		when(proxifier.unwrap(user1)).thenReturn(user1);
+		when(proxifier.unwrap(user2)).thenReturn(user2);
+
+		persisterImpl.batchPersistJoinMap(context, propertyMeta, joinMap,
+				persister);
+
+		verify(entityDao).insertColumnBatch(entity.getId(), comp1,
+				writeString(kv1), ttlO, timestampO, entityMutator);
+		verify(entityDao).insertColumnBatch(entity.getId(), comp2,
+				writeString(kv2), ttlO, timestampO, entityMutator);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user1), eq(propertyMeta.getJoinProperties()));
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user2), eq(propertyMeta.getJoinProperties()));
+
+		List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
+
+		assertThat(contextes.get(0).getEntity()).isSameAs(user1);
+		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
+	}
+
+	@Test
+	public void should_remove_entity_having_simple_counter() throws Exception {
+		String fqcn = CompleteBean.class.getCanonicalName();
+
+		PropertyMeta counterIdMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, Long.class).field("id").accessors()
+				.build();
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Counter.class).field("count")
+				.type(PropertyType.COUNTER).accessors()
+				.counterIdMeta(counterIdMeta).fqcn(fqcn)
+				.consistencyLevels(Pair.create(ONE, ALL)).build();
+
+		entityMeta.setClusteredEntity(false);
+		entityMeta.setPropertyMetas(ImmutableMap.of("pm", propertyMeta));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(propertyMeta));
+		entityMeta.setFirstMeta(propertyMeta);
+
+		Composite keyComp = new Composite();
+		Composite comp = new Composite();
+		when(
+				thriftCompositeFactory.createKeyForCounter(fqcn,
+						entity.getId(), counterIdMeta)).thenReturn(keyComp);
+		when(
+				thriftCompositeFactory
+						.createForBatchInsertSingleCounter(propertyMeta))
+				.thenReturn(comp);
+		when(flushContext.getCounterMutator()).thenReturn(counterMutator);
+
+		persisterImpl.remove(context);
+
+		verify(counterDao).removeCounterBatch(keyComp, comp, counterMutator);
+
+	}
+
+	@Test
+	public void should_remove_entity_batch() throws Exception {
+		Object primaryKey = entity.getId();
+		when(flushContext.getEntityMutator("cf")).thenReturn(entityMutator);
+
+		persisterImpl.removeEntityBatch(context);
+
+		verify(entityDao).removeRowBatch(primaryKey, entityMutator);
+	}
+
+	@Test
+	public void should_remove_clustered_entity() throws Exception {
+		Object compoundKey = entity.getId();
+		Object partitionKey = 10L;
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Integer.class)
+				.type(SIMPLE).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						compoundKey)).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+
+		persisterImpl.removeClusteredEntity(context, partitionKey);
+		verify(wideRowDao)
+				.removeColumnBatch(partitionKey, comp, wideRowMutator);
+	}
+
+	@Test
+	public void should_remove_value_less_clustered_entity() throws Exception {
+		Object compoundKey = entity.getId();
+		Object partitionKey = 10L;
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+
+		Composite comp = new Composite();
+
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						compoundKey)).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+
+		persisterImpl.removeClusteredEntity(context, partitionKey);
+		verify(wideRowDao)
+				.removeColumnBatch(partitionKey, comp, wideRowMutator);
+	}
+
+	@Test
+	public void should_remove_counter_clustered_entity() throws Exception {
+		Object compoundKey = entity.getId();
+		Object partitionKey = 10L;
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
+				.type(COUNTER).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		Composite comp = new Composite();
+
+		when(
+				thriftCompositeFactory.createCompositeForClustered(idMeta,
+						compoundKey)).thenReturn(comp);
+		wideRowDaosMap.put("cf", wideRowDao);
+		when(flushContext.getWideRowMutator("cf")).thenReturn(wideRowMutator);
+
+		persisterImpl.removeClusteredEntity(context, partitionKey);
+		verify(wideRowDao).removeCounterBatch(partitionKey, comp,
+				wideRowMutator);
+	}
+
+	@Test
+	public void should_batch_remove_property() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				//
+				.completeBean(Void.class, String.class).field("name")
+				.type(PropertyType.SIMPLE).accessors().build();
+
+		Composite start = new Composite(), end = new Composite();
+		when(
+				thriftCompositeFactory.createBaseForQuery(propertyMeta,
+						ComponentEquality.EQUAL)).thenReturn(start);
+		when(
+				thriftCompositeFactory.createBaseForQuery(propertyMeta,
+						ComponentEquality.GREATER_THAN_EQUAL)).thenReturn(end);
+
+		persisterImpl.removePropertyBatch(context, propertyMeta);
+
+		verify(entityDao).removeColumnRangeBatch(entity.getId(), start, end,
+				entityMutator);
+	}
+
+	@SuppressWarnings("unchecked")
+	private KeyValue<Integer, String> readKeyValue(String value)
+			throws Exception {
+		return objectMapper.readValue(value, KeyValue.class);
+	}
+
+	private String writeString(Object value) throws Exception {
+		return objectMapper.writeValueAsString(value);
+	}
 }
