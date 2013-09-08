@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadePersist;
@@ -6,87 +22,74 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLPersisterImpl;
+
 import java.util.List;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
-/**
- * CQLPersisterImpl
- * 
- * @author DuyHai DOAN
- * 
- */
-public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext>
-{
-    private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
+public class CQLEntityPersister implements
+		EntityPersister<CQLPersistenceContext> {
+	private static final Logger log = LoggerFactory
+			.getLogger(CQLEntityPersister.class);
 
-    private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
+	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
-    @Override
-    public void persist(CQLPersistenceContext context)
-    {
-        EntityMeta entityMeta = context.getEntityMeta();
+	@Override
+	public void persist(CQLPersistenceContext context) {
+		EntityMeta entityMeta = context.getEntityMeta();
 
-        Object entity = context.getEntity();
-        if (context.addToProcessingList(entity))
-        {
-            log.debug("Persisting transient entity {}", entity);
+		Object entity = context.getEntity();
+		if (context.addToProcessingList(entity)) {
+			log.debug("Persisting transient entity {}", entity);
 
-            if (entityMeta.isClusteredCounter())
-            {
-                persisterImpl.persistClusteredCounter(context);
-            }
-            else
-            {
-                persistEntity(context, entityMeta);
-            }
-        }
-    }
+			if (entityMeta.isClusteredCounter()) {
+				persisterImpl.persistClusteredCounter(context);
+			} else {
+				persistEntity(context, entityMeta);
+			}
+		}
+	}
 
-    private void persistEntity(CQLPersistenceContext context, EntityMeta entityMeta)
-    {
-        persisterImpl.persist(context);
+	private void persistEntity(CQLPersistenceContext context,
+			EntityMeta entityMeta) {
+		persisterImpl.persist(context);
 
-        List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
+		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
 
-        Set<PropertyMeta> joinPMsWithCascade = FluentIterable
-                .from(allMetas)
-                .filter(joinPropertyType)
-                .filter(hasCascadePersist)
-                .toImmutableSet();
+		Set<PropertyMeta> joinPMsWithCascade = FluentIterable.from(allMetas)
+				.filter(joinPropertyType).filter(hasCascadePersist)
+				.toImmutableSet();
 
-        persisterImpl.cascadePersist(this, context, joinPMsWithCascade);
+		persisterImpl.cascadePersist(this, context, joinPMsWithCascade);
 
-        if (context.isEnsureJoinConsistency())
-        {
-            Set<PropertyMeta> joinPMs = FluentIterable
-                    .from(allMetas)
-                    .filter(joinPropertyType)
-                    .toImmutableSet();
+		if (context.isEnsureJoinConsistency()) {
+			Set<PropertyMeta> joinPMs = FluentIterable.from(allMetas)
+					.filter(joinPropertyType).toImmutableSet();
 
-            Set<PropertyMeta> ensureExistsPMs = Sets.difference(joinPMs,
-                    joinPMsWithCascade);
+			Set<PropertyMeta> ensureExistsPMs = Sets.difference(joinPMs,
+					joinPMsWithCascade);
 
-            log.debug("Consistency check for join entity of class {} and primary key {} ",
-                    context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+			log.debug(
+					"Consistency check for join entity of class {} and primary key {} ",
+					context.getEntityClass().getCanonicalName(),
+					context.getPrimaryKey());
 
-            persisterImpl.ensureEntitiesExist(context, ensureExistsPMs);
-        }
+			persisterImpl.ensureEntitiesExist(context, ensureExistsPMs);
+		}
 
-        Set<PropertyMeta> counterMetas = FluentIterable
-                .from(allMetas)
-                .filter(counterType)
-                .toImmutableSet();
+		Set<PropertyMeta> counterMetas = FluentIterable.from(allMetas)
+				.filter(counterType).toImmutableSet();
 
-        persisterImpl.persistCounters(context, counterMetas);
-    }
+		persisterImpl.persistCounters(context, counterMetas);
+	}
 
-    @Override
-    public void remove(CQLPersistenceContext context)
-    {
-        persisterImpl.remove(context);
-    }
+	@Override
+	public void remove(CQLPersistenceContext context) {
+		persisterImpl.remove(context);
+	}
 }

@@ -1,143 +1,92 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.consistency;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
-/**
- * CQLConsistencyLevelPolicy
- * 
- * @author DuyHai DOAN
- * 
- */
-public class CQLConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy
-{
+public class CQLConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy {
 
-	public CQLConsistencyLevelPolicy(ConsistencyLevel defaultGlobalReadConsistencyLevel,
+	public CQLConsistencyLevelPolicy(
+			ConsistencyLevel defaultGlobalReadConsistencyLevel,
 			ConsistencyLevel defaultGlobalWriteConsistencyLevel,
 			Map<String, ConsistencyLevel> readCfConsistencyLevels,
-			Map<String, ConsistencyLevel> writeCfConsistencyLevels)
-	{
-		super(defaultGlobalReadConsistencyLevel, defaultGlobalWriteConsistencyLevel,
-				readCfConsistencyLevels, writeCfConsistencyLevels);
+			Map<String, ConsistencyLevel> writeCfConsistencyLevels) {
+		super(defaultGlobalReadConsistencyLevel,
+				defaultGlobalWriteConsistencyLevel, readCfConsistencyLevels,
+				writeCfConsistencyLevels);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#loadConsistencyLevelForRead(java.lang.String)
-	 */
 	@Override
-	public void loadConsistencyLevelForRead(String columnFamily)
-	{
+	public void loadConsistencyLevelForRead(String columnFamily) {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#loadConsistencyLevelForWrite(java.lang.String)
-	 */
 	@Override
-	public void loadConsistencyLevelForWrite(String columnFamily)
-	{
+	public void loadConsistencyLevelForWrite(String columnFamily) {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#reinitDefaultConsistencyLevels()
-	 */
 	@Override
-	public void reinitDefaultConsistencyLevels()
-	{
+	public void reinitDefaultConsistencyLevels() {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#reinitCurrentConsistencyLevels()
-	 */
 	@Override
-	public void reinitCurrentConsistencyLevels()
-	{
+	public void reinitCurrentConsistencyLevels() {
 		// TODO Auto-generated method stub
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#getCurrentReadLevel()
-	 */
 	@Override
-	public ConsistencyLevel getCurrentReadLevel()
-	{
+	public ConsistencyLevel getCurrentReadLevel() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#setCurrentReadLevel(info.archinnov.achilles.type.ConsistencyLevel)
-	 */
 	@Override
-	public void setCurrentReadLevel(ConsistencyLevel readLevel)
-	{
+	public void setCurrentReadLevel(ConsistencyLevel readLevel) {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#removeCurrentReadLevel()
-	 */
 	@Override
-	public void removeCurrentReadLevel()
-	{
+	public void removeCurrentReadLevel() {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#getCurrentWriteLevel()
-	 */
 	@Override
-	public ConsistencyLevel getCurrentWriteLevel()
-	{
+	public ConsistencyLevel getCurrentWriteLevel() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#setCurrentWriteLevel(info.archinnov.achilles.type.ConsistencyLevel)
-	 */
 	@Override
-	public void setCurrentWriteLevel(ConsistencyLevel writeLevel)
-	{
+	public void setCurrentWriteLevel(ConsistencyLevel writeLevel) {
 		// TODO Auto-generated method stub
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy#removeCurrentWriteLevel()
-	 */
 	@Override
-	public void removeCurrentWriteLevel()
-	{
+	public void removeCurrentWriteLevel() {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
@@ -20,16 +36,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * CQLEntityLoaderTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
-public class CQLEntityLoaderTest
-{
+public class CQLEntityLoaderTest {
 
 	@InjectMocks
 	private CQLEntityLoader loader;
@@ -53,14 +61,10 @@ public class CQLEntityLoaderTest
 	private Long primaryKey = RandomUtils.nextLong();
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 
-		idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class)
-				.field("id")
-				.accessors()
-				.build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+				.field("id").accessors().build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClusteredEntity(false);
@@ -72,8 +76,7 @@ public class CQLEntityLoaderTest
 	}
 
 	@Test
-	public void should_load_lazy_entity() throws Exception
-	{
+	public void should_load_lazy_entity() throws Exception {
 
 		when(context.isLoadEagerFields()).thenReturn(false);
 		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
@@ -86,10 +89,10 @@ public class CQLEntityLoaderTest
 	}
 
 	@Test
-	public void should_load_entity() throws Exception
-	{
+	public void should_load_entity() throws Exception {
 		when(context.isLoadEagerFields()).thenReturn(true);
-		when(loaderImpl.eagerLoadEntity(context, CompleteBean.class)).thenReturn(entity);
+		when(loaderImpl.eagerLoadEntity(context, CompleteBean.class))
+				.thenReturn(entity);
 
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 
@@ -99,14 +102,11 @@ public class CQLEntityLoaderTest
 	}
 
 	@Test
-	public void should_load_property_into_object() throws Exception
-	{
+	public void should_load_property_into_object() throws Exception {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.valueClass(Long.class)
-				.type(SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
+				.type(SIMPLE).build();
 
 		loader.loadPropertyIntoObject(context, entity, pm);
 
@@ -114,29 +114,25 @@ public class CQLEntityLoaderTest
 	}
 
 	@Test
-	public void should_load_join_property_into_object() throws Exception
-	{
+	public void should_load_join_property_into_object() throws Exception {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.valueClass(Long.class)
-				.type(JOIN_SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
+				.type(JOIN_SIMPLE).build();
 
 		loader.loadPropertyIntoObject(context, entity, pm);
 
-		verify(loaderImpl).loadJoinPropertyIntoEntity(loader, context, pm, entity);
+		verify(loaderImpl).loadJoinPropertyIntoEntity(loader, context, pm,
+				entity);
 	}
 
 	@Test
-	public void should_not_load_property_into_object_for_proxy_type() throws Exception
-	{
+	public void should_not_load_property_into_object_for_proxy_type()
+			throws Exception {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.valueClass(Counter.class)
-				.type(COUNTER)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class)
+				.type(COUNTER).build();
 
 		loader.loadPropertyIntoObject(context, entity, pm);
 

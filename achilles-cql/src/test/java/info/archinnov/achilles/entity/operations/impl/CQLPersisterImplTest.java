@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
@@ -15,11 +31,14 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.persistence.CascadeType;
+
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,275 +48,244 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.common.collect.Sets;
 
-/**
- * CQLPersisterImplTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
-public class CQLPersisterImplTest
-{
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+public class CQLPersisterImplTest {
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
-    private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
+	@InjectMocks
+	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
-    @Mock
-    private ReflectionInvoker invoker;
+	@Mock
+	private ReflectionInvoker invoker;
 
-    @Mock
-    private CQLEntityPersister entityPersister;
+	@Mock
+	private CQLEntityPersister entityPersister;
 
-    @Mock
-    private CQLPersistenceContext context;
+	@Mock
+	private CQLPersistenceContext context;
 
-    @Mock
-    private CQLPersistenceContext joinContext;
+	@Mock
+	private CQLPersistenceContext joinContext;
 
-    @Mock
-    private EntityMeta entityMeta;
+	@Mock
+	private EntityMeta entityMeta;
 
-    @Mock
-    private EntityMeta joinMeta;
+	@Mock
+	private EntityMeta joinMeta;
 
-    private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
-    private Set<PropertyMeta> joinMetas = new HashSet<PropertyMeta>();
+	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
+	private Set<PropertyMeta> joinMetas = new HashSet<PropertyMeta>();
 
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+			.buid();
 
-    @Before
-    public void setUp()
-    {
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getPrimaryKey()).thenReturn(entity.getId());
-        when(context.getEntityMeta()).thenReturn(entityMeta);
+	@Before
+	public void setUp() {
+		when(context.getEntity()).thenReturn(entity);
+		when(context.getPrimaryKey()).thenReturn(entity.getId());
+		when(context.getEntityMeta()).thenReturn(entityMeta);
 
-        when(entityMeta.getAllMetas()).thenReturn(allMetas);
-        when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
-        allMetas.clear();
-        joinMetas.clear();
-    }
+		when(entityMeta.getAllMetas()).thenReturn(allMetas);
+		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
+		allMetas.clear();
+		joinMetas.clear();
+	}
 
-    @Test
-    public void should_persist() throws Exception
-    {
-        persisterImpl.persist(context);
+	@Test
+	public void should_persist() throws Exception {
+		persisterImpl.persist(context);
 
-        verify(context).pushInsertStatement();
-    }
+		verify(context).pushInsertStatement();
+	}
 
-    @Test
-    public void should_persist_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .accessors()
-                .build();
-        Counter counter = CounterBuilder.incr();
+	@Test
+	public void should_persist_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("count")
+				.accessors().build();
+		Counter counter = CounterBuilder.incr();
 
-        when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
-        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(counter);
+		when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
+				.thenReturn(counter);
 
-        persisterImpl.persistClusteredCounter(context);
+		persisterImpl.persistClusteredCounter(context);
 
-        verify(context).pushClusteredCounterIncrementStatement(counterMeta, 1L);
-    }
+		verify(context).pushClusteredCounterIncrementStatement(counterMeta, 1L);
+	}
 
-    @Test
-    public void should_exception_when_null_value_for_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .accessors()
-                .build();
+	@Test
+	public void should_exception_when_null_value_for_clustered_counter()
+			throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("count")
+				.accessors().build();
 
-        when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
-        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+		when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
+				.thenReturn(null);
 
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Cannot insert clustered counter entity '" + entity
-                + "' with null clustered counter value");
-        persisterImpl.persistClusteredCounter(context);
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage("Cannot insert clustered counter entity '"
+				+ entity + "' with null clustered counter value");
+		persisterImpl.persistClusteredCounter(context);
 
-    }
+	}
 
-    @Test
-    public void should_persist_counters() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .accessors()
-                .build();
+	@Test
+	public void should_persist_counters() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("count")
+				.accessors().build();
 
-        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(12L));
+		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
+				.thenReturn(CounterBuilder.incr(12L));
 
-        persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
+		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
-        verify(context).bindForSimpleCounterIncrement(counterMeta, 12L);
-    }
+		verify(context).bindForSimpleCounterIncrement(counterMeta, 12L);
+	}
 
-    @Test
-    public void should_not_persist_counters_when_no_counter_set() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .accessors()
-                .build();
+	@Test
+	public void should_not_persist_counters_when_no_counter_set()
+			throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("count")
+				.accessors().build();
 
-        when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
+				.thenReturn(null);
 
-        persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
+		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
-        verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta), any(Long.class));
-    }
+		verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta),
+				any(Long.class));
+	}
 
-    @Test
-    public void should_cascade_persist() throws Exception
-    {
-        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(PropertyType.JOIN_SIMPLE)
-                .accessors()
-                .joinMeta(joinMeta)
-                .cascadeType(CascadeType.ALL)
-                .build();
-        joinMetas.add(joinSimpleMeta);
+	@Test
+	public void should_cascade_persist() throws Exception {
+		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(PropertyType.JOIN_SIMPLE).accessors().joinMeta(joinMeta)
+				.cascadeType(CascadeType.ALL).build();
+		joinMetas.add(joinSimpleMeta);
 
-        UserBean user = new UserBean();
-        entity.setUser(user);
-        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+		UserBean user = new UserBean();
+		entity.setUser(user);
+		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
+				.thenReturn(user);
 
-        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(
+				joinContext);
 
-        persisterImpl.cascadePersist(entityPersister, context, joinMetas);
+		persisterImpl.cascadePersist(entityPersister, context, joinMetas);
 
-        verify(entityPersister).persist(joinContext);
-    }
+		verify(entityPersister).persist(joinContext);
+	}
 
-    @Test
-    public void should_check_for_entity_existence() throws Exception
-    {
-        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(PropertyType.JOIN_SIMPLE)
-                .accessors()
-                .joinMeta(joinMeta)
-                .cascadeType(CascadeType.ALL)
-                .build();
+	@Test
+	public void should_check_for_entity_existence() throws Exception {
+		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(PropertyType.JOIN_SIMPLE).accessors().joinMeta(joinMeta)
+				.cascadeType(CascadeType.ALL).build();
 
-        joinMetas.add(joinSimpleMeta);
-        UserBean user = new UserBean();
-        entity.setUser(user);
-        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+		joinMetas.add(joinSimpleMeta);
+		UserBean user = new UserBean();
+		entity.setUser(user);
+		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
+				.thenReturn(user);
 
-        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
-        when(context.addToProcessingList(user)).thenReturn(true);
-        when(joinContext.checkForEntityExistence()).thenReturn(true);
-        persisterImpl.ensureEntitiesExist(context, joinMetas);
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(
+				joinContext);
+		when(context.addToProcessingList(user)).thenReturn(true);
+		when(joinContext.checkForEntityExistence()).thenReturn(true);
+		persisterImpl.ensureEntitiesExist(context, joinMetas);
 
-        verify(joinContext).checkForEntityExistence();
-    }
+		verify(joinContext).checkForEntityExistence();
+	}
 
-    @Test
-    public void should_not_check_for_entity_existence_if_join_already_processed() throws Exception
-    {
-        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(PropertyType.JOIN_SIMPLE)
-                .accessors()
-                .joinMeta(joinMeta)
-                .cascadeType(CascadeType.ALL)
-                .build();
+	@Test
+	public void should_not_check_for_entity_existence_if_join_already_processed()
+			throws Exception {
+		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(PropertyType.JOIN_SIMPLE).accessors().joinMeta(joinMeta)
+				.cascadeType(CascadeType.ALL).build();
 
-        joinMetas.add(joinSimpleMeta);
-        UserBean user = new UserBean();
-        entity.setUser(user);
-        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(user);
+		joinMetas.add(joinSimpleMeta);
+		UserBean user = new UserBean();
+		entity.setUser(user);
+		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
+				.thenReturn(user);
 
-        when(context.createContextForJoin(joinMeta, user)).thenReturn(joinContext);
-        when(context.addToProcessingList(user)).thenReturn(false);
+		when(context.createContextForJoin(joinMeta, user)).thenReturn(
+				joinContext);
+		when(context.addToProcessingList(user)).thenReturn(false);
 
-        persisterImpl.ensureEntitiesExist(context, joinMetas);
+		persisterImpl.ensureEntitiesExist(context, joinMetas);
 
-        verify(joinContext, never()).checkForEntityExistence();
-    }
+		verify(joinContext, never()).checkForEntityExistence();
+	}
 
-    @Test
-    public void should_not_check_for_entity_existence_if_null_join_entity() throws Exception
-    {
-        PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(PropertyType.JOIN_SIMPLE)
-                .accessors()
-                .joinMeta(joinMeta)
-                .cascadeType(CascadeType.ALL)
-                .build();
+	@Test
+	public void should_not_check_for_entity_existence_if_null_join_entity()
+			throws Exception {
+		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(PropertyType.JOIN_SIMPLE).accessors().joinMeta(joinMeta)
+				.cascadeType(CascadeType.ALL).build();
 
-        joinMetas.add(joinSimpleMeta);
-        when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter())).thenReturn(null);
+		joinMetas.add(joinSimpleMeta);
+		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
+				.thenReturn(null);
 
-        persisterImpl.ensureEntitiesExist(context, joinMetas);
+		persisterImpl.ensureEntitiesExist(context, joinMetas);
 
-        verify(joinContext, never()).checkForEntityExistence();
-    }
+		verify(joinContext, never()).checkForEntityExistence();
+	}
 
-    @Test
-    public void should_remove() throws Exception
-    {
-        when(entityMeta.isClusteredCounter()).thenReturn(false);
-        when(entityMeta.getTableName()).thenReturn("table");
-        when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
+	@Test
+	public void should_remove() throws Exception {
+		when(entityMeta.isClusteredCounter()).thenReturn(false);
+		when(entityMeta.getTableName()).thenReturn("table");
+		when(entityMeta.getWriteConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-        persisterImpl.remove(context);
+		persisterImpl.remove(context);
 
-        verify(context).bindForRemoval("table");
-    }
+		verify(context).bindForRemoval("table");
+	}
 
-    @Test
-    public void should_remove_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("count")
-                .accessors()
-                .build();
+	@Test
+	public void should_remove_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, Long.class).field("count")
+				.accessors().build();
 
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(entityMeta.isClusteredCounter()).thenReturn(true);
+		when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
 
-        persisterImpl.remove(context);
+		persisterImpl.remove(context);
 
-        verify(context).bindForClusteredCounterRemoval(counterMeta);
-    }
+		verify(context).bindForClusteredCounterRemoval(counterMeta);
+	}
 
-    @Test
-    public void should_remove_linked_counters() throws Exception
-    {
-        PropertyMeta counterMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, UserBean.class)
-                .field("user")
-                .type(PropertyType.COUNTER)
-                .consistencyLevels(Pair.create(ALL, EACH_QUORUM))
-                .build();
+	@Test
+	public void should_remove_linked_counters() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, UserBean.class).field("user")
+				.type(PropertyType.COUNTER)
+				.consistencyLevels(Pair.create(ALL, EACH_QUORUM)).build();
 
-        allMetas.add(counterMeta);
+		allMetas.add(counterMeta);
 
-        persisterImpl.removeLinkedCounters(context);
+		persisterImpl.removeLinkedCounters(context);
 
-        verify(context).bindForSimpleCounterRemoval(counterMeta);
-    }
+		verify(context).bindForSimpleCounterRemoval(counterMeta);
+	}
 
 }

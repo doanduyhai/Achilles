@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
@@ -19,8 +35,10 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;
+
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,429 +47,412 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
-/**
- * CQLPersistenceContextTest
- * 
- * @author DuyHai DOAN
- * 
- */
-
 @RunWith(MockitoJUnitRunner.class)
-public class CQLPersistenceContextTest
-{
-    @InjectMocks
-    private CQLPersistenceContext context;
-
-    @Mock
-    private CQLDaoContext daoContext;
-
-    @Mock
-    private CQLAbstractFlushContext<?> flushContext;
-
-    @Mock
-    private ConfigurationContext configurationContext;
-
-    @Mock
-    private CQLEntityLoader loader;
-
-    @Mock
-    private CQLEntityPersister persister;
-
-    @Mock
-    private CQLEntityMerger merger;
-
-    @Mock
-    private CQLEntityProxifier proxifier;
-
-    @Mock
-    private EntityInitializer initializer;
-
-    @Mock
-    private EntityRefresher<CQLPersistenceContext> refresher;
-
-    private EntityMeta meta;
-
-    private PropertyMeta idMeta;
-
-    private Long primaryKey = RandomUtils.nextLong();
-
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
-
-    @Before
-    public void setUp() throws Exception
-    {
-        idMeta = PropertyMetaTestBuilder
-                .completeBean(Void.class, Long.class)
-                .field("id")
-                .type(PropertyType.SIMPLE)
-                .accessors()
-                .build();
-
-        meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setEntityClass(CompleteBean.class);
-
-        Whitebox.setInternalState(context, "entityMeta", meta);
-        Whitebox.setInternalState(context, "primaryKey", entity.getId());
-        Whitebox.setInternalState(context, CQLEntityLoader.class, loader);
-        Whitebox.setInternalState(context, CQLEntityMerger.class, merger);
-        Whitebox.setInternalState(context, CQLEntityPersister.class, persister);
-        Whitebox.setInternalState(context, EntityRefresher.class, refresher);
-        Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
-        Whitebox.setInternalState(context, "initializer", initializer);
-        Whitebox.setInternalState(context, "options", OptionsBuilder.noOptions());
-        Whitebox.setInternalState(context, CQLAbstractFlushContext.class, flushContext);
-    }
-
-    @Test
-    public void should_create_new_persistence_context_for_join_entity() throws Exception
-    {
-
-        CQLPersistenceContext joinContext = context.createContextForJoin(meta, entity);
-
-        assertThat(joinContext.getEntity()).isSameAs(entity);
-        assertThat((Class) joinContext.getEntityClass()).isSameAs(CompleteBean.class);
-        assertThat(joinContext.getEntityMeta()).isSameAs(meta);
-        assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
-    }
-
-    @Test
-    public void should_create_new_persistence_context_with_id_and_type() throws Exception
-    {
-        CQLPersistenceContext joinContext = context.createContextForJoin(CompleteBean.class, meta,
-                primaryKey);
-
-        assertThat((Class) joinContext.getEntityClass()).isSameAs(CompleteBean.class);
-        assertThat(joinContext.getEntityMeta()).isSameAs(meta);
-        assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
-    }
-
-    @Test
-    public void should_duplicate_for_new_entity() throws Exception
-    {
-        CompleteBean entity = new CompleteBean();
-        entity.setId(primaryKey);
-        CQLPersistenceContext joinContext = context.duplicate(entity);
-
-        assertThat(joinContext.getEntity()).isSameAs(entity);
-        assertThat(joinContext.getPrimaryKey()).isSameAs(primaryKey);
-    }
-
-    @Test
-    public void should_check_for_entity_existence() throws Exception
-    {
-        when(daoContext.checkForEntityExistence(context)).thenReturn(true);
+public class CQLPersistenceContextTest {
+	@InjectMocks
+	private CQLPersistenceContext context;
+
+	@Mock
+	private CQLDaoContext daoContext;
+
+	@Mock
+	private CQLAbstractFlushContext<?> flushContext;
+
+	@Mock
+	private ConfigurationContext configurationContext;
+
+	@Mock
+	private CQLEntityLoader loader;
+
+	@Mock
+	private CQLEntityPersister persister;
+
+	@Mock
+	private CQLEntityMerger merger;
+
+	@Mock
+	private CQLEntityProxifier proxifier;
+
+	@Mock
+	private EntityInitializer initializer;
+
+	@Mock
+	private EntityRefresher<CQLPersistenceContext> refresher;
+
+	private EntityMeta meta;
+
+	private PropertyMeta idMeta;
+
+	private Long primaryKey = RandomUtils.nextLong();
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder()
+			.id(primaryKey).buid();
+
+	@Before
+	public void setUp() throws Exception {
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+				.field("id").type(PropertyType.SIMPLE).accessors().build();
 
-        assertThat(context.checkForEntityExistence()).isTrue();
-    }
+		meta = new EntityMeta();
+		meta.setIdMeta(idMeta);
+		meta.setEntityClass(CompleteBean.class);
+
+		Whitebox.setInternalState(context, "entityMeta", meta);
+		Whitebox.setInternalState(context, "primaryKey", entity.getId());
+		Whitebox.setInternalState(context, CQLEntityLoader.class, loader);
+		Whitebox.setInternalState(context, CQLEntityMerger.class, merger);
+		Whitebox.setInternalState(context, CQLEntityPersister.class, persister);
+		Whitebox.setInternalState(context, EntityRefresher.class, refresher);
+		Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
+		Whitebox.setInternalState(context, "initializer", initializer);
+		Whitebox.setInternalState(context, "options",
+				OptionsBuilder.noOptions());
+		Whitebox.setInternalState(context, CQLAbstractFlushContext.class,
+				flushContext);
+	}
 
-    @Test
-    public void should_eager_load_entity() throws Exception
-    {
-        Row row = mock(Row.class);
-        when(daoContext.eagerLoadEntity(context)).thenReturn(row);
-
-        assertThat(context.eagerLoadEntity()).isSameAs(row);
-    }
+	@Test
+	public void should_create_new_persistence_context_for_join_entity()
+			throws Exception {
 
-    @Test
-    public void should_load_property() throws Exception
-    {
-        Row row = mock(Row.class);
-        when(daoContext.loadProperty(context, idMeta)).thenReturn(row);
+		CQLPersistenceContext joinContext = context.createContextForJoin(meta,
+				entity);
+
+		assertThat(joinContext.getEntity()).isSameAs(entity);
+		assertThat((Class) joinContext.getEntityClass()).isSameAs(
+				CompleteBean.class);
+		assertThat(joinContext.getEntityMeta()).isSameAs(meta);
+		assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
+	}
 
-        assertThat(context.loadProperty(idMeta)).isSameAs(row);
-    }
+	@Test
+	public void should_create_new_persistence_context_with_id_and_type()
+			throws Exception {
+		CQLPersistenceContext joinContext = context.createContextForJoin(
+				CompleteBean.class, meta, primaryKey);
 
-    @Test
-    public void should_bind_for_insert() throws Exception
-    {
-        context.pushInsertStatement();
+		assertThat((Class) joinContext.getEntityClass()).isSameAs(
+				CompleteBean.class);
+		assertThat(joinContext.getEntityMeta()).isSameAs(meta);
+		assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
+	}
 
-        verify(daoContext).pushInsertStatement(context);
-    }
+	@Test
+	public void should_duplicate_for_new_entity() throws Exception {
+		CompleteBean entity = new CompleteBean();
+		entity.setId(primaryKey);
+		CQLPersistenceContext joinContext = context.duplicate(entity);
 
-    @Test
-    public void should_bind_for_update() throws Exception
-    {
-        List<PropertyMeta> pms = Arrays.asList();
-        context.pushUpdateStatement(pms);
+		assertThat(joinContext.getEntity()).isSameAs(entity);
+		assertThat(joinContext.getPrimaryKey()).isSameAs(primaryKey);
+	}
 
-        verify(daoContext).pushUpdateStatement(context, pms);
-    }
+	@Test
+	public void should_check_for_entity_existence() throws Exception {
+		when(daoContext.checkForEntityExistence(context)).thenReturn(true);
 
-    @Test
-    public void should_bind_for_removal() throws Exception
-    {
-        context.bindForRemoval("table");
+		assertThat(context.checkForEntityExistence()).isTrue();
+	}
 
-        verify(daoContext).bindForRemoval(context, "table");
-    }
+	@Test
+	public void should_eager_load_entity() throws Exception {
+		Row row = mock(Row.class);
+		when(daoContext.eagerLoadEntity(context)).thenReturn(row);
 
-    @Test
-    public void should_bind_and_execute() throws Exception
-    {
-        PreparedStatement ps = mock(PreparedStatement.class);
-        ResultSet rs = mock(ResultSet.class);
+		assertThat(context.eagerLoadEntity()).isSameAs(row);
+	}
 
-        when(daoContext.bindAndExecute(ps, 11L, "a")).thenReturn(rs);
-        ResultSet actual = context.bindAndExecute(ps, 11L, "a");
+	@Test
+	public void should_load_property() throws Exception {
+		Row row = mock(Row.class);
+		when(daoContext.loadProperty(context, idMeta)).thenReturn(row);
 
-        assertThat(actual).isSameAs(rs);
-    }
+		assertThat(context.loadProperty(idMeta)).isSameAs(row);
+	}
 
-    // Simple counter
-    @Test
-    public void should_bind_for_simple_counter_increment() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_bind_for_insert() throws Exception {
+		context.pushInsertStatement();
 
-        context.bindForSimpleCounterIncrement(counterMeta, 11L);
+		verify(daoContext).pushInsertStatement(context);
+	}
 
-        verify(daoContext).bindForSimpleCounterIncrement(context, meta, counterMeta, 11L);
-    }
+	@Test
+	public void should_bind_for_update() throws Exception {
+		List<PropertyMeta> pms = Arrays.asList();
+		context.pushUpdateStatement(pms);
 
-    @Test
-    public void should_increment_simple_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+		verify(daoContext).pushUpdateStatement(context, pms);
+	}
 
-        context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
+	@Test
+	public void should_bind_for_removal() throws Exception {
+		context.bindForRemoval("table");
 
-        verify(daoContext).incrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
-    }
+		verify(daoContext).bindForRemoval(context, "table");
+	}
 
-    @Test
-    public void should_decrement_simple_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_bind_and_execute() throws Exception {
+		PreparedStatement ps = mock(PreparedStatement.class);
+		ResultSet rs = mock(ResultSet.class);
 
-        context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
+		when(daoContext.bindAndExecute(ps, 11L, "a")).thenReturn(rs);
+		ResultSet actual = context.bindAndExecute(ps, 11L, "a");
 
-        verify(daoContext).decrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
-    }
+		assertThat(actual).isSameAs(rs);
+	}
 
-    @Test
-    public void should_get_simple_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	// Simple counter
+	@Test
+	public void should_bind_for_simple_counter_increment() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        Row row = mock(Row.class);
-        when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
-        when(row.getLong(CQL_COUNTER_VALUE)).thenReturn(11L);
-        Long counterValue = context.getSimpleCounter(counterMeta, LOCAL_QUORUM);
+		context.bindForSimpleCounterIncrement(counterMeta, 11L);
 
-        assertThat(counterValue).isEqualTo(11L);
-    }
+		verify(daoContext).bindForSimpleCounterIncrement(context, meta,
+				counterMeta, 11L);
+	}
 
-    @Test
-    public void should_return_null_when_no_simple_counter_value() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_increment_simple_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
+		context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        assertThat(context.getSimpleCounter(counterMeta, LOCAL_QUORUM)).isNull();
-    }
+		verify(daoContext).incrementSimpleCounter(context, meta, counterMeta,
+				11L, LOCAL_QUORUM);
+	}
 
-    @Test
-    public void should_bind_for_simple_counter_removal() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_decrement_simple_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.bindForSimpleCounterRemoval(counterMeta);
+		context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        verify(daoContext).bindForSimpleCounterDelete(context, meta, counterMeta, entity.getId());
-    }
+		verify(daoContext).decrementSimpleCounter(context, meta, counterMeta,
+				11L, LOCAL_QUORUM);
+	}
 
-    // Clustered counter
-    @Test
-    public void should_bind_for_clustered_counter_increment() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_get_simple_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
+		Row row = mock(Row.class);
+		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM))
+				.thenReturn(row);
+		when(row.getLong(CQL_COUNTER_VALUE)).thenReturn(11L);
+		Long counterValue = context.getSimpleCounter(counterMeta, LOCAL_QUORUM);
 
-        verify(daoContext).pushClusteredCounterIncrementStatement(context, meta, counterMeta, 11L);
-    }
+		assertThat(counterValue).isEqualTo(11L);
+	}
 
-    @Test
-    public void should_increment_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_return_null_when_no_simple_counter_value()
+			throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.incrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
+		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM))
+				.thenReturn(null);
 
-        verify(daoContext).incrementClusteredCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
-    }
+		assertThat(context.getSimpleCounter(counterMeta, LOCAL_QUORUM))
+				.isNull();
+	}
 
-    @Test
-    public void should_decrement_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_bind_for_simple_counter_removal() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.decrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
+		context.bindForSimpleCounterRemoval(counterMeta);
 
-        verify(daoContext).decrementClusteredCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
-    }
+		verify(daoContext).bindForSimpleCounterDelete(context, meta,
+				counterMeta, entity.getId());
+	}
 
-    @Test
-    public void should_get_clustered_counter() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
-        counterMeta.setPropertyName("count");
+	// Clustered counter
+	@Test
+	public void should_bind_for_clustered_counter_increment() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        Row row = mock(Row.class);
-        when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
-        when(row.getLong("count")).thenReturn(11L);
-        Long counterValue = context.getClusteredCounter(counterMeta, LOCAL_QUORUM);
+		context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
-        assertThat(counterValue).isEqualTo(11L);
-    }
+		verify(daoContext).pushClusteredCounterIncrementStatement(context,
+				meta, counterMeta, 11L);
+	}
 
-    @Test
-    public void should_return_null_when_no_clustered_counter_value() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_increment_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
+		context.incrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        assertThat(context.getClusteredCounter(counterMeta, LOCAL_QUORUM)).isNull();
-    }
+		verify(daoContext).incrementClusteredCounter(context, meta,
+				counterMeta, 11L, LOCAL_QUORUM);
+	}
 
-    @Test
-    public void should_bind_for_clustered_counter_removal() throws Exception
-    {
-        PropertyMeta counterMeta = new PropertyMeta();
+	@Test
+	public void should_decrement_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.bindForClusteredCounterRemoval(counterMeta);
+		context.decrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        verify(daoContext).bindForClusteredCounterDelete(context, meta, counterMeta, entity.getId());
-    }
+		verify(daoContext).decrementClusteredCounter(context, meta,
+				counterMeta, 11L, LOCAL_QUORUM);
+	}
 
-    @Test
-    public void should_push_bound_statement() throws Exception
-    {
-        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
+	@Test
+	public void should_get_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
+		counterMeta.setPropertyName("count");
 
-        context.pushBoundStatement(bsWrapper, EACH_QUORUM);
+		Row row = mock(Row.class);
+		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM))
+				.thenReturn(row);
+		when(row.getLong("count")).thenReturn(11L);
+		Long counterValue = context.getClusteredCounter(counterMeta,
+				LOCAL_QUORUM);
 
-        verify(flushContext).pushBoundStatement(bsWrapper, EACH_QUORUM);
-    }
+		assertThat(counterValue).isEqualTo(11L);
+	}
 
-    @Test
-    public void should_push_statement() throws Exception
-    {
-        Statement statement = mock(Statement.class);
+	@Test
+	public void should_return_null_when_no_clustered_counter_value()
+			throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        context.pushStatement(statement, EACH_QUORUM);
+		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM))
+				.thenReturn(null);
 
-        verify(flushContext).pushStatement(statement, EACH_QUORUM);
-    }
+		assertThat(context.getClusteredCounter(counterMeta, LOCAL_QUORUM))
+				.isNull();
+	}
 
-    @Test
-    public void should_execute_immediate_with_consistency() throws Exception
-    {
-        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
-        BoundStatement bs = mock(BoundStatement.class);
+	@Test
+	public void should_bind_for_clustered_counter_removal() throws Exception {
+		PropertyMeta counterMeta = new PropertyMeta();
 
-        Object[] boundValues = new Object[1];
-        when(bsWrapper.getBs()).thenReturn(bs);
-        when(bsWrapper.getValues()).thenReturn(boundValues);
+		context.bindForClusteredCounterRemoval(counterMeta);
 
-        ResultSet resultSet = mock(ResultSet.class);
-        when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM, boundValues)).thenReturn(resultSet);
+		verify(daoContext).bindForClusteredCounterDelete(context, meta,
+				counterMeta, entity.getId());
+	}
 
-        ResultSet actual = context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
+	@Test
+	public void should_push_bound_statement() throws Exception {
+		BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-        assertThat(actual).isSameAs(resultSet);
-    }
+		context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
-    @Test
-    public void should_persist() throws Exception
-    {
-        context.persist();
-        verify(persister).persist(context);
-        verify(flushContext).flush();
-    }
+		verify(flushContext).pushBoundStatement(bsWrapper, EACH_QUORUM);
+	}
 
-    @Test
-    public void should_merge() throws Exception
-    {
-        when(merger.merge(context, entity)).thenReturn(entity);
+	@Test
+	public void should_push_statement() throws Exception {
+		Statement statement = mock(Statement.class);
 
-        CompleteBean merged = context.merge(entity);
+		context.pushStatement(statement, EACH_QUORUM);
 
-        assertThat(merged).isSameAs(entity);
-        verify(flushContext).flush();
-    }
+		verify(flushContext).pushStatement(statement, EACH_QUORUM);
+	}
 
-    @Test
-    public void should_remove() throws Exception
-    {
-        context.remove();
-        verify(persister).remove(context);
-        verify(flushContext).flush();
-    }
+	@Test
+	public void should_execute_immediate_with_consistency() throws Exception {
+		BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
+		BoundStatement bs = mock(BoundStatement.class);
 
-    @Test
-    public void should_find() throws Exception
-    {
-        when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		Object[] boundValues = new Object[1];
+		when(bsWrapper.getBs()).thenReturn(bs);
+		when(bsWrapper.getValues()).thenReturn(boundValues);
 
-        CompleteBean found = context.find(CompleteBean.class);
+		ResultSet resultSet = mock(ResultSet.class);
+		when(
+				flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM,
+						boundValues)).thenReturn(resultSet);
 
-        assertThat(found).isSameAs(entity);
-    }
+		ResultSet actual = context.executeImmediateWithConsistency(bsWrapper,
+				EACH_QUORUM);
 
-    @Test
-    public void should_return_null_when_not_found() throws Exception
-    {
-        when(loader.load(context, CompleteBean.class)).thenReturn(null);
+		assertThat(actual).isSameAs(resultSet);
+	}
 
-        CompleteBean found = context.find(CompleteBean.class);
+	@Test
+	public void should_persist() throws Exception {
+		context.persist();
+		verify(persister).persist(context);
+		verify(flushContext).flush();
+	}
 
-        assertThat(found).isNull();
-        verifyZeroInteractions(proxifier);
-    }
+	@Test
+	public void should_merge() throws Exception {
+		when(merger.merge(context, entity)).thenReturn(entity);
 
-    @Test
-    public void should_get_reference() throws Exception
-    {
-        when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-        when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		CompleteBean merged = context.merge(entity);
 
-        CompleteBean found = context.getReference(CompleteBean.class);
+		assertThat(merged).isSameAs(entity);
+		verify(flushContext).flush();
+	}
 
-        assertThat(context.isLoadEagerFields()).isFalse();
-        assertThat(found).isSameAs(entity);
-    }
+	@Test
+	public void should_remove() throws Exception {
+		context.remove();
+		verify(persister).remove(context);
+		verify(flushContext).flush();
+	}
 
-    @Test
-    public void should_refresh() throws Exception
-    {
-        context.refresh();
-        verify(refresher).refresh(context);
-    }
+	@Test
+	public void should_find() throws Exception {
+		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
-    @Test
-    public void should_initialize() throws Exception
-    {
-        EntityInterceptor<CQLPersistenceContext, CompleteBean> interceptor = mock(EntityInterceptor.class);
+		CompleteBean found = context.find(CompleteBean.class);
 
-        when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		assertThat(found).isSameAs(entity);
+	}
 
-        CompleteBean actual = context.initialize(entity);
+	@Test
+	public void should_return_null_when_not_found() throws Exception {
+		when(loader.load(context, CompleteBean.class)).thenReturn(null);
 
-        assertThat(actual).isSameAs(entity);
+		CompleteBean found = context.find(CompleteBean.class);
 
-        verify(initializer).initializeEntity(entity, meta, interceptor);
-    }
+		assertThat(found).isNull();
+		verifyZeroInteractions(proxifier);
+	}
+
+	@Test
+	public void should_get_reference() throws Exception {
+		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
+		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+
+		CompleteBean found = context.getReference(CompleteBean.class);
+
+		assertThat(context.isLoadEagerFields()).isFalse();
+		assertThat(found).isSameAs(entity);
+	}
+
+	@Test
+	public void should_refresh() throws Exception {
+		context.refresh();
+		verify(refresher).refresh(context);
+	}
+
+	@Test
+	public void should_initialize() throws Exception {
+		EntityInterceptor<CQLPersistenceContext, CompleteBean> interceptor = mock(EntityInterceptor.class);
+
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+
+		CompleteBean actual = context.initialize(entity);
+
+		assertThat(actual).isSameAs(entity);
+
+		verify(initializer).initializeEntity(entity, meta, interceptor);
+	}
 }

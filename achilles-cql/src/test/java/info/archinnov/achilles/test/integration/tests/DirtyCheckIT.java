@@ -1,3 +1,19 @@
+/**
+ *
+ * Copyright (C) 2012-2013 DuyHai DOAN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -8,6 +24,7 @@ import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,528 +33,580 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-/**
- * DirtyCheckIT
- * 
- * @author DuyHai DOAN
- * 
- */
-public class DirtyCheckIT
-{
+public class DirtyCheckIT {
 
-    @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
+	@Rule
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
+			Steps.AFTER_TEST, "CompleteBean");
 
-    private CQLEntityManager em = resource.getEm();
+	private CQLEntityManager em = resource.getEm();
 
-    private Session session = resource.getNativeSession();
+	private Session session = resource.getNativeSession();
 
-    private CompleteBean bean;
+	private CompleteBean bean;
 
-    @Before
-    public void setUp()
-    {
-        bean = CompleteBeanTestBuilder.builder().randomId()
-                .name("DuyHai")
-                .age(35L)
-                .addFriends("foo", "bar")
-                .addFollowers("George", "Paul")
-                .addPreference(1, "FR")
-                .addPreference(2, "Paris")
-                .addPreference(3, "75014")
-                .buid();
+	@Before
+	public void setUp() {
+		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
+				.age(35L).addFriends("foo", "bar")
+				.addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        bean = em.merge(bean);
-    }
+		bean = em.merge(bean);
+	}
 
-    @Test
-    public void should_dirty_check_list_element_add() throws Exception
-    {
-        bean.getFriends().add("qux");
+	@Test
+	public void should_dirty_check_list_element_add() throws Exception {
+		bean.getFriends().add("qux");
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(3);
-        assertThat(friends.get(2)).isEqualTo("qux");
-    }
+		assertThat(friends).hasSize(3);
+		assertThat(friends.get(2)).isEqualTo("qux");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_add_at_index() throws Exception
-    {
-        bean.getFriends().add(1, "qux");
+	@Test
+	public void should_dirty_check_list_element_add_at_index() throws Exception {
+		bean.getFriends().add(1, "qux");
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
 
-        List<String> friends = row.getList("friends", String.class);
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(3);
-        assertThat(friends.get(1)).isEqualTo("qux");
-        assertThat(friends.get(2)).isEqualTo("bar");
-    }
+		assertThat(friends).hasSize(3);
+		assertThat(friends.get(1)).isEqualTo("qux");
+		assertThat(friends.get(2)).isEqualTo("bar");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_add_all() throws Exception
-    {
-        bean.getFriends().addAll(Arrays.asList("qux", "baz"));
+	@Test
+	public void should_dirty_check_list_element_add_all() throws Exception {
+		bean.getFriends().addAll(Arrays.asList("qux", "baz"));
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(4);
-        assertThat(friends.get(2)).isEqualTo("qux");
-        assertThat(friends.get(3)).isEqualTo("baz");
-    }
+		assertThat(friends).hasSize(4);
+		assertThat(friends.get(2)).isEqualTo("qux");
+		assertThat(friends.get(3)).isEqualTo("baz");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_clear() throws Exception
-    {
-        bean.getFriends().clear();
+	@Test
+	public void should_dirty_check_list_element_clear() throws Exception {
+		bean.getFriends().clear();
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        assertThat(row.isNull("friends")).isTrue();
-    }
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		assertThat(row.isNull("friends")).isTrue();
+	}
 
-    @Test
-    public void should_dirty_check_list_element_remove_at_index() throws Exception
-    {
-        bean.getFriends().remove(0);
+	@Test
+	public void should_dirty_check_list_element_remove_at_index()
+			throws Exception {
+		bean.getFriends().remove(0);
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("bar");
-    }
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("bar");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_remove_element() throws Exception
-    {
-        bean.getFriends().remove("bar");
+	@Test
+	public void should_dirty_check_list_element_remove_element()
+			throws Exception {
+		bean.getFriends().remove("bar");
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("foo");
-    }
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("foo");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_remove_all() throws Exception
-    {
-        bean.getFriends().removeAll(Arrays.asList("foo", "qux"));
+	@Test
+	public void should_dirty_check_list_element_remove_all() throws Exception {
+		bean.getFriends().removeAll(Arrays.asList("foo", "qux"));
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("bar");
-    }
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("bar");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_retain_all() throws Exception
-    {
-        bean.getFriends().retainAll(Arrays.asList("foo", "qux"));
+	@Test
+	public void should_dirty_check_list_element_retain_all() throws Exception {
+		bean.getFriends().retainAll(Arrays.asList("foo", "qux"));
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("foo");
-    }
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("foo");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_sub_list_remove() throws Exception
-    {
-        bean.getFriends().subList(0, 1).remove(0);
+	@Test
+	public void should_dirty_check_list_element_sub_list_remove()
+			throws Exception {
+		bean.getFriends().subList(0, 1).remove(0);
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("bar");
-    }
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("bar");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_set() throws Exception
-    {
-        bean.getFriends().set(1, "qux");
+	@Test
+	public void should_dirty_check_list_element_set() throws Exception {
+		bean.getFriends().set(1, "qux");
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        assertThat(friends).hasSize(2);
-        assertThat(friends.get(1)).isEqualTo("qux");
-    }
+		assertThat(friends).hasSize(2);
+		assertThat(friends.get(1)).isEqualTo("qux");
+	}
 
-    @Test
-    public void should_dirty_check_list_element_iterator_remove() throws Exception
-    {
-        Iterator<String> iter = bean.getFriends().iterator();
+	@Test
+	public void should_dirty_check_list_element_iterator_remove()
+			throws Exception {
+		Iterator<String> iter = bean.getFriends().iterator();
 
-        iter.next();
-        iter.remove();
+		iter.next();
+		iter.remove();
+
+		em.merge(bean);
 
-        em.merge(bean);
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("bar");
+	}
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("bar");
-    }
+	@Test
+	public void should_dirty_check_list_element_list_iterator_remove()
+			throws Exception {
+		Iterator<String> iter = bean.getFriends().listIterator();
 
-    @Test
-    public void should_dirty_check_list_element_list_iterator_remove() throws Exception
-    {
-        Iterator<String> iter = bean.getFriends().listIterator();
+		iter.next();
+		iter.remove();
+
+		em.merge(bean);
 
-        iter.next();
-        iter.remove();
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        em.merge(bean);
+		assertThat(friends).hasSize(1);
+		assertThat(friends.get(0)).isEqualTo("bar");
+	}
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+	@Test
+	public void should_dirty_check_list_element_list_iterator_set()
+			throws Exception {
+		ListIterator<String> iter = bean.getFriends().listIterator();
 
-        assertThat(friends).hasSize(1);
-        assertThat(friends.get(0)).isEqualTo("bar");
-    }
+		iter.next();
+		iter.set("qux");
 
-    @Test
-    public void should_dirty_check_list_element_list_iterator_set() throws Exception
-    {
-        ListIterator<String> iter = bean.getFriends().listIterator();
+		em.merge(bean);
 
-        iter.next();
-        iter.set("qux");
+		Row row = session.execute(
+				"select friends from CompleteBean where id=" + bean.getId())
+				.one();
+		List<String> friends = row.getList("friends", String.class);
 
-        em.merge(bean);
+		assertThat(friends).hasSize(2);
+		assertThat(friends.get(0)).isEqualTo("qux");
+	}
 
-        Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
-        List<String> friends = row.getList("friends", String.class);
+	@Test
+	public void should_dirty_check_map_put_element() throws Exception {
+		bean.getPreferences().put(4, "test");
 
-        assertThat(friends).hasSize(2);
-        assertThat(friends.get(0)).isEqualTo("qux");
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_put_element() throws Exception
-    {
-        bean.getPreferences().put(4, "test");
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(4);
+		assertThat(preferences.get(4)).isEqualTo("test");
+	}
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	@Test
+	public void should_dirty_check_map_remove_key() throws Exception {
+		bean.getPreferences().remove(1);
 
-        assertThat(preferences).hasSize(4);
-        assertThat(preferences.get(4)).isEqualTo("test");
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_remove_key() throws Exception
-    {
-        bean.getPreferences().remove(1);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
+	}
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	@Test
+	public void should_dirty_check_map_put_all() throws Exception {
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(3, "75015");
+		map.put(4, "test");
+		bean.getPreferences().putAll(map);
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_put_all() throws Exception
-    {
-        Map<Integer, String> map = new HashMap<Integer, String>();
-        map.put(3, "75015");
-        map.put(4, "test");
-        bean.getPreferences().putAll(map);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(4);
+		assertThat(preferences.get(3)).isEqualTo("75015");
+		assertThat(preferences.get(4)).isEqualTo("test");
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	}
 
-        assertThat(preferences).hasSize(4);
-        assertThat(preferences.get(3)).isEqualTo("75015");
-        assertThat(preferences.get(4)).isEqualTo("test");
+	@Test
+	public void should_dirty_check_map_keyset_remove() throws Exception {
+		bean.getPreferences().keySet().remove(1);
 
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_keyset_remove() throws Exception
-    {
-        bean.getPreferences().keySet().remove(1);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	}
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
+	@Test
+	public void should_dirty_check_map_keyset_remove_all() throws Exception {
+		bean.getPreferences().keySet().removeAll(Arrays.asList(1, 2, 5));
 
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_keyset_remove_all() throws Exception
-    {
-        bean.getPreferences().keySet().removeAll(Arrays.asList(1, 2, 5));
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(1);
+		assertThat(preferences.get(3)).isEqualTo("75014");
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	}
+
+	@Test
+	public void should_dirty_check_map_keyset_retain_all() throws Exception {
+		bean.getPreferences().keySet().retainAll(Arrays.asList(1, 3));
+
+		em.merge(bean);
 
-        assertThat(preferences).hasSize(1);
-        assertThat(preferences.get(3)).isEqualTo("75014");
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
+
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(3)).isEqualTo("75014");
+
+	}
 
-    }
+	@Test
+	public void should_dirty_check_map_keyset_iterator_remove()
+			throws Exception {
+		Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
 
-    @Test
-    public void should_dirty_check_map_keyset_retain_all() throws Exception
-    {
-        bean.getPreferences().keySet()
-                .retainAll(Arrays.asList(1, 3));
+		iter.next();
+		iter.remove();
 
-        em.merge(bean);
+		em.merge(bean);
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(1)).isEqualTo("FR");
-        assertThat(preferences.get(3)).isEqualTo("75014");
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
 
-    }
+	}
 
-    @Test
-    public void should_dirty_check_map_keyset_iterator_remove() throws Exception
-    {
-        Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
+	@Test
+	public void should_dirty_check_map_valueset_remove() throws Exception {
+		bean.getPreferences().values().remove("FR");
 
-        iter.next();
-        iter.remove();
+		em.merge(bean);
 
-        em.merge(bean);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
+	}
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
+	@Test
+	public void should_dirty_check_map_valueset_remove_all() throws Exception {
+		bean.getPreferences().values()
+				.removeAll(Arrays.asList("FR", "Paris", "test"));
 
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_valueset_remove() throws Exception
-    {
-        bean.getPreferences().values().remove("FR");
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(1);
+		assertThat(preferences.get(3)).isEqualTo("75014");
+	}
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	@Test
+	public void should_dirty_check_map_valueset_retain_all() throws Exception {
+		bean.getPreferences().values()
+				.retainAll(Arrays.asList("FR", "Paris", "test"));
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_valueset_remove_all() throws Exception
-    {
-        bean.getPreferences().values().removeAll(Arrays.asList("FR", "Paris", "test"));
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        em.merge(bean);
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+	}
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	@Test
+	public void should_dirty_check_map_valueset_iterator_remove()
+			throws Exception {
+		Iterator<String> iter = bean.getPreferences().values().iterator();
 
-        assertThat(preferences).hasSize(1);
-        assertThat(preferences.get(3)).isEqualTo("75014");
-    }
+		iter.next();
+		iter.remove();
 
-    @Test
-    public void should_dirty_check_map_valueset_retain_all() throws Exception
-    {
-        bean.getPreferences().values().retainAll(Arrays.asList("FR", "Paris", "test"));
+		em.merge(bean);
 
-        em.merge(bean);
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(1)).isEqualTo("FR");
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-    }
+	}
 
-    @Test
-    public void should_dirty_check_map_valueset_iterator_remove() throws Exception
-    {
-        Iterator<String> iter = bean.getPreferences().values().iterator();
+	@Test
+	public void should_dirty_check_map_entrySet_remove_entry() throws Exception {
 
-        iter.next();
-        iter.remove();
+		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
-        em.merge(bean);
+		Entry<Integer, String> entry = entrySet.iterator().next();
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+		entrySet.remove(entry);
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
+		em.merge(bean);
 
-    }
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-    @Test
-    public void should_dirty_check_map_entrySet_remove_entry() throws Exception
-    {
+		assertThat(preferences).hasSize(2);
+		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
 
-        Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
+	}
 
-        Entry<Integer, String> entry = entrySet.iterator().next();
+	@Test
+	public void should_dirty_check_map_entrySet_remove_all_entry()
+			throws Exception {
 
-        entrySet.remove(entry);
+		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
-        em.merge(bean);
+		Iterator<Entry<Integer, String>> iterator = entrySet.iterator();
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+		Entry<Integer, String> entry1 = iterator.next();
+		Entry<Integer, String> entry2 = iterator.next();
 
-        assertThat(preferences).hasSize(2);
-        assertThat(preferences.get(2)).isEqualTo("Paris");
-        assertThat(preferences.get(3)).isEqualTo("75014");
+		entrySet.removeAll(Arrays.asList(entry1, entry2));
 
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_map_entrySet_remove_all_entry() throws Exception
-    {
+		Row row = session
+				.execute(
+						"select preferences from CompleteBean where id="
+								+ bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences",
+				Integer.class, String.class);
 
-        Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
+		assertThat(preferences).hasSize(1);
+		assertThat(preferences.get(3)).isEqualTo("75014");
+	}
 
-        Iterator<Entry<Integer, String>> iterator = entrySet.iterator();
+	@Test
+	public void should_dirty_check_simple_property() throws Exception {
+		bean.setName("another_name");
 
-        Entry<Integer, String> entry1 = iterator.next();
-        Entry<Integer, String> entry2 = iterator.next();
+		em.merge(bean);
 
-        entrySet.removeAll(Arrays.asList(entry1, entry2));
+		Row row = session.execute(
+				"select name from CompleteBean where id=" + bean.getId()).one();
+		Object reloadedName = row.getString("name");
 
-        em.merge(bean);
+		assertThat(reloadedName).isEqualTo("another_name");
+	}
 
-        Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
-        Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
+	@Test
+	public void should_dirty_check_lazy_simple_property() throws Exception {
+		bean.setLabel("label");
 
-        assertThat(preferences).hasSize(1);
-        assertThat(preferences.get(3)).isEqualTo("75014");
-    }
+		em.merge(bean);
 
-    @Test
-    public void should_dirty_check_simple_property() throws Exception
-    {
-        bean.setName("another_name");
+		Row row = session.execute(
+				"select label from CompleteBean where id=" + bean.getId())
+				.one();
+		Object reloadedLabel = row.getString("label");
 
-        em.merge(bean);
+		assertThat(reloadedLabel).isEqualTo("label");
+	}
 
-        Row row = session.execute("select name from CompleteBean where id=" + bean.getId()).one();
-        Object reloadedName = row.getString("name");
+	@Test
+	public void should_dirty_check_lazy_simple_property_after_loading()
+			throws Exception {
+		assertThat(bean.getLabel()).isNull();
 
-        assertThat(reloadedName).isEqualTo("another_name");
-    }
+		bean.setLabel("label");
 
-    @Test
-    public void should_dirty_check_lazy_simple_property() throws Exception
-    {
-        bean.setLabel("label");
+		em.merge(bean);
 
-        em.merge(bean);
+		Row row = session.execute(
+				"select label from CompleteBean where id=" + bean.getId())
+				.one();
+		Object reloadedLabel = row.getString("label");
 
-        Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
-        Object reloadedLabel = row.getString("label");
+		assertThat(reloadedLabel).isEqualTo("label");
+	}
 
-        assertThat(reloadedLabel).isEqualTo("label");
-    }
+	@Test
+	public void should_cascade_dirty_check_join_simple_property()
+			throws Exception {
+		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId()
+				.content("Welcome").buid();
 
-    @Test
-    public void should_dirty_check_lazy_simple_property_after_loading() throws Exception
-    {
-        assertThat(bean.getLabel()).isNull();
+		CompleteBean myBean = CompleteBeanTestBuilder.builder().randomId()
+				.name("DuyHai").age(35L).addFriends("foo", "bar")
+				.addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        bean.setLabel("label");
+		myBean.setWelcomeTweet(welcomeTweet);
 
-        em.merge(bean);
+		myBean = em.merge(myBean);
 
-        Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
-        Object reloadedLabel = row.getString("label");
+		Tweet welcomeTweetFromBean = myBean.getWelcomeTweet();
+		welcomeTweetFromBean.setContent("new_welcome_message");
 
-        assertThat(reloadedLabel).isEqualTo("label");
-    }
+		em.merge(myBean);
 
-    @Test
-    public void should_cascade_dirty_check_join_simple_property() throws Exception
-    {
-        Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("Welcome").buid();
+		Tweet persistedWelcomeTweet = em
+				.find(Tweet.class, welcomeTweet.getId());
 
-        CompleteBean myBean = CompleteBeanTestBuilder.builder()
-                .randomId()
-                .name("DuyHai")
-                .age(35L)
-                .addFriends("foo", "bar")
-                .addFollowers("George", "Paul")
-                .addPreference(1, "FR")
-                .addPreference(2, "Paris")
-                .addPreference(3, "75014")
-                .buid();
+		assertThat(persistedWelcomeTweet).isNotNull();
+		assertThat(persistedWelcomeTweet.getContent()).isEqualTo(
+				"new_welcome_message");
 
-        myBean.setWelcomeTweet(welcomeTweet);
-
-        myBean = em.merge(myBean);
-
-        Tweet welcomeTweetFromBean = myBean.getWelcomeTweet();
-        welcomeTweetFromBean.setContent("new_welcome_message");
-
-        em.merge(myBean);
-
-        Tweet persistedWelcomeTweet = em.find(Tweet.class, welcomeTweet.getId());
-
-        assertThat(persistedWelcomeTweet).isNotNull();
-        assertThat(persistedWelcomeTweet.getContent()).isEqualTo("new_welcome_message");
-
-    }
+	}
 }
