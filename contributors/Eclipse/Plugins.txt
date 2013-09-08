@@ -1,0 +1,2 @@
+Eclemma plugin for code Coverage: http://update.eclemma.org/
+MoreUnit plugin:  http://moreunit.sourceforge.net/update-site/
