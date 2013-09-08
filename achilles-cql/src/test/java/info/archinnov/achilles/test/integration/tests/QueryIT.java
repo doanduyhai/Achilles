@@ -133,7 +133,7 @@ public class QueryIT {
 				"SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id="
 						+ entity.getId()).first();
 
-		assertThat(result.get("ttl(name)")).isEqualTo(1000);
+		assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
 		assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
 	}
 
