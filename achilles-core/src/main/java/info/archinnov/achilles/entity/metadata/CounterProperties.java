@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import com.google.common.base.Objects;
+
 public class CounterProperties {
 	private String fqcn;
 	private PropertyMeta idMeta;
@@ -43,6 +45,7 @@ public class CounterProperties {
 
 	@Override
 	public String toString() {
-		return "CounterProperties [fqcn=" + fqcn + ", idMeta=" + idMeta + "]";
+		return Objects.toStringHelper(this.getClass()).add("fqcn", fqcn)
+				.add("idMeta", idMeta).toString();
 	}
 }

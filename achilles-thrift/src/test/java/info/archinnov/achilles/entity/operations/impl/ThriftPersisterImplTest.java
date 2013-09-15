@@ -17,6 +17,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
@@ -33,6 +34,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
@@ -43,7 +45,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -58,7 +59,6 @@ import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,6 +74,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftPersisterImplTest {
@@ -125,14 +126,15 @@ public class ThriftPersisterImplTest {
 	@Mock
 	private ThriftImmediateFlushContext flushContext;
 
+	@Mock
+	private DataTranscoder transcoder;
+
 	private Optional<Integer> ttlO = Optional.<Integer> absent();
 
 	private Optional<Long> timestampO = Optional.<Long> absent();
 
 	@Captor
 	private ArgumentCaptor<Composite> compositeCaptor;
-
-	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
 			.buid();
@@ -379,9 +381,8 @@ public class ThriftPersisterImplTest {
 	public void should_batch_simple_property() throws Exception {
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().build();
+				.transcoder(transcoder).accessors().build();
 
 		Composite comp = new Composite();
 		when(
@@ -392,6 +393,7 @@ public class ThriftPersisterImplTest {
 		when(invoker.getValueFromField(entity, propertyMeta.getGetter()))
 				.thenReturn("testValue");
 
+		when(transcoder.forceEncodeToJSON("testValue")).thenReturn("testValue");
 		persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
 
 		verify(entityDao).insertColumnBatch(entity.getId(), comp, "testValue",
@@ -434,18 +436,18 @@ public class ThriftPersisterImplTest {
 	@Test
 	public void should_batch_list_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().build();
+				.transcoder(transcoder).accessors().build();
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
-		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 0)).thenReturn(comp1);
-		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 1)).thenReturn(comp2);
+		when(thriftCompositeFactory.createForBatchInsertList(propertyMeta, 0))
+				.thenReturn(comp1);
+		when(thriftCompositeFactory.createForBatchInsertList(propertyMeta, 1))
+				.thenReturn(comp2);
+
+		when(transcoder.forceEncodeToJSON("foo")).thenReturn("foo");
+		when(transcoder.forceEncodeToJSON("bar")).thenReturn("bar");
 
 		persisterImpl.batchPersistList(Arrays.asList("foo", "bar"), context,
 				propertyMeta);
@@ -461,100 +463,121 @@ public class ThriftPersisterImplTest {
 	@Test
 	public void should_batch_set_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().build();
+				.transcoder(transcoder).accessors().build();
 
 		Composite comp1 = new Composite();
+		comp1.setComponent(0, "John", STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
 		Composite comp2 = new Composite();
+		comp2.setComponent(0, "Helen", STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
+
+		when(transcoder.forceEncodeToJSON("John")).thenReturn("John");
+		when(transcoder.forceEncodeToJSON("Helen")).thenReturn("Helen");
+
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, "John".hashCode())).thenReturn(comp1);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "John")).thenReturn(comp1);
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, "Helen".hashCode())).thenReturn(comp2);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "Helen")).thenReturn(comp2);
 
 		Set<String> followers = ImmutableSet.of("John", "Helen");
 		persisterImpl.batchPersistSet(followers, context, propertyMeta);
 
 		InOrder inOrder = inOrder(entityDao);
-		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1,
-				"John", ttlO, timestampO, entityMutator);
-		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2,
-				"Helen", ttlO, timestampO, entityMutator);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp1, "",
+				ttlO, timestampO, entityMutator);
+		inOrder.verify(entityDao).insertColumnBatch(entity.getId(), comp2, "",
+				ttlO, timestampO, entityMutator);
 
 	}
 
 	@Test
 	public void should_batch_map_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Integer.class, String.class).field("preferences")
-				.type(MAP).accessors().build();
+				.transcoder(transcoder).type(MAP).accessors().build();
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
+		when(transcoder.forceEncodeToJSON(1)).thenReturn("1");
+		when(transcoder.forceEncodeToJSON("FR")).thenReturn("FR");
+		when(transcoder.forceEncodeToJSON(2)).thenReturn("2");
+		when(transcoder.forceEncodeToJSON("Paris")).thenReturn("Paris");
+		when(transcoder.forceEncodeToJSON(3)).thenReturn("3");
+		when(transcoder.forceEncodeToJSON("75014")).thenReturn("75014");
+
 		Composite comp1 = new Composite();
+		comp1.setComponent(0, "1", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
 		Composite comp2 = new Composite();
+		comp2.setComponent(0, "2", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
 		Composite comp3 = new Composite();
+		comp3.setComponent(0, "3", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
+
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 1)).thenReturn(comp1);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "1")).thenReturn(comp1);
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 2)).thenReturn(comp2);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "2")).thenReturn(comp2);
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 3)).thenReturn(comp3);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "3")).thenReturn(comp3);
 
 		persisterImpl.batchPersistMap(map, context, propertyMeta);
 
-		ArgumentCaptor<String> keyValueHolderCaptor = ArgumentCaptor
+		ArgumentCaptor<Composite> compositeCaptor = ArgumentCaptor
+				.forClass(Composite.class);
+		ArgumentCaptor<String> valueCaptor = ArgumentCaptor
 				.forClass(String.class);
 
 		verify(entityDao, times(3)).insertColumnBatch(eq(entity.getId()),
-				any(Composite.class), keyValueHolderCaptor.capture(), eq(ttlO),
+				compositeCaptor.capture(), valueCaptor.capture(), eq(ttlO),
 				eq(timestampO), eq(entityMutator));
 
-		assertThat(keyValueHolderCaptor.getAllValues()).hasSize(3);
+		assertThat(compositeCaptor.getAllValues()).hasSize(3);
+		assertThat(valueCaptor.getAllValues()).hasSize(3);
 
-		List<String> keyValues = keyValueHolderCaptor.getAllValues();
+		List<Composite> composites = compositeCaptor.getAllValues();
+		List<String> values = valueCaptor.getAllValues();
 
-		KeyValue<Integer, String> holder1 = readKeyValue(keyValues.get(0));
-		KeyValue<Integer, String> holder2 = readKeyValue(keyValues.get(1));
-		KeyValue<Integer, String> holder3 = readKeyValue(keyValues.get(2));
+		assertThat(composites.get(0)).isEqualTo(comp1);
+		assertThat(values.get(0)).isEqualTo("FR");
 
-		assertThat(holder1.getKey()).isEqualTo(1);
-		assertThat(holder1.getValue()).isEqualTo("FR");
+		assertThat(composites.get(1)).isEqualTo(comp2);
+		assertThat(values.get(1)).isEqualTo("Paris");
 
-		assertThat(holder2.getKey()).isEqualTo(2);
-		assertThat(holder2.getValue()).isEqualTo("Paris");
-
-		assertThat(holder3.getKey()).isEqualTo(3);
-		assertThat(holder3.getValue()).isEqualTo("75014");
+		assertThat(composites.get(2)).isEqualTo(comp3);
+		assertThat(values.get(2)).isEqualTo("75014");
 	}
 
 	@Test
 	public void should_batch_persist_join_entity() throws Exception {
 		Long joinId = 154654L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(SIMPLE).accessors().build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, UserBean.class).field("user")
 				.type(JOIN_SIMPLE).joinMeta(joinMeta).accessors().build();
 
 		UserBean user = new UserBean();
 		user.setUserId(joinId);
+
+		when(transcoder.forceEncodeToJSON(joinId))
+				.thenReturn(joinId.toString());
 
 		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(joinId);
 		Composite comp = new Composite();
@@ -579,33 +602,39 @@ public class ThriftPersisterImplTest {
 	}
 
 	@Test
-	public void should_batch_persist_join_collection() throws Exception {
+	public void should_batch_persist_join_list() throws Exception {
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(SIMPLE).accessors().build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).build();
+				.transcoder(transcoder).joinMeta(joinMeta).build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setUserId(joinId1);
 		user2.setUserId(joinId2);
 
 		Composite comp1 = new Composite();
+		comp1.setComponent(0, "0", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
 		Composite comp2 = new Composite();
-		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 0)).thenReturn(comp1);
-		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 1)).thenReturn(comp2);
+		comp2.setComponent(0, "1", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
+
+		when(transcoder.forceEncodeToJSON(joinId1)).thenReturn(
+				joinId1.toString());
+		when(transcoder.forceEncodeToJSON(joinId2)).thenReturn(
+				joinId2.toString());
+
+		when(thriftCompositeFactory.createForBatchInsertList(propertyMeta, 0))
+				.thenReturn(comp1);
+		when(thriftCompositeFactory.createForBatchInsertList(propertyMeta, 1))
+				.thenReturn(comp2);
 		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
 				.thenReturn(joinId1);
 		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
@@ -614,7 +643,7 @@ public class ThriftPersisterImplTest {
 		when(proxifier.unwrap(user1)).thenReturn(user1);
 		when(proxifier.unwrap(user2)).thenReturn(user2);
 
-		persisterImpl.batchPersistJoinCollection(context, propertyMeta,
+		persisterImpl.batchPersistJoinList(context, propertyMeta,
 				Arrays.asList(user1, user2), persister);
 
 		verify(entityDao).insertColumnBatch(entity.getId(), comp1,
@@ -637,40 +666,109 @@ public class ThriftPersisterImplTest {
 	}
 
 	@Test
-	public void should_batch_persist_join_map() throws Exception {
+	public void should_batch_persist_join_set() throws Exception {
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(SIMPLE).accessors().build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
+				.completeBean(Void.class, UserBean.class).field("user")
+				.transcoder(transcoder).joinMeta(joinMeta).build();
+
+		UserBean user1 = new UserBean(), user2 = new UserBean();
+		user1.setUserId(joinId1);
+		user2.setUserId(joinId2);
+
+		Composite comp1 = new Composite();
+		comp1.setComponent(0, "0", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
+		Composite comp2 = new Composite();
+		comp2.setComponent(0, "1", STRING_SRZ, STRING_SRZ.getComparatorType()
+				.getTypeName());
+
+		when(transcoder.forceEncodeToJSON(joinId1)).thenReturn(
+				joinId1.toString());
+		when(transcoder.forceEncodeToJSON(joinId2)).thenReturn(
+				joinId2.toString());
+
+		when(
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, joinId1.toString())).thenReturn(comp1);
+		when(
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, joinId2.toString())).thenReturn(comp2);
+
+		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
+				.thenReturn(joinId1);
+		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
+				.thenReturn(joinId2);
+
+		when(proxifier.unwrap(user1)).thenReturn(user1);
+		when(proxifier.unwrap(user2)).thenReturn(user2);
+
+		persisterImpl.batchPersistJoinSet(context, propertyMeta,
+				Sets.newHashSet(user1, user2), persister);
+
+		verify(entityDao).insertColumnBatch(entity.getId(), comp1, "", ttlO,
+				timestampO, entityMutator);
+		verify(entityDao).insertColumnBatch(entity.getId(), comp2, "", ttlO,
+				timestampO, entityMutator);
+
+		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
+				.forClass(ThriftPersistenceContext.class);
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user1), eq(propertyMeta.getJoinProperties()));
+		verify(persister).cascadePersistOrEnsureExists(contextCaptor.capture(),
+				eq(user2), eq(propertyMeta.getJoinProperties()));
+
+		List<ThriftPersistenceContext> contextes = contextCaptor.getAllValues();
+
+		assertThat(contextes.get(0).getEntity()).isSameAs(user1);
+		assertThat(contextes.get(1).getEntity()).isSameAs(user2);
+
+	}
+
+	@Test
+	public void should_batch_persist_join_map() throws Exception {
+		Long joinId1 = 54351L, joinId2 = 4653L;
+		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
+				.of(UserBean.class, Void.class, Long.class).field("userId")
+				.transcoder(transcoder).type(SIMPLE).accessors().build();
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).joinMeta(joinMeta)
-				.build();
+				.transcoder(transcoder).build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setUserId(joinId1);
 		user2.setUserId(joinId2);
 
 		Map<Integer, UserBean> joinMap = ImmutableMap.of(1, user1, 2, user2);
-		KeyValue<Integer, String> kv1 = new KeyValue<Integer, String>(1,
+
+		when(transcoder.forceEncodeToJSON(1)).thenReturn("1");
+		when(transcoder.forceEncodeToJSON(2)).thenReturn("2");
+
+		when(transcoder.forceEncodeToJSON(joinId1)).thenReturn(
 				joinId1.toString());
-		KeyValue<Integer, String> kv2 = new KeyValue<Integer, String>(2,
+		when(transcoder.forceEncodeToJSON(joinId2)).thenReturn(
 				joinId2.toString());
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
 
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 1)).thenReturn(comp1);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "1")).thenReturn(comp1);
 		when(
-				thriftCompositeFactory.createForBatchInsertMultiValue(
-						propertyMeta, 2)).thenReturn(comp2);
+				thriftCompositeFactory.createForBatchInsertSetOrMap(
+						propertyMeta, "2")).thenReturn(comp2);
 		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
 				.thenReturn(joinId1);
 		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
@@ -683,9 +781,9 @@ public class ThriftPersisterImplTest {
 				persister);
 
 		verify(entityDao).insertColumnBatch(entity.getId(), comp1,
-				writeString(kv1), ttlO, timestampO, entityMutator);
+				joinId1.toString(), ttlO, timestampO, entityMutator);
 		verify(entityDao).insertColumnBatch(entity.getId(), comp2,
-				writeString(kv2), ttlO, timestampO, entityMutator);
+				joinId2.toString(), ttlO, timestampO, entityMutator);
 
 		ArgumentCaptor<ThriftPersistenceContext> contextCaptor = ArgumentCaptor
 				.forClass(ThriftPersistenceContext.class);
@@ -852,15 +950,5 @@ public class ThriftPersisterImplTest {
 
 		verify(entityDao).removeColumnRangeBatch(entity.getId(), start, end,
 				entityMutator);
-	}
-
-	@SuppressWarnings("unchecked")
-	private KeyValue<Integer, String> readKeyValue(String value)
-			throws Exception {
-		return objectMapper.readValue(value, KeyValue.class);
-	}
-
-	private String writeString(Object value) throws Exception {
-		return objectMapper.writeValueAsString(value);
 	}
 }

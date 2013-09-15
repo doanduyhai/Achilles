@@ -164,22 +164,43 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	@Override
 	public String forceEncodeToJSON(Object object) {
-		try {
-			return this.objectMapper.writeValueAsString(object);
-		} catch (Exception e) {
-			throw new AchillesException("Error while encoding value '" + object
-					+ "'", e);
+
+		String result = null;
+		if (object != null) {
+			if (object instanceof String) {
+				result = String.class.cast(object);
+			} else {
+				try {
+
+					return this.objectMapper.writeValueAsString(object);
+				} catch (Exception e) {
+					throw new AchillesException("Error while encoding value '"
+							+ object + "'", e);
+				}
+			}
 		}
+
+		return result;
 	}
 
 	@Override
-	public Object forceDecodeFromJSON(String cassandraValue, Class<?> targetType) {
-		try {
-			return objectMapper.readValue(cassandraValue, targetType);
-		} catch (Exception e) {
-			throw new AchillesException("Error while decoding value '"
-					+ cassandraValue + "' to type '"
-					+ targetType.getCanonicalName() + "'", e);
+	public <T> T forceDecodeFromJSON(String cassandraValue, Class<T> targetType) {
+
+		T result = null;
+
+		if (cassandraValue != null) {
+			if (targetType == String.class) {
+				result = (T) cassandraValue;
+			} else {
+				try {
+					return objectMapper.readValue(cassandraValue, targetType);
+				} catch (Exception e) {
+					throw new AchillesException("Error while decoding value '"
+							+ cassandraValue + "' to type '"
+							+ targetType.getCanonicalName() + "'", e);
+				}
+			}
 		}
+		return result;
 	}
 }

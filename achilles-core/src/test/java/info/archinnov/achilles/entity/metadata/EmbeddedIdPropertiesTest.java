@@ -33,8 +33,8 @@ public class EmbeddedIdPropertiesTest {
 		props.setComponentNames(Arrays.asList("id", "age"));
 
 		StringBuilder toString = new StringBuilder();
-		toString.append("CompoundKeyProperties [componentClasses=[");
-		toString.append("java.lang.Integer,java.lang.String], componentNames=[id, age]]");
+		toString.append("EmbeddedIdProperties{componentClasses=");
+		toString.append("java.lang.Integer,java.lang.String, componentNames=[id, age]}");
 
 		assertThat(props.toString()).isEqualTo(toString.toString());
 	}

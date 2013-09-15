@@ -26,6 +26,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
@@ -65,6 +66,9 @@ public class ThriftCompositeFactoryTest {
 	@Mock
 	private PropertyMeta embeddedIdMeta;
 
+	@Mock
+	private DataTranscoder transcoder;
+
 	@Before
 	public void setUp() {
 
@@ -90,7 +94,9 @@ public class ThriftCompositeFactoryTest {
 	@Test
 	public void should_create_key_for_counter() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.build();
+				.transcoder(transcoder).build();
+
+		when(transcoder.forceEncodeToJSON(11L)).thenReturn("11");
 
 		Composite comp = factory.createKeyForCounter("fqcn", 11L, idMeta);
 
@@ -112,7 +118,7 @@ public class ThriftCompositeFactoryTest {
 		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
 		assertThat(comp.getComponent(1).getEquality()).isEqualTo(EQUAL);
-		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(0);
+		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("0");
 		assertThat(comp.getComponent(2).getEquality()).isEqualTo(EQUAL);
 	}
 
@@ -171,7 +177,7 @@ public class ThriftCompositeFactoryTest {
 		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
 				SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
-		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(0);
+		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("0");
 	}
 
 	@Test
@@ -187,17 +193,32 @@ public class ThriftCompositeFactoryTest {
 	}
 
 	@Test
-	public void should_create_for_batch_insert_multiple() throws Exception {
+	public void should_create_for_batch_insert_list_value() throws Exception {
 		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
 				.type(SIMPLE).field("name").build();
 
-		Composite comp = factory.createForBatchInsertMultiValue(meta, 21);
+		Composite comp = factory.createForBatchInsertList(meta, 21);
 
 		assertThat(comp.getComponents()).hasSize(3);
 		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
 				SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
-		assertThat(comp.getComponent(2).getValue(INT_SRZ)).isEqualTo(21);
+		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo(
+				"000021");
+	}
+
+	@Test
+	public void should_create_for_batch_insert_set_map_value() throws Exception {
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
+				.type(SIMPLE).field("name").build();
+
+		Composite comp = factory.createForBatchInsertSetOrMap(meta, "text");
+
+		assertThat(comp.getComponents()).hasSize(3);
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
+				SIMPLE.flag());
+		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
+		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("text");
 	}
 
 	@Test

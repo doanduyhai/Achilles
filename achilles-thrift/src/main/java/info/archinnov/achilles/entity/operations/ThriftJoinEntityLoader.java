@@ -41,8 +41,8 @@ public class ThriftJoinEntityLoader {
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
-	public <T, ID> Map<ID, T> loadJoinEntities(Class<T> entityClass,
-			List<ID> keys, EntityMeta entityMeta,
+	public Map<Object, Object> loadJoinEntities(Class<?> entityClass,
+			List<Object> keys, EntityMeta entityMeta,
 			ThriftGenericEntityDao joinEntityDao) {
 		if (log.isTraceEnabled()) {
 			log.trace("Load join entities of class {} with primary keys {}",
@@ -57,15 +57,16 @@ public class ThriftJoinEntityLoader {
 				"Entity meta for '%s' should not be null",
 				entityClass.getCanonicalName());
 
-		Map<ID, T> entitiesByKey = new HashMap<ID, T>();
-		Map<ID, List<Pair<Composite, String>>> rows = joinEntityDao
+		Map<Object, Object> entitiesByKey = new HashMap<Object, Object>();
+		Map<Object, List<Pair<Composite, String>>> rows = joinEntityDao
 				.eagerFetchEntities(keys);
 
-		for (Entry<ID, List<Pair<Composite, String>>> entry : rows.entrySet()) {
-			T entity;
+		for (Entry<Object, List<Pair<Composite, String>>> entry : rows
+				.entrySet()) {
+			Object entity;
 			entity = invoker.instanciate(entityClass);
 
-			ID key = entry.getKey();
+			Object key = entry.getKey();
 			List<Pair<Composite, String>> columns = entry.getValue();
 			if (columns.size() > 0) {
 				mapper.setEagerPropertiesToEntity(key, columns, entityMeta,

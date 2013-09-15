@@ -37,7 +37,6 @@ public class EntityMetaTest {
 		propertyMetas.put("age", null);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE)
 				.consistencyLevels(Pair.create(ALL, ALL)).build();
@@ -52,12 +51,12 @@ public class EntityMetaTest {
 		entityMeta.setConsistencyLevels(Pair.create(ONE, ONE));
 
 		StringBuilder toString = new StringBuilder();
-		toString.append("EntityMeta [className=className, ");
-		toString.append("columnFamilyName=cfName, ");
-		toString.append("propertyMetas=[age,name], ");
+		toString.append("EntityMeta{className=className, ");
+		toString.append("tableName/columnFamilyName=cfName, ");
+		toString.append("propertyMetas=age,name, ");
 		toString.append("idMeta=").append(idMeta.toString()).append(", ");
 		toString.append("clusteredEntity=true, ");
-		toString.append("consistencyLevels=[ONE,ONE]]");
+		toString.append("consistencyLevels=(ONE,ONE)}");
 		assertThat(entityMeta.toString()).isEqualTo(toString.toString());
 	}
 

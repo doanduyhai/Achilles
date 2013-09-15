@@ -64,15 +64,19 @@ public class ThriftEntityMapper extends EntityMapper {
 					break;
 				case LIST:
 					addToList(listProperties, propertyMeta,
-							propertyMeta.getValueFromString(pair.right));
+							propertyMeta.forceDecodeFromJSON(pair.right));
 					break;
 				case SET:
 					addToSet(setProperties, propertyMeta,
-							propertyMeta.getValueFromString(pair.right));
+							propertyMeta.decode(pair.left.get(2, STRING_SRZ)));
 					break;
 				case MAP:
-					addToMap(mapProperties, propertyMeta,
-							propertyMeta.getKeyValueFromString(pair.right));
+					Object decodedKey = propertyMeta.forceDecodeFromJSON(
+							pair.left.get(2, STRING_SRZ),
+							propertyMeta.getKeyClass());
+					Object decodedValue = propertyMeta.decode(pair.right);
+					addToMap(mapProperties, propertyMeta, decodedKey,
+							decodedValue);
 					break;
 				default:
 					log.debug("Property {} is lazy or of proxy type, do not set to entity now");

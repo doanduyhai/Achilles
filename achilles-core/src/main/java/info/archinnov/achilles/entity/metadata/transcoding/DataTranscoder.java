@@ -54,5 +54,5 @@ public interface DataTranscoder {
 
 	public Object decodeFromComponents(PropertyMeta pm, List<?> components);
 
-	public Object forceDecodeFromJSON(String cassandraValue, Class<?> targetType);
+	public <T> T forceDecodeFromJSON(String cassandraValue, Class<T> targetType);
 }

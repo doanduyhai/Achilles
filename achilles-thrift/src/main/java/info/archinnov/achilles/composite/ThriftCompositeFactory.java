@@ -24,6 +24,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 public class ThriftCompositeFactory {
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftCompositeFactory.class);
+	private static final String numberFormat = "000000";
 
 	private ComponentEqualityCalculator calculator = new ComponentEqualityCalculator();
 	private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
@@ -76,7 +78,7 @@ public class ThriftCompositeFactory {
 
 		Composite comp = new Composite();
 		comp.setComponent(0, fqcn, STRING_SRZ);
-		comp.setComponent(1, idMeta.writeValueToString(key), STRING_SRZ);
+		comp.setComponent(1, idMeta.forceEncodeToJSON(key), STRING_SRZ);
 		return comp;
 	}
 
@@ -89,7 +91,7 @@ public class ThriftCompositeFactory {
 				ComponentEquality.EQUAL);
 		composite.addComponent(1, propertyMeta.getPropertyName(),
 				ComponentEquality.EQUAL);
-		composite.addComponent(2, 0, ComponentEquality.EQUAL);
+		composite.addComponent(2, "0", ComponentEquality.EQUAL);
 		return composite;
 	}
 
@@ -133,8 +135,8 @@ public class ThriftCompositeFactory {
 				BYTE_SRZ.getComparatorType().getTypeName());
 		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ,
 				STRING_SRZ.getComparatorType().getTypeName());
-		composite.setComponent(2, 0, INT_SRZ, INT_SRZ.getComparatorType()
-				.getTypeName());
+		composite.setComponent(2, "0", STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
 		return composite;
 	}
 
@@ -150,18 +152,36 @@ public class ThriftCompositeFactory {
 		return composite;
 	}
 
-	public <K, V> Composite createForBatchInsertMultiValue(
-			PropertyMeta propertyMeta, int hashOrPosition) {
+	public <K, V> Composite createForBatchInsertList(PropertyMeta propertyMeta,
+			int position) {
 		log.trace(
-				"Creating base composite for propertyMeta {} for multi value batch insert with hash or position {}",
-				propertyMeta.getPropertyName(), hashOrPosition);
+				"Creating base composite for propertyMeta {} for list value batch insert with position {}",
+				propertyMeta.getPropertyName(), position);
 
 		Composite composite = new Composite();
 		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ,
 				BYTE_SRZ.getComparatorType().getTypeName());
 		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ,
 				STRING_SRZ.getComparatorType().getTypeName());
-		composite.setComponent(2, hashOrPosition, INT_SRZ, INT_SRZ
+		String positionString = new DecimalFormat(numberFormat)
+				.format(position);
+		composite.setComponent(2, positionString, STRING_SRZ, STRING_SRZ
+				.getComparatorType().getTypeName());
+		return composite;
+	}
+
+	public <K, V> Composite createForBatchInsertSetOrMap(
+			PropertyMeta propertyMeta, String valueOrKey) {
+		log.trace(
+				"Creating base composite for propertyMeta {} for set/map value batch insert {}",
+				propertyMeta.getPropertyName(), valueOrKey);
+
+		Composite composite = new Composite();
+		composite.setComponent(0, propertyMeta.type().flag(), BYTE_SRZ,
+				BYTE_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(1, propertyMeta.getPropertyName(), STRING_SRZ,
+				STRING_SRZ.getComparatorType().getTypeName());
+		composite.setComponent(2, valueOrKey, STRING_SRZ, STRING_SRZ
 				.getComparatorType().getTypeName());
 		return composite;
 	}

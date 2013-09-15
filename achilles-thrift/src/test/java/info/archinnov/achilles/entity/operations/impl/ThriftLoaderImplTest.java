@@ -17,6 +17,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
@@ -34,6 +35,7 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilde
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -42,7 +44,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -59,7 +60,6 @@ import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,6 +109,9 @@ public class ThriftLoaderImplTest {
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
+	@Mock
+	private DataTranscoder transcoder;
+
 	@Captor
 	ArgumentCaptor<CompleteBean> beanCaptor;
 
@@ -118,17 +121,14 @@ public class ThriftLoaderImplTest {
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
 			.buid();
 
-	private ObjectMapper objectMapper = new ObjectMapper();
-
 	private PropertyMeta idMeta;
 
 	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Throwable {
-		idMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id").accessors()
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+				.field("id").accessors().type(ID).transcoder(transcoder)
 				.build();
 
 		entityMeta = new EntityMeta();
@@ -494,13 +494,14 @@ public class ThriftLoaderImplTest {
 	public void should_load_simple_property_for_entity() throws Exception {
 
 		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().build();
+				.type(SIMPLE).transcoder(transcoder).accessors().build();
 
 		Composite comp = new Composite();
 		when(compositeFactory.createBaseForGet(nameMeta)).thenReturn(comp);
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn("name_xyz");
+		when(transcoder.forceDecodeFromJSON("name_xyz", String.class))
+				.thenReturn("name_xyz");
 
 		Object actual = loaderImpl.loadSimpleProperty(context, nameMeta);
 		assertThat(actual).isEqualTo("name_xyz");
@@ -514,10 +515,10 @@ public class ThriftLoaderImplTest {
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.compGetters(userIdGetter).build();
+				.transcoder(transcoder).compGetters(userIdGetter).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.build();
+				.transcoder(transcoder).type(SIMPLE).build();
 
 		entityMeta.setIdMeta(embeddedIdMeta);
 		entityMeta.setClusteredEntity(true);
@@ -530,6 +531,7 @@ public class ThriftLoaderImplTest {
 						embeddedIdMeta)).thenReturn(comp);
 
 		when(wideRowDao.getValue(partitionKey, comp)).thenReturn("name_xyz");
+		when(transcoder.decode(pm, "name_xyz")).thenReturn("name_xyz");
 
 		Object actual = loaderImpl.loadSimpleProperty(context, pm);
 		assertThat(actual).isEqualTo("name_xyz");
@@ -538,11 +540,18 @@ public class ThriftLoaderImplTest {
 	@Test
 	public void should_load_list() throws Exception {
 		PropertyMeta listMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().build();
+				.transcoder(transcoder).accessors().build();
 
 		Composite start = new Composite(), end = new Composite();
+		start.addComponent(LIST.flag(), BYTE_SRZ);
+		start.addComponent("friends", STRING_SRZ);
+		start.addComponent("0", STRING_SRZ);
+
+		end.addComponent(LIST.flag(), BYTE_SRZ);
+		end.addComponent("friends", STRING_SRZ);
+		end.addComponent("1", STRING_SRZ);
+
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 		columns.add(Pair.<Composite, Object> create(start, "foo"));
 		columns.add(Pair.<Composite, Object> create(end, "bar"));
@@ -554,6 +563,8 @@ public class ThriftLoaderImplTest {
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
+		when(transcoder.decode(listMeta, "foo")).thenReturn("foo");
+		when(transcoder.decode(listMeta, "bar")).thenReturn("bar");
 
 		List<Object> actual = loaderImpl.loadListProperty(context, listMeta);
 		assertThat(actual).containsExactly("foo", "bar");
@@ -562,14 +573,21 @@ public class ThriftLoaderImplTest {
 	@Test
 	public void should_load_set() throws Exception {
 		PropertyMeta setMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().build();
+				.transcoder(transcoder).accessors().build();
 
 		Composite start = new Composite(), end = new Composite();
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 		columns.add(Pair.<Composite, Object> create(start, "John"));
 		columns.add(Pair.<Composite, Object> create(end, "Helen"));
+
+		start.addComponent(SET.flag(), BYTE_SRZ);
+		start.addComponent("friends", STRING_SRZ);
+		start.addComponent("John", STRING_SRZ);
+
+		end.addComponent(SET.flag(), BYTE_SRZ);
+		end.addComponent("friends", STRING_SRZ);
+		end.addComponent("Helen", STRING_SRZ);
 
 		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(
 				start);
@@ -578,6 +596,8 @@ public class ThriftLoaderImplTest {
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
+		when(transcoder.decode(setMeta, "John")).thenReturn("John");
+		when(transcoder.decode(setMeta, "Helen")).thenReturn("Helen");
 
 		Set<Object> actual = loaderImpl.loadSetProperty(context, setMeta);
 		assertThat(actual).containsExactly("John", "Helen");
@@ -585,35 +605,46 @@ public class ThriftLoaderImplTest {
 
 	@Test
 	public void should_load_map() throws Exception {
-		PropertyMeta setMeta = PropertyMetaTestBuilder
+		PropertyMeta mapMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).field("usersMap")
-				.type(PropertyType.MAP).accessors().build();
+				.transcoder(transcoder).type(PropertyType.MAP).accessors()
+				.build();
 
 		Composite start = new Composite(), end = new Composite();
+		start.addComponent(MAP.flag(), BYTE_SRZ);
+		start.addComponent("friends", STRING_SRZ);
+		start.addComponent("1", STRING_SRZ);
+
+		end.addComponent(MAP.flag(), BYTE_SRZ);
+		end.addComponent("friends", STRING_SRZ);
+		end.addComponent("2", STRING_SRZ);
+
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setName("user1");
 		user2.setName("user2");
 
-		columns.add(Pair.<Composite, Object> create(start,
-				writeToString(new KeyValue<Integer, UserBean>(1, user1))));
-		columns.add(Pair.<Composite, Object> create(end,
-				writeToString(new KeyValue<Integer, UserBean>(2, user2))));
+		columns.add(Pair.<Composite, Object> create(start, "user1"));
+		columns.add(Pair.<Composite, Object> create(end, "user2"));
 
-		when(compositeFactory.createBaseForQuery(setMeta, EQUAL)).thenReturn(
+		when(compositeFactory.createBaseForQuery(mapMeta, EQUAL)).thenReturn(
 				start);
-		when(compositeFactory.createBaseForQuery(setMeta, GREATER_THAN_EQUAL))
+		when(compositeFactory.createBaseForQuery(mapMeta, GREATER_THAN_EQUAL))
 				.thenReturn(end);
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
+		when(transcoder.forceDecodeFromJSON("1", Integer.class)).thenReturn(1);
+		when(transcoder.forceDecodeFromJSON("2", Integer.class)).thenReturn(2);
+		when(transcoder.decode(mapMeta, "user1")).thenReturn(user1);
+		when(transcoder.decode(mapMeta, "user2")).thenReturn(user2);
 
-		Map<Object, UserBean> actual = (Map) loaderImpl.loadMapProperty(
-				context, setMeta);
+		Map<Object, Object> actual = loaderImpl.loadMapProperty(context,
+				mapMeta);
 		assertThat(actual).hasSize(2);
-		assertThat(actual.get(1).getName()).isEqualTo("user1");
-		assertThat(actual.get(2).getName()).isEqualTo("user2");
+		assertThat(((UserBean) actual.get(1)).getName()).isEqualTo("user1");
+		assertThat(((UserBean) actual.get(2)).getName()).isEqualTo("user2");
 	}
 
 	@Test
@@ -623,10 +654,9 @@ public class ThriftLoaderImplTest {
 		joinMeta.setIdMeta(idMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Integer.class, UserBean.class).field("user")
 				.joinMeta(joinMeta).type(PropertyType.JOIN_SIMPLE).accessors()
-				.build();
+				.transcoder(transcoder).build();
 
 		UserBean user = new UserBean();
 		Composite comp = new Composite();
@@ -634,6 +664,9 @@ public class ThriftLoaderImplTest {
 		when(entityDao.getValue(entity.getId(), comp)).thenReturn(stringJoinId);
 		when(loader.load(contextCaptor.capture(), eq(UserBean.class)))
 				.thenReturn(user);
+
+		when(transcoder.forceDecodeFromJSON(stringJoinId, Long.class))
+				.thenReturn(new Long(stringJoinId));
 
 		UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context,
 				propertyMeta, loader);
@@ -700,10 +733,5 @@ public class ThriftLoaderImplTest {
 				propertyMeta, loader);
 		assertThat(actual).isNull();
 
-	}
-
-	private String writeToString(KeyValue<Integer, UserBean> keyValue)
-			throws Exception {
-		return objectMapper.writeValueAsString(keyValue);
 	}
 }

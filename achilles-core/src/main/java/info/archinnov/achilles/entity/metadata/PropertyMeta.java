@@ -17,11 +17,9 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -34,10 +32,10 @@ import javax.persistence.CascadeType;
 
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
 public class PropertyMeta {
@@ -59,9 +57,6 @@ public class PropertyMeta {
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	private DataTranscoder transcoder;
-
-	private static final Logger logger = LoggerFactory
-			.getLogger(PropertyMeta.class);
 
 	public Object getValueFromString(Object stringValue) {
 		log.trace(
@@ -88,75 +83,6 @@ public class PropertyMeta {
 			}
 		} else {
 			return null;
-		}
-	}
-
-	public KeyValue<Object, Object> getKeyValueFromString(String stringKeyValue) {
-		log.trace(
-				"Getting key/value from string {} for property {} of entity class {}",
-				stringKeyValue, propertyName, entityClassName);
-		try {
-			return this.objectMapper.readValue(stringKeyValue,
-					new TypeReference<KeyValue<Object, Object>>() {
-					});
-		} catch (Exception e) {
-			logger.error("Error while trying to deserialize the JSON : "
-					+ stringKeyValue, e);
-			return null;
-		}
-	}
-
-	public String writeValueToString(Object object) {
-		log.trace(
-				"Writing value {} to string for property {} of entity class {}",
-				object, propertyName, entityClassName);
-		try {
-			if (valueClass == String.class && type != MAP && type != LAZY_MAP) {
-				log.trace("Casting value straight to string");
-				return (String) object;
-			} else {
-				log.trace("Serializing value to string");
-				return this.objectMapper.writeValueAsString(object);
-			}
-		} catch (Exception e) {
-			logger.error(
-					"Error while trying to serialize to JSON the object : "
-							+ object, e);
-			return null;
-		}
-	}
-
-	public Object writeValueAsSupportedTypeOrString(Object value) {
-		log.trace(
-				"Writing value {} as native type or string for property {} of entity class {}",
-				value, propertyName, entityClassName);
-		try {
-			if (isSupportedType(valueClass)) {
-				log.trace("Value belongs to list of supported native types");
-				return value;
-			} else {
-				log.trace("Serializing value to string");
-				return this.objectMapper.writeValueAsString(value);
-			}
-		} catch (Exception e) {
-			logger.error(
-					"Error while trying to serialize to JSON the object : "
-							+ value, e);
-			return null;
-		}
-	}
-
-	public Object castValue(Object object) {
-		try {
-			if (isSupportedType(valueClass) || type.isJoin())
-				return this.valueClass.cast(object);
-			else
-				return objectMapper.readValue((String) object, valueClass);
-		} catch (Exception e) {
-			throw new AchillesException(
-					"Error while trying to cast the object " + object
-							+ " to type '" + this.valueClass.getCanonicalName()
-							+ "'", e);
 		}
 	}
 
@@ -362,6 +288,14 @@ public class PropertyMeta {
 		return transcoder.forceDecodeFromJSON(cassandraValue, targetType);
 	}
 
+	public Object forceDecodeFromJSON(String cassandraValue) {
+		if (type.isJoin()) {
+			return joinIdMeta().forceDecodeFromJSON(cassandraValue);
+		} else {
+			return transcoder.forceDecodeFromJSON(cassandraValue, valueClass);
+		}
+	}
+
 	public PropertyType type() {
 		return type;
 	}
@@ -474,72 +408,31 @@ public class PropertyMeta {
 
 	@Override
 	public String toString() {
-		StringBuilder description = new StringBuilder();
-		description.append("PropertyMeta [type=").append(type).append(", ");
-		description.append("propertyName=").append(propertyName).append(", ");
-		description.append("entityClassName=").append(entityClassName)
-				.append(", ");
-		if (keyClass != null)
-			description.append("keyClass=").append(keyClass.getCanonicalName())
-					.append(", ");
-
-		description.append("valueClass=").append(valueClass.getCanonicalName())
-				.append(", ");
-
-		if (counterProperties != null)
-			description.append("counterProperties=").append(counterProperties)
-					.append(", ");
-
-		if (joinProperties != null)
-			description.append("joinProperties=").append(joinProperties)
-					.append(", ");
-
-		if (embeddedIdProperties != null)
-			description.append("multiKeyProperties=")
-					.append(embeddedIdProperties).append(", ");
-
-		if (consistencyLevels != null) {
-			description.append("consistencyLevels=[")
-					.append(consistencyLevels.left.name()).append(",");
-			description.append(consistencyLevels.right.name()).append("], ");
-		}
-
-		return description.toString();
+		return Objects.toStringHelper(this.getClass()).add("type", type)
+				.add("entityClassName", entityClassName)
+				.add("propertyName", propertyName).add("keyClass", keyClass)
+				.add("valueClass", valueClass)
+				.add("counterProperties", counterProperties)
+				.add("joinProperties", joinProperties)
+				.add("embeddedIdProperties", embeddedIdProperties)
+				.add("consistencyLevels", consistencyLevels).toString();
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((entityClassName == null) ? 0 : entityClassName.hashCode());
-		result = prime * result
-				+ ((propertyName == null) ? 0 : propertyName.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
+		return Objects.hashCode(entityClassName, propertyName, type);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		PropertyMeta other = (PropertyMeta) obj;
-		if (entityClassName == null) {
-			if (other.entityClassName != null)
-				return false;
-		} else if (!entityClassName.equals(other.entityClassName))
-			return false;
-		if (propertyName == null) {
-			if (other.propertyName != null)
-				return false;
-		} else if (!propertyName.equals(other.propertyName))
-			return false;
-		if (type != other.type)
-			return false;
-		return true;
+
+		return Objects.equal(entityClassName, other.getEntityClassName())
+				&& Objects.equal(propertyName, other.getPropertyName())
+				&& Objects.equal(type, other.type());
 	}
 }

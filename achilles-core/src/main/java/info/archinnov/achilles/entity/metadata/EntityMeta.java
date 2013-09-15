@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 
 public class EntityMeta {
@@ -201,19 +202,13 @@ public class EntityMeta {
 
 	@Override
 	public String toString() {
-		StringBuilder description = new StringBuilder();
-		description.append("EntityMeta [className=").append(className)
-				.append(", ");
-		description.append("columnFamilyName=").append(tableName).append(", ");
-		description.append("propertyMetas=[")
-				.append(StringUtils.join(propertyMetas.keySet(), ","))
-				.append("], ");
-		description.append("idMeta=").append(idMeta.toString()).append(", ");
-		description.append("clusteredEntity=").append(clusteredEntity)
-				.append(", ");
-		description.append("consistencyLevels=[")
-				.append(consistencyLevels.left.name()).append(",")
-				.append(consistencyLevels.right.name()).append("]]");
-		return description.toString();
+		return Objects
+				.toStringHelper(this.getClass())
+				.add("className", className)
+				.add("tableName/columnFamilyName", tableName)
+				.add("propertyMetas",
+						StringUtils.join(propertyMetas.keySet(), ","))
+				.add("idMeta", idMeta).add("clusteredEntity", clusteredEntity)
+				.add("consistencyLevels", consistencyLevels).toString();
 	}
 }

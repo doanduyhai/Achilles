@@ -17,6 +17,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
@@ -26,7 +27,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,7 +95,7 @@ public class ThriftLoaderImpl {
 			}
 			Object value = context.getWideRowDao().getValue(partitionKey,
 					composite);
-			return propertyMeta.castValue(value);
+			return propertyMeta.decode(value);
 		} else {
 			Composite composite = compositeFactory
 					.createBaseForGet(propertyMeta);
@@ -107,7 +107,8 @@ public class ThriftLoaderImpl {
 								.getTableName(), context.getPrimaryKey(),
 						format(composite));
 			}
-			return propertyMeta.getValueFromString(context.getEntityDao()
+			return propertyMeta.forceDecodeFromJSON((String) context
+					.getEntityDao()
 					.getValue(context.getPrimaryKey(), composite));
 		}
 	}
@@ -125,7 +126,8 @@ public class ThriftLoaderImpl {
 		if (columns.size() > 0) {
 			list = new ArrayList<Object>();
 			for (Pair<Composite, String> pair : columns) {
-				list.add(propertyMeta.getValueFromString(pair.right));
+				int index = Integer.parseInt(pair.left.get(2, STRING_SRZ));
+				list.add(index, propertyMeta.decode(pair.right));
 			}
 		}
 		return list;
@@ -144,7 +146,7 @@ public class ThriftLoaderImpl {
 		if (columns.size() > 0) {
 			set = new HashSet<Object>();
 			for (Pair<Composite, String> pair : columns) {
-				set.add(propertyMeta.getValueFromString(pair.right));
+				set.add(propertyMeta.decode(pair.left.get(2, STRING_SRZ)));
 			}
 		}
 		return set;
@@ -159,21 +161,21 @@ public class ThriftLoaderImpl {
 						.getTableName(), context.getPrimaryKey());
 		List<Pair<Composite, String>> columns = fetchColumns(context,
 				propertyMeta);
-		Class<?> keyClass = propertyMeta.getKeyClass();
 		Map<Object, Object> map = null;
 		if (columns.size() > 0) {
 			map = new HashMap<Object, Object>();
 			for (Pair<Composite, String> pair : columns) {
-				KeyValue<Object, Object> holder = propertyMeta
-						.getKeyValueFromString(pair.right);
-
-				map.put(keyClass.cast(holder.getKey()), holder.getValue());
+				Object key = propertyMeta.forceDecodeFromJSON(
+						pair.left.get(2, STRING_SRZ),
+						propertyMeta.getKeyClass());
+				Object value = propertyMeta.decode(pair.right);
+				map.put(key, value);
 			}
 		}
 		return map;
 	}
 
-	private List<Pair<Composite, String>> fetchColumns(
+	protected List<Pair<Composite, String>> fetchColumns(
 			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 
 		Composite start = compositeFactory.createBaseForQuery(propertyMeta,
@@ -194,15 +196,14 @@ public class ThriftLoaderImpl {
 	public Object loadJoinSimple(ThriftPersistenceContext context,
 			PropertyMeta propertyMeta, ThriftEntityLoader loader) {
 		EntityMeta joinMeta = propertyMeta.joinMeta();
-		PropertyMeta joinIdMeta = propertyMeta.joinIdMeta();
 
 		Object joinId;
 		if (context.isClusteredEntity()) {
 			joinId = retrieveJoinIdForClusteredEntity(context, propertyMeta);
 		} else {
 			String stringJoinId = retrieveJoinIdForEntity(context, propertyMeta);
-			joinId = stringJoinId != null ? joinIdMeta
-					.getValueFromString(stringJoinId) : null;
+			joinId = stringJoinId != null ? propertyMeta
+					.forceDecodeFromJSON(stringJoinId) : null;
 		}
 
 		if (joinId != null) {

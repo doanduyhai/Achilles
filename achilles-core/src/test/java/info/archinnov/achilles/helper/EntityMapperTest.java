@@ -26,7 +26,6 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.EntityMetaTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -91,7 +90,6 @@ public class EntityMapperTest {
 		joinPropertyMetaToBeFilled.clear();
 
 		idMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, Long.class).field("id")
 				.build();
 	}
@@ -113,7 +111,6 @@ public class EntityMapperTest {
 	public void should_map_simple_property() throws Exception {
 		CompleteBean entity = new CompleteBean();
 		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class).field("name")
 				.accessors().build();
 
@@ -130,7 +127,6 @@ public class EntityMapperTest {
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 
@@ -149,7 +145,6 @@ public class EntityMapperTest {
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 
@@ -172,14 +167,9 @@ public class EntityMapperTest {
 		preferences.put(2, "Paris");
 		preferences.put(3, "75014");
 
-		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder //
+		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Integer.class, String.class)
-				//
-				.field("preferences")
-				//
-				.accessors()
-				//
-				.build();
+				.field("preferences").accessors().build();
 
 		doNothing().when(invoker).setValueToField(eq(entity),
 				eq(mapPropertyMeta.getSetter()), mapCaptor.capture());
@@ -198,7 +188,6 @@ public class EntityMapperTest {
 		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
 
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 
@@ -215,7 +204,6 @@ public class EntityMapperTest {
 		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
 		listProperties.put("test", Arrays.<Object> asList("test1", "test2"));
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
@@ -234,7 +222,6 @@ public class EntityMapperTest {
 
 		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 
@@ -254,7 +241,6 @@ public class EntityMapperTest {
 		setProperties.put("test", set);
 
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
@@ -272,12 +258,10 @@ public class EntityMapperTest {
 
 		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
 		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Integer.class, String.class)
 				.field("preferences").type(MAP).mapper(objectMapper)
 				.accessors().build();
-		mapper.addToMap(mapProperties, mapPropertyMeta,
-				new KeyValue<Integer, String>(1, "FR"));
+		mapper.addToMap(mapProperties, mapPropertyMeta, 1, "FR");
 
 		assertThat(mapProperties).hasSize(1);
 		assertThat(mapProperties).containsKey("preferences");
@@ -295,13 +279,11 @@ public class EntityMapperTest {
 		mapProperties.put("test", map);
 
 		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Integer.class, String.class)
 				.field("preferences").type(MAP).mapper(objectMapper)
 				.accessors().build();
 
-		mapper.addToMap(mapProperties, mapPropertyMeta,
-				new KeyValue<Integer, String>(1, "FR"));
+		mapper.addToMap(mapProperties, mapPropertyMeta, 1, "FR");
 
 		assertThat(mapProperties).hasSize(2);
 		assertThat(mapProperties).containsKey("preferences");

@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.metadata.transcoding;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
@@ -328,5 +328,45 @@ public class AbstractTranscoderTest {
 						+ pm.type().name() + "'");
 
 		transcoder.decodeFromComponents(pm, components);
+	}
+
+	@Test
+	public void should_force_encode_to_json_object_type() throws Exception {
+		when(objectMapper.writeValueAsString(10L)).thenReturn("10");
+
+		assertThat(transcoder.forceEncodeToJSON(10L)).isEqualTo("10");
+	}
+
+	@Test
+	public void should_force_encode_to_json_string_type() throws Exception {
+		assertThat(transcoder.forceEncodeToJSON("test")).isEqualTo("test");
+		verifyZeroInteractions(objectMapper);
+	}
+
+	@Test
+	public void should_return_null_when_force_encode_null() throws Exception {
+
+		assertThat(transcoder.forceEncodeToJSON(null)).isNull();
+	}
+
+	@Test
+	public void should_force_decode_from_json_object_type() throws Exception {
+		when(objectMapper.readValue("10", Long.class)).thenReturn(10L);
+
+		assertThat(transcoder.forceDecodeFromJSON("10", Long.class)).isEqualTo(
+				10L);
+	}
+
+	@Test
+	public void should_force_decode_to_json_string_type() throws Exception {
+		assertThat(transcoder.forceDecodeFromJSON("test", String.class))
+				.isEqualTo("test");
+		verifyZeroInteractions(objectMapper);
+	}
+
+	@Test
+	public void should_return_null_when_force_decode_null() throws Exception {
+
+		assertThat(transcoder.forceDecodeFromJSON(null, Long.class)).isNull();
 	}
 }

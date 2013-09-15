@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
@@ -28,15 +30,14 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,6 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,15 +95,16 @@ public class ThriftJoinLoaderImplTest {
 	@Mock
 	private ThriftGenericEntityDao joinEntityDao;
 
+	@Mock
+	private DataTranscoder transcoder;
+
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
 			.buid();
 
 	private ThriftPersistenceContext context;
 
 	@Captor
-	private ArgumentCaptor<List<Long>> listCaptor;
-
-	private ObjectMapper objectMapper = new ObjectMapper();
+	private ArgumentCaptor<List<Object>> listCaptor;
 
 	@Before
 	public void setUp() {
@@ -121,23 +122,27 @@ public class ThriftJoinLoaderImplTest {
 
 	@Test
 	public void should_load_join_list() throws Exception {
-		EntityMeta joinMeta = new EntityMeta();
+
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.valueClass(Long.class).type(ID).transcoder(transcoder).build();
 
-		joinMeta.setIdMeta(joinIdMeta);
+		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setTableName("join_cf");
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
+		joinMeta.setIdMeta(joinIdMeta);
 
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setJoinProperties(joinProperties);
-		propertyMeta.setValueClass(UserBean.class);
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.valueClass(UserBean.class).type(JOIN_LIST).joinMeta(joinMeta)
+				.field("friends").transcoder(transcoder).build();
 
 		Composite start = new Composite();
 		Composite end = new Composite();
+		start.addComponent(JOIN_LIST.flag(), BYTE_SRZ);
+		start.addComponent("friends", STRING_SRZ);
+		start.addComponent("0", STRING_SRZ);
+
+		end.addComponent(JOIN_LIST.flag(), BYTE_SRZ);
+		end.addComponent("friends", STRING_SRZ);
+		end.addComponent("1", STRING_SRZ);
 
 		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL))
 				.thenReturn(start);
@@ -151,12 +156,13 @@ public class ThriftJoinLoaderImplTest {
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
+		when(transcoder.forceDecodeFromJSON("11", Long.class)).thenReturn(11L);
+		when(transcoder.forceDecodeFromJSON("12", Long.class)).thenReturn(12L);
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
-		Map<Long, UserBean> joinEntitiesMap = ImmutableMap.of(11L, user1, 12L,
-				user2);
-
+		Map<Object, Object> joinEntitiesMap = ImmutableMap.<Object, Object> of(
+				11L, user1, 12L, user2);
 		when(
 				joinHelper.loadJoinEntities(eq(UserBean.class),
 						listCaptor.capture(), eq(joinMeta), eq(joinEntityDao)))
@@ -173,21 +179,26 @@ public class ThriftJoinLoaderImplTest {
 	public void should_load_join_set() throws Exception {
 		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.valueClass(Long.class).transcoder(transcoder)
+				.type(PropertyType.ID).build();
 
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setTableName("join_cf");
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
 
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setJoinProperties(joinProperties);
-		propertyMeta.setValueClass(UserBean.class);
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.valueClass(UserBean.class).type(JOIN_SET).joinMeta(joinMeta)
+				.field("followers").transcoder(transcoder).build();
 
 		Composite start = new Composite();
 		Composite end = new Composite();
+
+		start.addComponent(JOIN_SET.flag(), BYTE_SRZ);
+		start.addComponent("followers", STRING_SRZ);
+		start.addComponent("11", STRING_SRZ);
+
+		end.addComponent(JOIN_SET.flag(), BYTE_SRZ);
+		end.addComponent("followers", STRING_SRZ);
+		end.addComponent("12", STRING_SRZ);
 
 		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL))
 				.thenReturn(start);
@@ -196,16 +207,19 @@ public class ThriftJoinLoaderImplTest {
 						GREATER_THAN_EQUAL)).thenReturn(end);
 
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
-		columns.add(Pair.<Composite, Object> create(start, "11"));
-		columns.add(Pair.<Composite, Object> create(end, "12"));
+		columns.add(Pair.<Composite, Object> create(start, ""));
+		columns.add(Pair.<Composite, Object> create(end, ""));
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
-		Map<Long, UserBean> joinEntitiesMap = ImmutableMap.of(11L, user1, 12L,
-				user2);
+		Map<Object, Object> joinEntitiesMap = ImmutableMap.<Object, Object> of(
+				11L, user1, 12L, user2);
+
+		when(transcoder.forceDecodeFromJSON("11", Long.class)).thenReturn(11L);
+		when(transcoder.forceDecodeFromJSON("12", Long.class)).thenReturn(12L);
 
 		when(
 				joinHelper.loadJoinEntities(eq(UserBean.class),
@@ -223,23 +237,27 @@ public class ThriftJoinLoaderImplTest {
 	public void should_load_join_map() throws Exception {
 		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.valueClass(Long.class).transcoder(transcoder)
+				.type(PropertyType.ID).build();
 
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setTableName("join_cf");
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
 
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setJoinProperties(joinProperties);
-		propertyMeta.setKeyClass(Integer.class);
-		propertyMeta.setValueClass(UserBean.class);
-		propertyMeta.setObjectMapper(objectMapper);
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.keyValueClass(Integer.class, UserBean.class).type(JOIN_MAP)
+				.joinMeta(joinMeta).field("preferences").transcoder(transcoder)
+				.build();
 
 		Composite start = new Composite();
 		Composite end = new Composite();
+
+		start.addComponent(JOIN_MAP.flag(), BYTE_SRZ);
+		start.addComponent("preferences", STRING_SRZ);
+		start.addComponent("1", STRING_SRZ);
+
+		end.addComponent(JOIN_MAP.flag(), BYTE_SRZ);
+		end.addComponent("preferences", STRING_SRZ);
+		end.addComponent("2", STRING_SRZ);
 
 		when(thriftCompositeFactory.createBaseForQuery(propertyMeta, EQUAL))
 				.thenReturn(start);
@@ -248,33 +266,32 @@ public class ThriftJoinLoaderImplTest {
 						GREATER_THAN_EQUAL)).thenReturn(end);
 
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
-		columns.add(Pair.<Composite, Object> create(start,
-				writeString(new KeyValue<Integer, String>(11, "11"))));
-		columns.add(Pair.<Composite, Object> create(end,
-				writeString(new KeyValue<Integer, String>(12, "12"))));
+		columns.add(Pair.<Composite, Object> create(start, "11"));
+		columns.add(Pair.<Composite, Object> create(end, "12"));
+
+		when(transcoder.forceDecodeFromJSON("1", Integer.class)).thenReturn(1);
+		when(transcoder.forceDecodeFromJSON("2", Integer.class)).thenReturn(2);
+		when(transcoder.forceDecodeFromJSON("11", Long.class)).thenReturn(11L);
+		when(transcoder.forceDecodeFromJSON("12", Long.class)).thenReturn(12L);
+
 		when(
 				entityDao.findColumnsRange(entity.getId(), start, end, false,
 						Integer.MAX_VALUE)).thenReturn(columns);
 
 		UserBean user1 = new UserBean();
 		UserBean user2 = new UserBean();
-		Map<Long, UserBean> joinEntitiesMap = ImmutableMap.of(11L, user1, 12L,
-				user2);
+		Map<Object, Object> joinEntitiesMap = ImmutableMap.<Object, Object> of(
+				11L, user1, 12L, user2);
 		when(
 				joinHelper.loadJoinEntities(eq(UserBean.class),
 						listCaptor.capture(), eq(joinMeta), eq(joinEntityDao)))
 				.thenReturn(joinEntitiesMap);
 
-		Map<Object, UserBean> actual = (Map) thriftJoinLoader
-				.loadJoinMapProperty(context, propertyMeta);
+		Map<Object, Object> actual = thriftJoinLoader.loadJoinMapProperty(
+				context, propertyMeta);
 
-		assertThat(actual.get(11)).isSameAs(user1);
-		assertThat(actual.get(12)).isSameAs(user2);
+		assertThat(actual.get(1)).isSameAs(user1);
+		assertThat(actual.get(2)).isSameAs(user2);
 		assertThat(listCaptor.getValue()).containsExactly(11L, 12L);
-	}
-
-	private String writeString(Object value) throws Exception {
-		return objectMapper.writerWithType(KeyValue.class).writeValueAsString(
-				value);
 	}
 }

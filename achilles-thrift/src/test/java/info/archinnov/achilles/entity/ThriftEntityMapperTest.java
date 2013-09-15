@@ -29,7 +29,6 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -90,7 +89,6 @@ public class ThriftEntityMapperTest {
 	@Before
 	public void setUp() throws Exception {
 		idMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, Long.class).field("id")
 				.build();
 	}
@@ -101,31 +99,25 @@ public class ThriftEntityMapperTest {
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class).field("name")
 				.type(SIMPLE).mapper(objectMapper).accessors().build();
 
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").type(LIST).mapper(objectMapper).accessors()
 				.build();
 
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").type(SET).mapper(objectMapper).accessors()
 				.build();
 
 		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Integer.class, String.class)
 				.field("preferences").type(MAP).mapper(objectMapper)
 				.accessors().build();
 
-		entityMeta = EntityMetaTestBuilder
-				.builder(idMeta)
-				//
+		entityMeta = EntityMetaTestBuilder.builder(idMeta)
 				.addPropertyMeta(namePropertyMeta)
 				.addPropertyMeta(listPropertyMeta)
 				.addPropertyMeta(setPropertyMeta)
@@ -135,19 +127,22 @@ public class ThriftEntityMapperTest {
 
 		columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
 
-		columns.add(Pair.create(buildListPropertyComposite("friends"), "foo"));
-		columns.add(Pair.create(buildListPropertyComposite("friends"), "bar"));
+		columns.add(Pair
+				.create(buildListPropertyComposite("friends", 0), "foo"));
+		columns.add(Pair
+				.create(buildListPropertyComposite("friends", 1), "bar"));
 
-		columns.add(Pair.create(buildSetPropertyComposite("followers"),
-				"George"));
-		columns.add(Pair.create(buildSetPropertyComposite("followers"), "Paul"));
+		columns.add(Pair.create(
+				buildSetPropertyComposite("followers", "George"), ""));
+		columns.add(Pair.create(buildSetPropertyComposite("followers", "Paul"),
+				""));
 
-		columns.add(Pair.create(buildMapPropertyComposite("preferences"),
-				writeToString(new KeyValue<Integer, String>(1, "FR"))));
-		columns.add(Pair.create(buildMapPropertyComposite("preferences"),
-				writeToString(new KeyValue<Integer, String>(2, "Paris"))));
-		columns.add(Pair.create(buildMapPropertyComposite("preferences"),
-				writeToString(new KeyValue<Integer, String>(3, "75014"))));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 1),
+				"FR"));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 2),
+				"Paris"));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 3),
+				"75014"));
 
 		doNothing().when(invoker).setValueToField(eq(entity),
 				eq(idMeta.getSetter()), idCaptor.capture());
@@ -285,31 +280,32 @@ public class ThriftEntityMapperTest {
 		Composite comp = new Composite();
 		comp.add(0, SIMPLE.flag());
 		comp.add(1, propertyName);
+		comp.add(2, "0");
 		return comp;
 	}
 
-	private Composite buildListPropertyComposite(String propertyName) {
+	private Composite buildListPropertyComposite(String propertyName, int index) {
 		Composite comp = new Composite();
 		comp.add(0, LIST.flag());
 		comp.add(1, propertyName);
+		comp.add(2, index + "");
 		return comp;
 	}
 
-	private Composite buildSetPropertyComposite(String propertyName) {
+	private Composite buildSetPropertyComposite(String propertyName,
+			String value) {
 		Composite comp = new Composite();
 		comp.add(0, SET.flag());
 		comp.add(1, propertyName);
+		comp.add(2, value);
 		return comp;
 	}
 
-	private Composite buildMapPropertyComposite(String propertyName) {
+	private Composite buildMapPropertyComposite(String propertyName, int key) {
 		Composite comp = new Composite();
 		comp.add(0, MAP.flag());
 		comp.add(1, propertyName);
+		comp.add(2, key + "");
 		return comp;
-	}
-
-	private String writeToString(Object object) throws Exception {
-		return objectMapper.writeValueAsString(object);
 	}
 }

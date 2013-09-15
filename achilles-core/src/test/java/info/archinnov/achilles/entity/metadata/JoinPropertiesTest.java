@@ -18,9 +18,10 @@ package info.archinnov.achilles.entity.metadata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.util.HashMap;
+
 import javax.persistence.CascadeType;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 public class JoinPropertiesTest {
@@ -28,6 +29,7 @@ public class JoinPropertiesTest {
 	public void should_to_string() throws Exception {
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClassName("className");
+		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
 		JoinProperties props = new JoinProperties();
 		props.setEntityMeta(entityMeta);
@@ -35,10 +37,9 @@ public class JoinPropertiesTest {
 		props.addCascadeType(CascadeType.PERSIST);
 
 		StringBuilder toString = new StringBuilder();
-		toString.append("JoinProperties [entityMeta=className, ");
-		toString.append("cascadeTypes=[")
-				.append(StringUtils.join(props.getCascadeTypes(), ","))
-				.append("]]");
+		toString.append("JoinProperties{entityMeta=").append(
+				entityMeta.toString());
+		toString.append(", cascadeTypes=MERGE,PERSIST}");
 
 		assertThat(props.toString()).isEqualTo(toString.toString());
 	}

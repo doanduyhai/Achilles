@@ -68,7 +68,7 @@ public class ThriftJoinEntityLoaderTest {
 	@Captor
 	ArgumentCaptor<UserBean> userCaptor;
 
-	private List<Long> keys = Arrays.asList(11L);
+	private List<Object> keys = Arrays.<Object> asList(11L);
 
 	@Test
 	public void should_load_join_entities() throws Exception {
@@ -86,7 +86,7 @@ public class ThriftJoinEntityLoaderTest {
 		columns2.add(Pair.create(start, "john"));
 		columns2.add(Pair.create(end, "helen"));
 
-		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
+		Map<Object, List<Pair<Composite, String>>> rows = new HashMap<Object, List<Pair<Composite, String>>>();
 		rows.put(11L, columns1);
 		rows.put(12L, columns2);
 
@@ -95,7 +95,7 @@ public class ThriftJoinEntityLoaderTest {
 		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
 		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
-		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(
+		Map<Object, Object> actual = joinHelper.loadJoinEntities(
 				UserBean.class, keys, joinMeta, dao);
 
 		verify(mapper).setEagerPropertiesToEntity(eq(11L), eq(columns1),
@@ -119,13 +119,13 @@ public class ThriftJoinEntityLoaderTest {
 	@Test
 	public void should_return_empty_map_when_no_join_entity_found()
 			throws Exception {
-		Map<Long, List<Pair<Composite, String>>> rows = new HashMap<Long, List<Pair<Composite, String>>>();
+		Map<Object, List<Pair<Composite, String>>> rows = new HashMap<Object, List<Pair<Composite, String>>>();
 		List<Pair<Composite, String>> columns1 = new ArrayList<Pair<Composite, String>>();
 		rows.put(11L, columns1);
 
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
-		Map<Long, UserBean> actual = joinHelper.loadJoinEntities(
+		Map<Object, Object> actual = joinHelper.loadJoinEntities(
 				UserBean.class, keys, joinMeta, dao);
 
 		verifyZeroInteractions(mapper);

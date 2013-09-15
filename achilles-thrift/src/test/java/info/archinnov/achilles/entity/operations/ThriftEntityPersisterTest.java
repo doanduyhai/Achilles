@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -327,7 +328,6 @@ public class ThriftEntityPersisterTest {
 		UserBean user = new UserBean();
 
 		PropertyMeta joinMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, UserBean.class).field("user")
 				.accessors().type(PropertyType.JOIN_SIMPLE).build();
 
@@ -343,11 +343,30 @@ public class ThriftEntityPersisterTest {
 	}
 
 	@Test
-	public void should_persist_join_collection() throws Exception {
+	public void should_persist_join_list() throws Exception {
+		List<String> joinList = new ArrayList<String>();
+
+		PropertyMeta joinListMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("friends")
+				.accessors().type(PropertyType.JOIN_LIST).build();
+
+		entityMeta.setPropertyMetas(ImmutableMap.of("joinListMeta",
+				joinListMeta));
+
+		when(invoker.getValueFromField(entity, joinListMeta.getGetter()))
+				.thenReturn(joinList);
+		persister.persist(context);
+
+		verify(persisterImpl).removeEntityBatch(context);
+		verify(persisterImpl).batchPersistJoinList(context, joinListMeta,
+				joinList, persister);
+	}
+
+	@Test
+	public void should_persist_join_set() throws Exception {
 		Set<String> joinSet = new HashSet<String>();
 
 		PropertyMeta joinSetMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("followers")
 				.accessors().type(PropertyType.JOIN_SET).build();
 
@@ -359,7 +378,7 @@ public class ThriftEntityPersisterTest {
 		persister.persist(context);
 
 		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl).batchPersistJoinCollection(context, joinSetMeta,
+		verify(persisterImpl).batchPersistJoinSet(context, joinSetMeta,
 				joinSet, persister);
 	}
 

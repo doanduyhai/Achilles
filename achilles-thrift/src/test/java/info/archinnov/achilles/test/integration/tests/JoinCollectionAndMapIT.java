@@ -17,6 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -31,7 +32,6 @@ import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithJoinCollectionAndMap;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -127,10 +127,10 @@ public class JoinCollectionAndMapIT {
 						false, 20);
 
 		assertThat(friendsColumns).hasSize(2);
-		assertThat(readLong(friendsColumns.get(0).right)).isIn(friend1.getId(),
-				friend2.getId());
-		assertThat(readLong(friendsColumns.get(1).right)).isIn(friend1.getId(),
-				friend2.getId());
+		assertThat(readLong(friendsColumns.get(0).left.get(2, STRING_SRZ)))
+				.isIn(friend1.getId(), friend2.getId());
+		assertThat(readLong(friendsColumns.get(1).left.get(2, STRING_SRZ)))
+				.isIn(friend1.getId(), friend2.getId());
 
 		Composite startTweetsComp = CompositeTestBuilder.builder()
 				.values(JOIN_LIST.flag(), "tweets").equality(EQUAL)
@@ -160,12 +160,12 @@ public class JoinCollectionAndMapIT {
 						false, 20);
 
 		assertThat(timelineColumns).hasSize(3);
-		assertThat(readKeyValue(timelineColumns.get(0).right).getKey())
-				.isEqualTo(3);
-		assertThat(readKeyValue(timelineColumns.get(1).right).getKey())
-				.isEqualTo(4);
-		assertThat(readKeyValue(timelineColumns.get(2).right).getKey())
-				.isEqualTo(5);
+		assertThat(timelineColumns.get(0).left.get(2, STRING_SRZ)).isEqualTo(
+				"3");
+		assertThat(timelineColumns.get(1).left.get(2, STRING_SRZ)).isEqualTo(
+				"4");
+		assertThat(timelineColumns.get(2).left.get(2, STRING_SRZ)).isEqualTo(
+				"5");
 
 		assertThat(em.find(Tweet.class, tweet1.getId()).getContent())
 				.isEqualTo(tweet1.getContent());
@@ -237,9 +237,8 @@ public class JoinCollectionAndMapIT {
 						false, 20);
 
 		assertThat(timelineColumns).hasSize(1);
-		assertThat(
-				readUUID(readKeyValue(timelineColumns.get(0).right).getValue()))
-				.isEqualTo(tweet3.getId());
+		assertThat(readUUID(timelineColumns.get(0).right)).isEqualTo(
+				tweet3.getId());
 
 		assertThat(em.find(Tweet.class, tweet1.getId()).getContent())
 				.isEqualTo(tweet1.getContent());
@@ -425,12 +424,5 @@ public class JoinCollectionAndMapIT {
 
 	private UUID readUUID(String value) throws Exception {
 		return this.objectMapper.readValue(value, UUID.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	private KeyValue<Integer, String> readKeyValue(String value)
-			throws Exception {
-		return (KeyValue<Integer, String>) this.objectMapper.readValue(value,
-				KeyValue.class);
 	}
 }

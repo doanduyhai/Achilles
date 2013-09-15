@@ -28,10 +28,8 @@ import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder.CounterImpl;
-import info.archinnov.achilles.type.KeyValue;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +47,7 @@ import com.google.common.collect.FluentIterable;
 public class ThriftPersisterImpl {
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftPersisterImpl.class);
+	private static final String EMPTY = "";
 
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
@@ -59,7 +58,7 @@ public class ThriftPersisterImpl {
 			PropertyMeta propertyMeta) {
 		Composite name = thriftCompositeFactory
 				.createForBatchInsertSingleValue(propertyMeta);
-		String value = propertyMeta.writeValueToString(invoker
+		String value = propertyMeta.forceEncodeToJSON(invoker
 				.getValueFromField(context.getEntity(),
 						propertyMeta.getGetter()));
 		if (value != null) {
@@ -116,11 +115,10 @@ public class ThriftPersisterImpl {
 			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		int count = 0;
 		for (V value : list) {
-			Composite name = thriftCompositeFactory
-					.createForBatchInsertMultiValue(propertyMeta, count);
-
-			String stringValue = propertyMeta.writeValueToString(value);
+			String stringValue = propertyMeta.forceEncodeToJSON(value);
 			if (stringValue != null) {
+				Composite name = thriftCompositeFactory
+						.createForBatchInsertList(propertyMeta, count);
 				if (log.isTraceEnabled()) {
 					log.trace(
 							"Batch persisting list property {} from entity of class {} and primary key {} with column name {}",
@@ -140,12 +138,12 @@ public class ThriftPersisterImpl {
 	public <V> void batchPersistSet(Set<V> set,
 			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		for (V value : set) {
-			Composite name = thriftCompositeFactory
-					.createForBatchInsertMultiValue(propertyMeta,
-							value.hashCode());
 
-			String stringValue = propertyMeta.writeValueToString(value);
-			if (stringValue != null) {
+			String valueAsString = propertyMeta.forceEncodeToJSON(value);
+			if (valueAsString != null) {
+				Composite name = thriftCompositeFactory
+						.createForBatchInsertSetOrMap(propertyMeta,
+								valueAsString);
 				if (log.isTraceEnabled()) {
 					log.trace(
 							"Batch persisting set property {} from entity of class {} and primary key {} with column name {}",
@@ -154,8 +152,8 @@ public class ThriftPersisterImpl {
 							context.getPrimaryKey(), format(name));
 				}
 				context.getEntityDao().insertColumnBatch(
-						context.getPrimaryKey(), name, stringValue,
-						context.getTtt(), context.getTimestamp(),
+						context.getPrimaryKey(), name, EMPTY, context.getTtt(),
+						context.getTimestamp(),
 						context.getEntityMutator(context.getTableName()));
 			}
 		}
@@ -164,12 +162,13 @@ public class ThriftPersisterImpl {
 	public <K, V> void batchPersistMap(Map<K, V> map,
 			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		for (Entry<K, V> entry : map.entrySet()) {
-			Composite name = thriftCompositeFactory
-					.createForBatchInsertMultiValue(propertyMeta, entry
-							.getKey().hashCode());
 
-			String value = propertyMeta.writeValueToString(new KeyValue<K, V>(
-					entry.getKey(), entry.getValue()));
+			String keyAsString = propertyMeta.forceEncodeToJSON(entry.getKey());
+			String valueAsString = propertyMeta.forceEncodeToJSON(entry
+					.getValue());
+
+			Composite name = thriftCompositeFactory
+					.createForBatchInsertSetOrMap(propertyMeta, keyAsString);
 
 			if (log.isTraceEnabled()) {
 				log.trace(
@@ -179,7 +178,8 @@ public class ThriftPersisterImpl {
 								.getPrimaryKey(), format(name));
 			}
 			context.getEntityDao().insertColumnBatch(context.getPrimaryKey(),
-					name, value, context.getTtt(), context.getTimestamp(),
+					name, valueAsString, context.getTtt(),
+					context.getTimestamp(),
 					context.getEntityMutator(context.getTableName()));
 		}
 	}
@@ -194,7 +194,7 @@ public class ThriftPersisterImpl {
 		Validator.validateNotNull(joinId,
 				"Primary key for join entity '%s' should not be null",
 				joinEntity);
-		String joinIdString = idMeta.writeValueToString(joinId);
+		String joinIdString = idMeta.forceEncodeToJSON(joinId);
 
 		Composite joinComposite = thriftCompositeFactory
 				.createForBatchInsertSingleValue(propertyMeta);
@@ -218,23 +218,25 @@ public class ThriftPersisterImpl {
 				joinEntity, joinProperties);
 	}
 
-	public <V> void batchPersistJoinCollection(
-			ThriftPersistenceContext context, PropertyMeta propertyMeta,
-			Collection<V> joinCollection, ThriftEntityPersister persister) {
+	public <V> void batchPersistJoinList(ThriftPersistenceContext context,
+			PropertyMeta propertyMeta, List<V> joinList,
+			ThriftEntityPersister persister) {
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
 		PropertyMeta joinIdMeta = joinEntityMeta.getIdMeta();
-		int count = 0;
-		for (V joinEntity : joinCollection) {
+		for (int i = 0; i < joinList.size(); i++) {
+
+			V joinEntity = joinList.get(i);
 			if (joinEntity != null) {
 				Composite name = thriftCompositeFactory
-						.createForBatchInsertMultiValue(propertyMeta, count);
+						.createForBatchInsertList(propertyMeta, i);
 
 				Object joinEntityId = invoker.getValueFromField(joinEntity,
 						joinIdMeta.getGetter());
 
 				String joinEntityIdStringValue = joinIdMeta
-						.writeValueToString(joinEntityId);
+						.forceEncodeToJSON(joinEntityId);
+
 				if (joinEntityIdStringValue != null) {
 					if (log.isTraceEnabled()) {
 						log.trace(
@@ -256,7 +258,50 @@ public class ThriftPersisterImpl {
 					persister.cascadePersistOrEnsureExists(
 							joinPersistenceContext, joinEntity, joinProperties);
 				}
-				count++;
+			}
+		}
+	}
+
+	public <V> void batchPersistJoinSet(ThriftPersistenceContext context,
+			PropertyMeta propertyMeta, Set<V> joinSet,
+			ThriftEntityPersister persister) {
+		JoinProperties joinProperties = propertyMeta.getJoinProperties();
+		EntityMeta joinEntityMeta = joinProperties.getEntityMeta();
+		PropertyMeta joinIdMeta = joinEntityMeta.getIdMeta();
+		for (V joinEntity : joinSet) {
+			if (joinEntity != null) {
+
+				Object joinEntityId = invoker.getValueFromField(joinEntity,
+						joinIdMeta.getGetter());
+
+				String joinEntityIdStringValue = joinIdMeta
+						.forceEncodeToJSON(joinEntityId);
+
+				if (joinEntityIdStringValue != null) {
+
+					Composite name = thriftCompositeFactory
+							.createForBatchInsertSetOrMap(propertyMeta,
+									joinEntityIdStringValue);
+
+					if (log.isTraceEnabled()) {
+						log.trace(
+								"Batch persisting join primary keys for property {} from entity of class {} and primary key {} with column name {}",
+								propertyMeta.getPropertyName(), context
+										.getEntityClass().getCanonicalName(),
+								context.getPrimaryKey(), format(name));
+					}
+					context.getEntityDao().insertColumnBatch(
+							context.getPrimaryKey(), name, EMPTY,
+							context.getTtt(), context.getTimestamp(),
+							context.getEntityMutator(context.getTableName()));
+
+					ThriftPersistenceContext joinPersistenceContext = context
+							.createContextForJoin(propertyMeta.joinMeta(),
+									proxifier.unwrap(joinEntity));
+
+					persister.cascadePersistOrEnsureExists(
+							joinPersistenceContext, joinEntity, joinProperties);
+				}
 			}
 		}
 	}
@@ -269,23 +314,22 @@ public class ThriftPersisterImpl {
 		PropertyMeta idMeta = joinEntityMeta.getIdMeta();
 
 		for (Entry<K, V> entry : joinMap.entrySet()) {
+
+			String keyAsString = propertyMeta.forceEncodeToJSON(entry.getKey());
+
 			Composite name = thriftCompositeFactory
-					.createForBatchInsertMultiValue(propertyMeta, entry
-							.getKey().hashCode());
+					.createForBatchInsertSetOrMap(propertyMeta, keyAsString);
 
 			V joinEntity = entry.getValue();
 			if (joinEntity != null) {
 				Object joinEntityId = invoker.getValueFromField(joinEntity,
 						idMeta.getGetter());
 				String joinEntityIdStringValue = idMeta
-						.writeValueToString(joinEntityId);
+						.forceEncodeToJSON(joinEntityId);
 
-				String value = propertyMeta
-						.writeValueToString(new KeyValue<K, String>(entry
-								.getKey(), joinEntityIdStringValue));
 				context.getEntityDao().insertColumnBatch(
-						context.getPrimaryKey(), name, value, context.getTtt(),
-						context.getTimestamp(),
+						context.getPrimaryKey(), name, joinEntityIdStringValue,
+						context.getTtt(), context.getTimestamp(),
 						context.getEntityMutator(context.getTableName()));
 
 				ThriftPersistenceContext joinPersistenceContext = context
@@ -355,8 +399,7 @@ public class ThriftPersisterImpl {
 				CounterImpl counterValue = (CounterImpl) clusteredValue;
 				dao.incrementCounter(partitionKey, comp, counterValue.get());
 			} else {
-				Object persistentValue = pm
-						.writeValueAsSupportedTypeOrString(clusteredValue);
+				Object persistentValue = pm.encode(clusteredValue);
 				dao.setValueBatch(partitionKey, comp, persistentValue,
 						context.getTtt(), context.getTimestamp(), mutator);
 			}
@@ -398,8 +441,7 @@ public class ThriftPersisterImpl {
 					clusteredValue, pm.getJoinProperties());
 
 		} else {
-			persistentValue = pm
-					.writeValueAsSupportedTypeOrString(clusteredValue);
+			persistentValue = pm.encode(clusteredValue);
 			dao.setValueBatch(partitionKey, comp, persistentValue,
 					context.getTtt(), context.getTimestamp(), mutator);
 		}

@@ -20,7 +20,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static javax.persistence.CascadeType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -127,49 +127,6 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_write_value_to_string() throws Exception {
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setObjectMapper(objectMapper);
-
-		UUID timeUUID = new UUID(10L, 100L);
-
-		String uuidString = objectMapper.writeValueAsString(timeUUID);
-
-		String converted = propertyMeta.writeValueToString(timeUUID);
-
-		assertThat(converted).isEqualTo(uuidString);
-	}
-
-	@Test
-	public void should_write_value_as_supported_type() throws Exception {
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setObjectMapper(objectMapper);
-		propertyMeta.setValueClass(String.class);
-
-		String value = "test";
-
-		Object converted = propertyMeta
-				.writeValueAsSupportedTypeOrString(value);
-
-		assertThat(converted).isSameAs(value);
-	}
-
-	@Test
-	public void should_write_value_as_string_because_not_supported_type()
-			throws Exception {
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setObjectMapper(objectMapper);
-
-		UserBean value = new UserBean();
-		String stringValue = objectMapper.writeValueAsString(value);
-
-		Object converted = propertyMeta
-				.writeValueAsSupportedTypeOrString(value);
-
-		assertThat(converted).isEqualTo(stringValue);
-	}
-
-	@Test
 	public void should_cast_key() throws Exception {
 		PropertyMeta propertyMeta = new PropertyMeta();
 		propertyMeta.setKeyClass(String.class);
@@ -179,49 +136,6 @@ public class PropertyMetaTest {
 
 		Object key = propertyMeta.getKey(test);
 		assertThat(key).isEqualTo("test");
-	}
-
-	@Test
-	public void should_cast_value_as_join_type() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_SIMPLE).build();
-
-		UserBean uuid = new UserBean();
-
-		Object cast = propertyMeta.castValue(uuid);
-
-		assertThat(cast).isSameAs(uuid);
-	}
-
-	@Test
-	public void should_cast_value_as_supported_type() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UUID.class)
-				.type(PropertyType.SIMPLE).build();
-
-		Object uuid = new UUID(10L, 100L);
-
-		Object cast = propertyMeta.castValue(uuid);
-
-		assertThat(cast).isSameAs(uuid);
-	}
-
-	@Test
-	public void should_cast_value_as_string() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.SIMPLE).build();
-
-		UserBean bean = new UserBean();
-		bean.setName("name");
-		bean.setUserId(12L);
-
-		UserBean cast = (UserBean) propertyMeta.castValue(objectMapper
-				.writeValueAsString(bean));
-
-		assertThat(cast.getName()).isEqualTo(bean.getName());
-		assertThat(cast.getUserId()).isEqualTo(bean.getUserId());
 	}
 
 	@Test
@@ -258,18 +172,13 @@ public class PropertyMetaTest {
 				joinIdMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_counter_id_meta() throws Exception {
 		PropertyMeta idMeta = new PropertyMeta();
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class) //
-				.type(PropertyType.COUNTER)
-				//
-				.counterIdMeta(idMeta)
-				//
-				.build();
+				.valueClass(Long.class).type(PropertyType.COUNTER)
+				.counterIdMeta(idMeta).build();
 
 		assertThat((PropertyMeta) propertyMeta.counterIdMeta())
 				.isSameAs(idMeta);
@@ -731,4 +640,53 @@ public class PropertyMetaTest {
 		assertThat(pm.encodeComponents(list)).isEqualTo(list);
 	}
 
+	@Test
+	public void should_force_encode_to_json() throws Exception {
+		PropertyMeta pm = new PropertyMeta();
+		pm.setTranscoder(transcoder);
+
+		pm.forceEncodeToJSON("value");
+
+		verify(transcoder).forceEncodeToJSON("value");
+	}
+
+	@Test
+	public void should_force_decode_from_json_simple_value() throws Exception {
+		PropertyMeta pm = new PropertyMeta();
+		pm.setTranscoder(transcoder);
+		pm.setType(SIMPLE);
+		pm.setValueClass(String.class);
+
+		when(transcoder.forceDecodeFromJSON("value", String.class)).thenReturn(
+				"decoded");
+
+		Object decoded = pm.forceDecodeFromJSON("value");
+
+		assertThat(decoded).isEqualTo("decoded");
+	}
+
+	@Test
+	public void should_force_decode_from_json_join_value() throws Exception {
+
+		PropertyMeta joinIdMeta = new PropertyMeta();
+		joinIdMeta.setType(ID);
+		joinIdMeta.setValueClass(Long.class);
+		joinIdMeta.setTranscoder(transcoder);
+
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(JOIN_SIMPLE);
+		pm.setValueClass(UserBean.class);
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinMeta);
+		pm.setJoinProperties(joinProperties);
+
+		when(transcoder.forceDecodeFromJSON("11", Long.class)).thenReturn(11L);
+
+		Object decoded = pm.forceDecodeFromJSON("11");
+
+		assertThat(decoded).isEqualTo(11L);
+	}
 }

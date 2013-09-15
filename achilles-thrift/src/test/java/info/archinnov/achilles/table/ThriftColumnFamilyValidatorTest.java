@@ -165,7 +165,7 @@ public class ThriftColumnFamilyValidatorTest {
 				.thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias())
 				.thenReturn(
-						"(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)");
+						"(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)");
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 

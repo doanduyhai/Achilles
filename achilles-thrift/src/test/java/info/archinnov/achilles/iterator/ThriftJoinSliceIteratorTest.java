@@ -139,14 +139,13 @@ public class ThriftJoinSliceIteratorTest {
 		HColumn<Composite, Object> hCol3 = HColumnTestBuilder.simple(name3,
 				(Object) joinId3, ttl);
 
-		Map<Long, UserBean> entitiesMap = new HashMap<Long, UserBean>();
+		Map<Object, Object> entitiesMap = new HashMap<Object, Object>();
 		entitiesMap.put(joinId1, user1);
 		entitiesMap.put(joinId2, user2);
 		entitiesMap.put(joinId3, user3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
-
-		List<Long> keys = Arrays.asList(joinId1, joinId2, joinId3);
+		List<Object> keys = Arrays.<Object> asList(joinId1, joinId2, joinId3);
 		when(
 				joinLoader.loadJoinEntities(UserBean.class, keys,
 						joinEntityMeta, joinEntityDao)).thenReturn(entitiesMap);
@@ -219,7 +218,7 @@ public class ThriftJoinSliceIteratorTest {
 				false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		Map<Long, UserBean> entitiesMap = new HashMap<Long, UserBean>();
+		Map<Object, Object> entitiesMap = new HashMap<Object, Object>();
 		entitiesMap.put(joinId1, user1);
 		entitiesMap.put(joinId2, user2);
 		entitiesMap.put(joinId3, user3);
@@ -227,12 +226,12 @@ public class ThriftJoinSliceIteratorTest {
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 		when(
 				joinLoader.loadJoinEntities(UserBean.class,
-						Arrays.asList(joinId1, joinId2), joinEntityMeta,
-						joinEntityDao)).thenReturn(entitiesMap);
+						Arrays.<Object> asList(joinId1, joinId2),
+						joinEntityMeta, joinEntityDao)).thenReturn(entitiesMap);
 		when(
 				joinLoader.loadJoinEntities(UserBean.class,
-						Arrays.asList(joinId3), joinEntityMeta, joinEntityDao))
-				.thenReturn(entitiesMap);
+						Arrays.<Object> asList(joinId3), joinEntityMeta,
+						joinEntityDao)).thenReturn(entitiesMap);
 
 		iterator = new ThriftJoinSliceIterator<Long, Integer, UserBean>(policy,
 				joinEntityDao, columnFamily, propertyMeta, query, start, end,

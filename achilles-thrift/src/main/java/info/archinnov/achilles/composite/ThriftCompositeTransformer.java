@@ -107,7 +107,7 @@ public class ThriftCompositeTransformer {
 		Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn
 				.getName().getComponents());
 		Object clusteredValue = hColumn.getValue();
-		Object value = pm.castValue(clusteredValue);
+		Object value = pm.decode(clusteredValue);
 		return mapper.createClusteredEntityWithValue(entityClass, idMeta, pm,
 				embeddedId, value);
 	}

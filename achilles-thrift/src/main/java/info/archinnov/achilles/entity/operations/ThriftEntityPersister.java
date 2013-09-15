@@ -25,7 +25,6 @@ import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,8 +91,10 @@ public class ThriftEntityPersister implements
 			batchPersistJoinEntity(context, propertyMeta);
 			break;
 		case JOIN_LIST:
+			batchPersistJoinListProperty(context, propertyMeta);
+			break;
 		case JOIN_SET:
-			batchPersistJoinListOrSetProperty(context, propertyMeta);
+			batchPersistJoinSetProperty(context, propertyMeta);
 			break;
 		case JOIN_MAP:
 			batchPersistJoinMapProperty(context, propertyMeta);
@@ -221,15 +222,25 @@ public class ThriftEntityPersister implements
 		}
 	}
 
-	private void batchPersistJoinListOrSetProperty(
-			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+	private void batchPersistJoinListProperty(ThriftPersistenceContext context,
+			PropertyMeta propertyMeta) {
 
-		Collection<?> joinCollection = (Collection<?>) invoker
-				.getValueFromField(context.getEntity(),
-						propertyMeta.getGetter());
-		if (joinCollection != null) {
-			persisterImpl.batchPersistJoinCollection(context, propertyMeta,
-					joinCollection, this);
+		List<?> joinList = (List<?>) invoker.getValueFromField(
+				context.getEntity(), propertyMeta.getGetter());
+		if (joinList != null) {
+			persisterImpl.batchPersistJoinList(context, propertyMeta, joinList,
+					this);
+		}
+	}
+
+	private void batchPersistJoinSetProperty(ThriftPersistenceContext context,
+			PropertyMeta propertyMeta) {
+
+		Set<?> joinSet = (Set<?>) invoker.getValueFromField(
+				context.getEntity(), propertyMeta.getGetter());
+		if (joinSet != null) {
+			persisterImpl.batchPersistJoinSet(context, propertyMeta, joinSet,
+					this);
 		}
 	}
 

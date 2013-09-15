@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class ListTranscoder extends AbstractTranscoder {
+public class ListTranscoder extends SimpleTranscoder {
 
 	public ListTranscoder(ObjectMapper objectMapper) {
 		super(objectMapper);

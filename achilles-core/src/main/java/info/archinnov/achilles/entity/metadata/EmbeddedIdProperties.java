@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 public class EmbeddedIdProperties {
@@ -83,10 +84,14 @@ public class EmbeddedIdProperties {
 
 	@Override
 	public String toString() {
-		return "CompoundKeyProperties [componentClasses=["
-				+ StringUtils.join(
-						Lists.transform(componentClasses, fqcnToStringFn), ",")
-				+ "], componentNames=" + componentNames + "]";
+
+		return Objects
+				.toStringHelper(this.getClass())
+				.add("componentClasses",
+						StringUtils.join(Lists.transform(componentClasses,
+								fqcnToStringFn), ","))
+				.add("componentNames", componentNames).toString();
+
 	}
 
 }

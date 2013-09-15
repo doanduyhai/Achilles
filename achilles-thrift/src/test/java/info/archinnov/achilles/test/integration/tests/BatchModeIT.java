@@ -114,7 +114,7 @@ public class BatchModeIT {
 		Composite labelComposite = new Composite();
 		labelComposite.addComponent(0, LAZY_SIMPLE.flag(), EQUAL);
 		labelComposite.addComponent(1, "label", EQUAL);
-		labelComposite.addComponent(2, 0, EQUAL);
+		labelComposite.addComponent(2, "0", EQUAL);
 
 		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite))
 				.isNull();

@@ -26,6 +26,7 @@ import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.test.builders.CompositeTestBuilder;
 import info.archinnov.achilles.test.builders.HColumnTestBuilder;
@@ -43,7 +44,6 @@ import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +81,8 @@ public class ThriftCompositeTransformerTest {
 	@Mock
 	private ThriftPersistenceContext joinContext;
 
-	private ObjectMapper mapper = new ObjectMapper();
+	@Mock
+	private DataTranscoder transcoder;
 
 	@Before
 	public void setUp() {
@@ -220,7 +221,8 @@ public class ThriftCompositeTransformerTest {
 
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_SIMPLE).accessors().build();
+				.transcoder(transcoder).type(PropertyType.JOIN_SIMPLE)
+				.accessors().build();
 
 		when(context.getIdMeta()).thenReturn((PropertyMeta) idMeta);
 		when(context.getFirstMeta()).thenReturn((PropertyMeta) pm);
@@ -238,6 +240,7 @@ public class ThriftCompositeTransformerTest {
 						eq(embeddedId), any(UserBean.class))).thenReturn(
 				expected);
 
+		when(transcoder.decode(pm, expected)).thenReturn(expected);
 		Function<HColumn<Composite, Object>, BeanWithClusteredId> function = transformer
 				.joinClusteredEntityTransformer(BeanWithClusteredId.class,
 						context, joinEntitiesMap);

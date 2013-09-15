@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -28,7 +29,6 @@ import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,7 +42,6 @@ import java.util.Set;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,8 +59,6 @@ public class DirtyCheckIT {
 							.getName()), Long.class);
 
 	private CompleteBean bean;
-
-	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Before
 	public void setUp() {
@@ -297,7 +294,6 @@ public class DirtyCheckIT {
 		assertThat(columns.get(0).right).isEqualTo("qux");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_put_element() throws Exception {
 		bean.getPreferences().put(4, "test");
@@ -312,13 +308,10 @@ public class DirtyCheckIT {
 
 		assertThat(columns).hasSize(4);
 
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(3).right, KeyValue.class)).getValue())
-				.isEqualTo("test");
+		assertThat(columns.get(3).left.get(2, STRING_SRZ)).isEqualTo("4");
+		assertThat(columns.get(3).right).isEqualTo("test");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_remove_key() throws Exception {
 		bean.getPreferences().remove(1);
@@ -332,17 +325,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_put_all() throws Exception {
 		Map<Integer, String> map = new HashMap<Integer, String>();
@@ -359,17 +347,13 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(2).right, KeyValue.class)).getValue())
-				.isEqualTo("75015");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(3).right, KeyValue.class)).getValue())
-				.isEqualTo("test");
+
+		assertThat(columns.get(2).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(2).right).isEqualTo("75015");
+		assertThat(columns.get(3).left.get(2, STRING_SRZ)).isEqualTo("4");
+		assertThat(columns.get(3).right).isEqualTo("test");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_remove() throws Exception {
 		bean.getPreferences().keySet().remove(1);
@@ -383,17 +367,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_remove_all() throws Exception {
 		bean.getPreferences().keySet().removeAll(Arrays.asList(1, 2, 5));
@@ -407,13 +386,10 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(0).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_retain_all() throws Exception {
 		bean.getPreferences().keySet().retainAll(Arrays.asList(1, 3));
@@ -427,17 +403,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("FR");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("1");
+		assertThat(columns.get(0).right).isEqualTo("FR");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_keyset_iterator_remove()
 			throws Exception {
@@ -455,17 +426,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_remove() throws Exception {
 		bean.getPreferences().values().remove("FR");
@@ -479,17 +445,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_remove_all() throws Exception {
 		bean.getPreferences().values()
@@ -505,13 +466,10 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(0).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_retain_all() throws Exception {
 		bean.getPreferences().values()
@@ -526,17 +484,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("FR");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("1");
+		assertThat(columns.get(0).right).isEqualTo("FR");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(1).right).isEqualTo("Paris");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_valueset_iterator_remove()
 			throws Exception {
@@ -554,17 +507,12 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_dirty_check_map_entrySet_remove_entry() throws Exception {
 
@@ -583,14 +531,10 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("Paris");
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(1).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
+		assertThat(columns.get(0).right).isEqualTo("Paris");
+		assertThat(columns.get(1).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(1).right).isEqualTo("75014");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -616,10 +560,8 @@ public class DirtyCheckIT {
 				bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
-		assertThat(
-				((KeyValue<Integer, String>) objectMapper.readValue(
-						columns.get(0).right, KeyValue.class)).getValue())
-				.isEqualTo("75014");
+		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
+		assertThat(columns.get(0).right).isEqualTo("75014");
 	}
 
 	@Test
@@ -631,7 +573,7 @@ public class DirtyCheckIT {
 		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "name", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
+		compo.addComponent(2, "0", EQUAL);
 
 		Object reloadedName = dao.getValue(bean.getId(), compo);
 
@@ -647,7 +589,7 @@ public class DirtyCheckIT {
 		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
+		compo.addComponent(2, "0", EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
@@ -666,7 +608,7 @@ public class DirtyCheckIT {
 		Composite compo = new Composite();
 		compo.addComponent(0, PropertyType.LAZY_SIMPLE.flag(), EQUAL);
 		compo.addComponent(1, "label", EQUAL);
-		compo.addComponent(2, 0, EQUAL);
+		compo.addComponent(2, "0", EQUAL);
 
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
@@ -701,27 +643,19 @@ public class DirtyCheckIT {
 
 	}
 
-	private Composite endComptForList() {
-		Composite endComp = new Composite();
-		endComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
-		endComp.addComponent(1, "friends", EQUAL);
-		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
-		return endComp;
-	}
-
 	private Composite startCompForList() {
 		Composite startComp = new Composite();
 		startComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
 		startComp.addComponent(1, "friends", EQUAL);
-		startComp.addComponent(2, 0, EQUAL);
+		startComp.addComponent(2, "0", EQUAL);
 		return startComp;
 	}
 
-	private Composite endCompForMap() {
+	private Composite endComptForList() {
 		Composite endComp = new Composite();
-		endComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
-		endComp.addComponent(1, "preferences", EQUAL);
-		endComp.addComponent(2, 5, GREATER_THAN_EQUAL);
+		endComp.addComponent(0, PropertyType.LAZY_LIST.flag(), EQUAL);
+		endComp.addComponent(1, "friends", EQUAL);
+		endComp.addComponent(2, "5", GREATER_THAN_EQUAL);
 		return endComp;
 	}
 
@@ -729,7 +663,15 @@ public class DirtyCheckIT {
 		Composite startComp = new Composite();
 		startComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
 		startComp.addComponent(1, "preferences", EQUAL);
-		startComp.addComponent(2, 0, EQUAL);
+		startComp.addComponent(2, "0", EQUAL);
 		return startComp;
+	}
+
+	private Composite endCompForMap() {
+		Composite endComp = new Composite();
+		endComp.addComponent(0, PropertyType.MAP.flag(), EQUAL);
+		endComp.addComponent(1, "preferences", EQUAL);
+		endComp.addComponent(2, "5", GREATER_THAN_EQUAL);
+		return endComp;
 	}
 }

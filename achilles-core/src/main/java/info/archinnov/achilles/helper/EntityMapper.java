@@ -19,7 +19,6 @@ package info.archinnov.achilles.helper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.KeyValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +65,7 @@ public class EntityMapper {
 	}
 
 	protected void addToMap(Map<String, Map<Object, Object>> mapProperties,
-			PropertyMeta mapMeta, KeyValue<?, ?> keyValue) {
+			PropertyMeta mapMeta, Object decodedKey, Object decodedValue) {
 		String propertyName = mapMeta.getPropertyName();
 
 		Map<Object, Object> map = null;
@@ -76,7 +75,7 @@ public class EntityMapper {
 		} else {
 			map = mapProperties.get(propertyName);
 		}
-		map.put(keyValue.getKey(), mapMeta.castValue(keyValue.getValue()));
+		map.put(decodedKey, decodedValue);
 	}
 
 	public <T, ID> void setIdToEntity(ID key, PropertyMeta idMeta, T entity) {

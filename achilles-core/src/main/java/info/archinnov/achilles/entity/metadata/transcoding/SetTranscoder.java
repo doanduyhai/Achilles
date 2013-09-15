@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class SetTranscoder extends AbstractTranscoder {
+public class SetTranscoder extends SimpleTranscoder {
 
 	public SetTranscoder(ObjectMapper objectMapper) {
 		super(objectMapper);

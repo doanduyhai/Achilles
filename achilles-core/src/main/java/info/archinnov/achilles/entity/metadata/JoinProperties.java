@@ -22,12 +22,14 @@ import info.archinnov.achilles.entity.metadata.util.CascadeRefreshFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 
 import org.apache.commons.lang.StringUtils;
+
+import com.google.common.base.Objects;
 
 public class JoinProperties {
 	public static CascadePersistFilter hasCascadePersist = new CascadePersistFilter();
@@ -35,7 +37,7 @@ public class JoinProperties {
 	public static CascadeRefreshFilter hasCascadeRefresh = new CascadeRefreshFilter();
 
 	private EntityMeta entityMeta;
-	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
+	private Set<CascadeType> cascadeTypes = new LinkedHashSet<CascadeType>();
 
 	public EntityMeta getEntityMeta() {
 		return entityMeta;
@@ -67,8 +69,9 @@ public class JoinProperties {
 
 	@Override
 	public String toString() {
-		return "JoinProperties [entityMeta=" + entityMeta.getClassName()
-				+ ", cascadeTypes=[" + StringUtils.join(cascadeTypes, ",")
-				+ "]]";
+		return Objects.toStringHelper(this.getClass())
+				.add("entityMeta", entityMeta)
+				.add("cascadeTypes", StringUtils.join(cascadeTypes, ","))
+				.toString();
 	}
 }

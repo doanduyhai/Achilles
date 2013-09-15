@@ -111,9 +111,10 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 
 			Object joinId;
 			if (propertyMeta.isJoin()) {
-				joinId = joinIdMeta.castValue(hColumn.getValue());
+				joinId = hColumn.getValue();
 			} else {
-				joinId = joinIdMeta.getValueFromString(hColumn.getValue());
+				joinId = joinIdMeta.forceDecodeFromJSON((String) hColumn
+						.getValue());
 			}
 			joinIds.add(joinId);
 			hColumMap.put(joinId,
@@ -122,9 +123,9 @@ public class ThriftJoinSliceIterator<K, KEY, VALUE> extends
 
 		if (joinIds.size() > 0) {
 
-			Map<Object, VALUE> loadedEntities = joinHelper.loadJoinEntities(
-					(Class<VALUE>) propertyMeta.getValueClass(), joinIds,
-					propertyMeta.joinMeta(), joinEntityDao);
+			Map<Object, VALUE> loadedEntities = (Map<Object, VALUE>) joinHelper
+					.loadJoinEntities(propertyMeta.getValueClass(), joinIds,
+							propertyMeta.joinMeta(), joinEntityDao);
 
 			for (Object joinId : joinIds) {
 				Pair<Composite, Integer> pair = hColumMap.get(joinId);
