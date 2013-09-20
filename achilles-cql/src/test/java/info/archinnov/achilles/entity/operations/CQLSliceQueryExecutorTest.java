@@ -113,11 +113,11 @@ public class CQLSliceQueryExecutorTest {
 		Whitebox.setInternalState(executor, CQLStatementGenerator.class,
 				generator);
 		Whitebox.setInternalState(executor, CQLEntityMapper.class, mapper);
-		Whitebox.setInternalState(executor, ReflectionInvoker.class, invoker);
 
 		meta = new EntityMeta();
 		meta.setEagerGetters(new ArrayList<Method>());
 		meta.setIdMeta(idMeta);
+		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
 
 		when(idMeta.getComponentNames())
 				.thenReturn(Arrays.asList("id", "name"));

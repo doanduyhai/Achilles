@@ -30,14 +30,9 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.beans.HCounterColumn;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Function;
 
 public class ThriftCompositeTransformer {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftCompositeTransformer.class);
 
 	private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
@@ -102,21 +97,20 @@ public class ThriftCompositeTransformer {
 
 	public <T> T buildClusteredEntity(Class<T> entityClass,
 			ThriftPersistenceContext context, HColumn<Composite, Object> hColumn) {
-		PropertyMeta idMeta = context.getIdMeta();
 		PropertyMeta pm = context.getFirstMeta();
 		Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn
 				.getName().getComponents());
 		Object clusteredValue = hColumn.getValue();
 		Object value = pm.decode(clusteredValue);
-		return mapper.createClusteredEntityWithValue(entityClass, idMeta, pm,
-				embeddedId, value);
+		return mapper.createClusteredEntityWithValue(entityClass,
+				context.getEntityMeta(), pm, embeddedId, value);
 	}
 
 	public <T> T buildClusteredEntityWithIdOnly(Class<T> entityClass,
 			ThriftPersistenceContext context, List<Component<?>> components) {
-		PropertyMeta idMeta = context.getIdMeta();
 		Object embeddedId = buildEmbeddedIdFromComponents(context, components);
-		return mapper.initClusteredEntity(entityClass, idMeta, embeddedId);
+		return mapper.initClusteredEntity(entityClass, context.getEntityMeta(),
+				embeddedId);
 	}
 
 	private Object buildEmbeddedIdFromComponents(

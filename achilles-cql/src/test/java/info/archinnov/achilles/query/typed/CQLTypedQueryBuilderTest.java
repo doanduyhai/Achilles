@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -89,12 +90,12 @@ public class CQLTypedQueryBuilderTest {
 	@Test
 	public void should_get_all_managed_with_select_star() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.accessors().build();
 
 		PropertyMeta nameMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
+				.type(SIMPLE).accessors().build();
 
 		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
@@ -103,8 +104,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(entity);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -139,8 +141,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(entity);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -161,8 +164,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(null);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(null);
 
 		List<CompleteBean> actual = builder.get();
 
@@ -186,8 +190,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(entity);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(entity);
 
 		List<CompleteBean> actual = builder.get();
 
@@ -213,8 +218,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(entity);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -242,8 +248,9 @@ public class CQLTypedQueryBuilderTest {
 
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(entity);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(entity);
 
 		CompleteBean actual = builder.getFirst();
 
@@ -274,8 +281,9 @@ public class CQLTypedQueryBuilderTest {
 		initBuilder(queryString, meta, meta.getPropertyMetas(), false);
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
-		when(mapper.mapRowToEntity(eq(entityClass), eq(row), any(Map.class)))
-				.thenReturn(null);
+		when(
+				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
+						any(Map.class))).thenReturn(null);
 
 		CompleteBean actual = builder.getFirst();
 

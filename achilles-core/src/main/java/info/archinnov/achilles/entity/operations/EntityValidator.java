@@ -19,7 +19,6 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.List;
@@ -32,7 +31,6 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
 	private static final Logger log = LoggerFactory
 			.getLogger(EntityValidator.class);
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private EntityProxifier<CONTEXT> proxifier;
 
 	public EntityValidator(EntityProxifier<CONTEXT> proxifier) {
@@ -51,19 +49,17 @@ public class EntityValidator<CONTEXT extends PersistenceContext> {
 
 	public void validateEntity(Object entity, EntityMeta entityMeta) {
 		log.debug("Validate entity {}", entity);
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-
 		Validator.validateNotNull(entityMeta,
 				"The entity %s is not managed by Achilles", entity.getClass()
 						.getCanonicalName());
 
-		Object id = invoker.getPrimaryKey(entity, idMeta);
+		Object id = entityMeta.getPrimaryKey(entity);
 		if (id == null) {
 			throw new IllegalArgumentException(
 					"Cannot get primary key for entity "
 							+ entity.getClass().getCanonicalName());
 		}
-		validatePrimaryKey(idMeta, id);
+		validatePrimaryKey(entityMeta.getIdMeta(), id);
 	}
 
 	public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {

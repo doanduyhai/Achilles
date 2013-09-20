@@ -125,6 +125,9 @@ public class ThriftEntityInterceptorTest {
 	@Mock
 	private ThriftImmediateFlushContext flushContext;
 
+	@Mock
+	private ReflectionInvoker invoker;
+
 	private Long key = 452L;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
@@ -140,25 +143,20 @@ public class ThriftEntityInterceptorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id").type(SIMPLE)
-				.accessors().build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+				.field("id").type(ID).accessors().invoker(invoker).build();
 
 		nameMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).accessors().build();
 
 		userMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, UserBean.class).field("user")
 				.type(JOIN_SIMPLE).accessors().build();
 
 		joinIdMeta = PropertyMetaTestBuilder
-				//
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.type(SIMPLE).accessors().build();
+				.type(ID).accessors().invoker(invoker).build();
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setGetterMetas(getterMetas);
@@ -169,7 +167,6 @@ public class ThriftEntityInterceptorTest {
 		when(flushContext.getConsistencyLevel()).thenReturn(ONE);
 
 		context = ThriftPersistenceContextTestBuilder
-				//
 				.context(entityMeta, counterDao, policy, CompleteBean.class,
 						entity.getId()).entity(entity).entityDao(entityDao)
 				.entityDaosMap(entityDaosMap)
@@ -286,6 +283,8 @@ public class ThriftEntityInterceptorTest {
 		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
 		when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
+		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(
+				user.getUserId());
 		when(proxy.invoke(entity, null)).thenReturn(user);
 
 		Object actual = this.interceptor.intercept(entity,
@@ -446,7 +445,8 @@ public class ThriftEntityInterceptorTest {
 				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
 				.compGetters(Arrays.asList(userIdGetter, nameGetter))
 				.compClasses(Long.class, String.class)
-				.transcoder(new CompoundTranscoder(new ObjectMapper())).build();
+				.transcoder(new CompoundTranscoder(new ObjectMapper()))
+				.invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		Method countGetter = CompleteBean.class.getDeclaredMethod("getCount");
@@ -456,6 +456,8 @@ public class ThriftEntityInterceptorTest {
 		CounterProperties counterProperties = new CounterProperties("fqcn");
 		counterProperties.setIdMeta(clusteredIdMeta);
 
+		when(invoker.getPartitionKey(compoundKey, clusteredIdMeta)).thenReturn(
+				userId);
 		when(propertyMeta.getCounterProperties()).thenReturn(counterProperties);
 
 		interceptor.setPrimaryKey(compoundKey);

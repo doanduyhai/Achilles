@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.Set;
 import com.datastax.driver.core.Row;
 
 public class CQLLoaderImpl {
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 	private CQLRowMethodInvoker cqlRowInvoker = new CQLRowMethodInvoker();
 
@@ -55,12 +53,12 @@ public class CQLLoaderImpl {
 			Long counterValue = context.getClusteredCounter(counterMeta,
 					readLevel);
 			if (counterValue != null) {
-				entity = invoker.instanciate(entityClass);
+				entity = entityMeta.<T> instanciate();
 			}
 		} else {
 			Row row = context.eagerLoadEntity();
 			if (row != null) {
-				entity = invoker.instanciate(entityClass);
+				entity = entityMeta.<T> instanciate();
 				mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 			}
 		}
@@ -81,38 +79,40 @@ public class CQLLoaderImpl {
 			EntityMeta joinMeta = pm.getJoinProperties().getEntityMeta();
 			PropertyMeta joinIdMeta = joinMeta.getIdMeta();
 
-			Object joinValue = null;
+			Object joinValue;
 			switch (pm.type()) {
 			case JOIN_SIMPLE:
 				joinValue = loadJoinSimple(loader, context, pm, row, joinMeta,
-						joinIdMeta, joinValue);
+						joinIdMeta);
 				break;
 			case JOIN_LIST:
 				joinValue = loadJoinList(loader, context, pm, row, joinMeta,
-						joinIdMeta, joinValue);
+						joinIdMeta);
 				break;
 			case JOIN_SET:
 				joinValue = loadJoinSet(loader, context, pm, row, joinMeta,
-						joinIdMeta, joinValue);
+						joinIdMeta);
 				break;
 			case JOIN_MAP:
-				joinValue = loadJoinMap(loader, context, pm, row, joinMeta,
-						joinValue);
+				joinValue = loadJoinMap(loader, context, pm, row, joinMeta);
 				break;
 			default:
+				joinValue = null;
 				break;
 			}
-
-			mapper.setJoinValueToEntity(joinValue, pm, entity);
+			pm.setValueToField(entity, joinValue);
 		}
 	}
 
 	private Object loadJoinList(CQLEntityLoader loader,
 			CQLPersistenceContext context, PropertyMeta pm, Row row,
-			EntityMeta joinMeta, PropertyMeta joinIdMeta, Object joinValue) {
+			EntityMeta joinMeta, PropertyMeta joinIdMeta) {
 		List<Object> joinEntitiesList = new ArrayList<Object>();
 		List<?> joinIdsList = cqlRowInvoker.invokeOnRowForList(row, pm,
 				pm.getPropertyName(), joinIdMeta.getValueClass());
+
+		Object joinValue = null;
+
 		if (joinIdsList != null && !joinIdsList.isEmpty()) {
 			joinValue = loadJoinEntitiesForCollection(loader, context, pm,
 					joinMeta, joinIdsList, joinEntitiesList);
@@ -122,10 +122,13 @@ public class CQLLoaderImpl {
 
 	private Object loadJoinSet(CQLEntityLoader loader,
 			CQLPersistenceContext context, PropertyMeta pm, Row row,
-			EntityMeta joinMeta, PropertyMeta joinIdMeta, Object joinValue) {
+			EntityMeta joinMeta, PropertyMeta joinIdMeta) {
 		Set<Object> joinEntitiesSet = new HashSet<Object>();
 		Set<?> joinIdsSet = cqlRowInvoker.invokeOnRowForSet(row, pm,
 				pm.getPropertyName(), joinIdMeta.getValueClass());
+
+		Object joinValue = null;
+
 		if (joinIdsSet != null && !joinIdsSet.isEmpty()) {
 			joinValue = loadJoinEntitiesForCollection(loader, context, pm,
 					joinMeta, joinIdsSet, joinEntitiesSet);
@@ -135,13 +138,14 @@ public class CQLLoaderImpl {
 
 	private Object loadJoinMap(CQLEntityLoader loader,
 			CQLPersistenceContext context, PropertyMeta pm, Row row,
-			EntityMeta joinMeta, Object joinValue) {
+			EntityMeta joinMeta) {
 		Map<Object, Object> joinEntitiesMap = new HashMap<Object, Object>();
 		Class<?> keyClass = pm.getKeyClass();
 		Class<?> valueClass = pm.getJoinProperties().getEntityMeta()
 				.getIdMeta().getValueClass();
 		Map<?, ?> joinIdsMap = cqlRowInvoker.invokeOnRowForMap(row, pm,
 				pm.getPropertyName(), keyClass, valueClass);
+		Object joinValue = null;
 		if (joinIdsMap != null && !joinIdsMap.isEmpty()) {
 			joinValue = loadJoinEntitiesForMap(loader, context, pm, joinMeta,
 					joinIdsMap, joinEntitiesMap);
@@ -151,7 +155,8 @@ public class CQLLoaderImpl {
 
 	private Object loadJoinSimple(CQLEntityLoader loader,
 			CQLPersistenceContext context, PropertyMeta pm, Row row,
-			EntityMeta joinMeta, PropertyMeta joinIdMeta, Object joinValue) {
+			EntityMeta joinMeta, PropertyMeta joinIdMeta) {
+		Object joinValue = null;
 		Object joinId = cqlRowInvoker.invokeOnRowForProperty(row, pm,
 				pm.getPropertyName(), joinIdMeta.getValueClass());
 		if (joinId != null) {

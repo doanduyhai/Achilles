@@ -16,7 +16,9 @@
  */
 package info.archinnov.achilles.entity.operations;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static javax.persistence.CascadeType.PERSIST;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -43,8 +45,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
@@ -150,18 +150,17 @@ public class ThriftEntityPersisterTest {
 	@Test
 	public void should_cascade_persist() throws Exception {
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.invoker(invoker).build();
+
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta)
-				.cascadeType(CascadeType.PERSIST)
-				.consistencyLevels(Pair.create(ALL, ALL)).build();
+				.accessors().type(JOIN_SIMPLE).joinMeta(joinMeta)
+				.cascadeType(PERSIST).consistencyLevels(Pair.create(ALL, ALL))
+				.invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("propertyMeta",
 				propertyMeta));
@@ -184,9 +183,9 @@ public class ThriftEntityPersisterTest {
 	@Test
 	public void should_ensure_join_entity_exist() throws Exception {
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.invoker(invoker).build();
+
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setTableName("cfName");
@@ -211,9 +210,9 @@ public class ThriftEntityPersisterTest {
 	public void should_not_ensure_join_entity_exist_if_join_consistency_flag_false()
 			throws Exception {
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.invoker(invoker).build();
+
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setTableName("cfName");
@@ -240,9 +239,9 @@ public class ThriftEntityPersisterTest {
 	public void should_not_ensure_join_entity_exist_if_already_processed()
 			throws Exception {
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.invoker(invoker).build();
+
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 		joinMeta.setTableName("cfName");
@@ -271,9 +270,8 @@ public class ThriftEntityPersisterTest {
 		ArrayList<String> list = new ArrayList<String>();
 
 		PropertyMeta listMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(PropertyType.LIST).build();
+				.accessors().type(LIST).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("listMeta", listMeta));
 
@@ -290,9 +288,8 @@ public class ThriftEntityPersisterTest {
 		Set<String> set = new HashSet<String>();
 
 		PropertyMeta setMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(PropertyType.SET).build();
+				.accessors().type(SET).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("setMeta", setMeta));
 
@@ -309,9 +306,8 @@ public class ThriftEntityPersisterTest {
 		Map<Integer, String> map = new HashMap<Integer, String>();
 
 		PropertyMeta mapMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(PropertyType.MAP).build();
+				.accessors().type(MAP).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("mapMeta", mapMeta));
 
@@ -329,7 +325,7 @@ public class ThriftEntityPersisterTest {
 
 		PropertyMeta joinMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(PropertyType.JOIN_SIMPLE).build();
+				.accessors().type(JOIN_SIMPLE).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("joinMeta", joinMeta));
 
@@ -348,7 +344,7 @@ public class ThriftEntityPersisterTest {
 
 		PropertyMeta joinListMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(PropertyType.JOIN_LIST).build();
+				.accessors().type(JOIN_LIST).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("joinListMeta",
 				joinListMeta));
@@ -368,7 +364,7 @@ public class ThriftEntityPersisterTest {
 
 		PropertyMeta joinSetMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(PropertyType.JOIN_SET).build();
+				.accessors().type(JOIN_SET).invoker(invoker).build();
 
 		entityMeta
 				.setPropertyMetas(ImmutableMap.of("joinSetMeta", joinSetMeta));
@@ -387,9 +383,8 @@ public class ThriftEntityPersisterTest {
 		Map<Integer, String> joinMap = new HashMap<Integer, String>();
 
 		PropertyMeta joinMapMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(PropertyType.JOIN_MAP).build();
+				.accessors().type(JOIN_MAP).invoker(invoker).build();
 
 		entityMeta
 				.setPropertyMetas(ImmutableMap.of("joinMapMeta", joinMapMeta));
@@ -409,12 +404,12 @@ public class ThriftEntityPersisterTest {
 		Object clusteredValue = "clusteredValue";
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -437,8 +432,8 @@ public class ThriftEntityPersisterTest {
 		Object partitionKey = 10L;
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+				.invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -459,12 +454,13 @@ public class ThriftEntityPersisterTest {
 		Object clusteredValue = "clusteredValue";
 		Object partitionKey = RandomUtils.nextLong();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
@@ -487,8 +483,9 @@ public class ThriftEntityPersisterTest {
 	public void should_remove_clustered_entity() throws Exception {
 		Object partitionKey = 10L;
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
+				.invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);

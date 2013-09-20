@@ -17,12 +17,13 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
@@ -30,6 +31,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -86,6 +88,9 @@ public class CQLPersistenceContextTest {
 	@Mock
 	private EntityRefresher<CQLPersistenceContext> refresher;
 
+	@Mock
+	private ReflectionInvoker invoker;
+
 	private EntityMeta meta;
 
 	private PropertyMeta idMeta;
@@ -98,7 +103,7 @@ public class CQLPersistenceContextTest {
 	@Before
 	public void setUp() throws Exception {
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(PropertyType.SIMPLE).accessors().build();
+				.field("id").type(ID).accessors().invoker(invoker).build();
 
 		meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -116,6 +121,8 @@ public class CQLPersistenceContextTest {
 				OptionsBuilder.noOptions());
 		Whitebox.setInternalState(context, CQLAbstractFlushContext.class,
 				flushContext);
+
+		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}
 
 	@Test

@@ -18,10 +18,9 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +30,12 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 
 import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
 public class PropertyMeta {
-	private static final Logger log = LoggerFactory
-			.getLogger(PropertyMeta.class);
 
-	private ObjectMapper objectMapper;
 	private PropertyType type;
 	private String propertyName;
 	private String entityClassName;
@@ -57,34 +50,7 @@ public class PropertyMeta {
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 
 	private DataTranscoder transcoder;
-
-	public Object getValueFromString(Object stringValue) {
-		log.trace(
-				"Getting value from string {} for property {} of entity class {}",
-				stringValue, propertyName, entityClassName);
-		if (stringValue != null) {
-			try {
-				if (valueClass == String.class) {
-					log.trace("Casting value straight to string");
-					return valueClass.cast(stringValue);
-				} else if (stringValue instanceof String) {
-					log.trace("Deserializing value from string");
-					return this.objectMapper.readValue((String) stringValue,
-							this.valueClass);
-				} else {
-					throw new AchillesException(
-							"Error while trying to deserialize the JSON '"
-									+ stringValue);
-				}
-			} catch (Exception e) {
-				throw new AchillesException(
-						"Error while trying to deserialize the JSON '"
-								+ stringValue);
-			}
-		} else {
-			return null;
-		}
-	}
+	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public List<Method> getComponentGetters() {
 		List<Method> compGetters = new ArrayList<Method>();
@@ -140,16 +106,6 @@ public class PropertyMeta {
 			return embeddedIdProperties.getComponentNames();
 		}
 		return components;
-	}
-
-	public <T> Constructor<T> getEmbeddedIdConstructor() {
-		return embeddedIdProperties != null ? embeddedIdProperties
-				.<T> getConstructor() : null;
-	}
-
-	public boolean hasDefaultConstructorForEmbeddedId() {
-		return embeddedIdProperties != null ? embeddedIdProperties
-				.getConstructor().getParameterTypes().length == 0 : false;
 	}
 
 	public boolean isJoin() {
@@ -255,7 +211,7 @@ public class PropertyMeta {
 				entityValue);
 	}
 
-	public List<Object> encode(List<?> entityValue) {
+	public <T> Object encode(List<T> entityValue) {
 		return entityValue == null ? null : transcoder
 				.encode(this, entityValue);
 	}
@@ -275,8 +231,8 @@ public class PropertyMeta {
 				compoundKey);
 	}
 
-	public List<Object> encodeComponents(List<?> components) {
-		return components == null ? null : transcoder.encodeComponents(this,
+	public List<Object> encodeToComponents(List<Object> components) {
+		return components == null ? null : transcoder.encodeToComponents(this,
 				components);
 	}
 
@@ -296,6 +252,72 @@ public class PropertyMeta {
 		}
 	}
 
+	public Object getPrimaryKey(Object entity) {
+		if (type.isId()) {
+			return invoker.getPrimaryKey(entity, this);
+		} else {
+			throw new IllegalStateException(
+					"Cannot get primary key on a non id field '" + propertyName
+							+ "'");
+		}
+	}
+
+	public Object getJoinPrimaryKey(Object entity) {
+		if (type.isJoin()) {
+			return joinMeta().getPrimaryKey(entity);
+		} else {
+			throw new IllegalStateException(
+					"Cannot get join primary key on a non join field '"
+							+ propertyName + "'");
+		}
+	}
+
+	public Object getPartitionKey(Object compoundKey) {
+		if (type.isEmbeddedId()) {
+			return invoker.getPartitionKey(compoundKey, this);
+		} else {
+			throw new IllegalStateException(
+					"Cannot get partition key on a non embedded id field '"
+							+ propertyName + "'");
+		}
+	}
+
+	public Object instanciate() {
+		return invoker.instanciate(valueClass);
+	}
+
+	Object instanciateEmbeddedIdWithPartitionKey(Object partitionKey) {
+		if (type.isEmbeddedId()) {
+			return invoker.instanciateEmbeddedIdWithPartitionKey(this,
+					partitionKey);
+		} else {
+			throw new IllegalStateException(
+					"Cannot instanciate embedded id with partition key on a non embedded id field '"
+							+ propertyName + "'");
+		}
+	}
+
+	public Object getValueFromField(Object target) {
+		return invoker.getValueFromField(target, getter);
+	}
+
+	public List<?> getListValueFromField(Object target) {
+		return invoker.getListValueFromField(target, getter);
+	}
+
+	public Set<?> getSetValueFromField(Object target) {
+		return invoker.getSetValueFromField(target, getter);
+	}
+
+	public Map<?, ?> getMapValueFromField(Object target) {
+		return invoker.getMapValueFromField(target, getter);
+	}
+
+	public void setValueToField(Object target, Object args) {
+		invoker.setValueToField(target, setter, args);
+	}
+
+	// //////// Getters & setters
 	public PropertyType type() {
 		return type;
 	}
@@ -373,10 +395,6 @@ public class PropertyMeta {
 		this.joinProperties = joinProperties;
 	}
 
-	public void setObjectMapper(ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-	}
-
 	public CounterProperties getCounterProperties() {
 		return counterProperties;
 	}
@@ -404,6 +422,14 @@ public class PropertyMeta {
 
 	public void setTranscoder(DataTranscoder transcoder) {
 		this.transcoder = transcoder;
+	}
+
+	public ReflectionInvoker getInvoker() {
+		return invoker;
+	}
+
+	public void setInvoker(ReflectionInvoker invoker) {
+		this.invoker = invoker;
 	}
 
 	@Override

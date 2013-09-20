@@ -74,7 +74,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 	}
 
 	@Override
-	public List<Object> encodeComponents(PropertyMeta pm, List<?> components) {
+	public List<Object> encodeToComponents(PropertyMeta pm, List<?> components) {
 		throw new AchillesException(
 				"Transcoder cannot encode components value '" + components
 						+ "'");
@@ -121,7 +121,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 			Object entityValue) {
 		if (pm.type().isJoin()) {
 			PropertyMeta joinIdMeta = pm.joinIdMeta();
-			Object joinId = invoker.getPrimaryKey(entityValue, joinIdMeta);
+			Object joinId = pm.getJoinPrimaryKey(entityValue);
 			return joinIdMeta.encode(joinId);
 		} else {
 			return encodeIgnoreJoin(sourceType, entityValue);
@@ -132,7 +132,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 		if (isSupportedType(sourceType)) {
 			return entityValue;
 		} else if (sourceType.isEnum()) {
-			return ((Enum) entityValue).name();
+			return ((Enum<?>) entityValue).name();
 		} else {
 			return forceEncodeToJSON(entityValue);
 		}
@@ -148,6 +148,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected Object decodeIgnoreJoin(Class<?> targetType, Object cassandraValue) {
 		if (isSupportedType(targetType)) {
 			return cassandraValue;
@@ -183,6 +184,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T forceDecodeFromJSON(String cassandraValue, Class<T> targetType) {
 

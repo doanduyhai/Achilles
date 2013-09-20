@@ -94,7 +94,7 @@ public class ThriftMergerImplTest {
 	public void should_merge_simple_property() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 
@@ -110,11 +110,11 @@ public class ThriftMergerImplTest {
 	public void should_merge_multi_values_property() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(LIST).build();
+				.accessors().type(LIST).invoker(invoker).build();
 
 		PropertyMeta joinPm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("user")
-				.accessors().type(JOIN_LIST).build();
+				.accessors().type(JOIN_LIST).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 		dirtyMap.put(joinPm.getSetter(), joinPm);
@@ -136,7 +136,7 @@ public class ThriftMergerImplTest {
 	public void should_remove_property_when_null() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 
@@ -154,7 +154,7 @@ public class ThriftMergerImplTest {
 			throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 		meta.setClusteredEntity(true);
@@ -171,7 +171,7 @@ public class ThriftMergerImplTest {
 		Object clusteredValue = "clusteredValue";
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 		meta.setClusteredEntity(true);
@@ -195,7 +195,8 @@ public class ThriftMergerImplTest {
 	public void should_cascade_merge_simple_property() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_SIMPLE).joinMeta(joinMeta).build();
+				.accessors().type(JOIN_SIMPLE).joinMeta(joinMeta)
+				.invoker(invoker).build();
 
 		joinPMs.add(pm);
 
@@ -213,7 +214,8 @@ public class ThriftMergerImplTest {
 	public void should_cascade_merge_collection_property() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_LIST).joinMeta(joinMeta).build();
+				.accessors().type(JOIN_LIST).joinMeta(joinMeta)
+				.invoker(invoker).build();
 
 		joinPMs.add(pm);
 
@@ -231,7 +233,8 @@ public class ThriftMergerImplTest {
 	public void should_cascade_merge_map_property() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_MAP).joinMeta(joinMeta).build();
+				.accessors().type(JOIN_MAP).joinMeta(joinMeta).invoker(invoker)
+				.build();
 
 		joinPMs.add(pm);
 
@@ -249,7 +252,8 @@ public class ThriftMergerImplTest {
 	public void should_not_cascade_merge_for_null_value() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_LIST).joinMeta(joinMeta).build();
+				.accessors().type(JOIN_LIST).joinMeta(joinMeta)
+				.invoker(invoker).build();
 
 		joinPMs.add(pm);
 

@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,7 @@ public class CQLPersistenceContextFactoryTest {
 	public void setUp() throws Exception {
 		meta = new EntityMeta();
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().build();
+				.field("id").type(ID).accessors().invoker(invoker).build();
 		meta.setIdMeta(idMeta);
 		meta.setEntityClass(CompleteBean.class);
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
@@ -88,6 +89,7 @@ public class CQLPersistenceContextFactoryTest {
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		CQLPersistenceContext actual = factory.newContext(entity,
 				OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
@@ -109,6 +111,7 @@ public class CQLPersistenceContextFactoryTest {
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		CQLPersistenceContext actual = factory.newContext(entity);
 
@@ -125,6 +128,7 @@ public class CQLPersistenceContextFactoryTest {
 	@Test
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
+
 		CQLPersistenceContext context = factory.newContext(CompleteBean.class,
 				primaryKey, OptionsBuilder.withConsistency(LOCAL_QUORUM)
 						.ttl(98));
@@ -143,9 +147,12 @@ public class CQLPersistenceContextFactoryTest {
 			throws Exception {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean entity = new CompleteBean(primaryKey);
+
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 		when(flushContext.duplicate()).thenReturn(flushContext);
+
 		CQLPersistenceContext actual = factory.newContextForJoin(entity,
 				flushContext, new HashSet<String>());
 

@@ -75,6 +75,10 @@ public enum PropertyType {
 		return (this == COUNTER);
 	}
 
+	public boolean isId() {
+		return this == ID || this == EMBEDDED_ID;
+	}
+
 	public boolean isEmbeddedId() {
 		return this == EMBEDDED_ID;
 	}

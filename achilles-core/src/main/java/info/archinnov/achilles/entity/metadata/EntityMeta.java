@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
@@ -45,6 +46,8 @@ public class EntityMeta {
 		}
 	};
 
+	private ReflectionInvoker invoker = new ReflectionInvoker();
+
 	private Class<?> entityClass;
 	private String className;
 	private String tableName;
@@ -60,7 +63,34 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
+	private boolean clusteredJoin = false;
 
+	public Object getPrimaryKey(Object entity) {
+		return idMeta.getPrimaryKey(entity);
+	}
+
+	public void setPrimaryKey(Object entity, Object primaryKey) {
+		idMeta.setValueToField(entity, primaryKey);
+	}
+
+	public Object getPartitionKey(Object compoundKey) {
+		return idMeta.getPartitionKey(compoundKey);
+	}
+
+	public Object instanciateEmbeddedIdWithPartitionKey(Object partitionKey) {
+		return idMeta.instanciateEmbeddedIdWithPartitionKey(partitionKey);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T instanciate() {
+		return (T) invoker.instanciate(entityClass);
+	}
+
+	public boolean hasEmbeddedId() {
+		return idMeta.isEmbeddedId();
+	}
+
+	// ////////// Getters & Setters
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
@@ -194,6 +224,14 @@ public class EntityMeta {
 
 	public void setClusteredCounter(boolean clusteredCounter) {
 		this.clusteredCounter = clusteredCounter;
+	}
+
+	public boolean isClusteredJoin() {
+		return clusteredJoin;
+	}
+
+	public void setClusteredJoin(boolean clusteredJoin) {
+		this.clusteredJoin = clusteredJoin;
 	}
 
 	public boolean isValueless() {

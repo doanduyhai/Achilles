@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.prepared.CQLSliceQueryPreparedStatementGenerator;
 
@@ -45,7 +44,6 @@ import com.google.common.collect.FluentIterable;
 
 public class CQLStatementGenerator {
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private CQLSliceQueryStatementGenerator sliceQueryGenerator = new CQLSliceQueryStatementGenerator();
 	private CQLSliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new CQLSliceQueryPreparedStatementGenerator();
 
@@ -120,7 +118,7 @@ public class CQLStatementGenerator {
 		fieldMetas.remove(idMeta);
 
 		for (PropertyMeta pm : fieldMetas) {
-			Object value = invoker.getValueFromField(entity, pm.getGetter());
+			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			insert.value(pm.getPropertyName(), value);
 		}
@@ -135,7 +133,7 @@ public class CQLStatementGenerator {
 		int i = 0;
 		Assignments assignments = null;
 		for (PropertyMeta pm : pms) {
-			Object value = invoker.getValueFromField(entity, pm.getGetter());
+			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			if (i == 0) {
 				assignments = update.with(set(pm.getPropertyName(), value));
@@ -149,12 +147,11 @@ public class CQLStatementGenerator {
 
 	private Update.Assignments generateWhereClauseForUpdate(Object entity,
 			PropertyMeta idMeta, Assignments update) {
+		Object primaryKey = idMeta.getPrimaryKey(entity);
 		if (idMeta.isEmbeddedId()) {
 			Update.Where where = null;
 			int index = 0;
 
-			Object primaryKey = invoker.getValueFromField(entity,
-					idMeta.getGetter());
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta
 					.encodeToComponents(primaryKey);
@@ -169,7 +166,7 @@ public class CQLStatementGenerator {
 				index++;
 			}
 		} else {
-			Object id = invoker.getValueFromField(entity, idMeta.getGetter());
+			Object id = idMeta.encode(primaryKey);
 			update.where(eq(idMeta.getPropertyName(), id));
 		}
 		return update;
@@ -177,8 +174,7 @@ public class CQLStatementGenerator {
 
 	private void generateInsertPrimaryKey(Object entity, PropertyMeta idMeta,
 			Insert insert) {
-		Object primaryKey = invoker.getValueFromField(entity,
-				idMeta.getGetter());
+		Object primaryKey = idMeta.getPrimaryKey(entity);
 		if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta
@@ -204,15 +200,15 @@ public class CQLStatementGenerator {
 			case LIST:
 			case LAZY_LIST:
 			case JOIN_LIST:
-				return pm.encode((List) value);
+				return pm.encode((List<?>) value);
 			case SET:
 			case LAZY_SET:
 			case JOIN_SET:
-				return pm.encode((Set) value);
+				return pm.encode((Set<?>) value);
 			case MAP:
 			case LAZY_MAP:
 			case JOIN_MAP:
-				return pm.encode((Map) value);
+				return pm.encode((Map<?, ?>) value);
 			default:
 				throw new AchillesException("Cannot encode value '" + value
 						+ "' for Cassandra for property '"

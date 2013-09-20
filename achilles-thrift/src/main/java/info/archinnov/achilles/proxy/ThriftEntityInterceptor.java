@@ -33,7 +33,6 @@ public class ThriftEntityInterceptor<T> extends
 		EntityInterceptor<ThriftPersistenceContext, T> {
 
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public ThriftEntityInterceptor() {
 		super.loader = new ThriftEntityLoader();
@@ -51,7 +50,7 @@ public class ThriftEntityInterceptor<T> extends
 				.getCounterProperties();
 		PropertyMeta idMeta = counterProperties.getIdMeta();
 		if (context.isClusteredEntity()) {
-			rowKey = invoker.getPartitionKey(primaryKey, idMeta);
+			rowKey = idMeta.getPartitionKey(primaryKey);
 			comp = thriftCompositeFactory.createBaseForClusteredGet(primaryKey,
 					idMeta);
 			counterDao = context.getWideRowDao();

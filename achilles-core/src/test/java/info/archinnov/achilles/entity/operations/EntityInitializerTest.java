@@ -30,8 +30,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,15 +59,12 @@ public class EntityInitializerTest {
 	@Mock
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
-	private final List<String> calledMethods = new ArrayList<String>();
-
 	@Mock
 	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(initializer, "proxifier", proxifier);
-		Whitebox.setInternalState(initializer, "invoker", invoker);
 	}
 
 	private CompleteBean bean = new CompleteBean();
@@ -93,6 +88,7 @@ public class EntityInitializerTest {
 		followersMeta.setEntityClassName("beanClass");
 		followersMeta.setType(LAZY_SET);
 		followersMeta.setGetter(beanClass.getMethod("getFollowers"));
+		followersMeta.setInvoker(invoker);
 
 		Set<Method> alreadyLoaded = Sets.newHashSet(friendsMeta.getGetter(),
 				nameMeta.getGetter());
@@ -127,6 +123,7 @@ public class EntityInitializerTest {
 		counterMeta.setType(COUNTER);
 		counterMeta.setGetter(beanClass.getMethod("getCount"));
 		counterMeta.setSetter(beanClass.getMethod("setCount", Counter.class));
+		counterMeta.setInvoker(invoker);
 
 		Set<Method> alreadyLoaded = Sets.newHashSet();
 
@@ -166,6 +163,7 @@ public class EntityInitializerTest {
 		counterMeta.setType(COUNTER);
 		counterMeta.setGetter(beanClass.getMethod("getCount"));
 		counterMeta.setSetter(beanClass.getMethod("setCount", Counter.class));
+		counterMeta.setInvoker(invoker);
 
 		Set<Method> alreadyLoaded = Sets.newHashSet(counterMeta.getGetter());
 

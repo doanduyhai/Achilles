@@ -16,12 +16,13 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static javax.persistence.CascadeType.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -35,8 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.CascadeType;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -123,8 +122,8 @@ public class CQLMergerImplTest {
 	public void should_cascade_to_join_simple() throws Exception {
 		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta)
-				.cascadeType(CascadeType.ALL).build();
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).cascadeType(ALL)
+				.invoker(invoker).build();
 
 		joinPMs.add(joinSimpleMeta);
 
@@ -144,8 +143,8 @@ public class CQLMergerImplTest {
 	public void should_cascade_to_join_collection() throws Exception {
 		PropertyMeta joinListMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_LIST).cascadeType(CascadeType.ALL)
-				.joinMeta(joinMeta).build();
+				.type(JOIN_LIST).cascadeType(ALL).joinMeta(joinMeta)
+				.invoker(invoker).build();
 
 		joinPMs.add(joinListMeta);
 
@@ -170,8 +169,8 @@ public class CQLMergerImplTest {
 	public void should_cascade_to_join_map() throws Exception {
 		PropertyMeta joinMapMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_MAP).cascadeType(CascadeType.ALL)
-				.joinMeta(joinMeta).build();
+				.type(JOIN_MAP).cascadeType(ALL).joinMeta(joinMeta)
+				.invoker(invoker).build();
 
 		joinPMs.add(joinMapMeta);
 
@@ -196,7 +195,7 @@ public class CQLMergerImplTest {
 	public void should_not_cascade_if_null() throws Exception {
 		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).invoker(invoker).build();
 
 		joinPMs.add(joinSimpleMeta);
 

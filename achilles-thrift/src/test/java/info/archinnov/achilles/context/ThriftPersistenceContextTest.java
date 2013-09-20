@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -26,7 +27,6 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
@@ -115,6 +115,9 @@ public class ThriftPersistenceContextTest {
 	@Mock
 	private EntityRefresher<ThriftPersistenceContext> refresher;
 
+	@Mock
+	private ReflectionInvoker invoker;
+
 	@Captor
 	private ArgumentCaptor<SafeExecutionContext<Void>> voidExecCaptor;
 
@@ -123,7 +126,9 @@ public class ThriftPersistenceContextTest {
 
 	private ConfigurationContext configContext = new ConfigurationContext();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
+	private Long id = RandomUtils.nextLong();
+
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(id)
 			.buid();
 
 	private UserBean bean;
@@ -132,10 +137,10 @@ public class ThriftPersistenceContextTest {
 	public void setUp() throws Exception {
 
 		bean = new UserBean();
-		bean.setUserId(RandomUtils.nextLong());
+		bean.setUserId(id);
 
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(PropertyType.SIMPLE).accessors().build();
+				.field("id").type(ID).accessors().invoker(invoker).build();
 
 		configContext.setConsistencyPolicy(policy);
 		entityMeta = new EntityMeta();
@@ -147,6 +152,7 @@ public class ThriftPersistenceContextTest {
 		when(flushContext.getConsistencyContext()).thenReturn(
 				consistencyContext);
 		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(id);
 
 		context = new ThriftPersistenceContext(entityMeta, configContext,
 				thriftDaoContext, flushContext, entity,
@@ -215,6 +221,9 @@ public class ThriftPersistenceContextTest {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean bean = new CompleteBean();
 		bean.setId(primaryKey);
+
+		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(primaryKey);
+
 		ThriftPersistenceContext duplicate = context.duplicate(bean);
 
 		assertThat(duplicate.getPrimaryKey()).isSameAs(primaryKey);
@@ -433,9 +442,8 @@ public class ThriftPersistenceContextTest {
 		bean.setUserId(123L);
 
 		joinIdMeta = PropertyMetaTestBuilder
-				//
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.accessors().type(ID).invoker(invoker).build();
 
 		joinMeta = new EntityMeta();
 
@@ -445,6 +453,8 @@ public class ThriftPersistenceContextTest {
 		joinMeta.setEntityClass(UserBean.class);
 		joinMeta.setClusteredEntity(false);
 
+		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(
+				bean.getUserId());
 		when(thriftDaoContext.findEntityDao("joinTable")).thenReturn(entityDao);
 	}
 

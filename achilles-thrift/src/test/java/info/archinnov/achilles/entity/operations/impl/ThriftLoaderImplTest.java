@@ -68,6 +68,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -129,11 +130,12 @@ public class ThriftLoaderImplTest {
 	public void setUp() throws Throwable {
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
 				.field("id").accessors().type(ID).transcoder(transcoder)
-				.build();
+				.invoker(invoker).build();
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setIdClass(Long.class);
+		Whitebox.setInternalState(entityMeta, ReflectionInvoker.class, invoker);
 		context = buildPersistenceContext(entityMeta);
 	}
 
@@ -174,12 +176,11 @@ public class ThriftLoaderImplTest {
 				comp, clusteredValue, 10);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+				.invoker(invoker).type(SIMPLE).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -215,11 +216,10 @@ public class ThriftLoaderImplTest {
 		Composite comp = new Composite();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+				.invoker(invoker).type(SIMPLE).build();
 
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
@@ -256,12 +256,11 @@ public class ThriftLoaderImplTest {
 				comp, clusteredValue, 10);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(JOIN_SIMPLE).build();
+				.type(JOIN_SIMPLE).invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -269,6 +268,7 @@ public class ThriftLoaderImplTest {
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		entityMeta.setFirstMeta(pm);
+		entityMeta.setClusteredJoin(true);
 
 		context = buildPersistenceContext(entityMeta);
 
@@ -282,8 +282,8 @@ public class ThriftLoaderImplTest {
 				partitionKey);
 		when(wideRowDao.getColumn(partitionKey, comp)).thenReturn(hCol);
 		when(
-				mapper.initClusteredEntity(BeanWithClusteredId.class, idMeta,
-						primaryKey)).thenReturn(expected);
+				mapper.initClusteredEntity(BeanWithClusteredId.class,
+						entityMeta, primaryKey)).thenReturn(expected);
 
 		BeanWithClusteredId actual = loaderImpl.load(context,
 				BeanWithClusteredId.class);
@@ -297,12 +297,11 @@ public class ThriftLoaderImplTest {
 		Composite comp = new Composite();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(JOIN_SIMPLE).build();
+				.type(JOIN_SIMPLE).invoker(invoker).build();
 
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
@@ -338,12 +337,11 @@ public class ThriftLoaderImplTest {
 				comp, 10L);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(COUNTER).build();
+				.type(COUNTER).invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -351,6 +349,7 @@ public class ThriftLoaderImplTest {
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		entityMeta.setFirstMeta(pm);
+		entityMeta.setClusteredCounter(true);
 
 		context = buildPersistenceContext(entityMeta);
 
@@ -382,12 +381,11 @@ public class ThriftLoaderImplTest {
 		Composite comp = new Composite();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(COUNTER).build();
+				.type(COUNTER).invoker(invoker).build();
 
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
@@ -424,9 +422,8 @@ public class ThriftLoaderImplTest {
 				comp, clusteredValue, 10);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
@@ -462,9 +459,8 @@ public class ThriftLoaderImplTest {
 		Composite comp = new Composite();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
@@ -513,12 +509,14 @@ public class ThriftLoaderImplTest {
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey embeddedId = new CompoundKey(partitionKey, "name");
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
+
 		PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.transcoder(transcoder).compGetters(userIdGetter).build();
+				.transcoder(transcoder).compGetters(userIdGetter)
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.transcoder(transcoder).type(SIMPLE).build();
+				.transcoder(transcoder).type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setIdMeta(embeddedIdMeta);
 		entityMeta.setClusteredEntity(true);
@@ -532,6 +530,8 @@ public class ThriftLoaderImplTest {
 
 		when(wideRowDao.getValue(partitionKey, comp)).thenReturn("name_xyz");
 		when(transcoder.decode(pm, "name_xyz")).thenReturn("name_xyz");
+		when(invoker.getPartitionKey(embeddedId, embeddedIdMeta)).thenReturn(
+				partitionKey);
 
 		Object actual = loaderImpl.loadSimpleProperty(context, pm);
 		assertThat(actual).isEqualTo("name_xyz");
@@ -541,7 +541,7 @@ public class ThriftLoaderImplTest {
 	public void should_load_list() throws Exception {
 		PropertyMeta listMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
-				.transcoder(transcoder).accessors().build();
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		Composite start = new Composite(), end = new Composite();
 		start.addComponent(LIST.flag(), BYTE_SRZ);
@@ -574,7 +574,7 @@ public class ThriftLoaderImplTest {
 	public void should_load_set() throws Exception {
 		PropertyMeta setMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
-				.transcoder(transcoder).accessors().build();
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		Composite start = new Composite(), end = new Composite();
 		List<Pair<Composite, Object>> columns = new ArrayList<Pair<Composite, Object>>();
@@ -607,7 +607,7 @@ public class ThriftLoaderImplTest {
 	public void should_load_map() throws Exception {
 		PropertyMeta mapMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).field("usersMap")
-				.transcoder(transcoder).type(PropertyType.MAP).accessors()
+				.transcoder(transcoder).type(MAP).accessors().invoker(invoker)
 				.build();
 
 		Composite start = new Composite(), end = new Composite();
@@ -655,8 +655,8 @@ public class ThriftLoaderImplTest {
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).type(PropertyType.JOIN_SIMPLE).accessors()
-				.transcoder(transcoder).build();
+				.joinMeta(joinMeta).type(JOIN_SIMPLE).accessors()
+				.transcoder(transcoder).invoker(invoker).build();
 
 		UserBean user = new UserBean();
 		Composite comp = new Composite();
@@ -683,7 +683,8 @@ public class ThriftLoaderImplTest {
 		Long joinId = RandomUtils.nextLong();
 
 		PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID).build();
+				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
+				.invoker(invoker).build();
 
 		entityMeta.setIdMeta(embeddedIdMeta);
 		entityMeta.setClusteredEntity(true);
@@ -722,8 +723,8 @@ public class ThriftLoaderImplTest {
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).type(PropertyType.JOIN_SIMPLE).accessors()
-				.build();
+				.joinMeta(joinMeta).type(JOIN_SIMPLE).accessors()
+				.invoker(invoker).build();
 
 		Composite comp = new Composite();
 		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);

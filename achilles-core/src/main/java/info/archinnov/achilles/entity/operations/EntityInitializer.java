@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.util.AlreadyLoadedTransformer;
 import info.archinnov.achilles.proxy.EntityInterceptor;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.type.Counter;
 
@@ -39,7 +38,6 @@ public class EntityInitializer {
 	private static final Logger log = LoggerFactory
 			.getLogger(EntityInitializer.class);
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private EntityProxifier<PersistenceContext> proxifier = new EntityProxifier<PersistenceContext>() {
 
 		@Override
@@ -70,23 +68,21 @@ public class EntityInitializer {
 				alreadyLoadedMetas);
 
 		for (PropertyMeta propertyMeta : toBeLoadedMetas) {
-			Object value = invoker.getValueFromField(entity,
-					propertyMeta.getGetter());
+			Object value = propertyMeta.getValueFromField(entity);
 			if (propertyMeta.isCounter()) {
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
-				invoker.setValueToField(realObject, propertyMeta.getSetter(),
+				propertyMeta.setValueToField(realObject,
 						CounterBuilder.incr(counter.get()));
 			}
 		}
 
 		for (PropertyMeta propertyMeta : alreadyLoadedMetas) {
 			if (propertyMeta.isCounter()) {
-				Object value = invoker.getValueFromField(entity,
-						propertyMeta.getGetter());
+				Object value = propertyMeta.getValueFromField(entity);
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
-				invoker.setValueToField(realObject, propertyMeta.getSetter(),
+				propertyMeta.setValueToField(realObject,
 						CounterBuilder.incr(counter.get()));
 			}
 		}

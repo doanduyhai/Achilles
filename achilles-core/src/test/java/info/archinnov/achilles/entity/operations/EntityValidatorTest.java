@@ -21,13 +21,11 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -40,7 +38,6 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityValidatorTest {
@@ -49,9 +46,6 @@ public class EntityValidatorTest {
 
 	@InjectMocks
 	private EntityValidator<PersistenceContext> entityValidator;
-
-	@Mock
-	private ReflectionInvoker invoker;
 
 	@Mock
 	private EntityProxifier<PersistenceContext> proxifier;
@@ -70,8 +64,6 @@ public class EntityValidatorTest {
 
 	@Before
 	public void setUp() {
-		Whitebox.setInternalState(entityValidator, ReflectionInvoker.class,
-				invoker);
 		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
 	}
 
@@ -82,7 +74,7 @@ public class EntityValidatorTest {
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
 				CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
+		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -94,7 +86,7 @@ public class EntityValidatorTest {
 		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
 				CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(null);
+		when(entityMeta.getPrimaryKey(bean)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Cannot get primary key for entity "
@@ -108,27 +100,17 @@ public class EntityValidatorTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		CompoundKey clusteredId = new CompoundKey(11L, "name");
 
-		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(clusteredId);
+		when(entityMeta.getPrimaryKey(bean)).thenReturn(clusteredId);
 		when(idMeta.isEmbeddedId()).thenReturn(true);
-
-		Method userIdGetter = CompoundKey.class.getMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getMethod("getName");
-
-		when(idMeta.getComponentGetters()).thenReturn(
-				Arrays.asList(userIdGetter, nameGetter));
-
-		when(invoker.getValueFromField(clusteredId, userIdGetter)).thenReturn(
-				11L);
-		when(invoker.getValueFromField(clusteredId, nameGetter)).thenReturn(
-				"name");
-
+		when(idMeta.encodeToComponents(clusteredId)).thenReturn(
+				Arrays.<Object> asList(11L, "name"));
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
 	@Test
 	public void should_validate_simple_id() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		when(invoker.getPrimaryKey(bean, idMeta)).thenReturn(12L);
+		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
 		when(idMeta.isEmbeddedId()).thenReturn(false);
 
 		entityValidator.validateEntity(bean, entityMeta);
@@ -136,6 +118,19 @@ public class EntityValidatorTest {
 
 	@Test
 	public void should_validate_not_clustered_counter() throws Exception {
+		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
+		when(
+				(Class<ClusteredEntityWithCounter>) proxifier
+						.deriveBaseClass(entity)).thenReturn(
+				ClusteredEntityWithCounter.class);
+		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(
+				entityMeta);
+		when(entityMeta.isClusteredCounter()).thenReturn(false);
+		entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+	}
+
+	@Test
+	public void should_exception_when_not_clustered_counter() throws Exception {
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
 		when(
 				(Class<ClusteredEntityWithCounter>) proxifier

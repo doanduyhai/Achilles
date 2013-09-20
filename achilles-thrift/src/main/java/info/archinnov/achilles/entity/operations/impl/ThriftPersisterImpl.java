@@ -26,7 +26,6 @@ import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder.CounterImpl;
 import info.archinnov.achilles.validation.Validator;
 
@@ -49,7 +48,6 @@ public class ThriftPersisterImpl {
 			.getLogger(ThriftPersisterImpl.class);
 	private static final String EMPTY = "";
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
@@ -58,9 +56,8 @@ public class ThriftPersisterImpl {
 			PropertyMeta propertyMeta) {
 		Composite name = thriftCompositeFactory
 				.createForBatchInsertSingleValue(propertyMeta);
-		String value = propertyMeta.forceEncodeToJSON(invoker
-				.getValueFromField(context.getEntity(),
-						propertyMeta.getGetter()));
+		String value = propertyMeta.forceEncodeToJSON(propertyMeta
+				.getValueFromField(context.getEntity()));
 		if (value != null) {
 			if (log.isTraceEnabled()) {
 				log.trace(
@@ -78,8 +75,7 @@ public class ThriftPersisterImpl {
 	public void persistCounter(ThriftPersistenceContext context,
 			PropertyMeta propertyMeta) {
 
-		Object counter = invoker.getValueFromField(context.getEntity(),
-				propertyMeta.getGetter());
+		Object counter = propertyMeta.getValueFromField(context.getEntity());
 		String entityClassName = context.getEntityClass().getCanonicalName();
 		if (counter != null) {
 
@@ -190,7 +186,7 @@ public class ThriftPersisterImpl {
 		JoinProperties joinProperties = propertyMeta.getJoinProperties();
 		PropertyMeta idMeta = propertyMeta.joinIdMeta();
 
-		Object joinId = invoker.getPrimaryKey(joinEntity, idMeta);
+		Object joinId = idMeta.getPrimaryKey(joinEntity);
 		Validator.validateNotNull(joinId,
 				"Primary key for join entity '%s' should not be null",
 				joinEntity);
@@ -231,8 +227,7 @@ public class ThriftPersisterImpl {
 				Composite name = thriftCompositeFactory
 						.createForBatchInsertList(propertyMeta, i);
 
-				Object joinEntityId = invoker.getValueFromField(joinEntity,
-						joinIdMeta.getGetter());
+				Object joinEntityId = joinIdMeta.getPrimaryKey(joinEntity);
 
 				String joinEntityIdStringValue = joinIdMeta
 						.forceEncodeToJSON(joinEntityId);
@@ -271,8 +266,7 @@ public class ThriftPersisterImpl {
 		for (V joinEntity : joinSet) {
 			if (joinEntity != null) {
 
-				Object joinEntityId = invoker.getValueFromField(joinEntity,
-						joinIdMeta.getGetter());
+				Object joinEntityId = joinEntityMeta.getPrimaryKey(joinEntity);
 
 				String joinEntityIdStringValue = joinIdMeta
 						.forceEncodeToJSON(joinEntityId);
@@ -322,8 +316,7 @@ public class ThriftPersisterImpl {
 
 			V joinEntity = entry.getValue();
 			if (joinEntity != null) {
-				Object joinEntityId = invoker.getValueFromField(joinEntity,
-						idMeta.getGetter());
+				Object joinEntityId = joinEntityMeta.getPrimaryKey(joinEntity);
 				String joinEntityIdStringValue = idMeta
 						.forceEncodeToJSON(joinEntityId);
 
@@ -370,9 +363,7 @@ public class ThriftPersisterImpl {
 		} else {
 			PropertyMeta pm = context.getFirstMeta();
 			if (pm.isJoin()) {
-				Object joinId = invoker.getValueFromField(clusteredValue, pm
-						.joinIdMeta().getGetter());
-
+				Object joinId = pm.getJoinPrimaryKey(clusteredValue);
 				Validator
 						.validateNotNull(
 								joinId,
@@ -421,8 +412,7 @@ public class ThriftPersisterImpl {
 		Mutator<Object> mutator = context.getWideRowMutator(tableName);
 		Object persistentValue;
 		if (pm.isJoin()) {
-			PropertyMeta joinIdMeta = pm.joinIdMeta();
-			persistentValue = invoker.getPrimaryKey(clusteredValue, joinIdMeta);
+			persistentValue = pm.getJoinPrimaryKey(clusteredValue);
 			dao.setValueBatch(partitionKey, comp, persistentValue,
 					context.getTtt(), context.getTimestamp(), mutator);
 

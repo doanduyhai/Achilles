@@ -72,7 +72,6 @@ public class PropertyMetaBuilder {
 		PropertyMeta meta = null;
 		boolean isCompound = embeddedIdProperties == null ? false : true;
 		meta = new PropertyMeta();
-		meta.setObjectMapper(objectMapper);
 		meta.setType(type);
 		meta.setPropertyName(propertyName);
 		meta.setEntityClassName(entityClassName);

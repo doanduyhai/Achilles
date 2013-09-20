@@ -226,17 +226,17 @@ public class ThriftPersisterImplTest {
 		Method idGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).build();
+				.valueClass(Long.class).type(ID).invoker(invoker).build();
 		joinIdMeta.setGetter(idGetter);
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(JOIN_SIMPLE).joinMeta(joinMeta).build();
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
@@ -251,7 +251,7 @@ public class ThriftPersisterImplTest {
 		when((Mutator) flushContext.getWideRowMutator("cf")).thenReturn(
 				wideRowMutator);
 
-		when(invoker.getValueFromField(clusteredValue, idGetter)).thenReturn(
+		when(invoker.getPrimaryKey(clusteredValue, joinIdMeta)).thenReturn(
 				joinId);
 		when(proxifier.unwrap(clusteredValue)).thenReturn(clusteredValue);
 
@@ -332,12 +332,12 @@ public class ThriftPersisterImplTest {
 		UserBean clusteredValue = new UserBean();
 		clusteredValue.setUserId(joinId);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).invoker(invoker).build();
 
 		Method userIdGetter = UserBean.class.getDeclaredMethod("getUserId");
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).build();
+				.valueClass(Long.class).type(ID).invoker(invoker).build();
 		joinIdMeta.setGetter(userIdGetter);
 
 		EntityMeta joinMeta = new EntityMeta();
@@ -382,7 +382,7 @@ public class ThriftPersisterImplTest {
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.transcoder(transcoder).accessors().build();
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		Composite comp = new Composite();
 		when(
@@ -406,14 +406,13 @@ public class ThriftPersisterImplTest {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+				.invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, Long.class).field("count")
-				.fqcn("fqcn").accessors().build();
+				.fqcn("fqcn").accessors().invoker(invoker).build();
 
 		Counter counterValue = CounterBuilder.incr(10L);
 		when(invoker.getValueFromField(entity, propertyMeta.getGetter()))
@@ -437,7 +436,7 @@ public class ThriftPersisterImplTest {
 	public void should_batch_list_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
-				.transcoder(transcoder).accessors().build();
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
@@ -464,7 +463,7 @@ public class ThriftPersisterImplTest {
 	public void should_batch_set_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
-				.transcoder(transcoder).accessors().build();
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		Composite comp1 = new Composite();
 		comp1.setComponent(0, "John", STRING_SRZ, STRING_SRZ
@@ -498,7 +497,8 @@ public class ThriftPersisterImplTest {
 	public void should_batch_map_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, String.class).field("preferences")
-				.transcoder(transcoder).type(MAP).accessors().build();
+				.transcoder(transcoder).type(MAP).accessors().invoker(invoker)
+				.build();
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
@@ -564,14 +564,16 @@ public class ThriftPersisterImplTest {
 		Long joinId = 154654L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.transcoder(transcoder).type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(ID).accessors().invoker(invoker)
+				.build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).joinMeta(joinMeta).accessors().build();
+				.type(JOIN_SIMPLE).joinMeta(joinMeta).accessors()
+				.invoker(invoker).build();
 
 		UserBean user = new UserBean();
 		user.setUserId(joinId);
@@ -606,14 +608,16 @@ public class ThriftPersisterImplTest {
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.transcoder(transcoder).type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(ID).accessors().invoker(invoker)
+				.build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.transcoder(transcoder).joinMeta(joinMeta).build();
+				.transcoder(transcoder).joinMeta(joinMeta).invoker(invoker)
+				.build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setUserId(joinId1);
@@ -635,10 +639,8 @@ public class ThriftPersisterImplTest {
 				.thenReturn(comp1);
 		when(thriftCompositeFactory.createForBatchInsertList(propertyMeta, 1))
 				.thenReturn(comp2);
-		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
-				.thenReturn(joinId1);
-		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
-				.thenReturn(joinId2);
+		when(invoker.getPrimaryKey(user1, joinIdMeta)).thenReturn(joinId1);
+		when(invoker.getPrimaryKey(user2, joinIdMeta)).thenReturn(joinId2);
 
 		when(proxifier.unwrap(user1)).thenReturn(user1);
 		when(proxifier.unwrap(user2)).thenReturn(user2);
@@ -670,14 +672,16 @@ public class ThriftPersisterImplTest {
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.transcoder(transcoder).type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(ID).accessors().invoker(invoker)
+				.build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.transcoder(transcoder).joinMeta(joinMeta).build();
+				.transcoder(transcoder).joinMeta(joinMeta).invoker(invoker)
+				.build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setUserId(joinId1);
@@ -702,10 +706,8 @@ public class ThriftPersisterImplTest {
 				thriftCompositeFactory.createForBatchInsertSetOrMap(
 						propertyMeta, joinId2.toString())).thenReturn(comp2);
 
-		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
-				.thenReturn(joinId1);
-		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
-				.thenReturn(joinId2);
+		when(invoker.getPrimaryKey(user1, joinIdMeta)).thenReturn(joinId1);
+		when(invoker.getPrimaryKey(user2, joinIdMeta)).thenReturn(joinId2);
 
 		when(proxifier.unwrap(user1)).thenReturn(user1);
 		when(proxifier.unwrap(user2)).thenReturn(user2);
@@ -737,14 +739,15 @@ public class ThriftPersisterImplTest {
 		Long joinId1 = 54351L, joinId2 = 4653L;
 		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
 				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.transcoder(transcoder).type(SIMPLE).accessors().build();
+				.transcoder(transcoder).type(ID).accessors().invoker(invoker)
+				.build();
 
 		EntityMeta joinMeta = new EntityMeta();
 		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, UserBean.class).joinMeta(joinMeta)
-				.transcoder(transcoder).build();
+				.transcoder(transcoder).invoker(invoker).build();
 
 		UserBean user1 = new UserBean(), user2 = new UserBean();
 		user1.setUserId(joinId1);
@@ -769,10 +772,8 @@ public class ThriftPersisterImplTest {
 		when(
 				thriftCompositeFactory.createForBatchInsertSetOrMap(
 						propertyMeta, "2")).thenReturn(comp2);
-		when(invoker.getValueFromField(user1, joinIdMeta.getGetter()))
-				.thenReturn(joinId1);
-		when(invoker.getValueFromField(user2, joinIdMeta.getGetter()))
-				.thenReturn(joinId2);
+		when(invoker.getPrimaryKey(user1, joinIdMeta)).thenReturn(joinId1);
+		when(invoker.getPrimaryKey(user2, joinIdMeta)).thenReturn(joinId2);
 
 		when(proxifier.unwrap(user1)).thenReturn(user1);
 		when(proxifier.unwrap(user2)).thenReturn(user2);
@@ -804,15 +805,15 @@ public class ThriftPersisterImplTest {
 		String fqcn = CompleteBean.class.getCanonicalName();
 
 		PropertyMeta counterIdMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, Long.class).field("id").accessors()
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Counter.class).field("count")
 				.type(PropertyType.COUNTER).accessors()
 				.counterIdMeta(counterIdMeta).fqcn(fqcn)
-				.consistencyLevels(Pair.create(ONE, ALL)).build();
+				.consistencyLevels(Pair.create(ONE, ALL)).invoker(invoker)
+				.build();
 
 		entityMeta.setClusteredEntity(false);
 		entityMeta.setPropertyMetas(ImmutableMap.of("pm", propertyMeta));
@@ -853,10 +854,10 @@ public class ThriftPersisterImplTest {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Integer.class)
-				.type(SIMPLE).build();
+				.type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
@@ -883,7 +884,7 @@ public class ThriftPersisterImplTest {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
@@ -908,10 +909,10 @@ public class ThriftPersisterImplTest {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(COUNTER).build();
+				.type(COUNTER).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
@@ -934,9 +935,8 @@ public class ThriftPersisterImplTest {
 	@Test
 	public void should_batch_remove_property() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
+				.type(PropertyType.SIMPLE).accessors().invoker(invoker).build();
 
 		Composite start = new Composite(), end = new Composite();
 		when(

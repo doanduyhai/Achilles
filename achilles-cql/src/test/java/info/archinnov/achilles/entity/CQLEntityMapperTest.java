@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.entity;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -81,11 +82,11 @@ public class CQLEntityMapperTest {
 	public void should_set_eager_properties_to_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(PropertyType.ID).build();
+				.type(ID).invoker(invoker).build();
 
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+				.accessors().type(SIMPLE).invoker(invoker).build();
 
 		List<PropertyMeta> eagerMetas = Arrays.asList(pm);
 
@@ -130,22 +131,11 @@ public class CQLEntityMapperTest {
 	}
 
 	@Test
-	public void should_set_property_to_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
-
-		entityMapper.setJoinValueToEntity("name", pm, entity);
-
-		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
-	}
-
-	@Test
 	public void should_set_compound_key_to_entity() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.EMBEDDED_ID).compNames("name")
-				.build();
+				.accessors().type(EMBEDDED_ID).compNames("name")
+				.invoker(invoker).build();
 
 		CompoundKey compoundKey = new CompoundKey();
 		when(cqlRowInvoker.invokeOnRowForCompoundKey(row, pm)).thenReturn(
@@ -161,8 +151,8 @@ public class CQLEntityMapperTest {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.accessors().invoker(invoker).build();
 
 		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta);
 
@@ -186,11 +176,11 @@ public class CQLEntityMapperTest {
 				Arrays.asList(def1, def2).iterator());
 
 		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
-
 		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+		when(entityMeta.instanciate()).thenReturn(entity);
 
 		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				row, propertiesMap);
+				entityMeta, row, propertiesMap);
 
 		assertThat(actual).isSameAs(entity);
 		verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
@@ -200,12 +190,12 @@ public class CQLEntityMapperTest {
 	public void should_skip_mapping_join_column() throws Exception {
 		Long id = RandomUtils.nextLong();
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.accessors().invoker(invoker).build();
 
 		PropertyMeta userMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_SIMPLE).build();
+				.type(JOIN_SIMPLE).invoker(invoker).build();
 
 		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
 				"user", userMeta);
@@ -230,11 +220,11 @@ public class CQLEntityMapperTest {
 				Arrays.asList(def1, def2).iterator());
 
 		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
-
 		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+		when(entityMeta.instanciate()).thenReturn(entity);
 
 		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				row, propertiesMap);
+				entityMeta, row, propertiesMap);
 
 		assertThat(actual).isSameAs(entity);
 		verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
@@ -244,8 +234,10 @@ public class CQLEntityMapperTest {
 	@Test
 	public void should_return_null_when_no_column_found() throws Exception {
 		when(row.getColumnDefinitions()).thenReturn(null);
+		when(entityMeta.instanciate()).thenReturn(entity);
+
 		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				row, null);
+				entityMeta, row, null);
 		assertThat(actual).isNull();
 	}
 

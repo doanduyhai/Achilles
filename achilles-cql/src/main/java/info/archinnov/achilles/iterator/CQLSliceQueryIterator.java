@@ -21,7 +21,6 @@ import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import com.datastax.driver.core.Row;
 
 public class CQLSliceQueryIterator<T> implements Iterator<T> {
 
-	private Class<T> entityClass;
 	private CQLPersistenceContext context;
 	private Iterator<Row> iterator;
 	private String varyingComponentName;
@@ -42,7 +40,6 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 	private int batchSize;
 	private int count = 0;
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 	private CQLRowMethodInvoker cqlInvoker = new CQLRowMethodInvoker();
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
@@ -53,8 +50,6 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 		this.context = context;
 		this.iterator = iterator;
 		this.ps = ps;
-
-		this.entityClass = sliceQuery.getEntityClass();
 		this.meta = sliceQuery.getMeta();
 		this.varyingComponentName = sliceQuery.getVaryingComponentName();
 		this.varyingComponentClass = sliceQuery.getVaryingComponentClass();
@@ -77,7 +72,7 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 		Row row = iterator.next();
 		lastVaryingComponentValue = cqlInvoker.invokeOnRowForType(row,
 				varyingComponentClass, varyingComponentName);
-		T clusteredEntity = invoker.instanciate(entityClass);
+		T clusteredEntity = meta.<T> instanciate();
 		mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
 		count++;
 		return proxify(clusteredEntity);

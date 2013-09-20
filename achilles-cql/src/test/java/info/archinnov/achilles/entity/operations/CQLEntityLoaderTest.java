@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEntityLoaderTest {
@@ -64,11 +65,13 @@ public class CQLEntityLoaderTest {
 	public void setUp() throws Exception {
 
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().build();
+				.field("id").accessors().invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClusteredEntity(false);
 		meta.setIdMeta(idMeta);
+		meta.setEntityClass(CompleteBean.class);
+		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
 
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getEntityMeta()).thenReturn(meta);

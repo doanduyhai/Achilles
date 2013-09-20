@@ -32,7 +32,19 @@ public class OptionsBuilderTest {
 		assertThat(options.getTtl().get()).isEqualTo(10);
 		assertThat(options.getTimestamp().get()).isEqualTo(100L);
 
+		options = OptionsBuilder.withConsistency(ALL).timestamp(100L).ttl(10);
+
+		assertThat(options.getConsistencyLevel().get()).isSameAs(ALL);
+		assertThat(options.getTtl().get()).isEqualTo(10);
+		assertThat(options.getTimestamp().get()).isEqualTo(100L);
+
 		options = OptionsBuilder.withTtl(11).consistency(ANY).timestamp(111L);
+
+		assertThat(options.getConsistencyLevel().get()).isSameAs(ANY);
+		assertThat(options.getTtl().get()).isEqualTo(11);
+		assertThat(options.getTimestamp().get()).isEqualTo(111L);
+
+		options = OptionsBuilder.withTtl(11).timestamp(111L).consistency(ANY);
 
 		assertThat(options.getConsistencyLevel().get()).isSameAs(ANY);
 		assertThat(options.getTtl().get()).isEqualTo(11);
@@ -44,6 +56,11 @@ public class OptionsBuilderTest {
 		assertThat(options.getTtl().get()).isEqualTo(12);
 		assertThat(options.getTimestamp().get()).isEqualTo(122L);
 
+		options = OptionsBuilder.withTimestamp(122L).ttl(12).consistency(ONE);
+
+		assertThat(options.getConsistencyLevel().get()).isSameAs(ONE);
+		assertThat(options.getTtl().get()).isEqualTo(12);
+		assertThat(options.getTimestamp().get()).isEqualTo(122L);
 	}
 
 	@Test
@@ -53,5 +70,9 @@ public class OptionsBuilderTest {
 		assertThat(options.getConsistencyLevel().isPresent()).isFalse();
 		assertThat(options.getTtl().isPresent()).isFalse();
 		assertThat(options.getTimestamp().isPresent()).isFalse();
+		Options duplicate = options.duplicateWithoutTtlAndTimestamp();
+		assertThat(duplicate.getConsistencyLevel().isPresent()).isFalse();
+		assertThat(duplicate.getTtl().isPresent()).isFalse();
+		assertThat(duplicate.getTimestamp().isPresent()).isFalse();
 	}
 }

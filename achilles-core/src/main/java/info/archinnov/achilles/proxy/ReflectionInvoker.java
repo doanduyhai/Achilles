@@ -19,8 +19,10 @@ package info.archinnov.achilles.proxy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +92,19 @@ public class ReflectionInvoker {
 		return value;
 	}
 
-	public void setValueToField(Object target, Method setter, Object... args) {
+	public List<?> getListValueFromField(Object target, Method getter) {
+		return (List<?>) getValueFromField(target, getter);
+	}
+
+	public Set<?> getSetValueFromField(Object target, Method getter) {
+		return (Set<?>) getValueFromField(target, getter);
+	}
+
+	public Map<?, ?> getMapValueFromField(Object target, Method getter) {
+		return (Map<?, ?>) getValueFromField(target, getter);
+	}
+
+	public void setValueToField(Object target, Method setter, Object args) {
 		log.trace(
 				"Set value with setter {} to instance {} of class {} with {}",
 				setter.getName(), target, setter.getDeclaringClass()
@@ -101,7 +115,7 @@ public class ReflectionInvoker {
 				setter.invoke(target, args);
 			} catch (Exception e) {
 				throw new AchillesException("Cannot invoke '"
-						+ setter.getName() + "'  of type '"
+						+ setter.getName() + "' of type '"
 						+ setter.getDeclaringClass().getCanonicalName()
 						+ "' on instance '" + target + "'", e);
 			}
@@ -120,47 +134,13 @@ public class ReflectionInvoker {
 		return newInstance;
 	}
 
-	public <T> T instanciate(Constructor<T> constructor, Object... args) {
-		T newInstance;
-		try {
-			newInstance = constructor.newInstance(args);
-		} catch (Exception e) {
-			throw new AchillesException(
-					"Cannot instanciate entity from class '"
-							+ constructor.getDeclaringClass()
-									.getCanonicalName()
-							+ "' with constructor '" + constructor.getName()
-							+ "' and args '" + args + "'", e);
-		}
-		return newInstance;
-	}
-
 	public Object instanciateEmbeddedIdWithPartitionKey(PropertyMeta idMeta,
 			Object partitionKey) {
-		Constructor<Object> constructor = idMeta.getEmbeddedIdConstructor();
-		Object newInstance;
-		try {
-			int parametersCount = constructor.getParameterTypes().length;
-			if (parametersCount > 0) {
-				Object[] constructorArgs = new Object[parametersCount];
-				constructorArgs[0] = partitionKey;
-				for (int i = 1; i < parametersCount; i++) {
-					constructorArgs[i] = null;
-				}
-				newInstance = constructor.newInstance(constructorArgs);
-			} else {
-				newInstance = constructor.newInstance();
-				setValueToField(newInstance, idMeta.getPartitionKeySetter(),
-						partitionKey);
-			}
-		} catch (Exception e) {
-			throw new AchillesException(
-					"Cannot instanciate entity from class '"
-							+ constructor.getDeclaringClass()
-									.getCanonicalName()
-							+ "' with constructor '" + constructor.getName()
-							+ "' and partition key '" + partitionKey + "'", e);
-		}
+
+		Class<?> valueClass = idMeta.getValueClass();
+		Object newInstance = instanciate(valueClass);
+		setValueToField(newInstance, idMeta.getPartitionKeySetter(),
+				partitionKey);
 		return newInstance;
 	}
 }

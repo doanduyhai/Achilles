@@ -29,6 +29,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.helper.EntityIntrospector;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -69,6 +70,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private String fqcn;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private DataTranscoder transcoder;
+	private ReflectionInvoker invoker;
 
 	public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz,
 			Class<K> keyClass, Class<V> valueClass) {
@@ -144,13 +146,13 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 		}
 		objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
-		pm.setObjectMapper(objectMapper);
 		if (consistencyLevels == null) {
 			consistencyLevels = Pair.create(ConsistencyLevel.ONE,
 					ConsistencyLevel.ONE);
 		}
 		pm.setConsistencyLevels(consistencyLevels);
 		setTranscoder(pm);
+		pm.setInvoker(invoker);
 		return pm;
 	}
 
@@ -303,6 +305,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	public PropertyMetaTestBuilder<T, K, V> transcoder(DataTranscoder transcoder) {
 		this.transcoder = transcoder;
+		return this;
+	}
+
+	public PropertyMetaTestBuilder<T, K, V> invoker(ReflectionInvoker invoker) {
+		this.invoker = invoker;
 		return this;
 	}
 

@@ -22,7 +22,6 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder.CounterImpl;
 import info.archinnov.achilles.validation.Validator;
 
@@ -35,7 +34,6 @@ import org.apache.cassandra.utils.Pair;
 import com.google.common.collect.FluentIterable;
 
 public class CQLPersisterImpl {
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private NullJoinValuesFilter nullJoinValuesFilter = new NullJoinValuesFilter();
 
 	public void persist(CQLPersistenceContext context) {
@@ -45,8 +43,7 @@ public class CQLPersisterImpl {
 	public void persistClusteredCounter(CQLPersistenceContext context) {
 		Object entity = context.getEntity();
 		PropertyMeta counterMeta = context.getFirstMeta();
-		Object counter = invoker.getValueFromField(entity,
-				counterMeta.getGetter());
+		Object counter = counterMeta.getValueFromField(entity);
 		if (counter != null) {
 			Validator
 					.validateTrue(
@@ -71,8 +68,7 @@ public class CQLPersisterImpl {
 			Set<PropertyMeta> counterMetas) {
 		Object entity = context.getEntity();
 		for (PropertyMeta counterMeta : counterMetas) {
-			Object counter = invoker.getValueFromField(entity,
-					counterMeta.getGetter());
+			Object counter = counterMeta.getValueFromField(entity);
 			if (counter != null) {
 				Validator
 						.validateTrue(
@@ -156,8 +152,7 @@ public class CQLPersisterImpl {
 			for (Object joinEntity : joinValues) {
 				if (joinEntity != null
 						&& context.addToProcessingList(joinEntity)) {
-					EntityMeta joinMeta = joinPM.getJoinProperties()
-							.getEntityMeta();
+					EntityMeta joinMeta = joinPM.joinMeta();
 					CQLPersistenceContext joinContext = context
 							.createContextForJoin(joinMeta, joinEntity);
 					boolean entityExist = joinContext.checkForEntityExistence();
@@ -168,8 +163,8 @@ public class CQLPersisterImpl {
 									"The entity '"
 											+ joinMeta.getClassName()
 											+ "' with id '"
-											+ invoker.getPrimaryKey(joinEntity,
-													joinMeta.getIdMeta())
+											+ joinMeta
+													.getPrimaryKey(joinEntity)
 											+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
 				}
 			}

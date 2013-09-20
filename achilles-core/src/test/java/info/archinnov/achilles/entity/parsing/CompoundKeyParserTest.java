@@ -19,14 +19,6 @@ package info.archinnov.achilles.entity.parsing;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorMissingJsonPropertyAnnotation;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorMissingJsonPropertyAnnotationAttribute;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorMissingOrderAnnotation;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorWithDuplicateJsonPropertyNames;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorWithMissingField;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorWithoutJsonCreatorAnnotation;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructorWithoutOrderAnnotation;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyIncorrectType;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyNotInstantiable;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyWithDuplicateOrder;
@@ -35,7 +27,6 @@ import info.archinnov.achilles.test.parser.entity.CompoundKeyWithNoAnnotation;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyWithOnlyOneComponent;
 import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import org.junit.Rule;
@@ -63,12 +54,10 @@ public class CompoundKeyParserTest {
 		Method rankGetter = CorrectCompoundKey.class.getMethod("getRank");
 		Method rankSetter = CorrectCompoundKey.class.getMethod("setRank",
 				int.class);
-		Constructor<?> constructor = CorrectCompoundKey.class.getConstructor();
 
 		EmbeddedIdProperties props = parser
 				.parseEmbeddedId(CorrectCompoundKey.class);
 
-		assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
 		assertThat(props.getComponentGetters()).containsExactly(nameGetter,
 				rankGetter);
 		assertThat(props.getComponentSetters()).containsExactly(nameSetter,
@@ -77,30 +66,6 @@ public class CompoundKeyParserTest {
 				int.class);
 		assertThat(props.getComponentNames()).containsExactly("name", "rank");
 		assertThat(props.getOrderingComponent()).isEqualTo("rank");
-	}
-
-	@Test
-	public void should_parse_compound_key_constructor_injection()
-			throws Exception {
-
-		Method idGetter = CompoundKeyByConstructor.class.getMethod("getId");
-		Method nameGetter = CompoundKeyByConstructor.class.getMethod("getName");
-
-		Constructor<?> constructor = CompoundKeyByConstructor.class
-				.getConstructor(Long.class, String.class);
-
-		EmbeddedIdProperties props = parser
-				.parseEmbeddedId(CompoundKeyByConstructor.class);
-
-		assertThat((Constructor) props.getConstructor()).isEqualTo(constructor);
-		assertThat(props.getComponentClasses()).containsExactly(Long.class,
-				String.class);
-		assertThat(props.getComponentGetters()).containsExactly(idGetter,
-				nameGetter);
-		assertThat(props.getComponentSetters()).isEmpty();
-		assertThat(props.getComponentNames()).containsExactly("primaryKey",
-				"name");
-		assertThat(props.getOrderingComponent()).isEqualTo("name");
 	}
 
 	@Test
@@ -132,9 +97,9 @@ public class CompoundKeyParserTest {
 			throws Exception {
 		exception.expect(AchillesBeanMappingException.class);
 		exception
-				.expectMessage("There should be exactly one constructor for @CompoundKey class '"
+				.expectMessage("There should be at least 2 fields annotated with @Order for the compound primary key class '"
 						+ CompoundKeyWithNoAnnotation.class.getCanonicalName()
-						+ "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
+						+ "'");
 
 		parser.parseEmbeddedId(CompoundKeyWithNoAnnotation.class);
 	}
@@ -164,112 +129,14 @@ public class CompoundKeyParserTest {
 	}
 
 	@Test
-	public void should_exception_when_compound_key_by_constructor_no_order_annotation()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("There should be exactly one constructor for @CompoundKey class '"
-						+ CompoundKeyByConstructorWithoutOrderAnnotation.class
-								.getCanonicalName()
-						+ "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-		parser.parseEmbeddedId(CompoundKeyByConstructorWithoutOrderAnnotation.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_no_json_property_annotation()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("There should be exactly one constructor for @CompoundKey class '"
-						+ CompoundKeyByConstructorWithoutOrderAnnotation.class
-								.getCanonicalName()
-						+ "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-		parser.parseEmbeddedId(CompoundKeyByConstructorWithoutOrderAnnotation.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_no_json_creator_annotation()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("There should be exactly one constructor for @CompoundKey class '"
-						+ CompoundKeyByConstructorWithoutJsonCreatorAnnotation.class
-								.getCanonicalName()
-						+ "' annotated by @JsonCreator and all arguments annotated by @Order AND @JsonProperty");
-		parser.parseEmbeddedId(CompoundKeyByConstructorWithoutJsonCreatorAnnotation.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_duplicated_json_property_name()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The property names defined by @JsonProperty should be unique for the @CompoundKey class '"
-						+ CompoundKeyByConstructorWithDuplicateJsonPropertyNames.class
-								.getCanonicalName() + "'");
-		parser.parseEmbeddedId(CompoundKeyByConstructorWithDuplicateJsonPropertyNames.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_missing_order_annotation()
-			throws Exception {
-		Constructor<?> constructor = CompoundKeyByConstructorMissingOrderAnnotation.class
-				.getConstructor(String.class, Long.class);
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The constructor '"
-						+ constructor
-						+ "' of @CompoundKey class '"
-						+ CompoundKeyByConstructorMissingOrderAnnotation.class
-								.getCanonicalName()
-						+ "' should have all its params annotated with @Order AND @JsonProperty");
-		parser.parseEmbeddedId(CompoundKeyByConstructorMissingOrderAnnotation.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_missing_json_property_annotation()
-			throws Exception {
-		Constructor<?> constructor = CompoundKeyByConstructorMissingJsonPropertyAnnotation.class
-				.getConstructor(String.class, Long.class);
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The constructor '"
-						+ constructor
-						+ "' of @CompoundKey class '"
-						+ CompoundKeyByConstructorMissingJsonPropertyAnnotation.class
-								.getCanonicalName()
-						+ "' should have all its params annotated with @Order AND @JsonProperty");
-		parser.parseEmbeddedId(CompoundKeyByConstructorMissingJsonPropertyAnnotation.class);
-	}
-
-	@Test
-	public void should_exception_when_compound_key_by_constructor_missing_json_property_annotation_attribute()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("@JsonProperty on constructor param should have a 'value' attribute for deserialization");
-		parser.parseEmbeddedId(CompoundKeyByConstructorMissingJsonPropertyAnnotationAttribute.class);
-	}
-
-	@Test
 	public void should_exception_when_compound_key_has_only_one_component()
 			throws Exception {
 		exception.expect(AchillesBeanMappingException.class);
 		exception
-				.expectMessage("There should be at least 2 components for the @CompoundKey class '"
+				.expectMessage("There should be at least 2 fields annotated with @Order for the compound primary key class '"
 						+ CompoundKeyWithOnlyOneComponent.class
 								.getCanonicalName() + "'");
 		parser.parseEmbeddedId(CompoundKeyWithOnlyOneComponent.class);
 	}
 
-	@Test
-	public void should_exception_when_compound_by_constructor_missing_field()
-			throws Exception {
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("Cannot find field of type 'java.lang.String' and name 'name' in the @CompoundKey class "
-						+ CompoundKeyByConstructorWithMissingField.class
-								.getCanonicalName());
-		parser.parseEmbeddedId(CompoundKeyByConstructorWithMissingField.class);
-	}
 }

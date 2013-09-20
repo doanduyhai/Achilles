@@ -19,7 +19,6 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.HashMap;
@@ -39,7 +38,6 @@ public class ThriftJoinEntityLoader {
 			.getLogger(ThriftJoinEntityLoader.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public Map<Object, Object> loadJoinEntities(Class<?> entityClass,
 			List<Object> keys, EntityMeta entityMeta,
@@ -63,16 +61,14 @@ public class ThriftJoinEntityLoader {
 
 		for (Entry<Object, List<Pair<Composite, String>>> entry : rows
 				.entrySet()) {
-			Object entity;
-			entity = invoker.instanciate(entityClass);
+			Object entity = entityMeta.<Object> instanciate();
 
 			Object key = entry.getKey();
 			List<Pair<Composite, String>> columns = entry.getValue();
 			if (columns.size() > 0) {
 				mapper.setEagerPropertiesToEntity(key, columns, entityMeta,
 						entity);
-				invoker.setValueToField(entity, entityMeta.getIdMeta()
-						.getSetter(), key);
+				entityMeta.getIdMeta().setValueToField(entity, key);
 				entitiesByKey.put(key, entity);
 			}
 		}

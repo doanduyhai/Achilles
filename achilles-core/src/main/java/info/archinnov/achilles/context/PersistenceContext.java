@@ -71,7 +71,7 @@ public abstract class PersistenceContext {
 				.validateNotNull(entity,
 						"The entity should not be null for persistence context creation");
 		this.entity = entity;
-		this.primaryKey = invoker.getPrimaryKey(entity, entityMeta.getIdMeta());
+		this.primaryKey = entityMeta.getPrimaryKey(entity);
 		Validator
 				.validateNotNull(
 						primaryKey,
@@ -98,9 +98,8 @@ public abstract class PersistenceContext {
 	}
 
 	private void extractPartitionKey() {
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		if (idMeta.isEmbeddedId()) {
-			this.partitionKey = invoker.getPartitionKey(primaryKey, idMeta);
+		if (entityMeta.hasEmbeddedId()) {
+			this.partitionKey = entityMeta.getPartitionKey(primaryKey);
 		}
 	}
 

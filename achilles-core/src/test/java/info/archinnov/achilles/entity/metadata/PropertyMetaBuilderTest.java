@@ -60,8 +60,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -111,8 +109,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
@@ -131,8 +127,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		Bean bean = new Bean();
-		assertThat(built.getValueFromString(writeString(bean))).isInstanceOf(
-				Bean.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(Bean.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -151,8 +145,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -171,8 +163,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
@@ -191,8 +181,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -211,8 +199,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
@@ -234,8 +220,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.getKey(12)).isInstanceOf(Integer.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -257,8 +241,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.getKey(bean)).isInstanceOf(Bean.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Bean.class);
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
@@ -279,8 +261,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.getKey(12)).isInstanceOf(Integer.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
-		assertThat(built.getValueFromString("\"val\"")).isInstanceOf(
-				String.class);
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();

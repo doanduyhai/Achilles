@@ -23,7 +23,6 @@ import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.iterator.CQLSliceQueryIterator;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
@@ -42,7 +41,6 @@ public class CQLSliceQueryExecutor extends
 		SliceQueryExecutor<CQLPersistenceContext> {
 
 	private CQLStatementGenerator generator = new CQLStatementGenerator();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 	private CQLDaoContext daoContext;
 	private CQLPersistenceContextFactory contextFactory;
@@ -59,7 +57,6 @@ public class CQLSliceQueryExecutor extends
 	@Override
 	public <T> List<T> get(SliceQuery<T> sliceQuery) {
 
-		Class<T> entityClass = sliceQuery.getEntityClass();
 		EntityMeta meta = sliceQuery.getMeta();
 
 		List<T> clusteredEntities = new ArrayList<T>();
@@ -71,7 +68,7 @@ public class CQLSliceQueryExecutor extends
 		List<Row> rows = daoContext.execute(query).all();
 
 		for (Row row : rows) {
-			T clusteredEntity = invoker.instanciate(entityClass);
+			T clusteredEntity = meta.<T> instanciate();
 			mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
 			clusteredEntities.add(clusteredEntity);
 		}

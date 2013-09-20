@@ -81,34 +81,6 @@ public class ThriftPersistenceContextFactory implements
 				OptionsBuilder.noOptions(), entitiesIdentity);
 	}
 
-	// public ThriftPersistenceContext newContextForBatch(Object entity,
-	// ThriftAbstractFlushContext<?> flushContext)
-	// {
-	// Validator.validateNotNull(entity,
-	// "entity should not be null for persistence context creation");
-	// Class<?> entityClass = proxifier.deriveBaseClass(entity);
-	// EntityMeta meta = entityMetaMap.get(entityClass);
-	//
-	// return new ThriftPersistenceContext(meta, configContext, daoContext,
-	// flushContext, entity, new HashSet<String>());
-	// }
-
-	// public ThriftPersistenceContext newContextForBatch(Class<?> entityClass,
-	// Object primaryKey, ThriftAbstractFlushContext<?> flushContext)
-	// {
-	// log.trace("Initializing new persistence context for entity class {} and primary key {}",
-	// entityClass.getCanonicalName(), primaryKey);
-	//
-	// Validator.validateNotNull(entityClass,
-	// "entityClass should not be null for persistence context creation");
-	// Validator.validateNotNull(primaryKey,
-	// "primaryKey should not be null for persistence context creation");
-	// EntityMeta meta = entityMetaMap.get(entityClass);
-	// return new ThriftPersistenceContext(meta, configContext, daoContext,
-	// flushContext, entityClass, primaryKey, OptionsBuilder.noOptions(), new
-	// HashSet<String>());
-	// }
-
 	@Override
 	public ThriftPersistenceContext newContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);

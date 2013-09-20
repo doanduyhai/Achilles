@@ -17,7 +17,7 @@
 package info.archinnov.achilles.query;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
@@ -41,18 +41,16 @@ public class SliceQueryTest {
 
 	@Test
 	public void should_build_new_slice_query() throws Exception {
-		PropertyMeta idMeta = new PropertyMeta();
-		idMeta.setTranscoder(transcoder);
+		PropertyMeta idMeta = mock(PropertyMeta.class);
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 
 		List<Object> fromComponents = Arrays.<Object> asList(11L, "a");
 		List<Object> toComponents = Arrays.<Object> asList(11L, "b");
-		when(transcoder.encodeComponents(idMeta, fromComponents)).thenReturn(
+		when(idMeta.encodeToComponents(fromComponents)).thenReturn(
 				fromComponents);
-		when(transcoder.encodeComponents(idMeta, toComponents)).thenReturn(
-				toComponents);
+		when(idMeta.encodeToComponents(toComponents)).thenReturn(toComponents);
 
 		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(
 				ClusteredEntity.class, meta, 11L, new Object[] { "a" },
@@ -75,8 +73,7 @@ public class SliceQueryTest {
 
 	@Test
 	public void should_return_true_when_no_component() throws Exception {
-		PropertyMeta idMeta = new PropertyMeta();
-		idMeta.setTranscoder(transcoder);
+		PropertyMeta idMeta = mock(PropertyMeta.class);
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);

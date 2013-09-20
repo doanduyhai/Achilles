@@ -72,8 +72,6 @@ public class ThriftJoinEntityLoaderTest {
 
 	@Test
 	public void should_load_join_entities() throws Exception {
-		Method idSetter = UserBean.class.getDeclaredMethod("setUserId",
-				Long.class);
 
 		Composite start = new Composite();
 		Composite end = new Composite();
@@ -93,7 +91,6 @@ public class ThriftJoinEntityLoaderTest {
 		when(dao.eagerFetchEntities(keys)).thenReturn(rows);
 
 		when(joinMeta.getIdMeta()).thenReturn(joinIdMeta);
-		when(joinIdMeta.getSetter()).thenReturn(idSetter);
 
 		Map<Object, Object> actual = joinHelper.loadJoinEntities(
 				UserBean.class, keys, joinMeta, dao);
@@ -103,10 +100,8 @@ public class ThriftJoinEntityLoaderTest {
 		verify(mapper).setEagerPropertiesToEntity(eq(12L), eq(columns2),
 				eq(joinMeta), userCaptor.capture());
 
-		verify(invoker).setValueToField(any(UserBean.class), eq(idSetter),
-				eq(11L));
-		verify(invoker).setValueToField(any(UserBean.class), eq(idSetter),
-				eq(12L));
+		verify(joinIdMeta).setValueToField(any(UserBean.class), eq(11L));
+		verify(joinIdMeta).setValueToField(any(UserBean.class), eq(12L));
 
 		assertThat(userCaptor.getAllValues()).hasSize(2);
 		UserBean user1 = userCaptor.getAllValues().get(0);

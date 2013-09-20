@@ -169,6 +169,7 @@ public class PropertyHelper {
 		return Pair.create(defaultGlobalRead, defaultGlobalWrite);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> Class<T> getClassFromType(Type type) {
 		if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;

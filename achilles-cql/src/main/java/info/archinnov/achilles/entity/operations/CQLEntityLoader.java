@@ -21,12 +21,10 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.CQLLoaderImpl;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 	private CQLLoaderImpl loaderImpl = new CQLLoaderImpl();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	@Override
 	public <T> T load(CQLPersistenceContext context, Class<T> entityClass) {
@@ -47,10 +45,9 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 		if (context.isLoadEagerFields()) {
 			entity = loaderImpl.eagerLoadEntity(context, entityClass);
 		} else {
-			entity = invoker.instanciate(entityClass);
+			entity = entityMeta.<T> instanciate();
 		}
-		invoker.setValueToField(entity, entityMeta.getIdMeta().getSetter(),
-				primaryKey);
+		entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 
 		return entity;
 	}

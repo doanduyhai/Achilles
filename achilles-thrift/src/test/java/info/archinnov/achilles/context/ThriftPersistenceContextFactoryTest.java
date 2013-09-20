@@ -17,6 +17,7 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.context.PersistenceContextFactory.NO_TTL;
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -70,7 +71,8 @@ public class ThriftPersistenceContextFactoryTest {
 	public void setUp() throws Exception {
 		meta = new EntityMeta();
 		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().build();
+				.field("id").accessors().type(ID).invoker(invoker).build();
+
 		meta.setIdMeta(idMeta);
 		meta.setEntityClass(CompleteBean.class);
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
@@ -89,6 +91,7 @@ public class ThriftPersistenceContextFactoryTest {
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		ThriftPersistenceContext actual = factory.newContext(entity,
 				OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
@@ -110,6 +113,7 @@ public class ThriftPersistenceContextFactoryTest {
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		ThriftPersistenceContext actual = factory.newContext(entity);
 
@@ -146,6 +150,8 @@ public class ThriftPersistenceContextFactoryTest {
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
 				CompleteBean.class);
 		when(flushContext.duplicate()).thenReturn(flushContext);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+
 		ThriftPersistenceContext actual = factory.newContextForJoin(entity,
 				flushContext, new HashSet<String>());
 

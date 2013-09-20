@@ -109,6 +109,9 @@ public class EntityMetaBuilder {
 		boolean clusteredCounter = clusteredEntity && firstMeta != null
 				&& firstMeta.isCounter();
 		meta.setClusteredCounter(clusteredCounter);
+		boolean clusteredJoin = clusteredEntity && firstMeta != null
+				&& firstMeta.isJoin();
+		meta.setClusteredJoin(clusteredJoin);
 		return meta;
 	}
 

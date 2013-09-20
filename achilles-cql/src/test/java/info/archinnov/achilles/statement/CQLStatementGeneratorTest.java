@@ -24,6 +24,7 @@ import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.prepared.CQLSliceQueryPreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -36,7 +37,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -76,10 +76,10 @@ public class CQLStatementGeneratorTest {
 	@Mock
 	private CQLDaoContext daoContext;
 
+	private ReflectionInvoker invoker = new ReflectionInvoker();
+
 	@Captor
 	private ArgumentCaptor<Statement> statementCaptor;
-
-	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Test
 	public void should_create_select_statement_for_entity_simple_id()
@@ -198,19 +198,19 @@ public class CQLStatementGeneratorTest {
 	public void should_generate_insert_for_simple_id() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).build();
+				.type(ID).invoker(invoker).build();
 
 		PropertyMeta ageMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("age").accessors()
-				.type(SIMPLE).build();
+				.type(SIMPLE).invoker(invoker).build();
 
 		PropertyMeta followersMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(SET).build();
+				.accessors().type(SET).invoker(invoker).build();
 
 		PropertyMeta preferencesMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(MAP).build();
+				.accessors().type(MAP).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -244,11 +244,12 @@ public class CQLStatementGeneratorTest {
 				.valueClass(CompoundKey.class).compNames("id", "name")
 				.compClasses(Long.class, String.class)
 				.compGetters(userIdGetter, nameGetter).field("id")
-				.type(EMBEDDED_ID).build();
+				.type(EMBEDDED_ID).invoker(invoker).build();
 		idMeta.setGetter(idGetter);
 
 		PropertyMeta valueMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).field("value").type(SIMPLE).build();
+				.valueClass(String.class).field("value").type(SIMPLE)
+				.invoker(invoker).build();
 		valueMeta.setGetter(valueGetter);
 
 		EntityMeta meta = new EntityMeta();
@@ -276,23 +277,23 @@ public class CQLStatementGeneratorTest {
 	public void should_generate_update_for_simple_id() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).build();
+				.type(ID).invoker(invoker).build();
 
 		PropertyMeta ageMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("age").accessors()
-				.type(SIMPLE).build();
+				.type(SIMPLE).invoker(invoker).build();
 
 		PropertyMeta friendsMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(LAZY_LIST).build();
+				.accessors().type(LAZY_LIST).invoker(invoker).build();
 
 		PropertyMeta followersMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(SET).build();
+				.accessors().type(SET).invoker(invoker).build();
 
 		PropertyMeta preferencesMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(MAP).build();
+				.accessors().type(MAP).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -331,11 +332,12 @@ public class CQLStatementGeneratorTest {
 				.valueClass(CompoundKey.class).compNames("id", "name")
 				.compClasses(Long.class, String.class)
 				.compGetters(userIdGetter, nameGetter).field("id")
-				.type(EMBEDDED_ID).build();
+				.type(EMBEDDED_ID).invoker(invoker).build();
 		idMeta.setGetter(idGetter);
 
 		PropertyMeta valueMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).field("value").type(SIMPLE).build();
+				.valueClass(String.class).field("value").type(SIMPLE)
+				.invoker(invoker).build();
 		valueMeta.setGetter(valueGetter);
 
 		EntityMeta meta = new EntityMeta();

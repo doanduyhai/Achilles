@@ -154,11 +154,12 @@ public abstract class CompoundKeyValidator {
 
 	protected static class ComponentComparator implements Comparator<Object> {
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public int compare(Object o1, Object o2) {
 			if (o1.getClass().isEnum() && o2.getClass().isEnum()) {
-				String name1 = ((Enum) o1).name();
-				String name2 = ((Enum) o2).name();
+				String name1 = ((Enum<?>) o1).name();
+				String name2 = ((Enum<?>) o2).name();
 
 				return name1.compareTo(name2);
 			} else if (Comparable.class.isAssignableFrom(o1.getClass())

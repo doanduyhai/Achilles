@@ -43,7 +43,6 @@ import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.QueryResult;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,7 +79,6 @@ public class ThriftJoinSliceIteratorTest {
 	private UserBean user1 = new UserBean();
 	private UserBean user2 = new UserBean();
 	private UserBean user3 = new UserBean();
-	private ObjectMapper objectMapper = new ObjectMapper();
 
 	private EntityMeta joinEntityMeta = new EntityMeta();
 
@@ -107,7 +105,6 @@ public class ThriftJoinSliceIteratorTest {
 
 		PropertyMeta joinIdMeta = new PropertyMeta();
 		joinIdMeta.setValueClass(Long.class);
-		joinIdMeta.setObjectMapper(objectMapper);
 		when(propertyMeta.joinIdMeta()).thenReturn(joinIdMeta);
 	}
 

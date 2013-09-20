@@ -20,7 +20,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +33,12 @@ import com.datastax.driver.core.PreparedStatement;
 import com.google.common.collect.FluentIterable;
 
 public class CQLPreparedStatementBinder {
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public BoundStatementWrapper bindForInsert(PreparedStatement ps,
 			EntityMeta entityMeta, Object entity) {
 		List<Object> values = new ArrayList<Object>();
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
-		values.addAll(bindPrimaryKey(primaryKey, idMeta));
+		Object primaryKey = entityMeta.getPrimaryKey(entity);
+		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
 		List<PropertyMeta> nonProxyMetas = FluentIterable
 				.from(entityMeta.getAllMetasExceptIdMeta())
@@ -51,7 +48,7 @@ public class CQLPreparedStatementBinder {
 				nonProxyMetas);
 
 		for (PropertyMeta pm : fieldMetas) {
-			Object value = invoker.getValueFromField(entity, pm.getGetter());
+			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			values.add(value);
 		}
@@ -65,14 +62,13 @@ public class CQLPreparedStatementBinder {
 	public BoundStatementWrapper bindForUpdate(PreparedStatement ps,
 			EntityMeta entityMeta, List<PropertyMeta> pms, Object entity) {
 		List<Object> values = new ArrayList<Object>();
-		PropertyMeta idMeta = entityMeta.getIdMeta();
 		for (PropertyMeta pm : pms) {
-			Object value = invoker.getValueFromField(entity, pm.getGetter());
+			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			values.add(value);
 		}
-		Object primaryKey = invoker.getPrimaryKey(entity, idMeta);
-		values.addAll(bindPrimaryKey(primaryKey, idMeta));
+		Object primaryKey = entityMeta.getPrimaryKey(entity);
+		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
 		Object[] boundValues = new Object[values.size()];
 		BoundStatement bs = ps.bind(values.toArray(boundValues));
@@ -181,15 +177,15 @@ public class CQLPreparedStatementBinder {
 			case LIST:
 			case LAZY_LIST:
 			case JOIN_LIST:
-				return pm.encode((List) value);
+				return pm.encode((List<?>) value);
 			case SET:
 			case LAZY_SET:
 			case JOIN_SET:
-				return pm.encode((Set) value);
+				return pm.encode((Set<?>) value);
 			case MAP:
 			case LAZY_MAP:
 			case JOIN_MAP:
-				return pm.encode((Map) value);
+				return pm.encode((Map<?, ?>) value);
 			default:
 				throw new AchillesException("Cannot encode value '" + value
 						+ "' for Cassandra for property '"

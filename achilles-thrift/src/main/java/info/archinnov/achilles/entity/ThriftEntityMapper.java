@@ -47,7 +47,7 @@ public class ThriftEntityMapper extends EntityMapper {
 		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
 		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
 
-		setIdToEntity(key, entityMeta.getIdMeta(), entity);
+		entityMeta.getIdMeta().setValueToField(entity, key);
 
 		Map<String, PropertyMeta> propertyMetas = entityMeta.getPropertyMetas();
 
@@ -60,7 +60,8 @@ public class ThriftEntityMapper extends EntityMapper {
 
 				switch (propertyMeta.type()) {
 				case SIMPLE:
-					setSimplePropertyToEntity(pair.right, propertyMeta, entity);
+					propertyMeta.setValueToField(entity,
+							propertyMeta.forceDecodeFromJSON(pair.right));
 					break;
 				case LIST:
 					addToList(listProperties, propertyMeta,
@@ -91,21 +92,21 @@ public class ThriftEntityMapper extends EntityMapper {
 				mapProperties, propertyMetas);
 	}
 
-	public <T> T initClusteredEntity(Class<T> entityClass, PropertyMeta idMeta,
+	public <T> T initClusteredEntity(Class<T> entityClass, EntityMeta meta,
 			Object embeddedId) {
 		T clusteredEntity = null;
-		clusteredEntity = invoker.instanciate(entityClass);
-		invoker.setValueToField(clusteredEntity, idMeta.getSetter(), embeddedId);
+		clusteredEntity = meta.<T> instanciate();
+		meta.setPrimaryKey(clusteredEntity, embeddedId);
 		return clusteredEntity;
 	}
 
 	public <T> T createClusteredEntityWithValue(Class<T> entityClass,
-			PropertyMeta idMeta, PropertyMeta pm, Object embeddedId,
+			EntityMeta meta, PropertyMeta pm, Object embeddedId,
 			Object clusteredValue) {
 		T clusteredEntity = null;
-		clusteredEntity = invoker.instanciate(entityClass);
-		invoker.setValueToField(clusteredEntity, idMeta.getSetter(), embeddedId);
-		invoker.setValueToField(clusteredEntity, pm.getSetter(), clusteredValue);
+		clusteredEntity = meta.<T> instanciate();
+		meta.setPrimaryKey(clusteredEntity, embeddedId);
+		pm.setValueToField(clusteredEntity, clusteredValue);
 
 		return clusteredEntity;
 	}
@@ -116,19 +117,19 @@ public class ThriftEntityMapper extends EntityMapper {
 			Map<String, Map<Object, Object>> mapProperties,
 			Map<String, PropertyMeta> propertyMetas) {
 		for (Entry<String, List<Object>> entry : listProperties.entrySet()) {
-			setListPropertyToEntity(entry.getValue(),
-					propertyMetas.get(entry.getKey()), entity);
+			propertyMetas.get(entry.getKey()).setValueToField(entity,
+					entry.getValue());
 		}
 
 		for (Entry<String, Set<Object>> entry : setProperties.entrySet()) {
-			setSetPropertyToEntity(entry.getValue(),
-					propertyMetas.get(entry.getKey()), entity);
+			propertyMetas.get(entry.getKey()).setValueToField(entity,
+					entry.getValue());
 		}
 
 		for (Entry<String, Map<Object, Object>> entry : mapProperties
 				.entrySet()) {
-			setMapPropertyToEntity(entry.getValue(),
-					propertyMetas.get(entry.getKey()), entity);
+			propertyMetas.get(entry.getKey()).setValueToField(entity,
+					entry.getValue());
 		}
 	}
 }

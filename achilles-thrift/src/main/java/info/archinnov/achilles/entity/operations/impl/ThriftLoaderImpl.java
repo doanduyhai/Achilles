@@ -26,7 +26,6 @@ import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ public class ThriftLoaderImpl {
 			.getLogger(ThriftLoaderImpl.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private ThriftCompositeFactory compositeFactory = new ThriftCompositeFactory();
 	private ThriftCompositeTransformer compositeTransformer = new ThriftCompositeTransformer();
 
@@ -67,11 +65,10 @@ public class ThriftLoaderImpl {
 			if (columns.size() > 0) {
 				log.trace("Mapping data from Cassandra columns to entity");
 
-				entity = invoker.instanciate(entityClass);
+				entity = entityMeta.<T> instanciate();
 				mapper.setEagerPropertiesToEntity(primaryKey, columns,
 						entityMeta, entity);
-				invoker.setValueToField(entity, entityMeta.getIdMeta()
-						.getSetter(), primaryKey);
+				entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 			}
 		}
 		return entity;
@@ -234,8 +231,8 @@ public class ThriftLoaderImpl {
 	private Object retrieveJoinIdForClusteredEntity(
 			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		Object embeddedId = context.getPrimaryKey();
-		PropertyMeta idMeta = context.getEntityMeta().getIdMeta();
-		Object partitionKey = invoker.getPartitionKey(embeddedId, idMeta);
+		PropertyMeta idMeta = context.getIdMeta();
+		Object partitionKey = idMeta.getPartitionKey(embeddedId);
 		Composite composite = compositeFactory.createBaseForClusteredGet(
 				embeddedId, idMeta);
 		if (log.isTraceEnabled()) {
@@ -251,13 +248,9 @@ public class ThriftLoaderImpl {
 	private <T> T loadClusteredEntity(ThriftPersistenceContext context,
 			Class<T> entityClass, EntityMeta entityMeta, Object primaryKey) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
-		boolean isCounter = entityMeta.isValueless() ? false : entityMeta
-				.getFirstMeta().isCounter();
-		boolean isJoin = entityMeta.isValueless() ? false : entityMeta
-				.getFirstMeta().isJoin();
 		Composite composite = compositeFactory.createBaseForClusteredGet(
 				primaryKey, idMeta);
-		Object partitionKey = invoker.getPartitionKey(primaryKey, idMeta);
+		Object partitionKey = entityMeta.getPartitionKey(primaryKey);
 
 		T clusteredEntity;
 		if (entityMeta.isValueless()) {
@@ -266,17 +259,17 @@ public class ThriftLoaderImpl {
 			clusteredEntity = column != null ? compositeTransformer
 					.buildClusteredEntityWithIdOnly(entityClass, context,
 							column.getName().getComponents()) : null;
-		} else if (isCounter) {
+		} else if (entityMeta.isClusteredCounter()) {
 			HCounterColumn<Composite> counterColumn = context.getWideRowDao()
 					.getCounterColumn(partitionKey, composite);
 			clusteredEntity = counterColumn != null ? compositeTransformer
 					.buildClusteredEntityWithIdOnly(entityClass, context,
 							counterColumn.getName().getComponents()) : null;
-		} else if (isJoin) {
+		} else if (entityMeta.isClusteredJoin()) {
 			HColumn<Composite, Object> column = context.getWideRowDao()
 					.getColumn(partitionKey, composite);
 			clusteredEntity = column != null ? mapper.initClusteredEntity(
-					entityClass, idMeta, primaryKey) : null;
+					entityClass, entityMeta, primaryKey) : null;
 		} else {
 			HColumn<Composite, Object> column = context.getWideRowDao()
 					.getColumn(partitionKey, composite);

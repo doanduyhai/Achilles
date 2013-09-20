@@ -23,23 +23,23 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-
 public class ClusteredTweetId {
+	@Order(1)
 	@Column(name = "user_id")
 	private Long userId;
 
+	@Order(2)
 	@Column(name = "tweet_id")
 	private UUID tweetId;
 
+	@Order(3)
 	@Column(name = "creation_date")
 	private Date creationDate;
 
-	@JsonCreator
-	public ClusteredTweetId(@Order(1) @JsonProperty("userId") Long userId,
-			@Order(2) @JsonProperty("tweetId") UUID tweetId,
-			@Order(3) @JsonProperty("creationDate") Date creationDate) {
+	public ClusteredTweetId() {
+	}
+
+	public ClusteredTweetId(Long userId, UUID tweetId, Date creationDate) {
 		this.userId = userId;
 		this.tweetId = tweetId;
 		this.creationDate = creationDate;

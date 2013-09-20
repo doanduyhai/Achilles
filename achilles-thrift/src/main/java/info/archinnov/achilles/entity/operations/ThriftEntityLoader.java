@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.validation.Validator;
 
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ public class ThriftEntityLoader implements
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftEntityLoader.class);
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
@@ -60,9 +58,8 @@ public class ThriftEntityLoader implements
 				entity = loaderImpl.load(context, entityClass);
 			} else {
 				log.debug("Get reference called, just instanciate the entity with primary key");
-				entity = invoker.instanciate(entityClass);
-				invoker.setValueToField(entity, entityMeta.getIdMeta()
-						.getSetter(), primaryKey);
+				entity = entityMeta.<T> instanciate();
+				entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 			}
 		} catch (Exception e) {
 			throw new AchillesException("Error when loading entity type '"
@@ -113,7 +110,7 @@ public class ThriftEntityLoader implements
 		default:
 			return;
 		}
-		invoker.setValueToField(realObject, propertyMeta.getSetter(), value);
+		propertyMeta.setValueToField(realObject, value);
 	}
 
 	protected Object loadPrimaryKey(ThriftPersistenceContext context,

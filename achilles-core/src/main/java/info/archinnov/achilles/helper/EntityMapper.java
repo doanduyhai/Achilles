@@ -17,8 +17,6 @@
 package info.archinnov.achilles.helper;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,15 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class EntityMapper {
-
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityMapper.class);
-
-	protected ReflectionInvoker invoker = new ReflectionInvoker();
 
 	protected void addToList(Map<String, List<Object>> listProperties,
 			PropertyMeta listMeta, Object value) {
@@ -76,69 +66,5 @@ public class EntityMapper {
 			map = mapProperties.get(propertyName);
 		}
 		map.put(decodedKey, decodedValue);
-	}
-
-	public <T, ID> void setIdToEntity(ID key, PropertyMeta idMeta, T entity) {
-		log.trace("Set primary key value {} to entity {} ", key, entity);
-
-		try {
-			invoker.setValueToField(entity, idMeta.getSetter(), key);
-		} catch (Exception e) {
-			throw new AchillesException("Cannot set value '" + key
-					+ "' to entity " + entity, e);
-		}
-	}
-
-	public <T, ID> void setSimplePropertyToEntity(String value,
-			PropertyMeta propertyMeta, T entity) {
-		log.trace("Set simple property {} to entity {} ",
-				propertyMeta.getPropertyName(), entity);
-
-		try {
-			invoker.setValueToField(entity, propertyMeta.getSetter(),
-					propertyMeta.getValueFromString(value));
-		} catch (Exception e) {
-			throw new AchillesException("Cannot set value '" + value
-					+ "' to entity " + entity, e);
-		}
-	}
-
-	public void setListPropertyToEntity(List<?> list, PropertyMeta listMeta,
-			Object entity) {
-		log.trace("Set list property {} to entity {} ",
-				listMeta.getPropertyName(), entity);
-
-		try {
-			invoker.setValueToField(entity, listMeta.getSetter(), list);
-		} catch (Exception e) {
-			throw new AchillesException("Cannot set value '" + list
-					+ "' to entity " + entity, e);
-		}
-	}
-
-	public void setSetPropertyToEntity(Set<?> set, PropertyMeta setMeta,
-			Object entity) {
-		log.trace("Set set property {} to entity {} ",
-				setMeta.getPropertyName(), entity);
-
-		try {
-			invoker.setValueToField(entity, setMeta.getSetter(), set);
-		} catch (Exception e) {
-			throw new AchillesException("Cannot set value '" + set
-					+ "' to entity " + entity, e);
-		}
-	}
-
-	public void setMapPropertyToEntity(Map<?, ?> map, PropertyMeta mapMeta,
-			Object entity) {
-		log.trace("Set map property {} to entity {} ",
-				mapMeta.getPropertyName(), entity);
-
-		try {
-			invoker.setValueToField(entity, mapMeta.getSetter(), map);
-		} catch (Exception e) {
-			throw new AchillesException("Cannot set value '" + map
-					+ "' to entity " + entity, e);
-		}
 	}
 }

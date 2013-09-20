@@ -18,7 +18,6 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.helper.LoggerHelper.fqcnToStringFn;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -32,7 +31,6 @@ public class EmbeddedIdProperties {
 	private List<String> componentNames;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
-	private Constructor<?> constructor;
 
 	public String getOrderingComponent() {
 		String component = null;
@@ -72,14 +70,6 @@ public class EmbeddedIdProperties {
 
 	public void setComponentNames(List<String> componentNames) {
 		this.componentNames = componentNames;
-	}
-
-	public <T> Constructor<T> getConstructor() {
-		return (Constructor<T>) constructor;
-	}
-
-	public void setConstructor(Constructor<?> constructor) {
-		this.constructor = constructor;
 	}
 
 	@Override

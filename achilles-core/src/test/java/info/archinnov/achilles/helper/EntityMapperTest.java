@@ -18,15 +18,14 @@ package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.test.builders.EntityMetaTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +61,9 @@ public class EntityMapperTest {
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
+	@Mock
+	private DataTranscoder transcoder;
+
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Captor
@@ -79,107 +81,12 @@ public class EntityMapperTest {
 	@Captor
 	ArgumentCaptor<Map<Integer, String>> mapCaptor;
 
-	private EntityMeta entityMeta;
-
-	private PropertyMeta idMeta;
-
 	private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 
 	@Before
 	public void setUp() throws Exception {
 		joinPropertyMetaToBeFilled.clear();
 
-		idMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, Long.class).field("id")
-				.build();
-	}
-
-	@Test
-	public void should_map_id_property() throws Exception {
-		entityMeta = EntityMetaTestBuilder.builder(idMeta).build();
-
-		CompleteBean entity = new CompleteBean();
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(entityMeta.getIdMeta().getSetter()), idCaptor.capture());
-
-		mapper.setIdToEntity(1L, entityMeta.getIdMeta(), entity);
-
-		assertThat(idCaptor.getValue()).isEqualTo(1L);
-	}
-
-	@Test
-	public void should_map_simple_property() throws Exception {
-		CompleteBean entity = new CompleteBean();
-		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.accessors().build();
-
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
-
-		mapper.setSimplePropertyToEntity("name", namePropertyMeta, entity);
-
-		assertThat(simpleCaptor.getValue()).isEqualTo("name");
-	}
-
-	@Test
-	public void should_map_list_property() throws Exception {
-		CompleteBean entity = new CompleteBean();
-
-		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
-				.field("friends").accessors().build();
-
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(listPropertyMeta.getSetter()), listCaptor.capture());
-
-		mapper.setListPropertyToEntity(Arrays.asList("foo", "bar"),
-				listPropertyMeta, entity);
-
-		assertThat(listCaptor.getValue()).hasSize(2);
-		assertThat(listCaptor.getValue()).containsExactly("foo", "bar");
-	}
-
-	@Test
-	public void should_map_set_property() throws Exception {
-		CompleteBean entity = new CompleteBean();
-
-		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
-				.field("followers").accessors().build();
-
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(setPropertyMeta.getSetter()), setCaptor.capture());
-
-		mapper.setSetPropertyToEntity(Sets.newHashSet("George", "Paul"),
-				setPropertyMeta, entity);
-
-		assertThat(setCaptor.getValue()).hasSize(2);
-		assertThat(setCaptor.getValue()).contains("George", "Paul");
-	}
-
-	@Test
-	public void should_map_map_property() throws Exception {
-		CompleteBean entity = new CompleteBean();
-		Map<Integer, String> preferences = new HashMap<Integer, String>();
-
-		preferences.put(1, "FR");
-		preferences.put(2, "Paris");
-		preferences.put(3, "75014");
-
-		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Integer.class, String.class)
-				.field("preferences").accessors().build();
-
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(mapPropertyMeta.getSetter()), mapCaptor.capture());
-
-		mapper.setMapPropertyToEntity(preferences, mapPropertyMeta, entity);
-
-		assertThat(mapCaptor.getValue()).hasSize(3);
-		assertThat(mapCaptor.getValue().get(1)).isEqualTo("FR");
-		assertThat(mapCaptor.getValue().get(2)).isEqualTo("Paris");
-		assertThat(mapCaptor.getValue().get(3)).isEqualTo("75014");
 	}
 
 	@Test
@@ -202,19 +109,20 @@ public class EntityMapperTest {
 	public void should_add_to_not_empty_list() throws Exception {
 
 		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
-		listProperties.put("test", Arrays.<Object> asList("test1", "test2"));
+		List<Object> friends = new ArrayList<Object>();
+		friends.add("test1");
+		friends.add("test2");
+
+		listProperties.put("friends", friends);
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
 
-		assertThat(listProperties).hasSize(2);
+		assertThat(listProperties).hasSize(1);
 		assertThat(listProperties).containsKey("friends");
-		assertThat(listProperties.get("friends")).containsExactly("foo");
-
-		assertThat(listProperties).containsKey("test");
-		assertThat(listProperties.get("test"))
-				.containsExactly("test1", "test2");
+		assertThat(listProperties.get("friends")).containsExactly("test1",
+				"test2", "foo");
 	}
 
 	@Test
@@ -238,19 +146,17 @@ public class EntityMapperTest {
 		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
 		Set<Object> set = Sets.newHashSet();
 		set.addAll(Arrays.asList("test1", "test2"));
-		setProperties.put("test", set);
+		setProperties.put("followers", set);
 
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
 
-		assertThat(setProperties).hasSize(2);
+		assertThat(setProperties).hasSize(1);
 		assertThat(setProperties).containsKey("followers");
-		assertThat(setProperties.get("followers")).containsExactly("George");
-
-		assertThat(setProperties).containsKey("test");
-		assertThat(setProperties.get("test")).containsExactly("test1", "test2");
+		assertThat(setProperties.get("followers")).containsOnly("test1",
+				"test2", "George");
 	}
 
 	@Test
@@ -276,7 +182,7 @@ public class EntityMapperTest {
 		HashMap<Object, Object> map = Maps.newHashMap();
 		map.put(2, "Paris");
 		map.put(3, "75014");
-		mapProperties.put("test", map);
+		mapProperties.put("preferences", map);
 
 		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Integer.class, String.class)
@@ -285,12 +191,10 @@ public class EntityMapperTest {
 
 		mapper.addToMap(mapProperties, mapPropertyMeta, 1, "FR");
 
-		assertThat(mapProperties).hasSize(2);
+		assertThat(mapProperties).hasSize(1);
 		assertThat(mapProperties).containsKey("preferences");
 		assertThat(mapProperties.get("preferences").get(1)).isEqualTo("FR");
-
-		assertThat(mapProperties).containsKey("test");
-		assertThat(mapProperties.get("test").get(2)).isEqualTo("Paris");
-		assertThat(mapProperties.get("test").get(3)).isEqualTo("75014");
+		assertThat(mapProperties.get("preferences").get(2)).isEqualTo("Paris");
+		assertThat(mapProperties.get("preferences").get(3)).isEqualTo("75014");
 	}
 }

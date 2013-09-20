@@ -24,6 +24,7 @@ import info.archinnov.achilles.proxy.wrapper.AbstractWrapper;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>> {
 	private Map<Method, PropertyMeta> dirtyMap;
 	private Method setter;
@@ -46,6 +47,7 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>
 		return (T) this;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public T proxifier(EntityProxifier proxifier) {
 		this.proxifier = proxifier;
 		return (T) this;

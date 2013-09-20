@@ -84,6 +84,9 @@ public class ThriftCompositeTransformerTest {
 	@Mock
 	private DataTranscoder transcoder;
 
+	@Mock
+	private EntityMeta entityMeta;
+
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(transformer, ThriftCompoundKeyMapper.class,
@@ -124,8 +127,9 @@ public class ThriftCompositeTransformerTest {
 				.completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).accessors().build();
 
-		when(context.getIdMeta()).thenReturn((PropertyMeta) idMeta);
-		when(context.getFirstMeta()).thenReturn((PropertyMeta) pm);
+		when(context.getEntityMeta()).thenReturn(entityMeta);
+		when(context.getIdMeta()).thenReturn(idMeta);
+		when(context.getFirstMeta()).thenReturn(pm);
 
 		CompoundKey compoundKey = new CompoundKey();
 		when(context.getPartitionKey()).thenReturn(partitionKey);
@@ -136,7 +140,7 @@ public class ThriftCompositeTransformerTest {
 
 		when(
 				entityMapper.createClusteredEntityWithValue(
-						BeanWithClusteredId.class, idMeta, pm, compoundKey,
+						BeanWithClusteredId.class, entityMeta, pm, compoundKey,
 						clusteredValue)).thenReturn(expected);
 
 		Function<HColumn<Composite, Object>, BeanWithClusteredId> function = transformer
@@ -174,7 +178,8 @@ public class ThriftCompositeTransformerTest {
 		meta.setPropertyMetas(ImmutableMap.of("name", pm));
 
 		when(context.getEntityMeta()).thenReturn(meta);
-		when(context.getIdMeta()).thenReturn((PropertyMeta) idMeta);
+		when(context.getIdMeta()).thenReturn(idMeta);
+		when(context.getEntityMeta()).thenReturn(entityMeta);
 
 		CompoundKey compoundKey = new CompoundKey();
 		when(context.getPartitionKey()).thenReturn(partitionKey);
@@ -185,7 +190,7 @@ public class ThriftCompositeTransformerTest {
 
 		when(
 				entityMapper.initClusteredEntity(BeanWithClusteredId.class,
-						idMeta, compoundKey)).thenReturn(expected);
+						entityMeta, compoundKey)).thenReturn(expected);
 
 		Function<HCounterColumn<Composite>, BeanWithClusteredId> function = transformer
 				.counterClusteredEntityTransformer(BeanWithClusteredId.class,
@@ -224,8 +229,9 @@ public class ThriftCompositeTransformerTest {
 				.transcoder(transcoder).type(PropertyType.JOIN_SIMPLE)
 				.accessors().build();
 
-		when(context.getIdMeta()).thenReturn((PropertyMeta) idMeta);
-		when(context.getFirstMeta()).thenReturn((PropertyMeta) pm);
+		when(context.getIdMeta()).thenReturn(idMeta);
+		when(context.getFirstMeta()).thenReturn(pm);
+		when(context.getEntityMeta()).thenReturn(entityMeta);
 
 		CompoundKey embeddedId = new CompoundKey();
 		when(context.getPartitionKey()).thenReturn(partitionKey);
@@ -236,7 +242,7 @@ public class ThriftCompositeTransformerTest {
 
 		when(
 				entityMapper.createClusteredEntityWithValue(
-						eq(BeanWithClusteredId.class), eq(idMeta), eq(pm),
+						eq(BeanWithClusteredId.class), eq(entityMeta), eq(pm),
 						eq(embeddedId), any(UserBean.class))).thenReturn(
 				expected);
 

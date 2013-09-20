@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -38,7 +37,6 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftMergerImpl.class);
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	@Override
 	public void merge(ThriftPersistenceContext context,
@@ -66,8 +64,7 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 		Object entity = context.getEntity();
 		for (PropertyMeta pm : joinPMs) {
 			log.debug("Cascade-merging join property {}", pm.getPropertyName());
-			Object joinValue = invoker
-					.getValueFromField(entity, pm.getGetter());
+			Object joinValue = pm.getValueFromField(entity);
 			if (joinValue != null) {
 				if (pm.isJoinCollection()) {
 					doCascadeCollection(entityMerger, context, pm,
@@ -109,8 +106,7 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 			Map<Method, PropertyMeta> dirtyMap, Object entity) {
 		for (Entry<Method, PropertyMeta> entry : dirtyMap.entrySet()) {
 			PropertyMeta pm = entry.getValue();
-			boolean removeProperty = invoker.getValueFromField(entity,
-					pm.getGetter()) == null;
+			boolean removeProperty = pm.getValueFromField(entity) == null;
 
 			if (removeProperty) {
 				log.debug("Removing property {}", pm.getPropertyName());
@@ -130,8 +126,7 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 	private void mergeClusteredEntity(ThriftPersistenceContext context,
 			Map<Method, PropertyMeta> dirtyMap, Object entity) {
 		PropertyMeta pm = dirtyMap.entrySet().iterator().next().getValue();
-		Object clusteredValue = invoker.getValueFromField(entity,
-				pm.getGetter());
+		Object clusteredValue = pm.getValueFromField(entity);
 		if (clusteredValue == null) {
 			persister.remove(context);
 		} else {

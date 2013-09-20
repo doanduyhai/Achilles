@@ -67,10 +67,10 @@ public class SliceQuery<T> {
 		PropertyMeta idMeta = meta.getIdMeta();
 		List<Object> componentsFrom = Arrays.<Object> asList(ArrayUtils.add(
 				clusteringsFrom, 0, partitionKey));
-		this.clusteringsFrom = idMeta.encodeComponents(componentsFrom);
+		this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
 		List<Object> componentsTo = Arrays.<Object> asList(ArrayUtils.add(
 				clusteringsTo, 0, partitionKey));
-		this.clusteringsTo = idMeta.encodeComponents(componentsTo);
+		this.clusteringsTo = idMeta.encodeToComponents(componentsTo);
 		this.ordering = ordering;
 		this.bounding = bounding;
 		this.consistencyLevel = consistencyLevel;

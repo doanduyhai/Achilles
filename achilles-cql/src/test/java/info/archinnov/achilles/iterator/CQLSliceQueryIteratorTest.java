@@ -85,7 +85,6 @@ public class CQLSliceQueryIteratorTest {
 		sliceIterator = new CQLSliceQueryIterator<ClusteredEntity>(sliceQuery,
 				context, iterator, ps);
 
-		Whitebox.setInternalState(sliceIterator, "invoker", invoker);
 		Whitebox.setInternalState(sliceIterator, "mapper", mapper);
 		Whitebox.setInternalState(sliceIterator, "cqlInvoker", cqlInvoker);
 		Whitebox.setInternalState(sliceIterator, "proxifier", proxifier);
@@ -124,6 +123,10 @@ public class CQLSliceQueryIteratorTest {
 	public void should_get_next_clustered_entity() throws Exception {
 		ClusteredEntity entity = new ClusteredEntity();
 		Row row = mock(Row.class);
+
+		meta.setEntityClass(ClusteredEntity.class);
+		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
+
 		when(iterator.next()).thenReturn(row);
 
 		when(cqlInvoker.invokeOnRowForType(row, String.class, "name"))

@@ -111,15 +111,16 @@ public class AbstractTranscoderTest {
 		Long joinId = RandomUtils.nextLong();
 		UserBean bean = new UserBean();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(pm);
+		PropertyMeta joinIdMeta = mock(PropertyMeta.class);
+		EntityMeta joinMeta = new EntityMeta();
+		joinMeta.setIdMeta(joinIdMeta);
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_SIMPLE).joinMeta(meta)
-				.build();
+				.valueClass(UserBean.class).type(JOIN_SIMPLE)
+				.joinMeta(joinMeta).build();
 
-		when(invoker.getPrimaryKey(bean, pm)).thenReturn(joinId);
-		when(pm.encode(joinId)).thenReturn(joinId);
+		when(joinIdMeta.getPrimaryKey(bean)).thenReturn(joinId);
+		when(joinIdMeta.encode(joinId)).thenReturn(joinId);
 
 		Object actual = transcoder.encode(propertyMeta, UserBean.class, bean);
 
@@ -209,6 +210,19 @@ public class AbstractTranscoderTest {
 	}
 
 	@Test
+	public void should_exception_by_default_on_encode_key() throws Exception {
+		UserBean bean = new UserBean();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
+				.type(SIMPLE).build();
+
+		exception.expect(AchillesException.class);
+		exception.expectMessage("Transcoder cannot encode key '" + bean
+				+ "' for type '" + pm.type().name() + "'");
+
+		transcoder.encodeKey(pm, bean);
+	}
+
+	@Test
 	public void should_exception_by_default_on_encode_list() throws Exception {
 		List<UserBean> list = Arrays.asList(new UserBean());
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
@@ -263,6 +277,19 @@ public class AbstractTranscoderTest {
 	}
 
 	@Test
+	public void should_exception_by_default_on_encode_to_list_of_components()
+			throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
+				.type(SIMPLE).build();
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Transcoder cannot encode components value '[]'");
+
+		transcoder.encodeToComponents(pm, Arrays.asList());
+	}
+
+	@Test
 	public void should_exception_by_default_on_decode_object() throws Exception {
 		UserBean bean = new UserBean();
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
@@ -273,6 +300,19 @@ public class AbstractTranscoderTest {
 				+ "' for type '" + pm.type().name() + "'");
 
 		transcoder.decode(pm, bean);
+	}
+
+	@Test
+	public void should_exception_by_default_on_decode_key() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
+				.type(SIMPLE).build();
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Transcoder cannot decode key 'null' for type '"
+						+ pm.type().name() + "'");
+
+		transcoder.decodeKey(pm, null);
 	}
 
 	@Test
@@ -350,11 +390,36 @@ public class AbstractTranscoderTest {
 	}
 
 	@Test
+	public void should_exception_when_error_on_force_encode_to_json()
+			throws Exception {
+		doThrow(new RuntimeException()).when(objectMapper).writeValueAsString(
+				11L);
+
+		exception.expect(AchillesException.class);
+		exception.expectMessage("Error while encoding value '11'");
+
+		transcoder.forceEncodeToJSON(11L);
+	}
+
+	@Test
 	public void should_force_decode_from_json_object_type() throws Exception {
 		when(objectMapper.readValue("10", Long.class)).thenReturn(10L);
 
 		assertThat(transcoder.forceDecodeFromJSON("10", Long.class)).isEqualTo(
 				10L);
+	}
+
+	@Test
+	public void should_exception_when_error_on_force_decode_from_json()
+			throws Exception {
+		doThrow(new RuntimeException()).when(objectMapper).readValue("11",
+				Long.class);
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Error while decoding value '11' to type 'java.lang.Long'");
+
+		transcoder.forceDecodeFromJSON("11", Long.class);
 	}
 
 	@Test

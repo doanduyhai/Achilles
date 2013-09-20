@@ -23,14 +23,13 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyByConstructor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,95 +41,36 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.cassandra.utils.Pair;
+import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyMetaTest {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Mock
 	private DataTranscoder transcoder;
 
-	@Test
-	public void should_get_value_from_string_with_correct_type()
-			throws Exception {
-		PropertyMeta meta = new PropertyMeta();
-		meta.setValueClass(Long.class);
-		meta.setObjectMapper(objectMapper);
-
-		Object testString = "123";
-
-		Object casted = meta.getValueFromString(testString);
-
-		assertThat(casted).isInstanceOf(Long.class);
-	}
-
-	@Test
-	public void should_get_value_from_string() throws Exception {
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setValueClass(String.class);
-		propertyMeta.setObjectMapper(objectMapper);
-
-		Object test = "test";
-
-		Object value = propertyMeta.getValueFromString(test);
-		assertThat(value).isEqualTo("test");
-	}
-
-	@Test
-	public void should_get_primitive_value_from_string() throws Exception {
-
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setValueClass(boolean.class);
-		propertyMeta.setObjectMapper(objectMapper);
-
-		Object test = "true";
-
-		Boolean value = (Boolean) propertyMeta.getValueFromString(test);
-		assertThat(value).isTrue();
-	}
-
-	@Test
-	public void should_get_enum_value_from_string() throws Exception {
-
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setValueClass(PropertyType.class);
-		propertyMeta.setObjectMapper(objectMapper);
-
-		Object test = "\"JOIN_MAP\"";
-
-		PropertyType value = (PropertyType) propertyMeta
-				.getValueFromString(test);
-		assertThat(value).isEqualTo(PropertyType.JOIN_MAP);
-	}
-
-	@Test
-	public void should_get_allowed_type_from_string() throws Exception {
-
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setValueClass(UUID.class);
-		propertyMeta.setObjectMapper(objectMapper);
-
-		UUID uuid = new UUID(10L, 100L);
-
-		Object test = objectMapper.writeValueAsString(uuid);
-
-		UUID value = (UUID) propertyMeta.getValueFromString(test);
-		assertThat(value).isEqualTo(uuid);
-	}
+	@Mock
+	private ReflectionInvoker invoker;
 
 	@Test
 	public void should_cast_key() throws Exception {
 		PropertyMeta propertyMeta = new PropertyMeta();
 		propertyMeta.setKeyClass(String.class);
-		propertyMeta.setObjectMapper(objectMapper);
 
 		Object test = "test";
 
@@ -139,7 +79,7 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_return_join_entity_meta() throws Exception {
+	public void should_get_join_meta() throws Exception {
 		EntityMeta joinMeta = new EntityMeta();
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
@@ -159,7 +99,7 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_return_join_id_meta() throws Exception {
+	public void should_get_join_id_meta() throws Exception {
 		EntityMeta joinMeta = new EntityMeta();
 		PropertyMeta joinIdMeta = new PropertyMeta();
 		joinMeta.setIdMeta(joinIdMeta);
@@ -168,29 +108,55 @@ public class PropertyMetaTest {
 				.keyValueClass(Integer.class, UserBean.class)
 				.type(PropertyType.JOIN_MAP).joinMeta(joinMeta).build();
 
-		assertThat((PropertyMeta) propertyMeta.joinIdMeta()).isSameAs(
-				joinIdMeta);
+		assertThat(propertyMeta.joinIdMeta()).isSameAs(joinIdMeta);
 	}
 
 	@Test
-	public void should_return_counter_id_meta() throws Exception {
+	public void should_return_null_when_no_join_id_meta() throws Exception {
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.keyValueClass(Integer.class, UserBean.class)
+				.type(PropertyType.JOIN_MAP).build();
+
+		assertThat(propertyMeta.joinIdMeta()).isNull();
+	}
+
+	@Test
+	public void should_get_counter_id_meta() throws Exception {
 		PropertyMeta idMeta = new PropertyMeta();
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.valueClass(Long.class).type(PropertyType.COUNTER)
 				.counterIdMeta(idMeta).build();
 
-		assertThat((PropertyMeta) propertyMeta.counterIdMeta())
-				.isSameAs(idMeta);
+		assertThat(propertyMeta.counterIdMeta()).isSameAs(idMeta);
 	}
 
-	public void should_return_fqcn() throws Exception {
+	@Test
+	public void should_return_null_if_no_counter_id_meta() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class).type(PropertyType.COUNTER).build();
+
+		assertThat(propertyMeta.counterIdMeta()).isNull();
+	}
+
+	@Test
+	public void should_get_fqcn() throws Exception {
 
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class) //
-				.type(PropertyType.COUNTER).fqcn("fqcn").build();
+				.valueClass(Long.class).type(PropertyType.COUNTER).fqcn("fqcn")
+				.build();
 
 		assertThat(propertyMeta.fqcn()).isEqualTo("fqcn");
+	}
+
+	@Test
+	public void should_return_null_if_no_fqcn() throws Exception {
+
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder
+				.valueClass(Long.class).type(PropertyType.COUNTER).build();
+
+		assertThat(propertyMeta.fqcn()).isNull();
 	}
 
 	@Test
@@ -249,6 +215,14 @@ public class PropertyMetaTest {
 	}
 
 	@Test
+	public void should_not_have_cascade_type_when_not_join() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.field("name").build();
+
+		assertThat(pm.hasCascadeType(ALL)).isFalse();
+	}
+
+	@Test
 	public void should_not_have_cascade_type_because_not_join()
 			throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
@@ -270,23 +244,30 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_return_true_if_type_is_join_collection()
-			throws Exception {
+	public void should_test_is_join_collection() throws Exception {
 		PropertyMeta pm1 = PropertyMetaTestBuilder.valueClass(String.class)
 				.type(JOIN_LIST).build();
 
 		PropertyMeta pm2 = PropertyMetaTestBuilder.valueClass(String.class)
 				.type(JOIN_SET).build();
 
+		PropertyMeta pm3 = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(SIMPLE).build();
+
 		assertThat(pm1.isJoinCollection()).isTrue();
 		assertThat(pm2.isJoinCollection()).isTrue();
+		assertThat(pm3.isJoinCollection()).isFalse();
 	}
 
 	@Test
-	public void should_return_true_if_type_is_join_map() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+	public void should_test_is_join_map() throws Exception {
+		PropertyMeta pm1 = PropertyMetaTestBuilder.valueClass(String.class)
 				.type(JOIN_MAP).build();
-		assertThat(pm.isJoinMap()).isTrue();
+		PropertyMeta pm2 = PropertyMetaTestBuilder.valueClass(String.class)
+				.type(SIMPLE).build();
+
+		assertThat(pm1.isJoinMap()).isTrue();
+		assertThat(pm2.isJoinMap()).isFalse();
 	}
 
 	@Test
@@ -364,64 +345,6 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_return_compound_key_constructor() throws Exception {
-		Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
-				.getConstructor(Long.class, String.class);
-		EmbeddedIdProperties props = new EmbeddedIdProperties();
-		props.setConstructor(constructor);
-
-		PropertyMeta meta = new PropertyMeta();
-		meta.setEmbeddedIdProperties(props);
-
-		assertThat(meta.<CompoundKeyByConstructor> getEmbeddedIdConstructor())
-				.isSameAs(constructor);
-	}
-
-	@Test
-	public void should_return_null_when_no_compound_key_constructor()
-			throws Exception {
-		PropertyMeta meta = new PropertyMeta();
-		assertThat(meta.getEmbeddedIdConstructor()).isNull();
-	}
-
-	@Test
-	public void should_return_true_when_compound_key_has_default_constructor()
-			throws Exception {
-
-		Constructor<TweetCompoundKey> constructor = TweetCompoundKey.class
-				.getConstructor();
-		EmbeddedIdProperties props = new EmbeddedIdProperties();
-		props.setConstructor(constructor);
-
-		PropertyMeta meta = new PropertyMeta();
-		meta.setEmbeddedIdProperties(props);
-
-		assertThat(meta.hasDefaultConstructorForEmbeddedId()).isTrue();
-	}
-
-	@Test
-	public void should_return_false_when_compound_key_has_no_default_constructor()
-			throws Exception {
-
-		Constructor<CompoundKeyByConstructor> constructor = CompoundKeyByConstructor.class
-				.getConstructor(Long.class, String.class);
-		EmbeddedIdProperties props = new EmbeddedIdProperties();
-		props.setConstructor(constructor);
-
-		PropertyMeta meta = new PropertyMeta();
-		meta.setEmbeddedIdProperties(props);
-
-		assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
-	}
-
-	@Test
-	public void should_return_false_when_no_compound_key_constructor()
-			throws Exception {
-		PropertyMeta meta = new PropertyMeta();
-		assertThat(meta.hasDefaultConstructorForEmbeddedId()).isFalse();
-	}
-
-	@Test
 	public void should_get_component_getters() throws Exception {
 		Method idGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
@@ -494,6 +417,14 @@ public class PropertyMetaTest {
 				.valueClass(CompoundKey.class).compNames("a", "b").build();
 
 		assertThat(idMeta.getComponentNames()).containsExactly("a", "b");
+	}
+
+	@Test
+	public void should_get_empty_component_names() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
+				CompoundKey.class).build();
+
+		assertThat(idMeta.getComponentNames()).isEmpty();
 	}
 
 	@Test
@@ -616,7 +547,6 @@ public class PropertyMetaTest {
 		assertThat(pm.encode((Set<?>) null)).isNull();
 		assertThat(pm.encode((Map<?, ?>) null)).isNull();
 		assertThat(pm.encodeToComponents((List<?>) null)).isNull();
-		assertThat(pm.encodeComponents((List<?>) null)).isNull();
 
 		Object value = "";
 		List<Object> list = new ArrayList<Object>();
@@ -629,7 +559,7 @@ public class PropertyMetaTest {
 		when(transcoder.encode(pm, set)).thenReturn(set);
 		when(transcoder.encode(pm, map)).thenReturn(map);
 		when(transcoder.encodeToComponents(pm, list)).thenReturn(list);
-		when(transcoder.encodeComponents(pm, list)).thenReturn(list);
+		when(transcoder.encodeToComponents(pm, list)).thenReturn(list);
 
 		assertThat(pm.encode(value)).isEqualTo(value);
 		assertThat(pm.encodeKey(value)).isEqualTo(value);
@@ -637,7 +567,7 @@ public class PropertyMetaTest {
 		assertThat(pm.encode(set)).isEqualTo(set);
 		assertThat(pm.encode(map)).isEqualTo(map);
 		assertThat(pm.encodeToComponents(list)).isEqualTo(list);
-		assertThat(pm.encodeComponents(list)).isEqualTo(list);
+		assertThat(pm.encodeToComponents(list)).isEqualTo(list);
 	}
 
 	@Test
@@ -688,5 +618,240 @@ public class PropertyMetaTest {
 		Object decoded = pm.forceDecodeFromJSON("11");
 
 		assertThat(decoded).isEqualTo(11L);
+	}
+
+	@Test
+	public void should_force_decode_from_json_to_type() throws Exception {
+		PropertyMeta pm = new PropertyMeta();
+		pm.setTranscoder(transcoder);
+
+		when(transcoder.forceDecodeFromJSON("test", String.class)).thenReturn(
+				"test");
+
+		assertThat(pm.forceDecodeFromJSON("test", String.class)).isEqualTo(
+				"test");
+	}
+
+	@Test
+	public void should_get_primary_key() throws Exception {
+
+		long id = RandomUtils.nextLong();
+		CompleteBean entity = new CompleteBean(id);
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(ID);
+		pm.setInvoker(invoker);
+
+		when(invoker.getPrimaryKey(entity, pm)).thenReturn(id);
+
+		assertThat(pm.getPrimaryKey(entity)).isEqualTo(id);
+	}
+
+	@Test
+	public void should_exception_when_asking_primary_key_on_non_id_field()
+			throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setPropertyName("property");
+		pm.setType(SIMPLE);
+
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("Cannot get primary key on a non id field 'property'");
+
+		pm.getPrimaryKey(entity);
+	}
+
+	@Test
+	public void should_get_join_primary_key() throws Exception {
+
+		long userId = RandomUtils.nextLong();
+		UserBean entity = new UserBean();
+		entity.setUserId(userId);
+
+		EntityMeta joinMeta = mock(EntityMeta.class);
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(JOIN_SIMPLE);
+		JoinProperties joinProperties = new JoinProperties();
+		joinProperties.setEntityMeta(joinMeta);
+		pm.setJoinProperties(joinProperties);
+
+		when(joinMeta.getPrimaryKey(entity)).thenReturn(userId);
+		assertThat(pm.getJoinPrimaryKey(entity)).isEqualTo(userId);
+	}
+
+	@Test
+	public void should_exception_when_asking_join_primary_key_on_non_join_field()
+			throws Exception {
+
+		UserBean entity = new UserBean();
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(SIMPLE);
+		pm.setPropertyName("property");
+
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("Cannot get join primary key on a non join field 'property'");
+
+		pm.getJoinPrimaryKey(entity);
+	}
+
+	@Test
+	public void should_get_partition_key() throws Exception {
+
+		long id = RandomUtils.nextLong();
+		CompoundKey compoundKey = new CompoundKey(id, "name");
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(EMBEDDED_ID);
+		pm.setInvoker(invoker);
+
+		when(invoker.getPartitionKey(compoundKey, pm)).thenReturn(id);
+
+		assertThat(pm.getPartitionKey(compoundKey)).isEqualTo(id);
+	}
+
+	@Test
+	public void should_exception_when_asking_partition_key_on_non_embedded_id_field()
+			throws Exception {
+
+		CompoundKey compoundKey = new CompoundKey();
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setPropertyName("property");
+		pm.setType(SIMPLE);
+
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("Cannot get partition key on a non embedded id field 'property'");
+
+		pm.getPartitionKey(compoundKey);
+	}
+
+	@Test
+	public void should_instanciate_embedded_id_with_partition_key()
+			throws Exception {
+
+		long id = RandomUtils.nextLong();
+		CompoundKey compoundKey = new CompoundKey(id, "name");
+
+		PropertyMeta pm = new PropertyMeta();
+		pm.setType(EMBEDDED_ID);
+		pm.setInvoker(invoker);
+
+		when(invoker.instanciateEmbeddedIdWithPartitionKey(pm, id)).thenReturn(
+				compoundKey);
+
+		assertThat(pm.instanciateEmbeddedIdWithPartitionKey(id)).isEqualTo(
+				compoundKey);
+	}
+
+	@Test
+	public void should_exception_when_instanciating_embedded_id_on_non_embedded_id_field()
+			throws Exception {
+
+		long id = RandomUtils.nextLong();
+		PropertyMeta pm = new PropertyMeta();
+		pm.setPropertyName("property");
+		pm.setType(SIMPLE);
+
+		exception.expect(IllegalStateException.class);
+		exception
+				.expectMessage("Cannot instanciate embedded id with partition key on a non embedded id field 'property'");
+
+		pm.instanciateEmbeddedIdWithPartitionKey(id);
+	}
+
+	@Test
+	public void should_get_value_from_field() throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+		entity.setName("name");
+
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("name")
+				.accessors().type(SIMPLE).invoker(invoker).build();
+
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
+				"name");
+
+		assertThat(pm.getValueFromField(entity)).isEqualTo("name");
+	}
+
+	@Test
+	public void should_get_list_value_from_field() throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+		List<String> friends = Arrays.asList("foo", "bar");
+		entity.setFriends(friends);
+
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("friends")
+				.accessors().type(LIST).invoker(invoker).build();
+
+		when(
+				(List<String>) invoker.getListValueFromField(entity,
+						pm.getGetter())).thenReturn(friends);
+
+		assertThat((List<String>) pm.getListValueFromField(entity))
+				.containsExactly("foo", "bar");
+	}
+
+	@Test
+	public void should_get_set_value_from_field() throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+		Set<String> followers = Sets.newHashSet("George", "Paul");
+		entity.setFollowers(followers);
+
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("followers")
+				.accessors().type(SET).invoker(invoker).build();
+
+		when((Set<String>) invoker.getSetValueFromField(entity, pm.getGetter()))
+				.thenReturn(followers);
+
+		assertThat((Set<String>) pm.getSetValueFromField(entity)).containsOnly(
+				"George", "Paul");
+	}
+
+	@Test
+	public void should_get_map_value_from_field() throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+		Map<Integer, String> preferences = ImmutableMap.of(1, "FR", 2, "Paris");
+		entity.setPreferences(preferences);
+
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Integer.class, String.class).field("preferences")
+				.accessors().type(MAP).invoker(invoker).build();
+
+		when(
+				(Map<Integer, String>) invoker.getMapValueFromField(entity,
+						pm.getGetter())).thenReturn(preferences);
+
+		Map<Integer, String> actual = (Map<Integer, String>) pm
+				.getMapValueFromField(entity);
+
+		assertThat(actual).containsKey(1).containsKey(2).containsValue("FR")
+				.containsValue("Paris");
+	}
+
+	@Test
+	public void should_set_value_to_field() throws Exception {
+
+		CompleteBean entity = new CompleteBean();
+
+		PropertyMeta pm = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("name")
+				.accessors().type(SIMPLE).invoker(invoker).build();
+
+		pm.setValueToField(entity, "name");
+
+		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
 	}
 }

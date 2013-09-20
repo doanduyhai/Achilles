@@ -17,7 +17,6 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +29,6 @@ import com.google.common.base.Function;
 
 public class JoinValuesExtractor implements
 		Function<PropertyMeta, Pair<List<?>, PropertyMeta>> {
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	private Object entity;
 
@@ -41,7 +39,7 @@ public class JoinValuesExtractor implements
 	@Override
 	public Pair<List<?>, PropertyMeta> apply(PropertyMeta pm) {
 		List<Object> joinValues = new ArrayList<Object>();
-		Object joinValue = invoker.getValueFromField(entity, pm.getGetter());
+		Object joinValue = pm.getValueFromField(entity);
 		if (joinValue != null) {
 			if (pm.isJoinCollection()) {
 				joinValues.addAll((Collection) joinValue);

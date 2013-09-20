@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -30,7 +30,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +53,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftEntityMapperTest {
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
 	private ThriftEntityMapper mapper;
@@ -90,7 +89,7 @@ public class ThriftEntityMapperTest {
 	public void setUp() throws Exception {
 		idMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, Long.class).field("id")
-				.build();
+				.invoker(invoker).build();
 	}
 
 	@Test
@@ -100,22 +99,23 @@ public class ThriftEntityMapperTest {
 
 		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.type(SIMPLE).mapper(objectMapper).accessors().build();
+				.type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker)
+				.build();
 
 		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").type(LIST).mapper(objectMapper).accessors()
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").type(SET).mapper(objectMapper).accessors()
-				.build();
+				.invoker(invoker).build();
 
 		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
 				.of(CompleteBean.class, Integer.class, String.class)
 				.field("preferences").type(MAP).mapper(objectMapper)
-				.accessors().build();
+				.invoker(invoker).accessors().build();
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta)
 				.addPropertyMeta(namePropertyMeta)
@@ -177,9 +177,9 @@ public class ThriftEntityMapperTest {
 		CompleteBean entity = new CompleteBean();
 
 		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				//
 				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.type(SIMPLE).mapper(objectMapper).accessors().build();
+				.type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker)
+				.build();
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
 				.addPropertyMeta(namePropertyMeta).build();
@@ -194,6 +194,9 @@ public class ThriftEntityMapperTest {
 				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
 
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
+
+		verify(invoker).setValueToField(eq(entity),
+				eq(namePropertyMeta.getSetter()), any(List.class));
 
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 
@@ -226,21 +229,16 @@ public class ThriftEntityMapperTest {
 	public void should_init_clustered_entity() throws Exception {
 		BeanWithClusteredId entity = new BeanWithClusteredId();
 		CompoundKey compoundKey = new CompoundKey();
+		entityMeta = mock(EntityMeta.class);
 
-		Method idSetter = BeanWithClusteredId.class.getDeclaredMethod("setId",
-				CompoundKey.class);
+		when(entityMeta.instanciate()).thenReturn(entity);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
-		idMeta.setSetter(idSetter);
-
-		when(invoker.instanciate(BeanWithClusteredId.class)).thenReturn(entity);
 		BeanWithClusteredId actual = mapper.initClusteredEntity(
-				BeanWithClusteredId.class, idMeta, compoundKey);
+				BeanWithClusteredId.class, entityMeta, compoundKey);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(entity, idSetter, compoundKey);
+		verify(entityMeta).setPrimaryKey(entity, compoundKey);
 	}
 
 	@Test
@@ -249,31 +247,22 @@ public class ThriftEntityMapperTest {
 		CompoundKey compoundKey = new CompoundKey();
 		String clusteredValue = "clusteredValue";
 
-		Method idSetter = BeanWithClusteredId.class.getDeclaredMethod("setId",
-				CompoundKey.class);
-		Method nameSetter = BeanWithClusteredId.class.getDeclaredMethod(
-				"setName", String.class);
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
-		idMeta.setSetter(idSetter);
-
-		PropertyMeta pm = PropertyMetaTestBuilder //
-				.valueClass(String.class).type(SIMPLE).build();
-		pm.setSetter(nameSetter);
+		PropertyMeta pm = mock(PropertyMeta.class);
+		entityMeta = mock(EntityMeta.class);
 
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(context.getFirstMeta()).thenReturn(pm);
 
-		when(invoker.instanciate(BeanWithClusteredId.class)).thenReturn(entity);
+		when(entityMeta.instanciate()).thenReturn(entity);
+
 		BeanWithClusteredId actual = mapper.createClusteredEntityWithValue(
-				BeanWithClusteredId.class, idMeta, pm, compoundKey,
+				BeanWithClusteredId.class, entityMeta, pm, compoundKey,
 				clusteredValue);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(entity, idSetter, compoundKey);
-		verify(invoker).setValueToField(entity, nameSetter, clusteredValue);
+		verify(entityMeta).setPrimaryKey(entity, compoundKey);
+		verify(pm).setValueToField(entity, clusteredValue);
 	}
 
 	private Composite buildSimplePropertyComposite(String propertyName) {

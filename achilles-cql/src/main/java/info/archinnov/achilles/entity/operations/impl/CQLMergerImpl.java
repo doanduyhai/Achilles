@@ -19,7 +19,6 @@ package info.archinnov.achilles.entity.operations.impl;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityMerger;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CQLMergerImpl implements Merger<CQLPersistenceContext> {
-	private ReflectionInvoker invoker = new ReflectionInvoker();
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
 	@Override
@@ -50,8 +48,7 @@ public class CQLMergerImpl implements Merger<CQLPersistenceContext> {
 			CQLPersistenceContext context, List<PropertyMeta> joinPMs) {
 		Object entity = context.getEntity();
 		for (PropertyMeta pm : joinPMs) {
-			Object joinValue = invoker
-					.getValueFromField(entity, pm.getGetter());
+			Object joinValue = pm.getValueFromField(entity);
 			if (joinValue != null) {
 				if (pm.isJoinCollection()) {
 					doCascadeCollection(entityMerger, context, pm,
