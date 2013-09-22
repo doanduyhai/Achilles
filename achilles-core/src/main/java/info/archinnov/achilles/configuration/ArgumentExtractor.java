@@ -18,11 +18,11 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,16 +34,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public abstract class ArgumentExtractor {
 	public List<String> initEntityPackages(Map<String, Object> configurationMap) {
-		String entityPackages = (String) configurationMap
+		List<String> entityPackages = new ArrayList<String>();
+		String entityPackagesParameter = (String) configurationMap
 				.get(ENTITY_PACKAGES_PARAM);
-		if (StringUtils.isBlank(entityPackages)) {
-			throw new AchillesException(
-					"'"
-							+ ENTITY_PACKAGES_PARAM
-							+ "' property should be set for Achilles ThrifEntityManagerFactory bootstraping");
-		} else {
-			return Arrays.asList(StringUtils.split(entityPackages, ","));
+		if (!StringUtils.isBlank(entityPackagesParameter)) {
+			entityPackages = Arrays.asList(StringUtils.split(
+					entityPackagesParameter, ","));
 		}
+
+		return entityPackages;
 	}
 
 	public boolean initForceCFCreation(Map<String, Object> configurationMap) {

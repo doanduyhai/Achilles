@@ -16,13 +16,19 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENSURE_CONSISTENCY_ON_JOIN_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,6 +51,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableMap;
+
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArgumentExtractorTest {
@@ -78,19 +87,6 @@ public class ArgumentExtractorTest {
 
 		assertThat(actual).containsExactly("my.package.entity",
 				"another.package.entity", "third.package");
-	}
-
-	@Test
-	public void should_exception_when_entity_packages_not_set()
-			throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("'"
-						+ ENTITY_PACKAGES_PARAM
-						+ "' property should be set for Achilles ThrifEntityManagerFactory bootstraping");
-
-		doCallRealMethod().when(extractor).initEntityPackages(configMap);
-		extractor.initEntityPackages(configMap);
 	}
 
 	@Test

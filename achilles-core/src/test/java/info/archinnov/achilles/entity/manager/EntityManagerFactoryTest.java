@@ -17,8 +17,13 @@
 package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -66,6 +71,8 @@ public class EntityManagerFactoryTest {
 
 	@Mock
 	private ArgumentExtractor extractor;
+	@Mock
+	private EntityParser entityParser;
 
 	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
@@ -111,9 +118,9 @@ public class EntityManagerFactoryTest {
 	}
 
 	@Test
-	public void should_discover_entities() throws Exception {
+	public void should_discover_package_without_entities() throws Exception {
 		List<Class<?>> entities = new ArrayList<Class<?>>();
-		entities.add(Long.class);
+
 		EntityMeta entityMeta = new EntityMeta();
 
 		when(achillesEntityExplorer.discoverEntities(entityPackages))
@@ -124,9 +131,10 @@ public class EntityManagerFactoryTest {
 		doCallRealMethod().when(factory).discoverEntities();
 		factory.discoverEntities();
 
-		assertThat(entityMetaMap).containsKey(Long.class);
-		assertThat(entityMetaMap).containsValue(entityMeta);
-		verify(validator).validateAtLeastOneEntity(entities, entityPackages);
+		assertThat(entityMetaMap).isEmpty();
+
+		verify(entityParser, never()).parseEntity(
+				any(EntityParsingContext.class));
 		verify(achillesEntityParser).fillJoinEntityMeta(
 				any(EntityParsingContext.class), eq(entityMetaMap));
 
