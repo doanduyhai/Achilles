@@ -84,7 +84,6 @@ public abstract class EntityManagerFactory {
 
 		List<Class<?>> entities = entityExplorer
 				.discoverEntities(entityPackages);
-		validator.validateAtLeastOneEntity(entities, entityPackages);
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
 			EntityParsingContext context = new EntityParsingContext(//
