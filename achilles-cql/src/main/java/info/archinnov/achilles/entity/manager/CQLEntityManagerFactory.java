@@ -16,7 +16,8 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.configuration.CQLArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -59,7 +60,11 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 		cluster = extractor.initCluster(configurationMap);
 		session = extractor.initSession(cluster, configurationMap);
 
-		boolean hasSimpleCounter = bootstrap();
+		boolean hasSimpleCounter = false;
+		if (configurationMap.containsKey(ENTITY_PACKAGES_PARAM)) {
+			hasSimpleCounter = bootstrap();
+		}
+
 		new CQLTableCreator(cluster, session,
 				(String) configurationMap.get(KEYSPACE_NAME_PARAM))
 				.validateOrCreateTables(entityMetaMap, configContext,

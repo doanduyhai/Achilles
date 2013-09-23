@@ -24,7 +24,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
@@ -47,7 +46,6 @@ public abstract class EntityManagerFactory {
 
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
-	private EntityParsingValidator validator = new EntityParsingValidator();
 
 	protected EntityManagerFactory(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
@@ -133,10 +131,6 @@ public abstract class EntityManagerFactory {
 
 	protected void setEntityExplorer(EntityExplorer achillesEntityExplorer) {
 		this.entityExplorer = achillesEntityExplorer;
-	}
-
-	protected void setValidator(EntityParsingValidator validator) {
-		this.validator = validator;
 	}
 
 	protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap) {

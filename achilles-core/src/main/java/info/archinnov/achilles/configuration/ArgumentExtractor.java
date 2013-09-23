@@ -33,11 +33,12 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public abstract class ArgumentExtractor {
+
 	public List<String> initEntityPackages(Map<String, Object> configurationMap) {
 		List<String> entityPackages = new ArrayList<String>();
 		String entityPackagesParameter = (String) configurationMap
 				.get(ENTITY_PACKAGES_PARAM);
-		if (!StringUtils.isBlank(entityPackagesParameter)) {
+		if (StringUtils.isNotBlank(entityPackagesParameter)) {
 			entityPackages = Arrays.asList(StringUtils.split(
 					entityPackagesParameter, ","));
 		}

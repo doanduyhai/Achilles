@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.entity.manager;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -26,6 +27,7 @@ import info.archinnov.achilles.context.ThriftDaoContextBuilder;
 import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.table.ThriftTableCreator;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collections;
 import java.util.Map;
@@ -64,6 +66,12 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 		keyspace = thriftArgumentExtractor.initKeyspace(cluster,
 				(ThriftConsistencyLevelPolicy) configContext
 						.getConsistencyPolicy(), configurationMap);
+
+		Validator
+				.validateNotEmpty(
+						entityPackages,
+						"'%s' property should be set for Achilles ThrifEntityManagerFactory bootstraping",
+						ENTITY_PACKAGES_PARAM);
 
 		log.info(
 				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",

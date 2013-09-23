@@ -30,6 +30,7 @@ import me.prettyprint.hector.api.factory.HFactory;
 public class ThriftArgumentExtractor extends ArgumentExtractor {
 
 	public Cluster initCluster(Map<String, Object> configurationMap) {
+
 		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
 		if (cluster == null) {
 			String cassandraHost = (String) configurationMap

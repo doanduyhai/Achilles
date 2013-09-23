@@ -16,14 +16,9 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -31,7 +26,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.entity.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.table.TableCreator;
@@ -64,13 +58,11 @@ public class EntityManagerFactoryTest {
 	private EntityExplorer achillesEntityExplorer;
 
 	@Mock
-	private EntityParsingValidator validator;
-
-	@Mock
 	private EntityParser achillesEntityParser;
 
 	@Mock
 	private ArgumentExtractor extractor;
+
 	@Mock
 	private EntityParser entityParser;
 
@@ -86,14 +78,11 @@ public class EntityManagerFactoryTest {
 				any(EntityParser.class));
 		doCallRealMethod().when(factory).setEntityExplorer(
 				any(EntityExplorer.class));
-		doCallRealMethod().when(factory).setValidator(
-				any(EntityParsingValidator.class));
 
 		factory.setEntityMetaMap(entityMetaMap);
 		factory.setEntityPackages(entityPackages);
 		factory.setEntityParser(achillesEntityParser);
 		factory.setEntityExplorer(achillesEntityExplorer);
-		factory.setValidator(validator);
 	}
 
 	@Test
@@ -114,6 +103,28 @@ public class EntityManagerFactoryTest {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Exception during entity parsing : test");
 		factory.bootstrap();
+
+	}
+
+	@Test
+	public void should_discover_entities() throws Exception {
+		List<Class<?>> entities = new ArrayList<Class<?>>();
+		entities.add(Long.class);
+
+		EntityMeta entityMeta = new EntityMeta();
+
+		when(achillesEntityExplorer.discoverEntities(entityPackages))
+				.thenReturn(entities);
+		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class)))
+				.thenReturn(entityMeta);
+
+		doCallRealMethod().when(factory).discoverEntities();
+		factory.discoverEntities();
+
+		assertThat(entityMetaMap).containsKey(Long.class);
+		assertThat(entityMetaMap).containsValue(entityMeta);
+		verify(achillesEntityParser).fillJoinEntityMeta(
+				any(EntityParsingContext.class), eq(entityMetaMap));
 
 	}
 
