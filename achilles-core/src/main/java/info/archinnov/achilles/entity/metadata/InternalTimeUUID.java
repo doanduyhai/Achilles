@@ -15,23 +15,11 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.annotations;
+package info.archinnov.achilles.entity.metadata;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+/**
+ * Marker class for internal usage only
+ */
+public class InternalTimeUUID {
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
-@Documented
-public @interface Order {
-
-	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
-	 */
-	int value();
 }

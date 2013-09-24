@@ -25,6 +25,7 @@ import info.archinnov.achilles.test.parser.entity.CompoundKeyWithDuplicateOrder;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyWithNegativeOrder;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyWithNoAnnotation;
 import info.archinnov.achilles.test.parser.entity.CompoundKeyWithOnlyOneComponent;
+import info.archinnov.achilles.test.parser.entity.CompoundKeyWithTimeUUID;
 import info.archinnov.achilles.test.parser.entity.CorrectCompoundKey;
 
 import java.lang.reflect.Method;
@@ -66,6 +67,19 @@ public class CompoundKeyParserTest {
 				int.class);
 		assertThat(props.getComponentNames()).containsExactly("name", "rank");
 		assertThat(props.getOrderingComponent()).isEqualTo("rank");
+		assertThat(props.getClusteringComponentNames()).containsExactly("rank");
+		assertThat(props.getClusteringComponentClasses()).containsExactly(
+				int.class);
+	}
+
+	@Test
+	public void should_parse_compound_key_with_time_uuid() throws Exception {
+		EmbeddedIdProperties props = parser
+				.parseEmbeddedId(CompoundKeyWithTimeUUID.class);
+
+		assertThat(props.getTimeUUIDComponents()).containsExactly("date");
+		assertThat(props.getComponentNames())
+				.containsExactly("date", "ranking");
 	}
 
 	@Test

@@ -26,6 +26,7 @@ import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -114,6 +115,37 @@ public class CQLTableValidatorTest {
 		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
 		when(tableMetadata.getColumn("name")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.text());
+
+		when(tableMetadata.getColumn("string")).thenReturn(
+				columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.text());
+
+		validator.validateForEntity(entityMeta, tableMetadata);
+	}
+
+	@Test
+	public void should_validate_embedded_id_with_time_uuid_for_entity()
+			throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).compNames("userId", "date")
+				.compClasses(Long.class, UUID.class).type(EMBEDDED_ID)
+				.compTimeUUID("date").build();
+
+		PropertyMeta nameMeta = PropertyMetaTestBuilder
+				.completeBean(Void.class, String.class).field("string")
+				.type(SIMPLE).build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
+
+		when(tableMetadata.getName()).thenReturn("table");
+		ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
+		when(tableMetadata.getColumn("userid")).thenReturn(userIdMetadata);
+		when(userIdMetadata.getType()).thenReturn(DataType.bigint());
+
+		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
+		when(tableMetadata.getColumn("date")).thenReturn(nameMetadata);
+		when(nameMetadata.getType()).thenReturn(DataType.timeuuid());
 
 		when(tableMetadata.getColumn("string")).thenReturn(
 				columnMetadataForField);

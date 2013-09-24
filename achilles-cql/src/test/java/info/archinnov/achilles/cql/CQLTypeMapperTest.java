@@ -20,6 +20,7 @@ import static com.datastax.driver.core.DataType.Name.*;
 import static info.archinnov.achilles.cql.CQLTypeMapper.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
@@ -70,9 +71,11 @@ public class CQLTypeMapperTest {
 		assertThat(toCQLType(UserBean.class)).isSameAs(TEXT);
 
 		assertThat(toCQLType(Counter.class)).isSameAs(COUNTER);
+		assertThat(toCQLType(InternalTimeUUID.class)).isSameAs(TIMEUUID);
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_convert_cql_to_java() throws Exception {
 
@@ -119,12 +122,14 @@ public class CQLTypeMapperTest {
 		assertThat(method.invoke(row, "object")).isEqualTo("object_value");
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_return_long_as_compatible_java_type() throws Exception {
 		assertThat((Class) toCompatibleJavaType(Long.class)).isEqualTo(
 				Long.class);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_return_String_as_compatible_java_type() throws Exception {
 		assertThat((Class) toCompatibleJavaType(PropertyType.class)).isEqualTo(

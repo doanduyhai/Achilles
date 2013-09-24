@@ -15,23 +15,39 @@
  * limitations under the License.
  */
 
-package info.archinnov.achilles.annotations;
+package info.archinnov.achilles.test.parser.entity;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.TimeUUID;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
-@Documented
-public @interface Order {
+import java.util.UUID;
 
-	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
-	 */
-	int value();
+import javax.persistence.Column;
+
+public class CompoundKeyWithTimeUUID {
+
+	@TimeUUID
+	@Order(1)
+	@Column
+	private UUID date;
+
+	@Order(2)
+	@Column(name = "ranking")
+	private int rank;
+
+	public UUID getDate() {
+		return date;
+	}
+
+	public void setDate(UUID date) {
+		this.date = date;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
 }

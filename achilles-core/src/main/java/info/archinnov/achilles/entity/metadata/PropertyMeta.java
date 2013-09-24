@@ -23,6 +23,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class PropertyMeta {
 	private EmbeddedIdProperties embeddedIdProperties;
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
-
+	private boolean timeUUID = false;
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
@@ -92,20 +93,36 @@ public class PropertyMeta {
 		return compClasses;
 	}
 
-	public String getOrderingComponent() {
-		String component = null;
-		if (embeddedIdProperties != null) {
-			return embeddedIdProperties.getOrderingComponent();
-		}
-		return component;
-	}
-
 	public List<String> getComponentNames() {
 		List<String> components = new ArrayList<String>();
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.getComponentNames();
 		}
 		return components;
+	}
+
+	public List<String> getClusteringComponentNames() {
+		return embeddedIdProperties != null ? embeddedIdProperties
+				.getClusteringComponentNames() : Arrays.<String> asList();
+	}
+
+	public List<Class<?>> getClusteringComponentClasses() {
+		return embeddedIdProperties != null ? embeddedIdProperties
+				.getClusteringComponentClasses() : Arrays.<Class<?>> asList();
+	}
+
+	public boolean isComponentTimeUUID(String componentName) {
+		return embeddedIdProperties != null
+				&& embeddedIdProperties.getTimeUUIDComponents().contains(
+						componentName);
+	}
+
+	public String getOrderingComponent() {
+		String component = null;
+		if (embeddedIdProperties != null) {
+			return embeddedIdProperties.getOrderingComponent();
+		}
+		return component;
 	}
 
 	public boolean isJoin() {
@@ -317,6 +334,14 @@ public class PropertyMeta {
 		invoker.setValueToField(target, setter, args);
 	}
 
+	public Class<?> getValueClassForTableCreation() {
+		if (timeUUID) {
+			return InternalTimeUUID.class;
+		} else {
+			return valueClass;
+		}
+	}
+
 	// //////// Getters & setters
 	public PropertyType type() {
 		return type;
@@ -383,10 +408,6 @@ public class PropertyMeta {
 		this.idClass = idClass;
 	}
 
-	public Object getKey(Object object) {
-		return keyClass.cast(object);
-	}
-
 	public JoinProperties getJoinProperties() {
 		return joinProperties;
 	}
@@ -430,6 +451,14 @@ public class PropertyMeta {
 
 	public void setInvoker(ReflectionInvoker invoker) {
 		this.invoker = invoker;
+	}
+
+	public boolean isTimeUUID() {
+		return timeUUID;
+	}
+
+	public void setTimeUUID(boolean timeUUID) {
+		this.timeUUID = timeUUID;
 	}
 
 	@Override

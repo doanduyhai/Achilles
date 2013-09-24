@@ -36,6 +36,7 @@ import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -71,6 +72,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker;
+	private List<String> compTimeUUID;
 
 	public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz,
 			Class<K> keyClass, Class<V> valueClass) {
@@ -135,6 +137,9 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			compoundKeyProps.setComponentNames(componentNames);
 			compoundKeyProps.setComponentGetters(componentGetters);
 			compoundKeyProps.setComponentSetters(componentSetters);
+			compTimeUUID = compTimeUUID != null ? compTimeUUID
+					: new ArrayList<String>();
+			compoundKeyProps.setTimeUUIDComponents(compTimeUUID);
 
 			pm.setEmbeddedIdProperties(compoundKeyProps);
 		}
@@ -242,6 +247,12 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		return this;
 	}
 
+	public PropertyMetaTestBuilder<T, K, V> compTimeUUID(
+			String... compTimeUUIDs) {
+		this.compTimeUUID = Arrays.asList(compTimeUUIDs);
+		return this;
+	}
+
 	public PropertyMetaTestBuilder<T, K, V> compNames(String... componentNames) {
 		this.componentNames = Arrays.asList(componentNames);
 		return this;
@@ -312,5 +323,4 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		this.invoker = invoker;
 		return this;
 	}
-
 }

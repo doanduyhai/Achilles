@@ -31,6 +31,7 @@ public class EmbeddedIdProperties {
 	private List<String> componentNames;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
+	private List<String> timeUUIDComponents;
 
 	public String getOrderingComponent() {
 		String component = null;
@@ -38,6 +39,14 @@ public class EmbeddedIdProperties {
 			return componentNames.get(1);
 		}
 		return component;
+	}
+
+	public List<String> getClusteringComponentNames() {
+		return componentNames.subList(1, componentNames.size());
+	}
+
+	public List<Class<?>> getClusteringComponentClasses() {
+		return componentClasses.subList(1, componentClasses.size());
 	}
 
 	public List<Class<?>> getComponentClasses() {
@@ -70,6 +79,14 @@ public class EmbeddedIdProperties {
 
 	public void setComponentNames(List<String> componentNames) {
 		this.componentNames = componentNames;
+	}
+
+	public List<String> getTimeUUIDComponents() {
+		return timeUUIDComponents;
+	}
+
+	public void setTimeUUIDComponents(List<String> timeUUIDComponents) {
+		this.timeUUIDComponents = timeUUIDComponents;
 	}
 
 	@Override

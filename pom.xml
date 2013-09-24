@@ -9,7 +9,7 @@
   <artifactId>achilles</artifactId>
   <version>2.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <description>A fully featured EntityManager for Cassandra</description>
+  <description>A Persistence Manager for Cassandra</description>
   <inceptionYear>2012</inceptionYear>
   <name>Achilles</name>
   <url>https://github.com/doanduyhai/achilles</url>
@@ -30,6 +30,14 @@
       <url>http://doanduyhai.wordpress.com</url>
       <roles>
         <role>Lead Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>sbabouche</id>
+      <name>Salaheddine BABOUCHE</name>
+      <email>sbabouche@palo-it.com</email>
+      <roles>
+        <role>Developer</role>
       </roles>
     </developer>
   </developers>
@@ -367,5 +375,4 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
-
 </project>

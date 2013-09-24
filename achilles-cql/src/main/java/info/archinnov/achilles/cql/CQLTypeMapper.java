@@ -17,6 +17,7 @@
 package info.archinnov.achilles.cql;
 
 import static com.datastax.driver.core.DataType.Name.*;
+import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.Counter;
@@ -61,6 +62,7 @@ public class CQLTypeMapper {
 		java2CQL.put(BigInteger.class, VARINT);
 		java2CQL.put(Date.class, TIMESTAMP);
 		java2CQL.put(UUID.class, UUID);
+		java2CQL.put(InternalTimeUUID.class, TIMEUUID);
 		java2CQL.put(List.class, LIST);
 		java2CQL.put(Set.class, SET);
 		java2CQL.put(Map.class, MAP);

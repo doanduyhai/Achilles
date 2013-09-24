@@ -26,12 +26,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @Documented
-public @interface Order {
-
+public @interface TimeUUID {
 	/**
 	 * <p>
-	 * Indicates the key order. The order index start at 1
+	 * Map this type to Cassandra timeuuid type. This annotation should be used
+	 * along side with java.util.UUID type
 	 * </p>
 	 */
-	int value();
 }

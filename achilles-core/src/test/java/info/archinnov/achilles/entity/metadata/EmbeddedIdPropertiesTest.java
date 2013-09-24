@@ -20,6 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -54,5 +55,24 @@ public class EmbeddedIdPropertiesTest {
 		props.setComponentNames(Arrays.asList("id"));
 
 		assertThat(props.getOrderingComponent()).isNull();
+	}
+
+	@Test
+	public void should_get_clustering_component_names() throws Exception {
+		EmbeddedIdProperties props = new EmbeddedIdProperties();
+		props.setComponentNames(Arrays.asList("id", "comp1", "comp2"));
+
+		assertThat(props.getClusteringComponentNames()).containsExactly(
+				"comp1", "comp2");
+	}
+
+	@Test
+	public void should_get_clustering_component_classes() throws Exception {
+		EmbeddedIdProperties props = new EmbeddedIdProperties();
+		props.setComponentClasses(Arrays.<Class<?>> asList(Long.class,
+				UUID.class, String.class));
+
+		assertThat(props.getClusteringComponentClasses()).containsExactly(
+				UUID.class, String.class);
 	}
 }

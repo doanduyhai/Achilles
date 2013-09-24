@@ -19,6 +19,7 @@ package info.archinnov.achilles.entity.parsing;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.reflections.ReflectionUtils.*;
 import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.helper.EntityIntrospector;
@@ -48,6 +49,8 @@ public class CompoundKeyParser {
 			.getLogger(PropertyHelper.class);
 	protected EntityIntrospector entityIntrospector = new EntityIntrospector();
 
+	private PropertyFilter filter = new PropertyFilter();
+
 	public EmbeddedIdProperties parseEmbeddedId(Class<?> keyClass) {
 		log.debug("Parse multikey class {} ", keyClass.getCanonicalName());
 
@@ -61,7 +64,7 @@ public class CompoundKeyParser {
 		Validator
 				.validateBeanMappingTrue(
 						components.size() > 1,
-						"There should be at least 2 components for the @CompoundKey class '%s'",
+						"There should be at least 2 components for the @EmbeddedId class '%s'",
 						keyClass.getCanonicalName());
 
 		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(
@@ -149,6 +152,8 @@ public class CompoundKeyParser {
 		List<Integer> orderList = new ArrayList<Integer>(components.keySet());
 		Collections.sort(orderList);
 
+		List<String> componentsAsTimeUUID = new ArrayList<String>();
+
 		for (Integer order : orderList) {
 			Field compoundKeyField = components.get(order);
 			Column column = compoundKeyField.getAnnotation(Column.class);
@@ -158,11 +163,14 @@ public class CompoundKeyParser {
 			else
 				componentNames.add(compoundKeyField.getName());
 
+			if (filter.hasAnnotation(compoundKeyField, TimeUUID.class)) {
+				componentsAsTimeUUID.add(compoundKeyField.getName());
+			}
+
 			componentGetters.add(entityIntrospector.findGetter(keyClass,
 					compoundKeyField));
-			if (constructor.getParameterTypes().length == 0)
-				componentSetters.add(entityIntrospector.findSetter(keyClass,
-						compoundKeyField));
+			componentSetters.add(entityIntrospector.findSetter(keyClass,
+					compoundKeyField));
 
 			componentClasses.add(compoundKeyField.getType());
 		}
@@ -178,6 +186,7 @@ public class CompoundKeyParser {
 		embeddedIdProperties.setComponentNames(componentNames);
 		embeddedIdProperties.setComponentGetters(componentGetters);
 		embeddedIdProperties.setComponentSetters(componentSetters);
+		embeddedIdProperties.setTimeUUIDComponents(componentsAsTimeUUID);
 
 		return embeddedIdProperties;
 	}

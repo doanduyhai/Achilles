@@ -26,6 +26,7 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.type.Counter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,21 +162,18 @@ public class CQLTableCreatorTest {
 	}
 
 	@Test
-	public void should_create_table_with_embedde_id() throws Exception {
+	public void should_create_clustered_table() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class).type(EMBEDDED_ID).field("id")
 				.compNames("index", "count", "uuid")
-				.compClasses(Long.class, Integer.class, UUID.class).build();
+				.compClasses(Long.class, Integer.class, UUID.class)
+				.compTimeUUID("uuid").build();
 
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class)
 				.type(SIMPLE).field("longCol").build();
 
-		PropertyMeta counterColPM = PropertyMetaTestBuilder
-				.keyValueClass(Void.class, Long.class).type(COUNTER)
-				.field("counterCol").build();
-
 		meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, counterColPM));
+		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -190,9 +188,43 @@ public class CQLTableCreatorTest {
 								+ "\t\tlongCol bigint,\n"
 								+ "\t\tindex bigint,\n"
 								+ "\t\tcount int,\n"
-								+ "\t\tuuid uuid,\n"
+								+ "\t\tuuid timeuuid,\n"
 								+ "\t\tPRIMARY KEY(index, count, uuid)\n"
 								+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+
+	}
+
+	@Test
+	public void should_create_clustered_counter_table() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class).type(EMBEDDED_ID).field("id")
+				.compNames("index", "count", "uuid")
+				.compClasses(Long.class, Integer.class, UUID.class).build();
+
+		PropertyMeta counterColPM = PropertyMetaTestBuilder
+				.keyValueClass(Void.class, Counter.class).type(COUNTER)
+				.field("counterCol").build();
+
+		meta = new EntityMeta();
+		meta.setFirstMeta(counterColPM);
+		meta.setIdMeta(idMeta);
+		meta.setClusteredCounter(true);
+		meta.setTableName("tableName");
+		meta.setClassName("entityName");
+
+		creator.validateOrCreateTableForEntity(meta, true);
+
+		verify(session).execute(stringCaptor.capture());
+
+		assertThat(stringCaptor.getValue())
+				.isEqualTo(
+						"\n\tCREATE TABLE tableName(\n"
+								+ "\t\tindex bigint,\n"
+								+ "\t\tcount int,\n"
+								+ "\t\tuuid uuid,\n"
+								+ "\t\tcounterCol counter,\n"
+								+ "\t\tPRIMARY KEY(index, count, uuid)\n"
+								+ "\t) WITH COMMENT = 'Create table for clustered counter entity \"entityName\"'");
 
 	}
 

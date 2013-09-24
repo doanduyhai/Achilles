@@ -21,6 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
+import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
@@ -100,7 +101,7 @@ public class PropertyParserTest {
 				Test.class.getDeclaredField("id"));
 		context.setPrimaryKey(true);
 
-		PropertyMeta meta = (PropertyMeta) parser.parse(context);
+		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("id");
 		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
@@ -130,7 +131,7 @@ public class PropertyParserTest {
 				Test.class.getDeclaredField("id"));
 		context.isEmbeddedId(true);
 
-		PropertyMeta meta = (PropertyMeta) parser.parse(context);
+		PropertyMeta meta = parser.parse(context);
 
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId",
@@ -177,7 +178,7 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("name"));
 
-		PropertyMeta meta = (PropertyMeta) parser.parse(context);
+		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
 		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
@@ -191,8 +192,7 @@ public class PropertyParserTest {
 
 		assertThat(meta.type()).isEqualTo(PropertyType.SIMPLE);
 
-		assertThat((PropertyMeta) context.getPropertyMetas().get("name"))
-				.isSameAs(meta);
+		assertThat(context.getPropertyMetas().get("name")).isSameAs(meta);
 
 	}
 
@@ -218,6 +218,33 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("firstname");
+	}
+
+	@Test
+	public void should_parse_simple_property_of_time_uuid_type()
+			throws Exception {
+
+		@SuppressWarnings("unused")
+		class Test {
+			@TimeUUID
+			@Column
+			private UUID date;
+
+			public UUID getDate() {
+				return date;
+			}
+
+			public void setDate(UUID date) {
+				this.date = date;
+			}
+		}
+
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("date"));
+
+		PropertyMeta meta = parser.parse(context);
+
+		assertThat(meta.isTimeUUID()).isTrue();
 	}
 
 	@Test
@@ -263,14 +290,13 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class,
 				Test.class.getDeclaredField("counter"));
 
-		PropertyMeta meta = (PropertyMeta) parser.parse(context);
+		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
 		assertThat(meta.getCounterProperties()).isNotNull();
 		assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(
 				Test.class.getCanonicalName());
-		assertThat((PropertyMeta) context.getCounterMetas().get(0)).isSameAs(
-				meta);
+		assertThat(context.getCounterMetas().get(0)).isSameAs(meta);
 	}
 
 	@Test

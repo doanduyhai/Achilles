@@ -45,6 +45,7 @@ public class PropertyMetaBuilder {
 	private JoinProperties joinProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
+	private boolean timeUUID = false;
 
 	public static PropertyMetaBuilder factory() {
 		return new PropertyMetaBuilder();
@@ -86,6 +87,7 @@ public class PropertyMetaBuilder {
 		meta.setCounterProperties(counterProperties);
 		meta.setConsistencyLevels(consistencyLevels);
 		meta.setTranscoder(determineTranscoder(isCompound));
+		meta.setTimeUUID(timeUUID);
 
 		return meta;
 	}
@@ -115,6 +117,11 @@ public class PropertyMetaBuilder {
 	public PropertyMetaBuilder consistencyLevels(
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
+		return this;
+	}
+
+	public PropertyMetaBuilder timeuuid(boolean timeUUID) {
+		this.timeUUID = timeUUID;
 		return this;
 	}
 

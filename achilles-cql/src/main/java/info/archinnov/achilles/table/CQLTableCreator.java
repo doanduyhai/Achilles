@@ -18,6 +18,7 @@ package info.archinnov.achilles.table;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.type.Counter;
@@ -120,7 +121,7 @@ public class CQLTableCreator extends TableCreator {
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
 			String propertyName = pm.getPropertyName();
 			Class<?> keyClass = pm.getKeyClass();
-			Class<?> valueClass = pm.getValueClass();
+			Class<?> valueClass = pm.getValueClassForTableCreation();
 			switch (pm.type()) {
 			case SIMPLE:
 			case LAZY_SIMPLE:
@@ -174,9 +175,8 @@ public class CQLTableCreator extends TableCreator {
 		buildPrimaryKeys(idMeta, builder);
 		builder.addColumn(pm.getPropertyName(), pm.getValueClass());
 
-		builder.addComment("Create table for counter property '"
-				+ pm.getPropertyName() + "' of entity '" + meta.getClassName()
-				+ "'");
+		builder.addComment("Create table for clustered counter entity '"
+				+ meta.getClassName() + "'");
 
 		session.execute(builder.generateDDLScript());
 
@@ -203,12 +203,17 @@ public class CQLTableCreator extends TableCreator {
 			List<Class<?>> componentClasses = pm.getComponentClasses();
 			for (int i = 0; i < componentNames.size(); i++) {
 				String componentName = componentNames.get(i);
-				builder.addColumn(componentName, componentClasses.get(i));
+				Class<?> javaType = componentClasses.get(i);
+				if (pm.isComponentTimeUUID(componentName)) {
+					javaType = InternalTimeUUID.class;
+				}
+
+				builder.addColumn(componentName, javaType);
 				builder.addPrimaryKey(componentName);
 			}
 		} else {
 			String columnName = pm.getPropertyName();
-			builder.addColumn(columnName, pm.getValueClass());
+			builder.addColumn(columnName, pm.getValueClassForTableCreation());
 			builder.addPrimaryKey(columnName);
 		}
 	}

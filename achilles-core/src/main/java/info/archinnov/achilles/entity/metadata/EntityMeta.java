@@ -197,7 +197,6 @@ public class EntityMeta {
 	}
 
 	public PropertyMeta getFirstMeta() {
-
 		return this.firstMeta;
 	}
 

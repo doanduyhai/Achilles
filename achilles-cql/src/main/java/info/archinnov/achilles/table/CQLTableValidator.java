@@ -20,6 +20,7 @@ import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.cql.CQLTypeMapper.toCQLType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -57,8 +58,13 @@ public class CQLTableValidator {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Class<?>> componentClasses = idMeta.getComponentClasses();
 			for (int i = 0; i < componentNames.size(); i++) {
-				validateColumn(tableMetadata, componentNames.get(i)
-						.toLowerCase(), componentClasses.get(i));
+				Class<?> componentClass = componentClasses.get(i);
+				String componentName = componentNames.get(i);
+				if (idMeta.isComponentTimeUUID(componentName)) {
+					componentClass = InternalTimeUUID.class;
+				}
+				validateColumn(tableMetadata, componentName.toLowerCase(),
+						componentClass);
 			}
 		} else {
 			validateColumn(tableMetadata, idMeta);
@@ -143,7 +149,7 @@ public class CQLTableValidator {
 					pm.joinIdMeta().getValueClass());
 		} else {
 			validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(),
-					pm.getValueClass());
+					pm.getValueClassForTableCreation());
 		}
 	}
 
@@ -179,7 +185,7 @@ public class CQLTableValidator {
 		if (pm.isJoin()) {
 			expectedValueType = toCQLType(pm.joinIdMeta().getValueClass());
 		} else {
-			expectedValueType = toCQLType(pm.getValueClass());
+			expectedValueType = toCQLType(pm.getValueClassForTableCreation());
 		}
 
 		switch (pm.type()) {

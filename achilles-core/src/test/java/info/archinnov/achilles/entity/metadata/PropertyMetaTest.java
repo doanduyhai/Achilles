@@ -68,17 +68,6 @@ public class PropertyMetaTest {
 	private ReflectionInvoker invoker;
 
 	@Test
-	public void should_cast_key() throws Exception {
-		PropertyMeta propertyMeta = new PropertyMeta();
-		propertyMeta.setKeyClass(String.class);
-
-		Object test = "test";
-
-		Object key = propertyMeta.getKey(test);
-		assertThat(key).isEqualTo("test");
-	}
-
-	@Test
 	public void should_get_join_meta() throws Exception {
 		EntityMeta joinMeta = new EntityMeta();
 
@@ -853,5 +842,60 @@ public class PropertyMetaTest {
 		pm.setValueToField(entity, "name");
 
 		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
+	}
+
+	@Test
+	public void should_get_clustering_component_names() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.compNames("id", "comp1", "comp2").build();
+
+		assertThat(pm.getClusteringComponentNames()).containsExactly("comp1",
+				"comp2");
+	}
+
+	@Test
+	public void should_get_empty_clustering_component_names() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.build();
+
+		assertThat(pm.getClusteringComponentNames()).isEmpty();
+	}
+
+	@Test
+	public void should_get_clustering_component_classes() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.compClasses(Long.class, UUID.class, String.class).build();
+
+		assertThat(pm.getClusteringComponentClasses()).containsExactly(
+				UUID.class, String.class);
+	}
+
+	@Test
+	public void should_get_empty_clustering_component_classes()
+			throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.build();
+
+		assertThat(pm.getClusteringComponentClasses()).isEmpty();
+	}
+
+	@Test
+	public void should_return_true_for_is_component_time_uuid()
+			throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.compNames("id", "comp1", "comp2").compTimeUUID("comp1")
+				.build();
+
+		assertThat(pm.isComponentTimeUUID("comp1")).isTrue();
+		assertThat(pm.isComponentTimeUUID("comp2")).isFalse();
+	}
+
+	@Test
+	public void should_return_false_for_is_component_time_uuid_if_not_embedded_id()
+			throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+				.build();
+
+		assertThat(pm.isComponentTimeUUID("comp1")).isFalse();
 	}
 }

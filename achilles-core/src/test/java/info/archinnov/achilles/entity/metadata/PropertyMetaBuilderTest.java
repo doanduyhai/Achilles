@@ -217,7 +217,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getKey(12)).isInstanceOf(Integer.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
@@ -238,7 +237,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
 		Bean bean = new Bean();
-		assertThat(built.getKey(bean)).isInstanceOf(Bean.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Bean.class);
 
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
@@ -258,7 +256,6 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat(built.getKey(12)).isInstanceOf(Integer.class);
 		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);

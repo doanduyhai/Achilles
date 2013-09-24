@@ -79,6 +79,7 @@ public class ThriftComparatorTypeAliasFactoryTest {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class)
+				.compNames("rowkey", "name", "date")
 				.compClasses(Long.class, String.class, UUID.class).build();
 
 		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
@@ -88,11 +89,28 @@ public class ThriftComparatorTypeAliasFactoryTest {
 	}
 
 	@Test
+	public void should_determine_composite_type_alias_for_clustered_entity_creation_with_time_uuid()
+			throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class)
+				.compNames("rowkey", "name", "date")
+				.compClasses(Long.class, String.class, UUID.class)
+				.compTimeUUID("date").build();
+
+		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
+				idMeta, true);
+
+		assertThat(actual).isEqualTo("(UTF8Type,TimeUUIDType)");
+	}
+
+	@Test
 	public void should_determine_composite_type_alias_for_clustered_entity_validation()
 			throws Exception {
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.valueClass(CompoundKey.class)
+				.compNames("rowkey", "name", "date")
 				.compClasses(Long.class, String.class, UUID.class).build();
 
 		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
@@ -101,5 +119,23 @@ public class ThriftComparatorTypeAliasFactoryTest {
 		assertThat(actual)
 				.isEqualTo(
 						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_clustered_entity_validation_with_time_uuid()
+			throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder
+				.valueClass(CompoundKey.class)
+				.compNames("rowkey", "name", "date")
+				.compClasses(Long.class, String.class, UUID.class)
+				.compTimeUUID("date").build();
+
+		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
+				idMeta, false);
+
+		assertThat(actual)
+				.isEqualTo(
+						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.TimeUUIDType)");
 	}
 }

@@ -18,17 +18,18 @@ package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.entity.parsing.validator.PropertyParsingValidator;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -37,6 +38,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.JoinColumn;
@@ -54,6 +56,7 @@ public class PropertyParser {
 	private CompoundKeyParser compoundKeyParser = new CompoundKeyParser();
 	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 	private PropertyParsingValidator validator = new PropertyParsingValidator();
+	private PropertyFilter filter = new PropertyFilter();
 
 	public PropertyMeta parse(PropertyParsingContext context) {
 		log.debug("Parsing property {} of entity class {}", context
@@ -130,6 +133,7 @@ public class PropertyParser {
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
+		boolean timeUUID = isTimeUUID(context, field);
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass,
 				field);
@@ -143,7 +147,7 @@ public class PropertyParser {
 						context.getCurrentEntityClass().getCanonicalName())
 				.accessors(accessors)
 				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.build(Void.class, field.getType());
+				.timeuuid(timeUUID).build(Void.class, field.getType());
 
 		log.trace(
 				"Built simple property meta for property {} of entity class {} : {}",
@@ -199,9 +203,9 @@ public class PropertyParser {
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
+		boolean timeUUID = isTimeUUID(context, field);
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
-
 		valueClass = propertyHelper.inferValueClassForListOrSet(genericType,
 				entityClass);
 
@@ -210,14 +214,14 @@ public class PropertyParser {
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
 		PropertyMeta listMeta = factory()
-				//
 				.objectMapper(context.getCurrentObjectMapper())
 				.type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(
 						context.getCurrentEntityClass().getCanonicalName())
 				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).build(Void.class, valueClass);
+				.accessors(accessors).timeuuid(timeUUID)
+				.build(Void.class, valueClass);
 
 		log.trace(
 				"Built list property meta for property {} of entity class {} : {}",
@@ -235,6 +239,7 @@ public class PropertyParser {
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
+		boolean timeUUID = isTimeUUID(context, field);
 
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
@@ -246,14 +251,14 @@ public class PropertyParser {
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
 		PropertyMeta setMeta = factory()
-				//
 				.objectMapper(context.getCurrentObjectMapper())
 				.type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(
 						context.getCurrentEntityClass().getCanonicalName())
 				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).build(Void.class, valueClass);
+				.accessors(accessors).timeuuid(timeUUID)
+				.build(Void.class, valueClass);
 
 		log.trace(
 				"Built set property meta for property {} of  entity class {} : {}",
@@ -271,6 +276,7 @@ public class PropertyParser {
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
+		boolean timeUUID = isTimeUUID(context, field);
 
 		validator.validateMapGenerics(field, entityClass);
 
@@ -289,7 +295,8 @@ public class PropertyParser {
 				.entityClassName(
 						context.getCurrentEntityClass().getCanonicalName())
 				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).build(keyClass, valueClass);
+				.accessors(accessors).timeuuid(timeUUID)
+				.build(keyClass, valueClass);
 
 		log.trace(
 				"Built map property meta for property {} of entity class {} : {}",
@@ -298,20 +305,6 @@ public class PropertyParser {
 
 		return mapMeta;
 
-	}
-
-	public void fillWideMap(EntityParsingContext context, PropertyMeta idMeta,
-			PropertyMeta propertyMeta, String externalTableName) {
-		log.debug(
-				"Filling wide map meta {} of entity class {} with id meta {} info",
-				propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), idMeta.getPropertyName());
-
-		propertyMeta.setIdClass(idMeta.getValueClass());
-
-		log.trace("Complete wide map property {} of entity class {} : {}",
-				propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), propertyMeta);
 	}
 
 	private void inferPropertyNameAndExternalTableName(
@@ -384,4 +377,17 @@ public class PropertyParser {
 		propertyMeta.setConsistencyLevels(consistencyLevels);
 	}
 
+	private boolean isTimeUUID(PropertyParsingContext context, Field field) {
+		boolean timeUUID = false;
+		if (filter.hasAnnotation(field, TimeUUID.class)) {
+			Validator
+					.validateBeanMappingTrue(
+							field.getType().equals(UUID.class),
+							"The field '%s' from class '%s' annotated with @TimeUUID should be of java.util.UUID type",
+							field.getName(), context.getCurrentEntityClass()
+									.getCanonicalName());
+			timeUUID = true;
+		}
+		return timeUUID;
+	}
 }
