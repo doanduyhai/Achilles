@@ -80,7 +80,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 				&& cassandraHost.contains(":")) {
 			String[] split = cassandraHost.split(":");
 			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, split[0]);
-			configMap.put(CONNECTION_PORT_PARAM, split[1]);
+			configMap.put(CONNECTION_PORT_PARAM, Integer.parseInt(split[1]));
 		} else {
 			createAchillesKeyspace(keyspaceName);
 			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, CASSANDRA_TEST_HOST);
