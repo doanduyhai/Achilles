@@ -23,6 +23,7 @@ import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
@@ -143,15 +144,12 @@ public class QueryIT {
 		Long id = RandomUtils.nextLong();
 		UUID date = UUIDGen.getTimeUUID();
 
-		session.execute("CREATE TABLE test_functions(id bigint PRIMARY KEY,date timeuuid)");
-		session.execute("INSERT INTO test_functions(id,date) VALUES(" + id
-				+ "," + date + ")");
+		em.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
-		Map<String, Object> result = em.nativeQuery(
-				"SELECT now(),dateOf(date),unixTimestampOf(date) FROM test_functions WHERE id="
-						+ id).first();
-		session.execute("DROP TABLE test_functions");
-
+		Map<String, Object> result = em
+				.nativeQuery(
+						"SELECT now(),dateOf(date),unixTimestampOf(date) FROM clustered_with_time_uuid WHERE id="
+								+ id).first();
 		assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
 		assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(
 				Date.class);

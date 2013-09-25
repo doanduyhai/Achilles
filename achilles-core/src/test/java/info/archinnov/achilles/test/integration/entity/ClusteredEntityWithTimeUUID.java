@@ -39,8 +39,8 @@ public class ClusteredEntityWithTimeUUID {
 	public ClusteredEntityWithTimeUUID() {
 	}
 
-	public ClusteredEntityWithTimeUUID(ClusteredKey id, String value) {
-		this.id = id;
+	public ClusteredEntityWithTimeUUID(Long id, UUID date, String value) {
+		this.id = new ClusteredKey(id, date);
 		this.value = value;
 	}
 
