@@ -19,12 +19,15 @@ package info.archinnov.achilles.proxy;
 import static info.archinnov.achilles.cql.CQLTypeMapper.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 
 public class CQLRowMethodInvoker {
@@ -63,33 +66,40 @@ public class CQLRowMethodInvoker {
 		return value;
 	}
 
-	public Object invokeOnRowForCompoundKey(Row row, PropertyMeta pm) {
+	public Object extractCompoundPrimaryKeyFromRow(Row row, PropertyMeta pm,
+			boolean isManagedEntity) {
 		List<String> componentNames = pm.getComponentNames();
 		List<Class<?>> componentClasses = pm.getComponentClasses();
-		List<Object> rawValues = new ArrayList<Object>();
+		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(
+				componentNames.size(), null));
 
 		try {
-			for (int i = 0; i < componentNames.size(); i++) {
-				String componentName = componentNames.get(i);
-				Class<?> componentClass = componentClasses.get(i);
-				if (row.isNull(componentName)) {
-					throw new AchillesException("Error, the component '"
-							+ componentName + "' from @CompoundKey class '"
-							+ pm.getValueClass()
-							+ "' cannot be found from Cassandra");
-				} else {
-					Object rawValue = getRowMethod(componentClass).invoke(row,
-							componentName);
-					rawValues.add(rawValue);
+			for (Definition column : row.getColumnDefinitions()) {
+				String columnName = column.getName();
+				int index = componentNames.indexOf(columnName);
+				Object rawValue = null;
+				if (index >= 0) {
+					Class<?> componentClass = componentClasses.get(index);
+					rawValue = getRowMethod(componentClass).invoke(row,
+							columnName);
+					rawValues.set(index, rawValue);
+				}
+			}
+			if (isManagedEntity) {
+				for (int i = 0; i < componentNames.size(); i++) {
+					Validator
+							.validateNotNull(
+									rawValues.get(i),
+									"Error, the component '%s' from @EmbeddedId class '%s' cannot be found in Cassandra",
+									componentNames.get(i), pm.getValueClass());
 				}
 			}
 			return pm.decodeFromComponents(rawValues);
 		} catch (Exception e) {
-			throw new AchillesException("Cannot retrieve compound property '"
-					+ pm.getPropertyName() + "' for entity class '"
-					+ pm.getEntityClassName() + "' from CQL Row", e);
+			throw new AchillesException(
+					"Cannot retrieve compound primary key for entity class '"
+							+ pm.getEntityClassName() + "' from CQL Row", e);
 		}
-
 	}
 
 	public Object invokeOnRowForProperty(Row row, PropertyMeta pm,

@@ -35,6 +35,11 @@ public class ClusteredEntity {
 	public ClusteredEntity() {
 	}
 
+	public ClusteredEntity(Long id, Integer count, String name, String value) {
+		this.id = new ClusteredKey(id, count, name);
+		this.value = value;
+	}
+
 	public ClusteredEntity(ClusteredKey id, String value) {
 		this.id = id;
 		this.value = value;

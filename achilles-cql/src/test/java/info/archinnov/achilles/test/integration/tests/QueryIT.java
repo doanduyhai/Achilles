@@ -23,6 +23,8 @@ import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -42,17 +44,14 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.datastax.driver.core.Session;
-
 public class QueryIT {
 
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "CompleteBean", AchillesCounter.CQL_COUNTER_TABLE);
+			Steps.AFTER_TEST, "CompleteBean", "clustered",
+			AchillesCounter.CQL_COUNTER_TABLE);
 
 	private CQLEntityManager em = resource.getEm();
-
-	private Session session = resource.getNativeSession();
 
 	@Test
 	public void should_return_rows_for_native_query() throws Exception {
@@ -565,6 +564,29 @@ public class QueryIT {
 	}
 
 	@Test
+	public void should_return_first_clustered_entity_for_typed_query_with_select_star()
+			throws Exception {
+		Long id = RandomUtils.nextLong();
+
+		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
+		em.persist(entity);
+
+		String queryString = "SELECT * FROM clustered LIMIT 3";
+		ClusteredEntity actual = em.typedQuery(ClusteredEntity.class,
+				queryString).getFirst();
+
+		assertThat(actual).isNotNull();
+		assertThat(actual).isInstanceOf(Factory.class);
+
+		ClusteredKey clusteredKey = actual.getId();
+
+		assertThat(clusteredKey).isNotNull();
+		assertThat(clusteredKey.getId()).isEqualTo(id);
+		assertThat(clusteredKey.getCount()).isEqualTo(10);
+		assertThat(clusteredKey.getName()).isEqualTo("name");
+	}
+
+	@Test
 	public void should_return_first_raw_entity_for_raw_typed_query_with_simple_select()
 			throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
@@ -592,4 +614,27 @@ public class QueryIT {
 		assertThat(actual.getWelcomeTweet()).isNull();
 
 	}
+
+	@Test
+	public void should_return_first_raw_clustered_entity_for_raw_query_with_simple_select()
+			throws Exception {
+		Long id = RandomUtils.nextLong();
+
+		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
+		em.persist(entity);
+
+		String queryString = "SELECT id,count,name,value FROM clustered LIMIT 3";
+		ClusteredEntity actual = em.rawTypedQuery(ClusteredEntity.class,
+				queryString).getFirst();
+
+		assertThat(actual).isNotNull();
+
+		ClusteredKey clusteredKey = actual.getId();
+
+		assertThat(clusteredKey).isNotNull();
+		assertThat(clusteredKey.getId()).isEqualTo(id);
+		assertThat(clusteredKey.getCount()).isEqualTo(10);
+		assertThat(clusteredKey.getName()).isEqualTo("name");
+	}
+
 }

@@ -39,13 +39,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -75,17 +75,15 @@ public class CQLTypedQueryBuilderTest {
 	@Mock
 	private Row row;
 
+	@Mock
+	private EntityMeta meta;
+
 	@Captor
 	private ArgumentCaptor<Set<Method>> alreadyLoadedCaptor;
 
 	private Class<CompleteBean> entityClass = CompleteBean.class;
 
 	private CompleteBean entity = new CompleteBean();
-
-	@Before
-	public void setUp() throws Exception {
-
-	}
 
 	@Test
 	public void should_get_all_managed_with_select_star() throws Exception {
@@ -105,8 +103,9 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(entity);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -142,8 +141,9 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(entity);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -165,8 +165,9 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(null);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(true))).thenReturn(null);
 
 		List<CompleteBean> actual = builder.get();
 
@@ -175,24 +176,18 @@ public class CQLTypedQueryBuilderTest {
 
 	@Test
 	public void should_get_all_raw_entities() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
-
-		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
+		EntityMeta meta = mock(EntityMeta.class);
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		String queryString = "select * from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+		initBuilder(queryString, meta, propertyMetas, false);
 
 		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
 				Arrays.asList(row));
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(entity);
+				mapper.mapRowToEntityWithPrimaryKey(entityClass, meta, row,
+						propertyMetas, false)).thenReturn(entity);
 
 		List<CompleteBean> actual = builder.get();
 
@@ -219,8 +214,9 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(entity);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(
 				proxifier.buildProxy(eq(entity), eq(context),
@@ -235,12 +231,12 @@ public class CQLTypedQueryBuilderTest {
 	@Test
 	public void should_get_first_raw_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+				.completeBean(Void.class, Long.class).field("id").type(ID)
+				.accessors().build();
 
 		PropertyMeta nameMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
+				.type(SIMPLE).accessors().build();
 
 		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 		String queryString = "select id from test";
@@ -249,8 +245,9 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(entity);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(false))).thenReturn(entity);
 
 		CompleteBean actual = builder.getFirst();
 
@@ -282,15 +279,15 @@ public class CQLTypedQueryBuilderTest {
 		when(daoContext.execute(any(SimpleStatement.class)).one()).thenReturn(
 				row);
 		when(
-				mapper.mapRowToEntity(eq(entityClass), eq(meta), eq(row),
-						any(Map.class))).thenReturn(null);
+				mapper.mapRowToEntityWithPrimaryKey(eq(entityClass), eq(meta),
+						eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+						eq(true))).thenReturn(null);
 
 		CompleteBean actual = builder.getFirst();
 
 		assertThat(actual).isNull();
 
 		verifyZeroInteractions(contextFactory, proxifier);
-
 	}
 
 	private EntityMeta buildEntityMeta(PropertyMeta... pms) {

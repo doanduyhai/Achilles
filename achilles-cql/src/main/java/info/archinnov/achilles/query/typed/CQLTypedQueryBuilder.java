@@ -89,8 +89,8 @@ public class CQLTypedQueryBuilder<T> {
 		List<Row> rows = daoContext.execute(
 				new SimpleStatement(normalizedQuery)).all();
 		for (Row row : rows) {
-			T entity = mapper.mapRowToEntity(entityClass, meta, row,
-					propertiesMap);
+			T entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta,
+					row, propertiesMap, managed);
 			if (entity != null) {
 				if (managed) {
 					entity = buildProxy(entity);
@@ -115,8 +115,8 @@ public class CQLTypedQueryBuilder<T> {
 		Row row = daoContext.execute(new SimpleStatement(normalizedQuery))
 				.one();
 		if (row != null) {
-			entity = mapper.mapRowToEntity(entityClass, meta, row,
-					propertiesMap);
+			entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta,
+					row, propertiesMap, managed);
 			if (entity != null && managed) {
 				entity = buildProxy(entity);
 			}

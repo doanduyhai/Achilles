@@ -16,21 +16,22 @@
  */
 package info.archinnov.achilles.entity;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,17 +81,12 @@ public class CQLEntityMapperTest {
 
 	@Test
 	public void should_set_eager_properties_to_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).invoker(invoker).build();
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = mock(PropertyMeta.class);
+		when(pm.isEmbeddedId()).thenReturn(false);
+		when(pm.getPropertyName()).thenReturn("name");
 
 		List<PropertyMeta> eagerMetas = Arrays.asList(pm);
 
-		when((PropertyMeta) entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
 
 		when(row.isNull("name")).thenReturn(false);
@@ -98,15 +94,15 @@ public class CQLEntityMapperTest {
 
 		entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), "value");
+		verify(pm).setValueToField(entity, "value");
 	}
 
 	@Test
 	public void should_set_null_to_entity_when_no_value_from_row()
 			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = mock(PropertyMeta.class);
+		when(pm.isEmbeddedId()).thenReturn(false);
+		when(pm.getPropertyName()).thenReturn("name");
 
 		List<PropertyMeta> eagerMetas = Arrays.asList(pm);
 
@@ -116,18 +112,17 @@ public class CQLEntityMapperTest {
 
 		entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
 
-		verifyZeroInteractions(cqlRowInvoker, invoker);
+		verify(pm, never()).setValueToField(eq(entity), any());
+		verifyZeroInteractions(cqlRowInvoker);
 	}
 
 	@Test
 	public void should_do_nothing_when_null_row() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = mock(PropertyMeta.class);
 
-		entityMapper.setPropertyToEntity((Row) null, pm, entity);
+		entityMapper.setPropertyToEntity(null, pm, entity);
 
-		verifyZeroInteractions(cqlRowInvoker, invoker);
+		verifyZeroInteractions(cqlRowInvoker, pm);
 	}
 
 	@Test
@@ -138,8 +133,8 @@ public class CQLEntityMapperTest {
 				.invoker(invoker).build();
 
 		CompoundKey compoundKey = new CompoundKey();
-		when(cqlRowInvoker.invokeOnRowForCompoundKey(row, pm)).thenReturn(
-				compoundKey);
+		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true))
+				.thenReturn(compoundKey);
 
 		entityMapper.setPropertyToEntity(row, pm, entity);
 
@@ -149,12 +144,15 @@ public class CQLEntityMapperTest {
 	@Test
 	public void should_map_row_to_entity() throws Exception {
 		Long id = RandomUtils.nextLong();
-		String name = "name";
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.accessors().invoker(invoker).build();
+		PropertyMeta idMeta = mock(PropertyMeta.class);
+		PropertyMeta valueMeta = mock(PropertyMeta.class);
 
-		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta);
+		when(idMeta.isEmbeddedId()).thenReturn(false);
+		when(idMeta.isJoin()).thenReturn(false);
+		when(valueMeta.isJoin()).thenReturn(false);
+
+		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
+				"value", valueMeta);
 
 		ColumnIdentifier iden1 = new ColumnIdentifier(
 				UTF8Type.instance.decompose("id"), UTF8Type.instance);
@@ -162,9 +160,9 @@ public class CQLEntityMapperTest {
 				iden1, LongType.instance);
 
 		ColumnIdentifier iden2 = new ColumnIdentifier(
-				UTF8Type.instance.decompose(name), UTF8Type.instance);
-		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "name",
-				iden2, UTF8Type.instance);
+				UTF8Type.instance.decompose("value"), UTF8Type.instance);
+		ColumnSpecification spec2 = new ColumnSpecification("keyspace",
+				"value", iden2, UTF8Type.instance);
 
 		def1 = Whitebox.invokeMethod(Definition.class,
 				"fromTransportSpecification", spec1);
@@ -175,59 +173,86 @@ public class CQLEntityMapperTest {
 		when(columnDefs.iterator()).thenReturn(
 				Arrays.asList(def1, def2).iterator());
 
-		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(entityMeta.instanciate()).thenReturn(entity);
 		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+		when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn(
+				"value");
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				entityMeta, row, propertiesMap);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
+				CompleteBean.class, entityMeta, row, propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
-		verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
+		verify(idMeta).setValueToField(entity, id);
+		verify(valueMeta).setValueToField(entity, "value");
+	}
+
+	@Test
+	public void should_map_row_to_entity_with_primary_key() throws Exception {
+		ClusteredEntity entity = new ClusteredEntity();
+		CompoundKey compoundKey = new CompoundKey();
+		PropertyMeta idMeta = mock(PropertyMeta.class);
+
+		when(idMeta.isEmbeddedId()).thenReturn(true);
+
+		Map<String, PropertyMeta> propertiesMap = new HashMap<String, PropertyMeta>();
+
+		when(row.getColumnDefinitions()).thenReturn(columnDefs);
+		when(columnDefs.iterator()).thenReturn(
+				Arrays.<Definition> asList().iterator());
+		when(entityMeta.instanciate()).thenReturn(entity);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, true))
+				.thenReturn(compoundKey);
+
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(
+				ClusteredEntity.class, entityMeta, row, propertiesMap, true);
+
+		assertThat(actual).isSameAs(entity);
+		verify(idMeta).setValueToField(entity, compoundKey);
+	}
+
+	@Test
+	public void should_not_map_row_to_entity_with_primary_key_when_entity_null() {
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(
+				ClusteredEntity.class, entityMeta, row, null, true);
+
+		assertThat(actual).isNull();
 	}
 
 	@Test
 	public void should_skip_mapping_join_column() throws Exception {
 		Long id = RandomUtils.nextLong();
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.accessors().invoker(invoker).build();
+		PropertyMeta idMeta = mock(PropertyMeta.class);
+		PropertyMeta userMeta = mock(PropertyMeta.class);
 
-		PropertyMeta userMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).invoker(invoker).build();
+		when(idMeta.isEmbeddedId()).thenReturn(false);
+		when(idMeta.isJoin()).thenReturn(false);
+		when(userMeta.isJoin()).thenReturn(true);
 
 		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
 				"user", userMeta);
-
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("id"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id",
-				iden1, LongType.instance);
 
 		ColumnIdentifier iden2 = new ColumnIdentifier(
 				UTF8Type.instance.decompose("user"), UTF8Type.instance);
 		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "user",
 				iden2, UTF8Type.instance);
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
 		def2 = Whitebox.invokeMethod(Definition.class,
 				"fromTransportSpecification", spec2);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(
-				Arrays.asList(def1, def2).iterator());
+		when(columnDefs.iterator()).thenReturn(Arrays.asList(def2).iterator());
 
-		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
-		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.instanciate()).thenReturn(entity);
+		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
 
-		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				entityMeta, row, propertiesMap);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
+				CompleteBean.class, entityMeta, row, propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
-		verify(invoker).setValueToField(entity, idMeta.getSetter(), id);
 		verify(cqlRowInvoker, never()).invokeOnRowForFields(row, userMeta);
 	}
 
@@ -236,8 +261,8 @@ public class CQLEntityMapperTest {
 		when(row.getColumnDefinitions()).thenReturn(null);
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper.mapRowToEntity(CompleteBean.class,
-				entityMeta, row, null);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
+				CompleteBean.class, entityMeta, row, null, true);
 		assertThat(actual).isNull();
 	}
 

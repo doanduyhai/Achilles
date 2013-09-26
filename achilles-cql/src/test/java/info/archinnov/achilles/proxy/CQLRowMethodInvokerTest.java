@@ -22,7 +22,9 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +38,8 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -50,15 +54,31 @@ public class CQLRowMethodInvokerTest {
 	@Mock
 	private Row row;
 
+	@Mock
+	private ColumnDefinitions columnDefs;
+
+	@Mock
+	private Definition definition;
+
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta pm;
 
+	private List<String> compNames;
+
+	private List<Class<?>> compClasses;
+
 	@Before
 	public void setUp() {
+
+		compNames = new ArrayList<String>();
+		compClasses = new ArrayList<Class<?>>();
+
 		when(pm.getPropertyName()).thenReturn("property");
 		when((Class) pm.getKeyClass()).thenReturn(Integer.class);
 		when((Class) pm.getValueClass()).thenReturn(String.class);
 		when(row.isNull("property")).thenReturn(false);
+		when(pm.getComponentNames()).thenReturn(compNames);
+		when(pm.getComponentClasses()).thenReturn(compClasses);
 	}
 
 	@Test
@@ -209,5 +229,14 @@ public class CQLRowMethodInvokerTest {
 		Object actual = invoker.invokeOnRowForType(row, String.class, "column");
 
 		assertThat(actual).isEqualTo("value");
+	}
+
+	@Test
+	public void should_test() throws Exception {
+		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(2,
+				null));
+
+		assertThat(rawValues.get(0)).isNull();
+		assertThat(rawValues.get(1)).isNull();
 	}
 }

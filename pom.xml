@@ -1,361 +1,398 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>  
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>info.archinnov</groupId>
-  <artifactId>achilles</artifactId>
-  <version>2.0.7-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <description>A Persistence Manager for Cassandra</description>
-  <inceptionYear>2012</inceptionYear>
-  <name>Achilles</name>
-  <url>https://github.com/doanduyhai/achilles</url>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>info.archinnov</groupId>
+	<artifactId>achilles</artifactId>
+	<version>2.0.7-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<description>A Persistence Manager for Cassandra</description>
+	<inceptionYear>2012</inceptionYear>
+	<name>Achilles</name>
+	<url>https://github.com/doanduyhai/achilles</url>
 
-  <licenses>
-	<license>
- 		<name>Apache License, Version 2.0</name>
-       	<url>http://www.apache.org/licenses/LICENSE-2.0</url>
-       	<distribution>repo</distribution>
-	</license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-  <developers>
-    <developer>
-      <id>doanduyhai</id>
-      <name>DuyHai DOAN</name>
-      <email>doanduyhai@gmail.com</email>
-      <url>http://doanduyhai.wordpress.com</url>
-      <roles>
-        <role>Lead Developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <id>sbabouche</id>
-      <name>Salaheddine BABOUCHE</name>
-      <email>sbabouche@palo-it.com</email>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-  </developers>
+	<developers>
+		<developer>
+			<id>doanduyhai</id>
+			<name>DuyHai DOAN</name>
+			<email>doanduyhai@gmail.com</email>
+			<url>http://doanduyhai.wordpress.com</url>
+			<roles>
+				<role>Lead Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>sbabouche</id>
+			<name>Salaheddine BABOUCHE</name>
+			<email>sbabouche@palo-it.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
-    <cassandra.version>1.2.8</cassandra.version>
-    <cglib.version>2.2.2</cglib.version>
-    <jackson.version>1.9.2</jackson.version>
-    <commons.io.version>2.4</commons.io.version>
-    <commons.collections.version>3.2.1</commons.collections.version>
-    <reflections.version>0.9.9-RC1</reflections.version>
-    <guava.version>13.0</guava.version>
-    <slf4j.version>1.7.2</slf4j.version>
-    
-    <fest.assert.version>2.0M8</fest.assert.version>
-    <fest.util.version>1.2.3</fest.util.version>
-    <junit.version>4.10</junit.version>
-    <mockito.version>1.9.5</mockito.version>
-    <powermock.version>1.5</powermock.version>
-    
-    <!-- Maven plugins -->
-    <maven.compiler.version>2.4</maven.compiler.version>
-    <maven.enforcer.version>1.0.1</maven.enforcer.version>
-    <maven.surefire.version>2.12</maven.surefire.version>
-    <maven.gpg.version>1.4</maven.gpg.version>
-    <maven-jar-plugin>2.4</maven-jar-plugin>
-    <maven-site-plugin>3.3</maven-site-plugin>
-    <maven-scm-plugin>1.8.1</maven-scm-plugin>
-  </properties>
-	
-  <modules>
-	<module>achilles-core</module>
-	<module>achilles-thrift</module>
-	<module>achilles-cql</module>
-  </modules>
-   
-  <dependencyManagement>
-  	<dependencies>
-		<dependency>
-        	<groupId>info.archinnov</groupId>
-            <artifactId>achilles-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-		<dependency>
-        	<groupId>info.archinnov</groupId>
-            <artifactId>achilles-core</artifactId>
-            <classifier>tests</classifier>
-            <version>${project.version}</version>
-        </dependency>        
-		<dependency>
-        	<groupId>info.archinnov</groupId>
-            <artifactId>achilles-thrift</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-  	</dependencies>
-  </dependencyManagement>
-  
-  <dependencies>
-	<!-- JPA -->
-	<dependency>
-		<groupId>org.hibernate.javax.persistence</groupId>
-		<artifactId>hibernate-jpa-2.0-api</artifactId>
-		<version>${hibernate.jpa2.version}</version>
-	</dependency>
-	<!-- Cassandra -->        
-	<dependency>
-		<groupId>org.apache.cassandra</groupId>
-		<artifactId>cassandra-all</artifactId>
-		<version>${cassandra.version}</version>
-		<exclusions>
-			<exclusion>
-				<artifactId>guava</artifactId>
-				<groupId>com.google.guava</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>slf4j-api</artifactId>
-				<groupId>org.slf4j</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-core-asl</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-mapper-asl</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-	
-	<!-- Embedded server & JUnit rule -->
-		<dependency>
-	 	<groupId>junit</groupId>
-	 	<artifactId>junit</artifactId>
-	 	<version>${junit.version}</version>
-	 </dependency>	
-	<!-- Utils -->
-	 <dependency>
-	 	<groupId>commons-io</groupId>
-	 	<artifactId>commons-io</artifactId>
-	 	<version>${commons.io.version}</version>
-	 </dependency>
-	<dependency>
-	 	<groupId>commons-collections</groupId>
-	 	<artifactId>commons-collections</artifactId>
-	 	<version>${commons.collections.version}</version>
-	 </dependency>
-	 <dependency>
-	 	<groupId>com.google.guava</groupId>
-	 	<artifactId>guava</artifactId>
-	 	<version>${guava.version}</version>
-	 </dependency>
- 	<dependency>
-         <groupId>org.reflections</groupId>
-         <artifactId>reflections</artifactId>
-         <version>${reflections.version}</version>
-         <exclusions>
-         	<exclusion>
-         		<groupId>com.google.guava</groupId>
-         		<artifactId>guava</artifactId>
-         	</exclusion>
-         </exclusions>
-    </dependency>	  		 
-	 <!-- Jackson Serializer -->
-	<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-core-asl</artifactId>
-		<version>${jackson.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-mapper-asl</artifactId>
-		<version>${jackson.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-xc</artifactId>
-		<version>${jackson.version}</version>
-	</dependency>
-	
-	<!-- CGLIB --> 		 
-	<dependency>
-		<groupId>cglib</groupId>
-		<artifactId>cglib-nodep</artifactId>
-		<version>${cglib.version}</version>
-	</dependency>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
+		<cassandra.version>1.2.8</cassandra.version>
+		<cglib.version>2.2.2</cglib.version>
+		<jackson.version>1.9.2</jackson.version>
+		<commons.io.version>2.4</commons.io.version>
+		<commons.collections.version>3.2.1</commons.collections.version>
+		<reflections.version>0.9.9-RC1</reflections.version>
+		<guava.version>13.0</guava.version>
+		<slf4j.version>1.7.2</slf4j.version>
 
-	<!-- Logging -->
-	<dependency>
-	 	<groupId>org.slf4j</groupId>
-	 	<artifactId>slf4j-api</artifactId>
-	 	<version>${slf4j.version}</version>
-	</dependency>
-	<dependency>
-	 	<groupId>org.slf4j</groupId>
-	 	<artifactId>slf4j-log4j12</artifactId>
-	 	<version>${slf4j.version}</version>
-	</dependency>
-	
-	<!-- TEST  -->
-	<dependency>
-		<groupId>org.easytesting</groupId>
-		<artifactId>fest-assert-core</artifactId>
-		<version>${fest.assert.version}</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.easytesting</groupId>
-		<artifactId>fest-util</artifactId>
-		<version>${fest.util.version}</version>
-		<scope>test</scope>
-	</dependency>
-  	<dependency>
-  		<groupId>org.mockito</groupId>
-  		<artifactId>mockito-core</artifactId>
-  		<version>${mockito.version}</version>
-  		<scope>test</scope>
-  	</dependency>
-	<dependency>
-		<groupId>org.powermock</groupId>
-		<artifactId>powermock-api-mockito</artifactId>
-		<version>${powermock.version}</version>
-		<scope>test</scope>
-	</dependency>
- </dependencies> 		   	
- <build>
-  	<finalName>Achilles</finalName>
-    <plugins>
-	   	<plugin>
-	       <groupId>org.apache.maven.plugins</groupId>
-	       <artifactId>maven-compiler-plugin</artifactId>
-	       <version>${maven.compiler.version}</version>
-	       <configuration>
-	           <source>1.6</source>
-	           <target>1.6</target>
-	       </configuration>
-	   	</plugin>
-		<plugin>
-		     <groupId>org.apache.maven.plugins</groupId>
-		     <artifactId>maven-enforcer-plugin</artifactId>
-		     <version>${maven.enforcer.version}</version>
-		     <executions>
-		         <execution>
-		             <id>enforce-versions</id>
-		             <goals>
-		                 <goal>enforce</goal>
-		             </goals>
-		             <configuration>
-		                 <rules>
-		                     <requireMavenVersion>
-		                         <version>[3.0.4,)</version>
-		                     </requireMavenVersion>
-		                     <requireJavaVersion>
-		                         <version>[1.6.0,)</version>
-		                     </requireJavaVersion>
-		                 </rules>
-		             </configuration>
-		         </execution>
-		     </executions>
-		 </plugin>      
-<!-- 		<plugin> -->
-<!-- 	        <groupId>org.apache.maven.plugins</groupId> -->
-<!-- 	        <artifactId>maven-gpg-plugin</artifactId> -->
-<!-- 	        <version>${maven.gpg.version}</version> -->
-<!-- 	        <executions> -->
-<!-- 	          <execution> -->
-<!-- 	            <id>sign-artifacts</id> -->
-<!-- 	            <phase>verify</phase> -->
-<!-- 	            <goals> -->
-<!-- 	              <goal>sign</goal> -->
-<!-- 	            </goals> -->
-<!-- 	          </execution> -->
-<!-- 	        </executions> -->
-<!-- 		</plugin>                 -->
-		<plugin>
-         	<groupId>org.apache.maven.plugins</groupId>
-         	<artifactId>maven-surefire-plugin</artifactId>
-         	<version>${maven.surefire.version}</version>
-			<configuration>			
-				<includes>
-					<include>**/info/archinnov/**/*.java</include>
-				</includes>	 
-			</configuration>
-       	</plugin>		  
-        <plugin>
-      		<groupId>org.apache.maven.plugins</groupId>
-      		<artifactId>maven-site-plugin</artifactId>
-      		<version>${maven-site-plugin}</version>
-      		<configuration>
-      			<reportPlugins>
-					<plugin>
-            			<groupId>org.apache.maven.plugins</groupId>
-            			<artifactId>maven-surefire-plugin</artifactId>
-            			<version>2.12</version>
-						<configuration>			
-							<includes>
-								<include>**/info/archinnov/**/*.java</include>
-							</includes>	 
+		<fest.assert.version>2.0M8</fest.assert.version>
+		<fest.util.version>1.2.3</fest.util.version>
+		<junit.version>4.10</junit.version>
+		<mockito.version>1.9.5</mockito.version>
+		<powermock.version>1.5</powermock.version>
+
+		<!-- Maven plugins -->
+		<maven.compiler.version>2.4</maven.compiler.version>
+		<maven.enforcer.version>1.0.1</maven.enforcer.version>
+		<maven.surefire.version>2.12</maven.surefire.version>
+		<maven.gpg.version>1.4</maven.gpg.version>
+		<maven-jar-plugin>2.4</maven-jar-plugin>
+		<maven-site-plugin>3.3</maven-site-plugin>
+		<maven-scm-plugin>1.8.1</maven-scm-plugin>
+	</properties>
+
+	<modules>
+		<module>achilles-core</module>
+		<module>achilles-thrift</module>
+		<module>achilles-cql</module>
+	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>info.archinnov</groupId>
+				<artifactId>achilles-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>info.archinnov</groupId>
+				<artifactId>achilles-core</artifactId>
+				<classifier>tests</classifier>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>info.archinnov</groupId>
+				<artifactId>achilles-thrift</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- JPA -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<version>${hibernate.jpa2.version}</version>
+		</dependency>
+		<!-- Cassandra -->
+		<dependency>
+			<groupId>org.apache.cassandra</groupId>
+			<artifactId>cassandra-all</artifactId>
+			<version>${cassandra.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>guava</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-core-asl</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-mapper-asl</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Embedded server & JUnit rule -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+		</dependency>
+		<!-- Utils -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons.io.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>${commons.collections.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>${reflections.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Jackson Serializer -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
+		<!-- CGLIB -->
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib-nodep</artifactId>
+			<version>${cglib.version}</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<!-- TEST -->
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-assert-core</artifactId>
+			<version>${fest.assert.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easytesting</groupId>
+			<artifactId>fest-util</artifactId>
+			<version>${fest.util.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>Achilles</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.version}</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>${maven.enforcer.version}</version>
+				<executions>
+					<execution>
+						<id>enforce-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>[3.0.4,)</version>
+								</requireMavenVersion>
+								<requireJavaVersion>
+									<version>[1.6.0,)</version>
+								</requireJavaVersion>
+							</rules>
 						</configuration>
-          			</plugin>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-gpg-plugin</artifactId> -->
+			<!-- <version>${maven.gpg.version}</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>sign-artifacts</id> -->
+			<!-- <phase>verify</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>sign</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<includes>
+						<include>**/info/archinnov/**/*.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>${maven-site-plugin}</version>
+				<configuration>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-plugin</artifactId>
+							<version>2.12</version>
+							<configuration>
+								<includes>
+									<include>**/info/archinnov/**/*.java</include>
+								</includes>
+							</configuration>
+						</plugin>
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>cobertura-maven-plugin</artifactId>
+							<version>2.4</version>
+							<configuration>
+								<formats>
+									<format>xml</format>
+									<format>html</format>
+								</formats>
+							</configuration>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven-jar-plugin}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>${maven-scm-plugin}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<formats>
+						<format>html</format>
+						<format>xml</format>
+					</formats>
+					<maxmem>256m</maxmem>
+					<aggregate>true</aggregate>
+					<instrumentation>
+						<ignores>
+							<ignore>info.archinnov.achilles.test.*</ignore>
+							<ignore>info.archinnov.achilles.**.FlushContext</ignore>
+							<ignore>info.archinnov.achilles.counter.*</ignore>
+							<ignore>info.archinnov.achilles.exception.*</ignore>
+							<ignore>info.archinnov.achilles.integration.spring.*JavaConfigSample</ignore>
+							<ignore>info.archinnov.achilles.embedded.*</ignore>
+						</ignores>
+						<excludes>
+							<exclude>info/archinnov/**/*Test.class</exclude>
+							<exclude>info/archinnov/achilles/**/FlushContext.class</exclude>
+							<exclude>info/archinnov/achilles/counter/*</exclude>
+							<exclude>info/archinnov/achilles/exception/*</exclude>
+							<exclude>info/archinnov/achilles/integration/spring/*JavaConfigSample.class</exclude>
+							<exclude>info/archinnov/achilles/embedded/*</exclude>
+						</excludes>
+					</instrumentation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>2.0.0</version>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<!-- Sign jars with pgp -->
 					<plugin>
-			            <groupId>org.codehaus.mojo</groupId>
-			            <artifactId>cobertura-maven-plugin</artifactId>
-			            <version>2.4</version>
-			            <configuration>
-			              <formats>
-			                <format>xml</format>
-			                <format>html</format>
-			              </formats>
-			            </configuration>
-			          </plugin>	          						      		   	      			
-      			</reportPlugins>
-      		</configuration>
-      	</plugin>
-		<plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-jar-plugin</artifactId>
-	        <version>${maven-jar-plugin}</version>
-      </plugin>        	
-		<plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-scm-plugin</artifactId>
-	        <version>${maven-scm-plugin}</version>
-      </plugin>      		    
-    </plugins> 
-  </build>
-  <profiles>
-	<profile>
-		<id>release-sign-artifacts</id>
-		<activation>
-			<activeByDefault>false</activeByDefault>
-			<property>
-				<name>performRelease</name>
-				<value>true</value>
-			</property>
-		</activation>
-		<build>
-			<plugins>
-				<!-- Sign jars with pgp -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-gpg-plugin</artifactId>
-					<version>${maven.gpg.version}</version>
-					<executions>
-						<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</build>
-	</profile>
-  </profiles>			    
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven.gpg.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<scm>
 		<url>https://github.com/doanduyhai/achilles</url>
 		<connection>scm:git:git@github.com:doanduyhai/Achilles</connection>
