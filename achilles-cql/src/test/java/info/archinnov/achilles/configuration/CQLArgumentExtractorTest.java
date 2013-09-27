@@ -17,8 +17,8 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.HashMap;
@@ -68,6 +68,15 @@ public class CQLArgumentExtractorTest {
 		params.put(SSL_OPTIONS, new SSLOptions());
 
 		extractor.initCluster(params);
+	}
+
+	@Test
+	public void should_get_cluster_directly_from_parameter() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(CLUSTER_PARAM, cluster);
+
+		Cluster actual = extractor.initCluster(params);
+		assertThat(actual).isSameAs(cluster);
 	}
 
 	@Test(expected = NoHostAvailableException.class)
@@ -123,6 +132,15 @@ public class CQLArgumentExtractorTest {
 				+ " property should be provided");
 
 		extractor.initSession(cluster, params);
+	}
 
+	@Test
+	public void should_get_native_session_from_parameter() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(NATIVE_SESSION_PARAM, session);
+
+		Session actual = extractor.initSession(cluster, params);
+
+		assertThat(actual).isSameAs(session);
 	}
 }

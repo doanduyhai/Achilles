@@ -17,6 +17,8 @@
 package info.archinnov.achilles.configuration;
 
 public interface CQLConfigurationParameters {
+	String CLUSTER_PARAM = "achilles.cassandra.cluster";
+	String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
 	String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
 	String CONNECTION_PORT_PARAM = "achilles.cassandra.connection.port";
 	String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
