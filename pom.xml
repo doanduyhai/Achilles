@@ -72,6 +72,7 @@
 	</properties>
 
 	<modules>
+		<module>achilles-model</module>
 		<module>achilles-core</module>
 		<module>achilles-thrift</module>
 		<module>achilles-cql</module>
@@ -260,20 +261,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-gpg-plugin</artifactId> -->
-			<!-- <version>${maven.gpg.version}</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>sign-artifacts</id> -->
-			<!-- <phase>verify</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>sign</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
