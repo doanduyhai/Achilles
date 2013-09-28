@@ -19,12 +19,10 @@ package info.archinnov.achilles.entity.operations.impl;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
-import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -83,37 +81,6 @@ public class ThriftQueryExecutorImpl {
 										composites[1], query.getOrdering()
 												.isReverse(), query
 												.getBatchSize());
-							}
-						}, query.getConsistencyLevel());
-	}
-
-	public <T> ThriftJoinSliceIterator<Object, Object, Object> getJoinColumnsIterator(
-			final SliceQuery<T> query, ThriftPersistenceContext context) {
-		EntityMeta meta = query.getMeta();
-		final PropertyMeta idMeta = meta.getIdMeta();
-		final PropertyMeta pm = meta.getFirstMeta();
-
-		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-
-		final ThriftGenericEntityDao joinEntityDao = context.findEntityDao(pm
-				.joinMeta().getTableName());
-
-		final Composite[] composites = compositeFactory
-				.createForClusteredQuery(idMeta, query.getClusteringsFrom(),
-						query.getClusteringsTo(), query.getBounding(),
-						query.getOrdering());
-
-		return context
-				.executeWithReadConsistencyLevel(
-						new SafeExecutionContext<ThriftJoinSliceIterator<Object, Object, Object>>() {
-							@Override
-							public ThriftJoinSliceIterator<Object, Object, Object> execute() {
-								return wideRowDao.getJoinColumnsIterator(
-										joinEntityDao, pm, query
-												.getPartitionKey(),
-										composites[0], composites[1], query
-												.getOrdering().isReverse(),
-										query.getBatchSize());
 							}
 						}, query.getConsistencyLevel());
 	}

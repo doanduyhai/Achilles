@@ -17,7 +17,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
@@ -29,7 +29,6 @@ import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilde
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.helper.EntityMapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -77,12 +76,6 @@ public class ThriftEntityLoaderTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private EntityMeta joinMeta;
-
-	@Mock
-	private PropertyMeta joinIdMeta;
-
-	@Mock
 	private EntityMapper mapper;
 
 	@Mock
@@ -93,9 +86,6 @@ public class ThriftEntityLoaderTest {
 
 	@Mock
 	private ThriftCompositeFactory thriftCompositeFactory;
-
-	@Mock
-	private ThriftJoinLoaderImpl joinLoaderImpl;
 
 	@Mock
 	private ThriftLoaderImpl loaderImpl;
@@ -245,63 +235,11 @@ public class ThriftEntityLoaderTest {
 	}
 
 	@Test
-	public void should_load_join_simple() throws Exception {
-		String value = "val";
-
-		when(propertyMeta.type()).thenReturn(JOIN_SIMPLE);
-		when(loaderImpl.loadJoinSimple(context, propertyMeta, loader))
-				.thenReturn(value);
-
-		loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-		verify(propertyMeta).setValueToField(bean, value);
-	}
-
-	@Test
-	public void should_load_join_list() throws Exception {
-		List<Object> value = Arrays.<Object> asList("val");
-
-		when(propertyMeta.type()).thenReturn(JOIN_LIST);
-		when(joinLoaderImpl.loadJoinListProperty(context, propertyMeta))
-				.thenReturn(value);
-
-		loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-		verify(propertyMeta).setValueToField(bean, value);
-	}
-
-	@Test
-	public void should_load_join_set() throws Exception {
-		Set<Object> value = Sets.<Object> newHashSet("val");
-
-		when(propertyMeta.type()).thenReturn(JOIN_SET);
-		when(joinLoaderImpl.loadJoinSetProperty(context, propertyMeta))
-				.thenReturn(value);
-
-		loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-		verify(propertyMeta).setValueToField(bean, value);
-	}
-
-	@Test
-	public void should_load_join_map() throws Exception {
-		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
-
-		when(propertyMeta.type()).thenReturn(JOIN_MAP);
-		when(joinLoaderImpl.loadJoinMapProperty(context, propertyMeta))
-				.thenReturn(value);
-
-		loader.loadPropertyIntoObject(context, bean, propertyMeta);
-
-		verify(propertyMeta).setValueToField(bean, value);
-	}
-
-	@Test
 	public void should_not_load() throws Exception {
 		when(propertyMeta.type()).thenReturn(PropertyType.COUNTER);
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
-		verifyZeroInteractions(loaderImpl, joinLoaderImpl);
+		verifyZeroInteractions(loaderImpl);
 	}
 
 	@Test

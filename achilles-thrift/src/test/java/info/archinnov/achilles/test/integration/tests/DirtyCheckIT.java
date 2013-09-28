@@ -16,19 +16,17 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.table.TableNameNormalizer.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.integration.entity.Tweet;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -613,34 +611,6 @@ public class DirtyCheckIT {
 		Object reloadedLabel = dao.getValue(bean.getId(), compo);
 
 		assertThat(reloadedLabel).isEqualTo("label");
-	}
-
-	@Test
-	public void should_cascade_dirty_check_join_simple_property()
-			throws Exception {
-		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId()
-				.content("Welcome").buid();
-
-		CompleteBean myBean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
-		myBean.setWelcomeTweet(welcomeTweet);
-
-		myBean = em.merge(myBean);
-
-		Tweet welcomeTweetFromBean = myBean.getWelcomeTweet();
-		welcomeTweetFromBean.setContent("new_welcome_message");
-
-		em.merge(myBean);
-
-		Tweet persistedWelcomeTweet = em
-				.find(Tweet.class, welcomeTweet.getId());
-
-		assertThat(persistedWelcomeTweet).isNotNull();
-		assertThat(persistedWelcomeTweet.getContent()).isEqualTo(
-				"new_welcome_message");
-
 	}
 
 	private Composite startCompForList() {

@@ -16,14 +16,12 @@
  */
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
+import static info.archinnov.achilles.logger.ThriftLoggerHelper.*;
 import static me.prettyprint.hector.api.factory.HFactory.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
-import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.serializer.ThriftSerializerTypeInferer;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
@@ -388,25 +386,6 @@ public abstract class ThriftAbstractDao {
 
 		return new ThriftCounterSliceIterator<K>(policy, columnFamily, query,
 				start, end, reverse, length);
-	}
-
-	public <K, KEY, VALUE> ThriftJoinSliceIterator<K, KEY, VALUE> getJoinColumnsIterator(
-			ThriftGenericEntityDao joinEntityDao, PropertyMeta propertyMeta,
-			K key, Composite start, Composite end, boolean reversed, int count) {
-		if (log.isTraceEnabled()) {
-			log.trace(
-					"Get join columns iterator within range having inclusive start/end {}/{} column names from column family {} with key {} and reverse {} by batch of {} elements; for property {}",
-					format(start), format(end), columnFamily, key, reversed,
-					count, propertyMeta.getPropertyName());
-		}
-
-		SliceQuery<K, Composite, Object> query = createSliceQuery(keyspace,
-				this.<K> rowSrz(), columnNameSerializer, this.<Object> valSrz())
-				.setColumnFamily(columnFamily).setKey(key);
-
-		return new ThriftJoinSliceIterator<K, KEY, VALUE>(policy,
-				joinEntityDao, columnFamily, propertyMeta, query, start, end,
-				reversed, count);
 	}
 
 	public <K, V> Rows<K, Composite, V> multiGetSliceRange(final List<K> keys,

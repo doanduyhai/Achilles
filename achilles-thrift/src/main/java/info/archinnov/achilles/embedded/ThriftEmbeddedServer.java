@@ -91,8 +91,7 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
 		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM,
 				entityPackages, CLUSTER_PARAM, cluster, KEYSPACE_PARAM,
-				getKeyspace(), FORCE_CF_CREATION_PARAM, true,
-				ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
+				getKeyspace(), FORCE_CF_CREATION_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
 		em = emf.createEntityManager();

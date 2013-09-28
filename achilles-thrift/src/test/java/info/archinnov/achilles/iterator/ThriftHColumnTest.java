@@ -24,36 +24,36 @@ public class ThriftHColumnTest {
 
 	@Test
 	public void should_test_all_methods() throws Exception {
-		ThriftHColumn<Integer, String> joinHCol = new ThriftHColumn<Integer, String>();
+		ThriftHColumn<Integer, String> hCol = new ThriftHColumn<Integer, String>();
 
-		joinHCol.setName(11);
-		joinHCol.setValue("val");
-		joinHCol.setClock(1000);
-		joinHCol.setTtl(10);
+		hCol.setName(11);
+		hCol.setValue("val");
+		hCol.setClock(1000);
+		hCol.setTtl(10);
 
-		assertThat(joinHCol.getName()).isEqualTo(11);
-		assertThat(joinHCol.getValue()).isEqualTo("val");
-		assertThat(joinHCol.getTtl()).isEqualTo(10);
-		assertThat(joinHCol.getClock()).isEqualTo(0);
+		assertThat(hCol.getName()).isEqualTo(11);
+		assertThat(hCol.getValue()).isEqualTo("val");
+		assertThat(hCol.getTtl()).isEqualTo(10);
+		assertThat(hCol.getClock()).isEqualTo(0);
 
-		assertThat(joinHCol.getNameBytes()).isNull();
-		assertThat(joinHCol.getValueBytes()).isNull();
-		assertThat(joinHCol.getNameSerializer()).isNull();
-		assertThat(joinHCol.getValueSerializer()).isNull();
+		assertThat(hCol.getNameBytes()).isNull();
+		assertThat(hCol.getValueBytes()).isNull();
+		assertThat(hCol.getNameSerializer()).isNull();
+		assertThat(hCol.getValueSerializer()).isNull();
 
-		joinHCol.apply("val2", 1, 20);
+		hCol.apply("val2", 1, 20);
 
-		assertThat(joinHCol.getName()).isEqualTo(11);
-		assertThat(joinHCol.getValue()).isEqualTo("val2");
-		assertThat(joinHCol.getTtl()).isEqualTo(20);
-		assertThat(joinHCol.getClock()).isEqualTo(0);
+		assertThat(hCol.getName()).isEqualTo(11);
+		assertThat(hCol.getValue()).isEqualTo("val2");
+		assertThat(hCol.getTtl()).isEqualTo(20);
+		assertThat(hCol.getClock()).isEqualTo(0);
 
-		joinHCol.clear();
+		hCol.clear();
 
-		assertThat(joinHCol.getName()).isNull();
-		assertThat(joinHCol.getValue()).isNull();
-		assertThat(joinHCol.getTtl()).isEqualTo(0);
-		assertThat(joinHCol.getClock()).isEqualTo(0);
+		assertThat(hCol.getName()).isNull();
+		assertThat(hCol.getValue()).isNull();
+		assertThat(hCol.getTtl()).isEqualTo(0);
+		assertThat(hCol.getClock()).isEqualTo(0);
 
 	}
 }

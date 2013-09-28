@@ -34,12 +34,11 @@ public class PropertyFilter {
 		acceptedAnnotations.add(javax.persistence.Id.class);
 		acceptedAnnotations.add(javax.persistence.EmbeddedId.class);
 		acceptedAnnotations.add(javax.persistence.Column.class);
-		acceptedAnnotations.add(javax.persistence.JoinColumn.class);
 	}
 
 	public boolean matches(Field field) {
 		log.trace(
-				"Does the field {} of class {} has the annotations @Id/@Column/@JoinColumn ?",
+				"Does the field {} of class {} has the annotations @Id/@EmbeddedId/@Column ?",
 				field.getName(), field.getDeclaringClass().getCanonicalName());
 
 		for (Class<?> clazz : acceptedAnnotations) {

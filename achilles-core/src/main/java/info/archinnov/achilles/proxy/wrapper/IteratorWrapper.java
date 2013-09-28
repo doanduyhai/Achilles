@@ -16,8 +16,6 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.context.PersistenceContext;
-
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -41,18 +39,7 @@ public class IteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object next() {
-		Object value = this.target.next();
-		if (isJoin()) {
-			log.trace(
-					"Build proxy for join entity for property {} of entity class {} upon next() call",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-			PersistenceContext joinContext = context.createContextForJoin(
-					propertyMeta.joinMeta(), value);
-			return proxifier.buildProxy(value, joinContext);
-		} else {
-			return value;
-		}
+		return this.target.next();
 	}
 
 	@Override

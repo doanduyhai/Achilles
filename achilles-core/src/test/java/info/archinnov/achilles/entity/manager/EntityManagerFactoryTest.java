@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -72,8 +73,10 @@ public class EntityManagerFactoryTest {
 
 	@Before
 	public void setUp() {
-		doCallRealMethod().when(factory).setEntityMetaMap(any(Map.class));
-		doCallRealMethod().when(factory).setEntityPackages(any(List.class));
+		doCallRealMethod().when(factory).setEntityMetaMap(
+				Mockito.<Map<Class<?>, EntityMeta>> any());
+		doCallRealMethod().when(factory).setEntityPackages(
+				Mockito.<List<String>> any());
 		doCallRealMethod().when(factory).setEntityParser(
 				any(EntityParser.class));
 		doCallRealMethod().when(factory).setEntityExplorer(
@@ -123,9 +126,6 @@ public class EntityManagerFactoryTest {
 
 		assertThat(entityMetaMap).containsKey(Long.class);
 		assertThat(entityMetaMap).containsValue(entityMeta);
-		verify(achillesEntityParser).fillJoinEntityMeta(
-				any(EntityParsingContext.class), eq(entityMetaMap));
-
 	}
 
 	@Test
@@ -146,9 +146,6 @@ public class EntityManagerFactoryTest {
 
 		verify(entityParser, never()).parseEntity(
 				any(EntityParsingContext.class));
-		verify(achillesEntityParser).fillJoinEntityMeta(
-				any(EntityParsingContext.class), eq(entityMetaMap));
-
 	}
 
 	@Test
@@ -156,9 +153,6 @@ public class EntityManagerFactoryTest {
 		AchillesConsistencyLevelPolicy policy = mock(AchillesConsistencyLevelPolicy.class);
 		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
 		Map<String, Object> configurationMap = new HashMap<String, Object>();
-
-		when(extractor.ensureConsistencyOnJoin(configurationMap)).thenReturn(
-				true);
 		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
 		when(factory.initConsistencyLevelPolicy(configurationMap, extractor))
 				.thenReturn(policy);
@@ -172,7 +166,6 @@ public class EntityManagerFactoryTest {
 				configurationMap, extractor);
 
 		assertThat(builtContext).isNotNull();
-		assertThat(builtContext.isEnsureJoinConsistency()).isTrue();
 		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
 		assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
 		assertThat(builtContext.getObjectMapperFactory()).isSameAs(

@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.iterator;
 
-import static info.archinnov.achilles.dao.ThriftAbstractDao.DEFAULT_LENGTH;
+import static info.archinnov.achilles.dao.ThriftAbstractDao.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
 import info.archinnov.achilles.exception.AchillesException;
@@ -174,7 +174,7 @@ public abstract class ThriftAbstractSliceIterator<HCOLUMN> implements
 	}
 
 	public enum IteratorType {
-		THRIFT_SLICE_ITERATOR, THRIFT_COUNTER_SLICE_ITERATOR, THRIFT_JOIN_SLICE_ITERATOR;
+		THRIFT_SLICE_ITERATOR, THRIFT_COUNTER_SLICE_ITERATOR;
 
 		@Override
 		public String toString() {

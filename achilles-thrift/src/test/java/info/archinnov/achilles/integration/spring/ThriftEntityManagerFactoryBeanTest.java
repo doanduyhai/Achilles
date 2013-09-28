@@ -122,7 +122,6 @@ public class ThriftEntityManagerFactoryBeanTest {
 		factory.setConsistencyLevelWriteDefault("ONE");
 		factory.setConsistencyLevelReadMap(ImmutableMap.of("entity", "ONE"));
 		factory.setConsistencyLevelWriteMap(ImmutableMap.of("entity", "ONE"));
-		factory.setEnsureJoinConsistency(true);
 		factory.setForceColumnFamilyCreation(true);
 
 		exception.expect(AchillesException.class);

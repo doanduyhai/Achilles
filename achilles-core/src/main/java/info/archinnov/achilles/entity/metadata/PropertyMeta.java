@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -28,12 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-
 import org.apache.cassandra.utils.Pair;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 
 public class PropertyMeta {
 
@@ -45,7 +41,6 @@ public class PropertyMeta {
 	private Method getter;
 	private Method setter;
 	private CounterProperties counterProperties;
-	private JoinProperties joinProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
@@ -125,18 +120,6 @@ public class PropertyMeta {
 		return component;
 	}
 
-	public boolean isJoin() {
-		return type.isJoin();
-	}
-
-	public EntityMeta joinMeta() {
-		return joinProperties != null ? joinProperties.getEntityMeta() : null;
-	}
-
-	public PropertyMeta joinIdMeta() {
-		return joinMeta() != null ? joinMeta().getIdMeta() : null;
-	}
-
 	public PropertyMeta counterIdMeta() {
 		return counterProperties != null ? counterProperties.getIdMeta() : null;
 	}
@@ -155,29 +138,6 @@ public class PropertyMeta {
 
 	public boolean isEmbeddedId() {
 		return type.isEmbeddedId();
-	}
-
-	public boolean hasCascadeType(CascadeType type) {
-		if (joinProperties != null
-				&& joinProperties.getCascadeTypes().contains(type)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public boolean hasAnyCascadeType(CascadeType... types) {
-		return joinProperties != null
-				&& !Sets.intersection(joinProperties.getCascadeTypes(),
-						Sets.newHashSet(types)).isEmpty();
-	}
-
-	public boolean isJoinCollection() {
-		return type == JOIN_LIST || type == JOIN_SET;
-	}
-
-	public boolean isJoinMap() {
-		return type == JOIN_MAP;
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel() {
@@ -262,11 +222,7 @@ public class PropertyMeta {
 	}
 
 	public Object forceDecodeFromJSON(String cassandraValue) {
-		if (type.isJoin()) {
-			return joinIdMeta().forceDecodeFromJSON(cassandraValue);
-		} else {
-			return transcoder.forceDecodeFromJSON(cassandraValue, valueClass);
-		}
+		return transcoder.forceDecodeFromJSON(cassandraValue, valueClass);
 	}
 
 	public Object getPrimaryKey(Object entity) {
@@ -276,16 +232,6 @@ public class PropertyMeta {
 			throw new IllegalStateException(
 					"Cannot get primary key on a non id field '" + propertyName
 							+ "'");
-		}
-	}
-
-	public Object getJoinPrimaryKey(Object entity) {
-		if (type.isJoin()) {
-			return joinMeta().getPrimaryKey(entity);
-		} else {
-			throw new IllegalStateException(
-					"Cannot get join primary key on a non join field '"
-							+ propertyName + "'");
 		}
 	}
 
@@ -408,14 +354,6 @@ public class PropertyMeta {
 		this.idClass = idClass;
 	}
 
-	public JoinProperties getJoinProperties() {
-		return joinProperties;
-	}
-
-	public void setJoinProperties(JoinProperties joinProperties) {
-		this.joinProperties = joinProperties;
-	}
-
 	public CounterProperties getCounterProperties() {
 		return counterProperties;
 	}
@@ -468,7 +406,6 @@ public class PropertyMeta {
 				.add("propertyName", propertyName).add("keyClass", keyClass)
 				.add("valueClass", valueClass)
 				.add("counterProperties", counterProperties)
-				.add("joinProperties", joinProperties)
 				.add("embeddedIdProperties", embeddedIdProperties)
 				.add("consistencyLevels", consistencyLevels).toString();
 	}

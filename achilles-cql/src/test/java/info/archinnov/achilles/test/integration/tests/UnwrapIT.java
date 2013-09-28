@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -50,23 +50,5 @@ public class UnwrapIT {
 		bean = em.unwrap(bean);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
-	}
-
-	@Test
-	public void should_unproxy_directly_attached_join_object() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet")
-				.buid();
-		bean.setWelcomeTweet(tweet);
-
-		em.persist(bean);
-
-		bean = em.find(CompleteBean.class, bean.getId());
-		em.initialize(bean);
-		bean = em.unwrap(bean);
-
-		assertThat(bean).isNotInstanceOf(Factory.class);
-		assertThat(bean.getWelcomeTweet()).isNotInstanceOf(Factory.class);
 	}
 }

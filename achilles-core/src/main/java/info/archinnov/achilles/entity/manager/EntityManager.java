@@ -64,10 +64,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Persist an entity. All join entities with CascadeType.PERSIST or
-	 * CascadeType.ALL
-	 * 
-	 * will be also persisted, overriding their current state in Cassandra
+	 * Persist an entity.
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
@@ -79,14 +76,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Persist an entity with the given time-to-live and Consistency Level. All
-	 * join entities
-	 * 
-	 * with CascadeType.PERSIST or CascadeType.ALL will be also persisted with
-	 * the same
-	 * 
-	 * Consistency Level <strong>but the time-to-live will not be
-	 * cascaded</strong>
+	 * Persist an entity with the given options.
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
@@ -113,10 +103,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Merge an entity. All join entities with CascadeType.MERGE or
-	 * CascadeType.ALL
-	 * 
-	 * will be also merged, updating their current state in Cassandra.
+	 * Merge an entity.
 	 * 
 	 * Calling merge on a transient entity will persist it and returns a managed
 	 * 
@@ -145,13 +132,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Merge an entity with the given time-to-live and Consistency Level. All
-	 * join entities with
-	 * 
-	 * CascadeType.MERGE or CascadeType.ALL will be also merged with the same
-	 * Consistency Level
-	 * 
-	 * <strong>but the time-to-live will not be cascaded</strong>
+	 * Merge an entity with the given options
 	 * 
 	 * Calling merge on a transient entity will persist it and returns a managed
 	 * instance.
@@ -188,13 +169,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Remove an entity. Join entities are <strong>not</strong> removed.
-	 * 
-	 * CascadeType.REMOVE is not supported as per design to avoid
-	 * 
-	 * inconsistencies while removing <em>shared</em> join entities.
-	 * 
-	 * You need to remove the join entities manually
+	 * Remove an entity.
 	 * 
 	 * @param entity
 	 *            Entity to be removed
@@ -207,14 +182,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Remove an entity by its id. Join entities are <strong>not</strong>
-	 * removed.
-	 * 
-	 * CascadeType.REMOVE is not supported as per design to avoid
-	 * 
-	 * inconsistencies while removing <em>shared</em> join entities.
-	 * 
-	 * You need to remove the join entities manually
+	 * Remove an entity by its id.
 	 * 
 	 * @param entityClass
 	 *            Entity class
@@ -239,14 +207,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Remove an entity with the given Consistency Level for write. Join
-	 * entities are <strong>not</strong> removed.
-	 * 
-	 * CascadeType.REMOVE is not supported as per design to avoid
-	 * 
-	 * inconsistencies while removing <em>shared</em> join entities.
-	 * 
-	 * You need to remove the join entities manually
+	 * Remove an entity with the given Consistency Level for write.
 	 * 
 	 * @param entity
 	 *            Entity to be removed
@@ -267,13 +228,6 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 
 	/**
 	 * Remove an entity by its id with the given Consistency Level for write.
-	 * Join entities are <strong>not</strong> removed.
-	 * 
-	 * CascadeType.REMOVE is not supported as per design to avoid
-	 * 
-	 * inconsistencies while removing <em>shared</em> join entities.
-	 * 
-	 * You need to remove the join entities manually
 	 * 
 	 * @param entityClass
 	 *            Entity class
@@ -393,8 +347,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Refresh an entity. All join entities with CascadeType.REFRESH or
-	 * CascadeType.ALL
+	 * Refresh an entity.
 	 * 
 	 * will be also refreshed from Cassandra.
 	 * 
@@ -409,10 +362,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Refresh an entity with the given Consistency Level for read. All join
-	 * entities with CascadeType.REFRESH or CascadeType.ALL
-	 * 
-	 * will be also refreshed from Cassandra.
+	 * Refresh an entity with the given Consistency Level for read.
 	 * 
 	 * @param entity
 	 *            Entity to be refreshed

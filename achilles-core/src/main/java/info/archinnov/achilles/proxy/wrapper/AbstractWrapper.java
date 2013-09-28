@@ -56,16 +56,7 @@ public abstract class AbstractWrapper {
 		this.proxifier = proxifier;
 	}
 
-	protected boolean isJoin() {
-		return this.propertyMeta.type().isJoin();
-	}
-
 	public void setContext(PersistenceContext context) {
 		this.context = context;
-	}
-
-	protected PersistenceContext joinContext(Object joinEntity) {
-		return context
-				.createContextForJoin(propertyMeta.joinMeta(), joinEntity);
 	}
 }

@@ -64,12 +64,7 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 				"Return element at index {} for list property {} of entity class {}",
 				index, propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
-		Object result = ((List<Object>) super.target).get(index);
-		if (isJoin()) {
-			return proxifier.buildProxy(result, joinContext(result));
-		} else {
-			return result;
-		}
+		return ((List<Object>) super.target).get(index);
 	}
 
 	@Override

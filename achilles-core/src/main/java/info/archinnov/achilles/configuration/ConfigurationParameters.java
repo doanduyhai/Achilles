@@ -31,7 +31,6 @@ public interface ConfigurationParameters {
 	String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
 
 	String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
-	String ENSURE_CONSISTENCY_ON_JOIN_PARAM = "achilles.consistency.join.check";
 
 	ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 }

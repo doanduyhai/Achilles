@@ -16,15 +16,13 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -53,16 +51,10 @@ public class MapWrapperTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private PropertyMeta joinPropertyMeta;
-
-	@Mock
 	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
 	private PersistenceContext context;
-
-	@Mock
-	private PersistenceContext joinContext;
 
 	@Before
 	public void setUp() throws Exception {
@@ -76,22 +68,6 @@ public class MapWrapperTest {
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		assertThat(wrapper.get(1)).isEqualTo("FR");
-	}
-
-	@Test
-	public void should_get_join_value() throws Exception {
-		Map<Integer, UserBean> target = new HashMap<Integer, UserBean>();
-		UserBean bean = new UserBean();
-		target.put(1, bean);
-		EntityMeta joinMeta = new EntityMeta();
-
-		MapWrapper wrapper = prepareJoinMapWrapper(target);
-		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
-		when(joinPropertyMeta.joinMeta()).thenReturn(joinMeta);
-		when(context.createContextForJoin(joinMeta, bean)).thenReturn(
-				joinContext);
-		when(proxifier.buildProxy(bean, joinContext)).thenReturn(bean);
-		assertThat(wrapper.get(1)).isSameAs(bean);
 	}
 
 	@Test
@@ -299,16 +275,6 @@ public class MapWrapperTest {
 		map.put(3, "75014");
 
 		return map;
-	}
-
-	private MapWrapper prepareJoinMapWrapper(Map<Integer, UserBean> target) {
-		MapWrapper wrapper = new MapWrapper((Map) target);
-		wrapper.setDirtyMap(dirtyMap);
-		wrapper.setSetter(setter);
-		wrapper.setPropertyMeta(joinPropertyMeta);
-		wrapper.setProxifier(proxifier);
-		wrapper.setContext(context);
-		return wrapper;
 	}
 
 	private MapWrapper prepareMapWrapper(Map<Integer, String> target) {

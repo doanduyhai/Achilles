@@ -17,8 +17,7 @@
 package info.archinnov.achilles.entity.operations.impl;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static javax.persistence.CascadeType.ALL;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -35,9 +34,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
@@ -69,16 +66,9 @@ public class CQLPersisterImplTest {
 	private CQLPersistenceContext context;
 
 	@Mock
-	private CQLPersistenceContext joinContext;
-
-	@Mock
 	private EntityMeta entityMeta;
 
-	@Mock
-	private EntityMeta joinMeta;
-
 	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
-	private Set<PropertyMeta> joinMetas = new HashSet<PropertyMeta>();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
 			.buid();
@@ -92,7 +82,6 @@ public class CQLPersisterImplTest {
 		when(entityMeta.getAllMetas()).thenReturn(allMetas);
 		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
 		allMetas.clear();
-		joinMetas.clear();
 	}
 
 	@Test
@@ -109,7 +98,7 @@ public class CQLPersisterImplTest {
 				.accessors().invoker(invoker).build();
 		Counter counter = CounterBuilder.incr();
 
-		when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(context.getFirstMeta()).thenReturn(counterMeta);
 		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
 				.thenReturn(counter);
 
@@ -125,7 +114,7 @@ public class CQLPersisterImplTest {
 				.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
-		when(context.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(context.getFirstMeta()).thenReturn(counterMeta);
 		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
 				.thenReturn(null);
 
@@ -167,89 +156,6 @@ public class CQLPersisterImplTest {
 	}
 
 	@Test
-	public void should_cascade_persist() throws Exception {
-		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).accessors().joinMeta(joinMeta)
-				.cascadeType(ALL).invoker(invoker).build();
-		joinMetas.add(joinSimpleMeta);
-
-		UserBean user = new UserBean();
-		entity.setUser(user);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
-				.thenReturn(user);
-
-		when(context.createContextForJoin(joinMeta, user)).thenReturn(
-				joinContext);
-
-		persisterImpl.cascadePersist(entityPersister, context, joinMetas);
-
-		verify(entityPersister).persist(joinContext);
-	}
-
-	@Test
-	public void should_check_for_entity_existence() throws Exception {
-		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).accessors().joinMeta(joinMeta)
-				.cascadeType(ALL).invoker(invoker).build();
-
-		joinMetas.add(joinSimpleMeta);
-		UserBean user = new UserBean();
-		entity.setUser(user);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
-				.thenReturn(user);
-
-		when(context.createContextForJoin(joinMeta, user)).thenReturn(
-				joinContext);
-		when(context.addToProcessingList(user)).thenReturn(true);
-		when(joinContext.checkForEntityExistence()).thenReturn(true);
-		persisterImpl.ensureEntitiesExist(context, joinMetas);
-
-		verify(joinContext).checkForEntityExistence();
-	}
-
-	@Test
-	public void should_not_check_for_entity_existence_if_join_already_processed()
-			throws Exception {
-		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).accessors().joinMeta(joinMeta)
-				.cascadeType(ALL).invoker(invoker).build();
-
-		joinMetas.add(joinSimpleMeta);
-		UserBean user = new UserBean();
-		entity.setUser(user);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
-				.thenReturn(user);
-
-		when(context.createContextForJoin(joinMeta, user)).thenReturn(
-				joinContext);
-		when(context.addToProcessingList(user)).thenReturn(false);
-
-		persisterImpl.ensureEntitiesExist(context, joinMetas);
-
-		verify(joinContext, never()).checkForEntityExistence();
-	}
-
-	@Test
-	public void should_not_check_for_entity_existence_if_null_join_entity()
-			throws Exception {
-		PropertyMeta joinSimpleMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).accessors().joinMeta(joinMeta)
-				.cascadeType(ALL).invoker(invoker).build();
-
-		joinMetas.add(joinSimpleMeta);
-		when(invoker.getValueFromField(entity, joinSimpleMeta.getGetter()))
-				.thenReturn(null);
-
-		persisterImpl.ensureEntitiesExist(context, joinMetas);
-
-		verify(joinContext, never()).checkForEntityExistence();
-	}
-
-	@Test
 	public void should_remove() throws Exception {
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
 		when(entityMeta.getTableName()).thenReturn("table");
@@ -267,7 +173,7 @@ public class CQLPersisterImplTest {
 				.accessors().build();
 
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
-		when(entityMeta.getFirstMeta()).thenReturn((PropertyMeta) counterMeta);
+		when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
 
 		persisterImpl.remove(context);
 
@@ -290,5 +196,4 @@ public class CQLPersisterImplTest {
 
 		verify(context).bindForSimpleCounterRemoval(counterMeta);
 	}
-
 }

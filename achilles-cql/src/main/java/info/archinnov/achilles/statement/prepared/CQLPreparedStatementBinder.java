@@ -172,19 +172,15 @@ public class CQLPreparedStatementBinder {
 			switch (pm.type()) {
 			case SIMPLE:
 			case LAZY_SIMPLE:
-			case JOIN_SIMPLE:
 				return pm.encode(value);
 			case LIST:
 			case LAZY_LIST:
-			case JOIN_LIST:
 				return pm.encode((List<?>) value);
 			case SET:
 			case LAZY_SET:
-			case JOIN_SET:
 				return pm.encode((Set<?>) value);
 			case MAP:
 			case LAZY_MAP:
-			case JOIN_MAP:
 				return pm.encode((Map<?, ?>) value);
 			default:
 				throw new AchillesException("Cannot encode value '" + value

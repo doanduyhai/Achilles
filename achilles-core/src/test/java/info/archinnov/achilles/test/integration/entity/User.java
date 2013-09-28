@@ -16,12 +16,9 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 
 @Entity
 public class User {
@@ -34,12 +31,10 @@ public class User {
 	@Column
 	private String lastname;
 
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn
+	@Column
 	private User referrer;
 
-	@OneToOne
-	@JoinColumn
+	@Column
 	private User referree;
 
 	public User() {

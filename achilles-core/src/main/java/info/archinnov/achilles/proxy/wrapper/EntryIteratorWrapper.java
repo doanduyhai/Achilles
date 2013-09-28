@@ -50,7 +50,6 @@ public class EntryIteratorWrapper extends AbstractWrapper implements
 					propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 			result = MapEntryWrapperBuilder.builder(context, entry)
-					//
 					.dirtyMap(dirtyMap).setter(setter)
 					.propertyMeta(propertyMeta).proxifier(proxifier).build();
 		}

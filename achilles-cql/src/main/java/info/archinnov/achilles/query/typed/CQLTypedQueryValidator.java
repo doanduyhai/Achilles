@@ -20,13 +20,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class CQLTypedQueryValidator {
-
-	private static final Logger logger = LoggerFactory
-			.getLogger(CQLTypedQueryValidator.class);
 
 	public void validateTypedQuery(Class<?> entityClass, String queryString,
 			EntityMeta meta) {
@@ -70,13 +64,5 @@ public class CQLTypedQueryValidator {
 						"The typed query [%s] should contain the ' from %s' clause if type is '%s'",
 						queryString, tableName, entityClass.getCanonicalName());
 
-		for (PropertyMeta pm : meta.getAllMetasExceptIdMeta()) {
-			String column = pm.getPropertyName().toLowerCase();
-			if (pm.isJoin() && normalizedQuery.contains(column)) {
-				logger.warn(
-						"The column '{}' in the type query [{}] is a join column and will not be mapped to the entity '{}'",
-						column, queryString, entityClass.getCanonicalName());
-			}
-		}
 	}
 }

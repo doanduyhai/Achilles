@@ -17,7 +17,7 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.table.TableCreator.TABLE_PATTERN;
+import static info.archinnov.achilles.table.TableCreator.*;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -109,9 +109,6 @@ public class EntityMetaBuilder {
 		boolean clusteredCounter = clusteredEntity && firstMeta != null
 				&& firstMeta.isCounter();
 		meta.setClusteredCounter(clusteredCounter);
-		boolean clusteredJoin = clusteredEntity && firstMeta != null
-				&& firstMeta.isJoin();
-		meta.setClusteredJoin(clusteredJoin);
 		return meta;
 	}
 

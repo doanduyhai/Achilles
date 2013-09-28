@@ -25,9 +25,7 @@ import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.common.base.Optional;
 
@@ -51,34 +49,6 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	public CQLPersistenceContext newContextForJoin(Object joinEntity,
-			CQLAbstractFlushContext<?> flushContext,
-			Set<String> entitiesIdentity) {
-		Validator
-				.validateNotNull(joinEntity,
-						"join entity should not be null for persistence context creation");
-		Class<?> entityClass = proxifier.deriveBaseClass(joinEntity);
-		EntityMeta joinMeta = entityMetaMap.get(entityClass);
-
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-				flushContext.duplicate(), joinEntity,
-				OptionsBuilder.noOptions(), entitiesIdentity);
-	}
-
-	public CQLPersistenceContext newContextForJoin(Class<?> entityClass,
-			Object joinId, CQLAbstractFlushContext<?> flushContext,
-			Set<String> entitiesIdentity) {
-		Validator
-				.validateNotNull(entityClass,
-						"entityClass should not be null for persistence context creation");
-		Validator.validateNotNull(joinId,
-				"joinId should not be null for persistence context creation");
-		EntityMeta joinMeta = entityMetaMap.get(entityClass);
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-				flushContext.duplicate(), entityClass, joinId,
-				OptionsBuilder.noOptions(), entitiesIdentity);
-	}
-
 	@Override
 	public CQLPersistenceContext newContext(Object entity, Options options) {
 		Validator.validateNotNull(entity,
@@ -88,7 +58,7 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 		CQLImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
 		return new CQLPersistenceContext(meta, configContext, daoContext,
-				flushContext, entity, options, new HashSet<String>());
+				flushContext, entity, options);
 	}
 
 	@Override
@@ -109,8 +79,7 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 		CQLImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
 		return new CQLPersistenceContext(meta, configContext, daoContext,
-				flushContext, entityClass, primaryKey, options,
-				new HashSet<String>());
+				flushContext, entityClass, primaryKey, options);
 	}
 
 	@Override
@@ -126,7 +95,7 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 
 		return new CQLPersistenceContext(meta, configContext, daoContext,
 				flushContext, entityClass, embeddedId,
-				OptionsBuilder.withConsistency(cl), new HashSet<String>());
+				OptionsBuilder.withConsistency(cl));
 	}
 
 	private CQLImmediateFlushContext buildImmediateFlushContext(Options options) {

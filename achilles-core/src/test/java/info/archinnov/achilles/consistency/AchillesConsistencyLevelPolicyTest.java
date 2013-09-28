@@ -17,9 +17,9 @@
 package info.archinnov.achilles.consistency;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doCallRealMethod;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -43,9 +44,9 @@ public class AchillesConsistencyLevelPolicyTest {
 	@Before
 	public void setUp() {
 		doCallRealMethod().when(policy).setReadCfConsistencyLevels(
-				(Map<String, ConsistencyLevel>) any(Map.class));
+				Mockito.<Map<String, ConsistencyLevel>> any());
 		doCallRealMethod().when(policy).setWriteCfConsistencyLevels(
-				(Map<String, ConsistencyLevel>) any(Map.class));
+				Mockito.<Map<String, ConsistencyLevel>> any());
 
 		policy.setReadCfConsistencyLevels(readCfConsistencyLevels);
 		policy.setWriteCfConsistencyLevels(writeCfConsistencyLevels);

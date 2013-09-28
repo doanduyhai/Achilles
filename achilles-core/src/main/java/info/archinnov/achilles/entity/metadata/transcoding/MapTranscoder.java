@@ -32,21 +32,21 @@ public class MapTranscoder extends AbstractTranscoder {
 
 	@Override
 	public Object encode(PropertyMeta pm, Object entityValue) {
-		return super.encode(pm, pm.getValueClass(), entityValue);
+		return super.encodeInternal(pm.getValueClass(), entityValue);
 	}
 
 	@Override
 	public Object encodeKey(PropertyMeta pm, Object entityValue) {
-		return super.encodeIgnoreJoin(pm.getKeyClass(), entityValue);
+		return super.encodeInternal(pm.getKeyClass(), entityValue);
 	}
 
 	@Override
 	public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue) {
 		Map<Object, Object> encoded = new HashMap<Object, Object>();
 		for (Entry<?, ?> entry : entityValue.entrySet()) {
-			Object encodedKey = super.encodeIgnoreJoin(pm.getKeyClass(),
+			Object encodedKey = super.encodeInternal(pm.getKeyClass(),
 					entry.getKey());
-			Object encodedValue = super.encode(pm, pm.getValueClass(),
+			Object encodedValue = super.encodeInternal(pm.getValueClass(),
 					entry.getValue());
 			encoded.put(encodedKey, encodedValue);
 		}
@@ -55,21 +55,21 @@ public class MapTranscoder extends AbstractTranscoder {
 
 	@Override
 	public Object decode(PropertyMeta pm, Object cassandraValue) {
-		return super.decode(pm, pm.getValueClass(), cassandraValue);
+		return super.decodeInternal(pm.getValueClass(), cassandraValue);
 	}
 
 	@Override
 	public Object decodeKey(PropertyMeta pm, Object cassandraValue) {
-		return super.decodeIgnoreJoin(pm.getKeyClass(), cassandraValue);
+		return super.decodeInternal(pm.getKeyClass(), cassandraValue);
 	}
 
 	@Override
 	public Map<Object, Object> decode(PropertyMeta pm, Map<?, ?> cassandraValue) {
 		Map<Object, Object> decoded = new HashMap<Object, Object>();
 		for (Entry<?, ?> entry : cassandraValue.entrySet()) {
-			Object decodedKey = super.decodeIgnoreJoin(pm.getKeyClass(),
+			Object decodedKey = super.decodeInternal(pm.getKeyClass(),
 					entry.getKey());
-			Object decodedValue = super.decode(pm, pm.getValueClass(),
+			Object decodedValue = super.decodeInternal(pm.getValueClass(),
 					entry.getValue());
 			decoded.put(decodedKey, decodedValue);
 		}

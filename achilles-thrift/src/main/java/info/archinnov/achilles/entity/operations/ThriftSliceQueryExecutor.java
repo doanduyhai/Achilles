@@ -27,7 +27,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.iterator.ThriftClusteredEntityIterator;
 import info.archinnov.achilles.iterator.ThriftCounterClusteredEntityIterator;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
-import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -71,7 +70,6 @@ public class ThriftSliceQueryExecutor extends
 				: context.getFirstMeta().type();
 		List<T> clusteredEntities = null;
 		switch (type) {
-		case JOIN_SIMPLE:
 		case SIMPLE:
 			List<HColumn<Composite, Object>> hColumns = executorImpl
 					.findColumns(sliceQuery, context);
@@ -109,12 +107,6 @@ public class ThriftSliceQueryExecutor extends
 					.getColumnsIterator(sliceQuery, context);
 			return new ThriftClusteredEntityIterator<T>(entityClass,
 					columnsIterator, context);
-
-		case JOIN_SIMPLE:
-			ThriftJoinSliceIterator<Object, Object, Object> joinColumnsIterator = executorImpl
-					.getJoinColumnsIterator(sliceQuery, context);
-			return new ThriftClusteredEntityIterator<T>(entityClass,
-					joinColumnsIterator, context);
 		case COUNTER:
 			ThriftCounterSliceIterator<Object> counterColumnsIterator = executorImpl
 					.getCounterColumnsIterator(sliceQuery, context);
@@ -139,7 +131,6 @@ public class ThriftSliceQueryExecutor extends
 					sliceQuery.getConsistencyLevel());
 		} else {
 			switch (type) {
-			case JOIN_SIMPLE:
 			case SIMPLE:
 				List<HColumn<Composite, Object>> hColumns = executorImpl
 						.findColumns(sliceQuery, context);

@@ -57,12 +57,7 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 			Object realObject, PropertyMeta pm) {
 		PropertyType type = pm.type();
 		if (!type.isCounter()) {
-			if (type.isJoin()) {
-				loaderImpl.loadJoinPropertyIntoEntity(this, context, pm,
-						realObject);
-			} else {
-				loaderImpl.loadPropertyIntoEntity(context, pm, realObject);
-			}
+			loaderImpl.loadPropertyIntoEntity(context, pm, realObject);
 		}
 	}
 

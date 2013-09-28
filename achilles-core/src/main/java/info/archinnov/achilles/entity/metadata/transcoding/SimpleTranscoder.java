@@ -31,12 +31,12 @@ public class SimpleTranscoder extends AbstractTranscoder {
 
 	@Override
 	public Object encode(PropertyMeta pm, Object entityValue) {
-		return super.encode(pm, pm.getValueClass(), entityValue);
+		return super.encodeInternal(pm.getValueClass(), entityValue);
 	}
 
 	@Override
 	public Object decode(PropertyMeta pm, Object cassandraValue) {
-		return super.decode(pm, pm.getValueClass(), cassandraValue);
+		return super.decodeInternal(pm.getValueClass(), cassandraValue);
 	}
 
 }

@@ -56,16 +56,6 @@ public abstract class ArgumentExtractor {
 		}
 	}
 
-	public boolean ensureConsistencyOnJoin(Map<String, Object> configurationMap) {
-		Boolean ensureConsistencyOnJoin = (Boolean) configurationMap
-				.get(ENSURE_CONSISTENCY_ON_JOIN_PARAM);
-		if (ensureConsistencyOnJoin != null) {
-			return ensureConsistencyOnJoin;
-		} else {
-			return false;
-		}
-	}
-
 	public ObjectMapperFactory initObjectMapperFactory(
 			Map<String, Object> configurationMap) {
 		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap

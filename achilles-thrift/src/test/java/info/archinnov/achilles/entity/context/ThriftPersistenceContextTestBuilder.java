@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.context;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
@@ -29,7 +29,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.powermock.reflect.Whitebox;
@@ -40,7 +39,6 @@ public class ThriftPersistenceContextTestBuilder {
 	private Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 	private ThriftCounterDao counterDao;
 	private ThriftConsistencyLevelPolicy policy;
-	private boolean ensureJoinConsistency;
 	private Object entity;
 	private Class<?> entityClass;
 	private Object primaryKey;
@@ -81,15 +79,12 @@ public class ThriftPersistenceContextTestBuilder {
 				columnFamilyDaosMap, counterDao);
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
-		configContext.setEnsureJoinConsistency(ensureJoinConsistency);
 		ThriftPersistenceContext context = new ThriftPersistenceContext(
-				//
 				entityMeta, //
 				configContext, //
 				thriftDaoContext, //
 				thriftImmediateFlushContext, //
-				entityClass, primaryKey, OptionsBuilder.noOptions(),
-				new HashSet<String>());
+				entityClass, primaryKey, OptionsBuilder.noOptions());
 
 		context.setEntity(entity);
 		Whitebox.setInternalState(context, ThriftGenericEntityDao.class,
@@ -133,11 +128,4 @@ public class ThriftPersistenceContextTestBuilder {
 		this.thriftImmediateFlushContext = thriftImmediateFlushContext;
 		return this;
 	}
-
-	public ThriftPersistenceContextTestBuilder ensureJoinConsistency(
-			boolean ensureJoinConsistency) {
-		this.ensureJoinConsistency = ensureJoinConsistency;
-		return this;
-	}
-
 }

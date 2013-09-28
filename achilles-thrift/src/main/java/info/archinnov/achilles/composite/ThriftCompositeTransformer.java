@@ -20,10 +20,8 @@ import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.iterator.ThriftHColumn;
 
 import java.util.List;
-import java.util.Map;
 
 import me.prettyprint.hector.api.beans.AbstractComposite.Component;
 import me.prettyprint.hector.api.beans.Composite;
@@ -54,21 +52,6 @@ public class ThriftCompositeTransformer {
 			@Override
 			public T apply(HColumn<Composite, Object> hColumn) {
 				return buildClusteredEntity(entityClass, context, hColumn);
-			}
-		};
-	}
-
-	public <T> Function<HColumn<Composite, Object>, T> joinClusteredEntityTransformer(
-			final Class<T> entityClass, final ThriftPersistenceContext context,
-			final Map<Object, Object> joinEntitiesMap) {
-		return new Function<HColumn<Composite, Object>, T>() {
-			@Override
-			public T apply(HColumn<Composite, Object> hColumn) {
-				Object joinId = hColumn.getValue();
-				Object clusteredValue = joinEntitiesMap.get(joinId);
-				ThriftHColumn<Composite, Object> hCol = new ThriftHColumn<Composite, Object>(
-						hColumn.getName(), clusteredValue);
-				return buildClusteredEntity(entityClass, context, hCol);
 			}
 		};
 	}

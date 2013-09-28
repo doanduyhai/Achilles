@@ -17,16 +17,14 @@
 package info.archinnov.achilles.table;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.COUNTER_KEY_ALIAS;
-import static info.archinnov.achilles.table.ThriftColumnFamilyValidator.*;
+import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.Arrays;
@@ -155,6 +153,7 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCounterCF(cfDef);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_validate() throws Exception {
 
@@ -183,6 +182,7 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCounterCF(cfDef);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_not_matching_key_validation_class()
 			throws Exception {
@@ -198,6 +198,7 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_comparator_type_null() throws Exception {
 		when(cfDef.getKeyValidationClass()).thenReturn(
@@ -214,6 +215,7 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_comparator_type_not_composite()
 			throws Exception {
@@ -232,6 +234,7 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_comparator_type_alias_does_not_match()
 			throws Exception {
@@ -283,47 +286,6 @@ public class ThriftColumnFamilyValidatorTest {
 						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 		when(cfDef.getDefaultValidationClass()).thenReturn(
 				DATE_SRZ.getComparatorType().getClassName());
-
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
-	}
-
-	@Test
-	public void should_validate_join_clustered_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
-
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
-
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(idMeta);
-		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		meta.setFirstMeta(pm);
-
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
-		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
 
 		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
 	}

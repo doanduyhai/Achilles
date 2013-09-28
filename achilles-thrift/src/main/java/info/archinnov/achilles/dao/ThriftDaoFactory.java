@@ -16,11 +16,10 @@
  */
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
+import static info.archinnov.achilles.helper.PropertyHelper.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
 
 import java.util.Map;
@@ -72,12 +71,7 @@ public class ThriftDaoFactory {
 		if (entityMeta.isValueless()) {
 			valueClass = String.class;
 		} else {
-			PropertyMeta pm = entityMeta.getFirstMeta();
-			if (pm.isJoin()) {
-				valueClass = pm.joinIdMeta().getValueClass();
-			} else {
-				valueClass = pm.getValueClass();
-			}
+			valueClass = entityMeta.getFirstMeta().getValueClass();
 		}
 
 		ThriftGenericWideRowDao dao;

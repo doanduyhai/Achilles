@@ -16,10 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.JOIN_SIMPLE;
-import static javax.persistence.CascadeType.ALL;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -77,6 +75,7 @@ public class EntityMergerTest {
 
 	private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(entityMerger, Merger.class, merger);
@@ -86,9 +85,9 @@ public class EntityMergerTest {
 				proxifier);
 
 		when(context.getEntity()).thenReturn(entity);
-		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
+				CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
-		when(context.addToProcessingList(entity)).thenReturn(true);
 
 		allMetas.clear();
 		dirtyMap.clear();
@@ -100,25 +99,20 @@ public class EntityMergerTest {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(context.addToProcessingList(entity)).thenReturn(true, false);
 
 		PropertyMeta pm = PropertyMetaTestBuilder
 				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).cascadeType(ALL).accessors().build();
+				.type(SIMPLE).accessors().build();
 
 		meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
 
 		dirtyMap.put(pm.getSetter(), pm);
 
 		CompleteBean actual = entityMerger.merge(context, entity);
-		CompleteBean actual2 = entityMerger.merge(context, entity);
 
-		assertThat(actual2).isSameAs(entity);
 		assertThat(actual).isSameAs(entity);
-		verify(context, times(2)).setEntity(entity);
+		verify(context).setEntity(entity);
 		verify(merger).merge(context, dirtyMap);
-		verify(merger).cascadeMerge(eq(entityMerger), eq(context),
-				any(List.class));
 
 		verify(interceptor).setContext(context);
 		verify(interceptor).setTarget(entity);

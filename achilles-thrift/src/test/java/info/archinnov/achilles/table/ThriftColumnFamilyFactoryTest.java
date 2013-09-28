@@ -19,7 +19,7 @@ package info.archinnov.achilles.table;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -70,10 +70,12 @@ public class ThriftColumnFamilyFactoryTest {
 	@Mock
 	private ColumnFamilyDefinition cfDef;
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_entity_column_family() throws Exception {
 		PropertyMeta propertyMeta = mock(PropertyMeta.class);
-		when((Class) propertyMeta.getValueClass()).thenReturn(String.class);
+		when((Class<String>) propertyMeta.getValueClass()).thenReturn(
+				String.class);
 
 		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 		propertyMetas.put("age", propertyMeta);
@@ -160,43 +162,6 @@ public class ThriftColumnFamilyFactoryTest {
 
 		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
 				COUNTERTYPE.getTypeName());
-	}
-
-	@Test
-	public void should_create_clustered_entity_column_family_with_join_clustered_value()
-			throws Exception {
-
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(UUID.class).build();
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("name")
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
-
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(idMeta);
-		meta.setTableName("tableName");
-		meta.setClassName("entityName");
-		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "name", pm));
-		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		meta.setFirstMeta(pm);
-
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								true)).thenReturn("(UTF8Type,UUIDType)");
-		ColumnFamilyDefinition cfDef = factory.createClusteredEntityCF(
-				"keyspaceName", meta);
-
-		assertThat(cfDef.getDefaultValidationClass()).isEqualTo(
-				UUID_SRZ.getComparatorType().getTypeName());
 	}
 
 	@Test

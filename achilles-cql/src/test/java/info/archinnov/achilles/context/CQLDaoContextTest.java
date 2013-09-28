@@ -17,7 +17,7 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -378,31 +378,6 @@ public class CQLDaoContextTest {
 				.isEqualTo(new Long(ttl));
 		assertThat(Whitebox.getInternalState(usings.get(1), "value"))
 				.isEqualTo(new Long(timestamp));
-	}
-
-	@Test
-	public void should_check_for_entity_existence() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.field("id").build();
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setConsistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM));
-
-		when(
-				cacheManager.getCacheForFieldSelect(session, dynamicPSCache,
-						context, idMeta)).thenReturn(ps);
-		when(
-				binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta,
-						entity.getId())).thenReturn(bsWrapper);
-		when(context.getConsistencyLevel()).thenReturn(
-				Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
-		ResultSet resultSet = mock(ResultSet.class);
-		when(context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM))
-				.thenReturn(resultSet);
-		when(resultSet.all()).thenReturn(Arrays.asList(mock(Row.class)));
-
-		boolean actual = daoContext.checkForEntityExistence(context);
-
-		assertThat(actual).isTrue();
 	}
 
 	@Test

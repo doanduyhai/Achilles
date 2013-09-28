@@ -139,19 +139,6 @@ public class CQLTableCreator extends TableCreator {
 			case LAZY_MAP:
 				builder.addMap(propertyName, keyClass, pm.getValueClass());
 				break;
-			case JOIN_SIMPLE:
-				builder.addColumn(propertyName, pm.joinIdMeta().getValueClass());
-				break;
-			case JOIN_LIST:
-				builder.addList(propertyName, pm.joinIdMeta().getValueClass());
-				break;
-			case JOIN_SET:
-				builder.addSet(propertyName, pm.joinIdMeta().getValueClass());
-				break;
-			case JOIN_MAP:
-				builder.addMap(propertyName, keyClass, pm.joinIdMeta()
-						.getValueClass());
-				break;
 			default:
 				break;
 			}

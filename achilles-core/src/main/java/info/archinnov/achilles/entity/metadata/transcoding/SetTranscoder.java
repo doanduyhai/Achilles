@@ -33,7 +33,7 @@ public class SetTranscoder extends SimpleTranscoder {
 	public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
 		Set<Object> encoded = new HashSet<Object>();
 		for (Object value : entityValue) {
-			encoded.add(super.encode(pm, pm.getValueClass(), value));
+			encoded.add(super.encodeInternal(pm.getValueClass(), value));
 		}
 		return encoded;
 	}
@@ -42,7 +42,7 @@ public class SetTranscoder extends SimpleTranscoder {
 	public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
 		Set<Object> decoded = new HashSet<Object>();
 		for (Object value : cassandraValue) {
-			decoded.add(super.decode(pm, pm.getValueClass(), value));
+			decoded.add(super.decodeInternal(pm.getValueClass(), value));
 		}
 		return decoded;
 	}

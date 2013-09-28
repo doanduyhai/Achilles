@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 
 import org.junit.Test;
 
@@ -29,35 +29,12 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.LAZY_LIST.isLazy()).isTrue();
 		assertThat(PropertyType.LAZY_SET.isLazy()).isTrue();
 		assertThat(PropertyType.LAZY_MAP.isLazy()).isTrue();
-		assertThat(PropertyType.JOIN_SIMPLE.isLazy()).isTrue();
-		assertThat(PropertyType.JOIN_LIST.isLazy()).isTrue();
-		assertThat(PropertyType.JOIN_SET.isLazy()).isTrue();
-		assertThat(PropertyType.JOIN_MAP.isLazy()).isTrue();
 
 		assertThat(PropertyType.ID.isLazy()).isFalse();
 		assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
 		assertThat(PropertyType.LIST.isLazy()).isFalse();
 		assertThat(PropertyType.MAP.isLazy()).isFalse();
 		assertThat(PropertyType.EMBEDDED_ID.isLazy()).isFalse();
-	}
-
-	@Test
-	public void should_test_is_join_column() throws Exception {
-		assertThat(PropertyType.ID.isJoin()).isFalse();
-		assertThat(PropertyType.SIMPLE.isJoin()).isFalse();
-		assertThat(PropertyType.LIST.isJoin()).isFalse();
-		assertThat(PropertyType.MAP.isJoin()).isFalse();
-		assertThat(PropertyType.COUNTER.isJoin()).isFalse();
-		assertThat(PropertyType.LAZY_SIMPLE.isJoin()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isJoin()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isJoin()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isJoin()).isFalse();
-		assertThat(PropertyType.EMBEDDED_ID.isJoin()).isFalse();
-
-		assertThat(PropertyType.JOIN_SIMPLE.isJoin()).isTrue();
-		assertThat(PropertyType.JOIN_LIST.isJoin()).isTrue();
-		assertThat(PropertyType.JOIN_SET.isJoin()).isTrue();
-		assertThat(PropertyType.JOIN_MAP.isJoin()).isTrue();
 	}
 
 	@Test
@@ -71,10 +48,6 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.LAZY_LIST.isCounter()).isFalse();
 		assertThat(PropertyType.LAZY_SET.isCounter()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isCounter()).isFalse();
-		assertThat(PropertyType.JOIN_SIMPLE.isCounter()).isFalse();
-		assertThat(PropertyType.JOIN_LIST.isCounter()).isFalse();
-		assertThat(PropertyType.JOIN_SET.isCounter()).isFalse();
-		assertThat(PropertyType.JOIN_MAP.isCounter()).isFalse();
 		assertThat(PropertyType.EMBEDDED_ID.isCounter()).isFalse();
 	}
 
@@ -85,10 +58,6 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.LAZY_LIST.isId()).isFalse();
 		assertThat(PropertyType.LAZY_SET.isId()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isId()).isFalse();
-		assertThat(PropertyType.JOIN_SIMPLE.isId()).isFalse();
-		assertThat(PropertyType.JOIN_LIST.isId()).isFalse();
-		assertThat(PropertyType.JOIN_SET.isId()).isFalse();
-		assertThat(PropertyType.JOIN_MAP.isId()).isFalse();
 
 		assertThat(PropertyType.ID.isId()).isTrue();
 		assertThat(PropertyType.SIMPLE.isId()).isFalse();
@@ -104,10 +73,6 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.LAZY_LIST.isEmbeddedId()).isFalse();
 		assertThat(PropertyType.LAZY_SET.isEmbeddedId()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.JOIN_SIMPLE.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.JOIN_LIST.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.JOIN_SET.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.JOIN_MAP.isEmbeddedId()).isFalse();
 
 		assertThat(PropertyType.ID.isEmbeddedId()).isFalse();
 		assertThat(PropertyType.SIMPLE.isEmbeddedId()).isFalse();
@@ -125,12 +90,6 @@ public class PropertyTypeTest {
 				.isFalse();
 		assertThat(PropertyType.LAZY_SET.isValidClusteredValueType()).isFalse();
 		assertThat(PropertyType.LAZY_MAP.isValidClusteredValueType()).isFalse();
-		assertThat(PropertyType.JOIN_SIMPLE.isValidClusteredValueType())
-				.isTrue();
-		assertThat(PropertyType.JOIN_LIST.isValidClusteredValueType())
-				.isFalse();
-		assertThat(PropertyType.JOIN_SET.isValidClusteredValueType()).isFalse();
-		assertThat(PropertyType.JOIN_MAP.isValidClusteredValueType()).isFalse();
 
 		assertThat(PropertyType.ID.isValidClusteredValueType()).isFalse();
 		assertThat(PropertyType.SIMPLE.isValidClusteredValueType()).isTrue();

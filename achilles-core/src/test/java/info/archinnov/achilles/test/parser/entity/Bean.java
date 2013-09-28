@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import static javax.persistence.CascadeType.ALL;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -28,8 +27,6 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 @Entity
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
@@ -58,8 +55,7 @@ public class Bean {
 	@Column
 	private Map<Integer, String> preferences;
 
-	@ManyToOne(cascade = ALL)
-	@JoinColumn
+	@Column
 	private UserBean creator;
 
 	public Long getId() {

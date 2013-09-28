@@ -30,8 +30,6 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ObjectUtils;
-
 import com.google.common.base.Optional;
 
 public abstract class PersistenceContext {
@@ -44,29 +42,26 @@ public abstract class PersistenceContext {
 	protected Object primaryKey;
 	protected Object partitionKey;
 	protected FlushContext<?> flushContext;
-	protected Set<String> entitiesIdentity;
 
 	protected Options options = OptionsBuilder.noOptions();
 	protected boolean loadEagerFields = true;
 
 	private PersistenceContext(EntityMeta entityMeta,
 			ConfigurationContext configContext, FlushContext<?> flushContext,
-			Class<?> entityClass, Options options, Set<String> entitiesIdentity) {
+			Class<?> entityClass, Options options) {
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
 		this.flushContext = flushContext;
 		this.entityClass = entityClass;
 		this.options = options;
-		this.entitiesIdentity = entitiesIdentity;
 
 	}
 
 	protected PersistenceContext(EntityMeta entityMeta,
 			ConfigurationContext configContext, Object entity,
-			FlushContext<?> flushContext, Options options,
-			Set<String> entitiesIdentity) {
+			FlushContext<?> flushContext, Options options) {
 		this(entityMeta, configContext, flushContext, entityMeta
-				.getEntityClass(), options, entitiesIdentity);
+				.getEntityClass(), options);
 		Validator
 				.validateNotNull(entity,
 						"The entity should not be null for persistence context creation");
@@ -82,10 +77,8 @@ public abstract class PersistenceContext {
 
 	protected PersistenceContext(EntityMeta entityMeta,
 			ConfigurationContext configContext, Class<?> entityClass,
-			Object primaryKey, FlushContext<?> flushContext, Options options,
-			Set<String> entitiesIdentity) {
-		this(entityMeta, configContext, flushContext, entityClass, options,
-				entitiesIdentity);
+			Object primaryKey, FlushContext<?> flushContext, Options options) {
+		this(entityMeta, configContext, flushContext, entityClass, options);
 
 		this.primaryKey = primaryKey;
 		this.flushContext = flushContext;
@@ -101,10 +94,6 @@ public abstract class PersistenceContext {
 		if (entityMeta.hasEmbeddedId()) {
 			this.partitionKey = entityMeta.getPartitionKey(primaryKey);
 		}
-	}
-
-	public boolean addToProcessingList(Object entity) {
-		return entitiesIdentity.add(ObjectUtils.identityToString(entity));
 	}
 
 	public abstract void persist();
@@ -144,12 +133,6 @@ public abstract class PersistenceContext {
 	public abstract void refresh() throws AchillesStaleObjectStateException;
 
 	public abstract PersistenceContext duplicate(Object entity);
-
-	public abstract PersistenceContext createContextForJoin(
-			EntityMeta joinMeta, Object joinEntity);
-
-	public abstract PersistenceContext createContextForJoin(
-			Class<?> entityClass, EntityMeta joinMeta, Object joinId);
 
 	public boolean isClusteredEntity() {
 		return this.entityMeta.isClusteredEntity();
@@ -237,9 +220,4 @@ public abstract class PersistenceContext {
 	public Optional<ConsistencyLevel> getConsistencyLevel() {
 		return Optional.fromNullable(flushContext.getConsistencyLevel());
 	}
-
-	public boolean isEnsureJoinConsistency() {
-		return configContext.isEnsureJoinConsistency();
-	}
-
 }

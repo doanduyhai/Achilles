@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -126,46 +126,13 @@ public class CQLPersistenceContextTest {
 	}
 
 	@Test
-	public void should_create_new_persistence_context_for_join_entity()
-			throws Exception {
-
-		CQLPersistenceContext joinContext = context.createContextForJoin(meta,
-				entity);
-
-		assertThat(joinContext.getEntity()).isSameAs(entity);
-		assertThat((Class) joinContext.getEntityClass()).isSameAs(
-				CompleteBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(meta);
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
-	}
-
-	@Test
-	public void should_create_new_persistence_context_with_id_and_type()
-			throws Exception {
-		CQLPersistenceContext joinContext = context.createContextForJoin(
-				CompleteBean.class, meta, primaryKey);
-
-		assertThat((Class) joinContext.getEntityClass()).isSameAs(
-				CompleteBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(meta);
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(primaryKey);
-	}
-
-	@Test
 	public void should_duplicate_for_new_entity() throws Exception {
 		CompleteBean entity = new CompleteBean();
 		entity.setId(primaryKey);
-		CQLPersistenceContext joinContext = context.duplicate(entity);
+		CQLPersistenceContext duplicateContext = context.duplicate(entity);
 
-		assertThat(joinContext.getEntity()).isSameAs(entity);
-		assertThat(joinContext.getPrimaryKey()).isSameAs(primaryKey);
-	}
-
-	@Test
-	public void should_check_for_entity_existence() throws Exception {
-		when(daoContext.checkForEntityExistence(context)).thenReturn(true);
-
-		assertThat(context.checkForEntityExistence()).isTrue();
+		assertThat(duplicateContext.getEntity()).isSameAs(entity);
+		assertThat(duplicateContext.getPrimaryKey()).isSameAs(primaryKey);
 	}
 
 	@Test
@@ -452,6 +419,7 @@ public class CQLPersistenceContextTest {
 
 	@Test
 	public void should_initialize() throws Exception {
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CQLPersistenceContext, CompleteBean> interceptor = mock(EntityInterceptor.class);
 
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);

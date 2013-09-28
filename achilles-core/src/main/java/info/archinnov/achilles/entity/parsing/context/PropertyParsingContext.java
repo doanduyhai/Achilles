@@ -25,15 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.utils.Pair;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class PropertyParsingContext {
 	private EntityParsingContext context;
 	private Field currentField;
 	private String currentPropertyName;
-	private String currentExternalTableName;
-	private boolean joinColumn = false;
 	private boolean isCustomConsistencyLevels;
 	private boolean primaryKey = false;
 	private boolean embeddedId = false;
@@ -60,28 +57,12 @@ public class PropertyParsingContext {
 		return currentField;
 	}
 
-	public boolean isJoinColumn() {
-		return joinColumn;
-	}
-
-	public void setJoinColumn(boolean joinColumn) {
-		this.joinColumn = joinColumn;
-	}
-
 	public String getCurrentPropertyName() {
 		return currentPropertyName;
 	}
 
 	public void setCurrentPropertyName(String currentPropertyName) {
 		this.currentPropertyName = currentPropertyName;
-	}
-
-	public String getCurrentExternalTableName() {
-		return currentExternalTableName;
-	}
-
-	public void setCurrentExternalTableName(String currentExternalTableName) {
-		this.currentExternalTableName = currentExternalTableName;
 	}
 
 	public List<PropertyMeta> getCounterMetas() {
@@ -96,16 +77,8 @@ public class PropertyParsingContext {
 		return context.getConfigurableCLPolicy();
 	}
 
-	public Map<PropertyMeta, Class<?>> getJoinPropertyMetaToBeFilled() {
-		return context.getJoinPropertyMetaToBeFilled();
-	}
-
 	public String getCurrentColumnFamilyName() {
 		return context.getCurrentColumnFamilyName();
-	}
-
-	public boolean isExternal() {
-		return !StringUtils.isBlank(currentExternalTableName);
 	}
 
 	public boolean isCustomConsistencyLevels() {

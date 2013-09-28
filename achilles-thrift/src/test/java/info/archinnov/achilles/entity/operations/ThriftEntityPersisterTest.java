@@ -17,9 +17,6 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static javax.persistence.CascadeType.PERSIST;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -27,7 +24,6 @@ import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
@@ -35,18 +31,15 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -133,139 +126,6 @@ public class ThriftEntityPersisterTest {
 	}
 
 	@Test
-	public void should_not_persist_twice_the_same_entity() throws Exception {
-		PropertyMeta simpleMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).type(PropertyType.SIMPLE).build();
-
-		entityMeta.setPropertyMetas(ImmutableMap.of("simpleMeta", simpleMeta));
-
-		persister.persist(context);
-		persister.persist(context);
-
-		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl, times(1)).batchPersistSimpleProperty(context,
-				simpleMeta);
-	}
-
-	@Test
-	public void should_cascade_persist() throws Exception {
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.invoker(invoker).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_SIMPLE).joinMeta(joinMeta)
-				.cascadeType(PERSIST).consistencyLevels(Pair.create(ALL, ALL))
-				.invoker(invoker).build();
-
-		entityMeta.setPropertyMetas(ImmutableMap.of("propertyMeta",
-				propertyMeta));
-
-		Long joinId = RandomUtils.nextLong();
-
-		UserBean user = new UserBean();
-
-		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
-		when(invoker.getValueFromField(entity, propertyMeta.getGetter()))
-				.thenReturn(user);
-
-		persister.cascadePersistOrEnsureExists(context, entity,
-				propertyMeta.getJoinProperties());
-
-		verify(persisterImpl).batchPersistJoinEntity(context, propertyMeta,
-				user, persister);
-	}
-
-	@Test
-	public void should_ensure_join_entity_exist() throws Exception {
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.invoker(invoker).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setTableName("cfName");
-		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
-		entityDaosMap.put("cfName", entityDao);
-		Long joinId = RandomUtils.nextLong();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-
-		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
-		when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
-		context.getConfigContext().setEnsureJoinConsistency(true);
-
-		Object actual = persister.cascadePersistOrEnsureExists(context, entity,
-				joinProperties);
-		assertThat(actual).isEqualTo(joinId);
-
-		verify(loader).loadPrimaryKey(context, joinIdMeta);
-	}
-
-	@Test
-	public void should_not_ensure_join_entity_exist_if_join_consistency_flag_false()
-			throws Exception {
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.invoker(invoker).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setTableName("cfName");
-		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
-		entityDaosMap.put("cfName", entityDao);
-		Long joinId = RandomUtils.nextLong();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-
-		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
-		when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
-		context.getConfigContext().setEnsureJoinConsistency(false);
-
-		Object actual = persister.cascadePersistOrEnsureExists(context, entity,
-				joinProperties);
-
-		assertThat(actual).isEqualTo(joinId);
-
-		verifyZeroInteractions(loader);
-
-	}
-
-	@Test
-	public void should_not_ensure_join_entity_exist_if_already_processed()
-			throws Exception {
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.invoker(invoker).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setTableName("cfName");
-		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
-		entityDaosMap.put("cfName", entityDao);
-		Long joinId = RandomUtils.nextLong();
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-
-		when(invoker.getPrimaryKey(entity, joinIdMeta)).thenReturn(joinId);
-		when(loader.loadPrimaryKey(context, joinIdMeta)).thenReturn(joinId);
-		context.getConfigContext().setEnsureJoinConsistency(true);
-		context.addToProcessingList(entity);
-
-		Object actual = persister.cascadePersistOrEnsureExists(context, entity,
-				joinProperties);
-
-		assertThat(actual).isEqualTo(joinId);
-
-		verifyZeroInteractions(loader);
-
-	}
-
-	@Test
 	public void should_persist_list() throws Exception {
 		ArrayList<String> list = new ArrayList<String>();
 
@@ -317,85 +177,6 @@ public class ThriftEntityPersisterTest {
 
 		verify(persisterImpl).removeEntityBatch(context);
 		verify(persisterImpl).batchPersistMap(map, context, mapMeta);
-	}
-
-	@Test
-	public void should_persist_join() throws Exception {
-		UserBean user = new UserBean();
-
-		PropertyMeta joinMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(JOIN_SIMPLE).invoker(invoker).build();
-
-		entityMeta.setPropertyMetas(ImmutableMap.of("joinMeta", joinMeta));
-
-		when(invoker.getValueFromField(entity, joinMeta.getGetter()))
-				.thenReturn(user);
-		persister.persist(context);
-
-		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl).batchPersistJoinEntity(context, joinMeta, user,
-				persister);
-	}
-
-	@Test
-	public void should_persist_join_list() throws Exception {
-		List<String> joinList = new ArrayList<String>();
-
-		PropertyMeta joinListMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(JOIN_LIST).invoker(invoker).build();
-
-		entityMeta.setPropertyMetas(ImmutableMap.of("joinListMeta",
-				joinListMeta));
-
-		when(invoker.getValueFromField(entity, joinListMeta.getGetter()))
-				.thenReturn(joinList);
-		persister.persist(context);
-
-		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl).batchPersistJoinList(context, joinListMeta,
-				joinList, persister);
-	}
-
-	@Test
-	public void should_persist_join_set() throws Exception {
-		Set<String> joinSet = new HashSet<String>();
-
-		PropertyMeta joinSetMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(JOIN_SET).invoker(invoker).build();
-
-		entityMeta
-				.setPropertyMetas(ImmutableMap.of("joinSetMeta", joinSetMeta));
-
-		when(invoker.getValueFromField(entity, joinSetMeta.getGetter()))
-				.thenReturn(joinSet);
-		persister.persist(context);
-
-		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl).batchPersistJoinSet(context, joinSetMeta,
-				joinSet, persister);
-	}
-
-	@Test
-	public void should_persist_join_map() throws Exception {
-		Map<Integer, String> joinMap = new HashMap<Integer, String>();
-
-		PropertyMeta joinMapMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(JOIN_MAP).invoker(invoker).build();
-
-		entityMeta
-				.setPropertyMetas(ImmutableMap.of("joinMapMeta", joinMapMeta));
-
-		when(invoker.getValueFromField(entity, joinMapMeta.getGetter()))
-				.thenReturn(joinMap);
-		persister.persist(context);
-
-		verify(persisterImpl).removeEntityBatch(context);
-		verify(persisterImpl).batchPersistJoinMap(context, joinMapMeta,
-				joinMap, persister);
 	}
 
 	@Test

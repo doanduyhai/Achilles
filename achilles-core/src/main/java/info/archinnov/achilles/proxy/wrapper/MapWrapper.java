@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.wrapper.builder.EntrySetWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.KeySetWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.ValueCollectionWrapperBuilder;
@@ -71,7 +70,6 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getEntityClassName());
 
 			EntrySetWrapper wrapperSet = EntrySetWrapperBuilder
-					//
 					.builder(context, targetEntrySet).dirtyMap(dirtyMap)
 					.setter(setter).propertyMeta(propertyMeta)
 					.proxifier(proxifier).build();
@@ -86,12 +84,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 				"Return value having key{} for map property {} of entity class {}",
 				key, propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
-		if (isJoin()) {
-			Object joinEntity = this.target.get(key);
-			return proxifier.buildProxy(joinEntity, joinContext(joinEntity));
-		} else {
-			return this.target.get(key);
-		}
+		return this.target.get(key);
 	}
 
 	@Override
@@ -110,8 +103,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 			KeySetWrapper keySetWrapper = KeySetWrapperBuilder
 					.builder(context, keySet).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta((PropertyMeta) propertyMeta)
-					.proxifier(proxifier).build();
+					.propertyMeta(propertyMeta).proxifier(proxifier).build();
 			keySet = keySetWrapper;
 		}
 		return keySet;
@@ -176,8 +168,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 			ValueCollectionWrapper collectionWrapper = ValueCollectionWrapperBuilder
 					//
 					.builder(context, values).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta((PropertyMeta) propertyMeta)
-					.proxifier(proxifier).build();
+					.propertyMeta(propertyMeta).proxifier(proxifier).build();
 			values = collectionWrapper;
 		}
 		return values;

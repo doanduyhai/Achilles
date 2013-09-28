@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadePersist;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -30,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
 
 public class CQLEntityPersister implements
 		EntityPersister<CQLPersistenceContext> {
@@ -44,14 +42,12 @@ public class CQLEntityPersister implements
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		Object entity = context.getEntity();
-		if (context.addToProcessingList(entity)) {
-			log.debug("Persisting transient entity {}", entity);
+		log.debug("Persisting transient entity {}", entity);
 
-			if (entityMeta.isClusteredCounter()) {
-				persisterImpl.persistClusteredCounter(context);
-			} else {
-				persistEntity(context, entityMeta);
-			}
+		if (entityMeta.isClusteredCounter()) {
+			persisterImpl.persistClusteredCounter(context);
+		} else {
+			persistEntity(context, entityMeta);
 		}
 	}
 
@@ -60,27 +56,6 @@ public class CQLEntityPersister implements
 		persisterImpl.persist(context);
 
 		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
-
-		Set<PropertyMeta> joinPMsWithCascade = FluentIterable.from(allMetas)
-				.filter(joinPropertyType).filter(hasCascadePersist)
-				.toImmutableSet();
-
-		persisterImpl.cascadePersist(this, context, joinPMsWithCascade);
-
-		if (context.isEnsureJoinConsistency()) {
-			Set<PropertyMeta> joinPMs = FluentIterable.from(allMetas)
-					.filter(joinPropertyType).toImmutableSet();
-
-			Set<PropertyMeta> ensureExistsPMs = Sets.difference(joinPMs,
-					joinPMsWithCascade);
-
-			log.debug(
-					"Consistency check for join entity of class {} and primary key {} ",
-					context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-
-			persisterImpl.ensureEntitiesExist(context, ensureExistsPMs);
-		}
 
 		Set<PropertyMeta> counterMetas = FluentIterable.from(allMetas)
 				.filter(counterType).toImmutableSet();

@@ -27,7 +27,6 @@ import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
-import java.util.HashSet;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -68,8 +67,6 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 
 	/**
 	 * End an existing batch and flush all the pending statements.
-	 * 
-	 * All join entities will be flushed too.
 	 * 
 	 * Do nothing if there is no pending statement
 	 * 
@@ -168,8 +165,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				flushContext, entityClass, primaryKey, options,
-				new HashSet<String>());
+				flushContext, entityClass, primaryKey, options);
 	}
 
 	@Override
@@ -180,6 +176,6 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 		EntityMeta entityMeta = this.entityMetaMap.get(proxifier
 				.deriveBaseClass(entity));
 		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				flushContext, entity, options, new HashSet<String>());
+				flushContext, entity, options);
 	}
 }

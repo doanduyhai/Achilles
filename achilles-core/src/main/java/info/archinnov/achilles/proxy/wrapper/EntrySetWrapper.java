@@ -17,11 +17,9 @@
 package info.archinnov.achilles.proxy.wrapper;
 
 import info.archinnov.achilles.proxy.wrapper.builder.EntryIteratorWrapperBuilder;
-import info.archinnov.achilles.proxy.wrapper.builder.MapEntryWrapperBuilder;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -138,53 +136,12 @@ public class EntrySetWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object[] toArray() {
-		Object[] result = null;
-		if (isJoin()) {
-			log.trace(
-					"Build proxies for join entities of entrey set property {} of entity class {} upon toArray() call",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-			Object[] array = new MapEntryWrapper[this.target.size()];
-			int i = 0;
-			for (Map.Entry<Object, Object> entry : this.target) {
-				array[i] = MapEntryWrapperBuilder
-						//
-						.builder(context, entry).dirtyMap(dirtyMap)
-						.setter(setter).propertyMeta(propertyMeta)
-						.proxifier(proxifier).build();
-				i++;
-			}
-			result = array;
-		} else {
-			result = this.target.toArray();
-		}
-		return result;
+		return this.target.toArray();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T[] toArray(T[] arg0) {
-		T[] result = null;
-		if (isJoin()) {
-			T[] array = this.target.toArray(arg0);
-
-			for (int i = 0; i < array.length; i++) {
-				log.trace(
-						"Build proxies for join entities of entrey set property {} of entity class {} upon toArray(T[] arg) call",
-						propertyMeta.getPropertyName(),
-						propertyMeta.getEntityClassName());
-
-				array[i] = (T) MapEntryWrapperBuilder
-						.builder(context, (Entry<Object, Object>) array[i])
-						.dirtyMap(dirtyMap).setter(setter)
-						.propertyMeta(propertyMeta).proxifier(proxifier)
-						.build();
-			}
-			result = array;
-		} else {
-			result = this.target.toArray(arg0);
-		}
-		return result;
+		return this.target.toArray(arg0);
 	}
 
 }

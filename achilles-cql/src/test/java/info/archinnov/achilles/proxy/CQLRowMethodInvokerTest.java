@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.proxy;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
@@ -115,9 +115,6 @@ public class CQLRowMethodInvokerTest {
 	@Test
 	public void should_get_map_value_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.MAP);
-		when(
-				(Class<String>) pm.getJoinProperties().getEntityMeta()
-						.getIdMeta().getValueClass()).thenReturn(String.class);
 		Map<Integer, String> map = ImmutableMap.of(11, "value");
 		when(row.getMap("property", Integer.class, String.class)).thenReturn(
 				map);
@@ -208,9 +205,6 @@ public class CQLRowMethodInvokerTest {
 	public void should_exception_when_invoking_map_getter_from_row()
 			throws Exception {
 		when(pm.type()).thenReturn(PropertyType.MAP);
-		when(
-				(Class<String>) pm.getJoinProperties().getEntityMeta()
-						.getIdMeta().getValueClass()).thenReturn(String.class);
 		when(row.getMap("property", Integer.class, String.class)).thenThrow(
 				new RuntimeException(""));
 

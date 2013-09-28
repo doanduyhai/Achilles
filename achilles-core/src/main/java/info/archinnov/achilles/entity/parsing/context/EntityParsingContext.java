@@ -33,7 +33,6 @@ import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class EntityParsingContext {
-	private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled;
 	private ConfigurationContext configContext;
 	private Boolean hasCounter = false;
 
@@ -46,18 +45,14 @@ public class EntityParsingContext {
 	private String currentColumnFamilyName;
 
 	public EntityParsingContext(//
-			Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled, //
 			ConfigurationContext configContext, //
 			Class<?> currentEntityClass) {
-		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
 		this.configContext = configContext;
 		this.currentEntityClass = currentEntityClass;
 	}
 
 	public EntityParsingContext( //
-			Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled, //
 			ConfigurationContext configContext) {
-		this.joinPropertyMetaToBeFilled = joinPropertyMetaToBeFilled;
 		this.configContext = configContext;
 	}
 
@@ -67,10 +62,6 @@ public class EntityParsingContext {
 
 	public boolean isThriftImpl() {
 		return configContext.getImpl() == Impl.THRIFT;
-	}
-
-	public Map<PropertyMeta, Class<?>> getJoinPropertyMetaToBeFilled() {
-		return joinPropertyMetaToBeFilled;
 	}
 
 	public Class<?> getCurrentEntityClass() {

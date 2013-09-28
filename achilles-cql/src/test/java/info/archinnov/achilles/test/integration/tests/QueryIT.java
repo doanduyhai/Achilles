@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
@@ -187,7 +187,7 @@ public class QueryIT {
 		Factory factory1 = (Factory) found1;
 		CQLEntityInterceptor<CompleteBean> interceptor1 = (CQLEntityInterceptor<CompleteBean>) factory1
 				.getCallback(0);
-		assertThat(interceptor1.getAlreadyLoaded()).hasSize(5);
+		assertThat(interceptor1.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 
@@ -197,7 +197,7 @@ public class QueryIT {
 		Factory factory2 = (Factory) found1;
 		CQLEntityInterceptor<CompleteBean> interceptor2 = (CQLEntityInterceptor<CompleteBean>) factory2
 				.getCallback(0);
-		assertThat(interceptor2.getAlreadyLoaded()).hasSize(5);
+		assertThat(interceptor2.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
 

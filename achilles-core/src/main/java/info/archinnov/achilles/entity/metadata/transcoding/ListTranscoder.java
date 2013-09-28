@@ -33,7 +33,7 @@ public class ListTranscoder extends SimpleTranscoder {
 	public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
 		List<Object> encoded = new ArrayList<Object>();
 		for (Object value : entityValue) {
-			encoded.add(super.encode(pm, pm.getValueClass(), value));
+			encoded.add(super.encodeInternal(pm.getValueClass(), value));
 		}
 		return encoded;
 	}
@@ -42,7 +42,7 @@ public class ListTranscoder extends SimpleTranscoder {
 	public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
 		List<Object> decoded = new ArrayList<Object>();
 		for (Object value : cassandraValue) {
-			decoded.add(super.decode(pm, pm.getValueClass(), value));
+			decoded.add(super.decodeInternal(pm.getValueClass(), value));
 		}
 		return decoded;
 	}

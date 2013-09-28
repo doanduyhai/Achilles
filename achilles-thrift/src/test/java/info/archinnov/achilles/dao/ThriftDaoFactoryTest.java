@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.dao;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.COMPOSITE_SRZ;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -233,42 +233,6 @@ public class ThriftDaoFactoryTest {
 				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
 		assertThat(rowAndValueClases.left).isSameAs(Integer.class);
 		assertThat(rowAndValueClases.right).isSameAs(String.class);
-	}
-
-	@Test
-	public void should_create_join_clustered_entity_dao() throws Exception {
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Integer.class, String.class, UUID.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).build();
-
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(UUID.class).build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
-
-		EntityMeta entityMeta = new EntityMeta();
-		entityMeta.setClusteredEntity(true);
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setTableName("cf");
-		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		entityMeta.setFirstMeta(pm);
-
-		factory.createClusteredEntityDao(cluster, keyspace, configContext,
-				entityMeta, wideRowDaosMap);
-
-		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
-
-		Pair<Class<Integer>, Class<UUID>> rowAndValueClases = Whitebox
-				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
-		assertThat(rowAndValueClases.left).isSameAs(Integer.class);
-		assertThat(rowAndValueClases.right).isSameAs(UUID.class);
 	}
 
 	@Test

@@ -16,10 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.CQLEntityMapper;
@@ -29,17 +27,11 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.proxy.CQLRowMethodInvoker;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,8 +49,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Row;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLLoaderImplTest {
@@ -94,9 +84,6 @@ public class CQLLoaderImplTest {
 
 	@Captor
 	private ArgumentCaptor<Map<Integer, UserBean>> mapCaptor;
-
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
 
 	private PropertyMeta idMeta;
 
@@ -217,250 +204,5 @@ public class CQLLoaderImplTest {
 		loaderImpl.loadPropertyIntoEntity(context, pm, entity);
 
 		verify(mapper).setPropertyToEntity(row, pm, entity);
-	}
-
-	@Test
-	public void should_load_join_simple_into_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(JOIN_SIMPLE).invoker(invoker)
-				.joinMeta(entityMeta).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForProperty(row, pm, "name", Long.class))
-				.thenReturn(11L);
-
-		UserBean userBean = new UserBean();
-		when(
-				entityLoader.load(any(CQLPersistenceContext.class),
-						eq(UserBean.class))).thenReturn(userBean);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, userBean);
-	}
-
-	@Test
-	public void should_load_join_property_if_row_null() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_SIMPLE)
-				.joinMeta(entityMeta).build();
-
-		when(context.loadProperty(pm)).thenReturn(null);
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verifyZeroInteractions(entityLoader, cqlRowInvoker, mapper);
-	}
-
-	@Test
-	public void should_not_load_join_simple_into_entity_when_null()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(JOIN_SIMPLE).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForProperty(row, pm, "name", Long.class))
-				.thenReturn(null);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_load_join_list_into_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(JOIN_LIST).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		List<Long> joinIds = Arrays.asList(11L);
-		when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class))
-				.thenReturn((List) joinIds);
-
-		UserBean userBean = new UserBean();
-		when(
-				entityLoader.load(any(CQLPersistenceContext.class),
-						eq(UserBean.class))).thenReturn(userBean);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(eq(entity), any(Method.class),
-				listCaptor.capture());
-		assertThat(listCaptor.getValue()).containsExactly(userBean);
-	}
-
-	@Test
-	public void should_not_load_join_list_into_entity_when_null()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_LIST)
-				.joinMeta(entityMeta).invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class))
-				.thenReturn(null);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_not_load_join_list_into_entity_empty_id_list()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_LIST)
-				.joinMeta(entityMeta).invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForList(row, pm, "name", Long.class))
-				.thenReturn(new ArrayList());
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_load_join_set_into_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_SET).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		Set<Long> joinIds = Sets.newHashSet(11L);
-		when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class))
-				.thenReturn((Set) joinIds);
-
-		UserBean userBean = new UserBean();
-		when(
-				entityLoader.load(any(CQLPersistenceContext.class),
-						eq(UserBean.class))).thenReturn(userBean);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(eq(entity), any(Method.class),
-				setCaptor.capture());
-		assertThat(setCaptor.getValue()).containsExactly(userBean);
-	}
-
-	@Test
-	public void should_not_load_join_set_into_entity_when_null()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_SET).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class))
-				.thenReturn(null);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_not_load_join_set_into_entity_when_empty_id_set()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(PropertyType.JOIN_SET).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(cqlRowInvoker.invokeOnRowForSet(row, pm, "name", Long.class))
-				.thenReturn(new HashSet());
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_load_join_map_into_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class).field("name")
-				.type(PropertyType.JOIN_MAP).joinMeta(entityMeta)
-				.invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		Map<Integer, Long> joinIds = ImmutableMap.of(11, 11L);
-		when(
-				cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class,
-						Long.class)).thenReturn((Map) joinIds);
-
-		UserBean userBean = new UserBean();
-		when(
-				entityLoader.load(any(CQLPersistenceContext.class),
-						eq(UserBean.class))).thenReturn(userBean);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(eq(entity), any(Method.class),
-				mapCaptor.capture());
-		assertThat(mapCaptor.getValue()).containsKey(11);
-		assertThat(mapCaptor.getValue()).containsValue(userBean);
-	}
-
-	@Test
-	public void should_not_load_join_map_into_entity_when_null()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class).field("name")
-				.type(JOIN_MAP).joinMeta(entityMeta).invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(
-				cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class,
-						Long.class)).thenReturn(null);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_not_load_join_map_into_entity_when_empty_id_map()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class).field("name")
-				.type(JOIN_MAP).joinMeta(entityMeta).invoker(invoker).build();
-
-		when(context.loadProperty(pm)).thenReturn(row);
-		when(
-				cqlRowInvoker.invokeOnRowForMap(row, pm, "name", Integer.class,
-						Long.class)).thenReturn(new HashMap());
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-	}
-
-	@Test
-	public void should_load_null_when_not_join_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.field("name").type(SIMPLE).joinMeta(entityMeta)
-				.invoker(invoker).build();
-		when(context.loadProperty(pm)).thenReturn(row);
-
-		loaderImpl
-				.loadJoinPropertyIntoEntity(entityLoader, context, pm, entity);
-
-		verify(invoker).setValueToField(entity, null, null);
-
-		verifyZeroInteractions(cqlRowInvoker);
 	}
 }

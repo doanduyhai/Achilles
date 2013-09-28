@@ -58,12 +58,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 				"Return next element from list property {} of entity class {}",
 				propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
-		Object entity = this.target.next();
-		if (isJoin()) {
-			return proxifier.buildProxy(entity, joinContext(entity));
-		} else {
-			return entity;
-		}
+		return this.target.next();
 	}
 
 	@Override
@@ -77,12 +72,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 				"Return previous element from list property {} of entity class {}",
 				propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
-		Object entity = this.target.previous();
-		if (isJoin()) {
-			return proxifier.buildProxy(entity, joinContext(entity));
-		} else {
-			return entity;
-		}
+		return this.target.previous();
 	}
 
 	@Override

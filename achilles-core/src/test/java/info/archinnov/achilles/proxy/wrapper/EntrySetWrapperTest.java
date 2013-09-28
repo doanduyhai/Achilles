@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -55,9 +55,6 @@ public class EntrySetWrapperTest {
 
 	@Mock
 	private PropertyMeta propertyMeta;
-
-	@Mock
-	private PropertyMeta joinPropertyMeta;
 
 	@Mock
 	private EntityProxifier<PersistenceContext> proxifier;
@@ -293,19 +290,6 @@ public class EntrySetWrapperTest {
 				"FR");
 	}
 
-	@Test
-	public void should_return_array_when_join() throws Exception {
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put(1, "FR");
-		EntrySetWrapper wrapper = prepareWrapper(map);
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
-
-		Object[] array = wrapper.toArray();
-
-		assertThat(array).hasSize(1);
-		assertThat(array[0]).isInstanceOf(MapEntryWrapper.class);
-	}
-
 	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_array_with_argument() throws Exception {
@@ -321,27 +305,6 @@ public class EntrySetWrapperTest {
 		assertThat(array).hasSize(1);
 		assertThat(((Entry<Object, Object>) array[0]).getValue()).isEqualTo(
 				"FR");
-	}
-
-	@Test
-	public void should_return_array_with_argument_when_join_entity()
-			throws Exception {
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put(1, entity);
-		Entry<Object, Object> entry = map.entrySet().iterator().next();
-
-		EntrySetWrapper wrapper = prepareJoinWrapper(map);
-		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_SET);
-
-		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-		when(proxifier.buildProxy(eq(entity), any(PersistenceContext.class)))
-				.thenReturn(entity);
-
-		Object[] array = wrapper.toArray(new Entry[] { entry });
-
-		assertThat(array).hasSize(1);
-		assertThat(((Entry<Integer, CompleteBean>) array[0]).getValue())
-				.isEqualTo(entity);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -383,16 +346,6 @@ public class EntrySetWrapperTest {
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setProxifier(proxifier);
-		return wrapper;
-	}
-
-	private EntrySetWrapper prepareJoinWrapper(Map<Object, Object> map) {
-		EntrySetWrapper wrapper = new EntrySetWrapper(map.entrySet());
-		wrapper.setContext(context);
-		wrapper.setDirtyMap(dirtyMap);
-		wrapper.setSetter(setter);
-		wrapper.setPropertyMeta(joinPropertyMeta);
 		wrapper.setProxifier(proxifier);
 		return wrapper;
 	}

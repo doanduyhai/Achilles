@@ -63,7 +63,6 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
-	private boolean clusteredJoin = false;
 
 	public Object getPrimaryKey(Object entity) {
 		return idMeta.getPrimaryKey(entity);
@@ -223,14 +222,6 @@ public class EntityMeta {
 
 	public void setClusteredCounter(boolean clusteredCounter) {
 		this.clusteredCounter = clusteredCounter;
-	}
-
-	public boolean isClusteredJoin() {
-		return clusteredJoin;
-	}
-
-	public void setClusteredJoin(boolean clusteredJoin) {
-		this.clusteredJoin = clusteredJoin;
 	}
 
 	public boolean isValueless() {

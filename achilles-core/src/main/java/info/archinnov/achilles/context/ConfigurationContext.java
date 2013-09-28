@@ -22,8 +22,6 @@ import info.archinnov.achilles.json.ObjectMapperFactory;
 public class ConfigurationContext {
 	private boolean forceColumnFamilyCreation;
 
-	private boolean ensureJoinConsistency;
-
 	private AchillesConsistencyLevelPolicy consistencyPolicy;
 
 	private ObjectMapperFactory objectMapperFactory;
@@ -36,14 +34,6 @@ public class ConfigurationContext {
 
 	public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
 		this.forceColumnFamilyCreation = forceColumnFamilyCreation;
-	}
-
-	public boolean isEnsureJoinConsistency() {
-		return ensureJoinConsistency;
-	}
-
-	public void setEnsureJoinConsistency(boolean ensureJoinConsistency) {
-		this.ensureJoinConsistency = ensureJoinConsistency;
 	}
 
 	public AchillesConsistencyLevelPolicy getConsistencyPolicy() {

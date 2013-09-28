@@ -17,9 +17,9 @@
 package info.archinnov.achilles.proxy;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ThriftAbstractFlushContext;
@@ -42,7 +42,6 @@ import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.lang.reflect.Method;
@@ -56,7 +55,6 @@ import java.util.Set;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.mutation.Mutator;
-import net.sf.cglib.proxy.Factory;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -103,9 +101,6 @@ public class ThriftEntityInterceptorTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private PropertyMeta joinPropertyMeta;
-
-	@Mock
 	private Mutator<Long> mutator;
 
 	private ThriftPersistenceContext context;
@@ -135,11 +130,7 @@ public class ThriftEntityInterceptorTest {
 
 	private PropertyMeta idMeta;
 
-	private PropertyMeta joinIdMeta;
-
 	private PropertyMeta nameMeta;
-
-	private PropertyMeta userMeta;
 
 	@Before
 	public void setUp() throws Exception {
@@ -150,13 +141,6 @@ public class ThriftEntityInterceptorTest {
 				.completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).accessors().build();
 
-		userMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).accessors().build();
-
-		joinIdMeta = PropertyMetaTestBuilder
-				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.type(ID).accessors().invoker(invoker).build();
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setGetterMetas(getterMetas);
@@ -179,7 +163,6 @@ public class ThriftEntityInterceptorTest {
 		interceptor.setPrimaryKey(key);
 		interceptor.setDirtyMap(dirtyMap);
 		interceptor.setContext(context);
-		when(entityDaosMap.get("join_cf")).thenReturn(entityDao);
 		when(flushContext.duplicate()).thenReturn(flushContext);
 
 		Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
@@ -268,54 +251,6 @@ public class ThriftEntityInterceptorTest {
 	}
 
 	@Test
-	public void should_create_simple_join_wrapper() throws Throwable {
-		UserBean user = new UserBean();
-		user.setUserId(123L);
-		EntityMeta joinEntityMeta = new EntityMeta();
-		joinEntityMeta.setEntityClass(UserBean.class);
-		joinEntityMeta.setIdMeta(joinIdMeta);
-		joinEntityMeta.setGetterMetas(getterMetas);
-		joinEntityMeta.setSetterMetas(setterMetas);
-		joinEntityMeta.setTableName("join_cf");
-		joinEntityMeta.setEagerGetters(eagerGetters);
-
-		when(getterMetas.containsKey(userMeta.getGetter())).thenReturn(true);
-		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
-		when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-		when(invoker.getPrimaryKey(user, joinIdMeta)).thenReturn(
-				user.getUserId());
-		when(proxy.invoke(entity, null)).thenReturn(user);
-
-		Object actual = this.interceptor.intercept(entity,
-				userMeta.getGetter(), (Object[]) null, proxy);
-
-		assertThat(actual).isInstanceOf(Factory.class);
-		assertThat(actual).isInstanceOf(UserBean.class);
-	}
-
-	@Test
-	public void should_return_null_when_no_join_simple() throws Throwable {
-		UserBean user = new UserBean();
-		user.setUserId(123L);
-		EntityMeta joinEntityMeta = new EntityMeta();
-		joinEntityMeta.setIdMeta(joinIdMeta);
-		joinEntityMeta.setGetterMetas(getterMetas);
-		joinEntityMeta.setSetterMetas(setterMetas);
-		joinEntityMeta.setTableName("join_cf");
-
-		when(getterMetas.containsKey(userMeta.getGetter())).thenReturn(true);
-		when(getterMetas.get(userMeta.getGetter())).thenReturn(propertyMeta);
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_SIMPLE);
-		when(propertyMeta.joinMeta()).thenReturn(joinEntityMeta);
-		when(proxy.invoke(entity, null)).thenReturn(null);
-		Object actual = this.interceptor.intercept(entity,
-				userMeta.getGetter(), (Object[]) null, proxy);
-
-		assertThat(actual).isNull();
-	}
-
-	@Test
 	public void should_create_list_wrapper() throws Throwable {
 		when(getterMetas.containsKey(nameMeta.getGetter())).thenReturn(true);
 		when(getterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
@@ -400,6 +335,7 @@ public class ThriftEntityInterceptorTest {
 		assertThat(actual).isNull();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_counter_wrapper_for_entity() throws Throwable {
 		CompleteBean bean = new CompleteBean();
@@ -431,6 +367,7 @@ public class ThriftEntityInterceptorTest {
 				propertyName);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_create_counter_wrapper_for_clustered_entity()
 			throws Throwable {

@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.compound;
 
-import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
-import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.EQUAL;
+import static info.archinnov.achilles.logger.ThriftLoggerHelper.*;
+import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -42,6 +42,7 @@ public class ThriftCompoundKeyMapper {
 
 	private ThriftCompoundKeyValidator validator = new ThriftCompoundKeyValidator();
 
+	@SuppressWarnings("unchecked")
 	public <V> V fromCompositeToEmbeddedId(PropertyMeta pm,
 			List<Component<?>> components, Object partitionKey) {
 		if (log.isTraceEnabled()) {

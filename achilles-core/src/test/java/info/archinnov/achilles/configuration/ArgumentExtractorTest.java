@@ -106,20 +106,6 @@ public class ArgumentExtractorTest {
 	}
 
 	@Test
-	public void should_ensure_join_consistency() throws Exception {
-		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
-		doCallRealMethod().when(extractor).ensureConsistencyOnJoin(configMap);
-		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isTrue();
-	}
-
-	@Test
-	public void should_not_ensure_join_consistency_by_default()
-			throws Exception {
-		doCallRealMethod().when(extractor).ensureConsistencyOnJoin(configMap);
-		assertThat(extractor.ensureConsistencyOnJoin(configMap)).isFalse();
-	}
-
-	@Test
 	public void should_init_default_object_factory_mapper() throws Exception {
 		doCallRealMethod().when(extractor).initObjectMapperFactory(configMap);
 		ObjectMapperFactory actual = extractor

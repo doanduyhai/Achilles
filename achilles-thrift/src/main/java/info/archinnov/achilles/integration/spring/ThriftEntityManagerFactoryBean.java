@@ -18,7 +18,7 @@ package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.ThriftEntityManager;
 import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -53,7 +53,6 @@ public class ThriftEntityManagerFactoryBean extends
 	private Map<String, String> consistencyLevelWriteMap;
 
 	private boolean forceColumnFamilyCreation = false;
-	private boolean ensureJoinConsistency = false;
 
 	protected void initialize() {
 		Map<String, Object> configMap = new HashMap<String, Object>();
@@ -67,7 +66,6 @@ public class ThriftEntityManagerFactoryBean extends
 		fillConsistencyLevels(configMap);
 
 		configMap.put(FORCE_CF_CREATION_PARAM, forceColumnFamilyCreation);
-		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, ensureJoinConsistency);
 
 		ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory(
 				configMap);
@@ -188,10 +186,6 @@ public class ThriftEntityManagerFactoryBean extends
 	public void setConsistencyLevelWriteMap(
 			Map<String, String> consistencyLevelWriteMap) {
 		this.consistencyLevelWriteMap = consistencyLevelWriteMap;
-	}
-
-	public void setEnsureJoinConsistency(boolean ensureJoinConsistency) {
-		this.ensureJoinConsistency = ensureJoinConsistency;
 	}
 
 	@Override

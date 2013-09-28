@@ -100,9 +100,6 @@ public class CQLEntityManagerJavaConfigSample {
 	@Value("#{cassandraProperties['achilles.ddl.force.column.family.creation']}")
 	private String forceColumnFamilyCreation;
 
-	@Value("#{cassandraProperties['achilles.consistency.join.check']}")
-	private String ensureJoinConsistency;
-
 	private CQLEntityManagerFactory emf;
 
 	@PostConstruct
@@ -165,8 +162,6 @@ public class CQLEntityManagerJavaConfigSample {
 
 		configMap.put(FORCE_CF_CREATION_PARAM,
 				Boolean.parseBoolean(forceColumnFamilyCreation));
-		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM,
-				Boolean.parseBoolean(ensureJoinConsistency));
 
 		return configMap;
 	}

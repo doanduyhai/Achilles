@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
-import static info.archinnov.achilles.logger.ThriftLoggerHelper.format;
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.logger.ThriftLoggerHelper.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
@@ -25,7 +25,6 @@ import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,61 +189,6 @@ public class ThriftLoaderImpl {
 		return columns;
 	}
 
-	public Object loadJoinSimple(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta, ThriftEntityLoader loader) {
-		EntityMeta joinMeta = propertyMeta.joinMeta();
-
-		Object joinId;
-		if (context.isClusteredEntity()) {
-			joinId = retrieveJoinIdForClusteredEntity(context, propertyMeta);
-		} else {
-			String stringJoinId = retrieveJoinIdForEntity(context, propertyMeta);
-			joinId = stringJoinId != null ? propertyMeta
-					.forceDecodeFromJSON(stringJoinId) : null;
-		}
-
-		if (joinId != null) {
-			ThriftPersistenceContext joinContext = context
-					.createContextForJoin(propertyMeta.getValueClass(),
-							joinMeta, joinId);
-			return loader.load(joinContext, propertyMeta.getValueClass());
-		} else {
-			return null;
-		}
-	}
-
-	private String retrieveJoinIdForEntity(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		Composite composite = compositeFactory.createBaseForGet(propertyMeta);
-		if (log.isTraceEnabled()) {
-			log.trace(
-					"Loading join primary key for property {} of entity {} from column family {} with primary key {} and column name {}",
-					propertyMeta.getPropertyName(), propertyMeta
-							.getEntityClassName(), context.getEntityMeta()
-							.getTableName(), context.getPrimaryKey(),
-					format(composite));
-		}
-		return context.getEntityDao().getValue(context.getPrimaryKey(),
-				composite);
-	}
-
-	private Object retrieveJoinIdForClusteredEntity(
-			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
-		Object embeddedId = context.getPrimaryKey();
-		PropertyMeta idMeta = context.getIdMeta();
-		Object partitionKey = idMeta.getPartitionKey(embeddedId);
-		Composite composite = compositeFactory.createBaseForClusteredGet(
-				embeddedId, idMeta);
-		if (log.isTraceEnabled()) {
-			log.trace(
-					"Loading join primary key for property {} of clustered entity {} from column family {} with primary key {} and column name {}",
-					propertyMeta.getPropertyName(), propertyMeta
-							.getEntityClassName(), context.getEntityMeta()
-							.getTableName(), embeddedId, format(composite));
-		}
-		return context.getWideRowDao().getValue(partitionKey, composite);
-	}
-
 	private <T> T loadClusteredEntity(ThriftPersistenceContext context,
 			Class<T> entityClass, EntityMeta entityMeta, Object primaryKey) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
@@ -265,11 +209,6 @@ public class ThriftLoaderImpl {
 			clusteredEntity = counterColumn != null ? compositeTransformer
 					.buildClusteredEntityWithIdOnly(entityClass, context,
 							counterColumn.getName().getComponents()) : null;
-		} else if (entityMeta.isClusteredJoin()) {
-			HColumn<Composite, Object> column = context.getWideRowDao()
-					.getColumn(partitionKey, composite);
-			clusteredEntity = column != null ? mapper.initClusteredEntity(
-					entityClass, entityMeta, primaryKey) : null;
 		} else {
 			HColumn<Composite, Object> column = context.getWideRowDao()
 					.getColumn(partitionKey, composite);

@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
+import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.JoinColumn;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
@@ -64,7 +63,7 @@ public class PropertyParser {
 				.getCanonicalName());
 
 		Field field = context.getCurrentField();
-		inferPropertyNameAndExternalTableName(context);
+		inferPropertyName(context);
 		context.setCustomConsistencyLevels(propertyHelper
 				.hasConsistencyAnnotation(context.getCurrentField()));
 
@@ -307,31 +306,20 @@ public class PropertyParser {
 
 	}
 
-	private void inferPropertyNameAndExternalTableName(
-			PropertyParsingContext context) {
-		log.trace(
-				"Infering property name and column family name for property {}",
+	private void inferPropertyName(PropertyParsingContext context) {
+		log.trace("Infering property name for property {}",
 				context.getCurrentPropertyName());
 
-		String propertyName, externalTableName = null;
+		String propertyName = null;
 		Field field = context.getCurrentField();
-		if (context.isJoinColumn()) {
-			JoinColumn column = field.getAnnotation(JoinColumn.class);
-			externalTableName = field.getAnnotation(JoinColumn.class).table();
+		Column column = field.getAnnotation(Column.class);
+		if (column != null) {
 			propertyName = StringUtils.isNotBlank(column.name()) ? column
 					.name() : field.getName();
-		} else if (context.isPrimaryKey()) {
-			propertyName = field.getName();
 		} else {
-			Column column = field.getAnnotation(Column.class);
-			externalTableName = field.getAnnotation(Column.class).table();
-			propertyName = StringUtils.isNotBlank(column.name()) ? column
-					.name() : field.getName();
+			propertyName = field.getName();
 		}
-
 		context.setCurrentPropertyName(propertyName);
-		context.setCurrentExternalTableName(externalTableName);
-
 	}
 
 	private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field) {

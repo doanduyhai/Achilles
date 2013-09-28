@@ -37,7 +37,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext> {
 	private static final Logger log = LoggerFactory
 			.getLogger(EntityProxifier.class);
 
-	public <ID> Class<?> deriveBaseClass(Object entity) {
+	public Class<?> deriveBaseClass(Object entity) {
 		log.debug("Deriving base class for entity {} ", entity);
 
 		Class<?> baseClass = entity.getClass();

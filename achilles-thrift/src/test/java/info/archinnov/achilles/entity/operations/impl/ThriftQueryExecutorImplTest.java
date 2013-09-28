@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftConsistencyContext;
@@ -28,7 +28,6 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
-import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
@@ -101,9 +100,6 @@ public class ThriftQueryExecutorImplTest {
 
 	@Captor
 	private ArgumentCaptor<SafeExecutionContext<ThriftSliceIterator<Long, Object>>> iteratorCaptor;
-
-	@Captor
-	private ArgumentCaptor<SafeExecutionContext<ThriftJoinSliceIterator<Long, Object, Object>>> joinIteratorCaptor;
 
 	@Captor
 	private ArgumentCaptor<SafeExecutionContext<ThriftCounterSliceIterator<Long>>> counterIteratorCaptor;
@@ -216,6 +212,7 @@ public class ThriftQueryExecutorImplTest {
 						clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
+		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Long, Object> iterator = mock(ThriftSliceIterator.class);
 
 		when(
@@ -234,41 +231,6 @@ public class ThriftQueryExecutorImplTest {
 	}
 
 	@Test
-	public void should_get_join_columns_iterator() throws Exception {
-		Composite comp1 = new Composite();
-		Composite comp2 = new Composite();
-		Composite[] composites = new Composite[] { comp1, comp2 };
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setTableName("tableName");
-
-		when(pm.joinMeta()).thenReturn(joinMeta);
-		when(context.findEntityDao("tableName")).thenReturn(entityDao);
-
-		when(
-				compositeFactory.createForClusteredQuery(idMeta,
-						clusteringsFrom, clusteringsTo, bounding, ordering))
-				.thenReturn(composites);
-
-		ThriftJoinSliceIterator<Long, Object, Object> iterator = mock(ThriftJoinSliceIterator.class);
-
-		when(
-				wideRowDao.getJoinColumnsIterator(entityDao, pm, partitionKey,
-						comp1, comp2, ordering.isReverse(), batchSize))
-				.thenReturn(iterator);
-
-		executor.getJoinColumnsIterator(query, context);
-
-		verify(context).executeWithReadConsistencyLevel(
-				joinIteratorCaptor.capture(), eq(consistencyLevel));
-
-		ThriftJoinSliceIterator<Long, Object, Object> actual = joinIteratorCaptor
-				.getValue().execute();
-
-		assertThat(actual).isSameAs(iterator);
-	}
-
-	@Test
 	public void should_get_counter_columns_iterator() throws Exception {
 		Composite comp1 = new Composite();
 		Composite comp2 = new Composite();
@@ -279,6 +241,7 @@ public class ThriftQueryExecutorImplTest {
 						clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
+		@SuppressWarnings("unchecked")
 		ThriftCounterSliceIterator<Long> iterator = mock(ThriftCounterSliceIterator.class);
 
 		when(
@@ -300,9 +263,12 @@ public class ThriftQueryExecutorImplTest {
 	@Test
 	public void should_remove_columns() throws Exception {
 		Composite name = new Composite();
+
+		@SuppressWarnings("unchecked")
 		HColumn<Composite, Object> column = mock(HColumn.class);
 		when(column.getName()).thenReturn(name);
 
+		@SuppressWarnings("unchecked")
 		List<HColumn<Composite, Object>> columns = Arrays.asList(column);
 
 		executor.removeColumns(columns, consistencyLevel, context);
@@ -319,9 +285,12 @@ public class ThriftQueryExecutorImplTest {
 	@Test
 	public void should_remove_counter_columns() throws Exception {
 		Composite name = new Composite();
+
+		@SuppressWarnings("unchecked")
 		HCounterColumn<Composite> counterColumn = mock(HCounterColumn.class);
 		when(counterColumn.getName()).thenReturn(name);
 
+		@SuppressWarnings("unchecked")
 		List<HCounterColumn<Composite>> counterColumns = Arrays
 				.asList(counterColumn);
 

@@ -35,11 +35,7 @@ public enum PropertyType {
 	COUNTER(30), //
 	LAZY_LIST(30), //
 	LAZY_SET(30), //
-	LAZY_MAP(30), //
-	JOIN_SIMPLE(30), //
-	JOIN_LIST(30), //
-	JOIN_SET(30), //
-	JOIN_MAP(30);
+	LAZY_MAP(30);
 
 	private final int flag;
 
@@ -56,18 +52,7 @@ public enum PropertyType {
 				|| this == LAZY_SIMPLE //
 				|| this == LAZY_LIST //
 				|| this == LAZY_SET //
-				|| this == LAZY_MAP //
-				|| this == JOIN_SIMPLE //
-				|| this == JOIN_LIST //
-				|| this == JOIN_SET //
-		|| this == JOIN_MAP);
-	}
-
-	public boolean isJoin() {
-		return (this == JOIN_SIMPLE //
-				|| this == JOIN_LIST //
-				|| this == JOIN_SET //
-		|| this == JOIN_MAP //
+		|| this == LAZY_MAP //
 		);
 	}
 
@@ -83,30 +68,17 @@ public enum PropertyType {
 		return this == EMBEDDED_ID;
 	}
 
-	public static PropertyType[] nonProxyJoinTypes() {
-		return new PropertyType[] { JOIN_SIMPLE, JOIN_LIST, JOIN_SET, JOIN_MAP };
-	}
-
 	public boolean isValidClusteredValueType() {
-		return (this == SIMPLE || this == JOIN_SIMPLE || this == COUNTER);
+		return (this == SIMPLE || this == COUNTER);
 	}
 
-	public static PropertyTypeFilter joinPropertyType = new PropertyTypeFilter(
-			nonProxyJoinTypes());
-	public static PropertyTypeFilter joinSimpleType = new PropertyTypeFilter(
-			JOIN_SIMPLE);
-	public static PropertyTypeFilter joinCollectionType = new PropertyTypeFilter(
-			JOIN_LIST, JOIN_SET);
-	public static PropertyTypeFilter joinMapType = new PropertyTypeFilter(
-			JOIN_MAP);
 	public static PropertyTypeFilter counterType = new PropertyTypeFilter(
 			COUNTER);
 
 	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID,
 			EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
 	public static PropertyTypeFilter lazyType = new PropertyTypeFilter(
-			LAZY_SIMPLE, LAZY_LIST, LAZY_SET, LAZY_MAP, JOIN_SIMPLE, JOIN_LIST,
-			JOIN_SET, JOIN_MAP, COUNTER);
+			LAZY_SIMPLE, LAZY_LIST, LAZY_SET, LAZY_MAP, COUNTER);
 
 	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(
 			ID, EMBEDDED_ID);
@@ -115,7 +87,6 @@ public enum PropertyType {
 			COUNTER);
 
 	public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(
-			LIST, LAZY_LIST, SET, LAZY_SET, MAP, LAZY_MAP, JOIN_LIST, JOIN_SET,
-			JOIN_MAP);
+			LIST, LAZY_LIST, SET, LAZY_SET, MAP, LAZY_MAP);
 
 }

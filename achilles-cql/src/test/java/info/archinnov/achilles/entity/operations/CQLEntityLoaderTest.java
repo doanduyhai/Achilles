@@ -17,7 +17,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -114,19 +114,6 @@ public class CQLEntityLoaderTest {
 		loader.loadPropertyIntoObject(context, entity, pm);
 
 		verify(loaderImpl).loadPropertyIntoEntity(context, pm, entity);
-	}
-
-	@Test
-	public void should_load_join_property_into_object() throws Exception {
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(JOIN_SIMPLE).build();
-
-		loader.loadPropertyIntoObject(context, entity, pm);
-
-		verify(loaderImpl).loadJoinPropertyIntoEntity(loader, context, pm,
-				entity);
 	}
 
 	@Test

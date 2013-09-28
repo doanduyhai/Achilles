@@ -16,11 +16,11 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.context.PersistenceContextFactory.NO_TTL;
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static info.archinnov.achilles.context.PersistenceContextFactory.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
@@ -30,7 +30,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -102,7 +101,7 @@ public class ThriftPersistenceContextFactoryTest {
 		assertThat(actual.getEntityClass())
 				.isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
-		assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
+		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().get()).isEqualTo(95);
 	}
 
@@ -122,7 +121,7 @@ public class ThriftPersistenceContextFactoryTest {
 		assertThat(actual.getEntityClass())
 				.isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
-		assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
+		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt()).isSameAs(NO_TTL);
 	}
 
@@ -138,45 +137,8 @@ public class ThriftPersistenceContextFactoryTest {
 		assertThat(context.getEntityClass()).isSameAs(
 				(Class) CompleteBean.class);
 		assertThat(context.getEntityMeta()).isSameAs(meta);
-		assertThat(context.getIdMeta()).isSameAs((PropertyMeta) idMeta);
+		assertThat(context.getIdMeta()).isSameAs(idMeta);
 		assertThat(context.getTtt().get()).isEqualTo(98);
-	}
-
-	@Test
-	public void should_create_new_join_context_with_join_entity()
-			throws Exception {
-		Long primaryKey = RandomUtils.nextLong();
-		CompleteBean entity = new CompleteBean(primaryKey);
-		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
-				CompleteBean.class);
-		when(flushContext.duplicate()).thenReturn(flushContext);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
-
-		ThriftPersistenceContext actual = factory.newContextForJoin(entity,
-				flushContext, new HashSet<String>());
-
-		assertThat(actual.getEntity()).isSameAs(entity);
-		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass())
-				.isSameAs((Class) CompleteBean.class);
-		assertThat(actual.getEntityMeta()).isSameAs(meta);
-		assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
-	}
-
-	@Test
-	public void should_create_new_join_context_with_join_id() throws Exception {
-		Long primaryKey = RandomUtils.nextLong();
-		when(flushContext.duplicate()).thenReturn(flushContext);
-		ThriftPersistenceContext actual = factory.newContextForJoin(
-				CompleteBean.class, primaryKey, flushContext,
-				new HashSet<String>());
-
-		assertThat(actual.getEntity()).isNull();
-		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass())
-				.isSameAs((Class) CompleteBean.class);
-		assertThat(actual.getEntityMeta()).isSameAs(meta);
-		assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
 	}
 
 	@Test
@@ -194,7 +156,7 @@ public class ThriftPersistenceContextFactoryTest {
 		assertThat(actual.getEntityClass())
 				.isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
-		assertThat(actual.getIdMeta()).isSameAs((PropertyMeta) idMeta);
+		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().isPresent()).isFalse();
 	}
 }

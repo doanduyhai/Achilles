@@ -17,9 +17,8 @@
 package info.archinnov.achilles.entity.metadata.transcoding;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -75,20 +73,15 @@ public class AbstractTranscoderTest {
 
 	@Test
 	public void should_encode_supported_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
 
-		Object actual = transcoder.encode(pm, String.class, "value");
+		Object actual = transcoder.encodeInternal(String.class, "value");
 
 		assertThat(actual).isEqualTo("value");
 	}
 
 	@Test
 	public void should_encode_enum_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.valueClass(PropertyType.class).type(SIMPLE).build();
-
-		Object actual = transcoder.encode(pm, PropertyType.class, SIMPLE);
+		Object actual = transcoder.encodeInternal(PropertyType.class, SIMPLE);
 
 		assertThat(actual).isEqualTo("SIMPLE");
 	}
@@ -96,53 +89,22 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_encode_unsopported_type_to_json() throws Exception {
 		UserBean bean = new UserBean();
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
-
 		when(objectMapper.writeValueAsString(bean)).thenReturn("json_bean");
-		Object actual = transcoder.encode(pm, UserBean.class, bean);
+		Object actual = transcoder.encodeInternal(UserBean.class, bean);
 
 		assertThat(actual).isEqualTo("json_bean");
 	}
 
 	@Test
-	public void should_delegate_encoding_to_join_type() throws Exception {
-		Long joinId = RandomUtils.nextLong();
-		UserBean bean = new UserBean();
-
-		PropertyMeta joinIdMeta = mock(PropertyMeta.class);
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_SIMPLE)
-				.joinMeta(joinMeta).build();
-
-		when(joinIdMeta.getPrimaryKey(bean)).thenReturn(joinId);
-		when(joinIdMeta.encode(joinId)).thenReturn(joinId);
-
-		Object actual = transcoder.encode(propertyMeta, UserBean.class, bean);
-
-		assertThat(actual).isEqualTo(joinId);
-	}
-
-	@Test
 	public void should_decode_supported_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
-
-		Object actual = transcoder.decode(pm, String.class, "value");
+		Object actual = transcoder.decodeInternal(String.class, "value");
 
 		assertThat(actual).isEqualTo("value");
 	}
 
 	@Test
 	public void should_decode_enum_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.valueClass(PropertyType.class).type(SIMPLE).build();
-
-		Object actual = transcoder.decode(pm, PropertyType.class, "SIMPLE");
+		Object actual = transcoder.decodeInternal(PropertyType.class, "SIMPLE");
 
 		assertThat(actual).isEqualTo(SIMPLE);
 	}
@@ -150,31 +112,9 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_decode_unsopported_type_to_json() throws Exception {
 		UserBean bean = new UserBean();
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
-
 		when(objectMapper.readValue("json_bean", UserBean.class)).thenReturn(
 				bean);
-		Object actual = transcoder.decode(pm, UserBean.class, "json_bean");
-
-		assertThat(actual).isEqualTo(bean);
-	}
-
-	@Test
-	public void should_delegate_decoding_to_join_type() throws Exception {
-		UserBean bean = new UserBean();
-
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(pm);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_SIMPLE).joinMeta(meta)
-				.build();
-
-		when(pm.decode(bean)).thenReturn(bean);
-
-		Object actual = transcoder.decode(propertyMeta, UserBean.class, bean);
+		Object actual = transcoder.decodeInternal(UserBean.class, "json_bean");
 
 		assertThat(actual).isEqualTo(bean);
 	}
@@ -184,14 +124,11 @@ public class AbstractTranscoderTest {
 			throws Exception {
 		UserBean bean = new UserBean();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
-
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Error while decoding value '" + bean
 				+ "' to type '" + UserBean.class.getCanonicalName() + "'");
 
-		transcoder.decode(pm, UserBean.class, bean);
+		transcoder.decodeInternal(UserBean.class, bean);
 	}
 
 	// /////////////

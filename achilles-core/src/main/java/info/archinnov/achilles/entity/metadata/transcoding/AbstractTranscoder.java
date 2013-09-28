@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.metadata.transcoding;
 
-import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
+import static info.archinnov.achilles.helper.PropertyHelper.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
@@ -117,18 +117,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 						+ "' to value for type '" + pm.type().name() + "'");
 	}
 
-	protected Object encode(PropertyMeta pm, Class<?> sourceType,
-			Object entityValue) {
-		if (pm.type().isJoin()) {
-			PropertyMeta joinIdMeta = pm.joinIdMeta();
-			Object joinId = pm.getJoinPrimaryKey(entityValue);
-			return joinIdMeta.encode(joinId);
-		} else {
-			return encodeIgnoreJoin(sourceType, entityValue);
-		}
-	}
-
-	protected Object encodeIgnoreJoin(Class<?> sourceType, Object entityValue) {
+	Object encodeInternal(Class<?> sourceType, Object entityValue) {
 		if (isSupportedType(sourceType)) {
 			return entityValue;
 		} else if (sourceType.isEnum()) {
@@ -138,18 +127,8 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 		}
 	}
 
-	protected Object decode(PropertyMeta pm, Class<?> targetType,
-			Object cassandraValue) {
-		if (pm.type().isJoin()) {
-			return pm.joinIdMeta().decode(cassandraValue);
-		} else {
-			return decodeIgnoreJoin(targetType, cassandraValue);
-		}
-
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected Object decodeIgnoreJoin(Class<?> targetType, Object cassandraValue) {
+	Object decodeInternal(Class<?> targetType, Object cassandraValue) {
 		if (isSupportedType(targetType)) {
 			return cassandraValue;
 		} else if (targetType.isEnum()) {

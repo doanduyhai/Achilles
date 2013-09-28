@@ -18,8 +18,6 @@ package info.archinnov.achilles.test.builders;
 
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
@@ -38,11 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -56,8 +50,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private PropertyType type;
 	private Class<K> keyClass;
 	private Class<V> valueClass;
-	private EntityMeta joinMeta;
-	private Set<CascadeType> cascadeTypes = new HashSet<CascadeType>();
 
 	private List<Class<?>> componentClasses;
 	private List<String> componentNames;
@@ -123,13 +115,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			}
 		}
 
-		if (joinMeta != null || !cascadeTypes.isEmpty()) {
-			JoinProperties joinProperties = new JoinProperties();
-			joinProperties.setCascadeTypes(cascadeTypes);
-			joinProperties.setEntityMeta(joinMeta);
-			pm.setJoinProperties(joinProperties);
-		}
-
 		if (componentClasses != null || componentNames != null
 				|| componentGetters != null || componentSetters != null) {
 			EmbeddedIdProperties compoundKeyProps = new EmbeddedIdProperties();
@@ -170,22 +155,18 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			case ID:
 			case SIMPLE:
 			case LAZY_SIMPLE:
-			case JOIN_SIMPLE:
 				pm.setTranscoder(new SimpleTranscoder(objectMapper));
 				break;
 			case LIST:
 			case LAZY_LIST:
-			case JOIN_LIST:
 				pm.setTranscoder(new ListTranscoder(objectMapper));
 				break;
 			case SET:
 			case LAZY_SET:
-			case JOIN_SET:
 				pm.setTranscoder(new SetTranscoder(objectMapper));
 				break;
 			case MAP:
 			case LAZY_MAP:
-			case JOIN_MAP:
 				pm.setTranscoder(new MapTranscoder(objectMapper));
 				break;
 			case EMBEDDED_ID:
@@ -210,22 +191,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	public PropertyMetaTestBuilder<T, K, V> type(PropertyType type) {
 		this.type = type;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> joinMeta(EntityMeta joinMeta) {
-		this.joinMeta = joinMeta;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> cascadeType(CascadeType cascadeType) {
-		this.cascadeTypes.add(cascadeType);
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> cascadeTypes(
-			CascadeType... cascadeTypes) {
-		this.cascadeTypes.addAll(Arrays.asList(cascadeTypes));
 		return this;
 	}
 

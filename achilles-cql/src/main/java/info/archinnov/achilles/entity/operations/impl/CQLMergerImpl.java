@@ -18,11 +18,9 @@ package info.archinnov.achilles.entity.operations.impl;
 
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityMerger;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,45 +38,6 @@ public class CQLMergerImpl implements Merger<CQLPersistenceContext> {
 			Collections.sort(sortedDirtyMetas, comparator);
 			context.pushUpdateStatement(sortedDirtyMetas);
 			dirtyMap.clear();
-		}
-	}
-
-	@Override
-	public void cascadeMerge(EntityMerger<CQLPersistenceContext> entityMerger,
-			CQLPersistenceContext context, List<PropertyMeta> joinPMs) {
-		Object entity = context.getEntity();
-		for (PropertyMeta pm : joinPMs) {
-			Object joinValue = pm.getValueFromField(entity);
-			if (joinValue != null) {
-				if (pm.isJoinCollection()) {
-					doCascadeCollection(entityMerger, context, pm,
-							(Collection<?>) joinValue);
-				} else if (pm.isJoinMap()) {
-					Map<?, ?> joinMap = (Map<?, ?>) joinValue;
-					doCascadeCollection(entityMerger, context, pm,
-							joinMap.values());
-				} else {
-					doCascade(entityMerger, context, pm, joinValue);
-				}
-			}
-		}
-	}
-
-	private void doCascadeCollection(
-			EntityMerger<CQLPersistenceContext> entityMerger,
-			CQLPersistenceContext context, PropertyMeta pm,
-			Collection<?> joinCollection) {
-		for (Object joinEntity : joinCollection) {
-			doCascade(entityMerger, context, pm, joinEntity);
-		}
-	}
-
-	private void doCascade(EntityMerger<CQLPersistenceContext> entityMerger,
-			CQLPersistenceContext context, PropertyMeta pm, Object joinEntity) {
-		if (joinEntity != null) {
-			CQLPersistenceContext joinContext = context.createContextForJoin(
-					pm.joinMeta(), joinEntity);
-			entityMerger.merge(joinContext, joinEntity);
 		}
 	}
 

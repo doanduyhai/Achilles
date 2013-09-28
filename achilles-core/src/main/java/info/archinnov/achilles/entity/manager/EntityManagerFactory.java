@@ -20,7 +20,6 @@ import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -78,14 +77,12 @@ public abstract class EntityManagerFactory {
 			IOException {
 		log.info("Start discovery of entities, searching in packages '{}'",
 				StringUtils.join(entityPackages, ","));
-		Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 
 		List<Class<?>> entities = entityExplorer
 				.discoverEntities(entityPackages);
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
-			EntityParsingContext context = new EntityParsingContext(//
-					joinPropertyMetaToBeFilled, //
+			EntityParsingContext context = new EntityParsingContext(
 					configContext, entityClass);
 
 			EntityMeta entityMeta = entityParser.parseEntity(context);
@@ -93,10 +90,6 @@ public abstract class EntityManagerFactory {
 			hasSimpleCounter = context.getHasSimpleCounter()
 					|| hasSimpleCounter;
 		}
-
-		entityParser.fillJoinEntityMeta(new EntityParsingContext( //
-				joinPropertyMetaToBeFilled, //
-				configContext), entityMetaMap);
 
 		return hasSimpleCounter;
 	}
@@ -109,8 +102,6 @@ public abstract class EntityManagerFactory {
 			Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
 		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setEnsureJoinConsistency(argumentExtractor
-				.ensureConsistencyOnJoin(configurationMap));
 		configContext.setForceColumnFamilyCreation(argumentExtractor
 				.initForceCFCreation(configurationMap));
 		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(

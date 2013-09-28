@@ -16,8 +16,6 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.JoinProperties.hasCascadeMerge;
-import static info.archinnov.achilles.entity.metadata.PropertyType.joinPropertyType;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -26,13 +24,10 @@ import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.FluentIterable;
 
 public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 
@@ -64,19 +59,9 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 			EntityInterceptor<CONTEXT, T> interceptor = proxifier
 					.getInterceptor(entity);
 			Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
-
-			if (context.addToProcessingList(realObject)) {
-				merger.merge(context, dirtyMap);
-				List<PropertyMeta> joinPMs = FluentIterable
-						.from(entityMeta.getAllMetasExceptIdMeta())
-						.filter(joinPropertyType).filter(hasCascadeMerge)
-						.toImmutableList();
-
-				merger.cascadeMerge(this, context, joinPMs);
-
-				interceptor.setContext(context);
-				interceptor.setTarget(realObject);
-			}
+			merger.merge(context, dirtyMap);
+			interceptor.setContext(context);
+			interceptor.setTarget(realObject);
 			proxy = entity;
 		} else {
 			log.debug("Persisting transient entity");

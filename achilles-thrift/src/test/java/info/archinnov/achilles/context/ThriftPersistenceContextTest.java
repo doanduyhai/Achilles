@@ -16,9 +16,9 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.execution.SafeExecutionContext;
@@ -40,9 +40,6 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.OptionsBuilder;
-
-import java.util.HashSet;
-
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -69,9 +66,6 @@ public class ThriftPersistenceContextTest {
 
 	private EntityMeta entityMeta;
 	private PropertyMeta idMeta;
-
-	private EntityMeta joinMeta;
-	private PropertyMeta joinIdMeta;
 
 	@Mock
 	private ThriftDaoContext thriftDaoContext;
@@ -156,7 +150,7 @@ public class ThriftPersistenceContextTest {
 
 		context = new ThriftPersistenceContext(entityMeta, configContext,
 				thriftDaoContext, flushContext, entity,
-				OptionsBuilder.noOptions(), new HashSet<String>());
+				OptionsBuilder.noOptions());
 	}
 
 	@Test
@@ -175,45 +169,12 @@ public class ThriftPersistenceContextTest {
 
 		context = new ThriftPersistenceContext(entityMeta, configContext,
 				thriftDaoContext, flushContext, CompleteBean.class,
-				entity.getId(), OptionsBuilder.noOptions(),
-				new HashSet<String>());
+				entity.getId(), OptionsBuilder.noOptions());
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getEntityMeta()).isSameAs(entityMeta);
 		assertThat(context.getWideRowDao()).isSameAs(wideRowDao);
-	}
-
-	@Test
-	public void should_spawn_child_context_with_join_entity() throws Exception {
-		prepareJoinContext();
-
-		ThriftPersistenceContext joinContext = context.createContextForJoin(
-				joinMeta, bean);
-
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
-		assertThat(joinContext.getEntity()).isEqualTo(bean);
-		assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(
-				UserBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
-		assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
-
-	}
-
-	@Test
-	public void should_spawn_child_context_with_id() throws Exception {
-		prepareJoinContext();
-
-		ThriftPersistenceContext joinContext = (ThriftPersistenceContext) context
-				.createContextForJoin(UserBean.class, joinMeta,
-						bean.getUserId());
-
-		assertThat(joinContext.getPrimaryKey()).isEqualTo(bean.getUserId());
-		assertThat(joinContext.getEntity()).isNull();
-		assertThat((Class<UserBean>) joinContext.getEntityClass()).isEqualTo(
-				UserBean.class);
-		assertThat(joinContext.getEntityMeta()).isSameAs(joinMeta);
-		assertThat(joinContext.getEntityDao()).isSameAs(entityDao);
 	}
 
 	@Test
@@ -315,7 +276,7 @@ public class ThriftPersistenceContextTest {
 	public void should_get_reference() throws Exception {
 		context = new ThriftPersistenceContext(entityMeta, configContext,
 				thriftDaoContext, flushContext, entity,
-				OptionsBuilder.noOptions(), new HashSet<String>());
+				OptionsBuilder.noOptions());
 
 		Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
 		Whitebox.setInternalState(context, ThriftEntityProxifier.class,
@@ -435,27 +396,6 @@ public class ThriftPersistenceContextTest {
 				execContext, LOCAL_QUORUM);
 
 		assertThat(actual).isSameAs(entity);
-	}
-
-	private void prepareJoinContext() throws Exception {
-		bean = new UserBean();
-		bean.setUserId(123L);
-
-		joinIdMeta = PropertyMetaTestBuilder
-				.of(UserBean.class, Void.class, Long.class).field("userId")
-				.accessors().type(ID).invoker(invoker).build();
-
-		joinMeta = new EntityMeta();
-
-		joinMeta.setTableName("joinTable");
-		joinMeta.setClusteredEntity(false);
-		joinMeta.setIdMeta(joinIdMeta);
-		joinMeta.setEntityClass(UserBean.class);
-		joinMeta.setClusteredEntity(false);
-
-		when(invoker.getPrimaryKey(bean, joinIdMeta)).thenReturn(
-				bean.getUserId());
-		when(thriftDaoContext.findEntityDao("joinTable")).thenReturn(entityDao);
 	}
 
 }

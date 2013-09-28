@@ -19,8 +19,8 @@ package info.archinnov.achilles.entity.operations.impl;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
@@ -34,7 +34,6 @@ import info.archinnov.achilles.entity.ThriftEntityMapper;
 import info.archinnov.achilles.entity.context.ThriftPersistenceContextTestBuilder;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.ThriftEntityLoader;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
@@ -220,88 +219,6 @@ public class ThriftLoaderImplTest {
 				.invoker(invoker).build();
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
 				.invoker(invoker).type(SIMPLE).build();
-
-		Long partitionKey = RandomUtils.nextLong();
-		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
-
-		entityMeta.setClusteredEntity(true);
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setIdClass(CompoundKey.class);
-		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		entityMeta.setFirstMeta(pm);
-
-		context = buildPersistenceContext(entityMeta);
-
-		context.setPrimaryKey(primaryKey);
-
-		when(compositeFactory.createBaseForClusteredGet(primaryKey, idMeta))
-				.thenReturn(comp);
-		when(invoker.getPartitionKey(primaryKey, idMeta)).thenReturn(
-				partitionKey);
-		when(wideRowDao.getColumn(partitionKey, comp)).thenReturn(null);
-
-		assertThat(loaderImpl.load(context, BeanWithClusteredId.class))
-				.isNull();
-
-		verifyZeroInteractions(compositeTransformer);
-	}
-
-	@Test
-	public void should_load_join_clustered_entity() throws Exception {
-		Composite comp = new Composite();
-		Object clusteredValue = "clusteredValue";
-		BeanWithClusteredId expected = new BeanWithClusteredId();
-		HColumn<Composite, Object> hCol = new HColumnImpl<Composite, Object>(
-				comp, clusteredValue, 10);
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.invoker(invoker).build();
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(JOIN_SIMPLE).invoker(invoker).build();
-
-		entityMeta.setClusteredEntity(true);
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setIdClass(CompoundKey.class);
-		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		entityMeta.setFirstMeta(pm);
-		entityMeta.setClusteredJoin(true);
-
-		context = buildPersistenceContext(entityMeta);
-
-		Long partitionKey = RandomUtils.nextLong();
-		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
-		context.setPrimaryKey(primaryKey);
-
-		when(compositeFactory.createBaseForClusteredGet(primaryKey, idMeta))
-				.thenReturn(comp);
-		when(invoker.getPartitionKey(primaryKey, idMeta)).thenReturn(
-				partitionKey);
-		when(wideRowDao.getColumn(partitionKey, comp)).thenReturn(hCol);
-		when(
-				mapper.initClusteredEntity(BeanWithClusteredId.class,
-						entityMeta, primaryKey)).thenReturn(expected);
-
-		BeanWithClusteredId actual = loaderImpl.load(context,
-				BeanWithClusteredId.class);
-
-		assertThat(actual).isSameAs(expected);
-	}
-
-	@Test
-	public void should_return_null_when_no_join_clustered_entity()
-			throws Exception {
-		Composite comp = new Composite();
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
-				.invoker(invoker).build();
-
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(JOIN_SIMPLE).invoker(invoker).build();
 
 		Long partitionKey = RandomUtils.nextLong();
 		CompoundKey primaryKey = new CompoundKey(partitionKey, "name");
@@ -645,94 +562,5 @@ public class ThriftLoaderImplTest {
 		assertThat(actual).hasSize(2);
 		assertThat(((UserBean) actual.get(1)).getName()).isEqualTo("user1");
 		assertThat(((UserBean) actual.get(2)).getName()).isEqualTo("user2");
-	}
-
-	@Test
-	public void should_load_join_simple_for_entity() throws Exception {
-		String stringJoinId = RandomUtils.nextLong() + "";
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).type(JOIN_SIMPLE).accessors()
-				.transcoder(transcoder).invoker(invoker).build();
-
-		UserBean user = new UserBean();
-		Composite comp = new Composite();
-		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
-		when(entityDao.getValue(entity.getId(), comp)).thenReturn(stringJoinId);
-		when(loader.load(contextCaptor.capture(), eq(UserBean.class)))
-				.thenReturn(user);
-
-		when(transcoder.forceDecodeFromJSON(stringJoinId, Long.class))
-				.thenReturn(new Long(stringJoinId));
-
-		UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context,
-				propertyMeta, loader);
-		assertThat(actual).isSameAs(user);
-		assertThat(contextCaptor.getValue().getPrimaryKey()).isEqualTo(
-				new Long(stringJoinId));
-		assertThat(contextCaptor.getValue().getEntityMeta()).isSameAs(joinMeta);
-	}
-
-	@Test
-	public void should_load_join_simple_for_clustered_entity() throws Exception {
-		Long partitionKey = RandomUtils.nextLong();
-		CompoundKey embeddedId = new CompoundKey(partitionKey, "name");
-		Long joinId = RandomUtils.nextLong();
-
-		PropertyMeta embeddedIdMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.invoker(invoker).build();
-
-		entityMeta.setIdMeta(embeddedIdMeta);
-		entityMeta.setClusteredEntity(true);
-		context.setPrimaryKey(embeddedId);
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).type(PropertyType.JOIN_SIMPLE).accessors()
-				.build();
-
-		UserBean user = new UserBean();
-		Composite comp = new Composite();
-		when(invoker.getPartitionKey(embeddedId, embeddedIdMeta)).thenReturn(
-				partitionKey);
-		when(
-				compositeFactory.createBaseForClusteredGet(embeddedId,
-						embeddedIdMeta)).thenReturn(comp);
-		when(wideRowDao.getValue(partitionKey, comp)).thenReturn(joinId);
-		when(loader.load(contextCaptor.capture(), eq(UserBean.class)))
-				.thenReturn(user);
-
-		UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context, pm,
-				loader);
-		assertThat(actual).isSameAs(user);
-		assertThat(contextCaptor.getValue().getPrimaryKey()).isEqualTo(joinId);
-		assertThat(contextCaptor.getValue().getEntityMeta()).isSameAs(joinMeta);
-	}
-
-	@Test
-	public void should_return_null_when_no_join_entity() throws Exception {
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, UserBean.class).field("user")
-				.joinMeta(joinMeta).type(JOIN_SIMPLE).accessors()
-				.invoker(invoker).build();
-
-		Composite comp = new Composite();
-		when(compositeFactory.createBaseForGet(propertyMeta)).thenReturn(comp);
-		when(entityDao.getValue(entity.getId(), comp)).thenReturn(null);
-
-		UserBean actual = (UserBean) loaderImpl.loadJoinSimple(context,
-				propertyMeta, loader);
-		assertThat(actual).isNull();
-
 	}
 }

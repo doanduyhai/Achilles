@@ -42,7 +42,6 @@ public class PropertyMetaBuilder {
 	private ObjectMapper objectMapper;
 	private CounterProperties counterProperties;
 
-	private JoinProperties joinProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private boolean timeUUID = false;
@@ -80,8 +79,6 @@ public class PropertyMetaBuilder {
 		meta.setValueClass(valueClass);
 		meta.setGetter(accessors[0]);
 		meta.setSetter(accessors[1]);
-
-		meta.setJoinProperties(joinProperties);
 		meta.setEmbeddedIdProperties(embeddedIdProperties);
 
 		meta.setCounterProperties(counterProperties);
@@ -133,19 +130,15 @@ public class PropertyMetaBuilder {
 		case COUNTER:
 		case SIMPLE:
 		case LAZY_SIMPLE:
-		case JOIN_SIMPLE:
 			return new SimpleTranscoder(objectMapper);
 		case LIST:
 		case LAZY_LIST:
-		case JOIN_LIST:
 			return new ListTranscoder(objectMapper);
 		case SET:
 		case LAZY_SET:
-		case JOIN_SET:
 			return new SetTranscoder(objectMapper);
 		case MAP:
 		case LAZY_MAP:
-		case JOIN_MAP:
 			return new MapTranscoder(objectMapper);
 
 		default:

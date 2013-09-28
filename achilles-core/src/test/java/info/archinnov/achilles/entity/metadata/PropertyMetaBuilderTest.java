@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
@@ -64,7 +64,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
 		assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
@@ -92,7 +91,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isTrue();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
 		assertThat(built.getTranscoder())
@@ -113,7 +111,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
 	}
 
@@ -131,7 +128,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
 	}
 
@@ -149,7 +145,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
 	}
 
@@ -167,7 +162,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
 	}
 
@@ -185,7 +179,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
 	}
 
@@ -203,7 +196,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
 	}
 
@@ -223,7 +215,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
 	}
 
@@ -242,7 +233,6 @@ public class PropertyMetaBuilderTest {
 		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
 	}
 
@@ -262,7 +252,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.type().isJoin()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
 	}
 

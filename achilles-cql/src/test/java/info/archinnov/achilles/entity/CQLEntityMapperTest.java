@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -148,8 +148,6 @@ public class CQLEntityMapperTest {
 		PropertyMeta valueMeta = mock(PropertyMeta.class);
 
 		when(idMeta.isEmbeddedId()).thenReturn(false);
-		when(idMeta.isJoin()).thenReturn(false);
-		when(valueMeta.isJoin()).thenReturn(false);
 
 		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
 				"value", valueMeta);
@@ -219,41 +217,6 @@ public class CQLEntityMapperTest {
 				ClusteredEntity.class, entityMeta, row, null, true);
 
 		assertThat(actual).isNull();
-	}
-
-	@Test
-	public void should_skip_mapping_join_column() throws Exception {
-		Long id = RandomUtils.nextLong();
-		PropertyMeta idMeta = mock(PropertyMeta.class);
-		PropertyMeta userMeta = mock(PropertyMeta.class);
-
-		when(idMeta.isEmbeddedId()).thenReturn(false);
-		when(idMeta.isJoin()).thenReturn(false);
-		when(userMeta.isJoin()).thenReturn(true);
-
-		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
-				"user", userMeta);
-
-		ColumnIdentifier iden2 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("user"), UTF8Type.instance);
-		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "user",
-				iden2, UTF8Type.instance);
-
-		def2 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec2);
-
-		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(Arrays.asList(def2).iterator());
-
-		when(entityMeta.getIdMeta()).thenReturn(idMeta);
-		when(entityMeta.instanciate()).thenReturn(entity);
-		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
-
-		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
-				CompleteBean.class, entityMeta, row, propertiesMap, true);
-
-		assertThat(actual).isSameAs(entity);
-		verify(cqlRowInvoker, never()).invokeOnRowForFields(row, userMeta);
 	}
 
 	@Test

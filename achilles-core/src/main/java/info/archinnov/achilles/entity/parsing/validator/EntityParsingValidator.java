@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.parsing.validator;
 
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -64,7 +63,7 @@ public class EntityParsingValidator {
 						"The entity '"
 								+ context.getCurrentEntityClass()
 										.getCanonicalName()
-								+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
+								+ "' should have at least one field with javax.persistence.Column/javax.persistence.Id/javax.persistence.EmbeddedId annotations");
 
 	}
 
@@ -82,7 +81,7 @@ public class EntityParsingValidator {
 							"The clustered entity '"
 									+ context.getCurrentEntityClass()
 											.getCanonicalName()
-									+ "' should not have more than two properties annotated with @EmbeddedId/@Column/@JoinColumn");
+									+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
 
 			Iterator<Entry<String, PropertyMeta>> metaIter = propertyMetas
 					.entrySet().iterator();
@@ -107,38 +106,11 @@ public class EntityParsingValidator {
 				Validator
 						.validateBeanMappingTrue(
 								type2.isValidClusteredValueType(),
-								"The clustered entity '%s' should have a single @Column/@JoinColumn property of type simple/join simple/counter",
+								"The clustered entity '%s' should have a single @Column property of type simple/counter",
 								context.getCurrentEntityClass()
 										.getCanonicalName());
 			}
 		}
-	}
-
-	public void validateJoinEntityNotClusteredEntity(PropertyMeta propertyMeta,
-			EntityMeta joinEntityMeta) {
-		log.debug(
-				"Validate that the join entity for the property {} of the entity class {} is not clustered",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
-
-		Validator
-				.validateBeanMappingFalse(
-						joinEntityMeta.isClusteredEntity(),
-						"The entity '%s' is a clustered entity and cannot be a join entity",
-						joinEntityMeta.getClassName());
-	}
-
-	public void validateJoinEntityExist(
-			Map<Class<?>, EntityMeta> entityMetaMap, Class<?> joinEntityClass) {
-		log.debug(
-				"Validate that the join entity class {} exists among all parsed entities",
-				joinEntityClass.getCanonicalName());
-
-		Validator.validateBeanMappingTrue(
-				entityMetaMap.containsKey(joinEntityClass),
-				"Cannot find mapping for join entity '%s'",
-				joinEntityClass.getCanonicalName());
-
 	}
 
 	public void validateAtLeastOneEntity(List<Class<?>> entities,

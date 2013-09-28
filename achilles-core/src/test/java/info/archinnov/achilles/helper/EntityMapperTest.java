@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -80,14 +79,6 @@ public class EntityMapperTest {
 
 	@Captor
 	ArgumentCaptor<Map<Integer, String>> mapCaptor;
-
-	private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
-
-	@Before
-	public void setUp() throws Exception {
-		joinPropertyMetaToBeFilled.clear();
-
-	}
 
 	@Test
 	public void should_add_to_empty_list() throws Exception {

@@ -25,9 +25,7 @@ import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,34 +51,6 @@ public class ThriftPersistenceContextFactory implements
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	public ThriftPersistenceContext newContextForJoin(Object joinEntity,
-			ThriftAbstractFlushContext<?> flushContext,
-			Set<String> entitiesIdentity) {
-		Validator
-				.validateNotNull(joinEntity,
-						"join entity should not be null for persistence context creation");
-		Class<?> entityClass = proxifier.deriveBaseClass(joinEntity);
-		EntityMeta joinMeta = entityMetaMap.get(entityClass);
-
-		return new ThriftPersistenceContext(joinMeta, configContext,
-				daoContext, flushContext.duplicate(), joinEntity,
-				OptionsBuilder.noOptions(), entitiesIdentity);
-	}
-
-	public ThriftPersistenceContext newContextForJoin(Class<?> entityClass,
-			Object joinId, ThriftAbstractFlushContext<?> flushContext,
-			Set<String> entitiesIdentity) {
-		Validator
-				.validateNotNull(entityClass,
-						"entityClass should not be null for persistence context creation");
-		Validator.validateNotNull(joinId,
-				"joinId should not be null for persistence context creation");
-		EntityMeta joinMeta = entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext(joinMeta, configContext,
-				daoContext, flushContext.duplicate(), entityClass, joinId,
-				OptionsBuilder.noOptions(), entitiesIdentity);
-	}
-
 	@Override
 	public ThriftPersistenceContext newContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
@@ -91,7 +61,7 @@ public class ThriftPersistenceContextFactory implements
 		ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
 		return new ThriftPersistenceContext(meta, configContext, daoContext,
-				flushContext, entity, options, new HashSet<String>());
+				flushContext, entity, options);
 	}
 
 	@Override
@@ -112,8 +82,7 @@ public class ThriftPersistenceContextFactory implements
 		ThriftImmediateFlushContext flushContext = buildImmediateFlushContext(options);
 
 		return new ThriftPersistenceContext(meta, configContext, daoContext,
-				flushContext, entityClass, primaryKey, options,
-				new HashSet<String>());
+				flushContext, entityClass, primaryKey, options);
 	}
 
 	@Override
@@ -129,7 +98,7 @@ public class ThriftPersistenceContextFactory implements
 
 		return new ThriftPersistenceContext(meta, configContext, daoContext,
 				flushContext, entityClass, embeddedId,
-				OptionsBuilder.withConsistency(cl), new HashSet<String>());
+				OptionsBuilder.withConsistency(cl));
 	}
 
 	private ThriftImmediateFlushContext buildImmediateFlushContext(

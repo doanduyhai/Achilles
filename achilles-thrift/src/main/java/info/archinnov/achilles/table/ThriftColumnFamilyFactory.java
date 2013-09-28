@@ -17,7 +17,7 @@
 package info.archinnov.achilles.table;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.table.TableCreator.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class ThriftColumnFamilyFactory {
 
 	public static final String ENTITY_COMPARATOR_TYPE_ALIAS = "(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
-	public static final String ENTITY_COMPARATOR_TYPE_CHECK = "CompositeType(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.Int32Type)";
+	public static final String ENTITY_COMPARATOR_TYPE_CHECK = "CompositeType(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
 
 	public static final String COUNTER_KEY_ALIAS = "(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
 	public static final String COUNTER_KEY_CHECK = "org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)";
@@ -104,11 +104,6 @@ public class ThriftColumnFamilyFactory {
 			if (pm.isCounter()) {
 				valueSerializer = LONG_SRZ;
 				defaultValidationType = COUNTERTYPE.getTypeName();
-			} else if (pm.isJoin()) {
-				valueSerializer = ThriftSerializerTypeInferer.getSerializer(pm
-						.joinIdMeta().getValueClass());
-				defaultValidationType = valueSerializer.getComparatorType()
-						.getTypeName();
 			} else {
 				valueSerializer = ThriftSerializerTypeInferer
 						.getSerializer(valueClass);

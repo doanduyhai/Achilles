@@ -16,10 +16,9 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
@@ -53,9 +52,6 @@ public class MapEntryWrapperTest {
 
 	@Mock
 	private PersistenceContext context;
-
-	@Mock
-	private PersistenceContext joinContext;
 
 	@Before
 	public void setUp() throws Exception {
@@ -219,27 +215,5 @@ public class MapEntryWrapperTest {
 		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
 
 		assertThat(wrapper1.hashCode()).isNotEqualTo(wrapper2.hashCode());
-	}
-
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_get_join_value() throws Exception {
-		Map.Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(
-				1, "abc");
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-
-		EntityMeta joinMeta = new EntityMeta();
-
-		wrapper1.setProxifier(proxifier);
-		wrapper1.setPropertyMeta(propertyMeta);
-		wrapper1.setContext(context);
-		when(propertyMeta.type()).thenReturn(PropertyType.JOIN_MAP);
-		when(propertyMeta.joinMeta()).thenReturn(joinMeta);
-		when(context.createContextForJoin(joinMeta, "abc")).thenReturn(
-				joinContext);
-
-		when(proxifier.buildProxy("abc", joinContext)).thenReturn("def");
-
-		assertThat(wrapper1.getValue()).isSameAs("def");
 	}
 }

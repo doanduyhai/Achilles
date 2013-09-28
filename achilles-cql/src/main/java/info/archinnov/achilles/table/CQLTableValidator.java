@@ -18,7 +18,7 @@ package info.archinnov.achilles.table;
 
 import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.cql.CQLTypeMapper.toCQLType;
+import static info.archinnov.achilles.cql.CQLTypeMapper.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -67,15 +67,16 @@ public class CQLTableValidator {
 						componentClass);
 			}
 		} else {
-			validateColumn(tableMetadata, idMeta);
+			validateColumn(tableMetadata, idMeta.getPropertyName()
+					.toLowerCase(), idMeta.getValueClassForTableCreation());
 		}
 
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
 			switch (pm.type()) {
 			case SIMPLE:
 			case LAZY_SIMPLE:
-			case JOIN_SIMPLE:
-				validateColumn(tableMetadata, pm);
+				validateColumn(tableMetadata, pm.getPropertyName()
+						.toLowerCase(), pm.getValueClassForTableCreation());
 				break;
 			case LIST:
 			case SET:
@@ -83,9 +84,6 @@ public class CQLTableValidator {
 			case LAZY_LIST:
 			case LAZY_SET:
 			case LAZY_MAP:
-			case JOIN_LIST:
-			case JOIN_SET:
-			case JOIN_MAP:
 				validateCollectionAndMapColumn(tableMetadata, pm);
 				break;
 			default:
@@ -143,16 +141,6 @@ public class CQLTableValidator {
 
 	}
 
-	private void validateColumn(TableMetadata tableMetadata, PropertyMeta pm) {
-		if (pm.isJoin()) {
-			validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(),
-					pm.joinIdMeta().getValueClass());
-		} else {
-			validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(),
-					pm.getValueClassForTableCreation());
-		}
-	}
-
 	private void validateColumn(TableMetadata tableMetadata, String columnName,
 			Class<?> columnJavaType) {
 		String tableName = tableMetadata.getName();
@@ -181,12 +169,7 @@ public class CQLTableValidator {
 				"Cannot find column '%s' in the table '%s'", columnName,
 				tableName);
 		Name realType = columnMetadata.getType().getName();
-		Name expectedValueType;
-		if (pm.isJoin()) {
-			expectedValueType = toCQLType(pm.joinIdMeta().getValueClass());
-		} else {
-			expectedValueType = toCQLType(pm.getValueClassForTableCreation());
-		}
+		Name expectedValueType = toCQLType(pm.getValueClassForTableCreation());
 
 		switch (pm.type()) {
 		case LIST:

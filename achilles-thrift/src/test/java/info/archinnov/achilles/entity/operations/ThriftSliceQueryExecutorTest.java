@@ -17,7 +17,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.clustered.ClusteredEntityFactory;
@@ -25,14 +25,12 @@ import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftQueryExecutorImpl;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.iterator.ThriftClusteredEntityIterator;
 import info.archinnov.achilles.iterator.ThriftCounterClusteredEntityIterator;
 import info.archinnov.achilles.iterator.ThriftCounterSliceIterator;
-import info.archinnov.achilles.iterator.ThriftJoinSliceIterator;
 import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
@@ -56,6 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -94,8 +93,6 @@ public class ThriftSliceQueryExecutorTest {
 
 	@Mock
 	private PropertyMeta pm;
-
-	private EntityMeta meta;
 
 	private BeanWithClusteredId entity;
 
@@ -163,41 +160,14 @@ public class ThriftSliceQueryExecutorTest {
 
 		when(
 				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class), any(Set.class)))
-				.thenReturn(entity);
+						any(ThriftPersistenceContext.class),
+						Mockito.<Set<Method>> any())).thenReturn(entity);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
 
 		// When
 		List<BeanWithClusteredId> actual = executor.get(query);
 
 		// Then
-		assertThat(actual).containsOnly(entity);
-	}
-
-	@Test
-	public void should_get_join_clustered_entities() throws Exception {
-		when(pm.type()).thenReturn(JOIN_SIMPLE);
-
-		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
-
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
-
-		List<BeanWithClusteredId> entities = Arrays.asList(entity);
-		when(
-				factory.buildClusteredEntities(eq(entityClass),
-						any(ThriftPersistenceContext.class), eq(columns)))
-				.thenReturn(entities);
-
-		when(
-				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class), any(Set.class)))
-				.thenReturn(entity);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
-		List<BeanWithClusteredId> actual = executor.get(query);
-
 		assertThat(actual).containsOnly(entity);
 	}
 
@@ -220,8 +190,8 @@ public class ThriftSliceQueryExecutorTest {
 
 		when(
 				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class), any(Set.class)))
-				.thenReturn(entity);
+						any(ThriftPersistenceContext.class),
+						Mockito.<Set<Method>> any())).thenReturn(entity);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
 		List<BeanWithClusteredId> actual = executor.get(query);
 
@@ -245,8 +215,8 @@ public class ThriftSliceQueryExecutorTest {
 
 		when(
 				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class), any(Set.class)))
-				.thenReturn(entity);
+						any(ThriftPersistenceContext.class),
+						Mockito.<Set<Method>> any())).thenReturn(entity);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
 		List<BeanWithClusteredId> actual = executor.get(query);
 
@@ -266,6 +236,7 @@ public class ThriftSliceQueryExecutorTest {
 	public void should_get_iterator() throws Exception {
 		when(pm.type()).thenReturn(SIMPLE);
 
+		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Object, Object> columnsIterator = mock(ThriftSliceIterator.class);
 
 		when(
@@ -279,25 +250,10 @@ public class ThriftSliceQueryExecutorTest {
 	}
 
 	@Test
-	public void should_get_join_iterator() throws Exception {
-		when(pm.type()).thenReturn(JOIN_SIMPLE);
-
-		ThriftJoinSliceIterator<Object, Object, Object> columnsIterator = mock(ThriftJoinSliceIterator.class);
-
-		when(
-				executorImpl.getJoinColumnsIterator(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columnsIterator);
-
-		Iterator<BeanWithClusteredId> iterator = executor.iterator(query);
-
-		assertThat(iterator).isInstanceOf(ThriftClusteredEntityIterator.class);
-	}
-
-	@Test
 	public void should_get_counter_iterator() throws Exception {
 		when(pm.type()).thenReturn(COUNTER);
 
+		@SuppressWarnings("unchecked")
 		ThriftCounterSliceIterator<Object> columnsIterator = mock(ThriftCounterSliceIterator.class);
 
 		when(
@@ -314,6 +270,8 @@ public class ThriftSliceQueryExecutorTest {
 	@Test
 	public void should_get_value_less_iterator() throws Exception {
 		when(context.isValueless()).thenReturn(true);
+
+		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Object, Object> columnsIterator = mock(ThriftSliceIterator.class);
 
 		when(
@@ -350,23 +308,6 @@ public class ThriftSliceQueryExecutorTest {
 	@Test
 	public void should_remove_columns() throws Exception {
 		when(pm.type()).thenReturn(SIMPLE);
-
-		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
-
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
-
-		executor.remove(query);
-
-		verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel),
-				any(ThriftPersistenceContext.class));
-	}
-
-	@Test
-	public void should_remove_join_columns() throws Exception {
-		when(pm.type()).thenReturn(JOIN_SIMPLE);
 
 		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
 

@@ -40,12 +40,7 @@ public class MapEntryWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object getValue() {
-		if (isJoin()) {
-			return proxifier.buildProxy(this.target.getValue(),
-					joinContext(this.target.getValue()));
-		} else {
-			return this.target.getValue();
-		}
+		return this.target.getValue();
 	}
 
 	@Override

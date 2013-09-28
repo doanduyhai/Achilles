@@ -17,8 +17,8 @@
 package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
@@ -36,7 +36,6 @@ import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +61,6 @@ public class PropertyParserTest {
 
 	private PropertyParser parser = new PropertyParser();
 
-	private Map<PropertyMeta, Class<?>> joinPropertyMetaToBeFilled = new HashMap<PropertyMeta, Class<?>>();
 	private EntityParsingContext entityContext;
 	private ConfigurationContext configContext;
 
@@ -71,7 +69,6 @@ public class PropertyParserTest {
 
 	@Before
 	public void setUp() {
-		joinPropertyMetaToBeFilled.clear();
 		configContext = new ConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
 
@@ -586,9 +583,7 @@ public class PropertyParserTest {
 
 	private <T> PropertyParsingContext newContext(Class<T> entityClass,
 			Field field) {
-		entityContext = new EntityParsingContext( //
-				joinPropertyMetaToBeFilled, //
-				configContext, entityClass);
+		entityContext = new EntityParsingContext(configContext, entityClass);
 
 		return entityContext.newPropertyContext(field);
 	}

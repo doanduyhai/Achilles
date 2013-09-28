@@ -16,10 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static javax.persistence.CascadeType.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.JoinProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.ThriftPersisterImpl;
 import info.archinnov.achilles.validation.Validator;
@@ -28,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-
-import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +34,6 @@ public class ThriftEntityPersister implements
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftEntityPersister.class);
 
-	private ThriftEntityLoader loader = new ThriftEntityLoader();
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
 	@Override
@@ -47,18 +41,16 @@ public class ThriftEntityPersister implements
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object entity = context.getEntity();
 
-		if (context.addToProcessingList(entity)) {
-			log.debug("Persisting transient entity {}", entity);
-			if (context.isClusteredEntity()) {
-				persistClusteredEntity(context);
-			} else {
-				// Remove first
-				persisterImpl.removeEntityBatch(context);
+		log.debug("Persisting transient entity {}", entity);
+		if (context.isClusteredEntity()) {
+			persistClusteredEntity(context);
+		} else {
+			// Remove first
+			persisterImpl.removeEntityBatch(context);
 
-				for (PropertyMeta propertyMeta : entityMeta.getPropertyMetas()
-						.values()) {
-					this.persistPropertyBatch(context, propertyMeta);
-				}
+			for (PropertyMeta propertyMeta : entityMeta.getPropertyMetas()
+					.values()) {
+				this.persistPropertyBatch(context, propertyMeta);
 			}
 		}
 	}
@@ -84,18 +76,6 @@ public class ThriftEntityPersister implements
 		case MAP:
 		case LAZY_MAP:
 			batchPersistMapProperty(context, propertyMeta);
-			break;
-		case JOIN_SIMPLE:
-			batchPersistJoinEntity(context, propertyMeta);
-			break;
-		case JOIN_LIST:
-			batchPersistJoinListProperty(context, propertyMeta);
-			break;
-		case JOIN_SET:
-			batchPersistJoinSetProperty(context, propertyMeta);
-			break;
-		case JOIN_MAP:
-			batchPersistJoinMapProperty(context, propertyMeta);
 			break;
 		case COUNTER:
 			persisterImpl.persistCounter(context, propertyMeta);
@@ -126,50 +106,6 @@ public class ThriftEntityPersister implements
 						.getCanonicalName(), context.getPrimaryKey());
 
 		persisterImpl.removePropertyBatch(context, propertyMeta);
-	}
-
-	public Object cascadePersistOrEnsureExists(
-			ThriftPersistenceContext context, Object joinEntity,
-			JoinProperties joinProperties) {
-
-		EntityMeta joinMeta = joinProperties.getEntityMeta();
-		Object joinId = joinMeta.getPrimaryKey(joinEntity);
-		Validate.notNull(joinId,
-				"key value for entity '" + joinMeta.getClassName()
-						+ "' should not be null");
-
-		Set<CascadeType> cascadeTypes = joinProperties.getCascadeTypes();
-		if (cascadeTypes.contains(ALL) || cascadeTypes.contains(PERSIST)) {
-			log.debug(
-					"Cascade-persisting entity of class {} and primary key {} ",
-					context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-
-			persist(context);
-		} else if (context.isEnsureJoinConsistency()
-				&& context.addToProcessingList(joinEntity)) {
-
-			log.debug(
-					"Consistency check for join entity of class {} and primary key {} ",
-					context.getEntityClass().getCanonicalName(),
-					context.getPrimaryKey());
-
-			Object primaryKey = loader.loadPrimaryKey(context,
-					joinMeta.getIdMeta());
-
-			Validator
-					.validateNotNull(
-							primaryKey,
-							"The entity '"
-									+ joinProperties.getEntityMeta()
-											.getClassName()
-									+ "' with id '"
-									+ joinId
-									+ "' cannot be found. Maybe you should persist it first or enable CascadeType.PERSIST/CascadeType.ALL");
-		}
-
-		return joinId;
-
 	}
 
 	public void persistClusteredValue(ThriftPersistenceContext context,
@@ -203,49 +139,6 @@ public class ThriftEntityPersister implements
 		if (map != null) {
 			persisterImpl.batchPersistMap(map, context, propertyMeta);
 		}
-	}
-
-	private void batchPersistJoinEntity(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		Object joinEntity = propertyMeta.getValueFromField(context.getEntity());
-
-		if (joinEntity != null) {
-			persisterImpl.batchPersistJoinEntity(context, propertyMeta,
-					joinEntity, this);
-		}
-	}
-
-	private void batchPersistJoinListProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-
-		List<?> joinList = propertyMeta.getListValueFromField(context
-				.getEntity());
-		if (joinList != null) {
-			persisterImpl.batchPersistJoinList(context, propertyMeta, joinList,
-					this);
-		}
-	}
-
-	private void batchPersistJoinSetProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-
-		Set<?> joinSet = propertyMeta.getSetValueFromField(context.getEntity());
-		if (joinSet != null) {
-			persisterImpl.batchPersistJoinSet(context, propertyMeta, joinSet,
-					this);
-		}
-	}
-
-	private void batchPersistJoinMapProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		Map<?, ?> joinMap = propertyMeta.getMapValueFromField(context
-				.getEntity());
-
-		if (joinMap != null) {
-			persisterImpl.batchPersistJoinMap(context, propertyMeta, joinMap,
-					this);
-		}
-
 	}
 
 	private void persistClusteredEntity(ThriftPersistenceContext context) {

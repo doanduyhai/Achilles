@@ -17,8 +17,8 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -28,13 +28,10 @@ import info.archinnov.achilles.entity.operations.impl.CQLPersisterImpl;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -48,9 +45,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Batch;
-import com.datastax.driver.core.querybuilder.Insert;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEntityPersisterTest {
@@ -67,16 +61,10 @@ public class CQLEntityPersisterTest {
 	private CQLPersistenceContext context;
 
 	@Mock
-	private CQLPersistenceContext joinContext;
-
-	@Mock
 	private ConfigurationContext configContext;
 
 	@Mock
 	private EntityMeta entityMeta;
-
-	@Mock
-	private EntityMeta joinMeta;
 
 	private Long primaryKey = RandomUtils.nextLong();
 
@@ -88,15 +76,7 @@ public class CQLEntityPersisterTest {
 	@Captor
 	private ArgumentCaptor<Set<PropertyMeta>> metaSetCaptor;
 
-	@Captor
-	private ArgumentCaptor<Insert> insertCaptor;
-
-	@Captor
-	private ArgumentCaptor<Batch> batchCaptor;
-
-	@Captor
-	private ArgumentCaptor<List<Statement>> statementsCaptor;
-
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		allMetas.clear();
@@ -111,75 +91,30 @@ public class CQLEntityPersisterTest {
 	@Test
 	public void should_persist() throws Exception {
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
-		when(context.addToProcessingList(entity)).thenReturn(true);
-
-		PropertyMeta joinMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).cascadeType(CascadeType.ALL).build();
 
 		PropertyMeta counterMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("count")
 				.type(COUNTER).build();
 
-		allMetas.add(joinMeta);
 		allMetas.add(counterMeta);
 
 		persister.persist(context);
 
 		verify(persisterImpl).persist(context);
-		verify(persisterImpl).cascadePersist(eq(persister), eq(context),
-				metaSetCaptor.capture());
 		verify(persisterImpl).persistCounters(eq(context),
 				metaSetCaptor.capture());
 
-		assertThat(metaSetCaptor.getAllValues().get(0)).containsOnly(joinMeta);
-		assertThat(metaSetCaptor.getAllValues().get(1)).containsOnly(
+		assertThat(metaSetCaptor.getAllValues().get(0)).containsOnly(
 				counterMeta);
 	}
 
 	@Test
 	public void should_persist_clustered_counter() throws Exception {
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
-		when(context.addToProcessingList(entity)).thenReturn(true);
 
 		persister.persist(context);
 
 		verify(persisterImpl).persistClusteredCounter(context);
-
-	}
-
-	@Test
-	public void should_not_persist_twice_the_same_entity() throws Exception {
-		when(entityMeta.isClusteredCounter()).thenReturn(false);
-		when(context.addToProcessingList(entity)).thenReturn(true, false);
-		persister.persist(context);
-		persister.persist(context);
-
-		verify(persisterImpl, times(1)).persist(context);
-		verify(persisterImpl, times(1)).cascadePersist(eq(persister),
-				eq(context), metaSetCaptor.capture());
-
-		assertThat(metaSetCaptor.getValue()).isEmpty();
-	}
-
-	@Test
-	public void should_ensure_entity_exist() throws Exception {
-		when(entityMeta.isClusteredCounter()).thenReturn(false);
-		when(context.isEnsureJoinConsistency()).thenReturn(true);
-		when(context.addToProcessingList(entity)).thenReturn(true);
-
-		PropertyMeta joinMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).build();
-
-		allMetas.add(joinMeta);
-
-		persister.persist(context);
-		verify(persisterImpl).persist(context);
-		verify(persisterImpl).ensureEntitiesExist(eq(context),
-				metaSetCaptor.capture());
-
-		assertThat(metaSetCaptor.getValue()).containsOnly(joinMeta);
 	}
 
 	@Test

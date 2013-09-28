@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
@@ -76,8 +76,7 @@ public class PropertyFilterTest {
 	public void should_not_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(
-				filter.hasAnnotation(name, javax.persistence.JoinColumn.class))
+		assertThat(filter.hasAnnotation(name, javax.persistence.Id.class))
 				.isFalse();
 	}
 }

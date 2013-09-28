@@ -143,16 +143,6 @@ public class CQLDaoContext {
 		}
 	}
 
-	public boolean checkForEntityExistence(CQLPersistenceContext context) {
-		EntityMeta entityMeta = context.getEntityMeta();
-		PreparedStatement ps = cacheManager.getCacheForFieldSelect(session,
-				dynamicPSCache, context, entityMeta.getIdMeta());
-
-		ConsistencyLevel readLevel = getReadConsistencyLevel(context,
-				entityMeta);
-		return executeReadWithConsistency(context, ps, readLevel).size() == 1;
-	}
-
 	public Row loadProperty(CQLPersistenceContext context, PropertyMeta pm) {
 		PreparedStatement ps = cacheManager.getCacheForFieldSelect(session,
 				dynamicPSCache, context, pm);

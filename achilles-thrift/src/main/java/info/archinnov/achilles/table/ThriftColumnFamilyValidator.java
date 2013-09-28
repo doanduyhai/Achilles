@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
-import static me.prettyprint.hector.api.ddl.ComparatorType.COUNTERTYPE;
+import static me.prettyprint.hector.api.ddl.ComparatorType.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -94,10 +94,6 @@ public class ThriftColumnFamilyValidator {
 			PropertyType type = pm.type();
 			if (type.isCounter()) {
 				valueValidationType = COUNTERTYPE.getClassName();
-			} else if (type.isJoin()) {
-				valueValidationType = ThriftSerializerTypeInferer
-						.getSerializer(pm.joinIdMeta().getValueClass())
-						.getComparatorType().getClassName();
 			} else {
 				valueValidationType = ThriftSerializerTypeInferer
 						.getSerializer(pm.getValueClass()).getComparatorType()

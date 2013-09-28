@@ -109,22 +109,8 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T>
 					propertyMeta.getEntityClassName());
 			result = buildCounterWrapper(propertyMeta);
 			break;
-		case JOIN_SIMPLE:
-			if (rawValue != null) {
-				log.trace(
-						"Build proxy on returned join entity for property {} of entity of class {} ",
-						propertyMeta.getPropertyName(),
-						propertyMeta.getEntityClassName());
-
-				@SuppressWarnings("unchecked")
-				CONTEXT joinContext = (CONTEXT) context.createContextForJoin(
-						propertyMeta.joinMeta(), rawValue);
-				result = proxifier.buildProxy(rawValue, joinContext);
-			}
-			break;
 		case LIST:
 		case LAZY_LIST:
-		case JOIN_LIST:
 			if (rawValue != null) {
 				log.trace(
 						"Build list wrapper for property {} of entity of class {} ",
@@ -141,7 +127,6 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T>
 			break;
 		case SET:
 		case LAZY_SET:
-		case JOIN_SET:
 			if (rawValue != null) {
 				log.trace(
 						"Build set wrapper for property {} of entity of class {} ",
@@ -158,7 +143,6 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T>
 			break;
 		case MAP:
 		case LAZY_MAP:
-		case JOIN_MAP:
 			if (rawValue != null) {
 				log.trace(
 						"Build map wrapper for property {} of entity of class {} ",
@@ -265,7 +249,7 @@ public abstract class EntityInterceptor<CONTEXT extends PersistenceContext, T>
 	}
 
 	private PropertyMeta getPropertyMetaByProperty(Method method) {
-		return (PropertyMeta) getterMetas.get(method);
+		return getterMetas.get(method);
 	}
 
 	protected void setLoader(EntityLoader<CONTEXT> loader) {

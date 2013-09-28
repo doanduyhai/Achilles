@@ -64,7 +64,7 @@ public class CQLEntityMapper extends EntityMapper {
 			for (Definition column : columnDefinitions) {
 				String columnName = column.getName();
 				PropertyMeta pm = propertiesMap.get(columnName);
-				if (pm != null && !pm.isJoin()) {
+				if (pm != null) {
 					Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
 					pm.setValueToField(entity, value);
 				}

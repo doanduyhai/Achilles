@@ -23,13 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 @Entity
 public class CompleteBean {
@@ -57,15 +53,13 @@ public class CompleteBean {
 	@Column
 	private Map<Integer, String> preferences;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn
+	@Column
 	private Tweet welcomeTweet;
 
 	@Column
 	private Counter version;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn
+	@Column
 	private List<Tweet> favoriteTweets;
 
 	public Long getId() {

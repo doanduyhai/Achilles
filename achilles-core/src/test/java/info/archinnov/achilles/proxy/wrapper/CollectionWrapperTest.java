@@ -16,8 +16,7 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.PersistenceContext;
@@ -25,7 +24,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
-import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -41,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,9 +53,6 @@ public class CollectionWrapperTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private PropertyMeta joinPropertyMeta;
-
-	@Mock
 	private EntityProxifier<PersistenceContext> proxifier;
 
 	@Mock
@@ -65,13 +61,7 @@ public class CollectionWrapperTest {
 	@Mock
 	private PersistenceContext context;
 
-	@Mock
-	private PersistenceContext joinContext;
-
 	private EntityMeta entityMeta;
-
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
 
 	@Before
 	public void setUp() throws Exception {
@@ -79,7 +69,6 @@ public class CollectionWrapperTest {
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
 				.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).accessors().build();
 
@@ -120,8 +109,8 @@ public class CollectionWrapperTest {
 
 		wrapper.setProxifier(proxifier);
 
-		when(proxifier.unwrap(any(Collection.class))).thenReturn(
-				(Collection) list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
+				list);
 
 		wrapper.addAll(list);
 
@@ -238,8 +227,8 @@ public class CollectionWrapperTest {
 		wrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(any(Collection.class))).thenReturn(
-				(Collection) list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
+				list);
 
 		wrapper.removeAll(list);
 
@@ -278,8 +267,8 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(any(Collection.class))).thenReturn(
-				(Collection) list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
+				list);
 
 		wrapper.retainAll(list);
 
@@ -301,8 +290,8 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "b", "c");
-		when(proxifier.unwrap(any(Collection.class))).thenReturn(
-				(Collection) list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
+				list);
 
 		wrapper.retainAll(list);
 
@@ -343,34 +332,6 @@ public class CollectionWrapperTest {
 	}
 
 	@Test
-	public void should_return_array_for_join() throws Exception {
-		ArrayList<Object> target = new ArrayList<Object>();
-		CompleteBean bean1 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-		CompleteBean bean2 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-		CompleteBean bean3 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-
-		target.add(bean1);
-		target.add(bean2);
-		target.add(bean3);
-		ListWrapper wrapper = prepareJoinListWrapper(target);
-
-		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-
-		when(context.createContextForJoin(eq(entityMeta), any())).thenReturn(
-				joinContext);
-
-		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);
-		when(proxifier.buildProxy(bean3, joinContext)).thenReturn(bean3);
-
-		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
-	}
-
-	@Test
 	public void should_return_array() throws Exception {
 		ArrayList<Object> target = new ArrayList<Object>();
 		target.add("a");
@@ -380,37 +341,6 @@ public class CollectionWrapperTest {
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 		assertThat(wrapper.toArray()).contains("a", "b", "c");
-	}
-
-	@Test
-	public void should_return_array_with_argument_for_join() throws Exception {
-		ArrayList<Object> target = new ArrayList<Object>();
-		CompleteBean bean1 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-		CompleteBean bean2 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-		CompleteBean bean3 = CompleteBeanTestBuilder.builder().randomId()
-				.buid();
-
-		target.add(bean1);
-		target.add(bean2);
-		target.add(bean3);
-		ListWrapper wrapper = prepareJoinListWrapper(target);
-
-		when(joinPropertyMeta.type()).thenReturn(PropertyType.JOIN_LIST);
-		when(joinPropertyMeta.joinMeta()).thenReturn(entityMeta);
-
-		when(context.createContextForJoin(eq(entityMeta), any())).thenReturn(
-				joinContext);
-
-		when(proxifier.buildProxy(bean1, joinContext)).thenReturn(bean1);
-		when(proxifier.buildProxy(bean2, joinContext)).thenReturn(bean2);
-		when(proxifier.buildProxy(bean3, joinContext)).thenReturn(bean3);
-
-		assertThat(wrapper.toArray()).contains(bean1, bean2, bean3);
-
-		assertThat(wrapper.toArray(new CompleteBean[] { bean1, bean2 }))
-				.contains(bean1, bean2);
 	}
 
 	@Test
@@ -443,15 +373,4 @@ public class CollectionWrapperTest {
 		wrapper.setContext(context);
 		return wrapper;
 	}
-
-	private ListWrapper prepareJoinListWrapper(List<Object> target) {
-		ListWrapper wrapper = new ListWrapper(target);
-		wrapper.setDirtyMap(dirtyMap);
-		wrapper.setSetter(setter);
-		wrapper.setPropertyMeta(joinPropertyMeta);
-		wrapper.setProxifier(proxifier);
-		wrapper.setContext(context);
-		return wrapper;
-	}
-
 }

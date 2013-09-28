@@ -22,7 +22,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.Arrays;
@@ -184,32 +183,6 @@ public class CQLTableValidatorTest {
 	}
 
 	@Test
-	public void should_validate_join_simple_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).joinMeta(joinMeta).build();
-
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-		when(tableMetadata.getName()).thenReturn("table");
-		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
-		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("user"))
-				.thenReturn(columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(DataType.bigint());
-
-		validator.validateForEntity(entityMeta, tableMetadata);
-	}
-
-	@Test
 	public void should_validate_list_field_for_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").type(ID)
@@ -240,34 +213,6 @@ public class CQLTableValidatorTest {
 	}
 
 	@Test
-	public void should_validate_join_list_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("friends")
-				.joinMeta(joinMeta).type(JOIN_LIST).build();
-
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-
-		when(tableMetadata.getName()).thenReturn("table");
-		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
-		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("friends")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.list(DataType.bigint()));
-
-		validator.validateForEntity(entityMeta, tableMetadata);
-	}
-
-	@Test
 	public void should_validate_set_field_for_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").type(ID)
@@ -288,34 +233,6 @@ public class CQLTableValidatorTest {
 				columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(
 				DataType.set(DataType.text()));
-
-		validator.validateForEntity(entityMeta, tableMetadata);
-	}
-
-	@Test
-	public void should_validate_join_set_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("followers")
-				.type(JOIN_SET).joinMeta(joinMeta).build();
-
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-
-		when(tableMetadata.getName()).thenReturn("table");
-		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
-		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("followers")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.set(DataType.bigint()));
 
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
@@ -347,34 +264,6 @@ public class CQLTableValidatorTest {
 		pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
 				.field("preferences").type(LAZY_MAP).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
-		validator.validateForEntity(entityMeta, tableMetadata);
-	}
-
-	@Test
-	public void should_validate_join_map_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(idMeta);
-
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
-				.type(JOIN_MAP).joinMeta(joinMeta).build();
-
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
-
-		when(tableMetadata.getName()).thenReturn("table");
-		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
-		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("preferences")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.map(DataType.cint(), DataType.bigint()));
-
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 

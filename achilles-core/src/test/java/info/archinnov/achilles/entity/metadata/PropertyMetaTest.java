@@ -17,16 +17,14 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
-import static javax.persistence.CascadeType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -68,49 +66,6 @@ public class PropertyMetaTest {
 	private ReflectionInvoker invoker;
 
 	@Test
-	public void should_get_join_meta() throws Exception {
-		EntityMeta joinMeta = new EntityMeta();
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_MAP).joinMeta(joinMeta).build();
-
-		assertThat(propertyMeta.joinMeta()).isSameAs(joinMeta);
-	}
-
-	@Test
-	public void should_return_null_if_not_join_type() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.SIMPLE).build();
-
-		assertThat(propertyMeta.joinMeta()).isNull();
-	}
-
-	@Test
-	public void should_get_join_id_meta() throws Exception {
-		EntityMeta joinMeta = new EntityMeta();
-		PropertyMeta joinIdMeta = new PropertyMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_MAP).joinMeta(joinMeta).build();
-
-		assertThat(propertyMeta.joinIdMeta()).isSameAs(joinIdMeta);
-	}
-
-	@Test
-	public void should_return_null_when_no_join_id_meta() throws Exception {
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_MAP).build();
-
-		assertThat(propertyMeta.joinIdMeta()).isNull();
-	}
-
-	@Test
 	public void should_get_counter_id_meta() throws Exception {
 		PropertyMeta idMeta = new PropertyMeta();
 
@@ -149,26 +104,6 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_return_null_when_joinid_invoke() throws Exception {
-		EntityMeta joinMeta = new EntityMeta();
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_MAP).joinMeta(joinMeta).build();
-
-		assertThat(propertyMeta.joinIdMeta()).isNull();
-	}
-
-	@Test
-	public void should_return_true_when_join_type() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class)
-				.type(PropertyType.JOIN_SIMPLE).build();
-
-		assertThat(propertyMeta.isJoin()).isTrue();
-	}
-
-	@Test
 	public void should_return_true_for_isLazy() throws Exception {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.keyValueClass(Void.class, String.class)
@@ -185,78 +120,6 @@ public class PropertyMetaTest {
 				.type(PropertyType.COUNTER).build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();
-	}
-
-	@Test
-	public void should_have_cascade_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").cascadeType(MERGE).build();
-
-		assertThat(pm.hasCascadeType(MERGE)).isTrue();
-	}
-
-	@Test
-	public void should_not_have_cascade_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").cascadeType(MERGE).build();
-
-		assertThat(pm.hasCascadeType(ALL)).isFalse();
-	}
-
-	@Test
-	public void should_not_have_cascade_type_when_not_join() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").build();
-
-		assertThat(pm.hasCascadeType(ALL)).isFalse();
-	}
-
-	@Test
-	public void should_not_have_cascade_type_because_not_join()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").build();
-
-		assertThat(pm.hasCascadeType(ALL)).isFalse();
-	}
-
-	@Test
-	public void should_have_any_cascade_type() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").cascadeTypes(MERGE, ALL).build();
-
-		assertThat(pm.hasAnyCascadeType(MERGE, PERSIST, REMOVE)).isTrue();
-		assertThat(pm.getJoinProperties().getCascadeTypes()).containsOnly(
-				MERGE, ALL);
-		assertThat(pm.hasAnyCascadeType(PERSIST, REMOVE)).isFalse();
-
-	}
-
-	@Test
-	public void should_test_is_join_collection() throws Exception {
-		PropertyMeta pm1 = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(JOIN_LIST).build();
-
-		PropertyMeta pm2 = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(JOIN_SET).build();
-
-		PropertyMeta pm3 = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
-
-		assertThat(pm1.isJoinCollection()).isTrue();
-		assertThat(pm2.isJoinCollection()).isTrue();
-		assertThat(pm3.isJoinCollection()).isFalse();
-	}
-
-	@Test
-	public void should_test_is_join_map() throws Exception {
-		PropertyMeta pm1 = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(JOIN_MAP).build();
-		PropertyMeta pm2 = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
-
-		assertThat(pm1.isJoinMap()).isTrue();
-		assertThat(pm2.isJoinMap()).isFalse();
 	}
 
 	@Test
@@ -585,31 +448,6 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_force_decode_from_json_join_value() throws Exception {
-
-		PropertyMeta joinIdMeta = new PropertyMeta();
-		joinIdMeta.setType(ID);
-		joinIdMeta.setValueClass(Long.class);
-		joinIdMeta.setTranscoder(transcoder);
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta pm = new PropertyMeta();
-		pm.setType(JOIN_SIMPLE);
-		pm.setValueClass(UserBean.class);
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-		pm.setJoinProperties(joinProperties);
-
-		when(transcoder.forceDecodeFromJSON("11", Long.class)).thenReturn(11L);
-
-		Object decoded = pm.forceDecodeFromJSON("11");
-
-		assertThat(decoded).isEqualTo(11L);
-	}
-
-	@Test
 	public void should_force_decode_from_json_to_type() throws Exception {
 		PropertyMeta pm = new PropertyMeta();
 		pm.setTranscoder(transcoder);
@@ -651,42 +489,6 @@ public class PropertyMetaTest {
 				.expectMessage("Cannot get primary key on a non id field 'property'");
 
 		pm.getPrimaryKey(entity);
-	}
-
-	@Test
-	public void should_get_join_primary_key() throws Exception {
-
-		long userId = RandomUtils.nextLong();
-		UserBean entity = new UserBean();
-		entity.setUserId(userId);
-
-		EntityMeta joinMeta = mock(EntityMeta.class);
-
-		PropertyMeta pm = new PropertyMeta();
-		pm.setType(JOIN_SIMPLE);
-		JoinProperties joinProperties = new JoinProperties();
-		joinProperties.setEntityMeta(joinMeta);
-		pm.setJoinProperties(joinProperties);
-
-		when(joinMeta.getPrimaryKey(entity)).thenReturn(userId);
-		assertThat(pm.getJoinPrimaryKey(entity)).isEqualTo(userId);
-	}
-
-	@Test
-	public void should_exception_when_asking_join_primary_key_on_non_join_field()
-			throws Exception {
-
-		UserBean entity = new UserBean();
-
-		PropertyMeta pm = new PropertyMeta();
-		pm.setType(SIMPLE);
-		pm.setPropertyName("property");
-
-		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("Cannot get join primary key on a non join field 'property'");
-
-		pm.getJoinPrimaryKey(entity);
 	}
 
 	@Test

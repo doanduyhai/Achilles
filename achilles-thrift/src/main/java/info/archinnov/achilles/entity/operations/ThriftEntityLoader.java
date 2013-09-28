@@ -19,7 +19,6 @@ package info.archinnov.achilles.entity.operations;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.impl.ThriftJoinLoaderImpl;
 import info.archinnov.achilles.entity.operations.impl.ThriftLoaderImpl;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
@@ -32,7 +31,6 @@ public class ThriftEntityLoader implements
 	private static final Logger log = LoggerFactory
 			.getLogger(ThriftEntityLoader.class);
 
-	private ThriftJoinLoaderImpl joinLoaderImpl = new ThriftJoinLoaderImpl();
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@Override
@@ -94,18 +92,6 @@ public class ThriftEntityLoader implements
 		case MAP:
 		case LAZY_MAP:
 			value = loaderImpl.loadMapProperty(context, propertyMeta);
-			break;
-		case JOIN_SIMPLE:
-			value = loaderImpl.loadJoinSimple(context, propertyMeta, this);
-			break;
-		case JOIN_LIST:
-			value = joinLoaderImpl.loadJoinListProperty(context, propertyMeta);
-			break;
-		case JOIN_SET:
-			value = joinLoaderImpl.loadJoinSetProperty(context, propertyMeta);
-			break;
-		case JOIN_MAP:
-			value = joinLoaderImpl.loadJoinMapProperty(context, propertyMeta);
 			break;
 		default:
 			return;

@@ -17,8 +17,8 @@
 package info.archinnov.achilles.entity.metadata.transcoding;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
@@ -49,8 +49,7 @@ public class MapTranscoderTest {
 	@Test
 	public void should_encode_key() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(JOIN_SIMPLE)
-				.build();
+				.keyValueClass(Integer.class, String.class).type(MAP).build();
 
 		assertThat(transcoder.encodeKey(pm, 11)).isEqualTo(11);
 	}
@@ -79,8 +78,7 @@ public class MapTranscoderTest {
 	@Test
 	public void should_decode_key() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(JOIN_SIMPLE)
-				.build();
+				.keyValueClass(Integer.class, String.class).type(MAP).build();
 
 		assertThat(transcoder.decodeKey(pm, 11)).isEqualTo(11);
 	}

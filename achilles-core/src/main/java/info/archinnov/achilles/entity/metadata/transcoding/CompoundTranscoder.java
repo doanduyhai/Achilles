@@ -40,8 +40,8 @@ public class CompoundTranscoder extends AbstractTranscoder {
 			for (int i = 0; i < componentGetters.size(); i++) {
 				Object component = invoker.getValueFromField(compoundKey,
 						componentGetters.get(i));
-				Object encoded = super.encodeIgnoreJoin(
-						componentClasses.get(i), component);
+				Object encoded = super.encodeInternal(componentClasses.get(i),
+						component);
 				compoundComponents.add(encoded);
 			}
 		}
@@ -61,8 +61,8 @@ public class CompoundTranscoder extends AbstractTranscoder {
 								"The component {} for embedded id {} has an unknown type. Valid types are {}",
 								component, pm.getValueClass()
 										.getCanonicalName(), componentClasses);
-				Object encoded = super.encodeIgnoreJoin(componentClass,
-						component);
+				Object encoded = super
+						.encodeInternal(componentClass, component);
 				encodedComponents.add(encoded);
 			}
 		}
@@ -76,7 +76,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
 		List<Object> decodedComponents = new ArrayList<Object>();
 		List<Class<?>> componentClasses = pm.getComponentClasses();
 		for (int i = 0; i < components.size(); i++) {
-			Object decoded = super.decodeIgnoreJoin(componentClasses.get(i),
+			Object decoded = super.decodeInternal(componentClasses.get(i),
 					components.get(i));
 			decodedComponents.add(decoded);
 		}

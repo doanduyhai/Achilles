@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
@@ -29,11 +29,8 @@ import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.validation.Validator;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
@@ -52,18 +49,17 @@ public class CQLPersistenceContext extends PersistenceContext {
 	public CQLPersistenceContext(EntityMeta entityMeta,
 			ConfigurationContext configContext, CQLDaoContext daoContext,
 			CQLAbstractFlushContext<?> flushContext, Class<?> entityClass,
-			Object primaryKey, Options options, Set<String> entitiesIdentity) {
+			Object primaryKey, Options options) {
 		super(entityMeta, configContext, entityClass, primaryKey, flushContext,
-				options, entitiesIdentity);
+				options);
 		initCollaborators(daoContext, flushContext);
 	}
 
 	public CQLPersistenceContext(EntityMeta entityMeta,
 			ConfigurationContext configContext, CQLDaoContext daoContext,
 			CQLAbstractFlushContext<?> flushContext, Object entity,
-			Options options, Set<String> entitiesIdentity) {
-		super(entityMeta, configContext, entity, flushContext, options,
-				entitiesIdentity);
+			Options options) {
+		super(entityMeta, configContext, entity, flushContext, options);
 		initCollaborators(daoContext, flushContext);
 	}
 
@@ -76,35 +72,10 @@ public class CQLPersistenceContext extends PersistenceContext {
 	}
 
 	@Override
-	public CQLPersistenceContext createContextForJoin(EntityMeta joinMeta,
-			Object joinEntity) {
-		Validator.validateNotNull(joinEntity, "join entity should not be null");
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-				flushContext.duplicate(), joinEntity,
-				options.duplicateWithoutTtlAndTimestamp(), entitiesIdentity);
-	}
-
-	@Override
-	public CQLPersistenceContext createContextForJoin(Class<?> entityClass,
-			EntityMeta joinMeta, Object joinId) {
-		Validator
-				.validateNotNull(entityClass, "entityClass should not be null");
-		Validator.validateNotNull(joinId, "joinId should not be null");
-		return new CQLPersistenceContext(joinMeta, configContext, daoContext,
-				flushContext.duplicate(), entityClass, joinId,
-				options.duplicateWithoutTtlAndTimestamp(), entitiesIdentity);
-	}
-
-	@Override
 	public CQLPersistenceContext duplicate(Object entity) {
 		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
 				flushContext.duplicate(), entity,
-				options.duplicateWithoutTtlAndTimestamp(),
-				new HashSet<String>());
-	}
-
-	public boolean checkForEntityExistence() {
-		return daoContext.checkForEntityExistence(this);
+				options.duplicateWithoutTtlAndTimestamp());
 	}
 
 	public Row eagerLoadEntity() {

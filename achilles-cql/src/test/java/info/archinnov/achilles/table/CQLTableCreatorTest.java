@@ -18,13 +18,12 @@ package info.archinnov.achilles.table;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 import info.archinnov.achilles.type.Counter;
 
@@ -98,45 +97,22 @@ public class CQLTableCreatorTest {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class)
 				.type(ID).field("id").build();
 
-		PropertyMeta joinIdMeta = PropertyMetaTestBuilder
-				.valueClass(UUID.class).type(ID).field("joinId").build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class)
 				.type(SIMPLE).field("longCol").build();
-
-		PropertyMeta joinColPM = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_SIMPLE)
-				.joinMeta(joinMeta).field("joinCol").build();
 
 		PropertyMeta longListColPM = PropertyMetaTestBuilder
 				.valueClass(Long.class).type(LIST).field("longListCol").build();
 
-		PropertyMeta joinListColPM = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_LIST).joinMeta(joinMeta)
-				.field("joinListCol").build();
-
 		PropertyMeta longSetColPM = PropertyMetaTestBuilder
 				.valueClass(Long.class).type(SET).field("longSetCol").build();
-
-		PropertyMeta joinSetColPM = PropertyMetaTestBuilder
-				.valueClass(UserBean.class).type(JOIN_SET).joinMeta(joinMeta)
-				.field("joinSetCol").build();
 
 		PropertyMeta longMapColPM = PropertyMetaTestBuilder
 				.keyValueClass(Integer.class, Long.class).type(MAP)
 				.field("longMapCol").build();
 
-		PropertyMeta joinMapColPM = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, UserBean.class).type(JOIN_MAP)
-				.joinMeta(joinMeta).field("joinMapCol").build();
-
 		meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, joinColPM,
-				longListColPM, joinListColPM, longSetColPM, joinSetColPM,
-				longMapColPM, joinMapColPM));
+		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, longListColPM,
+				longSetColPM, longMapColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -149,14 +125,10 @@ public class CQLTableCreatorTest {
 				.isEqualTo(
 						"\n\tCREATE TABLE tableName(\n"
 								+ "\t\tlongCol bigint,\n"
-								+ "\t\tjoinCol uuid,\n"
 								+ "\t\tid bigint,\n"
 								+ "\t\tlongListCol list<bigint>,\n"
-								+ "\t\tjoinListCol list<uuid>,\n"
 								+ "\t\tlongSetCol set<bigint>,\n"
-								+ "\t\tjoinSetCol set<uuid>,\n"
 								+ "\t\tlongMapCol map<int,bigint>,\n"
-								+ "\t\tjoinMapCol map<int,uuid>,\n"
 								+ "\t\tPRIMARY KEY(id)\n"
 								+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
 	}

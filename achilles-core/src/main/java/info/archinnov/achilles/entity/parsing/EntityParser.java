@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
+import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -28,13 +28,10 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -47,7 +44,6 @@ public class EntityParser {
 
 	private EntityParsingValidator validator = new EntityParsingValidator();
 	private PropertyParser parser = new PropertyParser();
-	private JoinPropertyParser joinParser = new JoinPropertyParser();
 	private PropertyFilter filter = new PropertyFilter();
 	private EntityIntrospector introspector = new EntityIntrospector();
 
@@ -83,9 +79,6 @@ public class EntityParser {
 				idMeta = parser.parse(propertyContext);
 			} else if (filter.hasAnnotation(field, Column.class)) {
 				parser.parse(propertyContext);
-			} else if (filter.hasAnnotation(field, JoinColumn.class)) {
-				propertyContext.setJoinColumn(true);
-				joinParser.parseJoin(propertyContext);
 			} else {
 				log.trace(
 						"Un-mapped field {} of entity {} will not be managed by Achilles",
@@ -117,29 +110,6 @@ public class EntityParser {
 		log.trace("Entity meta built for entity class {} : {}", context
 				.getCurrentEntityClass().getCanonicalName(), entityMeta);
 		return entityMeta;
-	}
-
-	public void fillJoinEntityMeta(EntityParsingContext context,
-			Map<Class<?>, EntityMeta> entityMetaMap) {
-		log.debug("Fill in join entity meta into property meta of join type");
-
-		// Retrieve EntityMeta objects for join columns after entities parsing
-		for (Entry<PropertyMeta, Class<?>> entry : context
-				.getJoinPropertyMetaToBeFilled().entrySet()) {
-			Class<?> clazz = entry.getValue();
-			validator.validateJoinEntityExist(entityMetaMap, clazz);
-
-			PropertyMeta propertyMeta = entry.getKey();
-			EntityMeta joinEntityMeta = entityMetaMap.get(clazz);
-
-			validator.validateJoinEntityNotClusteredEntity(propertyMeta,
-					joinEntityMeta);
-
-			propertyMeta.getJoinProperties().setEntityMeta(joinEntityMeta);
-
-			log.trace("Join property meta built for entity class {} : {}",
-					clazz.getCanonicalName(), propertyMeta);
-		}
 	}
 
 	private void validateEntityAndGetObjectMapper(EntityParsingContext context) {

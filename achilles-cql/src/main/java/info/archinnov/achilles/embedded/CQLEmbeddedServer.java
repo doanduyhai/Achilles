@@ -18,7 +18,7 @@ package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.context.CQLDaoContext.ACHILLES_DML_STATEMENT;
+import static info.archinnov.achilles.context.CQLDaoContext.*;
 import info.archinnov.achilles.entity.manager.CQLEntityManager;
 import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
 
@@ -90,7 +90,6 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 		configMap.put(KEYSPACE_NAME_PARAM, CASSANDRA_TEST_KEYSPACE_NAME);
 		configMap.put(FORCE_CF_CREATION_PARAM, true);
-		configMap.put(ENSURE_CONSISTENCY_ON_JOIN_PARAM, true);
 
 		emf = new CQLEntityManagerFactory(configMap);
 		em = emf.createEntityManager();

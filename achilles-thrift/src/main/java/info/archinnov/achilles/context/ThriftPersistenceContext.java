@@ -30,10 +30,6 @@ import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import me.prettyprint.hector.api.mutation.Mutator;
 
 import org.slf4j.Logger;
@@ -58,9 +54,8 @@ public class ThriftPersistenceContext extends PersistenceContext {
 			ConfigurationContext configContext, //
 			ThriftDaoContext daoContext, //
 			ThriftAbstractFlushContext<?> flushContext, //
-			Object entity, Options options, Set<String> entitiesIdentity) {
-		super(entityMeta, configContext, entity, flushContext, options,
-				entitiesIdentity);
+			Object entity, Options options) {
+		super(entityMeta, configContext, entity, flushContext, options);
 		log.trace("Create new persistence context for instance {} of class {}",
 				entity, entityMeta.getClassName());
 
@@ -68,15 +63,13 @@ public class ThriftPersistenceContext extends PersistenceContext {
 		initDaos();
 	}
 
-	public ThriftPersistenceContext(
-			EntityMeta entityMeta, //
+	public ThriftPersistenceContext(EntityMeta entityMeta, //
 			ConfigurationContext configContext, //
 			ThriftDaoContext daoContext, //
 			ThriftAbstractFlushContext<?> flushContext, //
-			Class<?> entityClass, Object primaryKey, Options options,
-			Set<String> entitiesIdentity) {
+			Class<?> entityClass, Object primaryKey, Options options) {
 		super(entityMeta, configContext, entityClass, primaryKey, flushContext,
-				options, entitiesIdentity);
+				options);
 		log.trace("Create new persistence context for instance {} of class {}",
 				entity, entityClass.getCanonicalName());
 
@@ -102,35 +95,10 @@ public class ThriftPersistenceContext extends PersistenceContext {
 	}
 
 	@Override
-	public ThriftPersistenceContext createContextForJoin(EntityMeta joinMeta,
-			Object joinEntity) {
-		log.trace(
-				"Spawn new persistence context for instance {} of join class {}",
-				joinEntity, joinMeta.getClassName());
-
-		return new ThriftPersistenceContext(joinMeta, configContext,
-				daoContext, flushContext.duplicate(), joinEntity,
-				options.duplicateWithoutTtlAndTimestamp(), entitiesIdentity);
-	}
-
-	@Override
-	public ThriftPersistenceContext createContextForJoin(Class<?> entityClass,
-			EntityMeta joinMeta, Object joinId) {
-		log.trace(
-				"Spawn new persistence context for primary key {} of join class {}",
-				joinId, joinMeta.getClassName());
-
-		return new ThriftPersistenceContext(joinMeta, configContext,
-				daoContext, flushContext.duplicate(), entityClass, joinId,
-				options.duplicateWithoutTtlAndTimestamp(), entitiesIdentity);
-	}
-
-	@Override
 	public ThriftPersistenceContext duplicate(Object entity) {
 		return new ThriftPersistenceContext(entityMeta, configContext,
 				daoContext, flushContext.duplicate(), entity,
-				options.duplicateWithoutTtlAndTimestamp(),
-				new HashSet<String>());
+				options.duplicateWithoutTtlAndTimestamp());
 	}
 
 	@Override

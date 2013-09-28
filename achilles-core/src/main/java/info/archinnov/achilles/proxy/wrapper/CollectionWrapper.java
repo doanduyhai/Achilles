@@ -150,45 +150,12 @@ public class CollectionWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object[] toArray() {
-		Object[] result = null;
-		if (isJoin()) {
-			log.trace(
-					"Build proxies for join entities of collection property {} of entity class {} upon toArray() call",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-			Object[] array = new Object[this.target.size()];
-			int i = 0;
-			for (Object joinEntity : this.target) {
-				array[i] = proxifier.buildProxy(joinEntity,
-						joinContext(joinEntity));
-				i++;
-			}
-			result = array;
-		} else {
-			result = this.target.toArray();
-		}
-		return result;
+		return this.target.toArray();
 	}
 
 	@Override
 	public <T> T[] toArray(T[] arg0) {
-		T[] result = null;
-		if (isJoin()) {
-			log.trace(
-					"Build proxies for join entities of collection property {} of entity class {} upon toArray(T[] arg) call",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-			T[] array = this.target.toArray(arg0);
-
-			for (int i = 0; i < array.length; i++) {
-				array[i] = proxifier
-						.buildProxy(array[i], joinContext(array[i]));
-			}
-			result = array;
-		} else {
-			result = this.target.toArray(arg0);
-		}
-		return result;
+		return this.target.toArray(arg0);
 	}
 
 	public Collection<Object> getTarget() {

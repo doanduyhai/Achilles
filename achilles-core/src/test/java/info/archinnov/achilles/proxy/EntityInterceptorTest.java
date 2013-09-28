@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.proxy;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -31,7 +31,6 @@ import info.archinnov.achilles.proxy.wrapper.SetWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Method;
@@ -74,9 +73,6 @@ public class EntityInterceptorTest {
 
 	@Mock
 	private PersistenceContext context;
-
-	@Mock
-	private PersistenceContext joinContext;
 
 	private Object[] args = new Object[] {};
 
@@ -230,39 +226,6 @@ public class EntityInterceptorTest {
 	}
 
 	@Test
-	public void should_return_join_simple() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(PropertyType.JOIN_SIMPLE).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-		when(context.createContextForJoin(null, rawValue)).thenReturn(
-				joinContext);
-		when(proxifier.buildProxy(rawValue, joinContext)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(),
-				args, proxy);
-
-		assertThat(actual).isSameAs(rawValue);
-	}
-
-	@Test
-	public void should_return_null_for_join_simple() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.accessors().type(PropertyType.JOIN_SIMPLE).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(null);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(),
-				args, proxy);
-
-		assertThat(actual).isNull();
-	}
-
-	@Test
 	public void should_return_list_wrapper() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
@@ -283,22 +246,6 @@ public class EntityInterceptorTest {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("friends")
 				.accessors().type(PropertyType.LAZY_LIST).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new ArrayList<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(),
-				args, proxy);
-
-		assertThat(actual).isInstanceOf(ListWrapper.class);
-	}
-
-	@Test
-	public void should_return_join_list_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(PropertyType.JOIN_LIST).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new ArrayList<String>();
@@ -358,22 +305,6 @@ public class EntityInterceptorTest {
 	}
 
 	@Test
-	public void should_return_join_set_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(PropertyType.JOIN_SET).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new HashSet<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(),
-				args, proxy);
-
-		assertThat(actual).isInstanceOf(SetWrapper.class);
-	}
-
-	@Test
 	public void should_return_null_for_set_property() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, String.class).field("followers")
@@ -409,22 +340,6 @@ public class EntityInterceptorTest {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder
 				.completeBean(Integer.class, String.class).field("preferences")
 				.accessors().type(PropertyType.LAZY_MAP).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new HashMap<Integer, String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(),
-				args, proxy);
-
-		assertThat(actual).isInstanceOf(MapWrapper.class);
-	}
-
-	@Test
-	public void should_return_join_map_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(PropertyType.JOIN_MAP).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new HashMap<Integer, String>();

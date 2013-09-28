@@ -17,9 +17,9 @@
 package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
@@ -27,7 +27,6 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
 
 import java.util.Arrays;
@@ -130,56 +129,6 @@ public class CQLPreparedStatementBinderTest {
 	}
 
 	@Test
-	public void should_bind_for_insert_with_join_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).transcoder(transcoder).invoker(invoker).build();
-
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().transcoder(transcoder)
-				.invoker(invoker).build();
-
-		PropertyMeta joinIdMeta = new PropertyMeta();
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setIdMeta(joinIdMeta);
-
-		PropertyMeta userMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(JOIN_SIMPLE).joinMeta(joinMeta).accessors()
-				.transcoder(transcoder).invoker(invoker).build();
-
-		UserBean user = new UserBean();
-
-		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, userMeta));
-
-		long primaryKey = RandomUtils.nextLong();
-		long joinId = RandomUtils.nextLong();
-		String name = "name";
-
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
-		when(invoker.getValueFromField(entity, nameMeta.getGetter()))
-				.thenReturn(name);
-		when(invoker.getValueFromField(entity, userMeta.getGetter()))
-				.thenReturn(user);
-
-		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
-		when(transcoder.encode(nameMeta, name)).thenReturn(name);
-		when(transcoder.encode(userMeta, user)).thenReturn(joinId);
-
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
-
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta,
-				entity);
-
-		assertThat(actual.getBs()).isSameAs(bs);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly(
-				primaryKey, name, joinId);
-
-	}
-
-	@Test
 	public void should_bind_for_insert_with_null_fields() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder
 				.completeBean(Void.class, Long.class).field("id").accessors()
@@ -271,7 +220,7 @@ public class CQLPreparedStatementBinderTest {
 				.thenReturn(preferences);
 
 		when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(
-				(List) Arrays.asList(userId, name));
+				Arrays.<Object> asList(userId, name));
 		when(transcoder.encode(ageMeta, age)).thenReturn(age);
 		when(transcoder.encode(friendsMeta, friends)).thenReturn(friends);
 		when(transcoder.encode(followersMeta, followers)).thenReturn(followers);

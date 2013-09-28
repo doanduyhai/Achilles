@@ -16,24 +16,19 @@
  */
 package info.archinnov.achilles.clustered;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeTransformer;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
-import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.ThriftJoinEntityLoader;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
@@ -59,9 +54,6 @@ public class ClusteredEntityFactoryTest {
 	private ThriftCompositeTransformer transformer;
 
 	@Mock
-	private ThriftJoinEntityLoader joinHelper;
-
-	@Mock
 	private ThriftPersistenceContext context;
 
 	@Mock
@@ -79,6 +71,7 @@ public class ClusteredEntityFactoryTest {
 
 	private BeanWithClusteredId entity = new BeanWithClusteredId();
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 
@@ -158,53 +151,6 @@ public class ClusteredEntityFactoryTest {
 		List<BeanWithClusteredId> clusteredEntities = factory
 				.buildCounterClusteredEntities(BeanWithClusteredId.class,
 						context, hCounterColumns);
-
-		assertThat(clusteredEntities).containsExactly(entity);
-	}
-
-	@Test
-	public void should_build_join_clustered_entity() throws Exception {
-		UserBean user = new UserBean();
-		Map<Object, Object> joinEntitiesMap = ImmutableMap.<Object, Object> of(
-				10L, user);
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setTableName("joinTable");
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(PropertyType.JOIN_SIMPLE).joinMeta(joinMeta).build();
-
-		when(context.getFirstMeta()).thenReturn(pm);
-		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
-
-		when(transformer.buildRawValueTransformer()).thenReturn(
-				(Function) new Function<HColumn<Composite, Object>, Object>() {
-					@Override
-					public Object apply(HColumn<Composite, Object> hCol) {
-						return 10L;
-					}
-				});
-
-		ThriftGenericEntityDao entityDao = mock(ThriftGenericEntityDao.class);
-		when(context.findEntityDao("joinTable")).thenReturn(entityDao);
-		when(
-				joinHelper.loadJoinEntities(eq(UserBean.class),
-						any(List.class), eq(joinMeta), eq(entityDao)))
-				.thenReturn(joinEntitiesMap);
-
-		when(
-				transformer.joinClusteredEntityTransformer(
-						BeanWithClusteredId.class, context, joinEntitiesMap))
-				.thenReturn(
-						new Function<HColumn<Composite, Object>, BeanWithClusteredId>() {
-							@Override
-							public BeanWithClusteredId apply(
-									HColumn<Composite, Object> hCol) {
-								return entity;
-							}
-						});
-		List<BeanWithClusteredId> clusteredEntities = factory
-				.buildClusteredEntities(BeanWithClusteredId.class, context,
-						hColumns);
 
 		assertThat(clusteredEntities).containsExactly(entity);
 	}

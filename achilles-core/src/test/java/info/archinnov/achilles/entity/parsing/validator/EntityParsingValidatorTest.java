@@ -18,7 +18,6 @@ package info.archinnov.achilles.entity.parsing.validator;
 
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ConfigurationContext.Impl;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +59,7 @@ public class EntityParsingValidatorTest {
 				.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.ID).build();
 
-		EntityParsingContext context = new EntityParsingContext(null, null,
+		EntityParsingContext context = new EntityParsingContext(null,
 				CompleteBean.class);
 		context.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id",
 				idMeta));
@@ -69,7 +67,7 @@ public class EntityParsingValidatorTest {
 		exception
 				.expectMessage("The entity '"
 						+ CompleteBean.class.getCanonicalName()
-						+ "' should have at least one field with javax.persistence.Column or javax.persistence.JoinColumn annotations");
+						+ "' should have at least one field with javax.persistence.Column/javax.persistence.Id/javax.persistence.EmbeddedId annotations");
 
 		validator.validatePropertyMetas(context, idMeta);
 	}
@@ -77,7 +75,7 @@ public class EntityParsingValidatorTest {
 	@Test
 	public void should_skip_wide_row_validation_when_not_wide_row_with_thrift_impl()
 			throws Exception {
-		EntityParsingContext context = new EntityParsingContext(null, null,
+		EntityParsingContext context = new EntityParsingContext(null,
 				CompleteBean.class);
 		context.setClusteredEntity(false);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
@@ -90,8 +88,8 @@ public class EntityParsingValidatorTest {
 			throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(null,
-				configContext, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext,
+				CompleteBean.class);
 
 		context.setClusteredEntity(false);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
@@ -104,8 +102,8 @@ public class EntityParsingValidatorTest {
 			throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(null,
-				configContext, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext,
+				CompleteBean.class);
 
 		context.setClusteredEntity(true);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
@@ -118,8 +116,8 @@ public class EntityParsingValidatorTest {
 			throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(null,
-				configContext, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext,
+				CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
@@ -131,7 +129,7 @@ public class EntityParsingValidatorTest {
 		exception
 				.expectMessage("The clustered entity '"
 						+ CompleteBean.class.getCanonicalName()
-						+ "' should not have more than two properties annotated with @EmbeddedId/@Column/@JoinColumn");
+						+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
 
 		validator.validateClusteredEntities(context);
 	}
@@ -141,8 +139,8 @@ public class EntityParsingValidatorTest {
 			throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(null,
-				configContext, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext,
+				CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder //
@@ -168,8 +166,8 @@ public class EntityParsingValidatorTest {
 			throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(null,
-				configContext, CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext,
+				CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder //
@@ -186,41 +184,9 @@ public class EntityParsingValidatorTest {
 		exception
 				.expectMessage("The clustered entity '"
 						+ CompleteBean.class.getCanonicalName()
-						+ "' should have a single @Column/@JoinColumn property of type simple/join simple/counter");
+						+ "' should have a single @Column property of type simple/counter");
 
 		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_exception_when_join_entity_is_wide_row()
-			throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				//
-				.valueClass(String.class).field("test")
-				.entityClassName("entity").build();
-
-		EntityMeta joinMeta = new EntityMeta();
-		joinMeta.setClusteredEntity(true);
-		joinMeta.setClassName("class.name");
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The entity 'class.name' is a clustered entity and cannot be a join entity");
-
-		validator.validateJoinEntityNotClusteredEntity(propertyMeta, joinMeta);
-	}
-
-	@Test
-	public void should_exception_when_join_entity_does_not_exist_in_properties_map()
-			throws Exception {
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-		entityMetaMap.put(this.getClass(), null);
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("Cannot find mapping for join entity '"
-				+ CompleteBean.class.getCanonicalName() + "'");
-
-		validator.validateJoinEntityExist(entityMetaMap, CompleteBean.class);
-
 	}
 
 	@Test
