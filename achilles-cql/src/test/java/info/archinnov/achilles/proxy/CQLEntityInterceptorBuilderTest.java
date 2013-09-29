@@ -43,11 +43,9 @@ public class CQLEntityInterceptorBuilderTest {
 	private CompleteBean entity = new CompleteBean();
 
 	@Test
-	public void should_build_interceptor_with_eager_fields_already_loaded()
-			throws Exception {
+	public void should_build_interceptor_with_eager_fields_already_loaded() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("id").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -61,22 +59,19 @@ public class CQLEntityInterceptorBuilderTest {
 		when(context.getPrimaryKey()).thenReturn(entity.getId());
 		when(context.isLoadEagerFields()).thenReturn(true);
 
-		CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder
-				.<CompleteBean> builder(context, entity).build();
+		CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder.<CompleteBean> builder(context,
+				entity).build();
 
 		assertThat(interceptor.getContext()).isSameAs(context);
 		assertThat(interceptor.getTarget()).isSameAs(entity);
 		assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
-		assertThat(interceptor.getAlreadyLoaded()).containsOnly(
-				idMeta.getGetter());
+		assertThat(interceptor.getAlreadyLoaded()).containsOnly(idMeta.getGetter());
 	}
 
 	@Test
-	public void should_build_interceptor_with_no_eager_fields()
-			throws Exception {
+	public void should_build_interceptor_with_no_eager_fields() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("id").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -90,8 +85,8 @@ public class CQLEntityInterceptorBuilderTest {
 		when(context.getPrimaryKey()).thenReturn(entity.getId());
 		when(context.isLoadEagerFields()).thenReturn(false);
 
-		CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder
-				.<CompleteBean> builder(context, entity).build();
+		CQLEntityInterceptor<CompleteBean> interceptor = CQLEntityInterceptorBuilder.<CompleteBean> builder(context,
+				entity).build();
 
 		assertThat(interceptor.getContext()).isSameAs(context);
 		assertThat(interceptor.getTarget()).isSameAs(entity);

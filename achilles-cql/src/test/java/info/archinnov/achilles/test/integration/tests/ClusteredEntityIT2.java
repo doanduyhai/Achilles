@@ -42,8 +42,8 @@ import com.datastax.driver.core.SimpleStatement;
 
 public class ClusteredEntityIT2 {
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "ClusteredTweet", "ClusteredMessage");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ClusteredTweet",
+			"ClusteredMessage");
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -55,11 +55,9 @@ public class ClusteredEntityIT2 {
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
-		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId,
-				creationDate);
+		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet",
-				userId, false);
+		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
 		em.persist(tweet);
 
@@ -78,11 +76,9 @@ public class ClusteredEntityIT2 {
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
-		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId,
-				creationDate);
+		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet",
-				userId, false);
+		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 		tweet = em.merge(tweet);
 
 		tweet.setContent("this is a new tweet2");
@@ -104,11 +100,9 @@ public class ClusteredEntityIT2 {
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
-		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId,
-				creationDate);
+		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet",
-				userId, false);
+		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
 		tweet = em.merge(tweet);
 
@@ -127,21 +121,14 @@ public class ClusteredEntityIT2 {
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
-		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId,
-				creationDate);
+		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet",
-				userId, false);
+		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
 		tweet = em.merge(tweet);
 
-		session.execute("update clusteredtweet set content='New tweet',original_author_id="
-				+ originalAuthorId
-				+ ",is_a_retweet=true where user_id="
-				+ userId
-				+ " and tweet_id="
-				+ tweetId
-				+ " and creation_date="
+		session.execute("update clusteredtweet set content='New tweet',original_author_id=" + originalAuthorId
+				+ ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId + " and creation_date="
 				+ creationDate.getTime());
 
 		Thread.sleep(100);
@@ -154,8 +141,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_persist_and_find_entity_having_compound_id_with_enum()
-			throws Exception {
+	public void should_persist_and_find_entity_having_compound_id_with_enum() throws Exception {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.TEXT);
 
@@ -171,8 +157,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_merge_entity_having_compound_id_with_enum()
-			throws Exception {
+	public void should_merge_entity_having_compound_id_with_enum() throws Exception {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.IMAGE);
 
@@ -190,8 +175,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_remove_entity_having_compound_id_with_enum()
-			throws Exception {
+	public void should_remove_entity_having_compound_id_with_enum() throws Exception {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.AUDIO);
 
@@ -207,8 +191,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_refresh_entity_having_compound_id_with_enum()
-			throws Exception {
+	public void should_refresh_entity_having_compound_id_with_enum() throws Exception {
 		String label = "a random file";
 		String newLabel = "a pdf file";
 
@@ -219,11 +202,9 @@ public class ClusteredEntityIT2 {
 
 		message = em.merge(message);
 
-		String updateQuery = "update ClusteredMessage set label='" + newLabel
-				+ "' where id=" + id + " and type='FILE'";
+		String updateQuery = "update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'";
 
-		CQLDaoContext daoContext = Whitebox.getInternalState(em,
-				CQLDaoContext.class);
+		CQLDaoContext daoContext = Whitebox.getInternalState(em, CQLDaoContext.class);
 
 		daoContext.execute(new SimpleStatement(updateQuery));
 

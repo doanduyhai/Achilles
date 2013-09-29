@@ -27,14 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftCounterDao extends ThriftAbstractDao {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftCounterDao.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftCounterDao.class);
 
-	public ThriftCounterDao(Cluster cluster, Keyspace keyspace,
-			AchillesConsistencyLevelPolicy consistencyPolicy,
+	public ThriftCounterDao(Cluster cluster, Keyspace keyspace, AchillesConsistencyLevelPolicy consistencyPolicy,
 			Pair<?, ?> rowkeyAndValueClasses) {
-		super(cluster, keyspace, AchillesCounter.THRIFT_COUNTER_CF,
-				consistencyPolicy, rowkeyAndValueClasses);
+		super(cluster, keyspace, AchillesCounter.THRIFT_COUNTER_CF, consistencyPolicy, rowkeyAndValueClasses);
 
 		columnNameSerializer = COMPOSITE_SRZ;
 		log.debug("Initializing CounterDao with Composite key serializer, DynamicComposite comparator and Long value serializer ");

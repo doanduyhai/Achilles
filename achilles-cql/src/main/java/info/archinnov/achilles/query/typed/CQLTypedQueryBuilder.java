@@ -41,8 +41,7 @@ import com.datastax.driver.core.SimpleStatement;
 
 public class CQLTypedQueryBuilder<T> {
 
-	private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern
-			.compile("^\\s*select\\s+(.+)\\s+from.+$");
+	private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
 	private static final String SELECT_STAR = "select * ";
 	private static final String WHITE_SPACES = "\\s+";
 
@@ -59,8 +58,7 @@ public class CQLTypedQueryBuilder<T> {
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 
-	public CQLTypedQueryBuilder(Class<T> entityClass, CQLDaoContext daoContext,
-			String queryString, EntityMeta meta,
+	public CQLTypedQueryBuilder(Class<T> entityClass, CQLDaoContext daoContext, String queryString, EntityMeta meta,
 			CQLPersistenceContextFactory contextFactory, boolean managed) {
 		this.entityClass = entityClass;
 		this.daoContext = daoContext;
@@ -86,11 +84,9 @@ public class CQLTypedQueryBuilder<T> {
 	 */
 	public List<T> get() {
 		List<T> result = new ArrayList<T>();
-		List<Row> rows = daoContext.execute(
-				new SimpleStatement(normalizedQuery)).all();
+		List<Row> rows = daoContext.execute(new SimpleStatement(normalizedQuery)).all();
 		for (Row row : rows) {
-			T entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta,
-					row, propertiesMap, managed);
+			T entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta, row, propertiesMap, managed);
 			if (entity != null) {
 				if (managed) {
 					entity = buildProxy(entity);
@@ -112,11 +108,9 @@ public class CQLTypedQueryBuilder<T> {
 	 */
 	public T getFirst() {
 		T entity = null;
-		Row row = daoContext.execute(new SimpleStatement(normalizedQuery))
-				.one();
+		Row row = daoContext.execute(new SimpleStatement(normalizedQuery)).one();
 		if (row != null) {
-			entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta,
-					row, propertiesMap, managed);
+			entity = mapper.mapRowToEntityWithPrimaryKey(entityClass, meta, row, propertiesMap, managed);
 			if (entity != null && managed) {
 				entity = buildProxy(entity);
 			}
@@ -126,8 +120,7 @@ public class CQLTypedQueryBuilder<T> {
 
 	private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
 		Map<String, PropertyMeta> propertiesMap = new HashMap<String, PropertyMeta>();
-		for (Entry<String, PropertyMeta> entry : meta.getPropertyMetas()
-				.entrySet()) {
+		for (Entry<String, PropertyMeta> entry : meta.getPropertyMetas().entrySet()) {
 			String propertyName = entry.getKey().toLowerCase();
 			propertiesMap.put(propertyName, entry.getValue());
 		}
@@ -139,14 +132,11 @@ public class CQLTypedQueryBuilder<T> {
 			alreadyLoaded = new HashSet<Method>(meta.getEagerGetters());
 		} else {
 			alreadyLoaded = new HashSet<Method>();
-			Matcher matcher = SELECT_COLUMNS_EXTRACTION_PATTERN
-					.matcher(normalizedQuery);
+			Matcher matcher = SELECT_COLUMNS_EXTRACTION_PATTERN.matcher(normalizedQuery);
 			if (matcher.matches()) {
-				selectedColumns = Arrays.asList(matcher.group(1)
-						.replaceAll(WHITE_SPACES, "").split(","));
+				selectedColumns = Arrays.asList(matcher.group(1).replaceAll(WHITE_SPACES, "").split(","));
 				for (PropertyMeta pm : propertiesMap.values()) {
-					if (selectedColumns.contains(pm.getPropertyName()
-							.toLowerCase())) {
+					if (selectedColumns.contains(pm.getPropertyName().toLowerCase())) {
 						alreadyLoaded.add(pm.getGetter());
 					}
 				}

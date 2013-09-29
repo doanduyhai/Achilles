@@ -28,8 +28,7 @@ public class ThriftDaoContext {
 	private final ThriftCounterDao thriftCounterDao;
 
 	public ThriftDaoContext(Map<String, ThriftGenericEntityDao> entityDaosMap,
-			Map<String, ThriftGenericWideRowDao> wideRowDaosMap,
-			ThriftCounterDao thriftCounterDao) {
+			Map<String, ThriftGenericWideRowDao> wideRowDaosMap, ThriftCounterDao thriftCounterDao) {
 		this.entityDaosMap = entityDaosMap;
 		this.wideRowDaosMap = wideRowDaosMap;
 		this.thriftCounterDao = thriftCounterDao;

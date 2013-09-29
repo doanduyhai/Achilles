@@ -39,27 +39,22 @@ import org.junit.Test;
 public class AchillesInternalThriftResourceTest {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "User");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "User");
 
 	private Cluster cluster = resource.getCluster();
 	private Keyspace keyspace = resource.getKeyspace();
 	private ThriftEntityManagerFactory emf = resource.getFactory();
 	private ThriftEntityManager em = resource.getEm();
-	private ThriftConsistencyLevelPolicy policy = resource
-			.getConsistencyPolicy();
-	private ThriftGenericEntityDao dao = resource.getEntityDao("User",
-			Long.class);
+	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
+	private ThriftGenericEntityDao dao = resource.getEntityDao("User", Long.class);
 
 	@Test
-	public void should_bootstrap_embedded_server_and_entity_manager()
-			throws Exception {
+	public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
 		Long id = RandomUtils.nextLong();
 		em.persist(new User(id, "fn", "ln"));
 
-		List<Pair<Composite, Object>> columnsRange = dao.findColumnsRange(id,
-				null, null, false, 100);
+		List<Pair<Composite, Object>> columnsRange = dao.findColumnsRange(id, null, null, false, 100);
 
 		assertThat(columnsRange).hasSize(3);
 

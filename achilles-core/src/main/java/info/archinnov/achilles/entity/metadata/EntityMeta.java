@@ -76,8 +76,8 @@ public class EntityMeta {
 		return idMeta.getPartitionKey(compoundKey);
 	}
 
-	public Object instanciateEmbeddedIdWithPartitionKey(Object partitionKey) {
-		return idMeta.instanciateEmbeddedIdWithPartitionKey(partitionKey);
+	public Object instanciateEmbeddedIdWithPartitionKey(List<Object> partitionComponents) {
+		return idMeta.instanciateEmbeddedIdWithPartitionKey(partitionComponents);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -87,6 +87,10 @@ public class EntityMeta {
 
 	public boolean hasEmbeddedId() {
 		return idMeta.isEmbeddedId();
+	}
+
+	public boolean hasCompositePartitionKey() {
+		return idMeta.isCompositePartitionKey();
 	}
 
 	// ////////// Getters & Setters
@@ -166,8 +170,7 @@ public class EntityMeta {
 		return this.consistencyLevels;
 	}
 
-	public void setConsistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 	}
 
@@ -230,13 +233,9 @@ public class EntityMeta {
 
 	@Override
 	public String toString() {
-		return Objects
-				.toStringHelper(this.getClass())
-				.add("className", className)
+		return Objects.toStringHelper(this.getClass()).add("className", className)
 				.add("tableName/columnFamilyName", tableName)
-				.add("propertyMetas",
-						StringUtils.join(propertyMetas.keySet(), ","))
-				.add("idMeta", idMeta).add("clusteredEntity", clusteredEntity)
-				.add("consistencyLevels", consistencyLevels).toString();
+				.add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ",")).add("idMeta", idMeta)
+				.add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
 	}
 }

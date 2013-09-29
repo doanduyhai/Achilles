@@ -18,16 +18,16 @@ package info.archinnov.achilles.compound;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
-import info.archinnov.achilles.test.parser.entity.CompoundKeyWithEnum;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithEnum;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +46,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -75,50 +76,101 @@ public class ThriftCompoundKeyMapperTest {
 	@Mock
 	private DataTranscoder transcoder;
 
+	@Mock
+	private ReflectionInvoker invoker;
+
 	@Test
 	public void should_build_embedded_id() throws Exception {
-		Long userId = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong();
+		List<Object> partitionComponents = Arrays.<Object> asList(id);
 		String name = "name";
-		CompoundKey compoundKey = new CompoundKey();
-		HColumn<Composite, String> hCol1 = buildHColumn(buildComposite(name),
-				"val1");
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+		HColumn<Composite, String> hCol1 = buildHColumn(buildComposite(name), "val1");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Arrays.<Class<?>> asList(Long.class, String.class))
-				.transcoder(transcoder).build();
+		when(compoundKeyMeta.extractPartitionComponents(embeddedKey)).thenReturn(partitionComponents);
+		when(compoundKeyMeta.getClusteringComponentClasses()).thenReturn(Arrays.<Class<?>> asList(String.class));
+		when(compoundKeyMeta.decodeFromComponents(Arrays.<Object> asList(id, name))).thenReturn(embeddedKey);
 
-		when(transcoder.decodeFromComponents(eq(idMeta), any(List.class)))
-				.thenReturn(compoundKey);
-		CompoundKey actual = mapper.fromCompositeToEmbeddedId(idMeta, hCol1
-				.getName().getComponents(), userId);
+		Object actual = mapper.fromCompositeToEmbeddedId(compoundKeyMeta, hCol1.getName().getComponents(), embeddedKey);
 
-		assertThat(actual).isSameAs(compoundKey);
+		assertThat(actual).isSameAs(embeddedKey);
 	}
 
 	@Test
-	public void should_create_composite_for_embedded_id_insert()
-			throws Exception {
+	public void should_create_composite_for_embedded_id_insert() throws Exception {
 		Long id = RandomUtils.nextLong();
-		CompoundKeyWithEnum compoundKey = new CompoundKeyWithEnum();
+		EmbeddedKeyWithEnum compoundKey = new EmbeddedKeyWithEnum();
 
-		when(compoundKeyMeta.encodeToComponents(compoundKey)).thenReturn(
-				Arrays.<Object> asList(id, "EMBEDDED_ID"));
+		List<Object> componentValues = Arrays.<Object> asList(id, "EMBEDDED_ID");
+		when(compoundKeyMeta.encodeToComponents(compoundKey)).thenReturn(componentValues);
 		when(compoundKeyMeta.isEmbeddedId()).thenReturn(true);
-		when(compoundKeyMeta.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, PropertyType.class));
+		when(compoundKeyMeta.getClusteringComponentClasses()).thenReturn(Arrays.<Class<?>> asList(PropertyType.class));
+		when(compoundKeyMeta.extractClusteringComponents(Mockito.<List<Object>> any())).thenReturn(
+				Arrays.<Object> asList("EMBEDDED_ID"));
 
-		Composite comp = mapper.fromCompoundToCompositeForInsertOrGet(
-				compoundKey, compoundKeyMeta);
+		Composite comp = mapper.fromCompoundToCompositeForInsertOrGet(compoundKey, compoundKeyMeta);
 
 		assertThat(comp.getComponents()).hasSize(1);
-		assertThat(comp.getComponents().get(0).getValue(STRING_SRZ)).isEqualTo(
-				"EMBEDDED_ID");
+		assertThat(comp.getComponents().get(0).getValue(STRING_SRZ)).isEqualTo("EMBEDDED_ID");
+	}
+
+	@Test
+	public void should_build_simple_row_key() throws Exception {
+		Long id = RandomUtils.nextLong();
+		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
+
+		when(context.getIdMeta()).thenReturn(compoundKeyMeta);
+		when(context.getPrimaryKey()).thenReturn(id);
+		when(compoundKeyMeta.isCompositePartitionKey()).thenReturn(false);
+
+		Object actual = mapper.buildRowKey(context);
+
+		assertThat(actual).isSameAs(id);
+	}
+
+	@Test
+	public void should_build_composite_row_key() throws Exception {
+		Long id = RandomUtils.nextLong();
+		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+		UUID date = new UUID(10, 10);
+		List<Object> components = Arrays.<Object> asList(id, "type", date);
+
+		when(context.getIdMeta()).thenReturn(compoundKeyMeta);
+		when(context.getPrimaryKey()).thenReturn(embeddedKey);
+		when(compoundKeyMeta.isCompositePartitionKey()).thenReturn(true);
+		when(compoundKeyMeta.encodeToComponents(embeddedKey)).thenReturn(components);
+		when(compoundKeyMeta.extractPartitionComponents(components)).thenReturn(Arrays.<Object> asList(id, "type"));
+		when(compoundKeyMeta.getPartitionComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(Long.class, String.class));
+
+		Composite actual = (Composite) mapper.buildRowKey(context);
+
+		assertThat(actual.getComponents()).hasSize(2);
+		assertThat(actual.getComponents().get(0).getValue(LONG_SRZ)).isEqualTo(id);
+		assertThat(actual.getComponents().get(1).getValue(STRING_SRZ)).isEqualTo("type");
+	}
+
+	@Test
+	public void should_build_partition_key_from_compound_primary_key() throws Exception {
+		Long id = RandomUtils.nextLong();
+		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+
+		when(context.getIdMeta()).thenReturn(compoundKeyMeta);
+		when(context.getPrimaryKey()).thenReturn(embeddedKey);
+		when(compoundKeyMeta.isCompositePartitionKey()).thenReturn(false);
+		when(compoundKeyMeta.isEmbeddedId()).thenReturn(true);
+		when(compoundKeyMeta.getPartitionKey(embeddedKey)).thenReturn(id);
+
+		Object actual = mapper.buildRowKey(context);
+
+		assertThat(actual).isSameAs(id);
 	}
 
 	@Test
 	public void should_exception_when_null_value() throws Exception {
-		CompoundKeyWithEnum compoundKey = new CompoundKeyWithEnum();
+		EmbeddedKeyWithEnum compoundKey = new EmbeddedKeyWithEnum();
 
 		when(compoundKeyMeta.getPropertyName()).thenReturn("compound_key");
 		List<Object> list = new ArrayList<Object>();
@@ -126,50 +178,42 @@ public class ThriftCompoundKeyMapperTest {
 		when(compoundKeyMeta.encodeToComponents(compoundKey)).thenReturn(list);
 
 		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("The component values for the @CompoundKey 'compound_key' should not be null");
+		expectedEx.expectMessage("The component values for the @EmbeddedId 'compound_key' should not be null");
 
-		mapper.fromCompoundToCompositeForInsertOrGet(compoundKey,
-				compoundKeyMeta);
+		mapper.fromCompoundToCompositeForInsertOrGet(compoundKey, compoundKeyMeta);
 
 	}
 
 	@Test
-	public void should_create_composite_from_components_for_query()
-			throws Exception {
+	public void should_create_composite_from_components_for_query() throws Exception {
 		UUID uuid = TimeUUIDUtils.getUniqueTimeUUIDinMillis();
-
-		when(compoundKeyMeta.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(UUID.class, String.class,
-						Integer.class));
-
 		List<Object> components = Arrays.<Object> asList(uuid, "a", 15);
 
-		when(validator.validateNoHoleAndReturnLastNonNullIndex(any(List.class)))
-				.thenReturn(1);
-		Composite comp = mapper.fromComponentsToCompositeForQuery(components,
-				compoundKeyMeta, LESS_THAN_EQUAL);
+		when(compoundKeyMeta.getPropertyName()).thenReturn("field");
+		when(compoundKeyMeta.extractClusteringComponents(components)).thenReturn(Arrays.<Object> asList("a", 15));
+		when(compoundKeyMeta.getClusteringComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(String.class, Integer.class));
+
+		when(validator.validateNoHoleAndReturnLastNonNullIndex(Mockito.<List<Object>> any())).thenReturn(1);
+		Composite comp = mapper.fromComponentsToCompositeForQuery(components, compoundKeyMeta, LESS_THAN_EQUAL);
 
 		assertThat(comp.getComponents()).hasSize(2);
 
 		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
 		assertThat(comp.getComponent(0).getValue()).isEqualTo("a");
 
-		assertThat(comp.getComponent(1).getEquality()).isEqualTo(
-				LESS_THAN_EQUAL);
+		assertThat(comp.getComponent(1).getEquality()).isEqualTo(LESS_THAN_EQUAL);
 		assertThat(comp.getComponent(1).getValue()).isEqualTo(15);
 	}
 
 	private Composite buildComposite(String name) {
 		Composite composite = new Composite();
-		composite.setComponent(0, name, STRING_SRZ, STRING_SRZ
-				.getComparatorType().getTypeName());
+		composite.setComponent(0, name, STRING_SRZ, STRING_SRZ.getComparatorType().getTypeName());
 		return composite;
 	}
 
 	private HColumn<Composite, String> buildHColumn(Composite comp, String value) {
-		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(
-				COMPOSITE_SRZ, STRING_SRZ);
+		HColumn<Composite, String> hColumn = new HColumnImpl<Composite, String>(COMPOSITE_SRZ, STRING_SRZ);
 
 		hColumn.setName(comp);
 		hColumn.setValue(value);

@@ -43,11 +43,9 @@ public class AchillesCQLResource extends AchillesTestResource {
 	public AchillesCQLResource(String entityPackages, String... tables) {
 		super(tables);
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
-		server = new CQLEmbeddedServer(true, entityPackages,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
 		factory = server.getEmf();
 		em = server.getEm();
 		session = em.getNativeSession();
@@ -69,15 +67,12 @@ public class AchillesCQLResource extends AchillesTestResource {
 	 *            list of tables to truncate before, after or before and after
 	 *            tests, depending on the 'cleanUpSteps' parameters
 	 */
-	public AchillesCQLResource(String entityPackages, Steps cleanUpSteps,
-			String... tables) {
+	public AchillesCQLResource(String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
-		server = new CQLEmbeddedServer(true, entityPackages,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
 		factory = server.getEmf();
 		em = server.getEm();
 		session = em.getNativeSession();

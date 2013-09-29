@@ -53,18 +53,13 @@ public class ThriftEntityManagerFactoryTest {
 		ConfigurationContext configContext = mock(ConfigurationContext.class);
 		AchillesConsistencyLevelPolicy consistencyPolicy = mock(AchillesConsistencyLevelPolicy.class);
 
-		when(configContext.getConsistencyPolicy())
-				.thenReturn(consistencyPolicy);
-		when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel())
-				.thenReturn(EACH_QUORUM);
+		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+		when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel()).thenReturn(EACH_QUORUM);
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
-		doCallRealMethod().when(factory).setThriftDaoContext(
-				any(ThriftDaoContext.class));
-		doCallRealMethod().when(factory).setConfigContext(
-				any(ConfigurationContext.class));
-		doCallRealMethod().when(factory).setEntityMetaMap(
-				(Map<Class<?>, EntityMeta>) any(Map.class));
+		doCallRealMethod().when(factory).setThriftDaoContext(any(ThriftDaoContext.class));
+		doCallRealMethod().when(factory).setConfigContext(any(ConfigurationContext.class));
+		doCallRealMethod().when(factory).setEntityMetaMap((Map<Class<?>, EntityMeta>) any(Map.class));
 
 		factory.setThriftDaoContext(daoContext);
 		factory.setConfigContext(configContext);
@@ -72,15 +67,11 @@ public class ThriftEntityManagerFactoryTest {
 
 		doCallRealMethod().when(factory).createEntityManager();
 
-		ThriftEntityManager em = (ThriftEntityManager) factory
-				.createEntityManager();
+		ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
 
-		assertThat(Whitebox.getInternalState(em, ThriftDaoContext.class))
-				.isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(em, "configContext")).isSameAs(
-				configContext);
-		Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox
-				.getInternalState(em, "entityMetaMap");
+		assertThat(Whitebox.getInternalState(em, ThriftDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(em, "configContext")).isSameAs(configContext);
+		Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox.getInternalState(em, "entityMetaMap");
 		assertThat(builtEntityMetaMap).isNotNull();
 		assertThat(builtEntityMetaMap).isEmpty();
 
@@ -95,25 +86,18 @@ public class ThriftEntityManagerFactoryTest {
 		readLevels.put("cf", THREE);
 		writeLevels.put("cf", QUORUM);
 
-		when(argumentExtractor.initDefaultReadConsistencyLevel(configMap))
-				.thenReturn(ONE);
-		when(argumentExtractor.initDefaultWriteConsistencyLevel(configMap))
-				.thenReturn(TWO);
-		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(
-				readLevels);
-		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(
-				writeLevels);
+		when(argumentExtractor.initDefaultReadConsistencyLevel(configMap)).thenReturn(ONE);
+		when(argumentExtractor.initDefaultWriteConsistencyLevel(configMap)).thenReturn(TWO);
+		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(readLevels);
+		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(writeLevels);
 
-		doCallRealMethod().when(factory).initConsistencyLevelPolicy(configMap,
-				argumentExtractor);
+		doCallRealMethod().when(factory).initConsistencyLevelPolicy(configMap, argumentExtractor);
 
-		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) factory
-				.initConsistencyLevelPolicy(configMap, argumentExtractor);
+		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) factory.initConsistencyLevelPolicy(
+				configMap, argumentExtractor);
 
-		assertThat(policy.getDefaultGlobalReadConsistencyLevel())
-				.isEqualTo(ONE);
-		assertThat(policy.getDefaultGlobalWriteConsistencyLevel()).isEqualTo(
-				TWO);
+		assertThat(policy.getDefaultGlobalReadConsistencyLevel()).isEqualTo(ONE);
+		assertThat(policy.getDefaultGlobalWriteConsistencyLevel()).isEqualTo(TWO);
 		assertThat(policy.getConsistencyLevelForRead("cf")).isEqualTo(THREE);
 		assertThat(policy.getConsistencyLevelForWrite("cf")).isEqualTo(QUORUM);
 	}

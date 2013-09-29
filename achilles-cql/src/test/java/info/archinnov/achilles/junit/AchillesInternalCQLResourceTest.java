@@ -31,16 +31,14 @@ import com.datastax.driver.core.Session;
 
 public class AchillesInternalCQLResourceTest {
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "User");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "User");
 
 	private CQLEntityManagerFactory emf = resource.getFactory();
 	private CQLEntityManager em = resource.getEm();
 	private Session session = resource.getNativeSession();
 
 	@Test
-	public void should_bootstrap_embedded_server_and_entity_manager()
-			throws Exception {
+	public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
 		Long id = RandomUtils.nextLong();
 		em.persist(new User(id, "fn", "ln"));
@@ -63,8 +61,7 @@ public class AchillesInternalCQLResourceTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_null_entity_package_provided()
-			throws Exception {
+	public void should_exception_when_null_entity_package_provided() throws Exception {
 		new AchillesCQLResource(null);
 	}
 }

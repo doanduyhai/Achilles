@@ -24,10 +24,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EntryIteratorWrapper extends AbstractWrapper implements
-		Iterator<Entry<Object, Object>> {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntryIteratorWrapper.class);
+public class EntryIteratorWrapper extends AbstractWrapper implements Iterator<Entry<Object, Object>> {
+	private static final Logger log = LoggerFactory.getLogger(EntryIteratorWrapper.class);
 
 	private Iterator<Entry<Object, Object>> target;
 
@@ -45,12 +43,9 @@ public class EntryIteratorWrapper extends AbstractWrapper implements
 		Entry<Object, Object> result = null;
 		Entry<Object, Object> entry = this.target.next();
 		if (entry != null) {
-			log.trace(
-					"Build wrapper for next entry of property {} of entity class {}",
-					propertyMeta.getPropertyName(),
+			log.trace("Build wrapper for next entry of property {} of entity class {}", propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
-			result = MapEntryWrapperBuilder.builder(context, entry)
-					.dirtyMap(dirtyMap).setter(setter)
+			result = MapEntryWrapperBuilder.builder(context, entry).dirtyMap(dirtyMap).setter(setter)
 					.propertyMeta(propertyMeta).proxifier(proxifier).build();
 		}
 		return result;
@@ -58,9 +53,7 @@ public class EntryIteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public void remove() {
-		log.trace(
-				"Mark dirty for property {} of entity class {} upon entry removal",
-				propertyMeta.getPropertyName(),
+		log.trace("Mark dirty for property {} of entity class {} upon entry removal", propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
 		this.target.remove();
 		this.markDirty();

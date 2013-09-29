@@ -61,24 +61,19 @@ public class ThriftCounterClusteredEntityIteratorTest {
 
 	@Before
 	public void setUp() {
-		iterator = new ThriftCounterClusteredEntityIterator<BeanWithClusteredId>(
-				entityClass, sliceIterator, context);
+		iterator = new ThriftCounterClusteredEntityIterator<BeanWithClusteredId>(entityClass, sliceIterator, context);
 		iterator = spy(iterator);
 
-		Whitebox.setInternalState(iterator, ThriftCompositeTransformer.class,
-				transformer);
+		Whitebox.setInternalState(iterator, ThriftCompositeTransformer.class, transformer);
 	}
 
 	@Test
 	public void should_get_next() throws Exception {
-		List<Component<?>> components = Arrays
-				.<Component<?>> asList(mock(Component.class));
+		List<Component<?>> components = Arrays.<Component<?>> asList(mock(Component.class));
 		when(sliceIterator.next()).thenReturn(hColumn);
 		when(hColumn.getName()).thenReturn(composite);
 		when(composite.getComponents()).thenReturn(components);
-		when(
-				transformer.buildClusteredEntityWithIdOnly(entityClass,
-						context, components)).thenReturn(entity);
+		when(transformer.buildClusteredEntityWithIdOnly(entityClass, context, components)).thenReturn(entity);
 		doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
 		assertThat(iterator.next()).isSameAs(entity);
 	}

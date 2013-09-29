@@ -24,8 +24,7 @@ import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.CQLCounterWrapper;
 import info.archinnov.achilles.type.Counter;
 
-public class CQLEntityInterceptor<T> extends
-		EntityInterceptor<CQLPersistenceContext, T> {
+public class CQLEntityInterceptor<T> extends EntityInterceptor<CQLPersistenceContext, T> {
 
 	public CQLEntityInterceptor() {
 		super.loader = new CQLEntityLoader();

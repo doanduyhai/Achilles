@@ -73,8 +73,7 @@ public class EntityRefresherTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		List<Method> eagerGetters = new ArrayList<Method>();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getPrimaryKey()).thenReturn(bean.getId());
 		when(context.getEntity()).thenReturn(bean);
 
@@ -100,8 +99,7 @@ public class EntityRefresherTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		List<Method> eagerGetters = new ArrayList<Method>();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getPrimaryKey()).thenReturn(bean.getId());
 		when(context.getEntity()).thenReturn(bean);
 

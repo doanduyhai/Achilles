@@ -55,16 +55,13 @@ public class ThriftLoggerHelper extends LoggerHelper {
 				Component<?> component = components.get(i);
 				String componentValue;
 				if (component.getSerializer() == ThriftSerializerUtils.BYTE_SRZ) {
-					componentValue = ByteBufferUtil.getArray(component
-							.getBytes())[0] + "";
+					componentValue = ByteBufferUtil.getArray(component.getBytes())[0] + "";
 				} else {
-					componentValue = component.getValue(
-							component.getSerializer()).toString();
+					componentValue = component.getValue(component.getSerializer()).toString();
 				}
 
 				if (i == componentNb - 1) {
-					componentsText.add(componentValue + "("
-							+ component.getEquality().name() + ")");
+					componentsText.add(componentValue + "(" + component.getEquality().name() + ")");
 				} else {
 					componentsText.add(componentValue);
 				}

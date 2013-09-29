@@ -55,8 +55,7 @@ public class CQLEntityManagerFactoryBeanTest {
 	@Test
 	public void should_exception_when_no_entity_packages() throws Exception {
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("'entityPackages' should be provided for entity scanning");
+		exception.expectMessage("'entityPackages' should be provided for entity scanning");
 		factory.initialize();
 	}
 
@@ -64,8 +63,7 @@ public class CQLEntityManagerFactoryBeanTest {
 	public void should_exception_when_no_contact_point_set() throws Exception {
 		factory.setEntityPackages("com.test");
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
+		exception.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
 		factory.initialize();
 	}
 
@@ -75,8 +73,7 @@ public class CQLEntityManagerFactoryBeanTest {
 		factory.setContactPoints("localhost");
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
+		exception.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
 		factory.initialize();
 	}
 
@@ -87,14 +84,12 @@ public class CQLEntityManagerFactoryBeanTest {
 		factory.setPort(9160);
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("'keyspaceName' for Cassandra connection should be provided");
+		exception.expectMessage("'keyspaceName' for Cassandra connection should be provided");
 		factory.initialize();
 	}
 
 	@Test
-	public void should_exception_when_no_ssl_options_when_ssl_is_enabled()
-			throws Exception {
+	public void should_exception_when_no_ssl_options_when_ssl_is_enabled() throws Exception {
 		factory.setEntityPackages("com.test");
 		factory.setContactPoints("localhost");
 		factory.setPort(9160);
@@ -102,8 +97,7 @@ public class CQLEntityManagerFactoryBeanTest {
 		factory.setSslEnabled(true);
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("'sslOptions' property should be set when SSL is enabled");
+		exception.expectMessage("'sslOptions' property should be set when SSL is enabled");
 		factory.initialize();
 	}
 

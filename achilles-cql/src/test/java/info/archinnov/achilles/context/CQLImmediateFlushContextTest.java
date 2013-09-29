@@ -71,28 +71,23 @@ public class CQLImmediateFlushContextTest {
 	@Test
 	public void should_push_bound_statement_with_consistency() throws Exception {
 		List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
-		Whitebox.setInternalState(context, "boundStatementWrappers",
-				boundStatementWrappers);
+		Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
 
 		context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
-		verify(bs).setConsistencyLevel(
-				com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		assertThat(boundStatementWrappers).containsOnly(bsWrapper);
 	}
 
 	@Test
-	public void should_push_bound_statement_with_consistency_overriden_by_current_level()
-			throws Exception {
+	public void should_push_bound_statement_with_consistency_overriden_by_current_level() throws Exception {
 		List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
-		Whitebox.setInternalState(context, "boundStatementWrappers",
-				boundStatementWrappers);
+		Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
 
 		context.setConsistencyLevel(LOCAL_QUORUM);
 		context.pushBoundStatement(bsWrapper, EACH_QUORUM);
 
-		verify(bs).setConsistencyLevel(
-				com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
 		assertThat(boundStatementWrappers).containsOnly(bsWrapper);
 	}
 
@@ -103,37 +98,31 @@ public class CQLImmediateFlushContextTest {
 
 		context.pushStatement(statement, EACH_QUORUM);
 
-		verify(statement).setConsistencyLevel(
-				com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+		verify(statement).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		assertThat(statements).containsOnly(statement);
 	}
 
 	@Test
-	public void should_push_statement_with_consistency_overriden_by_current_level()
-			throws Exception {
+	public void should_push_statement_with_consistency_overriden_by_current_level() throws Exception {
 		List<Statement> statements = new ArrayList<Statement>();
 		Whitebox.setInternalState(context, "statements", statements);
 
 		context.setConsistencyLevel(LOCAL_QUORUM);
 		context.pushStatement(statement, EACH_QUORUM);
 
-		verify(statement).setConsistencyLevel(
-				com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+		verify(statement).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
 		assertThat(statements).containsOnly(statement);
 	}
 
 	@Test
-	public void should_execute_immediate_with_consistency_level()
-			throws Exception {
+	public void should_execute_immediate_with_consistency_level() throws Exception {
 		ResultSet result = mock(ResultSet.class);
 		when(daoContext.execute(query)).thenReturn(result);
 
-		ResultSet actual = context.executeImmediateWithConsistency(query,
-				EACH_QUORUM);
+		ResultSet actual = context.executeImmediateWithConsistency(query, EACH_QUORUM);
 
 		assertThat(actual).isSameAs(result);
-		verify(query).setConsistencyLevel(
-				com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+		verify(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
@@ -145,8 +134,7 @@ public class CQLImmediateFlushContextTest {
 
 		Object[] boundValues = new Object[1];
 		when(bsWrapper.getValues()).thenReturn(boundValues);
-		Whitebox.setInternalState(context, "boundStatementWrappers",
-				boundStatementWrappers);
+		Whitebox.setInternalState(context, "boundStatementWrappers", boundStatementWrappers);
 		Whitebox.setInternalState(context, "statements", statements);
 
 		context.flush();

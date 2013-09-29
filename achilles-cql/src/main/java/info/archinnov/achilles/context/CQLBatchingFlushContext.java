@@ -24,18 +24,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CQLBatchingFlushContext extends
-		CQLAbstractFlushContext<CQLBatchingFlushContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLBatchingFlushContext.class);
+public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatchingFlushContext> {
+	private static final Logger log = LoggerFactory.getLogger(CQLBatchingFlushContext.class);
 
-	public CQLBatchingFlushContext(CQLDaoContext daoContext,
-			ConsistencyLevel consistencyLevel) {
+	public CQLBatchingFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel) {
 		super(daoContext, consistencyLevel);
 	}
 
-	private CQLBatchingFlushContext(CQLDaoContext daoContext,
-			List<BoundStatementWrapper> boundStatementWrappers,
+	private CQLBatchingFlushContext(CQLDaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
 			ConsistencyLevel consistencyLevel) {
 		super(daoContext, boundStatementWrappers, consistencyLevel);
 	}
@@ -64,8 +60,7 @@ public class CQLBatchingFlushContext extends
 
 	@Override
 	public CQLBatchingFlushContext duplicate() {
-		return new CQLBatchingFlushContext(daoContext, boundStatementWrappers,
-				consistencyLevel);
+		return new CQLBatchingFlushContext(daoContext, boundStatementWrappers, consistencyLevel);
 	}
 
 }

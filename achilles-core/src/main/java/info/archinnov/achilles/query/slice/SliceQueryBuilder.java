@@ -29,25 +29,23 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.Iterator;
 import java.util.List;
 
-public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
-		RootSliceQueryBuilder<CONTEXT, T> {
+public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
-	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
-			CompoundKeyValidator compoundKeyValidator, Class<T> entityClass,
-			EntityMeta meta) {
+	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, CompoundKeyValidator compoundKeyValidator,
+			Class<T> entityClass, EntityMeta meta) {
 		super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
 	}
 
 	/**
-	 * Query by partition key and clustering components<br/>
+	 * Query by partition key components and clustering components<br/>
 	 * <br/>
 	 * 
-	 * @param partitionKey
-	 *            Partition key
+	 * @param partitionComponents
+	 *            Partition key components
 	 * @return ThriftShortcutQueryBuilder<T>
 	 */
-	public SliceShortcutQueryBuilder partitionKey(Object partitionKey) {
-		super.partitionKeyInternal(partitionKey);
+	public SliceShortcutQueryBuilder partitionKey(Object... partitionComponents) {
+		super.partitionKeyInternal(partitionComponents);
 		return new SliceShortcutQueryBuilder();
 	}
 
@@ -58,20 +56,19 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 	 * @param fromEmbeddedId
 	 *            From embeddedId
 	 * 
-	 * @return ThriftFromEmbeddedIdBuilder<T>
+	 * @return SliceFromEmbeddedIdBuilder<T>
 	 */
 	public SliceFromEmbeddedIdBuilder fromEmbeddedId(Object fromEmbeddedId) {
 		Class<?> embeddedIdClass = meta.getIdClass();
 		PropertyMeta idMeta = meta.getIdMeta();
-		Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass,
-				"fromEmbeddedId should be of type '%s'",
+		Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
 		List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
-		List<Object> clusteringFrom = components.subList(1, components.size());
+		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
+		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 
-		super.partitionKeyInternal(components.get(0));
-		this.fromClusteringsInternal(clusteringFrom
-				.toArray(new Object[clusteringFrom.size()]));
+		super.partitionKeyInternal(partitionComponents);
+		this.fromClusteringsInternal(clusteringComponents);
 
 		return new SliceFromEmbeddedIdBuilder();
 	}
@@ -83,21 +80,20 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 	 * @param toEmbeddedId
 	 *            To embeddedId
 	 * 
-	 * @return ThriftToEmbeddedIdBuilder
+	 * @return SliceToEmbeddedIdBuilder
 	 */
 	public SliceToEmbeddedIdBuilder toEmbeddedId(Object toEmbeddedId) {
 		Class<?> embeddedIdClass = meta.getIdClass();
 		PropertyMeta idMeta = meta.getIdMeta();
-		Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass,
-				"toEmbeddedId should be of type '%s'",
+		Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
 
 		List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
-		List<Object> clusteringTo = components.subList(1, components.size());
+		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
+		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 
-		super.partitionKeyInternal(components.get(0));
-		this.toClusteringsInternal(clusteringTo.toArray(new Object[clusteringTo
-				.size()]));
+		super.partitionKeyInternal(partitionComponents);
+		this.toClusteringsInternal(clusteringComponents);
 
 		return new SliceToEmbeddedIdBuilder();
 	}
@@ -115,8 +111,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *            consistency level
 		 * @return SliceShortcutQueryBuilder
 		 */
-		public SliceShortcutQueryBuilder consistencyLevel(
-				ConsistencyLevel consistencyLevel) {
+		@Override
+		public SliceShortcutQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 			SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
 			return this;
 		}
@@ -130,10 +126,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return SliceFromClusteringsBuilder
 		 */
-		public SliceFromClusteringsBuilder fromClusterings(
-				Object... clusteringComponents) {
-			SliceQueryBuilder.super
-					.fromClusteringsInternal(clusteringComponents);
+		public SliceFromClusteringsBuilder fromClusterings(Object... clusteringComponents) {
+			SliceQueryBuilder.super.fromClusteringsInternal(clusteringComponents);
 			return new SliceFromClusteringsBuilder();
 		}
 
@@ -146,8 +140,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return SliceToClusteringsBuilder
 		 */
-		public SliceToClusteringsBuilder toClusterings(
-				Object... clusteringComponents) {
+		public SliceToClusteringsBuilder toClusterings(Object... clusteringComponents) {
 			SliceQueryBuilder.super.toClusteringsInternal(clusteringComponents);
 			return new SliceToClusteringsBuilder();
 		}
@@ -161,6 +154,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return SliceShortcutQueryBuilder
 		 */
+		@Override
 		public SliceShortcutQueryBuilder ordering(OrderingMode ordering) {
 			SliceQueryBuilder.super.ordering(ordering);
 			return this;
@@ -175,6 +169,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return list of found entities or empty list
 		 */
+		@Override
 		public List<T> get(int n) {
 			return SliceQueryBuilder.super.get(n);
 		}
@@ -190,8 +185,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *         components if any, or null if no matching entity is found
 		 */
 		public T getFirstOccurence(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.getFirstOccurence(clusteringComponents);
+			return SliceQueryBuilder.super.getFirstOccurence(clusteringComponents);
 		}
 
 		/**
@@ -222,8 +216,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *         components if any, or null if no matching entity is found
 		 */
 		public T getLastOccurence(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.getLastOccurence(clusteringComponents);
+			return SliceQueryBuilder.super.getLastOccurence(clusteringComponents);
 		}
 
 		/**
@@ -253,8 +246,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * @return iterator on found entities
 		 */
 		public Iterator<T> iterator(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.iteratorWithComponents(clusteringComponents);
+			return SliceQueryBuilder.super.iteratorWithComponents(clusteringComponents);
 		}
 
 		/**
@@ -269,10 +261,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return iterator on found entities
 		 */
-		public Iterator<T> iterator(int batchSize,
-				Object... clusteringComponents) {
-			return SliceQueryBuilder.super.iteratorWithComponents(batchSize,
-					clusteringComponents);
+		public Iterator<T> iterator(int batchSize, Object... clusteringComponents) {
+			return SliceQueryBuilder.super.iteratorWithComponents(batchSize, clusteringComponents);
 		}
 
 		/**
@@ -282,6 +272,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * @param n
 		 *            first n entities
 		 */
+		@Override
 		public void remove(int n) {
 			SliceQueryBuilder.super.remove(n);
 		}
@@ -351,19 +342,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * @return DefaultQueryBuilder
 		 */
 		public DefaultQueryBuilder toEmbeddedId(Object toEmbeddedId) {
-			Class<?> embeddedIdClass = meta.getIdClass();
-			PropertyMeta idMeta = meta.getIdMeta();
-			Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass,
-					"toEmbeddedId should be of type '%s'",
-					embeddedIdClass.getCanonicalName());
-
-			List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
-			List<Object> clusteringTo = components
-					.subList(1, components.size());
-
-			SliceQueryBuilder.super.toClusteringsInternal(clusteringTo
-					.toArray(new Object[clusteringTo.size()]));
-
+			SliceQueryBuilder.this.toEmbeddedId(toEmbeddedId);
 			return new DefaultQueryBuilder();
 		}
 	}
@@ -382,19 +361,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * @return DefaultQueryBuilder
 		 */
 		public DefaultQueryBuilder fromEmbeddedId(Object fromEmbeddedId) {
-			Class<?> embeddedIdClass = meta.getIdClass();
-			PropertyMeta idMeta = meta.getIdMeta();
-			Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass,
-					"fromEmbeddedId should be of type '%s'",
-					embeddedIdClass.getCanonicalName());
-
-			List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
-			List<Object> clusteringFrom = components.subList(1,
-					components.size());
-
-			SliceQueryBuilder.super.fromClusteringsInternal(clusteringFrom
-					.toArray(new Object[clusteringFrom.size()]));
-
+			SliceQueryBuilder.this.fromEmbeddedId(fromEmbeddedId);
 			return new DefaultQueryBuilder();
 		}
 	}
@@ -433,10 +400,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
-		public DefaultQueryBuilder fromClusterings(
-				Object... clusteringComponents) {
-			SliceQueryBuilder.super
-					.fromClusteringsInternal(clusteringComponents);
+		public DefaultQueryBuilder fromClusterings(Object... clusteringComponents) {
+			SliceQueryBuilder.super.fromClusteringsInternal(clusteringComponents);
 			return new DefaultQueryBuilder();
 		}
 	}
@@ -484,8 +449,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
-		public DefaultQueryBuilder consistencyLevel(
-				ConsistencyLevel consistencyLevel) {
+		public DefaultQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 			SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
 			return this;
 		}

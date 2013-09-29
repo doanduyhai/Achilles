@@ -78,17 +78,12 @@ public class ThriftImmediateFlushContextTest {
 
 	@Before
 	public void setUp() {
-		context = new ThriftImmediateFlushContext(
-				thriftDaoContext,
-				thriftConsistencyContext,
-				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-				hasCustomConsistencyLevels);
+		context = new ThriftImmediateFlushContext(thriftDaoContext, thriftConsistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(), hasCustomConsistencyLevels);
 
-		Whitebox.setInternalState(context, ThriftConsistencyContext.class,
-				thriftConsistencyContext);
+		Whitebox.setInternalState(context, ThriftConsistencyContext.class, thriftConsistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, ThriftDaoContext.class,
-				thriftDaoContext);
+		Whitebox.setInternalState(context, ThriftDaoContext.class, thriftDaoContext);
 		mutatorMap.clear();
 	}
 
@@ -102,8 +97,7 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_flush() throws Exception {
-		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair
-				.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.flush();
@@ -131,8 +125,7 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_get_existing_entity_mutator() throws Exception {
-		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair
-				.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Object> actual = context.getEntityMutator("cf");
@@ -141,21 +134,18 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_get_new_entity_mutator() throws Exception {
-		when((ThriftGenericEntityDao) thriftDaoContext.findEntityDao("cf"))
-				.thenReturn(entityDao);
+		when((ThriftGenericEntityDao) thriftDaoContext.findEntityDao("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getEntityMutator("cf");
 		assertThat(actual).isSameAs(mutator);
-		assertThat((Mutator<Object>) mutatorMap.get("cf").left).isSameAs(
-				mutator);
+		assertThat((Mutator<Object>) mutatorMap.get("cf").left).isSameAs(mutator);
 		assertThat(mutatorMap.get("cf").right).isSameAs(entityDao);
 	}
 
 	@Test
 	public void should_get_existing_cf_mutator() throws Exception {
-		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair
-				.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		Mutator<Object> actual = context.getWideRowMutator("cf");
@@ -164,22 +154,19 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_get_new_cf_mutator() throws Exception {
-		when((ThriftGenericWideRowDao) thriftDaoContext.findWideRowDao("cf"))
-				.thenReturn(cfDao);
+		when((ThriftGenericWideRowDao) thriftDaoContext.findWideRowDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getWideRowMutator("cf");
 		assertThat(actual).isSameAs(mutator);
-		assertThat((Mutator<Object>) mutatorMap.get("cf").left).isSameAs(
-				mutator);
+		assertThat((Mutator<Object>) mutatorMap.get("cf").left).isSameAs(mutator);
 		assertThat(mutatorMap.get("cf").right).isSameAs(cfDao);
 	}
 
 	@Test
 	public void should_get_existing_counter_mutator() throws Exception {
-		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair
-				.<Mutator<?>, ThriftAbstractDao> create(counterMutator,
-						thriftCounterDao);
+		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(counterMutator,
+				thriftCounterDao);
 		mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF, pair);
 
 		Mutator<Object> actual = context.getCounterMutator();
@@ -194,12 +181,8 @@ public class ThriftImmediateFlushContextTest {
 		Mutator<Object> actual = context.getCounterMutator();
 
 		assertThat(actual).isSameAs(counterMutator);
-		assertThat(
-				(Mutator<Object>) mutatorMap
-						.get(AchillesCounter.THRIFT_COUNTER_CF).left).isSameAs(
-				counterMutator);
-		assertThat(mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).right)
-				.isSameAs(thriftCounterDao);
+		assertThat((Mutator<Object>) mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).left).isSameAs(counterMutator);
+		assertThat(mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).right).isSameAs(thriftCounterDao);
 	}
 
 	@Test
@@ -209,11 +192,8 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_duplicate() throws Exception {
-		context = new ThriftImmediateFlushContext(
-				thriftDaoContext,
-				thriftConsistencyContext,
-				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-				true);
+		context = new ThriftImmediateFlushContext(thriftDaoContext, thriftConsistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(), true);
 		ThriftImmediateFlushContext actual = context.duplicate();
 
 		assertThat(actual).isNotNull();

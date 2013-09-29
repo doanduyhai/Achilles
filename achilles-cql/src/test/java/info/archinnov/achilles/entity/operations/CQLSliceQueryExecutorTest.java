@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.type.OrderingMode.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLDaoContext;
@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -84,6 +85,9 @@ public class CQLSliceQueryExecutorTest {
 	@Mock
 	private CQLPersistenceContext context;
 
+	@Mock
+	private Iterator<Row> iterator;
+
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta idMeta;
 
@@ -95,23 +99,19 @@ public class CQLSliceQueryExecutorTest {
 
 	private Long partitionKey = RandomUtils.nextLong();
 
-	private Object[] clusteringsFrom = new Object[] { "name1" };
-	private Object[] clusteringsTo = new Object[] { "name2" };
+	private List<Object> partitionComponents = Arrays.<Object> asList(partitionKey);
+	private List<Object> clusteringsFrom = Arrays.<Object> asList("name1");
+	private List<Object> clusteringsTo = Arrays.<Object> asList("name2");
 	private int limit = 98;
 	private int batchSize = 99;
 
 	@Before
 	public void setUp() {
-		when(
-				configContext.getConsistencyPolicy()
-						.getDefaultGlobalReadConsistencyLevel()).thenReturn(
-				EACH_QUORUM);
+		when(configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-		executor = new CQLSliceQueryExecutor(contextFactory, configContext,
-				daoContext);
+		executor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
 		executor.proxifier = proxifier;
-		Whitebox.setInternalState(executor, CQLStatementGenerator.class,
-				generator);
+		Whitebox.setInternalState(executor, CQLStatementGenerator.class, generator);
 		Whitebox.setInternalState(executor, CQLEntityMapper.class, mapper);
 
 		meta = new EntityMeta();
@@ -119,14 +119,11 @@ public class CQLSliceQueryExecutorTest {
 		meta.setIdMeta(idMeta);
 		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
 
-		when(idMeta.getComponentNames())
-				.thenReturn(Arrays.asList("id", "name"));
-		when(idMeta.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class));
+		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
+		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class,
-				meta, partitionKey, clusteringsFrom, clusteringsTo, ASCENDING,
-				EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
+		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
+				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
 
 	}
 
@@ -134,9 +131,7 @@ public class CQLSliceQueryExecutorTest {
 	public void should_get_clustered_entities() throws Exception {
 
 		Query query = mock(Query.class);
-		when(
-				generator.generateSelectSliceQuery(any(CQLSliceQuery.class),
-						eq(limit))).thenReturn(query);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(query);
 
 		Row row = mock(Row.class);
 		List<Row> rows = Arrays.asList(row);
@@ -151,24 +146,15 @@ public class CQLSliceQueryExecutorTest {
 	}
 
 	@Test
-	public void should_create_iterator_for_clustered_entities()
-			throws Exception {
+	public void should_create_iterator_for_clustered_entities() throws Exception {
 		Query query = mock(Query.class);
-		when(
-				generator.generateSelectSliceQuery(any(CQLSliceQuery.class),
-						eq(limit))).thenReturn(query);
-
-		Iterator<Row> iterator = mock(Iterator.class);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(query);
 		when(daoContext.execute(query).iterator()).thenReturn(iterator);
 
 		PreparedStatement ps = mock(PreparedStatement.class);
-		when(
-				generator.generateIteratorSliceQuery(any(CQLSliceQuery.class),
-						eq(daoContext))).thenReturn(ps);
-
-		when(
-				contextFactory.newContextForSliceQuery(ClusteredEntity.class,
-						ps, LOCAL_QUORUM)).thenReturn(context);
+		when(generator.generateIteratorSliceQuery(anySliceQuery(), eq(daoContext))).thenReturn(ps);
+		when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
+				.thenReturn(context);
 
 		Iterator<ClusteredEntity> iter = executor.iterator(sliceQuery);
 
@@ -178,17 +164,20 @@ public class CQLSliceQueryExecutorTest {
 
 	@Test
 	public void should_remove_clustered_entities() throws Exception {
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class,
-				meta, partitionKey, null, null, ASCENDING, EXCLUSIVE_BOUNDS,
-				LOCAL_QUORUM, limit, batchSize, false);
+		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents,
+				Arrays.<Object> asList(), Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit,
+				batchSize, false);
 
 		Query query = mock(Query.class);
-		when(generator.generateRemoveSliceQuery(any(CQLSliceQuery.class)))
-				.thenReturn(query);
+		when(generator.generateRemoveSliceQuery(anySliceQuery())).thenReturn(query);
 
 		executor.remove(sliceQuery);
 
 		verify(daoContext).execute(query);
 
+	}
+
+	private CQLSliceQuery<ClusteredEntity> anySliceQuery() {
+		return Mockito.<CQLSliceQuery<ClusteredEntity>> any();
 	}
 }

@@ -25,7 +25,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
@@ -69,8 +69,7 @@ public class PropertyMetaTest {
 	public void should_get_counter_id_meta() throws Exception {
 		PropertyMeta idMeta = new PropertyMeta();
 
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(PropertyType.COUNTER)
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER)
 				.counterIdMeta(idMeta).build();
 
 		assertThat(propertyMeta.counterIdMeta()).isSameAs(idMeta);
@@ -78,8 +77,7 @@ public class PropertyMetaTest {
 
 	@Test
 	public void should_return_null_if_no_counter_id_meta() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(PropertyType.COUNTER).build();
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
 
 		assertThat(propertyMeta.counterIdMeta()).isNull();
 	}
@@ -87,9 +85,8 @@ public class PropertyMetaTest {
 	@Test
 	public void should_get_fqcn() throws Exception {
 
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(PropertyType.COUNTER).fqcn("fqcn")
-				.build();
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER)
+				.fqcn("fqcn").build();
 
 		assertThat(propertyMeta.fqcn()).isEqualTo("fqcn");
 	}
@@ -97,26 +94,22 @@ public class PropertyMetaTest {
 	@Test
 	public void should_return_null_if_no_fqcn() throws Exception {
 
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(PropertyType.COUNTER).build();
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
 
 		assertThat(propertyMeta.fqcn()).isNull();
 	}
 
 	@Test
 	public void should_return_true_for_isLazy() throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Void.class, String.class)
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class)
 				.type(PropertyType.LAZY_LIST).build();
 
 		assertThat(propertyMeta.isLazy()).isTrue();
 	}
 
 	@Test
-	public void should_return_true_for_isCounter_when_type_is_counter()
-			throws Exception {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Void.class, String.class)
+	public void should_return_true_for_isCounter_when_type_is_counter() throws Exception {
+		PropertyMeta propertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class)
 				.type(PropertyType.COUNTER).build();
 
 		assertThat(propertyMeta.isCounter()).isTrue();
@@ -159,8 +152,7 @@ public class PropertyMetaTest {
 		assertThat(meta1.hashCode()).isNotEqualTo(meta4.hashCode());
 		assertThat(meta1.hashCode()).isEqualTo(meta5.hashCode());
 
-		Set<PropertyMeta> pms = Sets.newHashSet(meta1, meta2, meta3, meta4,
-				meta5);
+		Set<PropertyMeta> pms = Sets.newHashSet(meta1, meta2, meta3, meta4, meta5);
 
 		assertThat(pms).containsOnly(meta1, meta2, meta3, meta4);
 	}
@@ -172,24 +164,25 @@ public class PropertyMetaTest {
 		pm.setType(SIMPLE);
 		pm.setTranscoder(transcoder);
 
-		assertThat(pm.forceEncodeToJSON(new UUID(10, 10))).isEqualTo(
-				"\"00000000-0000-000a-0000-00000000000a\"");
+		assertThat(pm.forceEncodeToJSON(new UUID(10, 10))).isEqualTo("\"00000000-0000-000a-0000-00000000000a\"");
 	}
 
 	@Test
-	public void should_get_cql_ordering_component() throws Exception {
+	public void should_get_ordering_component() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
-		EmbeddedIdProperties multiKeyProperties = new EmbeddedIdProperties();
-		multiKeyProperties
-				.setComponentNames(Arrays.asList("id", "age", "name"));
-		meta.setEmbeddedIdProperties(multiKeyProperties);
+
+		ClusteringKeys clusteringKeys = new ClusteringKeys(Arrays.<Class<?>> asList(Long.class, String.class),
+				Arrays.asList("age", "name"), null, null);
+
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringKeys, null, Arrays.asList("a", "b", "c"),
+				null, null, null);
+		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getOrderingComponent()).isEqualTo("age");
 	}
 
 	@Test
-	public void should_return_null_for_cql_ordering_component_if_no_multikey()
-			throws Exception {
+	public void should_return_null_for_cql_ordering_component_if_no_multikey() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
 
 		assertThat(meta.getOrderingComponent()).isNull();
@@ -198,108 +191,70 @@ public class PropertyMetaTest {
 
 	@Test
 	public void should_get_component_getters() throws Exception {
-		Method idGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method idGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compGetters(Arrays.asList(idGetter, nameGetter)).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(idGetter, nameGetter)
+				.build();
 
-		assertThat(idMeta.getComponentGetters()).containsExactly(idGetter,
-				nameGetter);
+		assertThat(idMeta.getComponentGetters()).containsExactly(idGetter, nameGetter);
 	}
 
 	@Test
-	public void should_return_empty_list_when_no_component_getters()
-			throws Exception {
+	public void should_return_empty_list_when_no_component_getters() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
 		assertThat(idMeta.getComponentGetters()).isEmpty();
 	}
 
 	@Test
 	public void should_get_partition_key_getter() throws Exception {
-		Method idGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method idGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compGetters(Arrays.asList(idGetter, nameGetter)).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(idGetter, nameGetter)
+				.build();
 
 		assertThat(idMeta.getPartitionKeyGetter()).isEqualTo(idGetter);
 	}
 
 	@Test
-	public void should_get_partition_key_setter() throws Exception {
-		Method idSetter = CompoundKey.class.getDeclaredMethod("setUserId",
-				Long.class);
-		Method nameSetter = CompoundKey.class.getDeclaredMethod("setName",
-				String.class);
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compSetters(Arrays.asList(idSetter, nameSetter)).build();
-
-		assertThat(idMeta.getPartitionKeySetter()).isEqualTo(idSetter);
-	}
-
-	@Test
-	public void should_return_null_when_no_partition_key_getter()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+	public void should_return_null_when_no_partition_key_getter() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
 		assertThat(idMeta.getPartitionKeyGetter()).isNull();
 	}
 
 	@Test
-	public void should_return_null_when_no_partition_key_setter()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
-
-		assertThat(idMeta.getPartitionKeySetter()).isNull();
-	}
-
-	@Test
 	public void should_get_component_names() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compNames("a", "b").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("a", "b").build();
 
 		assertThat(idMeta.getComponentNames()).containsExactly("a", "b");
 	}
 
 	@Test
 	public void should_get_empty_component_names() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
 		assertThat(idMeta.getComponentNames()).isEmpty();
 	}
 
 	@Test
 	public void should_get_component_setters() throws Exception {
-		Method idSetter = CompoundKey.class.getDeclaredMethod("setUserId",
-				Long.class);
-		Method nameSetter = CompoundKey.class.getDeclaredMethod("setName",
-				String.class);
+		Method idSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
+		Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compSetters(Arrays.asList(idSetter, nameSetter)).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compSetters(idSetter, nameSetter)
+				.build();
 
-		assertThat(idMeta.getComponentSetters()).containsExactly(idSetter,
-				nameSetter);
+		assertThat(idMeta.getComponentSetters()).containsExactly(idSetter, nameSetter);
 	}
 
 	@Test
-	public void should_return_empty_list_when_no_component_setters()
-			throws Exception {
+	public void should_return_empty_list_when_no_component_setters() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
 		assertThat(idMeta.getComponentSetters()).isEmpty();
 	}
@@ -307,37 +262,30 @@ public class PropertyMetaTest {
 	@Test
 	public void should_get_component_classes() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Arrays.<Class<?>> asList(Long.class, String.class))
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Long.class, String.class).build();
 
-		assertThat(idMeta.getComponentClasses()).containsExactly(Long.class,
-				String.class);
+		assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
 	}
 
 	@Test
-	public void should_return_empty_list_when_no_component_classes()
-			throws Exception {
+	public void should_return_empty_list_when_no_component_classes() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
 		assertThat(idMeta.getComponentClasses()).isEmpty();
 	}
 
 	@Test
 	public void should_return_true_for_is_embedded_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).build();
 
 		assertThat(idMeta.isEmbeddedId()).isTrue();
 	}
 
 	@Test
 	public void should_return_false_for_is_embedded_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(ID).build();
 
 		assertThat(idMeta.isEmbeddedId()).isFalse();
 	}
@@ -349,8 +297,7 @@ public class PropertyMetaTest {
 		assertThat(pm.getReadConsistencyLevel()).isNull();
 		assertThat(pm.getWriteConsistencyLevel()).isNull();
 
-		pm.setConsistencyLevels(Pair
-				.<ConsistencyLevel, ConsistencyLevel> create(QUORUM, QUORUM));
+		pm.setConsistencyLevels(Pair.<ConsistencyLevel, ConsistencyLevel> create(QUORUM, QUORUM));
 
 		assertThat(pm.getReadConsistencyLevel()).isEqualTo(QUORUM);
 		assertThat(pm.getWriteConsistencyLevel()).isEqualTo(QUORUM);
@@ -439,8 +386,7 @@ public class PropertyMetaTest {
 		pm.setType(SIMPLE);
 		pm.setValueClass(String.class);
 
-		when(transcoder.forceDecodeFromJSON("value", String.class)).thenReturn(
-				"decoded");
+		when(transcoder.forceDecodeFromJSON("value", String.class)).thenReturn("decoded");
 
 		Object decoded = pm.forceDecodeFromJSON("value");
 
@@ -452,11 +398,9 @@ public class PropertyMetaTest {
 		PropertyMeta pm = new PropertyMeta();
 		pm.setTranscoder(transcoder);
 
-		when(transcoder.forceDecodeFromJSON("test", String.class)).thenReturn(
-				"test");
+		when(transcoder.forceDecodeFromJSON("test", String.class)).thenReturn("test");
 
-		assertThat(pm.forceDecodeFromJSON("test", String.class)).isEqualTo(
-				"test");
+		assertThat(pm.forceDecodeFromJSON("test", String.class)).isEqualTo("test");
 	}
 
 	@Test
@@ -475,8 +419,7 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_exception_when_asking_primary_key_on_non_id_field()
-			throws Exception {
+	public void should_exception_when_asking_primary_key_on_non_id_field() throws Exception {
 
 		CompleteBean entity = new CompleteBean();
 
@@ -485,8 +428,7 @@ public class PropertyMetaTest {
 		pm.setType(SIMPLE);
 
 		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("Cannot get primary key on a non id field 'property'");
+		exception.expectMessage("Cannot get primary key on a non id field 'property'");
 
 		pm.getPrimaryKey(entity);
 	}
@@ -495,55 +437,50 @@ public class PropertyMetaTest {
 	public void should_get_partition_key() throws Exception {
 
 		long id = RandomUtils.nextLong();
-		CompoundKey compoundKey = new CompoundKey(id, "name");
+		EmbeddedKey embeddedKey = new EmbeddedKey(id, "name");
 
 		PropertyMeta pm = new PropertyMeta();
 		pm.setType(EMBEDDED_ID);
 		pm.setInvoker(invoker);
 
-		when(invoker.getPartitionKey(compoundKey, pm)).thenReturn(id);
+		when(invoker.getPartitionKey(embeddedKey, pm)).thenReturn(id);
 
-		assertThat(pm.getPartitionKey(compoundKey)).isEqualTo(id);
+		assertThat(pm.getPartitionKey(embeddedKey)).isEqualTo(id);
 	}
 
 	@Test
-	public void should_exception_when_asking_partition_key_on_non_embedded_id_field()
-			throws Exception {
+	public void should_exception_when_asking_partition_key_on_non_embedded_id_field() throws Exception {
 
-		CompoundKey compoundKey = new CompoundKey();
+		EmbeddedKey embeddedKey = new EmbeddedKey();
 
 		PropertyMeta pm = new PropertyMeta();
 		pm.setPropertyName("property");
 		pm.setType(SIMPLE);
 
 		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("Cannot get partition key on a non embedded id field 'property'");
+		exception.expectMessage("Cannot get partition key on a non embedded id field 'property'");
 
-		pm.getPartitionKey(compoundKey);
+		pm.getPartitionKey(embeddedKey);
 	}
 
 	@Test
-	public void should_instanciate_embedded_id_with_partition_key()
-			throws Exception {
+	public void should_instanciate_embedded_id_with_partition_key() throws Exception {
 
 		long id = RandomUtils.nextLong();
-		CompoundKey compoundKey = new CompoundKey(id, "name");
+		EmbeddedKey embeddedKey = new EmbeddedKey(id, "name");
 
 		PropertyMeta pm = new PropertyMeta();
 		pm.setType(EMBEDDED_ID);
 		pm.setInvoker(invoker);
 
-		when(invoker.instanciateEmbeddedIdWithPartitionKey(pm, id)).thenReturn(
-				compoundKey);
+		when(invoker.instanciateEmbeddedIdWithPartitionComponents(pm, Arrays.<Object> asList(id))).thenReturn(
+				embeddedKey);
 
-		assertThat(pm.instanciateEmbeddedIdWithPartitionKey(id)).isEqualTo(
-				compoundKey);
+		assertThat(pm.instanciateEmbeddedIdWithPartitionKey(Arrays.<Object> asList(id))).isEqualTo(embeddedKey);
 	}
 
 	@Test
-	public void should_exception_when_instanciating_embedded_id_on_non_embedded_id_field()
-			throws Exception {
+	public void should_exception_when_instanciating_embedded_id_on_non_embedded_id_field() throws Exception {
 
 		long id = RandomUtils.nextLong();
 		PropertyMeta pm = new PropertyMeta();
@@ -554,7 +491,7 @@ public class PropertyMetaTest {
 		exception
 				.expectMessage("Cannot instanciate embedded id with partition key on a non embedded id field 'property'");
 
-		pm.instanciateEmbeddedIdWithPartitionKey(id);
+		pm.instanciateEmbeddedIdWithPartitionKey(Arrays.<Object> asList(id));
 	}
 
 	@Test
@@ -563,12 +500,10 @@ public class PropertyMetaTest {
 		CompleteBean entity = new CompleteBean();
 		entity.setName("name");
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-				"name");
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn("name");
 
 		assertThat(pm.getValueFromField(entity)).isEqualTo("name");
 	}
@@ -580,16 +515,12 @@ public class PropertyMetaTest {
 		List<String> friends = Arrays.asList("foo", "bar");
 		entity.setFriends(friends);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(LIST).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").accessors()
+				.type(LIST).invoker(invoker).build();
 
-		when(
-				(List<String>) invoker.getListValueFromField(entity,
-						pm.getGetter())).thenReturn(friends);
+		when((List<String>) invoker.getListValueFromField(entity, pm.getGetter())).thenReturn(friends);
 
-		assertThat((List<String>) pm.getListValueFromField(entity))
-				.containsExactly("foo", "bar");
+		assertThat((List<String>) pm.getListValueFromField(entity)).containsExactly("foo", "bar");
 	}
 
 	@Test
@@ -599,15 +530,12 @@ public class PropertyMetaTest {
 		Set<String> followers = Sets.newHashSet("George", "Paul");
 		entity.setFollowers(followers);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(SET).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers").accessors()
+				.type(SET).invoker(invoker).build();
 
-		when((Set<String>) invoker.getSetValueFromField(entity, pm.getGetter()))
-				.thenReturn(followers);
+		when((Set<String>) invoker.getSetValueFromField(entity, pm.getGetter())).thenReturn(followers);
 
-		assertThat((Set<String>) pm.getSetValueFromField(entity)).containsOnly(
-				"George", "Paul");
+		assertThat((Set<String>) pm.getSetValueFromField(entity)).containsOnly("George", "Paul");
 	}
 
 	@Test
@@ -617,19 +545,14 @@ public class PropertyMetaTest {
 		Map<Integer, String> preferences = ImmutableMap.of(1, "FR", 2, "Paris");
 		entity.setPreferences(preferences);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
 				.accessors().type(MAP).invoker(invoker).build();
 
-		when(
-				(Map<Integer, String>) invoker.getMapValueFromField(entity,
-						pm.getGetter())).thenReturn(preferences);
+		when((Map<Integer, String>) invoker.getMapValueFromField(entity, pm.getGetter())).thenReturn(preferences);
 
-		Map<Integer, String> actual = (Map<Integer, String>) pm
-				.getMapValueFromField(entity);
+		Map<Integer, String> actual = (Map<Integer, String>) pm.getMapValueFromField(entity);
 
-		assertThat(actual).containsKey(1).containsKey(2).containsValue("FR")
-				.containsValue("Paris");
+		assertThat(actual).containsKey(1).containsKey(2).containsValue("FR").containsValue("Paris");
 	}
 
 	@Test
@@ -637,9 +560,8 @@ public class PropertyMetaTest {
 
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		pm.setValueToField(entity, "name");
 
@@ -648,17 +570,14 @@ public class PropertyMetaTest {
 
 	@Test
 	public void should_get_clustering_component_names() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.compNames("id", "comp1", "comp2").build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).compNames("id", "comp1", "comp2").build();
 
-		assertThat(pm.getClusteringComponentNames()).containsExactly("comp1",
-				"comp2");
+		assertThat(pm.getClusteringComponentNames()).containsExactly("comp1", "comp2");
 	}
 
 	@Test
 	public void should_get_empty_clustering_component_names() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).build();
 
 		assertThat(pm.getClusteringComponentNames()).isEmpty();
 	}
@@ -668,35 +587,28 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
 				.compClasses(Long.class, UUID.class, String.class).build();
 
-		assertThat(pm.getClusteringComponentClasses()).containsExactly(
-				UUID.class, String.class);
+		assertThat(pm.getClusteringComponentClasses()).containsExactly(UUID.class, String.class);
 	}
 
 	@Test
-	public void should_get_empty_clustering_component_classes()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.build();
+	public void should_get_empty_clustering_component_classes() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).build();
 
 		assertThat(pm.getClusteringComponentClasses()).isEmpty();
 	}
 
 	@Test
-	public void should_return_true_for_is_component_time_uuid()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.compNames("id", "comp1", "comp2").compTimeUUID("comp1")
-				.build();
+	public void should_return_true_for_is_component_time_uuid() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).compNames("id", "comp1", "comp2")
+				.compTimeUUID("comp1").build();
 
 		assertThat(pm.isComponentTimeUUID("comp1")).isTrue();
 		assertThat(pm.isComponentTimeUUID("comp2")).isFalse();
 	}
 
 	@Test
-	public void should_return_false_for_is_component_time_uuid_if_not_embedded_id()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.build();
+	public void should_return_false_for_is_component_time_uuid_if_not_embedded_id() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).build();
 
 		assertThat(pm.isComponentTimeUUID("comp1")).isFalse();
 	}

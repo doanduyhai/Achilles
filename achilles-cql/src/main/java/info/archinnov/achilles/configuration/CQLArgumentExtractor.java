@@ -38,15 +38,12 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 	public Cluster initCluster(Map<String, Object> configurationMap) {
 		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
 		if (cluster == null) {
-			String contactPoints = (String) configurationMap
-					.get(CONNECTION_CONTACT_POINTS_PARAM);
-			Integer port = (Integer) configurationMap
-					.get(CONNECTION_PORT_PARAM);
+			String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
+			Integer port = (Integer) configurationMap.get(CONNECTION_PORT_PARAM);
 
 			Compression compression = Compression.SNAPPY;
 			if (configurationMap.containsKey(COMPRESSION_TYPE)) {
-				compression = (Compression) configurationMap
-						.get(COMPRESSION_TYPE);
+				compression = (Compression) configurationMap.get(COMPRESSION_TYPE);
 			}
 
 			RetryPolicy retryPolicy = Policies.defaultRetryPolicy();
@@ -54,24 +51,19 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 				retryPolicy = (RetryPolicy) configurationMap.get(RETRY_POLICY);
 			}
 
-			LoadBalancingPolicy loadBalancingPolicy = Policies
-					.defaultLoadBalancingPolicy();
+			LoadBalancingPolicy loadBalancingPolicy = Policies.defaultLoadBalancingPolicy();
 			if (configurationMap.containsKey(LOAD_BALANCING_POLICY)) {
-				loadBalancingPolicy = (LoadBalancingPolicy) configurationMap
-						.get(LOAD_BALANCING_POLICY);
+				loadBalancingPolicy = (LoadBalancingPolicy) configurationMap.get(LOAD_BALANCING_POLICY);
 			}
 
-			ReconnectionPolicy reconnectionPolicy = Policies
-					.defaultReconnectionPolicy();
+			ReconnectionPolicy reconnectionPolicy = Policies.defaultReconnectionPolicy();
 			if (configurationMap.containsKey(RECONNECTION_POLICY)) {
-				reconnectionPolicy = (ReconnectionPolicy) configurationMap
-						.get(RECONNECTION_POLICY);
+				reconnectionPolicy = (ReconnectionPolicy) configurationMap.get(RECONNECTION_POLICY);
 			}
 
 			String username = null;
 			String password = null;
-			if (configurationMap.containsKey(USERNAME)
-					&& configurationMap.containsKey(PASSWORD)) {
+			if (configurationMap.containsKey(USERNAME) && configurationMap.containsKey(PASSWORD)) {
 				username = (String) configurationMap.get(USERNAME);
 				password = (String) configurationMap.get(PASSWORD);
 			}
@@ -83,8 +75,7 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 
 			boolean disableMetrics = false;
 			if (configurationMap.containsKey(DISABLE_METRICS)) {
-				disableMetrics = (Boolean) configurationMap
-						.get(DISABLE_METRICS);
+				disableMetrics = (Boolean) configurationMap.get(DISABLE_METRICS);
 			}
 
 			boolean sslEnabled = false;
@@ -97,15 +88,12 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 				sslOptions = (SSLOptions) configurationMap.get(SSL_OPTIONS);
 			}
 
-			Validator.validateNotBlank(contactPoints,
-					"%s property should be provided",
-					CONNECTION_CONTACT_POINTS_PARAM);
-			Validator.validateNotNull(port, "%s property should be provided",
-					CONNECTION_PORT_PARAM);
+			Validator
+					.validateNotBlank(contactPoints, "%s property should be provided", CONNECTION_CONTACT_POINTS_PARAM);
+			Validator.validateNotNull(port, "%s property should be provided", CONNECTION_PORT_PARAM);
 			if (sslEnabled) {
-				Validator.validateNotNull(sslOptions,
-						"%s property should be provided when SSL is enabled",
-						SSL_OPTIONS);
+				Validator
+						.validateNotNull(sslOptions, "%s property should be provided when SSL is enabled", SSL_OPTIONS);
 			}
 
 			String[] contactPointsList = StringUtils.split(contactPoints, ",");
@@ -113,13 +101,11 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 			Builder clusterBuilder = Cluster
 					.builder()
 					//
-					.addContactPoints(contactPointsList).withPort(port)
-					.withCompression(compression).withRetryPolicy(retryPolicy)
-					.withLoadBalancingPolicy(loadBalancingPolicy)
+					.addContactPoints(contactPointsList).withPort(port).withCompression(compression)
+					.withRetryPolicy(retryPolicy).withLoadBalancingPolicy(loadBalancingPolicy)
 					.withReconnectionPolicy(reconnectionPolicy);
 
-			if (StringUtils.isNotBlank(username)
-					&& StringUtils.isNotBlank(password)) {
+			if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
 				clusterBuilder.withCredentials(username, password);
 			}
 
@@ -139,17 +125,13 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 		return cluster;
 	}
 
-	public Session initSession(Cluster cluster,
-			Map<String, Object> configurationMap) {
+	public Session initSession(Cluster cluster, Map<String, Object> configurationMap) {
 
-		Session nativeSession = (Session) configurationMap
-				.get(NATIVE_SESSION_PARAM);
+		Session nativeSession = (Session) configurationMap.get(NATIVE_SESSION_PARAM);
 
 		if (nativeSession == null) {
-			String keyspace = (String) configurationMap
-					.get(KEYSPACE_NAME_PARAM);
-			Validator.validateNotBlank(keyspace,
-					"%s property should be provided", KEYSPACE_NAME_PARAM);
+			String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
+			Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 			nativeSession = cluster.connect(keyspace);
 		}
 		return nativeSession;

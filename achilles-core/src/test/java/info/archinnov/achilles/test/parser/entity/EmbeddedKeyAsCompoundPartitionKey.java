@@ -14,40 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.TimeUUID;
+import info.archinnov.achilles.annotations.PartitionKey;
 
-import java.util.UUID;
+public class EmbeddedKeyAsCompoundPartitionKey {
 
-import javax.persistence.Column;
-
-public class CompoundKeyWithTimeUUID {
-
-	@TimeUUID
+	@PartitionKey
 	@Order(1)
-	@Column
-	private UUID date;
+	private Long id;
 
+	@PartitionKey
 	@Order(2)
-	@Column(name = "ranking")
-	private int rank;
+	private String type;
 
-	public UUID getDate() {
-		return date;
+	public Long getId() {
+		return id;
 	}
 
-	public void setDate(UUID date) {
-		this.date = date;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public int getRank() {
-		return rank;
+	public String getType() {
+		return type;
 	}
 
-	public void setRank(int rank) {
-		this.rank = rank;
+	public void setType(String type) {
+		this.type = type;
 	}
 }

@@ -93,8 +93,7 @@ public class CQLArgumentExtractorTest {
 		Map<String, Object> params = new HashMap<String, Object>();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM
-				+ " property should be provided");
+		exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
 
 		extractor.initCluster(params);
 	}
@@ -105,8 +104,7 @@ public class CQLArgumentExtractorTest {
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage(CONNECTION_PORT_PARAM
-				+ " property should be provided");
+		exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
 
 		extractor.initCluster(params);
 	}
@@ -128,8 +126,7 @@ public class CQLArgumentExtractorTest {
 		Map<String, Object> params = new HashMap<String, Object>();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage(KEYSPACE_NAME_PARAM
-				+ " property should be provided");
+		exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
 
 		extractor.initSession(cluster, params);
 	}

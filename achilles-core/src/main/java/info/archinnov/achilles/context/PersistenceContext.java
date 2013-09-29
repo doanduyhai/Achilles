@@ -46,8 +46,7 @@ public abstract class PersistenceContext {
 	protected Options options = OptionsBuilder.noOptions();
 	protected boolean loadEagerFields = true;
 
-	private PersistenceContext(EntityMeta entityMeta,
-			ConfigurationContext configContext, FlushContext<?> flushContext,
+	private PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, FlushContext<?> flushContext,
 			Class<?> entityClass, Options options) {
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
@@ -57,36 +56,25 @@ public abstract class PersistenceContext {
 
 	}
 
-	protected PersistenceContext(EntityMeta entityMeta,
-			ConfigurationContext configContext, Object entity,
+	protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Object entity,
 			FlushContext<?> flushContext, Options options) {
-		this(entityMeta, configContext, flushContext, entityMeta
-				.getEntityClass(), options);
-		Validator
-				.validateNotNull(entity,
-						"The entity should not be null for persistence context creation");
+		this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), options);
+		Validator.validateNotNull(entity, "The entity should not be null for persistence context creation");
 		this.entity = entity;
 		this.primaryKey = entityMeta.getPrimaryKey(entity);
-		Validator
-				.validateNotNull(
-						primaryKey,
-						"The primary key for the entity '%s' should not be null for persistence context creation",
-						entity);
+		Validator.validateNotNull(primaryKey,
+				"The primary key for the entity '%s' should not be null for persistence context creation", entity);
 
 	}
 
-	protected PersistenceContext(EntityMeta entityMeta,
-			ConfigurationContext configContext, Class<?> entityClass,
+	protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Class<?> entityClass,
 			Object primaryKey, FlushContext<?> flushContext, Options options) {
 		this(entityMeta, configContext, flushContext, entityClass, options);
 
 		this.primaryKey = primaryKey;
 		this.flushContext = flushContext;
-		Validator
-				.validateNotNull(
-						primaryKey,
-						"The primary key for the entity '%s' should not be null for persistence context creation",
-						entity);
+		Validator.validateNotNull(primaryKey,
+				"The primary key for the entity '%s' should not be null for persistence context creation", entity);
 
 	}
 

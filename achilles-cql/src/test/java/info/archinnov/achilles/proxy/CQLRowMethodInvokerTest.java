@@ -94,8 +94,7 @@ public class CQLRowMethodInvokerTest {
 	}
 
 	@Test
-	public void should_return_null_when_get_value_from_null_row()
-			throws Exception {
+	public void should_return_null_when_get_value_from_null_row() throws Exception {
 		assertThat(invoker.invokeOnRowForFields(null, pm)).isNull();
 	}
 
@@ -116,8 +115,7 @@ public class CQLRowMethodInvokerTest {
 	public void should_get_map_value_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.MAP);
 		Map<Integer, String> map = ImmutableMap.of(11, "value");
-		when(row.getMap("property", Integer.class, String.class)).thenReturn(
-				map);
+		when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
 		when(pm.decode(map)).thenReturn((Map) map);
 
 		Object actual = invoker.invokeOnRowForFields(row, pm);
@@ -158,62 +156,50 @@ public class CQLRowMethodInvokerTest {
 	}
 
 	@Test
-	public void should_exception_when_invoking_getter_from_row()
-			throws Exception {
+	public void should_exception_when_invoking_getter_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
 		when(row.getString("property")).thenThrow(new RuntimeException(""));
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot retrieve property 'property' for entity class 'null' from CQL Row");
+		exception.expectMessage("Cannot retrieve property 'property' for entity class 'null' from CQL Row");
 
 		invoker.invokeOnRowForFields(row, pm);
 	}
 
 	@Test
-	public void should_exception_when_invoking_list_getter_from_row()
-			throws Exception {
+	public void should_exception_when_invoking_list_getter_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.LIST);
 
-		when(row.getList("property", String.class)).thenThrow(
-				new RuntimeException(""));
+		when(row.getList("property", String.class)).thenThrow(new RuntimeException(""));
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot retrieve list property 'property' from CQL Row");
+		exception.expectMessage("Cannot retrieve list property 'property' from CQL Row");
 
 		invoker.invokeOnRowForList(row, pm, "property", String.class);
 	}
 
 	@Test
-	public void should_exception_when_invoking_set_getter_from_row()
-			throws Exception {
+	public void should_exception_when_invoking_set_getter_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.SET);
 
-		when(row.getSet("property", String.class)).thenThrow(
-				new RuntimeException(""));
+		when(row.getSet("property", String.class)).thenThrow(new RuntimeException(""));
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot retrieve set property 'property' from CQL Row");
+		exception.expectMessage("Cannot retrieve set property 'property' from CQL Row");
 
 		invoker.invokeOnRowForSet(row, pm, "property", String.class);
 	}
 
 	@Test
-	public void should_exception_when_invoking_map_getter_from_row()
-			throws Exception {
+	public void should_exception_when_invoking_map_getter_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.MAP);
-		when(row.getMap("property", Integer.class, String.class)).thenThrow(
-				new RuntimeException(""));
+		when(row.getMap("property", Integer.class, String.class)).thenThrow(new RuntimeException(""));
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot retrieve map property 'property' from CQL Row");
+		exception.expectMessage("Cannot retrieve map property 'property' from CQL Row");
 
-		invoker.invokeOnRowForMap(row, pm, "property", Integer.class,
-				String.class);
+		invoker.invokeOnRowForMap(row, pm, "property", Integer.class, String.class);
 	}
 
 	@Test
@@ -227,8 +213,7 @@ public class CQLRowMethodInvokerTest {
 
 	@Test
 	public void should_test() throws Exception {
-		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(2,
-				null));
+		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(2, null));
 
 		assertThat(rawValues.get(0)).isNull();
 		assertThat(rawValues.get(1)).isNull();

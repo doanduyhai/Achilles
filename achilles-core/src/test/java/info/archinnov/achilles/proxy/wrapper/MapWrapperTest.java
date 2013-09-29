@@ -110,8 +110,7 @@ public class MapWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_when_clear_on_empty_map()
-			throws Exception {
+	public void should_not_mark_dirty_when_clear_on_empty_map() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		target.clear();
 		MapWrapper wrapper = prepareMapWrapper(target);
@@ -122,15 +121,13 @@ public class MapWrapperTest {
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_add_new_entry_in_entrySet()
-			throws Exception {
+	public void should_exception_on_add_new_entry_in_entrySet() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Object, Object>> entrySet = wrapper.entrySet();
 
-		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
+		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 		entrySet.add(entry);
 	}
 
@@ -149,15 +146,13 @@ public class MapWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_remove_non_existing_from_entrySet()
-			throws Exception {
+	public void should_not_mark_dirty_on_remove_non_existing_from_entrySet() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		Set<Entry<Object, Object>> entrySet = wrapper.entrySet();
 
-		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
+		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 		entrySet.remove(entry);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
@@ -188,8 +183,7 @@ public class MapWrapperTest {
 	}
 
 	@Test
-	public void should_mark_dirty_on_remove_from_keySet_iterator()
-			throws Exception {
+	public void should_mark_dirty_on_remove_from_keySet_iterator() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -256,8 +250,7 @@ public class MapWrapperTest {
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
-	public void should_not_mark_dirty_on_collection_remove_non_existing()
-			throws Exception {
+	public void should_not_mark_dirty_on_collection_remove_non_existing() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 

@@ -26,13 +26,11 @@ public class KeySetWrapper extends SetWrapper {
 
 	@Override
 	public boolean add(Object arg0) {
-		throw new UnsupportedOperationException(
-				"This method is not supported for a key set");
+		throw new UnsupportedOperationException("This method is not supported for a key set");
 	}
 
 	@Override
 	public boolean addAll(Collection<?> arg0) {
-		throw new UnsupportedOperationException(
-				"This method is not supported for a key set");
+		throw new UnsupportedOperationException("This method is not supported for a key set");
 	}
 }

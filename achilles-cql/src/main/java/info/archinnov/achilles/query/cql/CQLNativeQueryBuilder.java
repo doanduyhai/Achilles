@@ -46,8 +46,7 @@ public class CQLNativeQueryBuilder {
 	 * @return List<Map<String, Object>>
 	 */
 	public List<Map<String, Object>> get() {
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString))
-				.all();
+		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
 		return mapper.mapRows(rows);
 	}
 
@@ -59,8 +58,7 @@ public class CQLNativeQueryBuilder {
 	 * @return Map<String, Object>
 	 */
 	public Map<String, Object> first() {
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString))
-				.all();
+		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
 		List<Map<String, Object>> result = mapper.mapRows(rows);
 		if (result.isEmpty())
 			return null;

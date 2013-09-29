@@ -35,8 +35,8 @@ public class CounterIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			"CompleteBean", AchillesCounter.CQL_COUNTER_TABLE);
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource("CompleteBean",
+			AchillesCounter.CQL_COUNTER_TABLE);
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -52,10 +52,8 @@ public class CounterIT {
 		bean.getVersion().incr(2L);
 
 		Row row = session.execute(
-				"select counter_value from achilles_counter_table where fqcn='"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + bean.getId()
-						+ "' and property_name='version'").one();
+				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+						+ "' and primary_key='" + bean.getId() + "' and property_name='version'").one();
 
 		assertThat(row.getLong("counter_value")).isEqualTo(2L);
 	}
@@ -79,10 +77,8 @@ public class CounterIT {
 		bean.getVersion().incr(version);
 
 		Row row = session.execute(
-				"select counter_value from achilles_counter_table where fqcn='"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + bean.getId()
-						+ "' and property_name='version'").one();
+				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+						+ "' and primary_key='" + bean.getId() + "' and property_name='version'").one();
 
 		assertThat(row.getLong("counter_value")).isEqualTo(version);
 
@@ -92,10 +88,8 @@ public class CounterIT {
 		em.remove(bean);
 
 		row = session.execute(
-				"select counter_value from achilles_counter_table where fqcn='"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + bean.getId()
-						+ "' and property_name='version'").one();
+				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+						+ "' and primary_key='" + bean.getId() + "' and property_name='version'").one();
 
 		assertThat(row).isNull();
 	}

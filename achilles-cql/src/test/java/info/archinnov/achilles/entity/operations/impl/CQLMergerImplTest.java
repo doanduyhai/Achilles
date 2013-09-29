@@ -61,8 +61,7 @@ public class CQLMergerImplTest {
 	@Captor
 	private ArgumentCaptor<List<PropertyMeta>> pmCaptor;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private PropertyMeta idMeta;
 
@@ -71,14 +70,12 @@ public class CQLMergerImplTest {
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors().build();
 	}
 
 	@Test
 	public void should_merge() throws Exception {
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("age").accessors()
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
 				.build();
 		Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
 		dirtyMap.put(idMeta.getGetter(), idMeta);

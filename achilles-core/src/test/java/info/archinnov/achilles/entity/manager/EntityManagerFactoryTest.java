@@ -73,14 +73,10 @@ public class EntityManagerFactoryTest {
 
 	@Before
 	public void setUp() {
-		doCallRealMethod().when(factory).setEntityMetaMap(
-				Mockito.<Map<Class<?>, EntityMeta>> any());
-		doCallRealMethod().when(factory).setEntityPackages(
-				Mockito.<List<String>> any());
-		doCallRealMethod().when(factory).setEntityParser(
-				any(EntityParser.class));
-		doCallRealMethod().when(factory).setEntityExplorer(
-				any(EntityExplorer.class));
+		doCallRealMethod().when(factory).setEntityMetaMap(Mockito.<Map<Class<?>, EntityMeta>> any());
+		doCallRealMethod().when(factory).setEntityPackages(Mockito.<List<String>> any());
+		doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
+		doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
 
 		factory.setEntityMetaMap(entityMetaMap);
 		factory.setEntityPackages(entityPackages);
@@ -99,8 +95,7 @@ public class EntityManagerFactoryTest {
 
 	@Test
 	public void should_exception_during_boostrap() throws Exception {
-		when(factory.discoverEntities())
-				.thenThrow(new RuntimeException("test"));
+		when(factory.discoverEntities()).thenThrow(new RuntimeException("test"));
 		doCallRealMethod().when(factory).bootstrap();
 
 		exception.expect(AchillesException.class);
@@ -116,10 +111,8 @@ public class EntityManagerFactoryTest {
 
 		EntityMeta entityMeta = new EntityMeta();
 
-		when(achillesEntityExplorer.discoverEntities(entityPackages))
-				.thenReturn(entities);
-		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class)))
-				.thenReturn(entityMeta);
+		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
+		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
 
 		doCallRealMethod().when(factory).discoverEntities();
 		factory.discoverEntities();
@@ -134,18 +127,15 @@ public class EntityManagerFactoryTest {
 
 		EntityMeta entityMeta = new EntityMeta();
 
-		when(achillesEntityExplorer.discoverEntities(entityPackages))
-				.thenReturn(entities);
-		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class)))
-				.thenReturn(entityMeta);
+		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
+		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
 
 		doCallRealMethod().when(factory).discoverEntities();
 		factory.discoverEntities();
 
 		assertThat(entityMetaMap).isEmpty();
 
-		verify(entityParser, never()).parseEntity(
-				any(EntityParsingContext.class));
+		verify(entityParser, never()).parseEntity(any(EntityParsingContext.class));
 	}
 
 	@Test
@@ -154,22 +144,17 @@ public class EntityManagerFactoryTest {
 		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
 		Map<String, Object> configurationMap = new HashMap<String, Object>();
 		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
-		when(factory.initConsistencyLevelPolicy(configurationMap, extractor))
-				.thenReturn(policy);
-		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(
-				mapperFactory);
+		when(factory.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
+		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
 
-		doCallRealMethod().when(factory).parseConfiguration(configurationMap,
-				extractor);
+		doCallRealMethod().when(factory).parseConfiguration(configurationMap, extractor);
 
-		ConfigurationContext builtContext = factory.parseConfiguration(
-				configurationMap, extractor);
+		ConfigurationContext builtContext = factory.parseConfiguration(configurationMap, extractor);
 
 		assertThat(builtContext).isNotNull();
 		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
 		assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
-		assertThat(builtContext.getObjectMapperFactory()).isSameAs(
-				mapperFactory);
+		assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
 	}
 
 }

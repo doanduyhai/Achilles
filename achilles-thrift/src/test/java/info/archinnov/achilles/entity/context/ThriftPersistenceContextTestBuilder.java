@@ -47,26 +47,21 @@ public class ThriftPersistenceContextTestBuilder {
 
 	private ThriftImmediateFlushContext thriftImmediateFlushContext;
 
-	public static ThriftPersistenceContextTestBuilder context(
-			EntityMeta entityMeta,//
+	public static ThriftPersistenceContextTestBuilder context(EntityMeta entityMeta,//
 			ThriftCounterDao thriftCounterDao, //
 			ThriftConsistencyLevelPolicy policy, //
 			Class<?> entityClass, Object primaryKey) {
-		return new ThriftPersistenceContextTestBuilder(entityMeta,
-				thriftCounterDao, policy, entityClass, primaryKey);
+		return new ThriftPersistenceContextTestBuilder(entityMeta, thriftCounterDao, policy, entityClass, primaryKey);
 	}
 
-	public static ThriftPersistenceContextTestBuilder mockAll(
-			EntityMeta entityMeta, Class<?> entityClass, Object primaryKey) {
-		return new ThriftPersistenceContextTestBuilder(entityMeta,
-				mock(ThriftCounterDao.class),
-				mock(ThriftConsistencyLevelPolicy.class), entityClass,
-				primaryKey);
+	public static ThriftPersistenceContextTestBuilder mockAll(EntityMeta entityMeta, Class<?> entityClass,
+			Object primaryKey) {
+		return new ThriftPersistenceContextTestBuilder(entityMeta, mock(ThriftCounterDao.class),
+				mock(ThriftConsistencyLevelPolicy.class), entityClass, primaryKey);
 	}
 
-	public ThriftPersistenceContextTestBuilder(EntityMeta entityMeta,
-			ThriftCounterDao counterDao, ThriftConsistencyLevelPolicy policy,
-			Class<?> entityClass, Object primaryKey) {
+	public ThriftPersistenceContextTestBuilder(EntityMeta entityMeta, ThriftCounterDao counterDao,
+			ThriftConsistencyLevelPolicy policy, Class<?> entityClass, Object primaryKey) {
 		this.entityMeta = entityMeta;
 		this.counterDao = counterDao;
 		this.policy = policy;
@@ -75,33 +70,27 @@ public class ThriftPersistenceContextTestBuilder {
 	}
 
 	public ThriftPersistenceContext build() {
-		ThriftDaoContext thriftDaoContext = new ThriftDaoContext(entityDaosMap,
-				columnFamilyDaosMap, counterDao);
+		ThriftDaoContext thriftDaoContext = new ThriftDaoContext(entityDaosMap, columnFamilyDaosMap, counterDao);
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setConsistencyPolicy(policy);
-		ThriftPersistenceContext context = new ThriftPersistenceContext(
-				entityMeta, //
+		ThriftPersistenceContext context = new ThriftPersistenceContext(entityMeta, //
 				configContext, //
 				thriftDaoContext, //
 				thriftImmediateFlushContext, //
 				entityClass, primaryKey, OptionsBuilder.noOptions());
 
 		context.setEntity(entity);
-		Whitebox.setInternalState(context, ThriftGenericEntityDao.class,
-				entityDao);
-		Whitebox.setInternalState(context, ThriftGenericWideRowDao.class,
-				wideRowDao);
+		Whitebox.setInternalState(context, ThriftGenericEntityDao.class, entityDao);
+		Whitebox.setInternalState(context, ThriftGenericWideRowDao.class, wideRowDao);
 		return context;
 	}
 
-	public ThriftPersistenceContextTestBuilder entityDaosMap(
-			Map<String, ThriftGenericEntityDao> entityDaosMap) {
+	public ThriftPersistenceContextTestBuilder entityDaosMap(Map<String, ThriftGenericEntityDao> entityDaosMap) {
 		this.entityDaosMap = entityDaosMap;
 		return this;
 	}
 
-	public ThriftPersistenceContextTestBuilder wideRowDaosMap(
-			Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap) {
+	public ThriftPersistenceContextTestBuilder wideRowDaosMap(Map<String, ThriftGenericWideRowDao> columnFamilyDaosMap) {
 		this.columnFamilyDaosMap = columnFamilyDaosMap;
 		return this;
 	}
@@ -111,14 +100,12 @@ public class ThriftPersistenceContextTestBuilder {
 		return this;
 	}
 
-	public ThriftPersistenceContextTestBuilder entityDao(
-			ThriftGenericEntityDao entityDao) {
+	public ThriftPersistenceContextTestBuilder entityDao(ThriftGenericEntityDao entityDao) {
 		this.entityDao = entityDao;
 		return this;
 	}
 
-	public ThriftPersistenceContextTestBuilder wideRowDao(
-			ThriftGenericWideRowDao columnFamilyDao) {
+	public ThriftPersistenceContextTestBuilder wideRowDao(ThriftGenericWideRowDao columnFamilyDao) {
 		this.wideRowDao = columnFamilyDao;
 		return this;
 	}

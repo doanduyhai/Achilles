@@ -23,6 +23,5 @@ public interface EntityLoader<CONTEXT extends PersistenceContext> {
 
 	public <T> T load(CONTEXT context, Class<T> entityClass);
 
-	public <V> void loadPropertyIntoObject(CONTEXT context, Object realObject,
-			PropertyMeta propertyMeta);
+	public <V> void loadPropertyIntoObject(CONTEXT context, Object realObject, PropertyMeta propertyMeta);
 }

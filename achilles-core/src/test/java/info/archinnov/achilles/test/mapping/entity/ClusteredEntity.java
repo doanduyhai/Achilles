@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.test.mapping.entity;
 
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -25,16 +25,16 @@ import javax.persistence.Entity;
 @Entity
 public class ClusteredEntity {
 	@EmbeddedId
-	private CompoundKey id;
+	private EmbeddedKey id;
 
 	@Column
 	private String value;
 
-	public CompoundKey getId() {
+	public EmbeddedKey getId() {
 		return id;
 	}
 
-	public void setId(CompoundKey id) {
+	public void setId(EmbeddedKey id) {
 		this.id = id;
 	}
 

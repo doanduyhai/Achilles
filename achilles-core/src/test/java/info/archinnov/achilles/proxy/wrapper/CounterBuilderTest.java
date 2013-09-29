@@ -54,8 +54,7 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_get_with_consistency()
-			throws Exception {
+	public void should_exception_when_calling_get_with_consistency() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");
@@ -95,8 +94,7 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_incr_with_consistency()
-			throws Exception {
+	public void should_exception_when_calling_incr_with_consistency() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");
@@ -104,8 +102,7 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_incr_n_with_consistency()
-			throws Exception {
+	public void should_exception_when_calling_incr_n_with_consistency() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");
@@ -113,8 +110,7 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_decr_with_consistency()
-			throws Exception {
+	public void should_exception_when_calling_decr_with_consistency() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");
@@ -122,8 +118,7 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_decr_n_with_consistency()
-			throws Exception {
+	public void should_exception_when_calling_decr_n_with_consistency() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");

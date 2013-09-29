@@ -29,11 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
-public abstract class ThriftAbstractClusteredEntityIterator<T> implements
-		Iterator<T> {
+public abstract class ThriftAbstractClusteredEntityIterator<T> implements Iterator<T> {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftAbstractClusteredEntityIterator.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftAbstractClusteredEntityIterator.class);
 
 	protected Class<T> entityClass;
 	private Iterator<?> iterator;
@@ -42,8 +40,8 @@ public abstract class ThriftAbstractClusteredEntityIterator<T> implements
 	private ThriftEntityProxifier proxifier = new ThriftEntityProxifier();
 	protected ThriftCompositeTransformer transformer = new ThriftCompositeTransformer();
 
-	public ThriftAbstractClusteredEntityIterator(Class<T> entityClass,
-			Iterator<?> iterator, ThriftPersistenceContext context) {
+	public ThriftAbstractClusteredEntityIterator(Class<T> entityClass, Iterator<?> iterator,
+			ThriftPersistenceContext context) {
 		this.entityClass = entityClass;
 		this.iterator = iterator;
 		this.context = context;
@@ -51,8 +49,7 @@ public abstract class ThriftAbstractClusteredEntityIterator<T> implements
 
 	@Override
 	public boolean hasNext() {
-		log.trace("Does the iterator {} has next value ? {} ", iterator,
-				iterator.hasNext());
+		log.trace("Does the iterator {} has next value ? {} ", iterator, iterator.hasNext());
 		return iterator.hasNext();
 	}
 
@@ -64,9 +61,8 @@ public abstract class ThriftAbstractClusteredEntityIterator<T> implements
 
 	protected T proxifyClusteredEntity(T target) {
 
-		Set<Method> getters = context.isValueless() ? Sets
-				.<Method> newHashSet() : Sets.newHashSet(context.getFirstMeta()
-				.getGetter());
+		Set<Method> getters = context.isValueless() ? Sets.<Method> newHashSet() : Sets.newHashSet(context
+				.getFirstMeta().getGetter());
 		return proxifier.buildProxy(target, context.duplicate(target), getters);
 	}
 }

@@ -83,17 +83,15 @@ public class CQLEntityManagerTest {
 
 	private PropertyMeta idMeta;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	private Optional<ConsistencyLevel> noConsistency = Optional
-			.<ConsistencyLevel> absent();
+	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 	private Optional<Integer> noTtl = Optional.<Integer> absent();
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().type(PropertyType.SIMPLE).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+				.type(PropertyType.SIMPLE).build();
 
 		meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -102,14 +100,11 @@ public class CQLEntityManagerTest {
 		meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
 		when(configContext.getConsistencyPolicy()).thenReturn(policy);
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(
-				ConsistencyLevel.EACH_QUORUM);
+		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
-		manager = new CQLEntityManager(entityMetaMap, contextFactory,
-				daoContext, configContext);
+		manager = new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
 		Whitebox.setInternalState(manager, CQLEntityProxifier.class, proxifier);
-		Whitebox.setInternalState(manager, CQLTypedQueryValidator.class,
-				typedQueryValidator);
+		Whitebox.setInternalState(manager, CQLTypedQueryValidator.class, typedQueryValidator);
 
 		manager.setEntityMetaMap(entityMetaMap);
 		entityMetaMap.put(CompleteBean.class, meta);
@@ -118,46 +113,36 @@ public class CQLEntityManagerTest {
 	@Test
 	public void should_init_persistence_context_with_entity() throws Exception {
 		CQLPersistenceContext context = mock(CQLPersistenceContext.class);
-		when(contextFactory.newContext(entity, OptionsBuilder.noOptions()))
-				.thenReturn(context);
+		when(contextFactory.newContext(entity, OptionsBuilder.noOptions())).thenReturn(context);
 
-		CQLPersistenceContext actual = manager.initPersistenceContext(entity,
-				OptionsBuilder.noOptions());
+		CQLPersistenceContext actual = manager.initPersistenceContext(entity, OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
 
 	}
 
 	@Test
-	public void should_init_persistence_context_with_type_and_id()
-			throws Exception {
+	public void should_init_persistence_context_with_type_and_id() throws Exception {
 		CQLPersistenceContext context = mock(CQLPersistenceContext.class);
-		when(
-				contextFactory.newContext(CompleteBean.class, entity.getId(),
-						OptionsBuilder.noOptions())).thenReturn(context);
+		when(contextFactory.newContext(CompleteBean.class, entity.getId(), OptionsBuilder.noOptions())).thenReturn(
+				context);
 
-		CQLPersistenceContext actual = manager.initPersistenceContext(
-				CompleteBean.class, entity.getId(), OptionsBuilder.noOptions());
+		CQLPersistenceContext actual = manager.initPersistenceContext(CompleteBean.class, entity.getId(),
+				OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
 	}
 
 	@Test
 	public void should_return_slice_query_builder() throws Exception {
-		SliceQueryBuilder<CQLPersistenceContext, CompleteBean> builder = manager
-				.sliceQuery(CompleteBean.class);
+		SliceQueryBuilder<CQLPersistenceContext, CompleteBean> builder = manager.sliceQuery(CompleteBean.class);
 
 		assertThat(builder).isNotNull();
 
-		assertThat(Whitebox.getInternalState(builder, SliceQueryExecutor.class))
-				.isNotNull();
-		assertThat(
-				Whitebox.getInternalState(builder, CompoundKeyValidator.class))
-				.isNotNull();
-		assertThat(Whitebox.getInternalState(builder, EntityMeta.class))
-				.isSameAs(meta);
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isSameAs(
-				CompleteBean.class);
+		assertThat(Whitebox.getInternalState(builder, SliceQueryExecutor.class)).isNotNull();
+		assertThat(Whitebox.getInternalState(builder, CompoundKeyValidator.class)).isNotNull();
+		assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
+		assertThat(Whitebox.getInternalState(builder, Class.class)).isSameAs(CompleteBean.class);
 	}
 
 	@Test
@@ -166,48 +151,36 @@ public class CQLEntityManagerTest {
 
 		assertThat(builder).isNotNull();
 
-		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class))
-				.isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo(
-				"queryString");
+		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
 	}
 
 	@Test
 	public void should_return_typed_query_builder() throws Exception {
 
-		CQLTypedQueryBuilder<CompleteBean> builder = manager.typedQuery(
-				CompleteBean.class, "queryString");
+		CQLTypedQueryBuilder<CompleteBean> builder = manager.typedQuery(CompleteBean.class, "queryString");
 
 		assertThat(builder).isNotNull();
 
-		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class,
-				"queryString", meta);
+		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "queryString", meta);
 
-		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class))
-				.isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo(
-				"querystring");
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(
-				CompleteBean.class);
+		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(CompleteBean.class);
 	}
 
 	@Test
 	public void should_return_raw_typed_query_builder() throws Exception {
 
-		CQLTypedQueryBuilder<CompleteBean> builder = manager.rawTypedQuery(
-				CompleteBean.class, "queryString");
+		CQLTypedQueryBuilder<CompleteBean> builder = manager.rawTypedQuery(CompleteBean.class, "queryString");
 
 		assertThat(builder).isNotNull();
 
-		verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class,
-				"queryString", meta);
+		verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class, "queryString", meta);
 
-		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class))
-				.isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo(
-				"querystring");
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(
-				CompleteBean.class);
+		assertThat(Whitebox.getInternalState(builder, CQLDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(CompleteBean.class);
 	}
 
 	@Test

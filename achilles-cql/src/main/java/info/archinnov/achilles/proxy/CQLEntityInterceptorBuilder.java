@@ -30,47 +30,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CQLEntityInterceptorBuilder<T> {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLEntityInterceptorBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLEntityInterceptorBuilder.class);
 
 	private T target;
 	private Set<Method> alreadyLoaded = new HashSet<Method>();
 	private CQLPersistenceContext context;
 
-	public static <T> CQLEntityInterceptorBuilder<T> builder(
-			CQLPersistenceContext context, T entity) {
+	public static <T> CQLEntityInterceptorBuilder<T> builder(CQLPersistenceContext context, T entity) {
 		return new CQLEntityInterceptorBuilder<T>(context, entity);
 	}
 
 	public CQLEntityInterceptorBuilder(CQLPersistenceContext context, T entity) {
-		Validator.validateNotNull(context,
-				"PersistenceContext for interceptor should not be null");
-		Validator.validateNotNull(entity,
-				"Target entity for interceptor should not be null");
+		Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
+		Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
 		this.context = context;
 		this.target = entity;
 	}
 
 	public CQLEntityInterceptor<T> build() {
-		log.debug("Build interceptor for entity of class {}", context
-				.getEntityMeta().getClassName());
+		log.debug("Build interceptor for entity of class {}", context.getEntityMeta().getClassName());
 
 		CQLEntityInterceptor<T> interceptor = new CQLEntityInterceptor<T>();
 
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		String className = context.getEntityClass().getCanonicalName();
-		Validator.validateNotNull(target,
-				"Target object for interceptor of '%s' should not be null",
-				className);
+		Validator.validateNotNull(target, "Target object for interceptor of '%s' should not be null", className);
 		Validator.validateNotNull(entityMeta.getGetterMetas(),
-				"Getters metadata for interceptor of '%s' should not be null",
-				className);
+				"Getters metadata for interceptor of '%s' should not be null", className);
 		Validator.validateNotNull(entityMeta.getSetterMetas(),
-				"Setters metadata for interceptor of '%s' should not be null",
-				className);
-		Validator.validateNotNull(entityMeta.getIdMeta(),
-				"Id metadata for '%s' should not be null", className);
+				"Setters metadata for interceptor of '%s' should not be null", className);
+		Validator.validateNotNull(entityMeta.getIdMeta(), "Id metadata for '%s' should not be null", className);
 
 		interceptor.setTarget(target);
 		interceptor.setContext(context);
@@ -89,8 +79,7 @@ public class CQLEntityInterceptorBuilder<T> {
 		return interceptor;
 	}
 
-	public CQLEntityInterceptorBuilder<T> alreadyLoaded(
-			Set<Method> alreadyLoaded) {
+	public CQLEntityInterceptorBuilder<T> alreadyLoaded(Set<Method> alreadyLoaded) {
 		this.alreadyLoaded = alreadyLoaded;
 		return this;
 	}

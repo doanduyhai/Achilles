@@ -27,8 +27,7 @@ public class StatementCacheKey {
 
 	private Class<?> entityClass;
 
-	public StatementCacheKey(CacheType type, String tableName,
-			Set<String> fields, Class<?> entityClass) {
+	public StatementCacheKey(CacheType type, String tableName, Set<String> fields, Class<?> entityClass) {
 		this.type = type;
 		this.entityClass = entityClass;
 		this.tableName = tableName;
@@ -56,8 +55,7 @@ public class StatementCacheKey {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
-		result = prime * result
-				+ ((tableName == null) ? 0 : tableName.hashCode());
+		result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}

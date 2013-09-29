@@ -28,6 +28,7 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 import me.prettyprint.hector.api.factory.HFactory;
 
+import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,62 +42,56 @@ public class ThriftColumnFamilyFactory {
 	public static final String COUNTER_COMPARATOR_TYPE_ALIAS = "(org.apache.cassandra.db.marshal.UTF8Type)";
 	public static final String COUNTER_COMPARATOR_CHECK = "CompositeType(org.apache.cassandra.db.marshal.UTF8Type)";
 
-	protected static final Logger log = LoggerFactory
-			.getLogger(ACHILLES_DDL_SCRIPT);
+	protected static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
 	private ThriftComparatorTypeAliasFactory comparatorAliasFactory = new ThriftComparatorTypeAliasFactory();
 
-	public ColumnFamilyDefinition createEntityCF(EntityMeta entityMeta,
-			String keyspaceName) {
+	public ColumnFamilyDefinition createEntityCF(EntityMeta entityMeta, String keyspaceName) {
 
 		String entityName = entityMeta.getClassName();
 		String columnFamilyName = entityMeta.getTableName();
 
-		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(
-				keyspaceName, columnFamilyName, ComparatorType.COMPOSITETYPE);
+		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName, columnFamilyName,
+				ComparatorType.COMPOSITETYPE);
 
-		Serializer<?> idSerializer = ThriftSerializerTypeInferer
-				.getSerializer(entityMeta.getIdClass());
-		String keyValidationType = idSerializer.getComparatorType()
-				.getTypeName();
+		Pair<String, String> keyValidationClassAndAlias = comparatorAliasFactory.determineKeyValidationAndAlias(
+				entityMeta.getIdMeta(), true);
 
-		cfDef.setKeyValidationClass(keyValidationType);
+		cfDef.setKeyValidationClass(keyValidationClassAndAlias.left);
+		if (keyValidationClassAndAlias.right != null)
+			cfDef.setKeyValidationAlias(keyValidationClassAndAlias.right);
+
 		cfDef.setComparatorTypeAlias(ENTITY_COMPARATOR_TYPE_ALIAS);
-		cfDef.setDefaultValidationClass(STRING_SRZ.getComparatorType()
-				.getTypeName());
+		cfDef.setDefaultValidationClass(STRING_SRZ.getComparatorType().getTypeName());
 		cfDef.setComment("Column family for entity '" + entityName + "'");
 
 		StringBuilder builder = new StringBuilder("\n\n");
 		builder.append("Create column family for entity ");
 		builder.append("'").append(entityName).append("' : \n");
-		builder.append("\tcreate column family ").append(columnFamilyName)
+		builder.append("\tcreate column family ").append(columnFamilyName).append("\n");
+		builder.append("\t\twith key_validation_class = ").append(keyValidationClassAndAlias.left);
+		if (keyValidationClassAndAlias.right != null) {
+			builder.append(keyValidationClassAndAlias.right);
+		}
+		builder.append("\n");
+		builder.append("\t\tand comparator = '").append(ENTITY_COMPARATOR_TYPE_CHECK).append("'\n");
+		builder.append("\t\tand default_validation_class = ").append(ComparatorType.UTF8TYPE.getTypeName())
 				.append("\n");
-		builder.append("\t\twith key_validation_class = ")
-				.append(keyValidationType).append("\n");
-		builder.append("\t\tand comparator = '")
-				.append(ENTITY_COMPARATOR_TYPE_CHECK).append("'\n");
-		builder.append("\t\tand default_validation_class = ")
-				.append(ComparatorType.UTF8TYPE.getTypeName()).append("\n");
-		builder.append("\t\tand comment = 'Column family for entity ")
-				.append(entityName).append("'\n\n");
+		builder.append("\t\tand comment = 'Column family for entity ").append(entityName).append("'\n\n");
 
 		log.debug(builder.toString());
 
 		return cfDef;
 	}
 
-	public ColumnFamilyDefinition createClusteredEntityCF(String keyspaceName,
-			EntityMeta entityMeta) {
+	public ColumnFamilyDefinition createClusteredEntityCF(String keyspaceName, EntityMeta entityMeta) {
 
 		String tableName = entityMeta.getTableName();
 		String entityName = entityMeta.getClassName();
 
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		Class<?> keyClass = idMeta.getComponentClasses().get(0);
 		String defaultValidationType;
 		if (entityMeta.isValueless()) {
-			defaultValidationType = STRING_SRZ.getComparatorType()
-					.getTypeName();
+			defaultValidationType = STRING_SRZ.getComparatorType().getTypeName();
 		} else {
 			PropertyMeta pm = entityMeta.getFirstMeta();
 			Class<?> valueClass = pm.getValueClass();
@@ -105,45 +100,41 @@ public class ThriftColumnFamilyFactory {
 				valueSerializer = LONG_SRZ;
 				defaultValidationType = COUNTERTYPE.getTypeName();
 			} else {
-				valueSerializer = ThriftSerializerTypeInferer
-						.getSerializer(valueClass);
-				defaultValidationType = valueSerializer.getComparatorType()
-						.getTypeName();
+				valueSerializer = ThriftSerializerTypeInferer.getSerializer(valueClass);
+				defaultValidationType = valueSerializer.getComparatorType().getTypeName();
 			}
 		}
 
-		Serializer<?> keySerializer = ThriftSerializerTypeInferer
-				.getSerializer(keyClass);
-		String keyValidationType = keySerializer.getComparatorType()
-				.getTypeName();
+		PropertyMeta idMeta = entityMeta.getIdMeta();
+		Pair<String, String> keyValidationClassAndAlias = comparatorAliasFactory.determineKeyValidationAndAlias(
+				entityMeta.getIdMeta(), true);
+		String comparatorTypesAlias = comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(
+				idMeta, true);
 
-		String comparatorTypesAlias = comparatorAliasFactory
-				.determineCompatatorTypeAliasForClusteredEntity(idMeta, true);
+		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(keyspaceName, tableName,
+				ComparatorType.COMPOSITETYPE);
 
-		ColumnFamilyDefinition cfDef = HFactory.createColumnFamilyDefinition(
-				keyspaceName, tableName, ComparatorType.COMPOSITETYPE);
-
-		cfDef.setKeyValidationClass(keyValidationType);
+		cfDef.setKeyValidationClass(keyValidationClassAndAlias.left);
+		if (keyValidationClassAndAlias.right != null)
+			cfDef.setKeyValidationAlias(keyValidationClassAndAlias.right);
 		cfDef.setComparatorTypeAlias(comparatorTypesAlias);
 
 		cfDef.setDefaultValidationClass(defaultValidationType);
-		cfDef.setComment("Column family for clustered entity '" + entityName
-				+ "'");
+		cfDef.setComment("Column family for clustered entity '" + entityName + "'");
 
 		StringBuilder builder = new StringBuilder("\n\n");
 		builder.append("Create column family for clustered entity '");
 		builder.append(entityName).append("' : \n");
-		builder.append("\tcreate column family ").append(tableName)
-				.append("\n");
-		builder.append("\t\twith key_validation_class = ")
-				.append(keyValidationType).append("\n");
-		builder.append("\t\tand comparator = '").append(
-				ComparatorType.COMPOSITETYPE.getTypeName());
+		builder.append("\tcreate column family ").append(tableName).append("\n");
+		builder.append("\t\twith key_validation_class = ").append(keyValidationClassAndAlias.left);
+		if (keyValidationClassAndAlias.right != null) {
+			builder.append(keyValidationClassAndAlias.right);
+		}
+		builder.append("\n");
+		builder.append("\t\tand comparator = '").append(ComparatorType.COMPOSITETYPE.getTypeName());
 		builder.append(comparatorTypesAlias).append("'\n");
-		builder.append("\t\tand default_validation_class = ")
-				.append(defaultValidationType).append("\n");
-		builder.append("\t\tand comment = 'Column family for clustered entity")
-				.append(entityName).append("'\n\n");
+		builder.append("\t\tand default_validation_class = ").append(defaultValidationType).append("\n");
+		builder.append("\t\tand comment = 'Column family for clustered entity").append(entityName).append("'\n\n");
 
 		log.debug(builder.toString());
 
@@ -151,9 +142,8 @@ public class ThriftColumnFamilyFactory {
 	}
 
 	public ColumnFamilyDefinition createCounterCF(String keyspaceName) {
-		ColumnFamilyDefinition counterCfDef = HFactory
-				.createColumnFamilyDefinition(keyspaceName,
-						AchillesCounter.THRIFT_COUNTER_CF, COMPOSITETYPE);
+		ColumnFamilyDefinition counterCfDef = HFactory.createColumnFamilyDefinition(keyspaceName,
+				AchillesCounter.THRIFT_COUNTER_CF, COMPOSITETYPE);
 
 		counterCfDef.setKeyValidationClass(COMPOSITETYPE.getTypeName());
 		counterCfDef.setKeyValidationAlias(COUNTER_KEY_ALIAS);
@@ -164,14 +154,10 @@ public class ThriftColumnFamilyFactory {
 
 		StringBuilder builder = new StringBuilder("\n\n");
 		builder.append("Create generic counter column family for Achilles : \n");
-		builder.append("\tcreate column family ")
-				.append(AchillesCounter.THRIFT_COUNTER_CF).append("\n");
-		builder.append("\t\twith key_validation_class = '")
-				.append(COUNTER_KEY_CHECK).append("'\n");
-		builder.append("\t\tand comparator = '")
-				.append(COUNTER_COMPARATOR_CHECK).append("'\n");
-		builder.append("\t\tand default_validation_class = ")
-				.append(COUNTERTYPE.getTypeName()).append("\n");
+		builder.append("\tcreate column family ").append(AchillesCounter.THRIFT_COUNTER_CF).append("\n");
+		builder.append("\t\twith key_validation_class = '").append(COUNTER_KEY_CHECK).append("'\n");
+		builder.append("\t\tand comparator = '").append(COUNTER_COMPARATOR_CHECK).append("'\n");
+		builder.append("\t\tand default_validation_class = ").append(COUNTERTYPE.getTypeName()).append("\n");
 		builder.append("\t\tand comment = 'Generic Counter Column Family for Achilles'\n\n");
 
 		log.debug(builder.toString());

@@ -72,17 +72,13 @@ public class ThriftCounterWrapperTest {
 		wrapper.setColumnName(columnName);
 		wrapper.setCounterDao(counterDao);
 		wrapper.setConsistencyLevel(consistencyLevel);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 	}
 
 	@Test
 	public void should_get_counter() throws Exception {
 		when(counterDao.getCounterValue(key, columnName)).thenReturn(10L);
-		when(
-				context.executeWithReadConsistencyLevel(
-						longExecCaptor.capture(), eq(consistencyLevel)))
-				.thenReturn(10L);
+		when(context.executeWithReadConsistencyLevel(longExecCaptor.capture(), eq(consistencyLevel))).thenReturn(10L);
 		Long value = wrapper.get();
 
 		assertThat(value).isEqualTo(10L);
@@ -92,10 +88,7 @@ public class ThriftCounterWrapperTest {
 	@Test
 	public void should_get_counter_with_consistency_level() throws Exception {
 		when(counterDao.getCounterValue(key, columnName)).thenReturn(10L);
-		when(
-				context.executeWithReadConsistencyLevel(
-						longExecCaptor.capture(), eq(EACH_QUORUM))).thenReturn(
-				10L);
+		when(context.executeWithReadConsistencyLevel(longExecCaptor.capture(), eq(EACH_QUORUM))).thenReturn(10L);
 		Long value = wrapper.get(EACH_QUORUM);
 
 		assertThat(value).isEqualTo(10L);
@@ -106,8 +99,7 @@ public class ThriftCounterWrapperTest {
 	public void should_incr() throws Exception {
 		wrapper.incr();
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).incrementCounter(key, columnName, 1L);
@@ -118,8 +110,7 @@ public class ThriftCounterWrapperTest {
 	public void should_incr_with_consistency() throws Exception {
 		wrapper.incr(EACH_QUORUM);
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(EACH_QUORUM));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).incrementCounter(key, columnName, 1L);
@@ -129,8 +120,7 @@ public class ThriftCounterWrapperTest {
 	public void should_incr_with_value() throws Exception {
 		wrapper.incr(10L);
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).incrementCounter(key, columnName, 10L);
@@ -139,8 +129,7 @@ public class ThriftCounterWrapperTest {
 	@Test
 	public void should_incr_with_value_and_consistency() throws Exception {
 		wrapper.incr(10L, EACH_QUORUM);
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(EACH_QUORUM));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).incrementCounter(key, columnName, 10L);
@@ -151,8 +140,7 @@ public class ThriftCounterWrapperTest {
 	public void should_decr() throws Exception {
 		wrapper.decr();
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).decrementCounter(key, columnName, 1L);
@@ -162,8 +150,7 @@ public class ThriftCounterWrapperTest {
 	public void should_decr_with_consistency() throws Exception {
 		wrapper.decr(EACH_QUORUM);
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(EACH_QUORUM));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).decrementCounter(key, columnName, 1L);
@@ -173,8 +160,7 @@ public class ThriftCounterWrapperTest {
 	public void should_decr_with_value() throws Exception {
 		wrapper.decr(10L);
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(consistencyLevel));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).decrementCounter(key, columnName, 10L);
@@ -184,8 +170,7 @@ public class ThriftCounterWrapperTest {
 	public void should_decr_with_value_and_consistency() throws Exception {
 		wrapper.decr(10L, EACH_QUORUM);
 
-		verify(context).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture(), eq(EACH_QUORUM));
+		verify(context).executeWithWriteConsistencyLevel(voidExecCaptor.capture(), eq(EACH_QUORUM));
 		voidExecCaptor.getValue().execute();
 
 		verify(counterDao).decrementCounter(key, columnName, 10L);

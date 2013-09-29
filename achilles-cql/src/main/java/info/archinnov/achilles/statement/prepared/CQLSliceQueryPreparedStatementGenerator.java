@@ -29,14 +29,12 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class CQLSliceQueryPreparedStatementGenerator {
 
-	public <T> Statement generateWhereClauseForIteratorSliceQuery(
-			CQLSliceQuery<T> sliceQuery, Select select) {
+	public <T> Statement generateWhereClauseForIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
 
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
-		String varyingComponentName = componentNames
-				.get(fixedComponents.size());
+		String varyingComponentName = componentNames.get(fixedComponents.size());
 		OrderingMode ordering = sliceQuery.getAchillesOrdering();
 
 		for (int i = 0; i < fixedComponents.size(); i++) {

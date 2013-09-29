@@ -28,7 +28,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,8 +76,7 @@ public class CQLEntityMapperTest {
 	private Definition def1;
 	private Definition def2;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Test
 	public void should_set_eager_properties_to_entity() throws Exception {
@@ -98,8 +97,7 @@ public class CQLEntityMapperTest {
 	}
 
 	@Test
-	public void should_set_null_to_entity_when_no_value_from_row()
-			throws Exception {
+	public void should_set_null_to_entity_when_no_value_from_row() throws Exception {
 		PropertyMeta pm = mock(PropertyMeta.class);
 		when(pm.isEmbeddedId()).thenReturn(false);
 		when(pm.getPropertyName()).thenReturn("name");
@@ -127,18 +125,15 @@ public class CQLEntityMapperTest {
 
 	@Test
 	public void should_set_compound_key_to_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(EMBEDDED_ID).compNames("name")
-				.invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(EMBEDDED_ID).compNames("name").invoker(invoker).build();
 
-		CompoundKey compoundKey = new CompoundKey();
-		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true))
-				.thenReturn(compoundKey);
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true)).thenReturn(embeddedKey);
 
 		entityMapper.setPropertyToEntity(row, pm, entity);
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), compoundKey);
+		verify(invoker).setValueToField(entity, pm.getSetter(), embeddedKey);
 	}
 
 	@Test
@@ -149,37 +144,28 @@ public class CQLEntityMapperTest {
 
 		when(idMeta.isEmbeddedId()).thenReturn(false);
 
-		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta,
-				"value", valueMeta);
+		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta, "value", valueMeta);
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("id"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id",
-				iden1, LongType.instance);
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
 
-		ColumnIdentifier iden2 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("value"), UTF8Type.instance);
-		ColumnSpecification spec2 = new ColumnSpecification("keyspace",
-				"value", iden2, UTF8Type.instance);
+		ColumnIdentifier iden2 = new ColumnIdentifier(UTF8Type.instance.decompose("value"), UTF8Type.instance);
+		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "value", iden2, UTF8Type.instance);
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
-		def2 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec2);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
+		def2 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec2);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(
-				Arrays.asList(def1, def2).iterator());
+		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.instanciate()).thenReturn(entity);
 		when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
-		when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn(
-				"value");
+		when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn("value");
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
-				CompleteBean.class, entityMeta, row, propertiesMap, true);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(CompleteBean.class, entityMeta, row,
+				propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
 		verify(idMeta).setValueToField(entity, id);
@@ -189,7 +175,7 @@ public class CQLEntityMapperTest {
 	@Test
 	public void should_map_row_to_entity_with_primary_key() throws Exception {
 		ClusteredEntity entity = new ClusteredEntity();
-		CompoundKey compoundKey = new CompoundKey();
+		EmbeddedKey embeddedKey = new EmbeddedKey();
 		PropertyMeta idMeta = mock(PropertyMeta.class);
 
 		when(idMeta.isEmbeddedId()).thenReturn(true);
@@ -197,24 +183,22 @@ public class CQLEntityMapperTest {
 		Map<String, PropertyMeta> propertiesMap = new HashMap<String, PropertyMeta>();
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(
-				Arrays.<Definition> asList().iterator());
+		when(columnDefs.iterator()).thenReturn(Arrays.<Definition> asList().iterator());
 		when(entityMeta.instanciate()).thenReturn(entity);
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
-		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, true))
-				.thenReturn(compoundKey);
+		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, true)).thenReturn(embeddedKey);
 
-		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(
-				ClusteredEntity.class, entityMeta, row, propertiesMap, true);
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(ClusteredEntity.class, entityMeta, row,
+				propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
-		verify(idMeta).setValueToField(entity, compoundKey);
+		verify(idMeta).setValueToField(entity, embeddedKey);
 	}
 
 	@Test
 	public void should_not_map_row_to_entity_with_primary_key_when_entity_null() {
-		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(
-				ClusteredEntity.class, entityMeta, row, null, true);
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(ClusteredEntity.class, entityMeta, row,
+				null, true);
 
 		assertThat(actual).isNull();
 	}
@@ -224,8 +208,8 @@ public class CQLEntityMapperTest {
 		when(row.getColumnDefinitions()).thenReturn(null);
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(
-				CompleteBean.class, entityMeta, row, null, true);
+		CompleteBean actual = entityMapper
+				.mapRowToEntityWithPrimaryKey(CompleteBean.class, entityMeta, row, null, true);
 		assertThat(actual).isNull();
 	}
 

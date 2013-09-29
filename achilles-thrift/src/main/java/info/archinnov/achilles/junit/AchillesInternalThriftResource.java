@@ -50,8 +50,7 @@ public class AchillesInternalThriftResource extends AchillesTestResource {
 	 */
 	public AchillesInternalThriftResource(String... tables) {
 		super(tables);
-		server = new ThriftEmbeddedServer(true, ENTITY_PACKAGES,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new ThriftEmbeddedServer(true, ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
@@ -74,8 +73,7 @@ public class AchillesInternalThriftResource extends AchillesTestResource {
 	 */
 	public AchillesInternalThriftResource(Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
-		server = new ThriftEmbeddedServer(true, ENTITY_PACKAGES,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new ThriftEmbeddedServer(true, ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
@@ -137,24 +135,18 @@ public class AchillesInternalThriftResource extends AchillesTestResource {
 		}
 	}
 
-	public <K> ThriftGenericEntityDao getEntityDao(String columnFamily,
-			Class<K> keyClass) {
-		return new ThriftGenericEntityDao(cluster, keyspace, columnFamily,
-				policy, Pair.create(keyClass, String.class));
+	public <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass) {
+		return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, Pair.create(keyClass, String.class));
 	}
 
-	public <K, V> ThriftGenericWideRowDao getColumnFamilyDao(
-			String columnFamily, Class<K> keyClass, Class<V> valueClass) {
+	public <K, V> ThriftGenericWideRowDao getColumnFamilyDao(String columnFamily, Class<K> keyClass, Class<V> valueClass) {
 
-		return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily,
-				policy, Pair.create(keyClass, valueClass));
+		return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, Pair.create(keyClass, valueClass));
 	}
 
 	public ThriftCounterDao getCounterDao() {
-		Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair
-				.create(Composite.class, Long.class);
-		return new ThriftCounterDao(cluster, keyspace, policy,
-				rowkeyAndValueClasses);
+		Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair.create(Composite.class, Long.class);
+		return new ThriftCounterDao(cluster, keyspace, policy, rowkeyAndValueClasses);
 	}
 
 }

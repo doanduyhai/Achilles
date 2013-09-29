@@ -21,12 +21,10 @@ import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 
 import java.util.List;
 
-public class ListWrapperBuilder extends
-		AbstractWrapperBuilder<ListWrapperBuilder> {
+public class ListWrapperBuilder extends AbstractWrapperBuilder<ListWrapperBuilder> {
 	private List<Object> target;
 
-	public static ListWrapperBuilder builder(PersistenceContext context,
-			List<Object> target) {
+	public static ListWrapperBuilder builder(PersistenceContext context, List<Object> target) {
 		return new ListWrapperBuilder(context, target);
 	}
 

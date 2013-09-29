@@ -31,8 +31,7 @@ import org.junit.Test;
 
 public class LazyLoadingIT {
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "CompleteBean");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -40,8 +39,8 @@ public class LazyLoadingIT {
 
 	@Before
 	public void setUp() {
-		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-				.age(35L).addFriends("foo", "bar").label("label").buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
+				.label("label").buid();
 
 		em.persist(bean);
 	}
@@ -51,8 +50,7 @@ public class LazyLoadingIT {
 		bean = em.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
-		CQLEntityInterceptor<?> interceptor = (CQLEntityInterceptor<?>) proxy
-				.getCallback(0);
+		CQLEntityInterceptor<?> interceptor = (CQLEntityInterceptor<?>) proxy.getCallback(0);
 		CompleteBean trueBean = (CompleteBean) interceptor.getTarget();
 
 		assertThat(trueBean.getLabel()).isNull();

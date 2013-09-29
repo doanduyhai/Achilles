@@ -33,8 +33,8 @@ import com.datastax.driver.core.Session;
 public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "clustered_with_enum_compound");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+			"clustered_with_enum_compound");
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -48,13 +48,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_persist_and_get_reference() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		em.persist(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.getReference(
-				ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = em.getReference(ClusteredEntityWithEnumCompoundKey.class,
+				compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -64,13 +63,11 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_merge_and_find() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		em.merge(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.find(
-				ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -81,8 +78,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.FILE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
@@ -98,16 +94,13 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_remove() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.IMAGE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
 		em.remove(entity);
 
-		assertThat(
-				em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey))
-				.isNull();
+		assertThat(em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
 
 	}
 
@@ -117,13 +110,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 		long partitionKey = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(partitionKey, Type.FILE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
-		session.execute("UPDATE clustered_with_enum_compound set value='new_clustered_value' where id="
-				+ partitionKey + " and type = 'FILE'");
+		session.execute("UPDATE clustered_with_enum_compound set value='new_clustered_value' where id=" + partitionKey
+				+ " and type = 'FILE'");
 
 		em.refresh(entity);
 

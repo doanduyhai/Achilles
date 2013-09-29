@@ -29,8 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftCounterWrapper implements Counter {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftCounterWrapper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftCounterWrapper.class);
 
 	private Object key;
 	private Composite columnName;
@@ -44,181 +43,151 @@ public class ThriftCounterWrapper implements Counter {
 
 	@Override
 	public Long get() {
-		log.trace("Get counter value for property {} of entity {}", columnName
-				.get(0, STRING_SRZ), context.getEntityClass()
-				.getCanonicalName());
-		return context.executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Long>() {
-					@Override
-					public Long execute() {
-						return counterDao.getCounterValue(key, columnName);
-					}
-				}, consistencyLevel);
+		log.trace("Get counter value for property {} of entity {}", columnName.get(0, STRING_SRZ), context
+				.getEntityClass().getCanonicalName());
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<Long>() {
+			@Override
+			public Long execute() {
+				return counterDao.getCounterValue(key, columnName);
+			}
+		}, consistencyLevel);
 	}
 
 	@Override
 	public Long get(ConsistencyLevel readLevel) {
-		Validator.validateNotNull(readLevel,
-				"Read consistency level for counter get should not be null");
+		Validator.validateNotNull(readLevel, "Read consistency level for counter get should not be null");
 
-		log.trace(
-				"Get counter value for property {} of entity {} with consistency {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), readLevel.name());
+		log.trace("Get counter value for property {} of entity {} with consistency {}", columnName.get(0, STRING_SRZ),
+				context.getEntityClass().getCanonicalName(), readLevel.name());
 
-		return context.executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Long>() {
-					@Override
-					public Long execute() {
-						return counterDao.getCounterValue(key, columnName);
-					}
-				}, readLevel);
+		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<Long>() {
+			@Override
+			public Long execute() {
+				return counterDao.getCounterValue(key, columnName);
+			}
+		}, readLevel);
 	}
 
 	@Override
 	public void incr() {
-		log.trace("Increment counter value for property {} of entity {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName());
+		log.trace("Increment counter value for property {} of entity {}", columnName.get(0, STRING_SRZ), context
+				.getEntityClass().getCanonicalName());
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.incrementCounter(key, columnName, 1L);
-						return null;
-					}
-				}, consistencyLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.incrementCounter(key, columnName, 1L);
+				return null;
+			}
+		}, consistencyLevel);
 
 	}
 
 	public void incr(ConsistencyLevel writeLevel) {
-		Validator.validateNotNull(consistencyLevel,
-				"Write consistency level for counter incr should not be null");
+		Validator.validateNotNull(consistencyLevel, "Write consistency level for counter incr should not be null");
 
-		log.trace(
-				"Increment counter value for property {} of entity {} with consistency {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), writeLevel);
+		log.trace("Increment counter value for property {} of entity {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(), writeLevel);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.incrementCounter(key, columnName, 1L);
-						return null;
-					}
-				}, writeLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.incrementCounter(key, columnName, 1L);
+				return null;
+			}
+		}, writeLevel);
 
 	}
 
 	@Override
 	public void incr(final Long increment) {
-		log.trace("Increment counter value for property {} of entity {} of {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), increment);
+		log.trace("Increment counter value for property {} of entity {} of {}", columnName.get(0, STRING_SRZ), context
+				.getEntityClass().getCanonicalName(), increment);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.incrementCounter(key, columnName, increment);
-						return null;
-					}
-				}, consistencyLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.incrementCounter(key, columnName, increment);
+				return null;
+			}
+		}, consistencyLevel);
 	}
 
 	@Override
 	public void incr(final Long increment, ConsistencyLevel writeLevel) {
-		Validator.validateNotNull(consistencyLevel,
-				"Write consistency level for counter incr should not be null");
+		Validator.validateNotNull(consistencyLevel, "Write consistency level for counter incr should not be null");
 
-		log.trace(
-				"Increment counter value for property {} of entity {} of {}  with consistency {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), increment, writeLevel);
+		log.trace("Increment counter value for property {} of entity {} of {}  with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(), increment, writeLevel);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.incrementCounter(key, columnName, increment);
-						return null;
-					}
-				}, writeLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.incrementCounter(key, columnName, increment);
+				return null;
+			}
+		}, writeLevel);
 	}
 
 	@Override
 	public void decr() {
-		log.trace("Decrement counter value for property {} of entity {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName());
+		log.trace("Decrement counter value for property {} of entity {}", columnName.get(0, STRING_SRZ), context
+				.getEntityClass().getCanonicalName());
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.decrementCounter(key, columnName, 1L);
-						return null;
-					}
-				}, consistencyLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.decrementCounter(key, columnName, 1L);
+				return null;
+			}
+		}, consistencyLevel);
 
 	}
 
 	@Override
 	public void decr(ConsistencyLevel writeLevel) {
-		Validator.validateNotNull(consistencyLevel,
-				"Write consistency level for counter decr should not be null");
+		Validator.validateNotNull(consistencyLevel, "Write consistency level for counter decr should not be null");
 
-		log.trace(
-				"Decrement counter value for property {} of entity {} with consistency {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), writeLevel);
+		log.trace("Decrement counter value for property {} of entity {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(), writeLevel);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.decrementCounter(key, columnName, 1L);
-						return null;
-					}
-				}, writeLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.decrementCounter(key, columnName, 1L);
+				return null;
+			}
+		}, writeLevel);
 	}
 
 	@Override
 	public void decr(final Long decrement) {
-		log.trace("Decrement counter value for property {} of entity {} of {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), decrement);
+		log.trace("Decrement counter value for property {} of entity {} of {}", columnName.get(0, STRING_SRZ), context
+				.getEntityClass().getCanonicalName(), decrement);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.decrementCounter(key, columnName, decrement);
-						return null;
-					}
-				}, consistencyLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.decrementCounter(key, columnName, decrement);
+				return null;
+			}
+		}, consistencyLevel);
 	}
 
 	@Override
 	public void decr(final Long decrement, ConsistencyLevel writeLevel) {
-		Validator.validateNotNull(consistencyLevel,
-				"Write consistency level for counter decr should not be null");
+		Validator.validateNotNull(consistencyLevel, "Write consistency level for counter decr should not be null");
 
-		log.trace(
-				"Decrement counter value for property {} of entity {} pof {} with consistency {}",
-				columnName.get(0, STRING_SRZ), context.getEntityClass()
-						.getCanonicalName(), decrement, writeLevel);
+		log.trace("Decrement counter value for property {} of entity {} pof {} with consistency {}",
+				columnName.get(0, STRING_SRZ), context.getEntityClass().getCanonicalName(), decrement, writeLevel);
 
-		context.executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						counterDao.decrementCounter(key, columnName, decrement);
-						return null;
-					}
-				}, writeLevel);
+		context.executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				counterDao.decrementCounter(key, columnName, decrement);
+				return null;
+			}
+		}, writeLevel);
 	}
 
 	public void setCounterDao(ThriftAbstractDao counterDao) {

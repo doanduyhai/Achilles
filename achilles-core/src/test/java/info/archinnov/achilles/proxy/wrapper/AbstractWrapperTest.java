@@ -47,9 +47,8 @@ public class AbstractWrapperTest {
 		doCallRealMethod().when(wrapper).setDirtyMap(dirtyMap);
 		wrapper.setDirtyMap(dirtyMap);
 
-		propertyMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
+		propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(PropertyType.SIMPLE).build();
 
 		doCallRealMethod().when(wrapper).setPropertyMeta(propertyMeta);
 		wrapper.setPropertyMeta(propertyMeta);

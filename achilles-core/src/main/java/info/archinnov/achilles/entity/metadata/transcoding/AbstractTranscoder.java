@@ -38,83 +38,79 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	@Override
 	public Object encode(PropertyMeta pm, Object entityValue) {
-		throw new AchillesException("Transcoder cannot encode value '"
-				+ entityValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot encode value '" + entityValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public Object encodeKey(PropertyMeta pm, Object entityValue) {
-		throw new AchillesException("Transcoder cannot encode key '"
-				+ entityValue + "' for type '" + pm.type().name() + "'");
-	}
-
-	@Override
-	public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
-		throw new AchillesException("Transcoder cannot encode value '"
-				+ entityValue + "' for type '" + pm.type().name() + "'");
-	}
-
-	@Override
-	public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
-		throw new AchillesException("Transcoder cannot encode value '"
-				+ entityValue + "' for type '" + pm.type().name() + "'");
-	}
-
-	@Override
-	public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue) {
-		throw new AchillesException("Transcoder cannot encode value '"
-				+ entityValue + "' for type '" + pm.type().name() + "'");
-	}
-
-	@Override
-	public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey) {
-		throw new AchillesException("Transcoder cannot encode from value '"
-				+ compoundKey + "' to components for type '" + pm.type().name()
+		throw new AchillesException("Transcoder cannot encode key '" + entityValue + "' for type '" + pm.type().name()
 				+ "'");
 	}
 
 	@Override
+	public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
+		throw new AchillesException("Transcoder cannot encode value '" + entityValue + "' for type '"
+				+ pm.type().name() + "'");
+	}
+
+	@Override
+	public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
+		throw new AchillesException("Transcoder cannot encode value '" + entityValue + "' for type '"
+				+ pm.type().name() + "'");
+	}
+
+	@Override
+	public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue) {
+		throw new AchillesException("Transcoder cannot encode value '" + entityValue + "' for type '"
+				+ pm.type().name() + "'");
+	}
+
+	@Override
+	public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey) {
+		throw new AchillesException("Transcoder cannot encode from value '" + compoundKey
+				+ "' to components for type '" + pm.type().name() + "'");
+	}
+
+	@Override
 	public List<Object> encodeToComponents(PropertyMeta pm, List<?> components) {
-		throw new AchillesException(
-				"Transcoder cannot encode components value '" + components
-						+ "'");
+		throw new AchillesException("Transcoder cannot encode components value '" + components + "'");
 	}
 
 	@Override
 	public Object decode(PropertyMeta pm, Object cassandraValue) {
-		throw new AchillesException("Transcoder cannot decode value '"
-				+ cassandraValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode value '" + cassandraValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public Object decodeKey(PropertyMeta pm, Object cassandraValue) {
-		throw new AchillesException("Transcoder cannot decode key '"
-				+ cassandraValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode key '" + cassandraValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
-		throw new AchillesException("Transcoder cannot decode value '"
-				+ cassandraValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode value '" + cassandraValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
-		throw new AchillesException("Transcoder cannot decode value '"
-				+ cassandraValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode value '" + cassandraValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public Map<Object, Object> decode(PropertyMeta pm, Map<?, ?> cassandraValue) {
-		throw new AchillesException("Transcoder cannot decode value '"
-				+ cassandraValue + "' for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode value '" + cassandraValue + "' for type '"
+				+ pm.type().name() + "'");
 	}
 
 	@Override
 	public Object decodeFromComponents(PropertyMeta pm, List<?> components) {
-		throw new AchillesException(
-				"Transcoder cannot decode from components '" + components
-						+ "' to value for type '" + pm.type().name() + "'");
+		throw new AchillesException("Transcoder cannot decode from components '" + components + "' to value for type '"
+				+ pm.type().name() + "'");
 	}
 
 	Object encodeInternal(Class<?> sourceType, Object entityValue) {
@@ -136,8 +132,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 		} else if (cassandraValue instanceof String) {
 			return forceDecodeFromJSON((String) cassandraValue, targetType);
 		} else {
-			throw new AchillesException("Error while decoding value '"
-					+ cassandraValue + "' to type '"
+			throw new AchillesException("Error while decoding value '" + cassandraValue + "' to type '"
 					+ targetType.getCanonicalName() + "'");
 		}
 	}
@@ -154,8 +149,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 					return this.objectMapper.writeValueAsString(object);
 				} catch (Exception e) {
-					throw new AchillesException("Error while encoding value '"
-							+ object + "'", e);
+					throw new AchillesException("Error while encoding value '" + object + "'", e);
 				}
 			}
 		}
@@ -176,8 +170,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 				try {
 					return objectMapper.readValue(cassandraValue, targetType);
 				} catch (Exception e) {
-					throw new AchillesException("Error while decoding value '"
-							+ cassandraValue + "' to type '"
+					throw new AchillesException("Error while decoding value '" + cassandraValue + "' to type '"
 							+ targetType.getCanonicalName() + "'", e);
 				}
 			}

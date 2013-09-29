@@ -39,42 +39,30 @@ public class CQLPersisterImpl {
 		PropertyMeta counterMeta = context.getFirstMeta();
 		Object counter = counterMeta.getValueFromField(entity);
 		if (counter != null) {
-			Validator
-					.validateTrue(
-							CounterImpl.class.isAssignableFrom(counter
-									.getClass()),
-							"Counter property '%s' value from entity class '%s'  should be of type '%s'",
-							counterMeta.getPropertyName(), counterMeta
-									.getEntityClassName(), CounterImpl.class
-									.getCanonicalName());
+			Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
+					"Counter property '%s' value from entity class '%s'  should be of type '%s'",
+					counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+					CounterImpl.class.getCanonicalName());
 			CounterImpl counterValue = (CounterImpl) counter;
-			context.pushClusteredCounterIncrementStatement(counterMeta,
-					counterValue.get());
+			context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.get());
 		} else {
-			throw new IllegalStateException(
-					"Cannot insert clustered counter entity '" + entity
-							+ "' with null clustered counter value");
+			throw new IllegalStateException("Cannot insert clustered counter entity '" + entity
+					+ "' with null clustered counter value");
 		}
 
 	}
 
-	public void persistCounters(CQLPersistenceContext context,
-			Set<PropertyMeta> counterMetas) {
+	public void persistCounters(CQLPersistenceContext context, Set<PropertyMeta> counterMetas) {
 		Object entity = context.getEntity();
 		for (PropertyMeta counterMeta : counterMetas) {
 			Object counter = counterMeta.getValueFromField(entity);
 			if (counter != null) {
-				Validator
-						.validateTrue(
-								CounterImpl.class.isAssignableFrom(counter
-										.getClass()),
-								"Counter property '%s' value from entity class '%s'  should be of type '%s'",
-								counterMeta.getPropertyName(), counterMeta
-										.getEntityClassName(),
-								CounterImpl.class.getCanonicalName());
+				Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
+						"Counter property '%s' value from entity class '%s'  should be of type '%s'",
+						counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+						CounterImpl.class.getCanonicalName());
 				CounterImpl counterValue = (CounterImpl) counter;
-				context.bindForSimpleCounterIncrement(counterMeta,
-						counterValue.get());
+				context.bindForSimpleCounterIncrement(counterMeta, counterValue.get());
 			}
 		}
 	}

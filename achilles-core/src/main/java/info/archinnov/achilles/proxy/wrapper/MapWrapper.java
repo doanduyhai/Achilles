@@ -40,10 +40,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	@Override
 	public void clear() {
 		if (this.target.size() > 0) {
-			log.trace(
-					"Mark map property {} of entity class {} dirty upon all elements clearance",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark map property {} of entity class {} dirty upon all elements clearance",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		this.target.clear();
@@ -64,15 +62,11 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public Set<java.util.Map.Entry<Object, Object>> entrySet() {
 		Set<Entry<Object, Object>> targetEntrySet = this.target.entrySet();
 		if (targetEntrySet.size() > 0) {
-			log.trace(
-					"Build map entry wrapper for map property {} of entity class {}",
-					propertyMeta.getPropertyName(),
+			log.trace("Build map entry wrapper for map property {} of entity class {}", propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 
-			EntrySetWrapper wrapperSet = EntrySetWrapperBuilder
-					.builder(context, targetEntrySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta(propertyMeta)
-					.proxifier(proxifier).build();
+			EntrySetWrapper wrapperSet = EntrySetWrapperBuilder.builder(context, targetEntrySet).dirtyMap(dirtyMap)
+					.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
 			targetEntrySet = wrapperSet;
 		}
 		return targetEntrySet;
@@ -80,10 +74,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Object get(Object key) {
-		log.trace(
-				"Return value having key{} for map property {} of entity class {}",
-				key, propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Return value having key{} for map property {} of entity class {}", key,
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return this.target.get(key);
 	}
 
@@ -96,14 +88,11 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public Set<Object> keySet() {
 		Set<Object> keySet = this.target.keySet();
 		if (keySet.size() > 0) {
-			log.trace(
-					"Build key set wrapper for map property {} of entity class {}",
-					propertyMeta.getPropertyName(),
+			log.trace("Build key set wrapper for map property {} of entity class {}", propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 
-			KeySetWrapper keySetWrapper = KeySetWrapperBuilder
-					.builder(context, keySet).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta(propertyMeta).proxifier(proxifier).build();
+			KeySetWrapper keySetWrapper = KeySetWrapperBuilder.builder(context, keySet).dirtyMap(dirtyMap)
+					.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
 			keySet = keySetWrapper;
 		}
 		return keySet;
@@ -111,10 +100,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Object put(Object key, Object value) {
-		log.trace(
-				"Mark map property {} of entity class {} dirty upon new value {} addition for key {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName(), value, key);
+		log.trace("Mark map property {} of entity class {} dirty upon new value {} addition for key {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), value, key);
 
 		Object result = this.target.put(key, proxifier.unwrap(value));
 		this.markDirty();
@@ -128,10 +115,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 			map.put(entry.getKey(), proxifier.unwrap(entry.getValue()));
 		}
 
-		log.trace(
-				"Mark map property {} of entity class {} dirty upon new key/value pairs addition",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark map property {} of entity class {} dirty upon new key/value pairs addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		this.target.putAll(map);
 		this.markDirty();
@@ -141,10 +126,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public Object remove(Object key) {
 		Object unproxy = proxifier.unwrap(key);
 		if (this.target.containsKey(unproxy)) {
-			log.trace(
-					"Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName(), key);
+			log.trace("Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), key);
 			this.markDirty();
 		}
 		return this.target.remove(unproxy);
@@ -160,15 +143,13 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 		Collection<Object> values = this.target.values();
 
 		if (values.size() > 0) {
-			log.trace(
-					"Build values collection wrapper for map property {} of entity class {}",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Build values collection wrapper for map property {} of entity class {}",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 			ValueCollectionWrapper collectionWrapper = ValueCollectionWrapperBuilder
 					//
-					.builder(context, values).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta(propertyMeta).proxifier(proxifier).build();
+					.builder(context, values).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+					.proxifier(proxifier).build();
 			values = collectionWrapper;
 		}
 		return values;

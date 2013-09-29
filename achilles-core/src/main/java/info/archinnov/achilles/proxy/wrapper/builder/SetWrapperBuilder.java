@@ -21,12 +21,10 @@ import info.archinnov.achilles.proxy.wrapper.SetWrapper;
 
 import java.util.Set;
 
-public class SetWrapperBuilder extends
-		AbstractWrapperBuilder<SetWrapperBuilder> {
+public class SetWrapperBuilder extends AbstractWrapperBuilder<SetWrapperBuilder> {
 	private Set<Object> target;
 
-	public static SetWrapperBuilder builder(PersistenceContext context,
-			Set<Object> target) {
+	public static SetWrapperBuilder builder(PersistenceContext context, Set<Object> target) {
 		return new SetWrapperBuilder(context, target);
 	}
 

@@ -38,8 +38,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
 public class CQLEntityManagerFactory extends EntityManagerFactory {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLEntityManagerFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLEntityManagerFactory.class);
 	private Cluster cluster;
 	private Session session;
 	private CQLDaoContext daoContext;
@@ -65,15 +64,11 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 			hasSimpleCounter = bootstrap();
 		}
 
-		new CQLTableCreator(cluster, session,
-				(String) configurationMap.get(KEYSPACE_NAME_PARAM))
-				.validateOrCreateTables(entityMetaMap, configContext,
-						hasSimpleCounter);
+		new CQLTableCreator(cluster, session, (String) configurationMap.get(KEYSPACE_NAME_PARAM))
+				.validateOrCreateTables(entityMetaMap, configContext, hasSimpleCounter);
 
-		daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap,
-				hasSimpleCounter);
-		contextFactory = new CQLPersistenceContextFactory(daoContext,
-				configContext, entityMetaMap);
+		daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap, hasSimpleCounter);
+		contextFactory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		registerShutdownHook(cluster);
 	}
 
@@ -84,8 +79,7 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 	 * @return CQLEntityManager
 	 */
 	public CQLEntityManager createEntityManager() {
-		return new CQLEntityManager(entityMetaMap, contextFactory, daoContext,
-				configContext);
+		return new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	/**
@@ -99,13 +93,11 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 	 * @return a new state-full EntityManager
 	 */
 	public CQLBatchingEntityManager createBatchingEntityManager() {
-		return new CQLBatchingEntityManager(entityMetaMap, contextFactory,
-				daoContext, configContext);
+		return new CQLBatchingEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	@Override
-	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
-			Map<String, Object> configurationMap,
+	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
 		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
 
@@ -113,14 +105,11 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 				.initDefaultReadConsistencyLevel(configurationMap);
 		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
 				.initDefaultWriteConsistencyLevel(configurationMap);
-		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor
-				.initReadConsistencyMap(configurationMap);
-		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
-				.initWriteConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor.initReadConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor.initWriteConsistencyMap(configurationMap);
 
-		return new CQLConsistencyLevelPolicy(defaultReadConsistencyLevel,
-				defaultWriteConsistencyLevel, readConsistencyMap,
-				writeConsistencyMap);
+		return new CQLConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
+				readConsistencyMap, writeConsistencyMap);
 	}
 
 	private void registerShutdownHook(final Cluster cluster) {

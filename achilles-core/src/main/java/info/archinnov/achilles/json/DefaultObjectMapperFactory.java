@@ -29,13 +29,11 @@ public class DefaultObjectMapperFactory implements ObjectMapperFactory {
 	public DefaultObjectMapperFactory() {
 		mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Inclusion.NON_NULL);
-		mapper.configure(
-				DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
 		AnnotationIntrospector secondary = new JaxbAnnotationIntrospector();
-		AnnotationIntrospector pair = new AnnotationIntrospector.Pair(primary,
-				secondary);
+		AnnotationIntrospector pair = new AnnotationIntrospector.Pair(primary, secondary);
 
 		mapper.setAnnotationIntrospector(pair);
 	}

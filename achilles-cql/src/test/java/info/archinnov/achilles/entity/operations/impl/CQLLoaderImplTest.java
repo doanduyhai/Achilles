@@ -90,8 +90,8 @@ public class CQLLoaderImplTest {
 	@Before
 	public void setUp() throws Exception {
 		when(context.getEntityMeta()).thenReturn(entityMeta);
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(PropertyType.ID).accessors().build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID)
+				.accessors().build();
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
@@ -103,8 +103,7 @@ public class CQLLoaderImplTest {
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(entityMeta.instanciate()).thenReturn(new CompleteBean());
 
-		CompleteBean actual = loaderImpl.eagerLoadEntity(context,
-				CompleteBean.class);
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
 		assertThat(actual).isInstanceOf(CompleteBean.class);
 
@@ -112,35 +111,28 @@ public class CQLLoaderImplTest {
 	}
 
 	@Test
-	public void should_return_null_for_eager_load_when_not_found()
-			throws Exception {
+	public void should_return_null_for_eager_load_when_not_found() throws Exception {
 		when(context.eagerLoadEntity()).thenReturn(null);
 
-		CompleteBean actual = loaderImpl.eagerLoadEntity(context,
-				CompleteBean.class);
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
 		assertThat(actual).isNull();
 		verifyZeroInteractions(mapper);
 	}
 
 	@Test
-	public void should_eager_load_clustered_counter_entity_with_runtime_consistency()
-			throws Exception {
+	public void should_eager_load_clustered_counter_entity_with_runtime_consistency() throws Exception {
 		Long counterValue = RandomUtils.nextLong();
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.type(PropertyType.COUNTER).build();
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
 		when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-		when(context.getConsistencyLevel()).thenReturn(
-				Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
-		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(
-				counterValue);
+		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 		when(entityMeta.instanciate()).thenReturn(new CompleteBean());
 
-		CompleteBean actual = loaderImpl.eagerLoadEntity(context,
-				CompleteBean.class);
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
 		assertThat(actual).isInstanceOf(CompleteBean.class);
 
@@ -148,25 +140,18 @@ public class CQLLoaderImplTest {
 	}
 
 	@Test
-	public void should_eager_load_clustered_counter_entity_with_default_consistency()
-			throws Exception {
+	public void should_eager_load_clustered_counter_entity_with_default_consistency() throws Exception {
 		Long counterValue = RandomUtils.nextLong();
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
-				.type(PropertyType.COUNTER)
-				.consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM))
-				.build();
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
+				.type(PropertyType.COUNTER).consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
 		when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-		when(context.getConsistencyLevel()).thenReturn(
-				Optional.<ConsistencyLevel> fromNullable(null));
-		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(
-				counterValue);
+		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
+		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(counterValue);
 		when(entityMeta.instanciate()).thenReturn(new CompleteBean());
 
-		CompleteBean actual = loaderImpl.eagerLoadEntity(context,
-				CompleteBean.class);
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
 		assertThat(actual).isInstanceOf(CompleteBean.class);
 
@@ -174,29 +159,24 @@ public class CQLLoaderImplTest {
 	}
 
 	@Test
-	public void should_return_null_for_eager_load_clusterd_counter_when_not_found()
-			throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+	public void should_return_null_for_eager_load_clusterd_counter_when_not_found() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.type(PropertyType.COUNTER).build();
 
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
 		when(entityMeta.getFirstMeta()).thenReturn(counterMeta);
-		when(context.getConsistencyLevel()).thenReturn(
-				Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
-		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(
-				null);
+		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
+		when(context.getClusteredCounter(counterMeta, EACH_QUORUM)).thenReturn(null);
 
-		CompleteBean actual = loaderImpl.eagerLoadEntity(context,
-				CompleteBean.class);
+		CompleteBean actual = loaderImpl.eagerLoadEntity(context, CompleteBean.class);
 
 		assertThat(actual).isNull();
 	}
 
 	@Test
 	public void should_load_property_into_entity() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.field("name").type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
+				.build();
 
 		CompleteBean entity = new CompleteBean();
 		when(context.loadProperty(pm)).thenReturn(row);

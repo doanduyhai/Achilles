@@ -25,8 +25,7 @@ public class ThriftConsistencyContext {
 
 	private ConsistencyLevel consistencyLevel;
 
-	public ThriftConsistencyContext(AchillesConsistencyLevelPolicy policy,
-			ConsistencyLevel consistencyLevel) {
+	public ThriftConsistencyContext(AchillesConsistencyLevelPolicy policy, ConsistencyLevel consistencyLevel) {
 		this.policy = policy;
 		this.consistencyLevel = consistencyLevel;
 	}
@@ -40,8 +39,7 @@ public class ThriftConsistencyContext {
 		}
 	}
 
-	public <T> T executeWithReadConsistencyLevel(
-			SafeExecutionContext<T> context, ConsistencyLevel readLevel) {
+	public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context, ConsistencyLevel readLevel) {
 
 		if (readLevel != null) {
 			policy.setCurrentReadLevel(readLevel);
@@ -51,8 +49,7 @@ public class ThriftConsistencyContext {
 		}
 	}
 
-	public <T> T executeWithWriteConsistencyLevel(
-			SafeExecutionContext<T> context) {
+	public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context) {
 		if (consistencyLevel != null) {
 			policy.setCurrentWriteLevel(consistencyLevel);
 			return reinitConsistencyLevels(context);
@@ -61,8 +58,7 @@ public class ThriftConsistencyContext {
 		}
 	}
 
-	public <T> T executeWithWriteConsistencyLevel(
-			SafeExecutionContext<T> context, ConsistencyLevel writeLevel) {
+	public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context, ConsistencyLevel writeLevel) {
 
 		if (writeLevel != null) {
 			policy.setCurrentWriteLevel(writeLevel);

@@ -33,10 +33,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftEntityManager extends
-		EntityManager<ThriftPersistenceContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftEntityManager.class);
+public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext> {
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
 
 	protected ThriftDaoContext daoContext;
 	protected ThriftPersistenceContextFactory contextFactory;
@@ -50,19 +48,15 @@ public class ThriftEntityManager extends
 	 *            Check documentation for more details on configuration
 	 *            parameters
 	 */
-	ThriftEntityManager(
-			Map<Class<?>, EntityMeta> entityMetaMap, //
-			ThriftPersistenceContextFactory contextFactory,
-			ThriftDaoContext daoContext, //
+	ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext, //
 			ConfigurationContext configContext) {
 		super(entityMetaMap, configContext);
 		this.contextFactory = contextFactory;
 		this.daoContext = daoContext;
 		super.proxifier = new ThriftEntityProxifier();
-		super.entityValidator = new EntityValidator<ThriftPersistenceContext>(
-				super.proxifier);
-		this.sliceQueryExecutor = new ThriftSliceQueryExecutor(contextFactory,
-				configContext);
+		super.entityValidator = new EntityValidator<ThriftPersistenceContext>(super.proxifier);
+		this.sliceQueryExecutor = new ThriftSliceQueryExecutor(contextFactory, configContext);
 	}
 
 	/**
@@ -74,22 +68,19 @@ public class ThriftEntityManager extends
 	 * @return SliceQueryBuilder<T>
 	 */
 	@Override
-	public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(
-			Class<T> entityClass) {
+	public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
-		return new SliceQueryBuilder<ThriftPersistenceContext, T>(
-				sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
+		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator,
+				entityClass, meta);
 	}
 
 	@Override
-	protected ThriftPersistenceContext initPersistenceContext(
-			Class<?> entityClass, Object primaryKey, Options options) {
+	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
 		return contextFactory.newContext(entityClass, primaryKey, options);
 	}
 
 	@Override
-	protected ThriftPersistenceContext initPersistenceContext(Object entity,
-			Options options) {
+	protected ThriftPersistenceContext initPersistenceContext(Object entity, Options options) {
 		return contextFactory.newContext(entity, options);
 	}
 
@@ -101,13 +92,11 @@ public class ThriftEntityManager extends
 		this.sliceQueryExecutor = queryExecutor;
 	}
 
-	protected void setCompoundKeyValidator(
-			ThriftCompoundKeyValidator compoundKeyValidator) {
+	protected void setCompoundKeyValidator(ThriftCompoundKeyValidator compoundKeyValidator) {
 		this.compoundKeyValidator = compoundKeyValidator;
 	}
 
-	protected void setContextFactory(
-			ThriftPersistenceContextFactory contextFactory) {
+	protected void setContextFactory(ThriftPersistenceContextFactory contextFactory) {
 		this.contextFactory = contextFactory;
 	}
 

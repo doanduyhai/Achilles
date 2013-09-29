@@ -30,19 +30,16 @@ public class CQLMergerImpl implements Merger<CQLPersistenceContext> {
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
 	@Override
-	public void merge(CQLPersistenceContext context,
-			Map<Method, PropertyMeta> dirtyMap) {
+	public void merge(CQLPersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
 		if (dirtyMap.size() > 0) {
-			List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(
-					dirtyMap.values());
+			List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());
 			Collections.sort(sortedDirtyMetas, comparator);
 			context.pushUpdateStatement(sortedDirtyMetas);
 			dirtyMap.clear();
 		}
 	}
 
-	public static class PropertyMetaComparator implements
-			Comparator<PropertyMeta> {
+	public static class PropertyMetaComparator implements Comparator<PropertyMeta> {
 		@Override
 		public int compare(PropertyMeta arg0, PropertyMeta arg1) {
 			return arg0.getPropertyName().compareTo(arg1.getPropertyName());

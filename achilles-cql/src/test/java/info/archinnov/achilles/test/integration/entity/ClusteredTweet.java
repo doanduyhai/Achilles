@@ -45,8 +45,7 @@ public class ClusteredTweet {
 	public ClusteredTweet() {
 	}
 
-	public ClusteredTweet(ClusteredTweetId id, String content,
-			Long originalAuthorId, Boolean isARetweet) {
+	public ClusteredTweet(ClusteredTweetId id, String content, Long originalAuthorId, Boolean isARetweet) {
 		this.id = id;
 		this.content = content;
 		this.originalAuthorId = originalAuthorId;

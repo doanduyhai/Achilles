@@ -45,8 +45,7 @@ public enum CassandraEmbedded {
 
 		log.info("Starting Cassandra...");
 		config.write();
-		System.setProperty("cassandra.config", "file:"
-				+ config.getConfigFile().getAbsolutePath());
+		System.setProperty("cassandra.config", "file:" + config.getConfigFile().getAbsolutePath());
 		System.setProperty("cassandra-foreground", "true");
 
 		final CountDownLatch startupLatch = new CountDownLatch(1);
@@ -64,16 +63,14 @@ public enum CassandraEmbedded {
 			startupLatch.await(30, SECONDS);
 		} catch (InterruptedException e) {
 			log.error("Timeout starting Cassandra embedded", e);
-			throw new IllegalStateException(
-					"Timeout starting Cassandra embedded", e);
+			throw new IllegalStateException("Timeout starting Cassandra embedded", e);
 		}
 	}
 
 	private boolean isAlreadyRunning() {
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		try {
-			MBeanInfo mBeanInfo = mbs.getMBeanInfo(new ObjectName(
-					"org.apache.cassandra.db:type=StorageService"));
+			MBeanInfo mBeanInfo = mbs.getMBeanInfo(new ObjectName("org.apache.cassandra.db:type=StorageService"));
 			if (mBeanInfo != null) {
 				return true;
 			}
@@ -81,14 +78,11 @@ public enum CassandraEmbedded {
 		} catch (InstanceNotFoundException e) {
 			return false;
 		} catch (IntrospectionException e) {
-			throw new IllegalStateException(
-					"Cannot check if cassandra is already running", e);
+			throw new IllegalStateException("Cannot check if cassandra is already running", e);
 		} catch (MalformedObjectNameException e) {
-			throw new IllegalStateException(
-					"Cannot check if cassandra is already running", e);
+			throw new IllegalStateException("Cannot check if cassandra is already running", e);
 		} catch (ReflectionException e) {
-			throw new IllegalStateException(
-					"Cannot check if cassandra is already running", e);
+			throw new IllegalStateException("Cannot check if cassandra is already running", e);
 		}
 
 	}
@@ -97,8 +91,7 @@ public enum CassandraEmbedded {
 		File cassandraHome = new File(cassandraHomePath);
 
 		if (cassandraHome.exists() && cassandraHome.isDirectory()) {
-			log.info("Cleaning up embedded Cassandra home directory '{}'",
-					cassandraHome.getAbsolutePath());
+			log.info("Cleaning up embedded Cassandra home directory '{}'", cassandraHome.getAbsolutePath());
 			FileUtils.deleteQuietly(cassandraHome);
 		}
 	}

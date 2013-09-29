@@ -26,11 +26,9 @@ public class ThriftSerializerTypeInferer {
 			return null;
 		}
 
-		Serializer<T> serializer = SerializerTypeInferer
-				.getSerializer(valueClass);
+		Serializer<T> serializer = SerializerTypeInferer.getSerializer(valueClass);
 
-		if (serializer == null
-				|| serializer.equals(ThriftSerializerUtils.OBJECT_SRZ)) {
+		if (serializer == null || serializer.equals(ThriftSerializerUtils.OBJECT_SRZ)) {
 			return SerializerTypeInferer.getSerializer(String.class);
 		} else {
 			return serializer;

@@ -22,7 +22,7 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,8 +56,7 @@ public class CQLTypedQueryValidatorTest {
 
 	@Test
 	public void should_exception_when_missing_id_column() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.ID).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -68,17 +67,14 @@ public class CQLTypedQueryValidatorTest {
 		String queryString = "SELECT name,age from table";
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The typed query [SELECT name,age from table] should contain the id column 'id'");
+		exception.expectMessage("The typed query [SELECT name,age from table] should contain the id column 'id'");
 
 		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
 	}
 
 	@Test
-	public void should_exception_when_missing_component_column_for_embedded_id()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, CompoundKey.class).field("id")
+	public void should_exception_when_missing_component_column_for_embedded_id() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
 				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
 		EntityMeta meta = new EntityMeta();
@@ -91,16 +87,14 @@ public class CQLTypedQueryValidatorTest {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("The typed query [SELECT id,age from table] should contain the component column 'name' for embedded id type '"
-						+ CompoundKey.class.getCanonicalName() + "'");
+						+ EmbeddedKey.class.getCanonicalName() + "'");
 
 		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
 	}
 
 	@Test
-	public void should_skip_id_column_validation_when_select_star()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+	public void should_skip_id_column_validation_when_select_star() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.ID).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -114,10 +108,8 @@ public class CQLTypedQueryValidatorTest {
 	}
 
 	@Test
-	public void should_skip_component_column_validation_when_select_star()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, CompoundKey.class).field("id")
+	public void should_skip_component_column_validation_when_select_star() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
 				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
 		EntityMeta meta = new EntityMeta();

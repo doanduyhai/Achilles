@@ -21,18 +21,15 @@ import info.archinnov.achilles.proxy.wrapper.MapEntryWrapper;
 
 import java.util.Map;
 
-public class MapEntryWrapperBuilder extends
-		AbstractWrapperBuilder<MapEntryWrapperBuilder> {
+public class MapEntryWrapperBuilder extends AbstractWrapperBuilder<MapEntryWrapperBuilder> {
 	private final Map.Entry<Object, Object> target;
 
-	public MapEntryWrapperBuilder(PersistenceContext context,
-			Map.Entry<Object, Object> target) {
+	public MapEntryWrapperBuilder(PersistenceContext context, Map.Entry<Object, Object> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static MapEntryWrapperBuilder builder(PersistenceContext context,
-			Map.Entry<Object, Object> target) {
+	public static MapEntryWrapperBuilder builder(PersistenceContext context, Map.Entry<Object, Object> target) {
 		return new MapEntryWrapperBuilder(context, target);
 	}
 

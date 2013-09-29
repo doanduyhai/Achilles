@@ -28,20 +28,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EntityExplorer {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityExplorer.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityExplorer.class);
 
-	public List<Class<?>> discoverEntities(List<String> packageNames)
-			throws ClassNotFoundException, IOException {
-		log.debug("Discovery of Achilles entity classes in packages {}",
-				StringUtils.join(packageNames, ","));
+	public List<Class<?>> discoverEntities(List<String> packageNames) throws ClassNotFoundException, IOException {
+		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
 
 		Set<Class<?>> candidateClasses = new HashSet<Class<?>>();
 		Reflections reflections = new Reflections(packageNames);
-		candidateClasses.addAll(reflections
-				.getTypesAnnotatedWith(javax.persistence.Entity.class));
-		candidateClasses.addAll(reflections
-				.getTypesAnnotatedWith(javax.persistence.Table.class));
+		candidateClasses.addAll(reflections.getTypesAnnotatedWith(javax.persistence.Entity.class));
+		candidateClasses.addAll(reflections.getTypesAnnotatedWith(javax.persistence.Table.class));
 		return new ArrayList<Class<?>>(candidateClasses);
 	}
 

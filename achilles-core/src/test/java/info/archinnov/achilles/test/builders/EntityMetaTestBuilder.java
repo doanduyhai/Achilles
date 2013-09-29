@@ -69,42 +69,35 @@ public class EntityMetaTestBuilder<ID> {
 		return this;
 	}
 
-	public EntityMetaTestBuilder<ID> propertyMetas(
-			Map<String, PropertyMeta> propertyMetas) {
+	public EntityMetaTestBuilder<ID> propertyMetas(Map<String, PropertyMeta> propertyMetas) {
 		this.propertyMetas = propertyMetas;
 		return this;
 	}
 
-	public EntityMetaTestBuilder<ID> columnFamilyDirectMapping(
-			boolean columnFamilyDirectMapping) {
+	public EntityMetaTestBuilder<ID> columnFamilyDirectMapping(boolean columnFamilyDirectMapping) {
 		this.columnFamilyDirectMapping = columnFamilyDirectMapping;
 		return this;
 	}
 
-	public EntityMetaTestBuilder<ID> consistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public EntityMetaTestBuilder<ID> consistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 		return this;
 	}
 
-	public <K, V> EntityMetaTestBuilder<ID> addPropertyMeta(
-			PropertyMeta propertyMeta) {
+	public <K, V> EntityMetaTestBuilder<ID> addPropertyMeta(PropertyMeta propertyMeta) {
 		this.propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
 		return this;
 	}
 
-	public <T, K, V> EntityMetaTestBuilder<ID> addGetter(Class<T> targetClass,
-			String getter, PropertyMeta propertyMeta) throws SecurityException,
-			NoSuchMethodException {
+	public <T, K, V> EntityMetaTestBuilder<ID> addGetter(Class<T> targetClass, String getter, PropertyMeta propertyMeta)
+			throws SecurityException, NoSuchMethodException {
 		Method getterMethod = targetClass.getDeclaredMethod(getter);
 		getterMetas.put(getterMethod, propertyMeta);
 		return this;
 	}
 
-	public <T, S, K, V> EntityMetaTestBuilder<ID> addSetter(
-			Class<T> targetClass, String setter, Class<S> type,
-			PropertyMeta propertyMeta) throws SecurityException,
-			NoSuchMethodException {
+	public <T, S, K, V> EntityMetaTestBuilder<ID> addSetter(Class<T> targetClass, String setter, Class<S> type,
+			PropertyMeta propertyMeta) throws SecurityException, NoSuchMethodException {
 		Method setterMethod = targetClass.getDeclaredMethod(setter, type);
 		setterMetas.put(setterMethod, propertyMeta);
 		return this;

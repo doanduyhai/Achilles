@@ -137,11 +137,10 @@ public class ThriftQueryExecutorImplTest {
 		when(query.getConsistencyLevel()).thenReturn(consistencyLevel);
 		when(query.getLimit()).thenReturn(limit);
 		when(query.getBatchSize()).thenReturn(batchSize);
-		when(query.getPartitionKey()).thenReturn(partitionKey);
 
 		when(context.getWideRowDao()).thenReturn(wideRowDao);
-		when(context.getPartitionKey()).thenReturn(partitionKey);
 		when(wideRowDao.buildMutator()).thenReturn(mutator);
+		when(compositeFactory.buildRowKey(context)).thenReturn(partitionKey);
 	}
 
 	@Test
@@ -150,25 +149,19 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(
-				compositeFactory.createForClusteredQuery(idMeta,
-						clusteringsFrom, clusteringsTo, bounding, ordering))
+		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
 		List<HCounterColumn<Composite>> hCounterColumns = new ArrayList<HCounterColumn<Composite>>();
 
-		when(
-				wideRowDao.findCounterColumnsRange(partitionKey, comp1, comp2,
-						limit, ordering.isReverse())).thenReturn(
+		when(wideRowDao.findCounterColumnsRange(partitionKey, comp1, comp2, limit, ordering.isReverse())).thenReturn(
 				hCounterColumns);
 
 		executor.findCounterColumns(query, context);
 
-		verify(context).executeWithReadConsistencyLevel(
-				counterColumnsCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithReadConsistencyLevel(counterColumnsCaptor.capture(), eq(consistencyLevel));
 
-		List<HCounterColumn<Composite>> actual = counterColumnsCaptor
-				.getValue().execute();
+		List<HCounterColumn<Composite>> actual = counterColumnsCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(hCounterColumns);
 	}
@@ -179,24 +172,19 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(
-				compositeFactory.createForClusteredQuery(idMeta,
-						clusteringsFrom, clusteringsTo, bounding, ordering))
+		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
 		List<HColumn<Composite, Object>> hColumns = new ArrayList<HColumn<Composite, Object>>();
 
-		when(
-				wideRowDao.findRawColumnsRange(partitionKey, comp1, comp2,
-						limit, ordering.isReverse())).thenReturn(hColumns);
+		when(wideRowDao.findRawColumnsRange(partitionKey, comp1, comp2, limit, ordering.isReverse())).thenReturn(
+				hColumns);
 
 		executor.findColumns(query, context);
 
-		verify(context).executeWithReadConsistencyLevel(
-				columnsCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithReadConsistencyLevel(columnsCaptor.capture(), eq(consistencyLevel));
 
-		List<HColumn<Composite, Object>> actual = columnsCaptor.getValue()
-				.execute();
+		List<HColumn<Composite, Object>> actual = columnsCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(hColumns);
 	}
@@ -207,25 +195,20 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(
-				compositeFactory.createForClusteredQuery(idMeta,
-						clusteringsFrom, clusteringsTo, bounding, ordering))
+		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
 		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Long, Object> iterator = mock(ThriftSliceIterator.class);
 
-		when(
-				wideRowDao.getColumnsIterator(partitionKey, comp1, comp2,
-						ordering.isReverse(), batchSize)).thenReturn(iterator);
+		when(wideRowDao.getColumnsIterator(partitionKey, comp1, comp2, ordering.isReverse(), batchSize)).thenReturn(
+				iterator);
 
 		executor.getColumnsIterator(query, context);
 
-		verify(context).executeWithReadConsistencyLevel(
-				iteratorCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithReadConsistencyLevel(iteratorCaptor.capture(), eq(consistencyLevel));
 
-		ThriftSliceIterator<Long, Object> actual = iteratorCaptor.getValue()
-				.execute();
+		ThriftSliceIterator<Long, Object> actual = iteratorCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(iterator);
 	}
@@ -236,26 +219,20 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(
-				compositeFactory.createForClusteredQuery(idMeta,
-						clusteringsFrom, clusteringsTo, bounding, ordering))
+		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
 				.thenReturn(composites);
 
 		@SuppressWarnings("unchecked")
 		ThriftCounterSliceIterator<Long> iterator = mock(ThriftCounterSliceIterator.class);
 
-		when(
-				wideRowDao.getCounterColumnsIterator(partitionKey, comp1,
-						comp2, ordering.isReverse(), batchSize)).thenReturn(
-				iterator);
+		when(wideRowDao.getCounterColumnsIterator(partitionKey, comp1, comp2, ordering.isReverse(), batchSize))
+				.thenReturn(iterator);
 
 		executor.getCounterColumnsIterator(query, context);
 
-		verify(context).executeWithReadConsistencyLevel(
-				counterIteratorCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithReadConsistencyLevel(counterIteratorCaptor.capture(), eq(consistencyLevel));
 
-		ThriftCounterSliceIterator<Long> actual = counterIteratorCaptor
-				.getValue().execute();
+		ThriftCounterSliceIterator<Long> actual = counterIteratorCaptor.getValue().execute();
 
 		assertThat(actual).isSameAs(iterator);
 	}
@@ -274,8 +251,7 @@ public class ThriftQueryExecutorImplTest {
 		executor.removeColumns(columns, consistencyLevel, context);
 
 		verify(wideRowDao).removeColumnBatch(partitionKey, name, mutator);
-		verify(context).executeWithWriteConsistencyLevel(
-				removeCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(removeCaptor.capture(), eq(consistencyLevel));
 
 		removeCaptor.getValue().execute();
 
@@ -291,14 +267,12 @@ public class ThriftQueryExecutorImplTest {
 		when(counterColumn.getName()).thenReturn(name);
 
 		@SuppressWarnings("unchecked")
-		List<HCounterColumn<Composite>> counterColumns = Arrays
-				.asList(counterColumn);
+		List<HCounterColumn<Composite>> counterColumns = Arrays.asList(counterColumn);
 
 		executor.removeCounterColumns(counterColumns, consistencyLevel, context);
 
 		verify(wideRowDao).removeCounterBatch(partitionKey, name, mutator);
-		verify(context).executeWithWriteConsistencyLevel(
-				removeCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(removeCaptor.capture(), eq(consistencyLevel));
 
 		removeCaptor.getValue().execute();
 
@@ -310,8 +284,7 @@ public class ThriftQueryExecutorImplTest {
 		executor.removeRow(partitionKey, context, consistencyLevel);
 
 		verify(wideRowDao).removeRowBatch(partitionKey, mutator);
-		verify(context).executeWithWriteConsistencyLevel(
-				removeCaptor.capture(), eq(consistencyLevel));
+		verify(context).executeWithWriteConsistencyLevel(removeCaptor.capture(), eq(consistencyLevel));
 
 		removeCaptor.getValue().execute();
 

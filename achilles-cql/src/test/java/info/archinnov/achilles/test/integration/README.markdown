@@ -6,7 +6,7 @@
  
 > -DcassandraHost=&lt;host&gt;:&lt;port&gt;
 
- Please note that you should create first an "achilles" keyspace in your Cassandra server as follow:
+ Please note that you should create first an "achilles_test" keyspace in your Cassandra server as follow:
  
  * CREATE KEYSPACE achilles_test WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}
  

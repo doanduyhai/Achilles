@@ -49,11 +49,7 @@ public class CQLEntityInterceptorTest {
 		Counter counterWrapper = interceptor.buildCounterWrapper(counterMeta);
 
 		assertThat(counterWrapper).isNotNull();
-		assertThat(
-				Whitebox.getInternalState(counterWrapper,
-						CQLPersistenceContext.class)).isSameAs(context);
-		assertThat(
-				Whitebox.getInternalState(counterWrapper, PropertyMeta.class))
-				.isSameAs(counterMeta);
+		assertThat(Whitebox.getInternalState(counterWrapper, CQLPersistenceContext.class)).isSameAs(context);
+		assertThat(Whitebox.getInternalState(counterWrapper, PropertyMeta.class)).isSameAs(counterMeta);
 	}
 }

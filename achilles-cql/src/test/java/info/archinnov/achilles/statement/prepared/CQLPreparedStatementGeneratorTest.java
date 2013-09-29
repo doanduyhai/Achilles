@@ -68,16 +68,13 @@ public class CQLPreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_insert_ps() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("counter")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("counter")
 				.type(PropertyType.COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -89,21 +86,17 @@ public class CQLPreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"INSERT INTO table(id,name) VALUES (?,?);");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?);");
 	}
 
 	@Test
 	public void should_prepare_insert_ps_with_clustered_id() throws Exception {
 		List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		allMetas.add(nameMeta);
@@ -116,19 +109,16 @@ public class CQLPreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"INSERT INTO table(id,a,b,name) VALUES (?,?,?,?);");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,a,b,name) VALUES (?,?,?,?);");
 	}
 
 	@Test
 	public void should_prepare_select_field_ps() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -137,23 +127,18 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareSelectFieldPS(session,
-				meta, nameMeta);
+		PreparedStatement actual = generator.prepareSelectFieldPS(session, meta, nameMeta);
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"SELECT name FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
 	}
 
 	@Test
-	public void should_prepare_select_field_ps_for_clustered_id()
-			throws Exception {
+	public void should_prepare_select_field_ps_for_clustered_id() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).compNames("id", "a", "b")
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.EMBEDDED_ID).compNames("id", "a", "b").build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -161,28 +146,23 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareSelectFieldPS(session,
-				meta, idMeta);
+		PreparedStatement actual = generator.prepareSelectFieldPS(session, meta, idMeta);
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"SELECT id,a,b FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b FROM table WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
 	public void should_prepare_update_fields_ps() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("age")
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
 				.type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -191,30 +171,23 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareUpdateFields(session, meta,
-				Arrays.asList(nameMeta, ageMeta));
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta, Arrays.asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"UPDATE table SET name=?,age=? WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table SET name=?,age=? WHERE id=?;");
 	}
 
 	@Test
-	public void should_prepare_update_fields_with_clustered_id_ps()
-			throws Exception {
+	public void should_prepare_update_fields_with_clustered_id_ps() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("age")
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
 				.type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -223,21 +196,17 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareUpdateFields(session, meta,
-				Arrays.asList(nameMeta, ageMeta));
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta, Arrays.asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"UPDATE table SET name=?,age=? WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table SET name=?,age=? WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
-	public void should_exception_when_preparing_select_for_counter_type()
-			throws Exception {
+	public void should_exception_when_preparing_select_for_counter_type() throws Exception {
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.type(PropertyType.COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -252,16 +221,13 @@ public class CQLPreparedStatementGeneratorTest {
 	}
 
 	@Test
-	public void should_prepare_select_eager_ps_with_single_key()
-			throws Exception {
+	public void should_prepare_select_eager_ps_with_single_key() throws Exception {
 		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		eagerMetas.add(nameMeta);
@@ -272,26 +238,20 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator
-				.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"SELECT name FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
 	}
 
 	@Test
-	public void should_prepare_select_eager_ps_with_clustered_key()
-			throws Exception {
+	public void should_prepare_select_eager_ps_with_clustered_key() throws Exception {
 		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		eagerMetas.add(idMeta);
@@ -303,23 +263,19 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator
-				.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"SELECT id,a,b,name FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b,name FROM table WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
 	public void should_remove_entity_having_single_key() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -329,25 +285,20 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(
-				session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"DELETE  FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=?;");
 	}
 
 	@Test
 	public void should_remove_entity_having_clustered_key() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -356,23 +307,19 @@ public class CQLPreparedStatementGeneratorTest {
 		meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(
-				session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo(
-				"DELETE  FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
 	public void should_remove_entity_having_counter() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(UUID.class, String.class).field("counter")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(UUID.class, String.class).field("counter")
 				.type(PropertyType.COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -382,14 +329,12 @@ public class CQLPreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
 
-		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(
-				session, meta);
+		Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsKey("table");
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getAllValues()).containsOnly(
-				"DELETE  FROM table WHERE id=?;");
+		assertThat(queryCaptor.getAllValues()).containsOnly("DELETE  FROM table WHERE id=?;");
 	}
 
 	@Test
@@ -399,11 +344,9 @@ public class CQLPreparedStatementGeneratorTest {
 		PreparedStatement selectPs = mock(PreparedStatement.class);
 		PreparedStatement deletePs = mock(PreparedStatement.class);
 
-		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs,
-				selectPs, deletePs);
+		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
 
-		Map<CQLQueryType, PreparedStatement> actual = generator
-				.prepareSimpleCounterQueryMap(session);
+		Map<CQLQueryType, PreparedStatement> actual = generator.prepareSimpleCounterQueryMap(session);
 
 		assertThat(actual.get(INCR)).isSameAs(incrPs);
 		assertThat(actual.get(DECR)).isSameAs(decrPs);
@@ -414,38 +357,27 @@ public class CQLPreparedStatementGeneratorTest {
 
 		assertThat(queries).hasSize(4);
 		assertThat(queries.get(0)).isEqualTo(
-				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE
-						+ " = " + CQL_COUNTER_VALUE + " + ? WHERE "
-						+ CQL_COUNTER_FQCN + " = ? AND "
-						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND "
+				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + " = " + CQL_COUNTER_VALUE + " + ? WHERE "
+						+ CQL_COUNTER_FQCN + " = ? AND " + CQL_COUNTER_PRIMARY_KEY + " = ? AND "
 						+ CQL_COUNTER_PROPERTY_NAME + " = ?");
 		assertThat(queries.get(1)).isEqualTo(
-				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE
-						+ " = " + CQL_COUNTER_VALUE + " - ? WHERE "
-						+ CQL_COUNTER_FQCN + " = ? AND "
-						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND "
+				"UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + " = " + CQL_COUNTER_VALUE + " - ? WHERE "
+						+ CQL_COUNTER_FQCN + " = ? AND " + CQL_COUNTER_PRIMARY_KEY + " = ? AND "
 						+ CQL_COUNTER_PROPERTY_NAME + " = ?");
 		assertThat(queries.get(2)).isEqualTo(
-				"SELECT " + CQL_COUNTER_VALUE + " FROM " + CQL_COUNTER_TABLE
-						+ " WHERE " + CQL_COUNTER_FQCN + " = ? AND "
-						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND "
-						+ CQL_COUNTER_PROPERTY_NAME + " = ?");
+				"SELECT " + CQL_COUNTER_VALUE + " FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN
+						+ " = ? AND " + CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME + " = ?");
 		assertThat(queries.get(3)).isEqualTo(
-				"DELETE FROM " + CQL_COUNTER_TABLE + " WHERE "
-						+ CQL_COUNTER_FQCN + " = ? AND "
-						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND "
-						+ CQL_COUNTER_PROPERTY_NAME + " = ?");
+				"DELETE FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN + " = ? AND "
+						+ CQL_COUNTER_PRIMARY_KEY + " = ? AND " + CQL_COUNTER_PROPERTY_NAME + " = ?");
 
 	}
 
 	@Test
 	public void should_prepare_clustered_counter_queries() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("counter")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("counter")
 				.type(COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -458,11 +390,9 @@ public class CQLPreparedStatementGeneratorTest {
 		PreparedStatement selectPs = mock(PreparedStatement.class);
 		PreparedStatement deletePs = mock(PreparedStatement.class);
 
-		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs,
-				selectPs, deletePs);
+		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
 
-		Map<CQLQueryType, PreparedStatement> actual = generator
-				.prepareClusteredCounterQueryMap(session, meta);
+		Map<CQLQueryType, PreparedStatement> actual = generator.prepareClusteredCounterQueryMap(session, meta);
 
 		assertThat(actual.get(INCR)).isSameAs(incrPs);
 		assertThat(actual.get(DECR)).isSameAs(decrPs);
@@ -472,13 +402,9 @@ public class CQLPreparedStatementGeneratorTest {
 		List<String> queries = queryCaptor.getAllValues();
 
 		assertThat(queries).hasSize(4);
-		assertThat(queries.get(0)).isEqualTo(
-				"UPDATE counterTable SET counter=counter+? WHERE id=?;");
-		assertThat(queries.get(1)).isEqualTo(
-				"UPDATE counterTable SET counter=counter-? WHERE id=?;");
-		assertThat(queries.get(2)).isEqualTo(
-				"SELECT counter FROM counterTable WHERE id=?;");
-		assertThat(queries.get(3)).isEqualTo(
-				"DELETE  FROM counterTable WHERE id=?;");
+		assertThat(queries.get(0)).isEqualTo("UPDATE counterTable SET counter=counter+? WHERE id=?;");
+		assertThat(queries.get(1)).isEqualTo("UPDATE counterTable SET counter=counter-? WHERE id=?;");
+		assertThat(queries.get(2)).isEqualTo("SELECT counter FROM counterTable WHERE id=?;");
+		assertThat(queries.get(3)).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
 	}
 }

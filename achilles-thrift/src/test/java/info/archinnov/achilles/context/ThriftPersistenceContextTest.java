@@ -122,8 +122,7 @@ public class ThriftPersistenceContextTest {
 
 	private Long id = RandomUtils.nextLong();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(id)
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).buid();
 
 	private UserBean bean;
 
@@ -133,8 +132,8 @@ public class ThriftPersistenceContextTest {
 		bean = new UserBean();
 		bean.setUserId(id);
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(ID).accessors().invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
+				.invoker(invoker).build();
 
 		configContext.setConsistencyPolicy(policy);
 		entityMeta = new EntityMeta();
@@ -143,13 +142,11 @@ public class ThriftPersistenceContextTest {
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setEntityClass(CompleteBean.class);
 
-		when(flushContext.getConsistencyContext()).thenReturn(
-				consistencyContext);
+		when(flushContext.getConsistencyContext()).thenReturn(consistencyContext);
 		when(thriftDaoContext.findEntityDao("table")).thenReturn(entityDao);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(id);
 
-		context = new ThriftPersistenceContext(entityMeta, configContext,
-				thriftDaoContext, flushContext, entity,
+		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext, entity,
 				OptionsBuilder.noOptions());
 	}
 
@@ -167,9 +164,8 @@ public class ThriftPersistenceContextTest {
 		entityMeta.setClusteredEntity(true);
 		when(thriftDaoContext.findWideRowDao("table")).thenReturn(wideRowDao);
 
-		context = new ThriftPersistenceContext(entityMeta, configContext,
-				thriftDaoContext, flushContext, CompleteBean.class,
-				entity.getId(), OptionsBuilder.noOptions());
+		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext,
+				CompleteBean.class, entity.getId(), OptionsBuilder.noOptions());
 
 		assertThat(context.getPrimaryKey()).isEqualTo(entity.getId());
 		assertThat(context.getEntity()).isNull();
@@ -192,13 +188,11 @@ public class ThriftPersistenceContextTest {
 
 	@Test
 	public void should_persist() throws Exception {
-		Whitebox.setInternalState(context, ThriftEntityPersister.class,
-				persister);
+		Whitebox.setInternalState(context, ThriftEntityPersister.class, persister);
 
 		context.persist();
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture());
+		verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
 		voidExecCaptor.getValue().execute();
 		verify(persister).persist(context);
 		verify(flushContext).flush();
@@ -211,8 +205,7 @@ public class ThriftPersistenceContextTest {
 
 		context.merge(entity);
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(
-				execCaptor.capture());
+		verify(consistencyContext).executeWithWriteConsistencyLevel(execCaptor.capture());
 		CompleteBean merged = execCaptor.getValue().execute();
 
 		assertThat(merged).isSameAs(entity);
@@ -221,13 +214,11 @@ public class ThriftPersistenceContextTest {
 
 	@Test
 	public void should_remove() throws Exception {
-		Whitebox.setInternalState(context, ThriftEntityPersister.class,
-				persister);
+		Whitebox.setInternalState(context, ThriftEntityPersister.class, persister);
 
 		context.remove();
 
-		verify(consistencyContext).executeWithWriteConsistencyLevel(
-				voidExecCaptor.capture());
+		verify(consistencyContext).executeWithWriteConsistencyLevel(voidExecCaptor.capture());
 		voidExecCaptor.getValue().execute();
 
 		verify(persister).remove(context);
@@ -237,14 +228,11 @@ public class ThriftPersistenceContextTest {
 	@Test
 	public void should_find() throws Exception {
 		Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
-		Whitebox.setInternalState(context, ThriftEntityProxifier.class,
-				proxifier);
+		Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
-		when(
-				consistencyContext.executeWithReadConsistencyLevel(execCaptor
-						.capture())).thenReturn(entity);
+		when(consistencyContext.executeWithReadConsistencyLevel(execCaptor.capture())).thenReturn(entity);
 
 		CompleteBean actual = context.find(CompleteBean.class);
 
@@ -257,16 +245,14 @@ public class ThriftPersistenceContextTest {
 	@Test
 	public void should_not_find() throws Exception {
 		Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
-		Whitebox.setInternalState(context, ThriftEntityProxifier.class,
-				proxifier);
+		Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
 		when(loader.load(context, CompleteBean.class)).thenReturn(null);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
 		context.find(CompleteBean.class);
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(
-				execCaptor.capture());
+		verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
 		CompleteBean actual = execCaptor.getValue().execute();
 
 		assertThat(actual).isNull();
@@ -274,21 +260,18 @@ public class ThriftPersistenceContextTest {
 
 	@Test
 	public void should_get_reference() throws Exception {
-		context = new ThriftPersistenceContext(entityMeta, configContext,
-				thriftDaoContext, flushContext, entity,
+		context = new ThriftPersistenceContext(entityMeta, configContext, thriftDaoContext, flushContext, entity,
 				OptionsBuilder.noOptions());
 
 		Whitebox.setInternalState(context, ThriftEntityLoader.class, loader);
-		Whitebox.setInternalState(context, ThriftEntityProxifier.class,
-				proxifier);
+		Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
 		context.getReference(CompleteBean.class);
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(
-				execCaptor.capture());
+		verify(consistencyContext).executeWithReadConsistencyLevel(execCaptor.capture());
 		CompleteBean actual = execCaptor.getValue().execute();
 
 		assertThat(context.isLoadEagerFields()).isFalse();
@@ -301,8 +284,7 @@ public class ThriftPersistenceContextTest {
 
 		context.refresh();
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(
-				voidExecCaptor.capture());
+		verify(consistencyContext).executeWithReadConsistencyLevel(voidExecCaptor.capture());
 		voidExecCaptor.getValue().execute();
 
 		verify(refresher).refresh(context);
@@ -311,16 +293,14 @@ public class ThriftPersistenceContextTest {
 	@Test
 	public void should_initialize() throws Exception {
 		Whitebox.setInternalState(context, "initializer", initializer);
-		Whitebox.setInternalState(context, ThriftEntityProxifier.class,
-				proxifier);
+		Whitebox.setInternalState(context, ThriftEntityProxifier.class, proxifier);
 
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 
 		CompleteBean actual = context.initialize(entity);
 		assertThat(actual).isSameAs(entity);
 
-		verify(consistencyContext).executeWithReadConsistencyLevel(
-				voidExecCaptor.capture());
+		verify(consistencyContext).executeWithReadConsistencyLevel(voidExecCaptor.capture());
 		voidExecCaptor.getValue().execute();
 
 		verify(initializer).initializeEntity(entity, entityMeta, interceptor);
@@ -373,12 +353,9 @@ public class ThriftPersistenceContextTest {
 	public void should_execute_with_read_consistency_level() throws Exception {
 		SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
 
-		when(
-				consistencyContext.executeWithReadConsistencyLevel(execContext,
-						LOCAL_QUORUM)).thenReturn(entity);
+		when(consistencyContext.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM)).thenReturn(entity);
 
-		CompleteBean actual = context.executeWithReadConsistencyLevel(
-				execContext, LOCAL_QUORUM);
+		CompleteBean actual = context.executeWithReadConsistencyLevel(execContext, LOCAL_QUORUM);
 
 		assertThat(actual).isSameAs(entity);
 
@@ -388,12 +365,9 @@ public class ThriftPersistenceContextTest {
 	public void should_execute_with_write_consistency_level() throws Exception {
 		SafeExecutionContext<CompleteBean> execContext = mock(SafeExecutionContext.class);
 
-		when(
-				consistencyContext.executeWithWriteConsistencyLevel(
-						execContext, LOCAL_QUORUM)).thenReturn(entity);
+		when(consistencyContext.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM)).thenReturn(entity);
 
-		CompleteBean actual = context.executeWithWriteConsistencyLevel(
-				execContext, LOCAL_QUORUM);
+		CompleteBean actual = context.executeWithWriteConsistencyLevel(execContext, LOCAL_QUORUM);
 
 		assertThat(actual).isSameAs(entity);
 	}

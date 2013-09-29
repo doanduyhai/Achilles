@@ -48,8 +48,7 @@ public class ThriftDaoContextTest {
 
 	@Before
 	public void setUp() {
-		context = new ThriftDaoContext(entityDaosMap, columnFamilyDaosMap,
-				thriftCounterDao);
+		context = new ThriftDaoContext(entityDaosMap, columnFamilyDaosMap, thriftCounterDao);
 	}
 
 	@Test
@@ -60,14 +59,12 @@ public class ThriftDaoContextTest {
 	@Test
 	public void should_get_entity_dao() throws Exception {
 		entityDaosMap.put("dao", entityDao);
-		assertThat((ThriftGenericEntityDao) context.findEntityDao("dao"))
-				.isSameAs(entityDao);
+		assertThat((ThriftGenericEntityDao) context.findEntityDao("dao")).isSameAs(entityDao);
 	}
 
 	@Test
 	public void should_get_wide_row_dao() throws Exception {
 		columnFamilyDaosMap.put("dao", columnFamilyDao);
-		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("dao"))
-				.isSameAs(columnFamilyDao);
+		assertThat((ThriftGenericWideRowDao) context.findWideRowDao("dao")).isSameAs(columnFamilyDao);
 	}
 }

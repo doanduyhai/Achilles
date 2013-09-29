@@ -37,21 +37,19 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.Lists;
 
-public class CQLSliceQueryExecutor extends
-		SliceQueryExecutor<CQLPersistenceContext> {
+public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceContext> {
 
 	private CQLStatementGenerator generator = new CQLStatementGenerator();
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 	private CQLDaoContext daoContext;
 	private CQLPersistenceContextFactory contextFactory;
 
-	public CQLSliceQueryExecutor(CQLPersistenceContextFactory contextFactory,
-			ConfigurationContext configContext, CQLDaoContext daoContext) {
+	public CQLSliceQueryExecutor(CQLPersistenceContextFactory contextFactory, ConfigurationContext configContext,
+			CQLDaoContext daoContext) {
 		super(new CQLEntityProxifier());
 		this.contextFactory = contextFactory;
 		this.daoContext = daoContext;
-		defaultReadLevel = configContext.getConsistencyPolicy()
-				.getDefaultGlobalReadConsistencyLevel();
+		defaultReadLevel = configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel();
 	}
 
 	@Override
@@ -61,10 +59,8 @@ public class CQLSliceQueryExecutor extends
 
 		List<T> clusteredEntities = new ArrayList<T>();
 
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery,
-				defaultReadLevel);
-		Query query = generator.generateSelectSliceQuery(cqlSliceQuery,
-				cqlSliceQuery.getLimit());
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
+		Query query = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit());
 		List<Row> rows = daoContext.execute(query).all();
 
 		for (Row row : rows) {
@@ -73,47 +69,39 @@ public class CQLSliceQueryExecutor extends
 			clusteredEntities.add(clusteredEntity);
 		}
 
-		return Lists.transform(clusteredEntities,
-				getProxyTransformer(sliceQuery, meta.getEagerGetters()));
+		return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, meta.getEagerGetters()));
 	}
 
 	@Override
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
 
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery,
-				defaultReadLevel);
-		Query query = generator.generateSelectSliceQuery(cqlSliceQuery,
-				cqlSliceQuery.getBatchSize());
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
+		Query query = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getBatchSize());
 		Iterator<Row> iterator = daoContext.execute(query).iterator();
-		PreparedStatement ps = generator.generateIteratorSliceQuery(
-				cqlSliceQuery, daoContext);
+		PreparedStatement ps = generator.generateIteratorSliceQuery(cqlSliceQuery, daoContext);
 		CQLPersistenceContext context = buildContextForQuery(sliceQuery);
-		return new CQLSliceQueryIterator<T>(cqlSliceQuery, context, iterator,
-				ps);
+		return new CQLSliceQueryIterator<T>(cqlSliceQuery, context, iterator, ps);
 	}
 
 	@Override
 	public <T> void remove(SliceQuery<T> sliceQuery) {
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery,
-				defaultReadLevel);
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
 		cqlSliceQuery.validateSliceQueryForRemove();
 		Query query = generator.generateRemoveSliceQuery(cqlSliceQuery);
 		daoContext.execute(query);
 	}
 
 	@Override
-	protected <T> CQLPersistenceContext buildContextForQuery(
-			SliceQuery<T> sliceQuery) {
+	protected <T> CQLPersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery) {
 
-		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel
-				: sliceQuery.getConsistencyLevel();
-		return contextFactory.newContextForSliceQuery(
-				sliceQuery.getEntityClass(), sliceQuery.getPartitionKey(), cl);
+		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
+				.getConsistencyLevel();
+		return contextFactory.newContextForSliceQuery(sliceQuery.getEntityClass(), sliceQuery.getPartitionComponents(),
+				cl);
 	}
 
 	@Override
-	protected <T> CQLPersistenceContext buildNewContext(
-			SliceQuery<T> sliceQuery, T clusteredEntity) {
+	protected <T> CQLPersistenceContext buildNewContext(SliceQuery<T> sliceQuery, T clusteredEntity) {
 		return contextFactory.newContext(clusteredEntity);
 	}
 

@@ -25,7 +25,7 @@ import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftDaoContextBuilder;
 import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
-import info.archinnov.achilles.table.ThriftTableCreator;
+import info.archinnov.achilles.table.ThriftColumnFamilyCreator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -40,8 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class ThriftEntityManagerFactory extends EntityManagerFactory {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftEntityManagerFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactory.class);
 
 	private Cluster cluster;
 	private Keyspace keyspace;
@@ -64,26 +63,21 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 		ThriftArgumentExtractor thriftArgumentExtractor = new ThriftArgumentExtractor();
 		cluster = thriftArgumentExtractor.initCluster(configurationMap);
 		keyspace = thriftArgumentExtractor.initKeyspace(cluster,
-				(ThriftConsistencyLevelPolicy) configContext
-						.getConsistencyPolicy(), configurationMap);
+				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(), configurationMap);
 
-		Validator
-				.validateNotEmpty(
-						entityPackages,
-						"'%s' property should be set for Achilles ThrifEntityManagerFactory bootstraping",
-						ENTITY_PACKAGES_PARAM);
+		Validator.validateNotEmpty(entityPackages,
+				"'%s' property should be set for Achilles ThrifEntityManagerFactory bootstraping",
+				ENTITY_PACKAGES_PARAM);
 
-		log.info(
-				"Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
+		log.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
 				cluster.getName(), keyspace.getKeyspaceName());
 
 		boolean hasSimpleCounter = bootstrap();
-		new ThriftTableCreator(cluster, keyspace).validateOrCreateTables(
-				entityMetaMap, configContext, hasSimpleCounter);
-		daoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace,
-				entityMetaMap, configContext, hasSimpleCounter);
-		contextFactory = new ThriftPersistenceContextFactory(daoContext,
-				configContext, entityMetaMap);
+		new ThriftColumnFamilyCreator(cluster, keyspace).validateOrCreateTables(entityMetaMap, configContext,
+				hasSimpleCounter);
+		daoContext = new ThriftDaoContextBuilder().buildDao(cluster, keyspace, entityMetaMap, configContext,
+				hasSimpleCounter);
+		contextFactory = new ThriftPersistenceContextFactory(daoContext, configContext, entityMetaMap);
 
 	}
 
@@ -96,8 +90,7 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 	public ThriftEntityManager createEntityManager() {
 		log.info("Create new Thrift-based Entity Manager ");
 
-		return new ThriftEntityManager(
-				Collections.unmodifiableMap(entityMetaMap), //
+		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
 				contextFactory, daoContext, configContext);
 	}
 
@@ -112,13 +105,11 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 	 * @return a new state-full EntityManager
 	 */
 	public ThriftBatchingEntityManager createBatchingEntityManager() {
-		return new ThriftBatchingEntityManager(entityMetaMap, contextFactory,
-				daoContext, configContext);
+		return new ThriftBatchingEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	@Override
-	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
-			Map<String, Object> configurationMap,
+	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
 		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
 
@@ -126,14 +117,11 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 				.initDefaultReadConsistencyLevel(configurationMap);
 		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
 				.initDefaultWriteConsistencyLevel(configurationMap);
-		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor
-				.initReadConsistencyMap(configurationMap);
-		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor
-				.initWriteConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor.initReadConsistencyMap(configurationMap);
+		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor.initWriteConsistencyMap(configurationMap);
 
-		policy = new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel,
-				defaultWriteConsistencyLevel, readConsistencyMap,
-				writeConsistencyMap);
+		policy = new ThriftConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
+				readConsistencyMap, writeConsistencyMap);
 		return policy;
 	}
 

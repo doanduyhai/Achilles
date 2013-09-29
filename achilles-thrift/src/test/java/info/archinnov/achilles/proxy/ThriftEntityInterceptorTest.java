@@ -42,7 +42,7 @@ import info.archinnov.achilles.proxy.wrapper.ThriftCounterWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -125,8 +125,7 @@ public class ThriftEntityInterceptorTest {
 
 	private Long key = 452L;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private PropertyMeta idMeta;
 
@@ -134,12 +133,11 @@ public class ThriftEntityInterceptorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(ID).accessors().invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
+				.invoker(invoker).build();
 
-		nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().build();
+		nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+				.accessors().build();
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
@@ -151,14 +149,11 @@ public class ThriftEntityInterceptorTest {
 		when(flushContext.getConsistencyLevel()).thenReturn(ONE);
 
 		context = ThriftPersistenceContextTestBuilder
-				.context(entityMeta, counterDao, policy, CompleteBean.class,
-						entity.getId()).entity(entity).entityDao(entityDao)
-				.entityDaosMap(entityDaosMap)
-				.wideRowDaosMap(columnFamilyDaosMap).build();
+				.context(entityMeta, counterDao, policy, CompleteBean.class, entity.getId()).entity(entity)
+				.entityDao(entityDao).entityDaosMap(entityDaosMap).wideRowDaosMap(columnFamilyDaosMap).build();
 		context.setFlushContext(flushContext);
 
-		interceptor = ThriftEntityInterceptorBuilder.builder(context, entity)
-				.build();
+		interceptor = ThriftEntityInterceptorBuilder.builder(context, entity).build();
 
 		interceptor.setPrimaryKey(key);
 		interceptor.setDirtyMap(dirtyMap);
@@ -166,29 +161,25 @@ public class ThriftEntityInterceptorTest {
 		when(flushContext.duplicate()).thenReturn(flushContext);
 
 		Whitebox.setInternalState(interceptor, "alreadyLoaded", alreadyLoaded);
-		Whitebox.setInternalState(context, ThriftAbstractFlushContext.class,
-				flushContext);
+		Whitebox.setInternalState(context, ThriftAbstractFlushContext.class, flushContext);
 		Whitebox.setInternalState(interceptor, "loader", loader);
 	}
 
 	@Test
 	public void should_get_id_value_directly() throws Throwable {
-		Object key = this.interceptor.intercept(entity, idMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object key = this.interceptor.intercept(entity, idMeta.getGetter(), (Object[]) null, proxy);
 		assertThat(key).isEqualTo(key);
 	}
 
 	@Test(expected = IllegalAccessException.class)
 	public void should_exception_when_setter_called_on_id() throws Throwable {
-		this.interceptor.intercept(entity, idMeta.getSetter(),
-				new Object[] { 1L }, proxy);
+		this.interceptor.intercept(entity, idMeta.getSetter(), new Object[] { 1L }, proxy);
 	}
 
 	@Test
 	public void should_get_unmapped_property() throws Throwable {
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isEqualTo("name");
 
@@ -204,8 +195,7 @@ public class ThriftEntityInterceptorTest {
 		when(alreadyLoaded.contains(nameMeta.getGetter())).thenReturn(false);
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isEqualTo("name");
 
@@ -223,8 +213,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, (Object[]) null)).thenReturn("name");
 
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isEqualTo("name");
 
@@ -241,8 +230,7 @@ public class ThriftEntityInterceptorTest {
 		Object[] args = new Object[] { "sdfsdvdqfv" };
 
 		when(proxy.invoke(entity, args)).thenReturn(null);
-		Object name = this.interceptor.intercept(entity, nameMeta.getSetter(),
-				args, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getSetter(), args, proxy);
 
 		assertThat(name).isNull();
 
@@ -258,8 +246,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, null)).thenReturn(Arrays.asList("a"));
 
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(ListWrapper.class);
 	}
@@ -272,8 +259,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, null)).thenReturn(null);
 
-		Object actual = this.interceptor.intercept(entity,
-				nameMeta.getGetter(), (Object[]) null, proxy);
+		Object actual = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(actual).isNull();
 	}
@@ -286,8 +272,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, null)).thenReturn(new HashSet<String>());
 
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(SetWrapper.class);
 	}
@@ -300,8 +285,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, null)).thenReturn(null);
 
-		Object actual = this.interceptor.intercept(entity,
-				nameMeta.getGetter(), (Object[]) null, proxy);
+		Object actual = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(actual).isNull();
 	}
@@ -312,11 +296,9 @@ public class ThriftEntityInterceptorTest {
 		when(getterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(LAZY_MAP);
 
-		when(proxy.invoke(entity, null)).thenReturn(
-				new HashMap<Integer, String>());
+		when(proxy.invoke(entity, null)).thenReturn(new HashMap<Integer, String>());
 
-		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		Object name = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(name).isInstanceOf(MapWrapper.class);
 	}
@@ -329,8 +311,7 @@ public class ThriftEntityInterceptorTest {
 
 		when(proxy.invoke(entity, null)).thenReturn(null);
 
-		Object actual = this.interceptor.intercept(entity,
-				nameMeta.getGetter(), (Object[]) null, proxy);
+		Object actual = this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 
 		assertThat(actual).isNull();
 	}
@@ -351,39 +332,31 @@ public class ThriftEntityInterceptorTest {
 
 		when(propertyMeta.getCounterProperties()).thenReturn(counterProperties);
 		when(propertyMeta.getPropertyName()).thenReturn(propertyName);
-		Object counterWrapper = this.interceptor.intercept(bean, countGetter,
-				(Object[]) null, proxy);
+		Object counterWrapper = this.interceptor.intercept(bean, countGetter, (Object[]) null, proxy);
 
 		assertThat(counterWrapper).isInstanceOf(ThriftCounterWrapper.class);
 
-		Composite comp = (Composite) Whitebox.getInternalState(counterWrapper,
-				"key");
+		Composite comp = (Composite) Whitebox.getInternalState(counterWrapper, "key");
 		assertThat(comp.getComponent(0).getValue(STRING_SRZ)).isEqualTo("fqcn");
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("452");
 
-		Composite columnName = (Composite) Whitebox.getInternalState(
-				counterWrapper, "columnName");
-		assertThat(columnName.getComponent(0).getValue(STRING_SRZ)).isEqualTo(
-				propertyName);
+		Composite columnName = (Composite) Whitebox.getInternalState(counterWrapper, "columnName");
+		assertThat(columnName.getComponent(0).getValue(STRING_SRZ)).isEqualTo(propertyName);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_create_counter_wrapper_for_clustered_entity()
-			throws Throwable {
+	public void should_create_counter_wrapper_for_clustered_entity() throws Throwable {
 		CompleteBean bean = new CompleteBean();
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
-		CompoundKey compoundKey = new CompoundKey(userId, name);
+		EmbeddedKey embeddedKey = new EmbeddedKey(userId, name);
 
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
-		PropertyMeta clusteredIdMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.compGetters(Arrays.asList(userIdGetter, nameGetter))
-				.compClasses(Long.class, String.class)
-				.transcoder(new CompoundTranscoder(new ObjectMapper()))
-				.invoker(invoker).build();
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
+		PropertyMeta clusteredIdMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compGetters(userIdGetter, nameGetter).compClasses(Long.class, String.class)
+				.transcoder(new CompoundTranscoder(new ObjectMapper())).invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		Method countGetter = CompleteBean.class.getDeclaredMethod("getCount");
@@ -393,23 +366,18 @@ public class ThriftEntityInterceptorTest {
 		CounterProperties counterProperties = new CounterProperties("fqcn");
 		counterProperties.setIdMeta(clusteredIdMeta);
 
-		when(invoker.getPartitionKey(compoundKey, clusteredIdMeta)).thenReturn(
-				userId);
+		when(invoker.getPartitionKey(embeddedKey, clusteredIdMeta)).thenReturn(userId);
 		when(propertyMeta.getCounterProperties()).thenReturn(counterProperties);
 
-		interceptor.setPrimaryKey(compoundKey);
+		interceptor.setPrimaryKey(embeddedKey);
 
-		Object counterWrapper = this.interceptor.intercept(bean, countGetter,
-				(Object[]) null, proxy);
+		Object counterWrapper = this.interceptor.intercept(bean, countGetter, (Object[]) null, proxy);
 
 		assertThat(counterWrapper).isInstanceOf(ThriftCounterWrapper.class);
 
-		assertThat(Whitebox.getInternalState(counterWrapper, "key")).isSameAs(
-				userId);
-		Composite columnName = (Composite) Whitebox.getInternalState(
-				counterWrapper, "columnName");
-		assertThat(columnName.getComponent(0).getValue(STRING_SRZ)).isEqualTo(
-				name);
+		assertThat(Whitebox.getInternalState(counterWrapper, "key")).isSameAs(userId);
+		Composite columnName = (Composite) Whitebox.getInternalState(counterWrapper, "columnName");
+		assertThat(columnName.getComponent(0).getValue(STRING_SRZ)).isEqualTo(name);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -418,8 +386,7 @@ public class ThriftEntityInterceptorTest {
 		when(setterMetas.get(nameMeta.getGetter())).thenReturn(propertyMeta);
 		when(propertyMeta.type()).thenReturn(PropertyType.COUNTER);
 
-		this.interceptor.intercept(entity, nameMeta.getGetter(),
-				(Object[]) null, proxy);
+		this.interceptor.intercept(entity, nameMeta.getGetter(), (Object[]) null, proxy);
 	}
 
 }

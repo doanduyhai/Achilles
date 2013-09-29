@@ -78,12 +78,10 @@ public class CQLSliceQueryIteratorTest {
 		when(sliceQuery.getEntityClass()).thenReturn(ClusteredEntity.class);
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getVaryingComponentName()).thenReturn("name");
-		when(sliceQuery.getVaryingComponentClass()).thenReturn(
-				(Class) String.class);
+		when(sliceQuery.getVaryingComponentClass()).thenReturn((Class) String.class);
 		when(sliceQuery.getBatchSize()).thenReturn(batchSize);
 
-		sliceIterator = new CQLSliceQueryIterator<ClusteredEntity>(sliceQuery,
-				context, iterator, ps);
+		sliceIterator = new CQLSliceQueryIterator<ClusteredEntity>(sliceQuery, context, iterator, ps);
 
 		Whitebox.setInternalState(sliceIterator, "mapper", mapper);
 		Whitebox.setInternalState(sliceIterator, "cqlInvoker", cqlInvoker);
@@ -102,8 +100,7 @@ public class CQLSliceQueryIteratorTest {
 		Whitebox.setInternalState(sliceIterator, "count", batchSize);
 		when(iterator.hasNext()).thenReturn(false);
 
-		when(context.bindAndExecute(ps, "name").iterator())
-				.thenReturn(iterator);
+		when(context.bindAndExecute(ps, "name").iterator()).thenReturn(iterator);
 
 		assertThat(sliceIterator.hasNext()).isFalse();
 
@@ -111,8 +108,7 @@ public class CQLSliceQueryIteratorTest {
 	}
 
 	@Test
-	public void should_return_false_for_has_next_when_no_more_data()
-			throws Exception {
+	public void should_return_false_for_has_next_when_no_more_data() throws Exception {
 		when(iterator.hasNext()).thenReturn(false);
 		Whitebox.setInternalState(sliceIterator, "count", batchSize - 1);
 
@@ -129,8 +125,7 @@ public class CQLSliceQueryIteratorTest {
 
 		when(iterator.next()).thenReturn(row);
 
-		when(cqlInvoker.invokeOnRowForType(row, String.class, "name"))
-				.thenReturn("name1");
+		when(cqlInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn("name1");
 		when(invoker.instanciate(ClusteredEntity.class)).thenReturn(entity);
 
 		when(context.duplicate(entity)).thenReturn(context);
@@ -139,8 +134,7 @@ public class CQLSliceQueryIteratorTest {
 		ClusteredEntity actual = sliceIterator.next();
 
 		assertThat(actual).isSameAs(entity);
-		assertThat((Integer) Whitebox.getInternalState(sliceIterator, "count"))
-				.isEqualTo(1);
+		assertThat((Integer) Whitebox.getInternalState(sliceIterator, "count")).isEqualTo(1);
 		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
 	}
 

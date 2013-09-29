@@ -35,7 +35,7 @@ import info.archinnov.achilles.iterator.ThriftSliceIterator;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
@@ -100,44 +100,37 @@ public class ThriftSliceQueryExecutorTest {
 
 	private Long partitionKey = RandomUtils.nextLong();
 
+	private List<Object> partitionComponents = Arrays.<Object> asList(partitionKey);
+
 	private ConsistencyLevel consistencyLevel = ConsistencyLevel.ALL;
 
-	private CompoundKey compoundKey = new CompoundKey(partitionKey, "name");
+	private EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
 
 	@Before
 	public void setUp() throws Exception {
-		when(configContext.getConsistencyPolicy())
-				.thenReturn(consistencyPolicy);
-		when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel())
-				.thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+		when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
 		executor = new ThriftSliceQueryExecutor(contextFactory, configContext);
 		executor.proxifier = proxifier;
 
-		Whitebox.setInternalState(executor, ClusteredEntityFactory.class,
-				factory);
-		Whitebox.setInternalState(executor, ThriftQueryExecutorImpl.class,
-				executorImpl);
+		Whitebox.setInternalState(executor, ClusteredEntityFactory.class, factory);
+		Whitebox.setInternalState(executor, ThriftQueryExecutorImpl.class, executorImpl);
 
 		entity = new BeanWithClusteredId();
-		entity.setId(compoundKey);
+		entity.setId(embeddedKey);
 
 		when(query.getConsistencyLevel()).thenReturn(consistencyLevel);
-		when(query.getPartitionKey()).thenReturn(partitionKey);
+		when(query.getPartitionComponents()).thenReturn(partitionComponents);
 
 		when(query.getEntityClass()).thenReturn(entityClass);
 
-		Method valueGetter = BeanWithClusteredId.class
-				.getDeclaredMethod("getName");
+		Method valueGetter = BeanWithClusteredId.class.getDeclaredMethod("getName");
 		when(pm.getGetter()).thenReturn(valueGetter);
-		when(
-				invoker.instanciateEmbeddedIdWithPartitionKey(idMeta,
-						partitionKey)).thenReturn(compoundKey);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
-		when(
-				contextFactory.newContextForSliceQuery(
-						BeanWithClusteredId.class, partitionKey,
-						consistencyLevel)).thenReturn(context);
+		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(embeddedKey);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(embeddedKey);
+		when(contextFactory.newContextForSliceQuery(BeanWithClusteredId.class, partitionComponents, consistencyLevel))
+				.thenReturn(context);
 		when(context.isValueless()).thenReturn(false);
 		when(context.getFirstMeta()).thenReturn(pm);
 	}
@@ -147,22 +140,15 @@ public class ThriftSliceQueryExecutorTest {
 		// Given
 		when(pm.type()).thenReturn(SIMPLE);
 		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		List<BeanWithClusteredId> entities = Arrays.asList(entity);
-		when(
-				factory.buildClusteredEntities(eq(entityClass),
-						any(ThriftPersistenceContext.class), eq(columns)))
+		when(factory.buildClusteredEntities(eq(entityClass), any(ThriftPersistenceContext.class), eq(columns)))
 				.thenReturn(entities);
 
-		when(
-				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class),
-						Mockito.<Set<Method>> any())).thenReturn(entity);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), Mockito.<Set<Method>> any()))
+				.thenReturn(entity);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(embeddedKey);
 
 		// When
 		List<BeanWithClusteredId> actual = executor.get(query);
@@ -177,22 +163,15 @@ public class ThriftSliceQueryExecutorTest {
 
 		List<HCounterColumn<Composite>> columns = new ArrayList<HCounterColumn<Composite>>();
 
-		when(
-				executorImpl.findCounterColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findCounterColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		List<BeanWithClusteredId> entities = Arrays.asList(entity);
-		when(
-				factory.buildCounterClusteredEntities(eq(entityClass),
-						any(ThriftPersistenceContext.class), eq(columns)))
+		when(factory.buildCounterClusteredEntities(eq(entityClass), any(ThriftPersistenceContext.class), eq(columns)))
 				.thenReturn(entities);
 
-		when(
-				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class),
-						Mockito.<Set<Method>> any())).thenReturn(entity);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), Mockito.<Set<Method>> any()))
+				.thenReturn(entity);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(embeddedKey);
 		List<BeanWithClusteredId> actual = executor.get(query);
 
 		assertThat(actual).containsOnly(entity);
@@ -202,30 +181,22 @@ public class ThriftSliceQueryExecutorTest {
 	public void should_get_value_less_clustered_entities() throws Exception {
 		when(context.isValueless()).thenReturn(true);
 		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		List<BeanWithClusteredId> entities = Arrays.asList(entity);
-		when(
-				factory.buildClusteredEntities(eq(entityClass),
-						any(ThriftPersistenceContext.class), eq(columns)))
+		when(factory.buildClusteredEntities(eq(entityClass), any(ThriftPersistenceContext.class), eq(columns)))
 				.thenReturn(entities);
 
-		when(
-				proxifier.buildProxy(eq(entity),
-						any(ThriftPersistenceContext.class),
-						Mockito.<Set<Method>> any())).thenReturn(entity);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(compoundKey);
+		when(proxifier.buildProxy(eq(entity), any(ThriftPersistenceContext.class), Mockito.<Set<Method>> any()))
+				.thenReturn(entity);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(embeddedKey);
 		List<BeanWithClusteredId> actual = executor.get(query);
 
 		assertThat(actual).containsOnly(entity);
 	}
 
 	@Test(expected = AchillesException.class)
-	public void should_exception_when_get_clustered_entities_of_wrong_value_type()
-			throws Exception {
+	public void should_exception_when_get_clustered_entities_of_wrong_value_type() throws Exception {
 		when(pm.type()).thenReturn(MAP);
 
 		executor.get(query);
@@ -239,9 +210,7 @@ public class ThriftSliceQueryExecutorTest {
 		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Object, Object> columnsIterator = mock(ThriftSliceIterator.class);
 
-		when(
-				executorImpl.getColumnsIterator(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
+		when(executorImpl.getColumnsIterator(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
 				columnsIterator);
 
 		Iterator<BeanWithClusteredId> iterator = executor.iterator(query);
@@ -256,15 +225,12 @@ public class ThriftSliceQueryExecutorTest {
 		@SuppressWarnings("unchecked")
 		ThriftCounterSliceIterator<Object> columnsIterator = mock(ThriftCounterSliceIterator.class);
 
-		when(
-				executorImpl.getCounterColumnsIterator(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
+		when(executorImpl.getCounterColumnsIterator(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
 				columnsIterator);
 
 		Iterator<BeanWithClusteredId> iterator = executor.iterator(query);
 
-		assertThat(iterator).isInstanceOf(
-				ThriftCounterClusteredEntityIterator.class);
+		assertThat(iterator).isInstanceOf(ThriftCounterClusteredEntityIterator.class);
 	}
 
 	@Test
@@ -274,9 +240,7 @@ public class ThriftSliceQueryExecutorTest {
 		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Object, Object> columnsIterator = mock(ThriftSliceIterator.class);
 
-		when(
-				executorImpl.getColumnsIterator(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
+		when(executorImpl.getColumnsIterator(eq(query), any(ThriftPersistenceContext.class))).thenReturn(
 				columnsIterator);
 
 		Iterator<BeanWithClusteredId> iterator = executor.iterator(query);
@@ -285,8 +249,7 @@ public class ThriftSliceQueryExecutorTest {
 	}
 
 	@Test(expected = AchillesException.class)
-	public void should_exception_when_get_iterator_on_wrong_valuetype()
-			throws Exception {
+	public void should_exception_when_get_iterator_on_wrong_valuetype() throws Exception {
 		when(pm.type()).thenReturn(MAP);
 
 		executor.iterator(query);
@@ -301,8 +264,8 @@ public class ThriftSliceQueryExecutorTest {
 		when(query.getConsistencyLevel()).thenReturn(consistencyLevel);
 		executor.remove(query);
 
-		verify(executorImpl).removeRow(eq(partitionKey),
-				any(ThriftPersistenceContext.class), eq(consistencyLevel));
+		verify(executorImpl).removeRow(eq(partitionComponents), any(ThriftPersistenceContext.class),
+				eq(consistencyLevel));
 	}
 
 	@Test
@@ -311,15 +274,11 @@ public class ThriftSliceQueryExecutorTest {
 
 		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
 
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		executor.remove(query);
 
-		verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel),
-				any(ThriftPersistenceContext.class));
+		verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel), any(ThriftPersistenceContext.class));
 	}
 
 	@Test
@@ -328,15 +287,12 @@ public class ThriftSliceQueryExecutorTest {
 
 		List<HCounterColumn<Composite>> columns = new ArrayList<HCounterColumn<Composite>>();
 
-		when(
-				executorImpl.findCounterColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findCounterColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		executor.remove(query);
 
-		verify(executorImpl).removeCounterColumns(eq(columns),
-				eq(consistencyLevel), any(ThriftPersistenceContext.class));
+		verify(executorImpl).removeCounterColumns(eq(columns), eq(consistencyLevel),
+				any(ThriftPersistenceContext.class));
 	}
 
 	@Test
@@ -344,20 +300,15 @@ public class ThriftSliceQueryExecutorTest {
 		when(context.isValueless()).thenReturn(true);
 		List<HColumn<Composite, Object>> columns = new ArrayList<HColumn<Composite, Object>>();
 
-		when(
-				executorImpl.findColumns(eq(query),
-						any(ThriftPersistenceContext.class))).thenReturn(
-				columns);
+		when(executorImpl.findColumns(eq(query), any(ThriftPersistenceContext.class))).thenReturn(columns);
 
 		executor.remove(query);
 
-		verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel),
-				any(ThriftPersistenceContext.class));
+		verify(executorImpl).removeColumns(eq(columns), eq(consistencyLevel), any(ThriftPersistenceContext.class));
 	}
 
 	@Test(expected = AchillesException.class)
-	public void should_exception_when_remove_clustered_entities_of_wrong_value_type()
-			throws Exception {
+	public void should_exception_when_remove_clustered_entities_of_wrong_value_type() throws Exception {
 		when(pm.type()).thenReturn(MAP);
 
 		executor.remove(query);

@@ -36,8 +36,8 @@ public class CounterIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			"CompleteBean", THRIFT_COUNTER_CF);
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource("CompleteBean",
+			THRIFT_COUNTER_CF);
 
 	private ThriftEntityManager em = resource.getEm();
 

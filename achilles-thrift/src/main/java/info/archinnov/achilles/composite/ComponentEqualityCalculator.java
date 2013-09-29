@@ -25,14 +25,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ComponentEqualityCalculator {
-	private static final Logger log = LoggerFactory
-			.getLogger(ComponentEqualityCalculator.class);
+	private static final Logger log = LoggerFactory.getLogger(ComponentEqualityCalculator.class);
 
-	public ComponentEquality[] determineEquality(BoundingMode bounds,
-			OrderingMode ordering) {
-		log.trace(
-				"Determine component equality with respect to bounding mode {} and ordering mode {}",
-				bounds.name(), ordering.name());
+	public ComponentEquality[] determineEquality(BoundingMode bounds, OrderingMode ordering) {
+		log.trace("Determine component equality with respect to bounding mode {} and ordering mode {}", bounds.name(),
+				ordering.name());
 		ComponentEquality[] result = new ComponentEquality[2];
 		switch (ordering) {
 		case ASCENDING:
@@ -77,10 +74,8 @@ public class ComponentEqualityCalculator {
 			break;
 		}
 
-		log.trace(
-				"For the to bounding mode {} and ordering mode {}, the component equalities should be : {} - {}",
-				bounds.name(), ordering.name(), result[0].name(),
-				result[1].name());
+		log.trace("For the to bounding mode {} and ordering mode {}, the component equalities should be : {} - {}",
+				bounds.name(), ordering.name(), result[0].name(), result[1].name());
 		return result;
 	}
 }

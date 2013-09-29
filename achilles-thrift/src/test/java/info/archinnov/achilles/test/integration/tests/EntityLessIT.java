@@ -17,10 +17,9 @@ import org.junit.Test;
 public class EntityLessIT {
 
 	@Test(expected = AchillesException.class)
-	public void should_exception_when_no_entity_package_provided()
-			throws Exception {
-		Cluster cluster = HFactory.getOrCreateCluster("Achilles-cluster",
-				CASSANDRA_TEST_HOST + ":" + CASSANDRA_THRIFT_TEST_PORT);
+	public void should_exception_when_no_entity_package_provided() throws Exception {
+		Cluster cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
+				+ CASSANDRA_THRIFT_TEST_PORT);
 		Keyspace keyspace = HFactory.createKeyspace("system", cluster);
 
 		Map<String, Object> configMap = new HashMap<String, Object>();

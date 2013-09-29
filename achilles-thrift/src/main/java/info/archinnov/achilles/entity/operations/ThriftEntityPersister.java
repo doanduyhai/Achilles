@@ -29,10 +29,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftEntityPersister implements
-		EntityPersister<ThriftPersistenceContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftEntityPersister.class);
+public class ThriftEntityPersister implements EntityPersister<ThriftPersistenceContext> {
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityPersister.class);
 
 	private ThriftPersisterImpl persisterImpl = new ThriftPersisterImpl();
 
@@ -48,19 +46,17 @@ public class ThriftEntityPersister implements
 			// Remove first
 			persisterImpl.removeEntityBatch(context);
 
-			for (PropertyMeta propertyMeta : entityMeta.getPropertyMetas()
-					.values()) {
+			for (PropertyMeta propertyMeta : entityMeta.getPropertyMetas().values()) {
 				this.persistPropertyBatch(context, propertyMeta);
 			}
 		}
 	}
 
-	public void persistPropertyBatch(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		log.debug("Persisting property {} of entity {}",
-				propertyMeta.getPropertyName(), context.getEntity());
+	public void persistPropertyBatch(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		log.debug("Persisting property {} of entity {}", propertyMeta.getPropertyName(), context.getEntity());
 		switch (propertyMeta.type()) {
 		case ID:
+		case EMBEDDED_ID:
 		case SIMPLE:
 		case LAZY_SIMPLE:
 			persisterImpl.batchPersistSimpleProperty(context, propertyMeta);
@@ -87,8 +83,8 @@ public class ThriftEntityPersister implements
 
 	@Override
 	public void remove(ThriftPersistenceContext context) {
-		log.debug("Removing entity of class {} and primary key {} ", context
-				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+		log.debug("Removing entity of class {} and primary key {} ", context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
 		EntityMeta meta = context.getEntityMeta();
 
 		if (meta.isClusteredEntity()) {
@@ -98,43 +94,32 @@ public class ThriftEntityPersister implements
 		}
 	}
 
-	public void removePropertyBatch(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		log.debug(
-				"Removing property {} from entity of class {} and primary key {} ",
-				propertyMeta.getPropertyName(), context.getEntityClass()
-						.getCanonicalName(), context.getPrimaryKey());
+	public void removePropertyBatch(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		log.debug("Removing property {} from entity of class {} and primary key {} ", propertyMeta.getPropertyName(),
+				context.getEntityClass().getCanonicalName(), context.getPrimaryKey());
 
 		persisterImpl.removePropertyBatch(context, propertyMeta);
 	}
 
-	public void persistClusteredValue(ThriftPersistenceContext context,
-			Object clusteredValue) {
-		Object primaryKey = context.getPrimaryKey();
-		Object partitionKey = context.getEntityMeta().getPartitionKey(
-				primaryKey);
-		persisterImpl.persistClusteredValueBatch(context, partitionKey,
-				clusteredValue, this);
+	public void persistClusteredValue(ThriftPersistenceContext context, Object clusteredValue) {
+		persisterImpl.persistClusteredValueBatch(context, clusteredValue);
 	}
 
-	private void batchPersistListProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
+	private void batchPersistListProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		List<?> list = propertyMeta.getListValueFromField(context.getEntity());
 		if (list != null) {
 			persisterImpl.batchPersistList(list, context, propertyMeta);
 		}
 	}
 
-	private void batchPersistSetProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
+	private void batchPersistSetProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		Set<?> set = propertyMeta.getSetValueFromField(context.getEntity());
 		if (set != null) {
 			persisterImpl.batchPersistSet(set, context, propertyMeta);
 		}
 	}
 
-	private void batchPersistMapProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
+	private void batchPersistMapProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		Map<?, ?> map = propertyMeta.getMapValueFromField(context.getEntity());
 		if (map != null) {
 			persisterImpl.batchPersistMap(map, context, propertyMeta);
@@ -143,22 +128,12 @@ public class ThriftEntityPersister implements
 
 	private void persistClusteredEntity(ThriftPersistenceContext context) {
 		Object entity = context.getEntity();
-		Object compoundKey = context.getPrimaryKey();
+		Object compoundPrimaryKey = context.getPrimaryKey();
 		String className = context.getEntityClass().getCanonicalName();
 
-		Validator
-				.validateNotNull(
-						compoundKey,
-						"Compound key should be provided for clustered entity '%s' persistence",
-						className);
-		Validator
-				.validateNotNull(
-						entity,
-						"Entity should be provided for clustered entity '%s' persistence",
-						className);
-
-		Object partitionKey = context.getEntityMeta().getPartitionKey(
-				compoundKey);
+		Validator.validateNotNull(compoundPrimaryKey,
+				"Compound primary key should be provided for clustered entity '%s' persistence", className);
+		Validator.validateNotNull(entity, "Entity should be provided for clustered entity '%s' persistence", className);
 
 		Object clusteredValue;
 		if (context.isValueless()) {
@@ -166,30 +141,15 @@ public class ThriftEntityPersister implements
 		} else {
 			PropertyMeta pm = context.getFirstMeta();
 			clusteredValue = pm.getValueFromField(entity);
-			Validator
-					.validateNotNull(
-							clusteredValue,
-							"Property '%s' should not be null for clustered entity '%s' persistence",
-							pm.getPropertyName(), className);
+			Validator.validateNotNull(clusteredValue,
+					"Property '%s' should not be null for clustered entity '%s' persistence", pm.getPropertyName(),
+					className);
 		}
 
-		persisterImpl.persistClusteredEntity(this, context, partitionKey,
-				clusteredValue);
+		persisterImpl.persistClusteredEntity(context, clusteredValue);
 	}
 
 	private void removeClusteredEntity(ThriftPersistenceContext context) {
-		Object embeddedId = context.getPrimaryKey();
-		String className = context.getEntityClass().getCanonicalName();
-
-		Validator
-				.validateNotNull(
-						embeddedId,
-						"Embedded id should be provided for clustered entity '%s' persistence",
-						className);
-
-		Object partitionKey = context.getEntityMeta().getPartitionKey(
-				embeddedId);
-
-		persisterImpl.removeClusteredEntity(context, partitionKey);
+		persisterImpl.removeClusteredEntity(context);
 	}
 }

@@ -68,19 +68,15 @@ public class MapEntryWrapperBuilderTest {
 
 		MapEntryWrapper wrapper = MapEntryWrapperBuilder
 				//
-				.builder(context, mapEntry).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, mapEntry).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 
 		assertThat(wrapper.getTarget()).isSameAs(mapEntry);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(
-				setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

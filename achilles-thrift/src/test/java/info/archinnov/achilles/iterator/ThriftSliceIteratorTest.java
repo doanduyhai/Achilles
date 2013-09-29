@@ -96,21 +96,16 @@ public class ThriftSliceIteratorTest {
 		String val1 = "val1", val2 = "val2", val3 = "val3";
 		int ttl = 10;
 
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1,
-				val1, ttl);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2,
-				val2, ttl);
-		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3,
-				val3, ttl);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1, val1, ttl);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2, val2, ttl);
+		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3, val3, ttl);
 
-		when(columnsIterator.hasNext()).thenReturn(true, true, true, true,
-				true, false);
+		when(columnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
-		iterator = new ThriftSliceIterator<Long, String>(policy, columnFamily,
-				query, start, end, false, 10);
+		iterator = new ThriftSliceIterator<Long, String>(policy, columnFamily, query, start, end, false, 10);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<Composite, String> h1 = iterator.next();
@@ -155,19 +150,14 @@ public class ThriftSliceIteratorTest {
 		String val1 = "val1", val2 = "val2", val3 = "val3";
 		int ttl = 10;
 
-		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1,
-				val1, ttl);
-		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2,
-				val2, ttl);
-		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3,
-				val3, ttl);
+		HColumn<Composite, String> hCol1 = HColumnTestBuilder.simple(name1, val1, ttl);
+		HColumn<Composite, String> hCol2 = HColumnTestBuilder.simple(name2, val2, ttl);
+		HColumn<Composite, String> hCol3 = HColumnTestBuilder.simple(name3, val3, ttl);
 
-		when(columnsIterator.hasNext()).thenReturn(true, true, true, false,
-				true, false, false);
+		when(columnsIterator.hasNext()).thenReturn(true, true, true, false, true, false, false);
 		when(columnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
-		iterator = new ThriftSliceIterator<Long, String>(policy, columnFamily,
-				query, start, end, false, count);
+		iterator = new ThriftSliceIterator<Long, String>(policy, columnFamily, query, start, end, false, count);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HColumn<Composite, String> h1 = iterator.next();
@@ -190,8 +180,7 @@ public class ThriftSliceIteratorTest {
 		assertThat(iterator.hasNext()).isEqualTo(false);
 
 		verify(policy).getCurrentReadLevel();
-		verify(policy, never())
-				.setCurrentReadLevel(any(ConsistencyLevel.class));
+		verify(policy, never()).setCurrentReadLevel(any(ConsistencyLevel.class));
 
 	}
 }

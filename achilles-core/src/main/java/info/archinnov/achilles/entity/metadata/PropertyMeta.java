@@ -64,14 +64,6 @@ public class PropertyMeta {
 		return getter;
 	}
 
-	public Method getPartitionKeySetter() {
-		Method getter = null;
-		if (embeddedIdProperties != null) {
-			getter = embeddedIdProperties.getComponentSetters().get(0);
-		}
-		return getter;
-	}
-
 	public List<Method> getComponentSetters() {
 		List<Method> compSetters = new ArrayList<Method>();
 		if (embeddedIdProperties != null) {
@@ -97,19 +89,57 @@ public class PropertyMeta {
 	}
 
 	public List<String> getClusteringComponentNames() {
-		return embeddedIdProperties != null ? embeddedIdProperties
-				.getClusteringComponentNames() : Arrays.<String> asList();
+		return embeddedIdProperties != null ? embeddedIdProperties.getClusteringComponentNames() : Arrays
+				.<String> asList();
 	}
 
 	public List<Class<?>> getClusteringComponentClasses() {
-		return embeddedIdProperties != null ? embeddedIdProperties
-				.getClusteringComponentClasses() : Arrays.<Class<?>> asList();
+		return embeddedIdProperties != null ? embeddedIdProperties.getClusteringComponentClasses() : Arrays
+				.<Class<?>> asList();
+	}
+
+	public List<String> getPartitionComponentNames() {
+		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentNames() : Arrays
+				.<String> asList();
+	}
+
+	public List<Class<?>> getPartitionComponentClasses() {
+		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentClasses() : Arrays
+				.<Class<?>> asList();
+	}
+
+	public List<Object> extractPartitionComponents(List<Object> components) {
+		return embeddedIdProperties != null ? embeddedIdProperties.extractPartitionComponents(components) : Arrays
+				.asList();
+	}
+
+	public List<Object> extractPartitionComponents(Object primaryKey) {
+		List<Object> partitionComponents;
+		if (isCompositePartitionKey()) {
+			partitionComponents = encodeToComponents(primaryKey);
+			partitionComponents = extractPartitionComponents(partitionComponents);
+		} else if (isEmbeddedId()) {
+			partitionComponents = Arrays.<Object> asList(getPartitionKey(primaryKey));
+		} else {
+			partitionComponents = Arrays.<Object> asList(primaryKey);
+		}
+
+		return partitionComponents;
+	}
+
+	public List<Method> getPartitionComponentSetters() {
+		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentSetters() : Arrays
+				.<Method> asList();
+	}
+
+	public List<Object> extractClusteringComponents(List<Object> components) {
+		return embeddedIdProperties != null ? embeddedIdProperties.extractClusteringComponents(components) : Arrays
+				.asList();
+
 	}
 
 	public boolean isComponentTimeUUID(String componentName) {
-		return embeddedIdProperties != null
-				&& embeddedIdProperties.getTimeUUIDComponents().contains(
-						componentName);
+		return embeddedIdProperties != null && embeddedIdProperties.getTimeUUIDComponents().contains(componentName);
 	}
 
 	public String getOrderingComponent() {
@@ -140,6 +170,10 @@ public class PropertyMeta {
 		return type.isEmbeddedId();
 	}
 
+	public boolean isCompositePartitionKey() {
+		return embeddedIdProperties != null && embeddedIdProperties.isCompositePartitionKey();
+	}
+
 	public ConsistencyLevel getReadConsistencyLevel() {
 		return consistencyLevels != null ? consistencyLevels.left : null;
 	}
@@ -149,68 +183,55 @@ public class PropertyMeta {
 	}
 
 	public Object decode(Object cassandraValue) {
-		return cassandraValue == null ? null : transcoder.decode(this,
-				cassandraValue);
+		return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
 	}
 
 	public Object decodeKey(Object cassandraValue) {
-		return cassandraValue == null ? null : transcoder.decodeKey(this,
-				cassandraValue);
+		return cassandraValue == null ? null : transcoder.decodeKey(this, cassandraValue);
 	}
 
 	public List<Object> decode(List<?> cassandraValue) {
-		return cassandraValue == null ? null : transcoder.decode(this,
-				cassandraValue);
+		return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
 	}
 
 	public Set<Object> decode(Set<?> cassandraValue) {
-		return cassandraValue == null ? null : transcoder.decode(this,
-				cassandraValue);
+		return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
 	}
 
 	public Map<Object, Object> decode(Map<?, ?> cassandraValue) {
-		return cassandraValue == null ? null : transcoder.decode(this,
-				cassandraValue);
+		return cassandraValue == null ? null : transcoder.decode(this, cassandraValue);
 	}
 
 	public Object decodeFromComponents(List<?> components) {
-		return components == null ? null : transcoder.decodeFromComponents(
-				this, components);
+		return components == null ? null : transcoder.decodeFromComponents(this, components);
 	}
 
 	public Object encode(Object entityValue) {
-		return entityValue == null ? null : transcoder
-				.encode(this, entityValue);
+		return entityValue == null ? null : transcoder.encode(this, entityValue);
 	}
 
 	public Object encodeKey(Object entityValue) {
-		return entityValue == null ? null : transcoder.encodeKey(this,
-				entityValue);
+		return entityValue == null ? null : transcoder.encodeKey(this, entityValue);
 	}
 
 	public <T> Object encode(List<T> entityValue) {
-		return entityValue == null ? null : transcoder
-				.encode(this, entityValue);
+		return entityValue == null ? null : transcoder.encode(this, entityValue);
 	}
 
 	public Set<Object> encode(Set<?> entityValue) {
-		return entityValue == null ? null : transcoder
-				.encode(this, entityValue);
+		return entityValue == null ? null : transcoder.encode(this, entityValue);
 	}
 
 	public Map<Object, Object> encode(Map<?, ?> entityValue) {
-		return entityValue == null ? null : transcoder
-				.encode(this, entityValue);
+		return entityValue == null ? null : transcoder.encode(this, entityValue);
 	}
 
 	public List<Object> encodeToComponents(Object compoundKey) {
-		return compoundKey == null ? null : transcoder.encodeToComponents(this,
-				compoundKey);
+		return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey);
 	}
 
 	public List<Object> encodeToComponents(List<Object> components) {
-		return components == null ? null : transcoder.encodeToComponents(this,
-				components);
+		return components == null ? null : transcoder.encodeToComponents(this, components);
 	}
 
 	public String forceEncodeToJSON(Object object) {
@@ -229,9 +250,7 @@ public class PropertyMeta {
 		if (type.isId()) {
 			return invoker.getPrimaryKey(entity, this);
 		} else {
-			throw new IllegalStateException(
-					"Cannot get primary key on a non id field '" + propertyName
-							+ "'");
+			throw new IllegalStateException("Cannot get primary key on a non id field '" + propertyName + "'");
 		}
 	}
 
@@ -239,9 +258,8 @@ public class PropertyMeta {
 		if (type.isEmbeddedId()) {
 			return invoker.getPartitionKey(compoundKey, this);
 		} else {
-			throw new IllegalStateException(
-					"Cannot get partition key on a non embedded id field '"
-							+ propertyName + "'");
+			throw new IllegalStateException("Cannot get partition key on a non embedded id field '" + propertyName
+					+ "'");
 		}
 	}
 
@@ -249,14 +267,13 @@ public class PropertyMeta {
 		return invoker.instanciate(valueClass);
 	}
 
-	Object instanciateEmbeddedIdWithPartitionKey(Object partitionKey) {
+	Object instanciateEmbeddedIdWithPartitionKey(List<Object> partitionComponents) {
 		if (type.isEmbeddedId()) {
-			return invoker.instanciateEmbeddedIdWithPartitionKey(this,
-					partitionKey);
+			return invoker.instanciateEmbeddedIdWithPartitionComponents(this, partitionComponents);
 		} else {
 			throw new IllegalStateException(
-					"Cannot instanciate embedded id with partition key on a non embedded id field '"
-							+ propertyName + "'");
+					"Cannot instanciate embedded id with partition key on a non embedded id field '" + propertyName
+							+ "'");
 		}
 	}
 
@@ -341,8 +358,7 @@ public class PropertyMeta {
 		return embeddedIdProperties;
 	}
 
-	public void setEmbeddedIdProperties(
-			EmbeddedIdProperties embeddedIdProperties) {
+	public void setEmbeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
 		this.embeddedIdProperties = embeddedIdProperties;
 	}
 
@@ -362,8 +378,7 @@ public class PropertyMeta {
 		this.counterProperties = counterProperties;
 	}
 
-	public void setConsistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 	}
 
@@ -401,12 +416,9 @@ public class PropertyMeta {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass()).add("type", type)
-				.add("entityClassName", entityClassName)
-				.add("propertyName", propertyName).add("keyClass", keyClass)
-				.add("valueClass", valueClass)
-				.add("counterProperties", counterProperties)
-				.add("embeddedIdProperties", embeddedIdProperties)
+		return Objects.toStringHelper(this.getClass()).add("type", type).add("entityClassName", entityClassName)
+				.add("propertyName", propertyName).add("keyClass", keyClass).add("valueClass", valueClass)
+				.add("counterProperties", counterProperties).add("embeddedIdProperties", embeddedIdProperties)
 				.add("consistencyLevels", consistencyLevels).toString();
 	}
 
@@ -424,7 +436,6 @@ public class PropertyMeta {
 		PropertyMeta other = (PropertyMeta) obj;
 
 		return Objects.equal(entityClassName, other.getEntityClassName())
-				&& Objects.equal(propertyName, other.getPropertyName())
-				&& Objects.equal(type, other.type());
+				&& Objects.equal(propertyName, other.getPropertyName()) && Objects.equal(type, other.type());
 	}
 }

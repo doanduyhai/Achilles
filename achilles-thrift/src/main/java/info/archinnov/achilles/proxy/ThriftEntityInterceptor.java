@@ -29,8 +29,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import me.prettyprint.hector.api.beans.Composite;
 
-public class ThriftEntityInterceptor<T> extends
-		EntityInterceptor<ThriftPersistenceContext, T> {
+public class ThriftEntityInterceptor<T> extends EntityInterceptor<ThriftPersistenceContext, T> {
 
 	private ThriftCompositeFactory thriftCompositeFactory = new ThriftCompositeFactory();
 
@@ -46,29 +45,24 @@ public class ThriftEntityInterceptor<T> extends
 		Object rowKey;
 		Composite comp;
 		ThriftAbstractDao counterDao;
-		CounterProperties counterProperties = propertyMeta
-				.getCounterProperties();
+		CounterProperties counterProperties = propertyMeta.getCounterProperties();
 		PropertyMeta idMeta = counterProperties.getIdMeta();
 		if (context.isClusteredEntity()) {
 			rowKey = idMeta.getPartitionKey(primaryKey);
-			comp = thriftCompositeFactory.createBaseForClusteredGet(primaryKey,
-					idMeta);
+			comp = thriftCompositeFactory.createBaseForClusteredGet(primaryKey, idMeta);
 			counterDao = context.getWideRowDao();
 		} else {
-			rowKey = thriftCompositeFactory.createKeyForCounter(
-					counterProperties.getFqcn(), primaryKey, idMeta);
+			rowKey = thriftCompositeFactory.createRowKeyForCounter(counterProperties.getFqcn(), primaryKey, idMeta);
 			comp = thriftCompositeFactory.createBaseForCounterGet(propertyMeta);
 			counterDao = context.getCounterDao();
 		}
 
-		ConsistencyLevel consistencyLevel = context.getConsistencyLevel()
-				.isPresent() ? context.getConsistencyLevel().get()
-				: propertyMeta.getReadConsistencyLevel();
+		ConsistencyLevel consistencyLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel()
+				.get() : propertyMeta.getReadConsistencyLevel();
 
 		result = ThriftCounterWrapperBuilder.builder(context)
-				//
-				.counterDao(counterDao).columnName(comp)
-				.consistencyLevel(consistencyLevel).key(rowKey).build();
+		//
+				.counterDao(counterDao).columnName(comp).consistencyLevel(consistencyLevel).key(rowKey).build();
 		return result;
 	}
 }

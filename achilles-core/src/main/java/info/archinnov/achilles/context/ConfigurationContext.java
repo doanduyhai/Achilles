@@ -40,8 +40,7 @@ public class ConfigurationContext {
 		return consistencyPolicy;
 	}
 
-	public void setConsistencyPolicy(
-			AchillesConsistencyLevelPolicy consistencyPolicy) {
+	public void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy) {
 		this.consistencyPolicy = consistencyPolicy;
 	}
 

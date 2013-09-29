@@ -22,10 +22,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MapEntryWrapper extends AbstractWrapper implements
-		Map.Entry<Object, Object> {
-	private static final Logger log = LoggerFactory
-			.getLogger(MapEntryWrapper.class);
+public class MapEntryWrapper extends AbstractWrapper implements Map.Entry<Object, Object> {
+	private static final Logger log = LoggerFactory.getLogger(MapEntryWrapper.class);
 
 	private final Map.Entry<Object, Object> target;
 
@@ -45,10 +43,8 @@ public class MapEntryWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object setValue(Object value) {
-		log.trace(
-				"Mark map entry property {} of entity class {} dirty upon element set",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark map entry property {} of entity class {} dirty upon element set",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		Object result = this.target.setValue(proxifier.unwrap(value));
 		this.markDirty();
 		return result;

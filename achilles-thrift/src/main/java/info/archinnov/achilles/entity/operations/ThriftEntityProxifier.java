@@ -23,15 +23,12 @@ import info.archinnov.achilles.proxy.ThriftEntityInterceptorBuilder;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-public class ThriftEntityProxifier extends
-		EntityProxifier<ThriftPersistenceContext> {
+public class ThriftEntityProxifier extends EntityProxifier<ThriftPersistenceContext> {
 
 	@Override
-	public <T> ThriftEntityInterceptor<T> buildInterceptor(
-			ThriftPersistenceContext context, T entity,
+	public <T> ThriftEntityInterceptor<T> buildInterceptor(ThriftPersistenceContext context, T entity,
 			Set<Method> alreadyLoaded) {
-		return ThriftEntityInterceptorBuilder.builder(context, entity)
-				.alreadyLoaded(alreadyLoaded).build();
+		return ThriftEntityInterceptorBuilder.builder(context, entity).alreadyLoaded(alreadyLoaded).build();
 	}
 
 }

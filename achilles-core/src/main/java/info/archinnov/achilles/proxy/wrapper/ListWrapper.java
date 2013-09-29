@@ -27,8 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ListWrapper extends CollectionWrapper implements List<Object> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ListWrapper.class);
+	private static final Logger log = LoggerFactory.getLogger(ListWrapper.class);
 
 	public ListWrapper(List<Object> target) {
 		super(target);
@@ -36,23 +35,18 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public void add(int index, Object arg1) {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element addition at index {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName(), index);
+		log.trace("Mark list property {} of entity class {} dirty upon element addition at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
 		((List<Object>) super.target).add(index, proxifier.unwrap(arg1));
 		super.markDirty();
 	}
 
 	@Override
 	public boolean addAll(int arg0, Collection<? extends Object> arg1) {
-		boolean result = ((List<Object>) super.target).addAll(arg0,
-				proxifier.unwrap(arg1));
+		boolean result = ((List<Object>) super.target).addAll(arg0, proxifier.unwrap(arg1));
 		if (result) {
-			log.trace(
-					"Mark list property {} of entity class {} dirty upon elements addition",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark list property {} of entity class {} dirty upon elements addition",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			super.markDirty();
 		}
 		return result;
@@ -60,10 +54,8 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public Object get(int index) {
-		log.trace(
-				"Return element at index {} for list property {} of entity class {}",
-				index, propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Return element at index {} for list property {} of entity class {}", index,
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return ((List<Object>) super.target).get(index);
 	}
 
@@ -79,42 +71,34 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public ListIterator<Object> listIterator() {
-		ListIterator<Object> target = ((List<Object>) super.target)
-				.listIterator();
+		ListIterator<Object> target = ((List<Object>) super.target).listIterator();
 
-		log.trace(
-				"Build iterator wrapper for list property {} of entity class {}",
-				propertyMeta.getPropertyName(),
+		log.trace("Build iterator wrapper for list property {} of entity class {}", propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
 
 		return ListIteratorWrapperBuilder
 				//
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 	}
 
 	@Override
 	public ListIterator<Object> listIterator(int index) {
-		ListIterator<Object> target = ((List<Object>) super.target)
-				.listIterator(index);
+		ListIterator<Object> target = ((List<Object>) super.target).listIterator(index);
 
-		log.trace(
-				"Build iterator wrapper for list property {} of entity class {} at index {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName(), index);
+		log.trace("Build iterator wrapper for list property {} of entity class {} at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
 
 		return ListIteratorWrapperBuilder
 				//
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 	}
 
 	@Override
 	public Object remove(int index) {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element removal at index {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName(), index);
+		log.trace("Mark list property {} of entity class {} dirty upon element removal at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
 
 		Object result = ((List<Object>) super.target).remove(index);
 		super.markDirty();
@@ -123,13 +107,10 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public Object set(int index, Object arg1) {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element set at index {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark list property {} of entity class {} dirty upon element set at index {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		Object result = ((List<Object>) super.target).set(index,
-				proxifier.unwrap(arg1));
+		Object result = ((List<Object>) super.target).set(index, proxifier.unwrap(arg1));
 		super.markDirty();
 		return result;
 	}
@@ -138,15 +119,13 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 	public List<Object> subList(int from, int to) {
 		List<Object> target = ((List<Object>) super.target).subList(from, to);
 
-		log.trace(
-				"Build sublist wrapper for list property {} of entity class {} between index {} and {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName(), from, to);
+		log.trace("Build sublist wrapper for list property {} of entity class {} between index {} and {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), from, to);
 
 		return ListWrapperBuilder
 				//
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 	}
 
 	@Override

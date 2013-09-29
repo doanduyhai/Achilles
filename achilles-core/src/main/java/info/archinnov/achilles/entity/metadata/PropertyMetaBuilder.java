@@ -32,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertyMetaBuilder {
-	private static final Logger log = LoggerFactory
-			.getLogger(PropertyMetaBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertyMetaBuilder.class);
 
 	private PropertyType type;
 	private String propertyName;
@@ -66,8 +65,7 @@ public class PropertyMetaBuilder {
 	}
 
 	public PropertyMeta build(Class<?> keyClass, Class<?> valueClass) {
-		log.debug("Build propertyMeta for property {} of entity class {}",
-				propertyName, entityClassName);
+		log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
 		PropertyMeta meta = null;
 		boolean isCompound = embeddedIdProperties == null ? false : true;
@@ -99,20 +97,17 @@ public class PropertyMetaBuilder {
 		return this;
 	}
 
-	public PropertyMetaBuilder embeddedIdProperties(
-			EmbeddedIdProperties embeddedIdProperties) {
+	public PropertyMetaBuilder embeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
 		this.embeddedIdProperties = embeddedIdProperties;
 		return this;
 	}
 
-	public PropertyMetaBuilder counterProperties(
-			CounterProperties counterProperties) {
+	public PropertyMetaBuilder counterProperties(CounterProperties counterProperties) {
 		this.counterProperties = counterProperties;
 		return this;
 	}
 
-	public PropertyMetaBuilder consistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public PropertyMetaBuilder consistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 		return this;
 	}

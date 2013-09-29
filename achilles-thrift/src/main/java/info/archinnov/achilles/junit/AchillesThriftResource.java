@@ -53,11 +53,9 @@ public class AchillesThriftResource extends AchillesTestResource {
 	public AchillesThriftResource(String entityPackages, String... tables) {
 		super(tables);
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
-		server = new ThriftEmbeddedServer(true, entityPackages,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new ThriftEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
@@ -81,15 +79,12 @@ public class AchillesThriftResource extends AchillesTestResource {
 	 *            list of tables to truncate before, after or before and after
 	 *            tests, depending on the 'cleanUpSteps' parameters
 	 */
-	public AchillesThriftResource(String entityPackages, Steps cleanUpSteps,
-			String... tables) {
+	public AchillesThriftResource(String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
-		server = new ThriftEmbeddedServer(true, entityPackages,
-				CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new ThriftEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
@@ -151,24 +146,18 @@ public class AchillesThriftResource extends AchillesTestResource {
 		}
 	}
 
-	public <K> ThriftGenericEntityDao getEntityDao(String columnFamily,
-			Class<K> keyClass) {
-		return new ThriftGenericEntityDao(cluster, keyspace, columnFamily,
-				policy, Pair.create(keyClass, String.class));
+	public <K> ThriftGenericEntityDao getEntityDao(String columnFamily, Class<K> keyClass) {
+		return new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, Pair.create(keyClass, String.class));
 	}
 
-	public <K, V> ThriftGenericWideRowDao getColumnFamilyDao(
-			String columnFamily, Class<K> keyClass, Class<V> valueClass) {
+	public <K, V> ThriftGenericWideRowDao getColumnFamilyDao(String columnFamily, Class<K> keyClass, Class<V> valueClass) {
 
-		return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily,
-				policy, Pair.create(keyClass, valueClass));
+		return new ThriftGenericWideRowDao(cluster, keyspace, columnFamily, policy, Pair.create(keyClass, valueClass));
 	}
 
 	public ThriftCounterDao getCounterDao() {
-		Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair
-				.create(Composite.class, Long.class);
-		return new ThriftCounterDao(cluster, keyspace, policy,
-				rowkeyAndValueClasses);
+		Pair<Class<Composite>, Class<Long>> rowkeyAndValueClasses = Pair.create(Composite.class, Long.class);
+		return new ThriftCounterDao(cluster, keyspace, policy, rowkeyAndValueClasses);
 	}
 
 }

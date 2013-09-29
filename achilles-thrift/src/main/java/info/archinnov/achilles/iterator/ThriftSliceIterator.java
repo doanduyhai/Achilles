@@ -27,19 +27,16 @@ import me.prettyprint.hector.api.beans.Composite;
 import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.query.SliceQuery;
 
-public class ThriftSliceIterator<K, V> extends
-		ThriftAbstractSliceIterator<HColumn<Composite, V>> {
+public class ThriftSliceIterator<K, V> extends ThriftAbstractSliceIterator<HColumn<Composite, V>> {
 	private SliceQuery<K, Composite, V> query;
 
-	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceQuery<K, Composite, V> query, Composite start,
-			final Composite finish, boolean reversed) {
+	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy, String cf, SliceQuery<K, Composite, V> query,
+			Composite start, final Composite finish, boolean reversed) {
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceQuery<K, Composite, V> query, Composite start,
-			final Composite finish, boolean reversed, int count) {
+	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy, String cf, SliceQuery<K, Composite, V> query,
+			Composite start, final Composite finish, boolean reversed, int count) {
 		this(policy, cf, query, start, new ColumnSliceFinish() {
 			@Override
 			public Composite function() {
@@ -48,19 +45,16 @@ public class ThriftSliceIterator<K, V> extends
 		}, reversed, count);
 	}
 
-	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceQuery<K, Composite, V> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed) {
+	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy, String cf, SliceQuery<K, Composite, V> query,
+			Composite start, ColumnSliceFinish finish, boolean reversed) {
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceQuery<K, Composite, V> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed, int count) {
+	public ThriftSliceIterator(AchillesConsistencyLevelPolicy policy, String cf, SliceQuery<K, Composite, V> query,
+			Composite start, ColumnSliceFinish finish, boolean reversed, int count) {
 		super(policy, cf, start, finish, reversed, count);
 		this.query = query;
-		this.query.setRange(this.start, this.finish.function(), this.reversed,
-				this.count);
+		this.query.setRange(this.start, this.finish.function(), this.reversed, this.count);
 	}
 
 	@Override

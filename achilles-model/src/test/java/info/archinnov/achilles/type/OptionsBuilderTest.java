@@ -25,8 +25,7 @@ public class OptionsBuilderTest {
 
 	@Test
 	public void should_create_options_with_all_parameters() throws Exception {
-		Options options = OptionsBuilder.withConsistency(ALL).ttl(10)
-				.timestamp(100L);
+		Options options = OptionsBuilder.withConsistency(ALL).ttl(10).timestamp(100L);
 
 		assertThat(options.getConsistencyLevel().get()).isSameAs(ALL);
 		assertThat(options.getTtl().get()).isEqualTo(10);

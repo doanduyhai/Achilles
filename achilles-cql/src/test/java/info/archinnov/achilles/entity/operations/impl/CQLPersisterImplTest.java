@@ -70,8 +70,7 @@ public class CQLPersisterImplTest {
 
 	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Before
 	public void setUp() {
@@ -93,14 +92,12 @@ public class CQLPersisterImplTest {
 
 	@Test
 	public void should_persist_clustered_counter() throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 		Counter counter = CounterBuilder.incr();
 
 		when(context.getFirstMeta()).thenReturn(counterMeta);
-		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
-				.thenReturn(counter);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(counter);
 
 		persisterImpl.persistClusteredCounter(context);
 
@@ -108,31 +105,26 @@ public class CQLPersisterImplTest {
 	}
 
 	@Test
-	public void should_exception_when_null_value_for_clustered_counter()
-			throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+	public void should_exception_when_null_value_for_clustered_counter() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
 		when(context.getFirstMeta()).thenReturn(counterMeta);
-		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
-				.thenReturn(null);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
 
 		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Cannot insert clustered counter entity '"
-				+ entity + "' with null clustered counter value");
+		exception.expectMessage("Cannot insert clustered counter entity '" + entity
+				+ "' with null clustered counter value");
 		persisterImpl.persistClusteredCounter(context);
 
 	}
 
 	@Test
 	public void should_persist_counters() throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
-				.thenReturn(CounterBuilder.incr(12L));
+		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(12L));
 
 		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
@@ -140,19 +132,15 @@ public class CQLPersisterImplTest {
 	}
 
 	@Test
-	public void should_not_persist_counters_when_no_counter_set()
-			throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+	public void should_not_persist_counters_when_no_counter_set() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, counterMeta.getGetter()))
-				.thenReturn(null);
+		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
 
 		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
-		verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta),
-				any(Long.class));
+		verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta), any(Long.class));
 	}
 
 	@Test
@@ -168,8 +156,7 @@ public class CQLPersisterImplTest {
 
 	@Test
 	public void should_remove_clustered_counter() throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().build();
 
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
@@ -182,13 +169,9 @@ public class CQLPersisterImplTest {
 
 	@Test
 	public void should_remove_linked_counters() throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class)
-				.field("user")
-				.type(COUNTER)
-				.invoker(invoker)
-				.consistencyLevels(
-						Pair.create(ConsistencyLevel.ONE, EACH_QUORUM)).build();
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user")
+				.type(COUNTER).invoker(invoker).consistencyLevels(Pair.create(ConsistencyLevel.ONE, EACH_QUORUM))
+				.build();
 
 		allMetas.add(counterMeta);
 

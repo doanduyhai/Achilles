@@ -16,25 +16,45 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-public class CompoundKeyWithNoAnnotation {
-	private String name;
+import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
-	private int rank;
+import java.util.UUID;
 
-	public String getName() {
-		return name;
+public class EmbeddedKeyWithCompoundPartitionKey {
+
+	@PartitionKey
+	@Order(1)
+	private Long id;
+
+	@PartitionKey
+	@Order(2)
+	private String type;
+
+	@Order(3)
+	private UUID date;
+
+	public Long getId() {
+		return id;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public int getRank() {
-		return rank;
+	public String getType() {
+		return type;
 	}
 
-	public void setRank(int rank) {
-		this.rank = rank;
+	public void setType(String type) {
+		this.type = type;
 	}
 
+	public UUID getDate() {
+		return date;
+	}
+
+	public void setDate(UUID date) {
+		this.date = date;
+	}
 }

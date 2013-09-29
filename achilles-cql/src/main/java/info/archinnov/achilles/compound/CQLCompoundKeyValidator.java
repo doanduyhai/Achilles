@@ -27,27 +27,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CQLCompoundKeyValidator extends CompoundKeyValidator {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLCompoundKeyValidator.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLCompoundKeyValidator.class);
 
 	@Override
-	public void validateComponentsForSliceQuery(List<Object> startComponents,
-			List<Object> endComponents, OrderingMode ordering) {
+	public void validateComponentsForSliceQuery(List<Object> startComponents, List<Object> endComponents,
+			OrderingMode ordering) {
 		String startDescription = StringUtils.join(startComponents, ",");
 		String endDescription = StringUtils.join(endComponents, ",");
 
-		log.trace("Check compound keys {} / {}", startDescription,
-				endDescription);
+		log.trace("Check compound keys {} / {}", startDescription, endDescription);
 
 		int startIndex = getLastNonNullIndex(startComponents);
 		int endIndex = getLastNonNullIndex(endComponents);
 
 		// No more than 1 non-null component difference between clustering keys
-		Validator
-				.validateTrue(
-						Math.abs(endIndex - startIndex) <= 1,
-						"There should be no more than 1 component difference between clustering keys: [[%s],[%s]",
-						startDescription, endDescription);
+		Validator.validateTrue(Math.abs(endIndex - startIndex) <= 1,
+				"There should be no more than 1 component difference between clustering keys: [[%s],[%s]",
+				startDescription, endDescription);
 
 		if (startIndex < 0 || endIndex < 0) {
 			return;
@@ -59,12 +55,9 @@ public class CQLCompoundKeyValidator extends CompoundKeyValidator {
 
 				int comparisonResult = comparator.compare(startComp, endComp);
 
-				Validator
-						.validateTrue(
-								comparisonResult == 0,
-								(i + 1)
-										+ "th component for clustering keys should be equal: [[%s],[%s]",
-								startDescription, endDescription);
+				Validator.validateTrue(comparisonResult == 0, (i + 1)
+						+ "th component for clustering keys should be equal: [[%s],[%s]", startDescription,
+						endDescription);
 			}
 
 			if (startIndex == endIndex) {

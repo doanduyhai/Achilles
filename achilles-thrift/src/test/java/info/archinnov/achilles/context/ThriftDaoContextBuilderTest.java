@@ -73,10 +73,8 @@ public class ThriftDaoContextBuilderTest {
 
 	@Test
 	public void should_build_counter_dao() throws Exception {
-		when(daoFactory.createCounterDao(cluster, keyspace, configContext))
-				.thenReturn(counterDao);
-		ThriftDaoContext context = builder.buildDao(cluster, keyspace,
-				entityMetaMap, configContext, true);
+		when(daoFactory.createCounterDao(cluster, keyspace, configContext)).thenReturn(counterDao);
+		ThriftDaoContext context = builder.buildDao(cluster, keyspace, entityMetaMap, configContext, true);
 
 		ThriftCounterDao counterDao = context.getCounterDao();
 		assertThat(counterDao).isSameAs(this.counterDao);
@@ -97,9 +95,8 @@ public class ThriftDaoContextBuilderTest {
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
 		builder.buildDao(cluster, keyspace, entityMetaMap, configContext, false);
-		verify(daoFactory).createDaosForEntity(eq(cluster), eq(keyspace),
-				eq(configContext), eq(entityMeta), any(Map.class),
-				any(Map.class));
+		verify(daoFactory).createDaosForEntity(eq(cluster), eq(keyspace), eq(configContext), eq(entityMeta),
+				any(Map.class), any(Map.class));
 
 	}
 
@@ -118,8 +115,8 @@ public class ThriftDaoContextBuilderTest {
 		entityMetaMap.put(CompleteBean.class, entityMeta);
 
 		builder.buildDao(cluster, keyspace, entityMetaMap, configContext, false);
-		verify(daoFactory).createClusteredEntityDao(eq(cluster), eq(keyspace),
-				eq(configContext), eq(entityMeta), any(Map.class));
+		verify(daoFactory).createClusteredEntityDao(eq(cluster), eq(keyspace), eq(configContext), eq(entityMeta),
+				any(Map.class));
 
 	}
 

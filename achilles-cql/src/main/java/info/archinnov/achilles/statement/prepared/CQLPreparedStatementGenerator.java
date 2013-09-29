@@ -43,18 +43,15 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.collect.FluentIterable;
 
 public class CQLPreparedStatementGenerator {
-	public PreparedStatement prepareInsertPS(Session session,
-			EntityMeta entityMeta) {
+	public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Insert insert = insertInto(entityMeta.getTableName());
 		prepareInsertPrimaryKey(idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable
-				.from(entityMeta.getAllMetasExceptIdMeta())
+		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(
-				nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
 		fieldMetas.remove(idMeta);
 
 		for (PropertyMeta pm : fieldMetas) {
@@ -63,19 +60,16 @@ public class CQLPreparedStatementGenerator {
 		return session.prepare(insert.getQueryString());
 	}
 
-	public PreparedStatement prepareInsertPSForClusteredCounter(
-			Session session, EntityMeta entityMeta) {
+	public PreparedStatement prepareInsertPSForClusteredCounter(Session session, EntityMeta entityMeta) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Insert insert = insertInto(entityMeta.getTableName());
 		prepareInsertPrimaryKey(idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable
-				.from(entityMeta.getAllMetasExceptIdMeta())
+		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(
-				nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
 		fieldMetas.remove(idMeta);
 
 		for (PropertyMeta pm : fieldMetas) {
@@ -84,16 +78,12 @@ public class CQLPreparedStatementGenerator {
 		return session.prepare(insert.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectFieldPS(Session session,
-			EntityMeta entityMeta, PropertyMeta pm) {
+	public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta, PropertyMeta pm) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		if (pm.isCounter()) {
-			throw new IllegalArgumentException(
-					"Cannot prepare statement for property '"
-							+ pm.getPropertyName() + "' of entity '"
-							+ entityMeta.getClassName()
-							+ "' because it is a counter type");
+			throw new IllegalArgumentException("Cannot prepare statement for property '" + pm.getPropertyName()
+					+ "' of entity '" + entityMeta.getClassName() + "' because it is a counter type");
 		} else {
 			Selection select = prepareSelectField(pm, select());
 			Select from = select.from(entityMeta.getTableName());
@@ -102,8 +92,7 @@ public class CQLPreparedStatementGenerator {
 		}
 	}
 
-	public PreparedStatement prepareUpdateFields(Session session,
-			EntityMeta entityMeta, List<PropertyMeta> pms) {
+	public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta, List<PropertyMeta> pms) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 
@@ -111,8 +100,7 @@ public class CQLPreparedStatementGenerator {
 		Assignments assignments = null;
 		for (PropertyMeta pm : pms) {
 			if (i == 0) {
-				assignments = update.with(set(pm.getPropertyName(),
-						bindMarker()));
+				assignments = update.with(set(pm.getPropertyName(), bindMarker()));
 			} else {
 				assignments.and(set(pm.getPropertyName(), bindMarker()));
 			}
@@ -122,8 +110,7 @@ public class CQLPreparedStatementGenerator {
 		return session.prepare(statement.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectEagerPS(Session session,
-			EntityMeta entityMeta) {
+	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Selection select = select();
@@ -137,8 +124,7 @@ public class CQLPreparedStatementGenerator {
 		return session.prepare(statement.getQueryString());
 	}
 
-	public Map<CQLQueryType, PreparedStatement> prepareSimpleCounterQueryMap(
-			Session session) {
+	public Map<CQLQueryType, PreparedStatement> prepareSimpleCounterQueryMap(Session session) {
 		StringBuilder incr = new StringBuilder();
 		incr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
 		incr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
@@ -177,27 +163,22 @@ public class CQLPreparedStatementGenerator {
 		return counterPSMap;
 	}
 
-	public Map<CQLQueryType, PreparedStatement> prepareClusteredCounterQueryMap(
-			Session session, EntityMeta meta) {
+	public Map<CQLQueryType, PreparedStatement> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
 		PropertyMeta idMeta = meta.getIdMeta();
 		PropertyMeta counterMeta = meta.getFirstMeta();
 		String tableName = meta.getTableName();
 		String counterName = counterMeta.getPropertyName();
 
-		Statement incrStatement = prepareWhereClauseForUpdate(idMeta,
-				update(tableName).with(incr(counterName, 100L)));
+		Statement incrStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(incr(counterName, 100L)));
 		String incr = incrStatement.getQueryString().replaceAll("100", "?");
 
-		Statement decrStatement = prepareWhereClauseForUpdate(idMeta,
-				update(tableName).with(decr(counterName, 100L)));
+		Statement decrStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(decr(counterName, 100L)));
 		String decr = decrStatement.getQueryString().replaceAll("100", "?");
 
-		Statement selectStatement = prepareWhereClauseForSelect(idMeta,
-				select(counterName).from(tableName));
+		Statement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
 		String select = selectStatement.getQueryString();
 
-		Statement deleteStatement = prepareWhereClauseForDelete(idMeta,
-				QueryBuilder.delete().from(tableName));
+		Statement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
 		String delete = deleteStatement.getQueryString();
 
 		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap<AchillesCounter.CQLQueryType, PreparedStatement>();
@@ -230,8 +211,7 @@ public class CQLPreparedStatementGenerator {
 		}
 	}
 
-	private Statement prepareWhereClauseForSelect(PropertyMeta idMeta,
-			Select from) {
+	private Statement prepareWhereClauseForSelect(PropertyMeta idMeta, Select from) {
 		Statement statement;
 		if (idMeta.isEmbeddedId()) {
 			Select.Where where = null;
@@ -251,8 +231,7 @@ public class CQLPreparedStatementGenerator {
 		return statement;
 	}
 
-	private Statement prepareWhereClauseForUpdate(PropertyMeta idMeta,
-			Assignments update) {
+	private Statement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update) {
 		Statement statement;
 		if (idMeta.isEmbeddedId()) {
 			Update.Where where = null;
@@ -267,28 +246,24 @@ public class CQLPreparedStatementGenerator {
 			}
 			statement = where;
 		} else {
-			statement = update
-					.where(eq(idMeta.getPropertyName(), bindMarker()));
+			statement = update.where(eq(idMeta.getPropertyName(), bindMarker()));
 		}
 		return statement;
 	}
 
-	public Map<String, PreparedStatement> prepareRemovePSs(Session session,
-			EntityMeta entityMeta) {
+	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
 
 		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
 		Statement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
-		removePSs.put(entityMeta.getTableName(),
-				session.prepare(mainStatement.getQueryString()));
+		removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
 
 		return removePSs;
 	}
 
-	private Statement prepareWhereClauseForDelete(PropertyMeta idMeta,
-			Delete mainFrom) {
+	private Statement prepareWhereClauseForDelete(PropertyMeta idMeta, Delete mainFrom) {
 		Statement mainStatement;
 		if (idMeta.isEmbeddedId()) {
 			Delete.Where where = null;
@@ -303,8 +278,7 @@ public class CQLPreparedStatementGenerator {
 			}
 			mainStatement = where;
 		} else {
-			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(),
-					bindMarker()));
+			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
 		}
 		return mainStatement;
 	}

@@ -27,8 +27,7 @@ public class CQLCounterWrapper implements Counter {
 	private PropertyMeta counterMeta;
 	private boolean clusteredCounter;
 
-	public CQLCounterWrapper(CQLPersistenceContext context,
-			PropertyMeta counterMeta) {
+	public CQLCounterWrapper(CQLPersistenceContext context, PropertyMeta counterMeta) {
 		this.context = context;
 		this.counterMeta = counterMeta;
 		this.clusteredCounter = context.getEntityMeta().isClusteredCounter();
@@ -72,8 +71,7 @@ public class CQLCounterWrapper implements Counter {
 	public void incr(Long increment) {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, increment,
-					writeLevel);
+			context.incrementClusteredCounter(counterMeta, increment, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, increment, writeLevel);
 	}
@@ -81,8 +79,7 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void incr(Long increment, ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, increment,
-					writeLevel);
+			context.incrementClusteredCounter(counterMeta, increment, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, increment, writeLevel);
 	}
@@ -108,8 +105,7 @@ public class CQLCounterWrapper implements Counter {
 	public void decr(Long decrement) {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, decrement,
-					writeLevel);
+			context.decrementClusteredCounter(counterMeta, decrement, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, decrement, writeLevel);
 	}
@@ -117,21 +113,18 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void decr(Long decrement, ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, decrement,
-					writeLevel);
+			context.decrementClusteredCounter(counterMeta, decrement, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, decrement, writeLevel);
 	}
 
 	private ConsistencyLevel getReadRuntimeConsistencyIfPossible() {
-		return context.getConsistencyLevel().isPresent() ? context
-				.getConsistencyLevel().get() : counterMeta
+		return context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : counterMeta
 				.getReadConsistencyLevel();
 	}
 
 	private ConsistencyLevel getWriteRuntimeConsistencyIfPossible() {
-		return context.getConsistencyLevel().isPresent() ? context
-				.getConsistencyLevel().get() : counterMeta
+		return context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : counterMeta
 				.getWriteConsistencyLevel();
 	}
 }

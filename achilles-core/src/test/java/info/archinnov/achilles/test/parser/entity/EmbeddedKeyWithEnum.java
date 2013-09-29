@@ -17,29 +17,29 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 
-import java.util.List;
+public class EmbeddedKeyWithEnum {
 
-public class CompoundKeyIncorrectType {
 	@Order(1)
-	private List<String> name;
+	private Long id;
 
 	@Order(2)
-	private int rank;
+	private PropertyType type;
 
-	public List<String> getName() {
-		return name;
+	public Long getId() {
+		return id;
 	}
 
-	public void setName(List<String> name) {
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public int getRank() {
-		return rank;
+	public PropertyType getType() {
+		return type;
 	}
 
-	public void setRank(int rank) {
-		this.rank = rank;
+	public void setType(PropertyType type) {
+		this.type = type;
 	}
 }

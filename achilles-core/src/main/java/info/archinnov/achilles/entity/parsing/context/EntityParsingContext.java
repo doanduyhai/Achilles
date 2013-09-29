@@ -100,8 +100,7 @@ public class EntityParsingContext {
 		this.clusteredEntity = wideRow;
 	}
 
-	public void setCurrentConsistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
+	public void setCurrentConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
 		this.currentConsistencyLevels = currentConsistencyLevels;
 	}
 

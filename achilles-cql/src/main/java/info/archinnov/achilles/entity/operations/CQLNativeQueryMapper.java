@@ -66,8 +66,7 @@ public class CQLNativeQueryMapper {
 			} else if (Set.class.isAssignableFrom(javaClass)) {
 				value = row.getSet(name, typeArguments.get(0).asJavaClass());
 			} else {
-				value = row.getMap(name, typeArguments.get(0).asJavaClass(),
-						typeArguments.get(1).asJavaClass());
+				value = row.getMap(name, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
 			}
 		} else {
 			value = cqlRowInvoker.invokeOnRowForType(row, javaClass, name);

@@ -28,10 +28,8 @@ public abstract class AchillesConsistencyLevelPolicy {
 	protected Map<String, ConsistencyLevel> readCfConsistencyLevels;
 	protected Map<String, ConsistencyLevel> writeCfConsistencyLevels;
 
-	protected AchillesConsistencyLevelPolicy(
-			ConsistencyLevel defaultGlobalReadConsistencyLevel,
-			ConsistencyLevel defaultGlobalWriteConsistencyLevel,
-			Map<String, ConsistencyLevel> readCfConsistencyLevels,
+	protected AchillesConsistencyLevelPolicy(ConsistencyLevel defaultGlobalReadConsistencyLevel,
+			ConsistencyLevel defaultGlobalWriteConsistencyLevel, Map<String, ConsistencyLevel> readCfConsistencyLevels,
 			Map<String, ConsistencyLevel> writeCfConsistencyLevels) {
 		this.defaultGlobalReadConsistencyLevel = defaultGlobalReadConsistencyLevel;
 		this.defaultGlobalWriteConsistencyLevel = defaultGlobalWriteConsistencyLevel;
@@ -40,22 +38,20 @@ public abstract class AchillesConsistencyLevelPolicy {
 	}
 
 	public ConsistencyLevel getConsistencyLevelForRead(String columnFamily) {
-		return readCfConsistencyLevels.get(columnFamily) != null ? readCfConsistencyLevels
-				.get(columnFamily) : defaultGlobalReadConsistencyLevel;
+		return readCfConsistencyLevels.get(columnFamily) != null ? readCfConsistencyLevels.get(columnFamily)
+				: defaultGlobalReadConsistencyLevel;
 	}
 
-	public void setConsistencyLevelForRead(ConsistencyLevel consistencyLevel,
-			String columnFamily) {
+	public void setConsistencyLevelForRead(ConsistencyLevel consistencyLevel, String columnFamily) {
 		readCfConsistencyLevels.put(columnFamily, consistencyLevel);
 	}
 
 	public ConsistencyLevel getConsistencyLevelForWrite(String columnFamily) {
-		return writeCfConsistencyLevels.get(columnFamily) != null ? writeCfConsistencyLevels
-				.get(columnFamily) : defaultGlobalWriteConsistencyLevel;
+		return writeCfConsistencyLevels.get(columnFamily) != null ? writeCfConsistencyLevels.get(columnFamily)
+				: defaultGlobalWriteConsistencyLevel;
 	}
 
-	public void setConsistencyLevelForWrite(ConsistencyLevel consistencyLevel,
-			String columnFamily) {
+	public void setConsistencyLevelForWrite(ConsistencyLevel consistencyLevel, String columnFamily) {
 		writeCfConsistencyLevels.put(columnFamily, consistencyLevel);
 	}
 
@@ -87,23 +83,19 @@ public abstract class AchillesConsistencyLevelPolicy {
 
 	public abstract void removeCurrentWriteLevel();
 
-	protected void setDefaultGlobalReadConsistencyLevel(
-			ConsistencyLevel defaultGlobalReadConsistencyLevel) {
+	protected void setDefaultGlobalReadConsistencyLevel(ConsistencyLevel defaultGlobalReadConsistencyLevel) {
 		this.defaultGlobalReadConsistencyLevel = defaultGlobalReadConsistencyLevel;
 	}
 
-	protected void setDefaultGlobalWriteConsistencyLevel(
-			ConsistencyLevel defaultGlobalWriteConsistencyLevel) {
+	protected void setDefaultGlobalWriteConsistencyLevel(ConsistencyLevel defaultGlobalWriteConsistencyLevel) {
 		this.defaultGlobalWriteConsistencyLevel = defaultGlobalWriteConsistencyLevel;
 	}
 
-	protected void setReadCfConsistencyLevels(
-			Map<String, ConsistencyLevel> readCfConsistencyLevels) {
+	protected void setReadCfConsistencyLevels(Map<String, ConsistencyLevel> readCfConsistencyLevels) {
 		this.readCfConsistencyLevels = readCfConsistencyLevels;
 	}
 
-	protected void setWriteCfConsistencyLevels(
-			Map<String, ConsistencyLevel> writeCfConsistencyLevels) {
+	protected void setWriteCfConsistencyLevels(Map<String, ConsistencyLevel> writeCfConsistencyLevels) {
 		this.writeCfConsistencyLevels = writeCfConsistencyLevels;
 	}
 

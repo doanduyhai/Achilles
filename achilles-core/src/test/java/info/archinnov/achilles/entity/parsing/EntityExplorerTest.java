@@ -31,8 +31,7 @@ public class EntityExplorerTest {
 
 	@Test
 	public void should_find_entities_from_multiple_packages() throws Exception {
-		List<Class<?>> entities = explorer.discoverEntities(Arrays.asList(
-				"info.archinnov.achilles.test.sample.entity",
+		List<Class<?>> entities = explorer.discoverEntities(Arrays.asList("info.archinnov.achilles.test.sample.entity",
 				"info.archinnov.achilles.test.more.entity"));
 
 		assertThat(entities).hasSize(3);
@@ -43,8 +42,7 @@ public class EntityExplorerTest {
 
 	@Test
 	public void should_find_entity_from_one_package() throws Exception {
-		List<Class<?>> entities = explorer.discoverEntities(Arrays
-				.asList("info.archinnov.achilles.test.more.entity"));
+		List<Class<?>> entities = explorer.discoverEntities(Arrays.asList("info.archinnov.achilles.test.more.entity"));
 		assertThat(entities).hasSize(1);
 		assertThat(entities).contains(Entity3.class);
 

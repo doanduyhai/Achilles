@@ -43,13 +43,11 @@ public class CacheManager {
 	};
 
 	public PreparedStatement getCacheForFieldSelect(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-			CQLPersistenceContext context, PropertyMeta pm) {
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, CQLPersistenceContext context, PropertyMeta pm) {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
-		StatementCacheKey cacheKey = new StatementCacheKey(
-				CacheType.SELECT_FIELD, entityMeta.getTableName(),
+		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD, entityMeta.getTableName(),
 				clusteredFields, entityClass);
 		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
 		if (ps == null) {
@@ -60,14 +58,12 @@ public class CacheManager {
 	}
 
 	public PreparedStatement getCacheForFieldsUpdate(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-			CQLPersistenceContext context, List<PropertyMeta> pms) {
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, CQLPersistenceContext context,
+			List<PropertyMeta> pms) {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
-		Set<String> fields = new HashSet<String>(Collections2.transform(pms,
-				propertyExtractor));
-		StatementCacheKey cacheKey = new StatementCacheKey(
-				CacheType.UPDATE_FIELDS, entityMeta.getTableName(), fields,
+		Set<String> fields = new HashSet<String>(Collections2.transform(pms, propertyExtractor));
+		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.UPDATE_FIELDS, entityMeta.getTableName(), fields,
 				entityClass);
 		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
 		if (ps == null) {

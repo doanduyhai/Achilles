@@ -28,8 +28,7 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 
-public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>>
-		extends FlushContext<T> {
+public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>> extends FlushContext<T> {
 	protected CQLDaoContext daoContext;
 
 	protected List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
@@ -37,14 +36,12 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 
 	protected ConsistencyLevel consistencyLevel;
 
-	public CQLAbstractFlushContext(CQLDaoContext daoContext,
-			ConsistencyLevel consistencyLevel) {
+	public CQLAbstractFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel) {
 		this.daoContext = daoContext;
 		this.consistencyLevel = consistencyLevel;
 	}
 
-	protected CQLAbstractFlushContext(CQLDaoContext daoContext,
-			List<BoundStatementWrapper> boundStatementWrappers,
+	protected CQLAbstractFlushContext(CQLDaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
 			ConsistencyLevel consistencyLevel) {
 		this.boundStatementWrappers = boundStatementWrappers;
 		this.daoContext = daoContext;
@@ -71,20 +68,17 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 
 	}
 
-	public void pushBoundStatement(BoundStatementWrapper bsWrapper,
-			ConsistencyLevel writeConsistencyLevel) {
+	public void pushBoundStatement(BoundStatementWrapper bsWrapper, ConsistencyLevel writeConsistencyLevel) {
 		BoundStatement boundStatement = bsWrapper.getBs();
 		if (consistencyLevel != null) {
 			boundStatement.setConsistencyLevel(getCQLLevel(consistencyLevel));
 		} else {
-			boundStatement
-					.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
+			boundStatement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
 		}
 		boundStatementWrappers.add(bsWrapper);
 	}
 
-	public void pushStatement(Statement statement,
-			ConsistencyLevel writeConsistencyLevel) {
+	public void pushStatement(Statement statement, ConsistencyLevel writeConsistencyLevel) {
 
 		if (consistencyLevel != null) {
 			statement.setConsistencyLevel(getCQLLevel(consistencyLevel));
@@ -94,8 +88,8 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 		statements.add(statement);
 	}
 
-	public ResultSet executeImmediateWithConsistency(Query query,
-			ConsistencyLevel readConsistencyLevel, Object... boundValues) {
+	public ResultSet executeImmediateWithConsistency(Query query, ConsistencyLevel readConsistencyLevel,
+			Object... boundValues) {
 		query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
 		return daoContext.execute(query, boundValues);
 	}

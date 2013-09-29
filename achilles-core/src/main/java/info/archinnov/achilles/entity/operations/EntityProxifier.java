@@ -34,8 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class EntityProxifier<CONTEXT extends PersistenceContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityProxifier.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
 	public Class<?> deriveBaseClass(Object entity) {
 		log.debug("Deriving base class for entity {} ", entity);
@@ -75,8 +74,7 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext> {
 
 		if (isProxy(proxy)) {
 			Factory factory = (Factory) proxy;
-			EntityInterceptor<CONTEXT, ?> interceptor = (EntityInterceptor<CONTEXT, ?>) factory
-					.getCallback(0);
+			EntityInterceptor<CONTEXT, ?> interceptor = (EntityInterceptor<CONTEXT, ?>) factory.getCallback(0);
 			return (T) interceptor.getTarget();
 		} else {
 			return proxy;
@@ -94,15 +92,13 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext> {
 		Factory factory = (Factory) proxy;
 
 		@SuppressWarnings("unchecked")
-		EntityInterceptor<CONTEXT, T> interceptor = (EntityInterceptor<CONTEXT, T>) factory
-				.getCallback(0);
+		EntityInterceptor<CONTEXT, T> interceptor = (EntityInterceptor<CONTEXT, T>) factory.getCallback(0);
 		return interceptor;
 	}
 
 	public <T> void ensureProxy(T proxy) {
 		if (!isProxy(proxy)) {
-			throw new IllegalStateException("The entity '" + proxy
-					+ "' is not in 'managed' state.");
+			throw new IllegalStateException("The entity '" + proxy + "' is not in 'managed' state.");
 		}
 	}
 
@@ -156,6 +152,6 @@ public abstract class EntityProxifier<CONTEXT extends PersistenceContext> {
 		return result;
 	}
 
-	public abstract <T> EntityInterceptor<CONTEXT, T> buildInterceptor(
-			CONTEXT context, T entity, Set<Method> alreadyLoaded);
+	public abstract <T> EntityInterceptor<CONTEXT, T> buildInterceptor(CONTEXT context, T entity,
+			Set<Method> alreadyLoaded);
 }

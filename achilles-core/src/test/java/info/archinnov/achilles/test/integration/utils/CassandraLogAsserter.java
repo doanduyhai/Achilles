@@ -39,24 +39,20 @@ public class CassandraLogAsserter {
 		storageProxyLogger.setLevel(Level.TRACE);
 		writerAppender = new WriterAppender();
 		writerAppender.setWriter(new OutputStreamWriter(logStream));
-		writerAppender.setLayout(new PatternLayout(
-				"%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
+		writerAppender.setLayout(new PatternLayout("%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"));
 		storageProxyLogger.addAppender(writerAppender);
 
 	}
 
-	public void assertConsistencyLevels(ConsistencyLevel read,
-			ConsistencyLevel write) {
-		String[] standardOutputs = StringUtils
-				.split(logStream.toString(), "\n");
+	public void assertConsistencyLevels(ConsistencyLevel read, ConsistencyLevel write) {
+		String[] standardOutputs = StringUtils.split(logStream.toString(), "\n");
 		try {
 			for (String logLine : standardOutputs) {
 				if (logLine.contains("fetchRows Command/ConsistencyLevel is")) {
 					assertThat(logLine).contains("/" + read.name());
 				}
 
-				if (logLine
-						.contains("mutate Mutations/ConsistencyLevel are [RowMutation")) {
+				if (logLine.contains("mutate Mutations/ConsistencyLevel are [RowMutation")) {
 					assertThat(logLine).contains("/" + write.name());
 				}
 			}

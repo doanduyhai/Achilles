@@ -41,8 +41,7 @@ public class EntityWithWriteOneAndReadLocalQuorumConsistency {
 	public EntityWithWriteOneAndReadLocalQuorumConsistency() {
 	}
 
-	public EntityWithWriteOneAndReadLocalQuorumConsistency(Long id,
-			String firstname, String lastname) {
+	public EntityWithWriteOneAndReadLocalQuorumConsistency(Long id, String firstname, String lastname) {
 		this.id = id;
 		this.firstname = firstname;
 		this.lastname = lastname;

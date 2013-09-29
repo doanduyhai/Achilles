@@ -23,10 +23,10 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
+import com.google.common.collect.ImmutableList;
 
 public class SliceQuery<T> {
 	public static final int DEFAULT_LIMIT = 100;
@@ -34,9 +34,9 @@ public class SliceQuery<T> {
 
 	private Class<T> entityClass;
 	private EntityMeta meta;
-	private Object partitionKey;
-	private List<Object> clusteringsFrom;
-	private List<Object> clusteringsTo;
+	private List<Object> partitionComponents;
+	private List<Object> clusteringsFrom = new ArrayList<Object>();
+	private List<Object> clusteringsTo = new ArrayList<Object>();
 	private OrderingMode ordering;
 	private BoundingMode bounding;
 	private ConsistencyLevel consistencyLevel;
@@ -45,32 +45,29 @@ public class SliceQuery<T> {
 	private boolean limitSet;
 	private boolean noComponent;
 
-	public SliceQuery(Class<T> entityClass, EntityMeta meta,
-			Object partitionKey, Object[] clusteringsFrom,
-			Object[] clusteringsTo, OrderingMode ordering,
-			BoundingMode bounding, ConsistencyLevel consistencyLevel,
-			int limit, int batchSize, boolean limitSet) {
+	public SliceQuery(Class<T> entityClass, EntityMeta meta, List<Object> partitionComponents,
+			List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering, BoundingMode bounding,
+			ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet) {
 
 		this.limitSet = limitSet;
-		Validator
-				.validateNotNull(
-						partitionKey,
-						"Partition key should be set for slice query for entity class '%s'",
-						entityClass.getCanonicalName());
+		Validator.validateNotNull(partitionComponents,
+				"Partition key should be set for slice query for entity class '%s'", entityClass.getCanonicalName());
 
 		this.entityClass = entityClass;
 		this.meta = meta;
 
-		this.partitionKey = partitionKey;
-		this.noComponent = clusteringsFrom == null && clusteringsTo == null;
+		this.partitionComponents = partitionComponents;
+		this.noComponent = clusteringsFrom.isEmpty() && clusteringsTo.isEmpty();
 
 		PropertyMeta idMeta = meta.getIdMeta();
-		List<Object> componentsFrom = Arrays.<Object> asList(ArrayUtils.add(
-				clusteringsFrom, 0, partitionKey));
+
+		List<Object> componentsFrom = ImmutableList.builder().addAll(partitionComponents).addAll(clusteringsFrom)
+				.build();
 		this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
-		List<Object> componentsTo = Arrays.<Object> asList(ArrayUtils.add(
-				clusteringsTo, 0, partitionKey));
+
+		List<Object> componentsTo = ImmutableList.builder().addAll(partitionComponents).addAll(clusteringsTo).build();
 		this.clusteringsTo = idMeta.encodeToComponents(componentsTo);
+
 		this.ordering = ordering;
 		this.bounding = bounding;
 		this.consistencyLevel = consistencyLevel;
@@ -86,8 +83,8 @@ public class SliceQuery<T> {
 		return meta;
 	}
 
-	public Object getPartitionKey() {
-		return partitionKey;
+	public List<Object> getPartitionComponents() {
+		return partitionComponents;
 	}
 
 	public List<Object> getClusteringsFrom() {

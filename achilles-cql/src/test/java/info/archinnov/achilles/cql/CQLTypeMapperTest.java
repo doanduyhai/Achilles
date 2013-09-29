@@ -112,8 +112,7 @@ public class CQLTypeMapperTest {
 	}
 
 	@Test
-	public void should_get_string_value_from_row_for_object_type()
-			throws Exception {
+	public void should_get_string_value_from_row_for_object_type() throws Exception {
 		Row row = mock(Row.class);
 		when(row.getString("object")).thenReturn("object_value");
 
@@ -125,14 +124,12 @@ public class CQLTypeMapperTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_return_long_as_compatible_java_type() throws Exception {
-		assertThat((Class) toCompatibleJavaType(Long.class)).isEqualTo(
-				Long.class);
+		assertThat((Class) toCompatibleJavaType(Long.class)).isEqualTo(Long.class);
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_return_String_as_compatible_java_type() throws Exception {
-		assertThat((Class) toCompatibleJavaType(PropertyType.class)).isEqualTo(
-				String.class);
+		assertThat((Class) toCompatibleJavaType(PropertyType.class)).isEqualTo(String.class);
 	}
 }

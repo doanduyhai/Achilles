@@ -42,82 +42,65 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftLoaderImpl {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftLoaderImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftLoaderImpl.class);
 
 	private ThriftEntityMapper mapper = new ThriftEntityMapper();
 	private ThriftCompositeFactory compositeFactory = new ThriftCompositeFactory();
 	private ThriftCompositeTransformer compositeTransformer = new ThriftCompositeTransformer();
 
 	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) {
-		log.trace("Loading entity of class {} with primary key {}", context
-				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+		log.trace("Loading entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 		T entity = null;
 		if (entityMeta.isClusteredEntity()) {
-			entity = loadClusteredEntity(context, entityClass, entityMeta,
-					primaryKey);
+			entity = loadClusteredEntity(context, entityClass, entityMeta, primaryKey);
 		} else {
-			List<Pair<Composite, String>> columns = context.getEntityDao()
-					.eagerFetchEntity(primaryKey);
+			Object rowKey = buildRowKey(context);
+			List<Pair<Composite, String>> columns = context.getEntityDao().eagerFetchEntity(rowKey);
 			if (columns.size() > 0) {
 				log.trace("Mapping data from Cassandra columns to entity");
 
 				entity = entityMeta.<T> instanciate();
-				mapper.setEagerPropertiesToEntity(primaryKey, columns,
-						entityMeta, entity);
-				entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+				mapper.setEagerPropertiesToEntity(primaryKey, columns, entityMeta, entity);
 			}
 		}
 		return entity;
 	}
 
-	public Object loadSimpleProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
+	public Object loadSimpleProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		Object rowKey = buildRowKey(context);
+
 		if (context.isClusteredEntity()) {
 			Object embeddedId = context.getPrimaryKey();
-			Object partitionKey = context.getPartitionKey();
 			PropertyMeta idMeta = context.getIdMeta();
-			Composite composite = compositeFactory.createBaseForClusteredGet(
-					embeddedId, idMeta);
+			Composite composite = compositeFactory.createBaseForClusteredGet(embeddedId, idMeta);
 			if (log.isTraceEnabled()) {
 				log.trace(
 						"Loading simple property {} of clustered entity {} from column family {} with primary key {} and composite column name {}",
-						propertyMeta.getPropertyName(), propertyMeta
-								.getEntityClassName(), context.getEntityMeta()
-								.getTableName(), context.getPrimaryKey(),
-						format(composite));
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context.getEntityMeta()
+								.getTableName(), context.getPrimaryKey(), format(composite));
 			}
-			Object value = context.getWideRowDao().getValue(partitionKey,
-					composite);
+			Object value = context.getWideRowDao().getValue(rowKey, composite);
 			return propertyMeta.decode(value);
 		} else {
-			Composite composite = compositeFactory
-					.createBaseForGet(propertyMeta);
+			Composite composite = compositeFactory.createBaseForGet(propertyMeta);
 			if (log.isTraceEnabled()) {
 				log.trace(
 						"Loading simple property {} of entity {} from column family {} with primary key {} and composite column name {}",
-						propertyMeta.getPropertyName(), propertyMeta
-								.getEntityClassName(), context.getEntityMeta()
-								.getTableName(), context.getPrimaryKey(),
-						format(composite));
+						propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), context.getEntityMeta()
+								.getTableName(), context.getPrimaryKey(), format(composite));
 			}
-			return propertyMeta.forceDecodeFromJSON((String) context
-					.getEntityDao()
-					.getValue(context.getPrimaryKey(), composite));
+			return propertyMeta.forceDecodeFromJSON((String) context.getEntityDao().getValue(rowKey, composite));
 		}
 	}
 
-	public List<Object> loadListProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		log.trace(
-				"Loading list property {} of class {} from column family {} with primary key {}",
-				propertyMeta.getPropertyName(), propertyMeta
-						.getEntityClassName(), context.getEntityMeta()
-						.getTableName(), context.getPrimaryKey());
-		List<Pair<Composite, String>> columns = fetchColumns(context,
-				propertyMeta);
+	public List<Object> loadListProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		log.trace("Loading list property {} of class {} from column family {} with primary key {}", propertyMeta
+				.getPropertyName(), propertyMeta.getEntityClassName(), context.getEntityMeta().getTableName(), context
+				.getPrimaryKey());
+		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		List<Object> list = null;
 		if (columns.size() > 0) {
 			list = new ArrayList<Object>();
@@ -129,15 +112,11 @@ public class ThriftLoaderImpl {
 		return list;
 	}
 
-	public Set<Object> loadSetProperty(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
-		log.trace(
-				"Loading set property {} of class {} from column family {} with primary key {}",
-				propertyMeta.getPropertyName(), propertyMeta
-						.getEntityClassName(), context.getEntityMeta()
-						.getTableName(), context.getPrimaryKey());
-		List<Pair<Composite, String>> columns = fetchColumns(context,
-				propertyMeta);
+	public Set<Object> loadSetProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		log.trace("Loading set property {} of class {} from column family {} with primary key {}", propertyMeta
+				.getPropertyName(), propertyMeta.getEntityClassName(), context.getEntityMeta().getTableName(), context
+				.getPrimaryKey());
+		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Set<Object> set = null;
 		if (columns.size() > 0) {
 			set = new HashSet<Object>();
@@ -148,22 +127,16 @@ public class ThriftLoaderImpl {
 		return set;
 	}
 
-	public Map<Object, Object> loadMapProperty(
-			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
-		log.trace(
-				"Loading map property {} of class {} from column family {} with primary key {}",
-				propertyMeta.getPropertyName(), propertyMeta
-						.getEntityClassName(), context.getEntityMeta()
-						.getTableName(), context.getPrimaryKey());
-		List<Pair<Composite, String>> columns = fetchColumns(context,
-				propertyMeta);
+	public Map<Object, Object> loadMapProperty(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+		log.trace("Loading map property {} of class {} from column family {} with primary key {}", propertyMeta
+				.getPropertyName(), propertyMeta.getEntityClassName(), context.getEntityMeta().getTableName(), context
+				.getPrimaryKey());
+		List<Pair<Composite, String>> columns = fetchColumns(context, propertyMeta);
 		Map<Object, Object> map = null;
 		if (columns.size() > 0) {
 			map = new HashMap<Object, Object>();
 			for (Pair<Composite, String> pair : columns) {
-				Object key = propertyMeta.forceDecodeFromJSON(
-						pair.left.get(2, STRING_SRZ),
-						propertyMeta.getKeyClass());
+				Object key = propertyMeta.forceDecodeFromJSON(pair.left.get(2, STRING_SRZ), propertyMeta.getKeyClass());
 				Object value = propertyMeta.decode(pair.right);
 				map.put(key, value);
 			}
@@ -171,50 +144,45 @@ public class ThriftLoaderImpl {
 		return map;
 	}
 
-	protected List<Pair<Composite, String>> fetchColumns(
-			ThriftPersistenceContext context, PropertyMeta propertyMeta) {
+	protected List<Pair<Composite, String>> fetchColumns(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 
-		Composite start = compositeFactory.createBaseForQuery(propertyMeta,
-				EQUAL);
-		Composite end = compositeFactory.createBaseForQuery(propertyMeta,
-				GREATER_THAN_EQUAL);
+		Composite start = compositeFactory.createBaseForQuery(propertyMeta, EQUAL);
+		Composite end = compositeFactory.createBaseForQuery(propertyMeta, GREATER_THAN_EQUAL);
 		if (log.isTraceEnabled()) {
-			log.trace(
-					"Fetching columns from Cassandra with column names {} / {}",
-					format(start), format(end));
+			log.trace("Fetching columns from Cassandra with column names {} / {}", format(start), format(end));
 		}
-		List<Pair<Composite, String>> columns = context.getEntityDao()
-				.findColumnsRange(context.getPrimaryKey(), start, end, false,
-						Integer.MAX_VALUE);
+
+		Object rowKey = buildRowKey(context);
+
+		List<Pair<Composite, String>> columns = context.getEntityDao().findColumnsRange(rowKey, start, end, false,
+				Integer.MAX_VALUE);
 		return columns;
 	}
 
-	private <T> T loadClusteredEntity(ThriftPersistenceContext context,
-			Class<T> entityClass, EntityMeta entityMeta, Object primaryKey) {
+	private <T> T loadClusteredEntity(ThriftPersistenceContext context, Class<T> entityClass, EntityMeta entityMeta,
+			Object primaryKey) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
-		Composite composite = compositeFactory.createBaseForClusteredGet(
-				primaryKey, idMeta);
-		Object partitionKey = entityMeta.getPartitionKey(primaryKey);
+		Composite composite = compositeFactory.createBaseForClusteredGet(primaryKey, idMeta);
+		Object rowKey = buildRowKey(context);
 
 		T clusteredEntity;
 		if (entityMeta.isValueless()) {
-			HColumn<Composite, Object> column = context.getWideRowDao()
-					.getColumn(partitionKey, composite);
-			clusteredEntity = column != null ? compositeTransformer
-					.buildClusteredEntityWithIdOnly(entityClass, context,
-							column.getName().getComponents()) : null;
+			HColumn<Composite, Object> column = context.getWideRowDao().getColumn(rowKey, composite);
+			clusteredEntity = column != null ? compositeTransformer.buildClusteredEntityWithIdOnly(entityClass,
+					context, column.getName().getComponents()) : null;
 		} else if (entityMeta.isClusteredCounter()) {
-			HCounterColumn<Composite> counterColumn = context.getWideRowDao()
-					.getCounterColumn(partitionKey, composite);
-			clusteredEntity = counterColumn != null ? compositeTransformer
-					.buildClusteredEntityWithIdOnly(entityClass, context,
-							counterColumn.getName().getComponents()) : null;
+			HCounterColumn<Composite> counterColumn = context.getWideRowDao().getCounterColumn(rowKey, composite);
+			clusteredEntity = counterColumn != null ? compositeTransformer.buildClusteredEntityWithIdOnly(entityClass,
+					context, counterColumn.getName().getComponents()) : null;
 		} else {
-			HColumn<Composite, Object> column = context.getWideRowDao()
-					.getColumn(partitionKey, composite);
-			clusteredEntity = column != null ? compositeTransformer
-					.buildClusteredEntity(entityClass, context, column) : null;
+			HColumn<Composite, Object> column = context.getWideRowDao().getColumn(rowKey, composite);
+			clusteredEntity = column != null ? compositeTransformer.buildClusteredEntity(entityClass, context, column)
+					: null;
 		}
 		return clusteredEntity;
+	}
+
+	private Object buildRowKey(ThriftPersistenceContext context) {
+		return compositeFactory.buildRowKey(context);
 	}
 }

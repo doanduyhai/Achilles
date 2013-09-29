@@ -18,39 +18,28 @@ package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
 
-import javax.persistence.Column;
+import java.util.List;
 
-public class CompoundKey {
-
+public class EmbeddedKeyIncorrectType {
 	@Order(1)
-	@Column(name = "id")
-	private Long userId;
+	private List<String> name;
 
 	@Order(2)
-	@Column
-	private String name;
+	private int rank;
 
-	public CompoundKey() {
-	}
-
-	public CompoundKey(Long userId, String name) {
-		this.userId = userId;
-		this.name = name;
-	}
-
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	public String getName() {
+	public List<String> getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setName(List<String> name) {
 		this.name = name;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
 	}
 }

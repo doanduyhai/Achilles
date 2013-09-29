@@ -33,8 +33,8 @@ import org.junit.Test;
 public class InitializeIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean", "Tweet");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean", "Tweet");
 
 	private ThriftEntityManager em = resource.getEm();
 
@@ -44,9 +44,8 @@ public class InitializeIT {
 		tweet.setId(UUIDGen.getTimeUUID());
 		tweet.setContent("welcome");
 
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").label("label").age(45L).addFriends("foo", "bar")
-				.welcomeTweet(tweet).buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").label("label").age(45L)
+				.addFriends("foo", "bar").welcomeTweet(tweet).buid();
 
 		entity.setVersion(CounterBuilder.incr(11L));
 
@@ -60,16 +59,14 @@ public class InitializeIT {
 		assertThat(rawEntity.getLabel()).isEqualTo("label");
 		assertThat(rawEntity.getAge()).isEqualTo(45L);
 		assertThat(rawEntity.getFriends()).containsExactly("foo", "bar");
-		assertThat(rawEntity.getWelcomeTweet().getContent()).isEqualTo(
-				"welcome");
+		assertThat(rawEntity.getWelcomeTweet().getContent()).isEqualTo("welcome");
 		assertThat(rawEntity.getVersion()).isInstanceOf(CounterImpl.class);
 		assertThat(rawEntity.getVersion().get()).isEqualTo(11L);
 	}
 
 	@Test
 	public void should_initialize_counter_value() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
 		entity = em.merge(entity);
 

@@ -32,35 +32,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftDaoContextBuilder {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftDaoContextBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftDaoContextBuilder.class);
 
 	private ThriftDaoFactory daoFactory = new ThriftDaoFactory();
 
-	public ThriftDaoContext buildDao(Cluster cluster, Keyspace keyspace,
-			Map<Class<?>, EntityMeta> entityMetaMap,
+	public ThriftDaoContext buildDao(Cluster cluster, Keyspace keyspace, Map<Class<?>, EntityMeta> entityMetaMap,
 			ConfigurationContext configContext, boolean hasSimpleCounter) {
 
 		Map<String, ThriftGenericEntityDao> entityDaosMap = new HashMap<String, ThriftGenericEntityDao>();
 		Map<String, ThriftGenericWideRowDao> wideRowDaosMap = new HashMap<String, ThriftGenericWideRowDao>();
 		ThriftCounterDao thriftCounterDao = null;
 		if (hasSimpleCounter) {
-			thriftCounterDao = daoFactory.createCounterDao(cluster, keyspace,
-					configContext);
+			thriftCounterDao = daoFactory.createCounterDao(cluster, keyspace, configContext);
 			log.debug("Build achillesCounterCF dao");
 		}
 
 		for (EntityMeta entityMeta : entityMetaMap.values()) {
 			if (entityMeta.isClusteredEntity()) {
-				daoFactory.createClusteredEntityDao(cluster, keyspace,
-						configContext, entityMeta, wideRowDaosMap);
+				daoFactory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 			} else {
-				daoFactory.createDaosForEntity(cluster, keyspace,
-						configContext, entityMeta, entityDaosMap,
+				daoFactory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap,
 						wideRowDaosMap);
 			}
 		}
-		return new ThriftDaoContext(entityDaosMap, wideRowDaosMap,
-				thriftCounterDao);
+		return new ThriftDaoContext(entityDaosMap, wideRowDaosMap, thriftCounterDao);
 	}
 }

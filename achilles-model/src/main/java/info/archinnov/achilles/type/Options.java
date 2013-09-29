@@ -43,17 +43,14 @@ public class Options {
 
 	@Override
 	public String toString() {
-		return "Options [consistency=" + consistency + ", ttl=" + ttl
-				+ ", timestamp=" + timestamp + "]";
+		return "Options [consistency=" + consistency + ", ttl=" + ttl + ", timestamp=" + timestamp + "]";
 	}
 
 	public Options duplicateWithoutTtlAndTimestamp() {
 		return OptionsBuilder.withConsistency(consistency);
 	}
 
-	public Options duplicateWithNewConsistencyLevel(
-			ConsistencyLevel consistencyLevel) {
-		return OptionsBuilder.withConsistency(consistencyLevel).ttl(ttl)
-				.timestamp(timestamp);
+	public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
+		return OptionsBuilder.withConsistency(consistencyLevel).ttl(ttl).timestamp(timestamp);
 	}
 }

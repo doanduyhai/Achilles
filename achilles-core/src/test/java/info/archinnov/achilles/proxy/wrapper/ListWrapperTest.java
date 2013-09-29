@@ -127,8 +127,7 @@ public class ListWrapperTest {
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
-		ListIterator<Object> listIteratorWrapper = prepareListWrapper(target)
-				.listIterator();
+		ListIterator<Object> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
 		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
 		when(proxifier.unwrap("c")).thenReturn("c");

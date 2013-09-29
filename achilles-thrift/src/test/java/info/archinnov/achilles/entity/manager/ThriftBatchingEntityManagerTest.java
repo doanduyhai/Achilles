@@ -70,12 +70,9 @@ public class ThriftBatchingEntityManagerTest {
 
 	@Before
 	public void setUp() {
-		when(configContext.getConsistencyPolicy())
-				.thenReturn(consistencyPolicy);
-		em = new ThriftBatchingEntityManager(null, contextFactory, daoContext,
-				configContext);
-		Whitebox.setInternalState(em, ThriftBatchingFlushContext.class,
-				flushContext);
+		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
+		em = new ThriftBatchingEntityManager(null, contextFactory, daoContext, configContext);
+		Whitebox.setInternalState(em, ThriftBatchingFlushContext.class, flushContext);
 	}
 
 	@Test
@@ -106,8 +103,7 @@ public class ThriftBatchingEntityManagerTest {
 	}
 
 	@Test
-	public void should_exception_when_persist_with_consistency()
-			throws Exception {
+	public void should_exception_when_persist_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
@@ -125,8 +121,7 @@ public class ThriftBatchingEntityManagerTest {
 	}
 
 	@Test
-	public void should_exception_when_remove_with_consistency()
-			throws Exception {
+	public void should_exception_when_remove_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
@@ -144,8 +139,7 @@ public class ThriftBatchingEntityManagerTest {
 	}
 
 	@Test
-	public void should_exception_when_getReference_with_consistency()
-			throws Exception {
+	public void should_exception_when_getReference_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
@@ -154,8 +148,7 @@ public class ThriftBatchingEntityManagerTest {
 	}
 
 	@Test
-	public void should_exception_when_refresh_with_consistency()
-			throws Exception {
+	public void should_exception_when_refresh_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");

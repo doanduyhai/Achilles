@@ -21,8 +21,7 @@ import info.archinnov.achilles.proxy.wrapper.KeySetWrapper;
 
 import java.util.Set;
 
-public class KeySetWrapperBuilder extends
-		AbstractWrapperBuilder<KeySetWrapperBuilder> {
+public class KeySetWrapperBuilder extends AbstractWrapperBuilder<KeySetWrapperBuilder> {
 	private Set<Object> target;
 
 	public KeySetWrapperBuilder(PersistenceContext context, Set<Object> target) {
@@ -30,8 +29,7 @@ public class KeySetWrapperBuilder extends
 		this.target = target;
 	}
 
-	public static KeySetWrapperBuilder builder(PersistenceContext context,
-			Set<Object> target) {
+	public static KeySetWrapperBuilder builder(PersistenceContext context, Set<Object> target) {
 		return new KeySetWrapperBuilder(context, target);
 	}
 

@@ -71,8 +71,7 @@ public class ThriftArgumentExtractorTest {
 	}
 
 	@Test
-	public void should_init_cluster_from_hostname_and_clustername()
-			throws Exception {
+	public void should_init_cluster_from_hostname_and_clustername() throws Exception {
 		configMap.put(HOSTNAME_PARAM, "localhost:9160");
 		configMap.put(CLUSTER_NAME_PARAM, "Test Cluster");
 
@@ -84,34 +83,22 @@ public class ThriftArgumentExtractorTest {
 	}
 
 	@Test
-	public void should_exception_when_cluster_and_hostname_not_set()
-			throws Exception {
+	public void should_exception_when_cluster_and_hostname_not_set() throws Exception {
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Either '"
-						+ CLUSTER_PARAM
-						+ "' property or '"
-						+ HOSTNAME_PARAM
-						+ "'/'"
-						+ CLUSTER_NAME_PARAM
-						+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+		exception.expectMessage("Either '" + CLUSTER_PARAM + "' property or '" + HOSTNAME_PARAM + "'/'"
+				+ CLUSTER_NAME_PARAM
+				+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
 		extractor.initCluster(configMap);
 	}
 
 	@Test
-	public void should_exception_when_cluster_and_clustername_not_set()
-			throws Exception {
+	public void should_exception_when_cluster_and_clustername_not_set() throws Exception {
 		configMap.put(HOSTNAME_PARAM, "localhost:9160");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Either '"
-						+ CLUSTER_PARAM
-						+ "' property or '"
-						+ HOSTNAME_PARAM
-						+ "'/'"
-						+ CLUSTER_NAME_PARAM
-						+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+		exception.expectMessage("Either '" + CLUSTER_PARAM + "' property or '" + HOSTNAME_PARAM + "'/'"
+				+ CLUSTER_NAME_PARAM
+				+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
 		extractor.initCluster(configMap);
 	}
 
@@ -129,8 +116,7 @@ public class ThriftArgumentExtractorTest {
 	public void should_init_keyspace_from_keyspacename() throws Exception {
 		configMap.put(KEYSPACE_NAME_PARAM, "achilles");
 
-		Cluster cluster = HFactory.getOrCreateCluster("Test Cluster",
-				new CassandraHostConfigurator("localhost:9161"));
+		Cluster cluster = HFactory.getOrCreateCluster("Test Cluster", new CassandraHostConfigurator("localhost:9161"));
 
 		Keyspace actual = extractor.initKeyspace(cluster, policy, configMap);
 
@@ -140,15 +126,10 @@ public class ThriftArgumentExtractorTest {
 	}
 
 	@Test
-	public void should_exception_when_keyspace_and_keyspacename_not_set()
-			throws Exception {
+	public void should_exception_when_keyspace_and_keyspacename_not_set() throws Exception {
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Either '"
-						+ KEYSPACE_PARAM
-						+ "' property or '"
-						+ KEYSPACE_NAME_PARAM
-						+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+		exception.expectMessage("Either '" + KEYSPACE_PARAM + "' property or '" + KEYSPACE_NAME_PARAM
+				+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
 		extractor.initKeyspace(null, policy, configMap);
 	}
 }

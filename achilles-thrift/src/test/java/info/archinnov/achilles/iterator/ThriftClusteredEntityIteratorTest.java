@@ -25,7 +25,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -64,19 +64,16 @@ public class ThriftClusteredEntityIteratorTest {
 
 	@Before
 	public void setUp() {
-		iterator = new ThriftClusteredEntityIterator<BeanWithClusteredId>(
-				entityClass, sliceIterator, context);
+		iterator = new ThriftClusteredEntityIterator<BeanWithClusteredId>(entityClass, sliceIterator, context);
 		iterator = spy(iterator);
-		Whitebox.setInternalState(iterator, ThriftCompositeTransformer.class,
-				transformer);
+		Whitebox.setInternalState(iterator, ThriftCompositeTransformer.class, transformer);
 	}
 
 	@Test
 	public void should_get_next() throws Exception {
 		Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).field("id")
 				.type(PropertyType.EMBEDDED_ID).build();
 		idMeta.setGetter(idGetter);
 
@@ -84,8 +81,7 @@ public class ThriftClusteredEntityIteratorTest {
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(meta.isValueless()).thenReturn(false);
 		when(sliceIterator.next()).thenReturn(hColumn);
-		when(transformer.buildClusteredEntity(entityClass, context, hColumn))
-				.thenReturn(entity);
+		when(transformer.buildClusteredEntity(entityClass, context, hColumn)).thenReturn(entity);
 		doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
 		assertThat(iterator.next()).isSameAs(entity);
 	}
@@ -96,8 +92,7 @@ public class ThriftClusteredEntityIteratorTest {
 		Composite composite = mock(Composite.class);
 		List<Component<?>> components = Arrays.asList();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 		idMeta.setGetter(idGetter);
 
 		when(context.isValueless()).thenReturn(true);
@@ -105,9 +100,7 @@ public class ThriftClusteredEntityIteratorTest {
 
 		when(hColumn.getName()).thenReturn(composite);
 		when(composite.getComponents()).thenReturn(components);
-		when(
-				transformer.buildClusteredEntityWithIdOnly(entityClass,
-						context, components)).thenReturn(entity);
+		when(transformer.buildClusteredEntityWithIdOnly(entityClass, context, components)).thenReturn(entity);
 
 		doReturn(entity).when(iterator).proxifyClusteredEntity(entity);
 

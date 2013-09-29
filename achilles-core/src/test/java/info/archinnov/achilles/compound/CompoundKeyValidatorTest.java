@@ -16,18 +16,16 @@
  */
 package info.archinnov.achilles.compound;
 
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.type.OrderingMode.*;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,161 +56,134 @@ public class CompoundKeyValidatorTest {
 
 	@Test
 	public void should_validate_partition_keys() throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class));
+		when(pm.getPartitionComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		validator.validatePartitionKey(pm, 11L, 13L);
+		validator.validatePartitionKey(pm, Arrays.<Object> asList(11L, "type"));
 	}
 
 	@Test
-	public void should_exception_when_no_partition_key_provided()
-			throws Exception {
+	public void should_exception_when_no_partition_key_provided() throws Exception {
 
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("There should be at least one partition key provided for querying on entity 'entityClass'");
+				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
-		validator.validatePartitionKey(pm, (Object[]) null);
+		validator.validatePartitionKey(pm, null);
 	}
 
 	@Test
-	public void should_exception_when_null_partition_key_provided()
-			throws Exception {
+	public void should_exception_when_null_partition_key_provided() throws Exception {
 
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("There should be at least one partition key provided for querying on entity 'entityClass'");
+				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
-		validator.validatePartitionKey(pm, new Object[0]);
+		validator.validatePartitionKey(pm, Arrays.<Object> asList());
 	}
 
 	@Test
-	public void should_exception_when_incorrect_type_of_partition_key_provided()
-			throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class));
+	public void should_exception_when_incorrect_type_of_partition_key_provided() throws Exception {
+		when(pm.getPartitionComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, Long.class));
 
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("The type 'java.lang.String' of partition key 'name' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Long'");
+				.expectMessage("The type 'java.lang.String' of partition key component 'name' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Long'");
 
-		validator.validatePartitionKey(pm, 11L, "name");
+		validator.validatePartitionKey(pm, Arrays.<Object> asList(11L, "name"));
 	}
 
 	@Test
 	public void should_validate_clustering_keys() throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class,
-						Integer.class));
+		when(pm.getClusteringComponentClasses()).thenReturn(Arrays.<Class<?>> asList(String.class, Integer.class));
 
-		validator.validateClusteringKeys(pm, "name", 13);
+		validator.validateClusteringKeys(pm, Arrays.<Object> asList("name", 13));
 	}
 
 	@Test
-	public void should_exception_when_no_clustering_key_provided()
-			throws Exception {
+	public void should_exception_when_no_clustering_key_provided() throws Exception {
 
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("There should be at least one clustering key provided for querying on entity 'entityClass'");
 
-		validator.validateClusteringKeys(pm, (Object[]) null);
+		validator.validateClusteringKeys(pm, null);
 	}
 
 	@Test
-	public void should_exception_when_wrong_type_provided_for_clustering_keys()
-			throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class,
-						Integer.class, UUID.class));
+	public void should_exception_when_wrong_type_provided_for_clustering_keys() throws Exception {
+		when(pm.getClusteringComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(String.class, Integer.class, UUID.class));
 
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("The type 'java.lang.Long' of clustering key '15' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Integer'");
 
-		validator.validateClusteringKeys(pm, "name", 15L, UUID.randomUUID());
+		validator.validateClusteringKeys(pm, Arrays.<Object> asList("name", 15L, UUID.randomUUID()));
 	}
 
 	@Test
-	public void should_exception_when_too_many_values_for_clustering_keys()
-			throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class,
-						Integer.class, UUID.class));
+	public void should_exception_when_too_many_values_for_clustering_keys() throws Exception {
+		when(pm.getClusteringComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(String.class, Integer.class, UUID.class));
 
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("There should be at most 3 value(s) of clustering component(s) provided for querying on entity 'entityClass'");
 
-		validator
-				.validateClusteringKeys(pm, "name", 15L, UUID.randomUUID(), 15);
+		validator.validateClusteringKeys(pm, Arrays.<Object> asList("name", 15L, UUID.randomUUID(), 15));
 	}
 
 	@Test
-	public void should_exception_when_component_not_comparable_for_clustering_key()
-			throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class,
-						Integer.class, UserBean.class));
+	public void should_exception_when_component_not_comparable_for_clustering_key() throws Exception {
+		when(pm.getClusteringComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(String.class, Integer.class, UserBean.class));
 
 		UserBean userBean = new UserBean();
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The type '"
-						+ UserBean.class.getCanonicalName()
-						+ "' of clustering key '"
-						+ userBean
-						+ "' for querying on entity 'entityClass' should implement the Comparable<T> interface");
+		exception.expectMessage("The type '" + UserBean.class.getCanonicalName() + "' of clustering key '" + userBean
+				+ "' for querying on entity 'entityClass' should implement the Comparable<T> interface");
 
-		validator.validateClusteringKeys(pm, "name", 15, userBean);
+		validator.validateClusteringKeys(pm, Arrays.<Object> asList("name", 15, userBean));
 	}
 
 	@Test
-	public void should_skip_validation_when_null_clustering_value()
-			throws Exception {
-		when(pm.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class,
-						Integer.class, UserBean.class));
+	public void should_skip_validation_when_null_clustering_value() throws Exception {
+		when(pm.getClusteringComponentClasses()).thenReturn(
+				Arrays.<Class<?>> asList(Long.class, String.class, Integer.class, UserBean.class));
 
-		validator.validateClusteringKeys(pm, null, null, null);
+		validator.validateClusteringKeys(pm, Arrays.<Object> asList(null, null, null));
 
 	}
 
 	@Test
-	public void should_exception_when_start_partition_key_null_for_query()
-			throws Exception {
+	public void should_exception_when_start_partition_key_null_for_query() throws Exception {
 		List<Object> start = Arrays.<Object> asList(null, "a");
 		List<Object> end = Arrays.<Object> asList(11L, "b");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Partition key should not be null for start clustering key : [null, a]");
+		exception.expectMessage("Partition key should not be null for start clustering key : [null, a]");
 
 		validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_end_partition_key_null_for_query()
-			throws Exception {
+	public void should_exception_when_end_partition_key_null_for_query() throws Exception {
 		List<Object> start = Arrays.<Object> asList(11L, "a");
 		List<Object> end = Arrays.<Object> asList(null, "b");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Partition key should not be null for end clustering key : [null, b]");
+		exception.expectMessage("Partition key should not be null for end clustering key : [null, b]");
 
 		validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_start_and_end_partition_keys_not_equal_for_query()
-			throws Exception {
+	public void should_exception_when_start_and_end_partition_keys_not_equal_for_query() throws Exception {
 		List<Object> start = Arrays.<Object> asList(11L, "a");
 		List<Object> end = Arrays.<Object> asList(12L, "b");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Partition key should be equal for start and end clustering keys : [[11, a],[12, b]]");
+		exception.expectMessage("Partition key should be equal for start and end clustering keys : [[11, a],[12, b]]");
 
 		validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
 	}
@@ -231,8 +202,7 @@ public class CompoundKeyValidatorTest {
 				return null;
 			}
 
-		}).when(validator).validateComponentsForSliceQuery(start, end,
-				ASCENDING);
+		}).when(validator).validateComponentsForSliceQuery(start, end, ASCENDING);
 
 		validator.validateComponentsForSliceQuery(pm, start, end, ASCENDING);
 
@@ -247,26 +217,17 @@ public class CompoundKeyValidatorTest {
 	}
 
 	@Test
-	public void should_return_last_non_null_index_when_all_components_not_null()
-			throws Exception {
-		assertThat(
-				validator.getLastNonNullIndex(Arrays.<Object> asList(11L,
-						"name", 12.0))).isEqualTo(2);
+	public void should_return_last_non_null_index_when_all_components_not_null() throws Exception {
+		assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, "name", 12.0))).isEqualTo(2);
 	}
 
 	@Test
-	public void should_return_last_non_null_index_when_some_components_are_null()
-			throws Exception {
-		assertThat(
-				validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null,
-						null))).isEqualTo(0);
+	public void should_return_last_non_null_index_when_some_components_are_null() throws Exception {
+		assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, null))).isEqualTo(0);
 	}
 
 	@Test
-	public void should_return_last_non_null_index_when_hole_in_component()
-			throws Exception {
-		assertThat(
-				validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null,
-						12))).isEqualTo(0);
+	public void should_return_last_non_null_index_when_hole_in_component() throws Exception {
+		assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, 12))).isEqualTo(0);
 	}
 }

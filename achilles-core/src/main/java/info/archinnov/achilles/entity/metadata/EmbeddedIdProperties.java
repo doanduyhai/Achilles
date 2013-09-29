@@ -16,89 +16,105 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.helper.LoggerHelper.fqcnToStringFn;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
-public class EmbeddedIdProperties {
-	private List<Class<?>> componentClasses;
-	private List<String> componentNames;
-	private List<Method> componentGetters;
-	private List<Method> componentSetters;
-	private List<String> timeUUIDComponents;
+public class EmbeddedIdProperties extends AbstractComponentProperties {
+
+	private final PartitionKeys partitionKeys;
+	private final ClusteringKeys clusteringKeys;
+	private final List<String> timeUUIDComponents;
+
+	public EmbeddedIdProperties(PartitionKeys partitionKeys, ClusteringKeys clusteringKeys,
+			List<Class<?>> componentClasses, List<String> componentNames, List<Method> componentGetters,
+			List<Method> componentSetters, List<String> timeUUIDComponents) {
+		super(componentClasses, componentNames, componentGetters, componentSetters);
+		this.partitionKeys = partitionKeys;
+		this.clusteringKeys = clusteringKeys;
+		this.timeUUIDComponents = timeUUIDComponents;
+	}
+
+	public boolean isCompositePartitionKey() {
+		return partitionKeys.isComposite();
+	}
+
+	public boolean isClustered() {
+		return clusteringKeys.isClustered();
+	}
 
 	public String getOrderingComponent() {
-		String component = null;
-		if (componentNames.size() > 1) {
-			return componentNames.get(1);
-		}
-		return component;
+		return clusteringKeys.getOrderingComponent();
 	}
 
 	public List<String> getClusteringComponentNames() {
-		return componentNames.subList(1, componentNames.size());
+		return clusteringKeys.getComponentNames();
 	}
 
 	public List<Class<?>> getClusteringComponentClasses() {
-		return componentClasses.subList(1, componentClasses.size());
+		return clusteringKeys.getComponentClasses();
 	}
 
+	public List<String> getPartitionComponentNames() {
+		return partitionKeys.getComponentNames();
+	}
+
+	public List<Class<?>> getPartitionComponentClasses() {
+		return partitionKeys.getComponentClasses();
+	}
+
+	public List<Method> getPartitionComponentSetters() {
+		return partitionKeys.getComponentSetters();
+	}
+
+	@Override
 	public List<Class<?>> getComponentClasses() {
 		return componentClasses;
 	}
 
-	public void setComponentClasses(List<Class<?>> componentClasses) {
-		this.componentClasses = componentClasses;
-	}
-
+	@Override
 	public List<Method> getComponentGetters() {
 		return componentGetters;
 	}
 
-	public void setComponentGetters(List<Method> componentGetters) {
-		this.componentGetters = componentGetters;
-	}
-
+	@Override
 	public List<Method> getComponentSetters() {
 		return componentSetters;
 	}
 
-	public void setComponentSetters(List<Method> componentSetters) {
-		this.componentSetters = componentSetters;
-	}
-
+	@Override
 	public List<String> getComponentNames() {
 		return componentNames;
-	}
-
-	public void setComponentNames(List<String> componentNames) {
-		this.componentNames = componentNames;
 	}
 
 	public List<String> getTimeUUIDComponents() {
 		return timeUUIDComponents;
 	}
 
-	public void setTimeUUIDComponents(List<String> timeUUIDComponents) {
-		this.timeUUIDComponents = timeUUIDComponents;
-	}
-
 	@Override
 	public String toString() {
 
-		return Objects
-				.toStringHelper(this.getClass())
-				.add("componentClasses",
-						StringUtils.join(Lists.transform(componentClasses,
-								fqcnToStringFn), ","))
-				.add("componentNames", componentNames).toString();
+		return Objects.toStringHelper(this.getClass()).add("partitionKeys", partitionKeys)
+				.add("clusteringKeys", clusteringKeys).toString();
 
 	}
 
+	public List<Object> extractPartitionComponents(List<Object> components) {
+		int partitionComponentsCount = partitionKeys.getComponentClasses().size();
+
+		Validator.validateTrue(components.size() >= partitionComponentsCount,
+				"Cannot extract composite partition key components from components list '%s'", components);
+		return components.subList(0, partitionComponentsCount);
+	}
+
+	public List<Object> extractClusteringComponents(List<Object> components) {
+		int partitionComponentsCount = partitionKeys.getComponentClasses().size();
+
+		Validator.validateTrue(components.size() >= partitionComponentsCount,
+				"Cannot extract clustering components from components list '%s'", components);
+		return components.subList(partitionComponentsCount, components.size());
+	}
 }

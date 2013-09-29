@@ -30,10 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.FluentIterable;
 
-public class CQLEntityPersister implements
-		EntityPersister<CQLPersistenceContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLEntityPersister.class);
+public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext> {
+	private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
 
 	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
@@ -51,14 +49,12 @@ public class CQLEntityPersister implements
 		}
 	}
 
-	private void persistEntity(CQLPersistenceContext context,
-			EntityMeta entityMeta) {
+	private void persistEntity(CQLPersistenceContext context, EntityMeta entityMeta) {
 		persisterImpl.persist(context);
 
 		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
 
-		Set<PropertyMeta> counterMetas = FluentIterable.from(allMetas)
-				.filter(counterType).toImmutableSet();
+		Set<PropertyMeta> counterMetas = FluentIterable.from(allMetas).filter(counterType).toImmutableSet();
 
 		persisterImpl.persistCounters(context, counterMetas);
 	}

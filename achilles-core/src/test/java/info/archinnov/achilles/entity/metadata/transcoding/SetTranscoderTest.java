@@ -31,13 +31,11 @@ import com.google.common.collect.Sets;
 
 public class SetTranscoderTest {
 
-	private SetTranscoder transcoder = new SetTranscoder(
-			mock(ObjectMapper.class));
+	private SetTranscoder transcoder = new SetTranscoder(mock(ObjectMapper.class));
 
 	@Test
 	public void should_encode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
 		Set actual = transcoder.encode(pm, Sets.newHashSet("value"));
 
@@ -46,8 +44,7 @@ public class SetTranscoderTest {
 
 	@Test
 	public void should_decode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
 		Set actual = transcoder.decode(pm, Sets.newHashSet("value"));
 

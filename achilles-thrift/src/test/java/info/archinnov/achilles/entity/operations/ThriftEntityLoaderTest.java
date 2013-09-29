@@ -96,16 +96,14 @@ public class ThriftEntityLoaderTest {
 	@Captor
 	ArgumentCaptor<Long> idCaptor;
 
-	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private ThriftPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {
 		context = ThriftPersistenceContextTestBuilder
-				.context(entityMeta, thriftCounterDao, policy,
-						CompleteBean.class, bean.getId()).entity(bean).build();
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, bean.getId()).entity(bean).build();
 	}
 
 	@Test
@@ -130,8 +128,7 @@ public class ThriftEntityLoaderTest {
 
 		assertThat(actual).isNotSameAs(bean);
 
-		verify(idMeta).setValueToField(any(CompleteBean.class),
-				eq(bean.getId()));
+		verify(idMeta).setValueToField(any(CompleteBean.class), eq(bean.getId()));
 		verifyZeroInteractions(loaderImpl);
 
 	}
@@ -140,8 +137,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_simple() throws Exception {
 		String value = "val";
 		when(propertyMeta.type()).thenReturn(SIMPLE);
-		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -152,8 +148,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_lazy_simple() throws Exception {
 		String value = "val";
 		when(propertyMeta.type()).thenReturn(LAZY_SIMPLE);
-		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadSimpleProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -164,8 +159,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_list() throws Exception {
 		List<Object> value = Arrays.<Object> asList("val");
 		when(propertyMeta.type()).thenReturn(LIST);
-		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -176,8 +170,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_lazy_list() throws Exception {
 		List<Object> value = Arrays.<Object> asList("val");
 		when(propertyMeta.type()).thenReturn(LAZY_LIST);
-		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadListProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -188,8 +181,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_set() throws Exception {
 		Set<Object> value = Sets.<Object> newHashSet("val");
 		when(propertyMeta.type()).thenReturn(SET);
-		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -200,8 +192,7 @@ public class ThriftEntityLoaderTest {
 	public void should_load_lazy_set() throws Exception {
 		Set<Object> value = Sets.<Object> newHashSet("val");
 		when(propertyMeta.type()).thenReturn(LAZY_SET);
-		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadSetProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -213,8 +204,7 @@ public class ThriftEntityLoaderTest {
 		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
 
 		when(propertyMeta.type()).thenReturn(MAP);
-		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 
@@ -226,8 +216,7 @@ public class ThriftEntityLoaderTest {
 		Map<Object, Object> value = ImmutableMap.<Object, Object> of(11, "val");
 
 		when(propertyMeta.type()).thenReturn(LAZY_MAP);
-		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(
-				value);
+		when(loaderImpl.loadMapProperty(context, propertyMeta)).thenReturn(value);
 
 		loader.loadPropertyIntoObject(context, bean, propertyMeta);
 

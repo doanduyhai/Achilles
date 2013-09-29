@@ -36,8 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftPersistenceContext extends PersistenceContext {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftPersistenceContext.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceContext.class);
 
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
 	private ThriftEntityLoader loader = new ThriftEntityLoader();
@@ -50,37 +49,27 @@ public class ThriftPersistenceContext extends PersistenceContext {
 	private ThriftGenericWideRowDao wideRowDao;
 	private ThriftAbstractFlushContext<?> flushContext;
 
-	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			ConfigurationContext configContext, //
-			ThriftDaoContext daoContext, //
-			ThriftAbstractFlushContext<?> flushContext, //
-			Object entity, Options options) {
+	public ThriftPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+			ThriftDaoContext daoContext, ThriftAbstractFlushContext<?> flushContext, Object entity, Options options) {
 		super(entityMeta, configContext, entity, flushContext, options);
-		log.trace("Create new persistence context for instance {} of class {}",
-				entity, entityMeta.getClassName());
+		log.trace("Create new persistence context for instance {} of class {}", entity, entityMeta.getClassName());
 
 		initCollaborators(daoContext, flushContext);
 		initDaos();
 	}
 
-	public ThriftPersistenceContext(EntityMeta entityMeta, //
-			ConfigurationContext configContext, //
-			ThriftDaoContext daoContext, //
-			ThriftAbstractFlushContext<?> flushContext, //
-			Class<?> entityClass, Object primaryKey, Options options) {
-		super(entityMeta, configContext, entityClass, primaryKey, flushContext,
-				options);
-		log.trace("Create new persistence context for instance {} of class {}",
-				entity, entityClass.getCanonicalName());
+	public ThriftPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext,
+			ThriftDaoContext daoContext, ThriftAbstractFlushContext<?> flushContext, Class<?> entityClass,
+			Object primaryKey, Options options) {
+		super(entityMeta, configContext, entityClass, primaryKey, flushContext, options);
+		log.trace("Create new persistence context for instance {} of class {}", entity, entityClass.getCanonicalName());
 
 		initCollaborators(daoContext, flushContext);
 		initDaos();
 	}
 
-	private void initCollaborators(ThriftDaoContext thriftDaoContext, //
-			ThriftAbstractFlushContext<?> flushContext) {
-		refresher = new EntityRefresher<ThriftPersistenceContext>(loader,
-				proxifier);
+	private void initCollaborators(ThriftDaoContext thriftDaoContext, ThriftAbstractFlushContext<?> flushContext) {
+		refresher = new EntityRefresher<ThriftPersistenceContext>(loader, proxifier);
 		this.daoContext = thriftDaoContext;
 		this.flushContext = flushContext;
 	}
@@ -96,64 +85,56 @@ public class ThriftPersistenceContext extends PersistenceContext {
 
 	@Override
 	public ThriftPersistenceContext duplicate(Object entity) {
-		return new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, flushContext.duplicate(), entity,
+		return new ThriftPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicate(), entity,
 				options.duplicateWithoutTtlAndTimestamp());
 	}
 
 	@Override
 	public void persist() {
-		flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						persister.persist(ThriftPersistenceContext.this);
-						flush();
-						return null;
-					}
-				});
+		flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				persister.persist(ThriftPersistenceContext.this);
+				flush();
+				return null;
+			}
+		});
 	}
 
 	@Override
 	public <T> T merge(final T entity) {
 
-		return flushContext.getConsistencyContext()
-				.executeWithWriteConsistencyLevel(
-						new SafeExecutionContext<T>() {
-							@Override
-							public T execute() {
-								T merged = merger.<T> merge(
-										ThriftPersistenceContext.this, entity);
-								flush();
-								return merged;
-							}
-						});
+		return flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(new SafeExecutionContext<T>() {
+			@Override
+			public T execute() {
+				T merged = merger.<T> merge(ThriftPersistenceContext.this, entity);
+				flush();
+				return merged;
+			}
+		});
 
 	}
 
 	@Override
 	public void remove() {
-		flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						persister.remove(ThriftPersistenceContext.this);
-						flush();
-						return null;
-					}
-				});
+		flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				persister.remove(ThriftPersistenceContext.this);
+				flush();
+				return null;
+			}
+		});
 	}
 
 	@Override
 	public <T> T find(final Class<T> entityClass) {
-		T entity = flushContext.getConsistencyContext()
-				.executeWithReadConsistencyLevel(new SafeExecutionContext<T>() {
-					@Override
-					public T execute() {
-						return loader.<T> load(ThriftPersistenceContext.this,
-								entityClass);
-					}
-				});
+		T entity = flushContext.getConsistencyContext().executeWithReadConsistencyLevel(new SafeExecutionContext<T>() {
+			@Override
+			public T execute() {
+				return loader.<T> load(ThriftPersistenceContext.this, entityClass);
+			}
+		});
 
 		if (entity != null) {
 			entity = proxifier.buildProxy(entity, this);
@@ -169,50 +150,42 @@ public class ThriftPersistenceContext extends PersistenceContext {
 
 	@Override
 	public void refresh() throws AchillesStaleObjectStateException {
-		flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						try {
-							refresher.refresh(ThriftPersistenceContext.this);
-						} catch (AchillesStaleObjectStateException e) {
-							throw new RuntimeException(e);
-						}
-						return null;
-					}
-				});
+		flushContext.getConsistencyContext().executeWithReadConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				try {
+					refresher.refresh(ThriftPersistenceContext.this);
+				} catch (AchillesStaleObjectStateException e) {
+					throw new RuntimeException(e);
+				}
+				return null;
+			}
+		});
 
 	}
 
 	@Override
 	public <T> T initialize(final T entity) {
 		log.debug("Force lazy fields initialization for entity {}", entity);
-		final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier
-				.getInterceptor(entity);
+		final EntityInterceptor<ThriftPersistenceContext, T> interceptor = proxifier.getInterceptor(entity);
 
-		flushContext.getConsistencyContext().executeWithReadConsistencyLevel(
-				new SafeExecutionContext<Void>() {
-					@Override
-					public Void execute() {
-						initializer.initializeEntity(entity, entityMeta,
-								interceptor);
-						return null;
-					}
-				});
+		flushContext.getConsistencyContext().executeWithReadConsistencyLevel(new SafeExecutionContext<Void>() {
+			@Override
+			public Void execute() {
+				initializer.initializeEntity(entity, entityMeta, interceptor);
+				return null;
+			}
+		});
 
 		return entity;
 	}
 
-	public <T> T executeWithReadConsistencyLevel(
-			SafeExecutionContext<T> context, ConsistencyLevel readLevel) {
-		return flushContext.getConsistencyContext()
-				.executeWithReadConsistencyLevel(context, readLevel);
+	public <T> T executeWithReadConsistencyLevel(SafeExecutionContext<T> context, ConsistencyLevel readLevel) {
+		return flushContext.getConsistencyContext().executeWithReadConsistencyLevel(context, readLevel);
 	}
 
-	public <T> T executeWithWriteConsistencyLevel(
-			SafeExecutionContext<T> context, ConsistencyLevel writeLevel) {
-		return flushContext.getConsistencyContext()
-				.executeWithWriteConsistencyLevel(context, writeLevel);
+	public <T> T executeWithWriteConsistencyLevel(SafeExecutionContext<T> context, ConsistencyLevel writeLevel) {
+		return flushContext.getConsistencyContext().executeWithWriteConsistencyLevel(context, writeLevel);
 	}
 
 	public boolean isValueless() {

@@ -34,13 +34,11 @@ import org.slf4j.LoggerFactory;
 
 public class CQLBatchingEntityManager extends CQLEntityManager {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLBatchingEntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLBatchingEntityManager.class);
 
 	private CQLBatchingFlushContext flushContext;
 
-	CQLBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap,
-			CQLPersistenceContextFactory contextFactory,
+	CQLBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, CQLPersistenceContextFactory contextFactory,
 			CQLDaoContext daoContext, ConfigurationContext configContext) {
 		super(entityMetaMap, contextFactory, daoContext, configContext);
 		this.flushContext = new CQLBatchingFlushContext(daoContext, null);
@@ -58,8 +56,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 	 * Start a batch session with read/write consistency levels
 	 */
 	public void startBatch(ConsistencyLevel consistencyLevel) {
-		log.debug("Starting batch mode with consistency level {}",
-				consistencyLevel.name());
+		log.debug("Starting batch mode with consistency level {}", consistencyLevel.name());
 		startBatch();
 		flushContext.setConsistencyLevel(consistencyLevel);
 
@@ -122,8 +119,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 	}
 
 	@Override
-	public <T> T find(final Class<T> entityClass, final Object primaryKey,
-			ConsistencyLevel readLevel) {
+	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
@@ -134,8 +130,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 	}
 
 	@Override
-	public <T> T getReference(final Class<T> entityClass,
-			final Object primaryKey, ConsistencyLevel readLevel) {
+	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
@@ -146,8 +141,7 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 	}
 
 	@Override
-	public void refresh(final Object entity, ConsistencyLevel readLevel)
-			throws AchillesStaleObjectStateException {
+	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
 		if (readLevel != null) {
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
@@ -157,25 +151,20 @@ public class CQLBatchingEntityManager extends CQLEntityManager {
 	}
 
 	@Override
-	protected CQLPersistenceContext initPersistenceContext(
-			Class<?> entityClass, Object primaryKey, Options options) {
-		log.trace(
-				"Initializing new persistence context for entity class {} and primary key {}",
+	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
-		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				flushContext, entityClass, primaryKey, options);
+		return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext, entityClass, primaryKey,
+				options);
 	}
 
 	@Override
-	protected CQLPersistenceContext initPersistenceContext(Object entity,
-			Options options) {
+	protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
 
-		EntityMeta entityMeta = this.entityMetaMap.get(proxifier
-				.deriveBaseClass(entity));
-		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				flushContext, entity, options);
+		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
+		return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext, entity, options);
 	}
 }

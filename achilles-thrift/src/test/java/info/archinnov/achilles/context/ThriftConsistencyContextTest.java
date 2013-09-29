@@ -53,8 +53,7 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_not_set_read_consistency_level_when_null()
-			throws Exception {
+	public void should_not_set_read_consistency_level_when_null() throws Exception {
 		context.setConsistencyLevel(null);
 		verifyZeroInteractions(policy);
 	}
@@ -70,8 +69,7 @@ public class ThriftConsistencyContextTest {
 	public void should_execute_with_read_consistency_level() throws Exception {
 
 		context = new ThriftConsistencyContext(policy, ALL);
-		String result = context
-				.executeWithReadConsistencyLevel(executionContext);
+		String result = context.executeWithReadConsistencyLevel(executionContext);
 
 		assertThat(result).isEqualTo("result");
 
@@ -81,12 +79,10 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_runtime_read_consistency_level()
-			throws Exception {
+	public void should_execute_with_runtime_read_consistency_level() throws Exception {
 
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context.executeWithReadConsistencyLevel(
-				executionContext, QUORUM);
+		String result = context.executeWithReadConsistencyLevel(executionContext, QUORUM);
 
 		assertThat(result).isEqualTo("result");
 
@@ -96,12 +92,10 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_no_runtime_read_consistency_level()
-			throws Exception {
+	public void should_execute_with_no_runtime_read_consistency_level() throws Exception {
 
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context.executeWithReadConsistencyLevel(
-				executionContext, null);
+		String result = context.executeWithReadConsistencyLevel(executionContext, null);
 
 		assertThat(result).isEqualTo("result");
 
@@ -109,11 +103,9 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_no_read_consistency_level()
-			throws Exception {
+	public void should_execute_with_no_read_consistency_level() throws Exception {
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context
-				.executeWithReadConsistencyLevel(executionContext);
+		String result = context.executeWithReadConsistencyLevel(executionContext);
 
 		assertThat(result).isEqualTo("result");
 
@@ -124,8 +116,7 @@ public class ThriftConsistencyContextTest {
 	public void should_execute_with_write_consistency_level() throws Exception {
 
 		context = new ThriftConsistencyContext(policy, ALL);
-		String result = context
-				.executeWithWriteConsistencyLevel(executionContext);
+		String result = context.executeWithWriteConsistencyLevel(executionContext);
 
 		assertThat(result).isEqualTo("result");
 
@@ -135,11 +126,9 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_no_write_consistency_level()
-			throws Exception {
+	public void should_execute_with_no_write_consistency_level() throws Exception {
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context
-				.executeWithWriteConsistencyLevel(executionContext);
+		String result = context.executeWithWriteConsistencyLevel(executionContext);
 
 		assertThat(result).isEqualTo("result");
 
@@ -147,11 +136,9 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_runtime_write_consistency_level()
-			throws Exception {
+	public void should_execute_with_runtime_write_consistency_level() throws Exception {
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context.executeWithWriteConsistencyLevel(
-				executionContext, QUORUM);
+		String result = context.executeWithWriteConsistencyLevel(executionContext, QUORUM);
 
 		assertThat(result).isEqualTo("result");
 
@@ -161,12 +148,10 @@ public class ThriftConsistencyContextTest {
 	}
 
 	@Test
-	public void should_execute_with_no_runtime_write_consistency_level()
-			throws Exception {
+	public void should_execute_with_no_runtime_write_consistency_level() throws Exception {
 
 		context = new ThriftConsistencyContext(policy, null);
-		String result = context.executeWithWriteConsistencyLevel(
-				executionContext, null);
+		String result = context.executeWithWriteConsistencyLevel(executionContext, null);
 
 		assertThat(result).isEqualTo("result");
 

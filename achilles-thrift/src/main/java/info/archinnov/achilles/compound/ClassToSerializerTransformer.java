@@ -21,8 +21,7 @@ import me.prettyprint.hector.api.Serializer;
 
 import com.google.common.base.Function;
 
-public class ClassToSerializerTransformer implements
-		Function<Class<?>, Serializer<Object>> {
+public class ClassToSerializerTransformer implements Function<Class<?>, Serializer<Object>> {
 
 	@Override
 	public Serializer<Object> apply(Class<?> clazz) {

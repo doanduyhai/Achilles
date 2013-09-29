@@ -75,8 +75,8 @@ public class ClusteredEntityFactoryTest {
 	@Before
 	public void setUp() throws Exception {
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).accessors().build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.EMBEDDED_ID).accessors().build();
 
 		meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -88,14 +88,12 @@ public class ClusteredEntityFactoryTest {
 
 	@Test
 	public void should_return_empty_list_when_empty_hcolumns() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 		when(context.getFirstMeta()).thenReturn(pm);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
-		List<BeanWithClusteredId> actual = factory.buildClusteredEntities(
-				BeanWithClusteredId.class, context,
+		List<BeanWithClusteredId> actual = factory.buildClusteredEntities(BeanWithClusteredId.class, context,
 				new ArrayList<HColumn<Composite, Object>>());
 
 		assertThat(actual).isEmpty();
@@ -104,27 +102,21 @@ public class ClusteredEntityFactoryTest {
 	@Test
 	public void should_build_simple_clustered_entity() throws Exception {
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 		when(context.getFirstMeta()).thenReturn(pm);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
 		when(context.getFirstMeta()).thenReturn(pm);
-		when(
-				transformer.clusteredEntityTransformer(
-						BeanWithClusteredId.class, context))
-				.thenReturn(
-						new Function<HColumn<Composite, Object>, BeanWithClusteredId>() {
-							@Override
-							public BeanWithClusteredId apply(
-									HColumn<Composite, Object> hCol) {
-								return entity;
-							}
-						});
-		List<BeanWithClusteredId> clusteredEntities = factory
-				.buildClusteredEntities(BeanWithClusteredId.class, context,
-						hColumns);
+		when(transformer.clusteredEntityTransformer(BeanWithClusteredId.class, context)).thenReturn(
+				new Function<HColumn<Composite, Object>, BeanWithClusteredId>() {
+					@Override
+					public BeanWithClusteredId apply(HColumn<Composite, Object> hCol) {
+						return entity;
+					}
+				});
+		List<BeanWithClusteredId> clusteredEntities = factory.buildClusteredEntities(BeanWithClusteredId.class,
+				context, hColumns);
 
 		assertThat(clusteredEntities).containsExactly(entity);
 	}
@@ -132,25 +124,20 @@ public class ClusteredEntityFactoryTest {
 	@Test
 	public void should_build_counter_clustered_entity() throws Exception {
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.type(PropertyType.COUNTER).build();
 		when(context.getFirstMeta()).thenReturn(pm);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 
-		when(
-				transformer.counterClusteredEntityTransformer(
-						BeanWithClusteredId.class, context)).thenReturn(
+		when(transformer.counterClusteredEntityTransformer(BeanWithClusteredId.class, context)).thenReturn(
 				new Function<HCounterColumn<Composite>, BeanWithClusteredId>() {
 					@Override
-					public BeanWithClusteredId apply(
-							HCounterColumn<Composite> hCol) {
+					public BeanWithClusteredId apply(HCounterColumn<Composite> hCol) {
 						return entity;
 					}
 				});
-		List<BeanWithClusteredId> clusteredEntities = factory
-				.buildCounterClusteredEntities(BeanWithClusteredId.class,
-						context, hCounterColumns);
+		List<BeanWithClusteredId> clusteredEntities = factory.buildCounterClusteredEntities(BeanWithClusteredId.class,
+				context, hCounterColumns);
 
 		assertThat(clusteredEntities).containsExactly(entity);
 	}
@@ -158,20 +145,15 @@ public class ClusteredEntityFactoryTest {
 	@Test
 	public void should_build_value_less_clustered_entity() throws Exception {
 		when(context.isValueless()).thenReturn(true);
-		when(
-				transformer.valuelessClusteredEntityTransformer(
-						BeanWithClusteredId.class, context))
-				.thenReturn(
-						new Function<HColumn<Composite, Object>, BeanWithClusteredId>() {
-							@Override
-							public BeanWithClusteredId apply(
-									HColumn<Composite, Object> hCol) {
-								return entity;
-							}
-						});
-		List<BeanWithClusteredId> clusteredEntities = factory
-				.buildClusteredEntities(BeanWithClusteredId.class, context,
-						hColumns);
+		when(transformer.valuelessClusteredEntityTransformer(BeanWithClusteredId.class, context)).thenReturn(
+				new Function<HColumn<Composite, Object>, BeanWithClusteredId>() {
+					@Override
+					public BeanWithClusteredId apply(HColumn<Composite, Object> hCol) {
+						return entity;
+					}
+				});
+		List<BeanWithClusteredId> clusteredEntities = factory.buildClusteredEntities(BeanWithClusteredId.class,
+				context, hColumns);
 
 		assertThat(clusteredEntities).containsExactly(entity);
 	}

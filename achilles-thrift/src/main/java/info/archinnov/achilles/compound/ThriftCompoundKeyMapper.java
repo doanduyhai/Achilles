@@ -18,6 +18,7 @@ package info.archinnov.achilles.compound;
 
 import static info.archinnov.achilles.logger.ThriftLoggerHelper.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
@@ -36,144 +37,130 @@ import com.google.common.collect.FluentIterable;
 
 public class ThriftCompoundKeyMapper {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftCompoundKeyMapper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftCompoundKeyMapper.class);
 	private static final ClassToSerializerTransformer classToSerializer = new ClassToSerializerTransformer();
 
 	private ThriftCompoundKeyValidator validator = new ThriftCompoundKeyValidator();
 
-	@SuppressWarnings("unchecked")
-	public <V> V fromCompositeToEmbeddedId(PropertyMeta pm,
-			List<Component<?>> components, Object partitionKey) {
+	public Object fromCompositeToEmbeddedId(PropertyMeta idMeta, List<Component<?>> components, Object primaryKey) {
 		if (log.isTraceEnabled()) {
-			log.trace("Build compound key {} from composite components {}",
-					pm.getPropertyName(), format(components));
+			log.trace("Build compound primary key {} from composite components {}", idMeta.getPropertyName(),
+					format(components));
 		}
 
-		V compoundKey;
-		List<Class<?>> componentClasses = pm.getComponentClasses().subList(1,
-				pm.getComponentClasses().size());
+		List<Object> partitionComponents = idMeta.extractPartitionComponents(primaryKey);
 
-		List<Serializer<Object>> serializers = FluentIterable
-				.from(componentClasses).transform(classToSerializer)
+		Object compoundPrimaryKey;
+		List<Class<?>> componentClasses = idMeta.getClusteringComponentClasses();
+		List<Serializer<Object>> serializers = FluentIterable.from(componentClasses).transform(classToSerializer)
 				.toImmutableList();
 
-		int componentCount = components.size();
-
-		List<Object> componentValues = new ArrayList<Object>();
-		componentValues.add(partitionKey);
-		for (int i = 0; i < componentCount; i++) {
+		List<Object> componentValues = new ArrayList<Object>(partitionComponents);
+		for (int i = 0; i < components.size(); i++) {
 			Component<?> comp = components.get(i);
-			componentValues.add(serializers.get(i).fromByteBuffer(
-					comp.getBytes()));
+			componentValues.add(serializers.get(i).fromByteBuffer(comp.getBytes()));
 		}
 
-		compoundKey = (V) pm.decodeFromComponents(componentValues);
+		compoundPrimaryKey = idMeta.decodeFromComponents(componentValues);
 
-		log.trace("Built compound key : {}", compoundKey);
+		log.trace("Built compound primary key : {}", compoundPrimaryKey);
 
-		return compoundKey;
+		return compoundPrimaryKey;
 	}
 
-	public Composite fromCompoundToCompositeForInsertOrGet(Object compoundKey,
-			PropertyMeta pm) {
-		log.trace("Build composite from key {} to persist @CompoundKey {} ",
-				compoundKey, pm.getPropertyName());
+	public Composite fromCompoundToCompositeForInsertOrGet(Object compoundPrimaryKey, PropertyMeta pm) {
+		log.trace("Build composite from key {} to persist @EmbeddedId {} ", compoundPrimaryKey, pm.getPropertyName());
 
-		List<Object> components = pm.encodeToComponents(compoundKey);
-		return fromComponentsToCompositeForInsertOrGet(components, pm);
-
+		List<Object> components = pm.encodeToComponents(compoundPrimaryKey);
+		return fromComponentsToCompositeForInsertOrGet(components, pm, false);
 	}
 
-	protected Composite fromComponentsToCompositeForInsertOrGet(
-			List<Object> components, PropertyMeta pm) {
+	public Object buildRowKey(ThriftPersistenceContext context) {
+		Object rowKey;
+		PropertyMeta idMeta = context.getIdMeta();
+		Object primaryKey = context.getPrimaryKey();
+		if (idMeta.isCompositePartitionKey()) {
+			List<Object> components = idMeta.encodeToComponents(primaryKey);
+			rowKey = fromComponentsToCompositeForInsertOrGet(components, idMeta, true);
+		} else if (idMeta.isEmbeddedId()) {
+			rowKey = idMeta.getPartitionKey(primaryKey);
+		} else {
+			rowKey = primaryKey;
+		}
+		return rowKey;
+	}
+
+	protected Composite fromComponentsToCompositeForInsertOrGet(List<Object> components, PropertyMeta pm,
+			boolean partitionComponents) {
 		String propertyName = pm.getPropertyName();
 
-		Validator
-				.validateNotNull(
-						components,
-						"The component values for the @CompoundKey '%s' should not be null",
-						propertyName);
-		Validator
-				.validateNotEmpty(
-						components,
-						"The component values for the @CompoundKey '%s' should not be empty",
-						propertyName);
-		for (Object value : components) {
-			Validator
-					.validateNotNull(
-							value,
-							"The component values for the @CompoundKey '%s' should not be null",
-							propertyName);
-		}
+		Validator.validateNotNull(components, "The component values for the @EmbeddedId '%s' should not be null",
+				propertyName);
+		Validator.validateNotEmpty(components, "The component values for the @EmbeddedId '%s' should not be empty",
+				propertyName);
 
 		Composite composite = new Composite();
-		List<Object> columnComponents = components
-				.subList(1, components.size());
-		List<Class<?>> columnClasses = pm.getComponentClasses().subList(1,
-				pm.getComponentClasses().size());
+		List<Object> componentValues;
+		List<Class<?>> componentClasses;
 
-		log.trace(
-				"Build composite from components {} to persist @CompoundKey {} ",
-				columnComponents, propertyName);
+		if (partitionComponents) {
+			componentValues = pm.extractPartitionComponents(components);
+			componentClasses = pm.getPartitionComponentClasses();
+		} else {
+			for (Object value : components) {
+				Validator.validateNotNull(value, "The component values for the @EmbeddedId '%s' should not be null",
+						propertyName);
+			}
+			componentValues = pm.extractClusteringComponents(components);
+			componentClasses = pm.getClusteringComponentClasses();
+		}
 
-		List<Serializer<Object>> serializers = FluentIterable
-				.from(columnClasses).transform(classToSerializer)
+		log.trace("Build composite from components {} to persist @EmbeddedId {} ", componentValues, propertyName);
+
+		List<Serializer<Object>> serializers = FluentIterable.from(componentClasses).transform(classToSerializer)
 				.toImmutableList();
 		int srzCount = serializers.size();
 
-		for (Object value : columnComponents) {
-			Validator.validateNotNull(value,
-					"The values for the @CompoundKey '%s' should not be null",
-					propertyName);
+		for (Object value : componentValues) {
+			Validator.validateNotNull(value, "The values for the @EmbeddedId '%s' should not be null", propertyName);
 		}
 
 		for (int i = 0; i < srzCount; i++) {
 			Serializer<Object> srz = serializers.get(i);
-			composite.setComponent(i, columnComponents.get(i), srz, srz
-					.getComparatorType().getTypeName());
+			composite.setComponent(i, componentValues.get(i), srz, srz.getComparatorType().getTypeName());
 		}
 		return composite;
 	}
 
-	public Composite fromComponentsToCompositeForQuery(List<Object> components,
-			PropertyMeta pm, ComponentEquality equality) {
-		String propertyName = pm.getPropertyName();
+	public Composite fromComponentsToCompositeForQuery(List<Object> components, PropertyMeta idMeta,
+			ComponentEquality equality) {
+		String propertyName = idMeta.getPropertyName();
 
-		List<Object> columnComponents = components
-				.subList(1, components.size());
-		List<Class<?>> columnClasses = pm.getComponentClasses().subList(1,
-				pm.getComponentClasses().size());
+		List<Object> columnComponents = idMeta.extractClusteringComponents(components);
+		List<Class<?>> columnClasses = idMeta.getClusteringComponentClasses();
 
-		log.trace(
-				"Build composite from components {} to query @CompoundKey {} ",
-				columnComponents, propertyName);
+		log.trace("Build composite from components {} to query @EmbeddedId {} ", columnComponents, propertyName);
 
 		Composite composite = new Composite();
 
-		List<Serializer<Object>> serializers = FluentIterable
-				.from(columnClasses).transform(classToSerializer)
+		List<Serializer<Object>> serializers = FluentIterable.from(columnClasses).transform(classToSerializer)
 				.toImmutableList();
 
 		int srzCount = serializers.size();
 
 		Validator.validateTrue(srzCount >= columnComponents.size(),
-				"There should be at most %s values for the @CompoundKey '%s'",
-				srzCount, propertyName);
+				"There should be at most %s values for the @EmbeddedId '%s'", srzCount, propertyName);
 
-		int lastNotNullIndex = validator
-				.validateNoHoleAndReturnLastNonNullIndex(columnComponents);
+		int lastNotNullIndex = validator.validateNoHoleAndReturnLastNonNullIndex(columnComponents);
 
 		for (int i = 0; i <= lastNotNullIndex; i++) {
 			Serializer<Object> srz = serializers.get(i);
 			Object value = columnComponents.get(i);
 
 			if (i < lastNotNullIndex) {
-				composite.setComponent(i, value, srz, srz.getComparatorType()
-						.getTypeName(), EQUAL);
+				composite.setComponent(i, value, srz, srz.getComparatorType().getTypeName(), EQUAL);
 			} else {
-				composite.setComponent(i, value, srz, srz.getComparatorType()
-						.getTypeName(), equality);
+				composite.setComponent(i, value, srz, srz.getComparatorType().getTypeName(), equality);
 			}
 		}
 		return composite;

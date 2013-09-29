@@ -32,17 +32,15 @@ import org.junit.Test;
 public class UnwrapIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean");
 
 	private ThriftEntityManager em = resource.getEm();
 
 	@Test
 	public void should_unproxy_object() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet")
-				.buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
+		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
 		bean = em.merge(bean);

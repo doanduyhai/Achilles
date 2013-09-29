@@ -42,8 +42,7 @@ import me.prettyprint.hector.api.beans.HCounterColumn;
 
 import com.google.common.collect.Lists;
 
-public class ThriftSliceQueryExecutor extends
-		SliceQueryExecutor<ThriftPersistenceContext> {
+public class ThriftSliceQueryExecutor extends SliceQueryExecutor<ThriftPersistenceContext> {
 
 	private AchillesConsistencyLevelPolicy consistencyPolicy;
 
@@ -51,121 +50,92 @@ public class ThriftSliceQueryExecutor extends
 	private ThriftQueryExecutorImpl executorImpl = new ThriftQueryExecutorImpl();
 	private ThriftPersistenceContextFactory contextFactory;
 
-	public ThriftSliceQueryExecutor(
-			ThriftPersistenceContextFactory contextFactory,
-			ConfigurationContext configContext) {
+	public ThriftSliceQueryExecutor(ThriftPersistenceContextFactory contextFactory, ConfigurationContext configContext) {
 		super(new ThriftEntityProxifier());
 		this.contextFactory = contextFactory;
 		this.consistencyPolicy = configContext.getConsistencyPolicy();
-		defaultReadLevel = consistencyPolicy
-				.getDefaultGlobalReadConsistencyLevel();
+		defaultReadLevel = consistencyPolicy.getDefaultGlobalReadConsistencyLevel();
 	}
 
 	@Override
 	public <T> List<T> get(final SliceQuery<T> sliceQuery) {
 		ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-		List<Method> getters = context.isValueless() ? Arrays.<Method> asList()
-				: Arrays.asList(context.getFirstMeta().getGetter());
-		PropertyType type = context.isValueless() ? PropertyType.SIMPLE
-				: context.getFirstMeta().type();
+		List<Method> getters = context.isValueless() ? Arrays.<Method> asList() : Arrays.asList(context.getFirstMeta()
+				.getGetter());
+		PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
 		List<T> clusteredEntities = null;
 		switch (type) {
 		case SIMPLE:
-			List<HColumn<Composite, Object>> hColumns = executorImpl
-					.findColumns(sliceQuery, context);
-			clusteredEntities = factory.buildClusteredEntities(
-					sliceQuery.getEntityClass(), context, hColumns);
+			List<HColumn<Composite, Object>> hColumns = executorImpl.findColumns(sliceQuery, context);
+			clusteredEntities = factory.buildClusteredEntities(sliceQuery.getEntityClass(), context, hColumns);
 			break;
 		case COUNTER:
-			List<HCounterColumn<Composite>> hCounterColumns = executorImpl
-					.findCounterColumns(sliceQuery, context);
-			clusteredEntities = factory.buildCounterClusteredEntities(
-					sliceQuery.getEntityClass(), context, hCounterColumns);
+			List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(sliceQuery, context);
+			clusteredEntities = factory.buildCounterClusteredEntities(sliceQuery.getEntityClass(), context,
+					hCounterColumns);
 			break;
 		default:
-			throw new AchillesException(
-					"Cannot get entities for clustered value of type '"
-							+ type.name() + "' and clustered entity class '"
-							+ sliceQuery.getEntityClass().getCanonicalName()
-							+ "'");
+			throw new AchillesException("Cannot get entities for clustered value of type '" + type.name()
+					+ "' and clustered entity class '" + sliceQuery.getEntityClass().getCanonicalName() + "'");
 		}
 
-		return Lists.transform(clusteredEntities,
-				getProxyTransformer(sliceQuery, getters));
+		return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, getters));
 	}
 
 	@Override
 	public <T> Iterator<T> iterator(final SliceQuery<T> sliceQuery) {
 		ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-		PropertyType type = context.isValueless() ? PropertyType.SIMPLE
-				: context.getFirstMeta().type();
+		PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
 		Class<T> entityClass = sliceQuery.getEntityClass();
 
 		switch (type) {
 		case SIMPLE:
-			ThriftSliceIterator<Object, Object> columnsIterator = executorImpl
-					.getColumnsIterator(sliceQuery, context);
-			return new ThriftClusteredEntityIterator<T>(entityClass,
-					columnsIterator, context);
+			ThriftSliceIterator<Object, Object> columnsIterator = executorImpl.getColumnsIterator(sliceQuery, context);
+			return new ThriftClusteredEntityIterator<T>(entityClass, columnsIterator, context);
 		case COUNTER:
-			ThriftCounterSliceIterator<Object> counterColumnsIterator = executorImpl
-					.getCounterColumnsIterator(sliceQuery, context);
-			return new ThriftCounterClusteredEntityIterator<T>(entityClass,
-					counterColumnsIterator, context);
+			ThriftCounterSliceIterator<Object> counterColumnsIterator = executorImpl.getCounterColumnsIterator(
+					sliceQuery, context);
+			return new ThriftCounterClusteredEntityIterator<T>(entityClass, counterColumnsIterator, context);
 		default:
-			throw new AchillesException(
-					"Cannot get iterator for clustered value of type '"
-							+ type.name() + "' and clustered entity class '"
-							+ entityClass.getCanonicalName() + "'");
+			throw new AchillesException("Cannot get iterator for clustered value of type '" + type.name()
+					+ "' and clustered entity class '" + entityClass.getCanonicalName() + "'");
 		}
 	}
 
 	@Override
 	public <T> void remove(final SliceQuery<T> sliceQuery) {
 		ThriftPersistenceContext context = buildContextForQuery(sliceQuery);
-		PropertyType type = context.isValueless() ? PropertyType.SIMPLE
-				: context.getFirstMeta().type();
+		PropertyType type = context.isValueless() ? PropertyType.SIMPLE : context.getFirstMeta().type();
 
 		if (sliceQuery.hasNoComponent() && sliceQuery.isLimitSet() == false) {
-			executorImpl.removeRow(sliceQuery.getPartitionKey(), context,
-					sliceQuery.getConsistencyLevel());
+			executorImpl.removeRow(sliceQuery.getPartitionComponents(), context, sliceQuery.getConsistencyLevel());
 		} else {
 			switch (type) {
 			case SIMPLE:
-				List<HColumn<Composite, Object>> hColumns = executorImpl
-						.findColumns(sliceQuery, context);
-				executorImpl.removeColumns(hColumns,
-						sliceQuery.getConsistencyLevel(), context);
+				List<HColumn<Composite, Object>> hColumns = executorImpl.findColumns(sliceQuery, context);
+				executorImpl.removeColumns(hColumns, sliceQuery.getConsistencyLevel(), context);
 				break;
 			case COUNTER:
-				List<HCounterColumn<Composite>> hCounterColumns = executorImpl
-						.findCounterColumns(sliceQuery, context);
-				executorImpl.removeCounterColumns(hCounterColumns,
-						sliceQuery.getConsistencyLevel(), context);
+				List<HCounterColumn<Composite>> hCounterColumns = executorImpl.findCounterColumns(sliceQuery, context);
+				executorImpl.removeCounterColumns(hCounterColumns, sliceQuery.getConsistencyLevel(), context);
 				break;
 			default:
-				throw new AchillesException(
-						"Cannot remove clustered value of type '"
-								+ type.name()
-								+ "' and clustered entity class '"
-								+ sliceQuery.getEntityClass()
-										.getCanonicalName() + "'");
+				throw new AchillesException("Cannot remove clustered value of type '" + type.name()
+						+ "' and clustered entity class '" + sliceQuery.getEntityClass().getCanonicalName() + "'");
 			}
 		}
 	}
 
 	@Override
-	protected <T> ThriftPersistenceContext buildContextForQuery(
-			SliceQuery<T> sliceQuery) {
-		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel
-				: sliceQuery.getConsistencyLevel();
-		return contextFactory.newContextForSliceQuery(
-				sliceQuery.getEntityClass(), sliceQuery.getPartitionKey(), cl);
+	protected <T> ThriftPersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery) {
+		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
+				.getConsistencyLevel();
+		return contextFactory.newContextForSliceQuery(sliceQuery.getEntityClass(), sliceQuery.getPartitionComponents(),
+				cl);
 	}
 
 	@Override
-	protected <T> ThriftPersistenceContext buildNewContext(
-			final SliceQuery<T> sliceQuery, T clusteredEntity) {
+	protected <T> ThriftPersistenceContext buildNewContext(final SliceQuery<T> sliceQuery, T clusteredEntity) {
 		return contextFactory.newContext(clusteredEntity);
 	}
 }

@@ -83,13 +83,11 @@ public class ThriftEntityManagerTest {
 
 	private ThriftCompoundKeyValidator compoundKeyValidator;
 
-	private Optional<ConsistencyLevel> noConsistency = Optional
-			.<ConsistencyLevel> absent();
+	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 	private Optional<Integer> noTtl = Optional.<Integer> absent();
 
 	private Long primaryKey = 1165446L;
-	private CompleteBean entity = CompleteBeanTestBuilder.builder()
-			.id(primaryKey).name("name").buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
 
 	@Before
 	public void setUp() throws Exception {
@@ -103,18 +101,16 @@ public class ThriftEntityManagerTest {
 	}
 
 	@Test
-	public void should_init_persistence_context_with_class_and_primary_key()
-			throws Exception {
+	public void should_init_persistence_context_with_class_and_primary_key() throws Exception {
 		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
-		when(
-				contextFactory.newContext(CompleteBean.class, entity.getId(),
-						OptionsBuilder.noOptions())).thenReturn(context);
+		when(contextFactory.newContext(CompleteBean.class, entity.getId(), OptionsBuilder.noOptions())).thenReturn(
+				context);
 
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(daoContext.findEntityDao("table")).thenReturn(entityDao);
 
-		ThriftPersistenceContext actual = em.initPersistenceContext(
-				CompleteBean.class, entity.getId(), OptionsBuilder.noOptions());
+		ThriftPersistenceContext actual = em.initPersistenceContext(CompleteBean.class, entity.getId(),
+				OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
 	}
@@ -122,11 +118,9 @@ public class ThriftEntityManagerTest {
 	@Test
 	public void should_init_persistence_context_with_entity() throws Exception {
 		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
-		when(contextFactory.newContext(entity, OptionsBuilder.noOptions()))
-				.thenReturn(context);
+		when(contextFactory.newContext(entity, OptionsBuilder.noOptions())).thenReturn(context);
 
-		ThriftPersistenceContext actual = em.initPersistenceContext(entity,
-				OptionsBuilder.noOptions());
+		ThriftPersistenceContext actual = em.initPersistenceContext(entity, OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
 
@@ -136,15 +130,11 @@ public class ThriftEntityManagerTest {
 	public void should_create_slice_query_builder() throws Exception {
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 
-		SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = em
-				.sliceQuery(CompleteBean.class);
+		SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = em.sliceQuery(CompleteBean.class);
 
 		assertThat(builder).isNotNull();
-		assertThat(Whitebox.getInternalState(builder, "sliceQueryExecutor"))
-				.isSameAs(queryExecutor);
-		assertThat(Whitebox.getInternalState(builder, "meta")).isSameAs(
-				entityMeta);
-		assertThat(Whitebox.getInternalState(builder, "entityClass"))
-				.isEqualTo(CompleteBean.class);
+		assertThat(Whitebox.getInternalState(builder, "sliceQueryExecutor")).isSameAs(queryExecutor);
+		assertThat(Whitebox.getInternalState(builder, "meta")).isSameAs(entityMeta);
+		assertThat(Whitebox.getInternalState(builder, "entityClass")).isEqualTo(CompleteBean.class);
 	}
 }

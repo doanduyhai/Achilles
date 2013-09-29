@@ -66,19 +66,14 @@ public class EntryIteratorWrapperBuilderTest {
 		map.put(3, "75014");
 
 		Iterator<Entry<Object, Object>> target = map.entrySet().iterator();
-		EntryIteratorWrapper wrapper = EntryIteratorWrapperBuilder
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+		EntryIteratorWrapper wrapper = EntryIteratorWrapperBuilder.builder(context, target).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
 
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(
-				target);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(target);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

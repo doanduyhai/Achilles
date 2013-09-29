@@ -22,13 +22,10 @@ import java.util.Map;
 
 public class CQLConsistencyLevelPolicy extends AchillesConsistencyLevelPolicy {
 
-	public CQLConsistencyLevelPolicy(
-			ConsistencyLevel defaultGlobalReadConsistencyLevel,
-			ConsistencyLevel defaultGlobalWriteConsistencyLevel,
-			Map<String, ConsistencyLevel> readCfConsistencyLevels,
+	public CQLConsistencyLevelPolicy(ConsistencyLevel defaultGlobalReadConsistencyLevel,
+			ConsistencyLevel defaultGlobalWriteConsistencyLevel, Map<String, ConsistencyLevel> readCfConsistencyLevels,
 			Map<String, ConsistencyLevel> writeCfConsistencyLevels) {
-		super(defaultGlobalReadConsistencyLevel,
-				defaultGlobalWriteConsistencyLevel, readCfConsistencyLevels,
+		super(defaultGlobalReadConsistencyLevel, defaultGlobalWriteConsistencyLevel, readCfConsistencyLevels,
 				writeCfConsistencyLevels);
 	}
 

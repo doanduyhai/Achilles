@@ -40,40 +40,33 @@ public class CQLCompoundKeyValidatorTest {
 
 	@Test
 	public void should_validate_single_key() throws Exception {
-		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(10L),
-				Arrays.<Object> asList(11L), ASCENDING);
+		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(10L), Arrays.<Object> asList(11L), ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_single_key_not_in_correct_order()
-			throws Exception {
+	public void should_exception_when_single_key_not_in_correct_order() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("For slice query with ascending order, start clustering last component should be 'lesser or equal' to end clustering last component: [[11],[10]");
-		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(11L),
-				Arrays.<Object> asList(10L), ASCENDING);
+		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(11L), Arrays.<Object> asList(10L), ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_components_not_in_correct_order_for_ascending()
-			throws Exception {
+	public void should_exception_when_components_not_in_correct_order_for_ascending() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("For slice query with ascending order, start clustering last component should be 'lesser or equal' to end clustering last component: [[10,11],[10,10]");
-		validator.validateComponentsForSliceQuery(
-				Arrays.<Object> asList(10L, 11),
-				Arrays.<Object> asList(10L, 10), ASCENDING);
+		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(10L, 11), Arrays.<Object> asList(10L, 10),
+				ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_components_not_in_correct_order_for_descending()
-			throws Exception {
+	public void should_exception_when_components_not_in_correct_order_for_descending() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("For slice query with descending order, start clustering last component should be 'greater or equal' to end clustering last component: [[10,11],[10,12]");
-		validator.validateComponentsForSliceQuery(
-				Arrays.<Object> asList(10L, 11),
-				Arrays.<Object> asList(10L, 12), DESCENDING);
+		validator.validateComponentsForSliceQuery(Arrays.<Object> asList(10L, 11), Arrays.<Object> asList(10L, 12),
+				DESCENDING);
 	}
 
 	@Test
@@ -116,52 +109,44 @@ public class CQLCompoundKeyValidatorTest {
 		start = Arrays.<Object> asList(10L);
 		end = Arrays.<Object> asList(10L);
 		validator.validateComponentsForSliceQuery(start, end, ASCENDING);
-		validator.validateComponentsForSliceQuery(start,
-				new ArrayList<Object>(), ASCENDING);
-		validator.validateComponentsForSliceQuery(new ArrayList<Object>(), end,
-				ASCENDING);
+		validator.validateComponentsForSliceQuery(start, new ArrayList<Object>(), ASCENDING);
+		validator.validateComponentsForSliceQuery(new ArrayList<Object>(), end, ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_too_many_start_components()
-			throws Exception {
+	public void should_exception_when_too_many_start_components() throws Exception {
 		UUID uuid1 = new UUID(10, 11);
 
 		List<Object> start = Arrays.<Object> asList(uuid1, "a", 1);
 		List<Object> end = Arrays.<Object> asList(uuid1, null, null);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("There should be no more than 1 component difference between clustering keys: [["
-						+ uuid1 + ",a,1],[" + uuid1 + ",,]");
+		exception.expectMessage("There should be no more than 1 component difference between clustering keys: [["
+				+ uuid1 + ",a,1],[" + uuid1 + ",,]");
 		validator.validateComponentsForSliceQuery(start, end, ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_components_are_not_equal_case1()
-			throws Exception {
+	public void should_exception_when_components_are_not_equal_case1() throws Exception {
 		UUID uuid1 = new UUID(10, 11);
 		List<Object> start = Arrays.<Object> asList(uuid1, "a", 1);
 		List<Object> end = Arrays.<Object> asList(uuid1, "b", 2);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("2th component for clustering keys should be equal: [["
-						+ uuid1 + ",a,1],[" + uuid1 + ",b,2]");
+		exception.expectMessage("2th component for clustering keys should be equal: [[" + uuid1 + ",a,1],[" + uuid1
+				+ ",b,2]");
 		validator.validateComponentsForSliceQuery(start, end, ASCENDING);
 	}
 
 	@Test
-	public void should_exception_when_components_are_not_equal_case2()
-			throws Exception {
+	public void should_exception_when_components_are_not_equal_case2() throws Exception {
 		UUID uuid1 = new UUID(10, 11);
 		List<Object> start = Arrays.<Object> asList(uuid1, "a", null);
 		List<Object> end = Arrays.<Object> asList(uuid1, "b", 2);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("2th component for clustering keys should be equal: [["
-						+ uuid1 + ",a,],[" + uuid1 + ",b,2]");
+		exception.expectMessage("2th component for clustering keys should be equal: [[" + uuid1 + ",a,],[" + uuid1
+				+ ",b,2]");
 		validator.validateComponentsForSliceQuery(start, end, ASCENDING);
 	}
 

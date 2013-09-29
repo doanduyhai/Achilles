@@ -27,20 +27,16 @@ import org.slf4j.LoggerFactory;
 
 public class ThriftGenericWideRowDao extends ThriftAbstractDao {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftGenericWideRowDao.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftGenericWideRowDao.class);
 
-	public <K, V> ThriftGenericWideRowDao(Cluster cluster,
-			Keyspace keyspace, //
+	public <K, V> ThriftGenericWideRowDao(Cluster cluster, Keyspace keyspace, //
 			String cf, //
-			AchillesConsistencyLevelPolicy consistencyPolicy,
-			Pair<K, V> rowkeyAndValueClasses) {
+			AchillesConsistencyLevelPolicy consistencyPolicy, Pair<K, V> rowkeyAndValueClasses) {
 
 		super(cluster, keyspace, cf, consistencyPolicy, rowkeyAndValueClasses);
 		columnNameSerializer = COMPOSITE_SRZ;
 		log.debug(
 				"Initializing GenericColumnFamilyDao for key serializer '{}', composite comparator and value serializer '{}'",
-				this.rowSrz().getComparatorType().getTypeName(), this.valSrz()
-						.getComparatorType().getTypeName());
+				this.rowSrz().getComparatorType().getTypeName(), this.valSrz().getComparatorType().getTypeName());
 	}
 }

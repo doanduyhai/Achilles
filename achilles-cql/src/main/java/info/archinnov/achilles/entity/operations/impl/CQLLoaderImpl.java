@@ -27,19 +27,16 @@ import com.datastax.driver.core.Row;
 public class CQLLoaderImpl {
 	private CQLEntityMapper mapper = new CQLEntityMapper();
 
-	public <T> T eagerLoadEntity(CQLPersistenceContext context,
-			Class<T> entityClass) {
+	public <T> T eagerLoadEntity(CQLPersistenceContext context, Class<T> entityClass) {
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		T entity = null;
 
 		if (entityMeta.isClusteredCounter()) {
 			PropertyMeta counterMeta = entityMeta.getFirstMeta();
-			ConsistencyLevel readLevel = context.getConsistencyLevel()
-					.isPresent() ? context.getConsistencyLevel().get()
-					: counterMeta.getReadConsistencyLevel();
-			Long counterValue = context.getClusteredCounter(counterMeta,
-					readLevel);
+			ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel()
+					.get() : counterMeta.getReadConsistencyLevel();
+			Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
 			if (counterValue != null) {
 				entity = entityMeta.<T> instanciate();
 			}
@@ -53,8 +50,7 @@ public class CQLLoaderImpl {
 		return entity;
 	}
 
-	public void loadPropertyIntoEntity(CQLPersistenceContext context,
-			PropertyMeta pm, Object entity) {
+	public void loadPropertyIntoEntity(CQLPersistenceContext context, PropertyMeta pm, Object entity) {
 		Row row = context.loadProperty(pm);
 		mapper.setPropertyToEntity(row, pm, entity);
 	}

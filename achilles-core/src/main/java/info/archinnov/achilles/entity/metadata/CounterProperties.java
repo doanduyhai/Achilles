@@ -45,7 +45,6 @@ public class CounterProperties {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass()).add("fqcn", fqcn)
-				.add("idMeta", idMeta).toString();
+		return Objects.toStringHelper(this.getClass()).add("fqcn", fqcn).add("idMeta", idMeta).toString();
 	}
 }

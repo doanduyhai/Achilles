@@ -17,27 +17,44 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
 
-public class CorrectCompoundKey {
+import java.util.UUID;
+
+public class EmbeddedKeyWithInconsistentCompoundPartitionKey {
+
+	@PartitionKey
 	@Order(1)
-	private String name;
+	private Long id;
 
 	@Order(2)
-	private int rank;
+	private String type;
 
-	public String getName() {
-		return name;
+	@PartitionKey
+	@Order(3)
+	private UUID date;
+
+	public Long getId() {
+		return id;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
-	public int getRank() {
-		return rank;
+	public String getType() {
+		return type;
 	}
 
-	public void setRank(int rank) {
-		this.rank = rank;
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public UUID getDate() {
+		return date;
+	}
+
+	public void setDate(UUID date) {
+		this.date = date;
 	}
 }

@@ -39,8 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EntityParser {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityParser.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
 
 	private EntityParsingValidator validator = new EntityParsingValidator();
 	private PropertyParser parser = new PropertyParser();
@@ -48,27 +47,22 @@ public class EntityParser {
 	private EntityIntrospector introspector = new EntityIntrospector();
 
 	public EntityMeta parseEntity(EntityParsingContext context) {
-		log.debug("Parsing entity class {}", context.getCurrentEntityClass()
-				.getCanonicalName());
+		log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		validateEntityAndGetObjectMapper(context);
 
-		String columnFamilyName = introspector.inferColumnFamilyName(
-				entityClass, entityClass.getName());
-		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector
-				.findConsistencyLevels(entityClass,
-						context.getConfigurableCLPolicy());
+		String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
+		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass,
+				context.getConfigurableCLPolicy());
 
 		context.setCurrentConsistencyLevels(consistencyLevels);
 		context.setCurrentColumnFamilyName(columnFamilyName);
 
 		PropertyMeta idMeta = null;
-		List<Field> inheritedFields = introspector
-				.getInheritedPrivateFields(entityClass);
+		List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
 		for (Field field : inheritedFields) {
-			PropertyParsingContext propertyContext = context
-					.newPropertyContext(field);
+			PropertyParsingContext propertyContext = context.newPropertyContext(field);
 			if (filter.hasAnnotation(field, Id.class)) {
 				propertyContext.setPrimaryKey(true);
 				idMeta = parser.parse(propertyContext);
@@ -80,10 +74,8 @@ public class EntityParser {
 			} else if (filter.hasAnnotation(field, Column.class)) {
 				parser.parse(propertyContext);
 			} else {
-				log.trace(
-						"Un-mapped field {} of entity {} will not be managed by Achilles",
-						field.getName(), context.getCurrentEntityClass()
-								.getCanonicalName());
+				log.trace("Un-mapped field {} of entity {} will not be managed by Achilles", field.getName(), context
+						.getCurrentEntityClass().getCanonicalName());
 			}
 		}
 
@@ -97,18 +89,15 @@ public class EntityParser {
 		// validator.validatePropertyMetas(context, idMeta);
 		validator.validateClusteredEntities(context);
 
-		EntityMeta entityMeta = entityMetaBuilder(idMeta)
-				.entityClass(entityClass)
-				.className(entityClass.getCanonicalName())
-				.columnFamilyName(columnFamilyName)
-				.propertyMetas(context.getPropertyMetas())
-				.consistencyLevels(context.getCurrentConsistencyLevels())
+		EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
+				.className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
+				.propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
 				.build();
 
 		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
-		log.trace("Entity meta built for entity class {} : {}", context
-				.getCurrentEntityClass().getCanonicalName(), entityMeta);
+		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),
+				entityMeta);
 		return entityMeta;
 	}
 
@@ -119,41 +108,32 @@ public class EntityParser {
 
 		Validator.validateInstantiable(entityClass);
 
-		ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(
-				entityClass);
-		Validator.validateNotNull(objectMapper,
-				"No Jackson ObjectMapper found for entity '%s'",
+		ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
+		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '%s'",
 				entityClass.getCanonicalName());
 
-		log.debug("Set default object mapper {} for entity {}", objectMapper
-				.getClass().getCanonicalName(), entityClass.getCanonicalName());
+		log.debug("Set default object mapper {} for entity {}", objectMapper.getClass().getCanonicalName(),
+				entityClass.getCanonicalName());
 		context.setCurrentObjectMapper(objectMapper);
 	}
 
-	private void completeCounterPropertyMeta(EntityParsingContext context,
-			PropertyMeta idMeta) {
+	private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta idMeta) {
 		for (PropertyMeta counterMeta : context.getCounterMetas()) {
 
-			log.debug("Add id Meta {} to counter meta {} of entity class {}",
-					idMeta.getPropertyName(), counterMeta.getPropertyName(),
-					context.getCurrentEntityClass().getCanonicalName());
+			log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta.getPropertyName(),
+					counterMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
 			counterMeta.getCounterProperties().setIdMeta(idMeta);
 		}
 	}
 
-	private void saveConsistencyLevel(EntityParsingContext context,
-			String columnFamilyName,
+	private void saveConsistencyLevel(EntityParsingContext context, String columnFamilyName,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
-		log.debug(
-				"Set default read/write consistency levels {} / {} for column family {}",
-				consistencyLevels.left.name(), consistencyLevels.right.name(),
-				columnFamilyName);
+		log.debug("Set default read/write consistency levels {} / {} for column family {}",
+				consistencyLevels.left.name(), consistencyLevels.right.name(), columnFamilyName);
 
-		context.getConfigurableCLPolicy().setConsistencyLevelForRead(
-				consistencyLevels.left, columnFamilyName);
-		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(
-				consistencyLevels.right, columnFamilyName);
+		context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left, columnFamilyName);
+		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(consistencyLevels.right, columnFamilyName);
 	}
 
 }

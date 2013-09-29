@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.ThriftColumnFamilyFactory.*;
 import static me.prettyprint.hector.api.ddl.ComparatorType.*;
@@ -25,7 +26,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -33,6 +34,7 @@ import java.util.Date;
 import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 
+import org.apache.cassandra.utils.Pair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,17 +62,18 @@ public class ThriftColumnFamilyValidatorTest {
 	private EntityMeta entityMeta;
 
 	@Mock
+	private PropertyMeta idMeta;
+
+	@Mock
 	private PropertyMeta propertyMeta;
 
 	@Mock
 	private ColumnFamilyDefinition cfDef;
 
 	@Test
-	public void should_exception_when_wrong_key_class_on_counter_column_family()
-			throws Exception {
+	public void should_exception_when_wrong_key_class_on_counter_column_family() throws Exception {
 
-		when(cfDef.getKeyValidationClass())
-				.thenReturn(ASCIITYPE.getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(ASCIITYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn("(alias)");
 
 		exception.expect(AchillesInvalidTableException.class);
@@ -82,10 +85,8 @@ public class ThriftColumnFamilyValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_wrong_key_type_alias_on_counter_column_family()
-			throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				COMPOSITETYPE.getClassName());
+	public void should_exception_when_wrong_key_type_alias_on_counter_column_family() throws Exception {
+		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn("(wrong_alias)");
 
 		exception.expect(AchillesInvalidTableException.class);
@@ -97,29 +98,24 @@ public class ThriftColumnFamilyValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_wrong_comparator_type_on_counter_column_family()
-			throws Exception {
+	public void should_exception_when_wrong_comparator_type_on_counter_column_family() throws Exception {
 
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				COMPOSITETYPE.getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(ASCIITYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
 
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType(alias)' should be '"
-						+ COUNTER_COMPARATOR_CHECK + "'");
+		exception.expectMessage("The column family 'achillesCounterCF' comparator type 'AsciiType(alias)' should be '"
+				+ COUNTER_COMPARATOR_CHECK + "'");
 
 		validator.validateCounterCF(cfDef);
 	}
 
 	@Test
-	public void should_exception_when_wrong_comparator_type_alias_on_counter_column_family()
-			throws Exception {
+	public void should_exception_when_wrong_comparator_type_alias_on_counter_column_family() throws Exception {
 
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				COMPOSITETYPE.getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
@@ -133,17 +129,13 @@ public class ThriftColumnFamilyValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_wrong_validation_class_on_counter_column_family()
-			throws Exception {
+	public void should_exception_when_wrong_validation_class_on_counter_column_family() throws Exception {
 
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				COMPOSITETYPE.getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(
-				"(org.apache.cassandra.db.marshal.UTF8Type)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				ASCIITYPE.getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(org.apache.cassandra.db.marshal.UTF8Type)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(ASCIITYPE.getClassName());
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception
@@ -153,116 +145,99 @@ public class ThriftColumnFamilyValidatorTest {
 		validator.validateCounterCF(cfDef);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_validate() throws Exception {
 
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
-		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
-		when(cfDef.getComparatorType())
-				.thenReturn(ComparatorType.COMPOSITETYPE);
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias())
 				.thenReturn(
 						"(org.apache.cassandra.db.marshal.BytesType,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type)");
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
 	@Test
 	public void should_validate_counter_cf() throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				COMPOSITETYPE.getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(COMPOSITETYPE.getClassName());
 		when(cfDef.getKeyValidationAlias()).thenReturn(COUNTER_KEY_ALIAS);
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias()).thenReturn(
-				"(org.apache.cassandra.db.marshal.UTF8Type)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				COUNTERTYPE.getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn("(org.apache.cassandra.db.marshal.UTF8Type)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(COUNTERTYPE.getClassName());
 
 		validator.validateCounterCF(cfDef);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void should_exception_when_not_matching_key_validation_class()
-			throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				INT_SRZ.getComparatorType().getClassName());
-		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
+	public void should_exception_when_not_matching_key_validation_class() throws Exception {
+		when(cfDef.getKeyValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getTableName()).thenReturn("cf");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception
-				.expectMessage("The column family 'cf' key class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
+				.expectMessage("The column family 'cf' key validation class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
 
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_exception_when_comparator_type_null() throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
-		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getTableName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(null);
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
 
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type 'null' should be '"
-						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
+		exception.expectMessage("The column family 'cf' comparator type 'null' should be '"
+				+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void should_exception_when_comparator_type_not_composite()
-			throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
-		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
+	public void should_exception_when_comparator_type_not_composite() throws Exception {
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getTableName()).thenReturn("cf");
 		when(cfDef.getComparatorType()).thenReturn(ComparatorType.ASCIITYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(alias)");
-
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type 'AsciiType(alias)' should be '"
-						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
+		exception.expectMessage("The column family 'cf' comparator type 'AsciiType(alias)' should be '"
+				+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
-	public void should_exception_when_comparator_type_alias_does_not_match()
-			throws Exception {
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
-		when((Class<Long>) entityMeta.getIdClass()).thenReturn(Long.class);
+	public void should_exception_when_comparator_type_alias_does_not_match() throws Exception {
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getTableName()).thenReturn("cf");
-		when(cfDef.getComparatorType())
-				.thenReturn(ComparatorType.COMPOSITETYPE);
+		when(cfDef.getComparatorType()).thenReturn(ComparatorType.COMPOSITETYPE);
 		when(cfDef.getComparatorTypeAlias()).thenReturn("(wrong_alias)");
-
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The column family 'cf' comparator type 'CompositeType(wrong_alias)' should be '"
-						+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
+		exception.expectMessage("The column family 'cf' comparator type 'CompositeType(wrong_alias)' should be '"
+				+ ENTITY_COMPARATOR_TYPE_CHECK + "'");
 
 		validator.validateCFForEntity(cfDef, entityMeta);
 	}
 
 	@Test
 	public void should_validate_clustered_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -270,200 +245,154 @@ public class ThriftColumnFamilyValidatorTest {
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		meta.setFirstMeta(pm);
+		meta.setTableName("tableName");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				DATE_SRZ.getComparatorType().getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(DATE_SRZ.getComparatorType().getClassName());
 
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 
 	@Test
 	public void should_validate_counter_clustered_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Long.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(PropertyType.COUNTER).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		meta.setFirstMeta(pm);
+		meta.setTableName("tableName");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				ComparatorType.COUNTERTYPE.getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(ComparatorType.COUNTERTYPE.getClassName());
 
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 
 	@Test
 	public void should_validate_value_less_clustered_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Long.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setClusteredEntity(true);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
-		entityMeta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList());
+		meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList());
+		meta.setTableName("tableName");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				STRING_SRZ.getComparatorType().getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(STRING_SRZ.getComparatorType().getClassName());
 
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 
 	@Test
-	public void should_exception_when_wrong_key_validation_type_for_clustered_entity()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+	public void should_exception_when_wrong_key_validation_type_for_clustered_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		meta.setFirstMeta(pm);
+		meta.setTableName("tableName");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				INT_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception
-				.expectMessage("The column family 'tableName' key validation type should be '"
-						+ LONG_SRZ.getComparatorType().getClassName() + "'");
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+				.expectMessage("The column family 'tableName' key validation class 'org.apache.cassandra.db.marshal.BytesType' does not correspond to the entity id class 'org.apache.cassandra.db.marshal.LongType'");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 
 	@Test
-	public void should_exception_when_wrong_comparator_type_alias_for_clustered_entity()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+	public void should_exception_when_wrong_comparator_type_alias_for_clustered_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(PropertyType.EMBEDDED_ID)
+				.build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		meta.setFirstMeta(pm);
+		meta.setTableName("tableName");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.LongType,org.apache.cassandra.db.marshal.UUIDType)");
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.LongType,org.apache.cassandra.db.marshal.UUIDType)");
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception
 				.expectMessage("The column family 'tableName' comparator type should be 'CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)'");
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 
 	@Test
-	public void should_exception_when_wrong_validation_type_for_clustered_entity()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Long.class, String.class, UUID.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).build();
+	public void should_exception_when_wrong_validation_type_for_clustered_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		meta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		meta.setFirstMeta(pm);
+		meta.setTableName("tableName");
+		when(comparatorAliasFactory.determineKeyValidationAndAlias(idMeta, false)).thenReturn(
+				Pair.<String, String> create(LONG_SRZ.getComparatorType().getClassName(), null));
+		when(comparatorAliasFactory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false)).thenReturn(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 
-		when(
-				comparatorAliasFactory
-						.determineCompatatorTypeAliasForClusteredEntity(idMeta,
-								false))
-				.thenReturn(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-
-		when(cfDef.getKeyValidationClass()).thenReturn(
-				LONG_SRZ.getComparatorType().getClassName());
+		when(cfDef.getKeyValidationClass()).thenReturn(LONG_SRZ.getComparatorType().getClassName());
 		when(cfDef.getComparatorType()).thenReturn(COMPOSITETYPE);
-		when(cfDef.getComparatorTypeAlias())
-				.thenReturn(
-						"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
-		when(cfDef.getDefaultValidationClass()).thenReturn(
-				INT_SRZ.getComparatorType().getClassName());
+		when(cfDef.getComparatorTypeAlias()).thenReturn(
+				"(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		when(cfDef.getDefaultValidationClass()).thenReturn(INT_SRZ.getComparatorType().getClassName());
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception
 				.expectMessage("The column family 'tableName' default validation type should be 'org.apache.cassandra.db.marshal.LongType'");
-		validator.validateCFForClusteredEntity(cfDef, meta, "tableName");
+		validator.validateCFForClusteredEntity(cfDef, meta);
 	}
 }

@@ -40,7 +40,7 @@ import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntityWithNotSupportedPropertyType;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntityWithTwoProperties;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -92,10 +92,8 @@ public class EntityParserTest {
 		configContext.setConsistencyPolicy(policy);
 		configContext.setObjectMapperFactory(objectMapperFactory);
 
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(
-				ConsistencyLevel.ONE);
-		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(
-				ConsistencyLevel.ALL);
+		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -104,11 +102,9 @@ public class EntityParserTest {
 		initEntityParsingContext(Bean.class);
 		EntityMeta meta = parser.parseEntity(entityContext);
 
-		assertThat(meta.getClassName()).isEqualTo(
-				"info.archinnov.achilles.test.parser.entity.Bean");
+		assertThat(meta.getClassName()).isEqualTo("info.archinnov.achilles.test.parser.entity.Bean");
 		assertThat(meta.getTableName()).isEqualTo("Bean");
-		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(
-				Long.class);
+		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
 		assertThat(meta.getPropertyMetas()).hasSize(7);
@@ -133,73 +129,54 @@ public class EntityParserTest {
 		assertThat(id.getPropertyName()).isEqualTo("id");
 		assertThat((Class<Long>) id.getValueClass()).isEqualTo(Long.class);
 		assertThat(id.type()).isEqualTo(ID);
-		assertThat(id.getReadConsistencyLevel())
-				.isEqualTo(ConsistencyLevel.ONE);
-		assertThat(id.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(id.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(id.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(name.getPropertyName()).isEqualTo("name");
-		assertThat((Class<String>) name.getValueClass())
-				.isEqualTo(String.class);
+		assertThat((Class<String>) name.getValueClass()).isEqualTo(String.class);
 		assertThat(name.type()).isEqualTo(SIMPLE);
-		assertThat(name.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(name.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(name.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(name.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(age.getPropertyName()).isEqualTo("age_in_year");
 		assertThat((Class<Long>) age.getValueClass()).isEqualTo(Long.class);
 		assertThat(age.type()).isEqualTo(SIMPLE);
-		assertThat(age.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(age.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(age.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(age.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
 		assertThat((Class) friends.getValueClass()).isEqualTo(String.class);
 		assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
 		assertThat(friends.type().isLazy()).isTrue();
-		assertThat(friends.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(friends.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(friends.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(friends.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(followers.getPropertyName()).isEqualTo("followers");
 		assertThat((Class) followers.getValueClass()).isEqualTo(String.class);
 		assertThat(followers.type()).isEqualTo(PropertyType.SET);
-		assertThat(followers.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(followers.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(followers.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(followers.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(preferences.getPropertyName()).isEqualTo("preferences");
 		assertThat((Class) preferences.getValueClass()).isEqualTo(String.class);
 		assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
 		assertThat((Class) preferences.getKeyClass()).isEqualTo(Integer.class);
-		assertThat(preferences.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(preferences.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(preferences.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(preferences.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(creator.getPropertyName()).isEqualTo("creator");
 		assertThat((Class) creator.getValueClass()).isEqualTo(UserBean.class);
 		assertThat(creator.type()).isEqualTo(SIMPLE);
 
-		assertThat(meta.getReadConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ONE);
-		assertThat(meta.getWriteConsistencyLevel()).isEqualTo(
-				ConsistencyLevel.ALL);
+		assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+		assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(meta.getEagerMetas()).containsOnly(id, name, age, followers,
-				preferences, creator);
-		assertThat(meta.getEagerGetters()).containsOnly(id.getGetter(),
-				name.getGetter(), age.getGetter(), followers.getGetter(),
-				preferences.getGetter(), creator.getGetter());
+		assertThat(meta.getEagerMetas()).containsOnly(id, name, age, followers, preferences, creator);
+		assertThat(meta.getEagerGetters()).containsOnly(id.getGetter(), name.getGetter(), age.getGetter(),
+				followers.getGetter(), preferences.getGetter(), creator.getGetter());
 
-		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE,
-				meta.getTableName());
-		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL,
-				meta.getTableName());
+		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE, meta.getTableName());
+		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL, meta.getTableName());
 	}
 
 	@Test
@@ -210,13 +187,11 @@ public class EntityParserTest {
 
 		assertThat(meta).isNotNull();
 
-		assertThat((Class<CompoundKey>) meta.getIdClass()).isEqualTo(
-				CompoundKey.class);
+		assertThat((Class<EmbeddedKey>) meta.getIdClass()).isEqualTo(EmbeddedKey.class);
 		PropertyMeta idMeta = meta.getIdMeta();
 
 		assertThat(idMeta.isEmbeddedId()).isTrue();
-		assertThat(idMeta.getComponentClasses()).containsExactly(Long.class,
-				String.class);
+		assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
 
 	}
 
@@ -238,12 +213,9 @@ public class EntityParserTest {
 
 		assertThat(meta).isNotNull();
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat(meta.getPropertyMetas().get("name").getPropertyName())
-				.isEqualTo("name");
-		assertThat(meta.getPropertyMetas().get("address").getPropertyName())
-				.isEqualTo("address");
-		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName())
-				.isEqualTo("nickname");
+		assertThat(meta.getPropertyMetas().get("name").getPropertyName()).isEqualTo("name");
+		assertThat(meta.getPropertyMetas().get("address").getPropertyName()).isEqualTo("address");
+		assertThat(meta.getPropertyMetas().get("nickname").getPropertyName()).isEqualTo("nickname");
 	}
 
 	@Test
@@ -258,12 +230,10 @@ public class EntityParserTest {
 		PropertyMeta counterMeta = meta.getPropertyMetas().get("counter");
 		assertThat(counterMeta).isNotNull();
 
-		CounterProperties counterProperties = counterMeta
-				.getCounterProperties();
+		CounterProperties counterProperties = counterMeta.getCounterProperties();
 
 		assertThat(counterProperties).isNotNull();
-		assertThat(counterProperties.getFqcn()).isEqualTo(
-				BeanWithSimpleCounter.class.getCanonicalName());
+		assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithSimpleCounter.class.getCanonicalName());
 		assertThat(counterProperties.getIdMeta()).isSameAs(idMeta);
 	}
 
@@ -272,22 +242,17 @@ public class EntityParserTest {
 		initEntityParsingContext(BeanWithNoId.class);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The entity '"
-						+ BeanWithNoId.class.getCanonicalName()
-						+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
+		expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
+				+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
 		parser.parseEntity(entityContext);
 	}
 
 	@Test
-	public void should_exception_when_entity_has_duplicated_column_name()
-			throws Exception {
+	public void should_exception_when_entity_has_duplicated_column_name() throws Exception {
 		initEntityParsingContext(BeanWithDuplicatedColumnName.class);
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The property 'name' is already used for the entity '"
-						+ BeanWithDuplicatedColumnName.class.getCanonicalName()
-						+ "'");
+		expectedEx.expectMessage("The property 'name' is already used for the entity '"
+				+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
 
 		parser.parseEntity(entityContext);
 	}
@@ -300,44 +265,34 @@ public class EntityParserTest {
 		assertThat(meta.isClusteredEntity()).isTrue();
 
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat((Class<CompoundKey>) meta.getIdMeta().getValueClass())
-				.isEqualTo(CompoundKey.class);
+		assertThat((Class<EmbeddedKey>) meta.getIdMeta().getValueClass()).isEqualTo(EmbeddedKey.class);
 
 		assertThat(meta.getPropertyMetas()).hasSize(2);
-		assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(
-				EMBEDDED_ID);
-		assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(
-				SIMPLE);
+		assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
+		assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
 	}
 
 	@Test
-	public void should_exception_when_clustered_entity_more_than_one_mapped_column()
-			throws Exception {
+	public void should_exception_when_clustered_entity_more_than_one_mapped_column() throws Exception {
 		initEntityParsingContext(ClusteredEntityWithTwoProperties.class);
 		configContext.setImpl(Impl.THRIFT);
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The clustered entity '"
-						+ ClusteredEntityWithTwoProperties.class
-								.getCanonicalName()
-						+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
+		expectedEx.expectMessage("The clustered entity '" + ClusteredEntityWithTwoProperties.class.getCanonicalName()
+				+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
 
 		parser.parseEntity(entityContext);
 
 	}
 
 	@Test
-	public void should_exception_when_clustered_entity_has_unsupported_property_type()
-			throws Exception {
+	public void should_exception_when_clustered_entity_has_unsupported_property_type() throws Exception {
 		initEntityParsingContext(ClusteredEntityWithNotSupportedPropertyType.class);
 		configContext.setImpl(Impl.THRIFT);
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The clustered entity '"
-						+ ClusteredEntityWithNotSupportedPropertyType.class
-								.getCanonicalName()
-						+ "' should have a single @Column property of type simple/counter");
+		expectedEx.expectMessage("The clustered entity '"
+				+ ClusteredEntityWithNotSupportedPropertyType.class.getCanonicalName()
+				+ "' should have a single @Column property of type simple/counter");
 
 		parser.parseEntity(entityContext);
 

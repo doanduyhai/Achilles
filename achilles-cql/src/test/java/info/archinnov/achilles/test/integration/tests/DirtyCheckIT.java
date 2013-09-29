@@ -42,8 +42,7 @@ import com.datastax.driver.core.Session;
 public class DirtyCheckIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "CompleteBean");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -53,10 +52,9 @@ public class DirtyCheckIT {
 
 	@Before
 	public void setUp() {
-		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-				.age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
+				.addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
+				.addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
 	}
@@ -67,9 +65,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(3);
@@ -82,9 +78,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 
 		List<String> friends = row.getList("friends", String.class);
 
@@ -99,9 +93,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(4);
@@ -115,22 +107,17 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		assertThat(row.isNull("friends")).isTrue();
 	}
 
 	@Test
-	public void should_dirty_check_list_element_remove_at_index()
-			throws Exception {
+	public void should_dirty_check_list_element_remove_at_index() throws Exception {
 		bean.getFriends().remove(0);
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -138,15 +125,12 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_remove_element()
-			throws Exception {
+	public void should_dirty_check_list_element_remove_element() throws Exception {
 		bean.getFriends().remove("bar");
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -159,9 +143,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -174,9 +156,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -184,15 +164,12 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_sub_list_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_sub_list_remove() throws Exception {
 		bean.getFriends().subList(0, 1).remove(0);
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -205,9 +182,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(2);
@@ -215,8 +190,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().iterator();
 
 		iter.next();
@@ -224,9 +198,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -234,8 +206,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_list_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
@@ -243,9 +214,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(1);
@@ -253,8 +222,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_set()
-			throws Exception {
+	public void should_dirty_check_list_element_list_iterator_set() throws Exception {
 		ListIterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
@@ -262,9 +230,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select friends from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(2);
@@ -277,12 +243,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(4);
 		assertThat(preferences.get(4)).isEqualTo("test");
@@ -294,12 +256,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -315,12 +273,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(4);
 		assertThat(preferences.get(3)).isEqualTo("75015");
@@ -334,12 +288,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -353,12 +303,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(1);
 		assertThat(preferences.get(3)).isEqualTo("75014");
@@ -371,12 +317,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(1)).isEqualTo("FR");
@@ -385,8 +327,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_map_keyset_iterator_remove() throws Exception {
 		Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
 
 		iter.next();
@@ -394,12 +335,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -413,12 +350,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -427,17 +360,12 @@ public class DirtyCheckIT {
 
 	@Test
 	public void should_dirty_check_map_valueset_remove_all() throws Exception {
-		bean.getPreferences().values()
-				.removeAll(Arrays.asList("FR", "Paris", "test"));
+		bean.getPreferences().values().removeAll(Arrays.asList("FR", "Paris", "test"));
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(1);
 		assertThat(preferences.get(3)).isEqualTo("75014");
@@ -445,17 +373,12 @@ public class DirtyCheckIT {
 
 	@Test
 	public void should_dirty_check_map_valueset_retain_all() throws Exception {
-		bean.getPreferences().values()
-				.retainAll(Arrays.asList("FR", "Paris", "test"));
+		bean.getPreferences().values().retainAll(Arrays.asList("FR", "Paris", "test"));
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(1)).isEqualTo("FR");
@@ -463,8 +386,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_valueset_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_map_valueset_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getPreferences().values().iterator();
 
 		iter.next();
@@ -472,12 +394,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -496,12 +414,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(2);
 		assertThat(preferences.get(2)).isEqualTo("Paris");
@@ -510,8 +424,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_entrySet_remove_all_entry()
-			throws Exception {
+	public void should_dirty_check_map_entrySet_remove_all_entry() throws Exception {
 
 		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
@@ -524,12 +437,8 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session
-				.execute(
-						"select preferences from CompleteBean where id="
-								+ bean.getId()).one();
-		Map<Integer, String> preferences = row.getMap("preferences",
-				Integer.class, String.class);
+		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
+		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
 		assertThat(preferences).hasSize(1);
 		assertThat(preferences.get(3)).isEqualTo("75014");
@@ -541,8 +450,7 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select name from CompleteBean where id=" + bean.getId()).one();
+		Row row = session.execute("select name from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedName = row.getString("name");
 
 		assertThat(reloadedName).isEqualTo("another_name");
@@ -554,26 +462,21 @@ public class DirtyCheckIT {
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select label from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedLabel = row.getString("label");
 
 		assertThat(reloadedLabel).isEqualTo("label");
 	}
 
 	@Test
-	public void should_dirty_check_lazy_simple_property_after_loading()
-			throws Exception {
+	public void should_dirty_check_lazy_simple_property_after_loading() throws Exception {
 		assertThat(bean.getLabel()).isNull();
 
 		bean.setLabel("label");
 
 		em.merge(bean);
 
-		Row row = session.execute(
-				"select label from CompleteBean where id=" + bean.getId())
-				.one();
+		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedLabel = row.getString("label");
 
 		assertThat(reloadedLabel).isEqualTo("label");

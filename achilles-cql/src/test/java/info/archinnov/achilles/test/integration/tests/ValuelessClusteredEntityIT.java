@@ -36,8 +36,8 @@ import org.junit.Test;
 public class ValuelessClusteredEntityIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "ValuelessClusteredEntity");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+			"ValuelessClusteredEntity");
 
 	private CQLEntityManager em = resource.getEm();
 
@@ -46,13 +46,11 @@ public class ValuelessClusteredEntityIT {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(
-				compoundKey);
+		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
 		em.persist(entity);
 
-		ValuelessClusteredEntity found = em.find(
-				ValuelessClusteredEntity.class, compoundKey);
+		ValuelessClusteredEntity found = em.find(ValuelessClusteredEntity.class, compoundKey);
 
 		assertThat(found).isNotNull();
 	}
@@ -62,13 +60,11 @@ public class ValuelessClusteredEntityIT {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(
-				compoundKey);
+		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
 		em.merge(entity);
 
-		ValuelessClusteredEntity found = em.getReference(
-				ValuelessClusteredEntity.class, compoundKey);
+		ValuelessClusteredEntity found = em.getReference(ValuelessClusteredEntity.class, compoundKey);
 
 		assertThat(found).isNotNull();
 	}
@@ -78,15 +74,13 @@ public class ValuelessClusteredEntityIT {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(
-				compoundKey);
+		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
 		em.persist(entity, OptionsBuilder.withTtl(2));
 
 		Thread.sleep(3000);
 
-		assertThat(em.find(ValuelessClusteredEntity.class, compoundKey))
-				.isNull();
+		assertThat(em.find(ValuelessClusteredEntity.class, compoundKey)).isNull();
 	}
 
 	@Test
@@ -94,15 +88,13 @@ public class ValuelessClusteredEntityIT {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(
-				compoundKey);
+		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
 		em.merge(entity, OptionsBuilder.withTtl(2));
 
 		Thread.sleep(3000);
 
-		assertThat(em.find(ValuelessClusteredEntity.class, compoundKey))
-				.isNull();
+		assertThat(em.find(ValuelessClusteredEntity.class, compoundKey)).isNull();
 	}
 
 	@Test
@@ -120,10 +112,8 @@ public class ValuelessClusteredEntityIT {
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
-		List<ValuelessClusteredEntity> result = em
-				.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
-				.fromClusterings(name5).toClusterings(name2)
-				.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
+		List<ValuelessClusteredEntity> result = em.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
+				.fromClusterings(name5).toClusterings(name2).bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
 				.ordering(OrderingMode.DESCENDING).limit(3).get();
 
 		assertThat(result).hasSize(3);
@@ -147,10 +137,8 @@ public class ValuelessClusteredEntityIT {
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
-		Iterator<ValuelessClusteredEntity> iterator = em
-				.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
-				.fromClusterings(name5).toClusterings(name2)
-				.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
+		Iterator<ValuelessClusteredEntity> iterator = em.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
+				.fromClusterings(name5).toClusterings(name2).bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
 				.ordering(OrderingMode.DESCENDING).iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
@@ -171,12 +159,10 @@ public class ValuelessClusteredEntityIT {
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
 		em.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
 
-		em.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
-				.fromClusterings(name2).toClusterings(name2).remove();
+		em.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id).fromClusterings(name2).toClusterings(name2)
+				.remove();
 
-		List<ValuelessClusteredEntity> result = em
-				.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
-				.get();
+		List<ValuelessClusteredEntity> result = em.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id).get();
 
 		assertThat(result).hasSize(2);
 		assertThat(result.get(0).getId().getName()).isEqualTo(name1);

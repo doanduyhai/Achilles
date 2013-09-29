@@ -43,15 +43,13 @@ import com.google.common.base.Optional;
 public class ClusteredEntityWithObjectPropertyIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "clustered_with_object_value");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"clustered_with_object_value");
 
 	private ThriftEntityManager em = resource.getEm();
 
-	private ThriftGenericWideRowDao dao = resource
-			.getColumnFamilyDao(
-					normalizerAndValidateColumnFamilyName("clustered_with_object_value"),
-					Long.class, Holder.class);
+	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
+			normalizerAndValidateColumnFamilyName("clustered_with_object_value"), Long.class, Holder.class);
 
 	private ClusteredEntityWithObjectValue entity;
 
@@ -65,8 +63,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		em.persist(entity);
 
-		ClusteredEntityWithObjectValue found = em.find(
-				ClusteredEntityWithObjectValue.class, compoundKey);
+		ClusteredEntityWithObjectValue found = em.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo(holder);
@@ -80,8 +77,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		em.merge(entity);
 
-		ClusteredEntityWithObjectValue found = em.getReference(
-				ClusteredEntityWithObjectValue.class, compoundKey);
+		ClusteredEntityWithObjectValue found = em.getReference(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo(holder);
@@ -115,8 +111,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		em.remove(entity);
 
-		assertThat(em.find(ClusteredEntityWithObjectValue.class, compoundKey))
-				.isNull();
+		assertThat(em.find(ClusteredEntityWithObjectValue.class, compoundKey)).isNull();
 
 	}
 
@@ -137,9 +132,8 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Mutator<Long> mutator = dao.buildMutator();
 		ObjectMapper mapper = new ObjectMapper();
 
-		dao.insertColumnBatch(partitionKey, comp,
-				mapper.writeValueAsString(newHolder),
-				Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
+		dao.insertColumnBatch(partitionKey, comp, mapper.writeValueAsString(newHolder), Optional.<Integer> absent(),
+				Optional.<Long> absent(), mutator);
 		dao.executeMutator(mutator);
 
 		em.refresh(entity);
@@ -151,18 +145,15 @@ public class ClusteredEntityWithObjectPropertyIT {
 	@Test
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		List<ClusteredEntityWithObjectValue> entities = em
-				.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).fromClusterings("name2")
-				.toClusterings("name4").get();
+		List<ClusteredEntityWithObjectValue> entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
+				.partitionKey(partitionKey).fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).fromClusterings("name2")
-				.toClusterings("name4").get();
+		entities = em.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey)
+				.fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
 
@@ -199,8 +190,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntityWithObjectValue> iter = em
-				.sliceQuery(ClusteredEntityWithObjectValue.class)
+		Iterator<ClusteredEntityWithObjectValue> iter = em.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.partitionKey(partitionKey).iterator();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -241,12 +231,10 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 5);
 
-		em.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).fromClusterings("name2")
+		em.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey).fromClusterings("name2")
 				.toClusterings("name4").remove();
 
-		List<ClusteredEntityWithObjectValue> entities = em
-				.sliceQuery(ClusteredEntityWithObjectValue.class)
+		List<ClusteredEntityWithObjectValue> entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.partitionKey(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
@@ -255,11 +243,9 @@ public class ClusteredEntityWithObjectPropertyIT {
 		assertThat(entities.get(1).getValue().getContent()).isEqualTo("name5");
 	}
 
-	private void insertClusteredEntity(Long partitionKey, String name,
-			Holder clusteredValue) {
+	private void insertClusteredEntity(Long partitionKey, String name, Holder clusteredValue) {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
-		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(
-				embeddedId, clusteredValue);
+		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(embeddedId, clusteredValue);
 		em.persist(entity);
 	}
 
@@ -267,8 +253,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		String namePrefix = "name";
 
 		for (int i = 1; i <= count; i++) {
-			insertClusteredEntity(partitionKey, namePrefix + i, new Holder(
-					namePrefix + i));
+			insertClusteredEntity(partitionKey, namePrefix + i, new Holder(namePrefix + i));
 		}
 	}
 }

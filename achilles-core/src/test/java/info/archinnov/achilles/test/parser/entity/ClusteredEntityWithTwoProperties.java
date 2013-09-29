@@ -23,7 +23,7 @@ import javax.persistence.Entity;
 @Entity
 public class ClusteredEntityWithTwoProperties {
 	@EmbeddedId
-	private CompoundKey id;
+	private EmbeddedKey id;
 
 	@Column
 	private String name;
@@ -31,11 +31,11 @@ public class ClusteredEntityWithTwoProperties {
 	@Column
 	private String value;
 
-	public CompoundKey getId() {
+	public EmbeddedKey getId() {
 		return id;
 	}
 
-	public void setId(CompoundKey id) {
+	public void setId(EmbeddedKey id) {
 		this.id = id;
 	}
 

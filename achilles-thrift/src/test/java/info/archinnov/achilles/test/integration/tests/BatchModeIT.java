@@ -63,8 +63,8 @@ public class BatchModeIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean", "User", "Tweet");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean", "User", "Tweet");
 
 	private ThriftEntityManagerFactory emf = resource.getFactory();
 
@@ -72,12 +72,10 @@ public class BatchModeIT {
 
 	private ThriftCounterDao thriftCounterDao = resource.getCounterDao();
 
-	private ThriftConsistencyLevelPolicy policy = resource
-			.getConsistencyPolicy();
+	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
 
 	private ThriftGenericEntityDao completeBeanDao = resource.getEntityDao(
-			normalizerAndValidateColumnFamilyName(CompleteBean.class
-					.getCanonicalName()), Long.class);
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getCanonicalName()), Long.class);
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -87,8 +85,7 @@ public class BatchModeIT {
 
 	@Before
 	public void setUp() {
-		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln")
-				.buid();
+		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
 	}
 
 	@Test
@@ -97,15 +94,13 @@ public class BatchModeIT {
 		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
 		batchEm.startBatch();
 
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
 		entity = batchEm.merge(entity);
 
 		entity.setLabel("label");
 
-		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId()
-				.content("welcomeTweet").buid();
+		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
 		entity.setWelcomeTweet(welcomeTweet);
 
 		entity.getVersion().incr(10L);
@@ -116,39 +111,27 @@ public class BatchModeIT {
 		labelComposite.addComponent(1, "label", EQUAL);
 		labelComposite.addComponent(2, "0", EQUAL);
 
-		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite))
-				.isNull();
+		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isNull();
 
-		Composite counterKey = createCounterKey(CompleteBean.class,
-				entity.getId());
+		Composite counterKey = createCounterKey(CompleteBean.class, entity.getId());
 		Composite versionCounterName = createCounterName("version");
 
-		assertThat(
-				thriftCounterDao
-						.getCounterValue(counterKey, versionCounterName))
-				.isEqualTo(10L);
+		assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
 
 		// Flush
 		batchEm.endBatch();
 
-		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite))
-				.isEqualTo("label");
+		assertThat(completeBeanDao.getValue(entity.getId(), labelComposite)).isEqualTo("label");
 
-		assertThat(
-				thriftCounterDao
-						.getCounterValue(counterKey, versionCounterName))
-				.isEqualTo(10L);
+		assertThat(thriftCounterDao.getCounterValue(counterKey, versionCounterName)).isEqualTo(10L);
 		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
 	public void should_batch_several_entities() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").buid();
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("tweet1")
-				.buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2")
-				.buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
 		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
@@ -188,10 +171,8 @@ public class BatchModeIT {
 
 	@Test
 	public void should_reinit_batch_context_after_exception() throws Exception {
-		User user = UserTestBuilder.user().id(123456494L)
-				.firstname("firstname").lastname("lastname").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet").creator(user).buid();
+		User user = UserTestBuilder.user().id(123456494L).firstname("firstname").lastname("lastname").buid();
+		Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
 		// Start batch
 		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
@@ -220,22 +201,17 @@ public class BatchModeIT {
 
 		Tweet foundTweet = batchEm.find(Tweet.class, tweet.getId());
 		assertThat(foundTweet.getContent()).isEqualTo("simple_tweet");
-		assertThat(foundTweet.getCreator().getId())
-				.isEqualTo(foundUser.getId());
-		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo(
-				"firstname");
+		assertThat(foundTweet.getCreator().getId()).isEqualTo(foundUser.getId());
+		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo("firstname");
 		assertThat(foundTweet.getCreator().getLastname()).isEqualTo("lastname");
 		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
 	public void should_batch_with_custom_consistency_level() throws Exception {
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet1").buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet2").buid();
-		Tweet tweet3 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet3").buid();
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
+		Tweet tweet3 = TweetTestBuilder.tweet().randomId().content("simple_tweet3").buid();
 
 		em.persist(tweet1);
 
@@ -262,12 +238,9 @@ public class BatchModeIT {
 	}
 
 	@Test
-	public void should_reinit_batch_context_and_consistency_after_exception()
-			throws Exception {
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet1").buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet2").buid();
+	public void should_reinit_batch_context_and_consistency_after_exception() throws Exception {
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 
 		em.persist(tweet1);
 
@@ -297,14 +270,12 @@ public class BatchModeIT {
 		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
-	private void assertThatBatchContextHasBeenReset(
-			ThriftBatchingEntityManager batchEm) {
-		ThriftBatchingFlushContext flushContext = Whitebox.getInternalState(
-				batchEm, "flushContext");
-		Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = Whitebox
-				.getInternalState(flushContext, "mutatorMap");
-		boolean hasCustomConsistencyLevels = (Boolean) Whitebox
-				.getInternalState(flushContext, "hasCustomConsistencyLevels");
+	private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm) {
+		ThriftBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
+		Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = Whitebox.getInternalState(flushContext,
+				"mutatorMap");
+		boolean hasCustomConsistencyLevels = (Boolean) Whitebox.getInternalState(flushContext,
+				"hasCustomConsistencyLevels");
 
 		assertThat(mutatorMap).isEmpty();
 		assertThat(hasCustomConsistencyLevels).isFalse();

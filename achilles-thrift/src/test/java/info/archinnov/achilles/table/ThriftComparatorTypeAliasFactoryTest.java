@@ -16,18 +16,19 @@
  */
 package info.archinnov.achilles.table;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.cassandra.utils.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,15 +46,6 @@ public class ThriftComparatorTypeAliasFactoryTest {
 
 	@InjectMocks
 	private ThriftComparatorTypeAliasFactory factory;
-
-	@Mock
-	private ThriftCompoundKeyMapper mapper;
-
-	@Mock
-	private PropertyMeta compoundKeyWideMeta;
-
-	@Mock
-	private PropertyMeta compoundKeyWithEnumWideMeta;
 
 	@Mock
 	private EmbeddedIdProperties embeddedIdProperties;
@@ -74,68 +66,85 @@ public class ThriftComparatorTypeAliasFactoryTest {
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_clustered_entity_creation()
-			throws Exception {
+	public void should_determine_composite_type_alias_for_clustering_components_creation() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compNames("rowkey", "name", "date")
-				.compClasses(Long.class, String.class, UUID.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).clusteringNames("name", "date")
+				.clusteringClasses(String.class, UUID.class).build();
 
-		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
-				idMeta, true);
+		String actual = factory.determineCompatatorTypeAliasForClusteringComponents(idMeta, true);
 
 		assertThat(actual).isEqualTo("(UTF8Type,UUIDType)");
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_clustered_entity_creation_with_time_uuid()
+	public void should_determine_composite_type_alias_for_clustering_components_creation_with_time_uuid()
 			throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compNames("rowkey", "name", "date")
-				.compClasses(Long.class, String.class, UUID.class)
-				.compTimeUUID("date").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).clusteringNames("name", "date")
+				.clusteringClasses(String.class, UUID.class).compTimeUUID("date").build();
 
-		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
-				idMeta, true);
+		String actual = factory.determineCompatatorTypeAliasForClusteringComponents(idMeta, true);
 
 		assertThat(actual).isEqualTo("(UTF8Type,TimeUUIDType)");
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_clustered_entity_validation()
-			throws Exception {
+	public void should_determine_composite_type_alias_for_clustering_components_validation() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compNames("rowkey", "name", "date")
-				.compClasses(Long.class, String.class, UUID.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).clusteringNames("name", "date")
+				.clusteringClasses(String.class, UUID.class).build();
 
-		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
-				idMeta, false);
+		String actual = factory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false);
 
-		assertThat(actual)
-				.isEqualTo(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
+		assertThat(actual).isEqualTo(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UUIDType)");
 	}
 
 	@Test
-	public void should_determine_composite_type_alias_for_clustered_entity_validation_with_time_uuid()
+	public void should_determine_composite_type_alias_for_clustering_components_validation_with_time_uuid()
 			throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compNames("rowkey", "name", "date")
-				.compClasses(Long.class, String.class, UUID.class)
-				.compTimeUUID("date").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).clusteringNames("name", "date")
+				.clusteringClasses(String.class, UUID.class).type(EMBEDDED_ID).compTimeUUID("date").build();
 
-		String actual = factory.determineCompatatorTypeAliasForClusteredEntity(
-				idMeta, false);
+		String actual = factory.determineCompatatorTypeAliasForClusteringComponents(idMeta, false);
 
-		assertThat(actual)
-				.isEqualTo(
-						"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.TimeUUIDType)");
+		assertThat(actual).isEqualTo(
+				"CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.TimeUUIDType)");
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_single_partition_key_creation() throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).build();
+
+		Pair<String, String> actual = factory.determineKeyValidationAndAlias(idMeta, true);
+
+		assertThat(actual.left).isEqualTo("LongType");
+		assertThat(actual.right).isNull();
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_embedded_single_partition_key_creation() throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, UUID.class).build();
+
+		Pair<String, String> actual = factory.determineKeyValidationAndAlias(idMeta, true);
+
+		assertThat(actual.left).isEqualTo("LongType");
+		assertThat(actual.right).isNull();
+	}
+
+	@Test
+	public void should_determine_composite_type_alias_for_composite_partition_key_creation() throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.partitionClasses(Long.class, String.class).build();
+
+		Pair<String, String> actual = factory.determineKeyValidationAndAlias(idMeta, true);
+
+		assertThat(actual.left).isEqualTo("CompositeType");
+		assertThat(actual.right).isEqualTo("(LongType,UTF8Type)");
 	}
 }

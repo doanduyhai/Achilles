@@ -21,17 +21,14 @@ import info.archinnov.achilles.proxy.wrapper.CollectionWrapper;
 
 import java.util.Collection;
 
-public class CollectionWrapperBuilder extends
-		AbstractWrapperBuilder<CollectionWrapperBuilder> {
+public class CollectionWrapperBuilder extends AbstractWrapperBuilder<CollectionWrapperBuilder> {
 	private Collection<Object> target;
 
-	public static CollectionWrapperBuilder builder(PersistenceContext context,
-			Collection<Object> target) {
+	public static CollectionWrapperBuilder builder(PersistenceContext context, Collection<Object> target) {
 		return new CollectionWrapperBuilder(context, target);
 	}
 
-	public CollectionWrapperBuilder(PersistenceContext context,
-			Collection<Object> target) {
+	public CollectionWrapperBuilder(PersistenceContext context, Collection<Object> target) {
 		super.context = context;
 		this.target = target;
 	}

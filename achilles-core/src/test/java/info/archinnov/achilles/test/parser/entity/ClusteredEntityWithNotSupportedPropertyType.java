@@ -25,16 +25,16 @@ import javax.persistence.Entity;
 @Entity
 public class ClusteredEntityWithNotSupportedPropertyType {
 	@EmbeddedId
-	private CompoundKey id;
+	private EmbeddedKey id;
 
 	@Column(table = "xxx")
 	private Map<Long, String> map;
 
-	public CompoundKey getId() {
+	public EmbeddedKey getId() {
 		return id;
 	}
 
-	public void setId(CompoundKey id) {
+	public void setId(EmbeddedKey id) {
 		this.id = id;
 	}
 

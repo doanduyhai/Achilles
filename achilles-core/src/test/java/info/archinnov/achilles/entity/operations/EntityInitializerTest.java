@@ -90,17 +90,13 @@ public class EntityInitializerTest {
 		followersMeta.setGetter(beanClass.getMethod("getFollowers"));
 		followersMeta.setInvoker(invoker);
 
-		Set<Method> alreadyLoaded = Sets.newHashSet(friendsMeta.getGetter(),
-				nameMeta.getGetter());
+		Set<Method> alreadyLoaded = Sets.newHashSet(friendsMeta.getGetter(), nameMeta.getGetter());
 
-		Map<Method, PropertyMeta> getterMetas = ImmutableMap
-				.<Method, PropertyMeta> of(nameMeta.getGetter(), nameMeta,
-						friendsMeta.getGetter(), friendsMeta,
-						followersMeta.getGetter(), followersMeta);
+		Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(nameMeta.getGetter(), nameMeta,
+				friendsMeta.getGetter(), friendsMeta, followersMeta.getGetter(), followersMeta);
 
-		Map<String, PropertyMeta> allMetas = ImmutableMap
-				.<String, PropertyMeta> of("name", nameMeta, "friends",
-						friendsMeta, "followers", followersMeta);
+		Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of("name", nameMeta, "friends",
+				friendsMeta, "followers", followersMeta);
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setPropertyMetas(allMetas);
@@ -114,8 +110,7 @@ public class EntityInitializerTest {
 	}
 
 	@Test
-	public void should_initialize_and_set_counter_value_for_entity()
-			throws Exception {
+	public void should_initialize_and_set_counter_value_for_entity() throws Exception {
 		Class<? extends CompleteBean> beanClass = bean.getClass();
 
 		PropertyMeta counterMeta = new PropertyMeta();
@@ -127,35 +122,30 @@ public class EntityInitializerTest {
 
 		Set<Method> alreadyLoaded = Sets.newHashSet();
 
-		Map<Method, PropertyMeta> getterMetas = ImmutableMap
-				.<Method, PropertyMeta> of(counterMeta.getGetter(), counterMeta);
+		Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(counterMeta.getGetter(),
+				counterMeta);
 
-		Map<String, PropertyMeta> allMetas = ImmutableMap
-				.<String, PropertyMeta> of("count", counterMeta);
+		Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of("count", counterMeta);
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setPropertyMetas(allMetas);
 		entityMeta.setGetterMetas(getterMetas);
 
 		when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
-		when(invoker.getValueFromField(bean, counterMeta.getGetter()))
-				.thenReturn(CounterBuilder.incr(10L));
+		when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
 		when(proxifier.getRealObject(bean)).thenReturn(bean);
 
 		initializer.initializeEntity(bean, entityMeta, interceptor);
 
-		ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor
-				.forClass(Counter.class);
+		ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor.forClass(Counter.class);
 
-		verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()),
-				counterCaptor.capture());
+		verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()), counterCaptor.capture());
 
 		assertThat(counterCaptor.getValue().get()).isEqualTo(10L);
 	}
 
 	@Test
-	public void should_initialize_and_set_counter_value_for_entity_even_if_already_loaded()
-			throws Exception {
+	public void should_initialize_and_set_counter_value_for_entity_even_if_already_loaded() throws Exception {
 		Class<? extends CompleteBean> beanClass = bean.getClass();
 
 		PropertyMeta counterMeta = new PropertyMeta();
@@ -167,28 +157,24 @@ public class EntityInitializerTest {
 
 		Set<Method> alreadyLoaded = Sets.newHashSet(counterMeta.getGetter());
 
-		Map<Method, PropertyMeta> getterMetas = ImmutableMap
-				.<Method, PropertyMeta> of(counterMeta.getGetter(), counterMeta);
+		Map<Method, PropertyMeta> getterMetas = ImmutableMap.<Method, PropertyMeta> of(counterMeta.getGetter(),
+				counterMeta);
 
-		Map<String, PropertyMeta> allMetas = ImmutableMap
-				.<String, PropertyMeta> of("count", counterMeta);
+		Map<String, PropertyMeta> allMetas = ImmutableMap.<String, PropertyMeta> of("count", counterMeta);
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setPropertyMetas(allMetas);
 		entityMeta.setGetterMetas(getterMetas);
 
 		when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
-		when(invoker.getValueFromField(bean, counterMeta.getGetter()))
-				.thenReturn(CounterBuilder.incr(10L));
+		when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
 		when(proxifier.getRealObject(bean)).thenReturn(bean);
 
 		initializer.initializeEntity(bean, entityMeta, interceptor);
 
-		ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor
-				.forClass(Counter.class);
+		ArgumentCaptor<Counter> counterCaptor = ArgumentCaptor.forClass(Counter.class);
 
-		verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()),
-				counterCaptor.capture());
+		verify(invoker).setValueToField(eq(bean), eq(counterMeta.getSetter()), counterCaptor.capture());
 
 		assertThat(counterCaptor.getValue().get()).isEqualTo(10L);
 	}

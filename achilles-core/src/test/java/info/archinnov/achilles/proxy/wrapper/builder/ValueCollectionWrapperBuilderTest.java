@@ -53,8 +53,7 @@ public class ValueCollectionWrapperBuilderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		setter = CompleteBean.class
-				.getDeclaredMethod("setFollowers", Set.class);
+		setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
 	}
 
 	@Test
@@ -66,20 +65,15 @@ public class ValueCollectionWrapperBuilderTest {
 
 		KeySetWrapper wrapper = KeySetWrapperBuilder
 				//
-				.builder(context, targetMap.keySet()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta((PropertyMeta) propertyMeta)
-				.proxifier(proxifier).build();
+				.builder(context, targetMap.keySet()).dirtyMap(dirtyMap).setter(setter)
+				.propertyMeta((PropertyMeta) propertyMeta).proxifier(proxifier).build();
 
 		assertThat(wrapper.getTarget()).isSameAs(targetMap.keySet());
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(
-				setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

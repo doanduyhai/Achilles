@@ -18,12 +18,18 @@ package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
 
-public class CompoundKeyWithNegativeOrder {
-	@Order(-1)
+public class EmbeddedKeyNotInstantiable {
+	@Order(1)
 	private String name;
 
-	@Order(0)
+	@Order(2)
 	private int rank;
+
+	public EmbeddedKeyNotInstantiable(String name, int rank) {
+		super();
+		this.name = name;
+		this.rank = rank;
+	}
 
 	public String getName() {
 		return name;

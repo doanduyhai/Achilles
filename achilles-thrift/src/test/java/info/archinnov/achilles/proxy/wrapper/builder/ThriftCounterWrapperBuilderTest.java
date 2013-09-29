@@ -48,20 +48,14 @@ public class ThriftCounterWrapperBuilderTest {
 
 	@Test
 	public void should_build() throws Exception {
-		ThriftCounterWrapper built = ThriftCounterWrapperBuilder
-				.builder(context)
-				//
-				.columnName(columnName).key(key).counterDao(counterDao)
-				.consistencyLevel(consistencyLevel).build();
+		ThriftCounterWrapper built = ThriftCounterWrapperBuilder.builder(context)
+		//
+				.columnName(columnName).key(key).counterDao(counterDao).consistencyLevel(consistencyLevel).build();
 
 		assertThat(Whitebox.getInternalState(built, "key")).isSameAs(key);
-		assertThat(Whitebox.getInternalState(built, "columnName")).isSameAs(
-				columnName);
-		assertThat(Whitebox.getInternalState(built, "context")).isSameAs(
-				context);
-		assertThat(Whitebox.getInternalState(built, "counterDao")).isSameAs(
-				counterDao);
-		assertThat(Whitebox.getInternalState(built, "consistencyLevel"))
-				.isSameAs(consistencyLevel);
+		assertThat(Whitebox.getInternalState(built, "columnName")).isSameAs(columnName);
+		assertThat(Whitebox.getInternalState(built, "context")).isSameAs(context);
+		assertThat(Whitebox.getInternalState(built, "counterDao")).isSameAs(counterDao);
+		assertThat(Whitebox.getInternalState(built, "consistencyLevel")).isSameAs(consistencyLevel);
 	}
 }

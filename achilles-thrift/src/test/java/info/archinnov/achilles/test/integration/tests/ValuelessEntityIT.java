@@ -30,8 +30,8 @@ import org.junit.Test;
 public class ValuelessEntityIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "ValuelessEntity");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"ValuelessEntity");
 
 	private ThriftEntityManager em = resource.getEm();
 

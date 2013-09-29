@@ -66,8 +66,7 @@ public class CQLNativeQueryBuilderTest {
 	@Test
 	public void should_get() throws Exception {
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
-				rows);
+		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		when(mapper.mapRows(rows)).thenReturn(result);
@@ -81,8 +80,7 @@ public class CQLNativeQueryBuilderTest {
 	public void should_get_one() throws Exception {
 
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
-				rows);
+		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		Map<String, Object> line = new LinkedHashMap<String, Object>();
@@ -97,8 +95,7 @@ public class CQLNativeQueryBuilderTest {
 	public void should_return_null_when_no_row() throws Exception {
 
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(
-				rows);
+		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		when(mapper.mapRows(rows)).thenReturn(result);

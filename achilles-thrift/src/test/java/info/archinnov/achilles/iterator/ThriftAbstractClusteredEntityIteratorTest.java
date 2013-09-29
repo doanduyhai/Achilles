@@ -25,7 +25,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -66,12 +66,9 @@ public class ThriftAbstractClusteredEntityIteratorTest {
 
 	@Before
 	public void setUp() {
-		Whitebox.setInternalState(abstractIter,
-				ThriftCompositeTransformer.class, transformer);
-		Whitebox.setInternalState(abstractIter, ThriftEntityProxifier.class,
-				proxifier);
-		Whitebox.setInternalState(abstractIter, ThriftPersistenceContext.class,
-				context);
+		Whitebox.setInternalState(abstractIter, ThriftCompositeTransformer.class, transformer);
+		Whitebox.setInternalState(abstractIter, ThriftEntityProxifier.class, proxifier);
+		Whitebox.setInternalState(abstractIter, ThriftPersistenceContext.class, context);
 		Whitebox.setInternalState(abstractIter, Iterator.class, iterator);
 	}
 
@@ -90,18 +87,14 @@ public class ThriftAbstractClusteredEntityIteratorTest {
 	public void should_proxify_entity() throws Exception {
 		Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 		idMeta.setGetter(idGetter);
 		when((PropertyMeta) context.getFirstMeta()).thenReturn(idMeta);
 		when(context.isValueless()).thenReturn(false);
 		when(context.duplicate(target)).thenReturn(context);
-		when(
-				proxifier.buildProxy(eq(target), eq(context),
-						methodCaptor.capture())).thenReturn(target);
+		when(proxifier.buildProxy(eq(target), eq(context), methodCaptor.capture())).thenReturn(target);
 
-		BeanWithClusteredId actual = abstractIter
-				.proxifyClusteredEntity(target);
+		BeanWithClusteredId actual = abstractIter.proxifyClusteredEntity(target);
 
 		assertThat(actual).isSameAs(target);
 
@@ -112,18 +105,14 @@ public class ThriftAbstractClusteredEntityIteratorTest {
 	public void should_proxify_value_less_entity() throws Exception {
 		Method idGetter = BeanWithClusteredId.class.getDeclaredMethod("getId");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(
-				CompoundKey.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 		idMeta.setGetter(idGetter);
 		when((PropertyMeta) context.getFirstMeta()).thenReturn(idMeta);
 		when(context.isValueless()).thenReturn(true);
 		when(context.duplicate(target)).thenReturn(context);
-		when(
-				proxifier.buildProxy(eq(target), eq(context),
-						methodCaptor.capture())).thenReturn(target);
+		when(proxifier.buildProxy(eq(target), eq(context), methodCaptor.capture())).thenReturn(target);
 
-		BeanWithClusteredId actual = abstractIter
-				.proxifyClusteredEntity(target);
+		BeanWithClusteredId actual = abstractIter.proxifyClusteredEntity(target);
 
 		assertThat(actual).isSameAs(target);
 

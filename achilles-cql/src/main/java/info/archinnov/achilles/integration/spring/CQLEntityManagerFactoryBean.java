@@ -36,8 +36,7 @@ import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
 
-public class CQLEntityManagerFactoryBean extends
-		AbstractFactoryBean<CQLEntityManager> {
+public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityManager> {
 	private static CQLEntityManager em;
 	private String entityPackages;
 
@@ -96,23 +95,20 @@ public class CQLEntityManagerFactoryBean extends
 
 	private void fillEntityPackages(Map<String, Object> configMap) {
 		if (isBlank(entityPackages)) {
-			throw new IllegalArgumentException(
-					"'entityPackages' should be provided for entity scanning");
+			throw new IllegalArgumentException("'entityPackages' should be provided for entity scanning");
 		}
 		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 	}
 
 	private void fillCluster(Map<String, Object> configMap) {
 		if (isBlank(contactPoints) || port == null) {
-			throw new IllegalArgumentException(
-					"'contactPoints' and 'port' for Cassandra connection should be provided");
+			throw new IllegalArgumentException("'contactPoints' and 'port' for Cassandra connection should be provided");
 		}
 		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
 		configMap.put(CONNECTION_PORT_PARAM, port);
 
 		if (isBlank(keyspaceName)) {
-			throw new IllegalArgumentException(
-					"'keyspaceName' for Cassandra connection should be provided");
+			throw new IllegalArgumentException("'keyspaceName' for Cassandra connection should be provided");
 		}
 		configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 
@@ -149,8 +145,7 @@ public class CQLEntityManagerFactoryBean extends
 	}
 
 	private void fillCredentials(Map<String, Object> configMap) {
-		if (StringUtils.isNotBlank(username)
-				&& StringUtils.isNotBlank(password)) {
+		if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
 			configMap.put(USERNAME, username);
 			configMap.put(PASSWORD, password);
 		}
@@ -159,8 +154,7 @@ public class CQLEntityManagerFactoryBean extends
 	private void fillSSLConfig(Map<String, Object> configMap) {
 		if (sslEnabled != null) {
 			if (sslOptions == null)
-				throw new IllegalArgumentException(
-						"'sslOptions' property should be set when SSL is enabled");
+				throw new IllegalArgumentException("'sslOptions' property should be set when SSL is enabled");
 
 			configMap.put(SSL_ENABLED, sslEnabled);
 			configMap.put(SSL_OPTIONS, sslOptions);
@@ -178,21 +172,17 @@ public class CQLEntityManagerFactoryBean extends
 
 	private void fillConsistencyLevels(Map<String, Object> configMap) {
 		if (consistencyLevelReadDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM,
-					consistencyLevelReadDefault);
+			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
 		}
 		if (consistencyLevelWriteDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM,
-					consistencyLevelWriteDefault);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
 		}
 
 		if (consistencyLevelReadMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
-					consistencyLevelReadMap);
+			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, consistencyLevelReadMap);
 		}
 		if (consistencyLevelWriteMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
-					consistencyLevelWriteMap);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, consistencyLevelWriteMap);
 		}
 	}
 
@@ -264,23 +254,19 @@ public class CQLEntityManagerFactoryBean extends
 		this.objectMapper = objectMapper;
 	}
 
-	public void setConsistencyLevelReadDefault(
-			String consistencyLevelReadDefault) {
+	public void setConsistencyLevelReadDefault(String consistencyLevelReadDefault) {
 		this.consistencyLevelReadDefault = consistencyLevelReadDefault;
 	}
 
-	public void setConsistencyLevelWriteDefault(
-			String consistencyLevelWriteDefault) {
+	public void setConsistencyLevelWriteDefault(String consistencyLevelWriteDefault) {
 		this.consistencyLevelWriteDefault = consistencyLevelWriteDefault;
 	}
 
-	public void setConsistencyLevelReadMap(
-			Map<String, String> consistencyLevelReadMap) {
+	public void setConsistencyLevelReadMap(Map<String, String> consistencyLevelReadMap) {
 		this.consistencyLevelReadMap = consistencyLevelReadMap;
 	}
 
-	public void setConsistencyLevelWriteMap(
-			Map<String, String> consistencyLevelWriteMap) {
+	public void setConsistencyLevelWriteMap(Map<String, String> consistencyLevelWriteMap) {
 		this.consistencyLevelWriteMap = consistencyLevelWriteMap;
 	}
 

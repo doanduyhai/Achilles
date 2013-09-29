@@ -72,21 +72,17 @@ public enum PropertyType {
 		return (this == SIMPLE || this == COUNTER);
 	}
 
-	public static PropertyTypeFilter counterType = new PropertyTypeFilter(
+	public static PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
+
+	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
+	public static PropertyTypeFilter lazyType = new PropertyTypeFilter(LAZY_SIMPLE, LAZY_LIST, LAZY_SET, LAZY_MAP,
 			COUNTER);
 
-	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID,
-			EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
-	public static PropertyTypeFilter lazyType = new PropertyTypeFilter(
-			LAZY_SIMPLE, LAZY_LIST, LAZY_SET, LAZY_MAP, COUNTER);
+	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
 
-	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(
-			ID, EMBEDDED_ID);
+	public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
 
-	public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(
-			COUNTER);
-
-	public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(
-			LIST, LAZY_LIST, SET, LAZY_SET, MAP, LAZY_MAP);
+	public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET, MAP,
+			LAZY_MAP);
 
 }

@@ -62,15 +62,13 @@ public class PropertyHelperTest {
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		Class<String> infered = helper.inferValueClassForListOrSet(type,
-				Test.class);
+		Class<String> infered = helper.inferValueClassForListOrSet(type, Test.class);
 
 		assertThat(infered).isEqualTo(String.class);
 	}
 
 	@Test
-	public void should_infer_parameterized_value_class_from_list()
-			throws Exception {
+	public void should_infer_parameterized_value_class_from_list() throws Exception {
 		@SuppressWarnings("unused")
 		class Test {
 			private List<Class<Void>> friends;
@@ -78,15 +76,13 @@ public class PropertyHelperTest {
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		Class<Class> infered = helper.inferValueClassForListOrSet(type,
-				Test.class);
+		Class<Class> infered = helper.inferValueClassForListOrSet(type, Test.class);
 
 		assertThat(infered).isEqualTo(Class.class);
 	}
 
 	@Test
-	public void should_exception_when_infering_value_type_from_raw_list()
-			throws Exception {
+	public void should_exception_when_infering_value_type_from_raw_list() throws Exception {
 		@SuppressWarnings({ "rawtypes", "unused" })
 		class Test {
 			private List friends;
@@ -95,8 +91,7 @@ public class PropertyHelperTest {
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx.expectMessage("The type '"
-				+ type.getClass().getCanonicalName()
+		expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
 				+ "' of the entity 'null' should be parameterized");
 
 		helper.inferValueClassForListOrSet(type, Test.class);

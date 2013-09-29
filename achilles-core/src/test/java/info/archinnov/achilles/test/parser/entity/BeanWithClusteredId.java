@@ -21,16 +21,16 @@ import javax.persistence.EmbeddedId;
 
 public class BeanWithClusteredId {
 	@EmbeddedId
-	private CompoundKey id;
+	private EmbeddedKey id;
 
 	@Column
 	private String name;
 
-	public CompoundKey getId() {
+	public EmbeddedKey getId() {
 		return id;
 	}
 
-	public void setId(CompoundKey id) {
+	public void setId(EmbeddedKey id) {
 		this.id = id;
 	}
 

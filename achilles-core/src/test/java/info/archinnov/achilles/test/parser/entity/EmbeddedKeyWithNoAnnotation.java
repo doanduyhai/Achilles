@@ -16,29 +16,25 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Order;
+public class EmbeddedKeyWithNoAnnotation {
+	private String name;
 
-import javax.persistence.Column;
+	private int rank;
 
-public class CompoundKeyWithOnlyOneComponent {
-
-	@Order(1)
-	@Column(name = "id")
-	private Long userId;
-
-	public CompoundKeyWithOnlyOneComponent() {
+	public String getName() {
+		return name;
 	}
 
-	public CompoundKeyWithOnlyOneComponent(Long userId, String name) {
-		this.userId = userId;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public int getRank() {
+		return rank;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setRank(int rank) {
+		this.rank = rank;
 	}
 
 }

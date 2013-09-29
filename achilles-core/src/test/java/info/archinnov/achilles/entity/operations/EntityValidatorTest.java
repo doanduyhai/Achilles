@@ -24,7 +24,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -71,8 +71,7 @@ public class EntityValidatorTest {
 	public void should_validate() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
 
@@ -83,14 +82,12 @@ public class EntityValidatorTest {
 	public void should_exception_when_no_id() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
-		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) proxifier.deriveBaseClass(bean)).thenReturn(CompleteBean.class);
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Cannot get primary key for entity "
-				+ CompleteBean.class.getCanonicalName());
+		exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -98,12 +95,11 @@ public class EntityValidatorTest {
 	@Test
 	public void should_validate_clustered_id() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		CompoundKey clusteredId = new CompoundKey(11L, "name");
+		EmbeddedKey clusteredId = new EmbeddedKey(11L, "name");
 
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(clusteredId);
 		when(idMeta.isEmbeddedId()).thenReturn(true);
-		when(idMeta.encodeToComponents(clusteredId)).thenReturn(
-				Arrays.<Object> asList(11L, "name"));
+		when(idMeta.encodeToComponents(clusteredId)).thenReturn(Arrays.<Object> asList(11L, "name"));
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
@@ -119,12 +115,9 @@ public class EntityValidatorTest {
 	@Test
 	public void should_validate_not_clustered_counter() throws Exception {
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
-		when(
-				(Class<ClusteredEntityWithCounter>) proxifier
-						.deriveBaseClass(entity)).thenReturn(
+		when((Class<ClusteredEntityWithCounter>) proxifier.deriveBaseClass(entity)).thenReturn(
 				ClusteredEntityWithCounter.class);
-		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(
-				entityMeta);
+		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
 		entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 	}
@@ -132,19 +125,14 @@ public class EntityValidatorTest {
 	@Test
 	public void should_exception_when_not_clustered_counter() throws Exception {
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter();
-		when(
-				(Class<ClusteredEntityWithCounter>) proxifier
-						.deriveBaseClass(entity)).thenReturn(
+		when((Class<ClusteredEntityWithCounter>) proxifier.deriveBaseClass(entity)).thenReturn(
 				ClusteredEntityWithCounter.class);
-		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(
-				entityMeta);
+		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
 		when(entityMeta.isClusteredCounter()).thenReturn(true);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The entity '"
-						+ entity
-						+ "' is a clustered counter and does not support insert/update with TTL");
+		exception.expectMessage("The entity '" + entity
+				+ "' is a clustered counter and does not support insert/update with TTL");
 
 		entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 	}

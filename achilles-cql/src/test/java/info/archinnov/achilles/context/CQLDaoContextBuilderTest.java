@@ -71,8 +71,7 @@ public class CQLDaoContextBuilderTest {
 
 	@Before
 	public void setUp() {
-		Whitebox.setInternalState(builder, CQLPreparedStatementGenerator.class,
-				queryGenerator);
+		Whitebox.setInternalState(builder, CQLPreparedStatementGenerator.class, queryGenerator);
 		Whitebox.setInternalState(builder, Session.class, session);
 	}
 
@@ -80,43 +79,30 @@ public class CQLDaoContextBuilderTest {
 	public void should_build_dao_context() throws Exception {
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		EntityMeta meta = new EntityMeta();
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
 		meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
 		entityMetaMap.put(CompleteBean.class, meta);
 
-		when(queryGenerator.prepareInsertPS(session, meta))
-				.thenReturn(insertPS);
-		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(
-				selectEagerPS);
-		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(
-				removePSs);
-		when(queryGenerator.prepareSimpleCounterQueryMap(session)).thenReturn(
-				counterQueryMap);
+		when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);
+		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
+		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
+		when(queryGenerator.prepareSimpleCounterQueryMap(session)).thenReturn(counterQueryMap);
 
 		CQLDaoContext actual = builder.build(entityMetaMap, true);
 
-		assertThat(
-				(Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(
-						actual, "insertPSs")).containsValue(insertPS);
-		assertThat(
-				(Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(
-						actual, "selectEagerPSs")).containsValue(selectEagerPS);
-		assertThat(
-				(Map<Class<?>, Map<String, PreparedStatement>>) Whitebox
-						.getInternalState(actual, "removePSs")).containsKey(
-				CompleteBean.class);
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs")).containsValue(
+				insertPS);
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectEagerPSs"))
+				.containsValue(selectEagerPS);
+		assertThat((Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual, "removePSs"))
+				.containsKey(CompleteBean.class);
 
-		assertThat(
-				(Cache<StatementCacheKey, PreparedStatement>) Whitebox
-						.getInternalState(actual, "dynamicPSCache"))
+		assertThat((Cache<StatementCacheKey, PreparedStatement>) Whitebox.getInternalState(actual, "dynamicPSCache"))
 				.isInstanceOf(Cache.class);
 
-		assertThat(
-				(Map<CQLQueryType, PreparedStatement>) Whitebox
-						.getInternalState(actual, "counterQueryMap")).isSameAs(
-				counterQueryMap);
+		assertThat((Map<CQLQueryType, PreparedStatement>) Whitebox.getInternalState(actual, "counterQueryMap"))
+				.isSameAs(counterQueryMap);
 	}
 }

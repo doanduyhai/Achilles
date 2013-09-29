@@ -35,17 +35,17 @@ import java.lang.annotation.Target;
  * </p>
  */
 public @interface Consistency {
-    /**
-     * <p>
-     * Consistency level for read operations
-     * </p>
-     */
-    ConsistencyLevel read() default ConsistencyLevel.ONE;
+	/**
+	 * <p>
+	 * Consistency level for read operations
+	 * </p>
+	 */
+	ConsistencyLevel read() default ConsistencyLevel.ONE;
 
-    /**
-     * <p>
-     * Consistency level for write operations
-     * </p>
-     */
-    ConsistencyLevel write() default ConsistencyLevel.ONE;
+	/**
+	 * <p>
+	 * Consistency level for write operations
+	 * </p>
+	 */
+	ConsistencyLevel write() default ConsistencyLevel.ONE;
 }

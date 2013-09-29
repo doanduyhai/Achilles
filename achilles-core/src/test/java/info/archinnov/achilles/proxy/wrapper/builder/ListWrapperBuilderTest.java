@@ -62,19 +62,15 @@ public class ListWrapperBuilderTest {
 		List<Object> target = new ArrayList<Object>();
 		ListWrapper wrapper = ListWrapperBuilder
 				//
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 
 		assertThat(wrapper.getTarget()).isSameAs(target);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(
-				setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

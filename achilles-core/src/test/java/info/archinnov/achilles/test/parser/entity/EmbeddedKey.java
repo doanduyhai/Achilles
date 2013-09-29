@@ -18,17 +18,33 @@ package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Order;
 
-import java.util.Date;
+import javax.persistence.Column;
 
-public class CompoundKeyWithDuplicateOrder {
+public class EmbeddedKey {
+
 	@Order(1)
+	@Column(name = "id")
+	private Long userId;
+
+	@Order(2)
+	@Column
 	private String name;
 
-	@Order(1)
-	private int rank;
+	public EmbeddedKey() {
+	}
 
-	@Order(4)
-	private Date date;
+	public EmbeddedKey(Long userId, String name) {
+		this.userId = userId;
+		this.name = name;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
 
 	public String getName() {
 		return name;
@@ -36,21 +52,5 @@ public class CompoundKeyWithDuplicateOrder {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public int getRank() {
-		return rank;
-	}
-
-	public void setRank(int rank) {
-		this.rank = rank;
-	}
-
-	public Date getDate() {
-		return date;
-	}
-
-	public void setDate(Date date) {
-		this.date = date;
 	}
 }

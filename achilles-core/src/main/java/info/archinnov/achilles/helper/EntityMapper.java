@@ -27,8 +27,7 @@ import java.util.Set;
 
 public class EntityMapper {
 
-	protected void addToList(Map<String, List<Object>> listProperties,
-			PropertyMeta listMeta, Object value) {
+	protected void addToList(Map<String, List<Object>> listProperties, PropertyMeta listMeta, Object value) {
 		String propertyName = listMeta.getPropertyName();
 		List<Object> list = null;
 		if (!listProperties.containsKey(propertyName)) {
@@ -40,8 +39,7 @@ public class EntityMapper {
 		list.add(value);
 	}
 
-	protected void addToSet(Map<String, Set<Object>> setProperties,
-			PropertyMeta setMeta, Object value) {
+	protected void addToSet(Map<String, Set<Object>> setProperties, PropertyMeta setMeta, Object value) {
 		String propertyName = setMeta.getPropertyName();
 
 		Set<Object> set = null;
@@ -54,8 +52,8 @@ public class EntityMapper {
 		set.add(value);
 	}
 
-	protected void addToMap(Map<String, Map<Object, Object>> mapProperties,
-			PropertyMeta mapMeta, Object decodedKey, Object decodedValue) {
+	protected void addToMap(Map<String, Map<Object, Object>> mapProperties, PropertyMeta mapMeta, Object decodedKey,
+			Object decodedValue) {
 		String propertyName = mapMeta.getPropertyName();
 
 		Map<Object, Object> map = null;

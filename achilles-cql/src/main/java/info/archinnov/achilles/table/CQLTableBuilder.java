@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.table;
 
-import static com.datastax.driver.core.DataType.Name.COUNTER;
-import static info.archinnov.achilles.cql.CQLTypeMapper.toCQLType;
-import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static com.datastax.driver.core.DataType.Name.*;
+import static info.archinnov.achilles.cql.CQLTypeMapper.*;
+import static info.archinnov.achilles.table.TableCreator.*;
+import static info.archinnov.achilles.table.TableNameNormalizer.*;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
@@ -35,12 +35,12 @@ import org.slf4j.LoggerFactory;
 
 public class CQLTableBuilder {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ACHILLES_DDL_SCRIPT);
+	private static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
 	private String tableName;
 	private String comment;
-	private List<String> primaryKeys = new ArrayList<String>();
+	private List<String> partitionComponents = new ArrayList<String>();
+	private List<String> clusteringComponents = new ArrayList<String>();
 	private Map<String, String> columns = new LinkedHashMap<String, String>();
 	private Map<String, String> lists = new LinkedHashMap<String, String>();
 	private Map<String, String> sets = new LinkedHashMap<String, String>();
@@ -76,47 +76,47 @@ public class CQLTableBuilder {
 		return this;
 	}
 
-	public CQLTableBuilder addMap(String mapName, Class<?> javaKeyType,
-			Class<?> javaValueType) {
-		maps.put(
-				mapName,
-				Pair.create(toCQLType(javaKeyType).toString(),
-						toCQLType(javaValueType).toString()));
+	public CQLTableBuilder addMap(String mapName, Class<?> javaKeyType, Class<?> javaValueType) {
+		maps.put(mapName, Pair.create(toCQLType(javaKeyType).toString(), toCQLType(javaValueType).toString()));
 		return this;
 	}
 
-	public CQLTableBuilder addPrimaryKey(String columnName) {
+	public CQLTableBuilder addPartitionComponent(String columnName) {
 		Validator.validateFalse(lists.containsKey(columnName),
-				"Primary key '%s' for table '%s' cannot be of list type",
-				columnName, tableName);
+				"Partition component '%s' for table '%s' cannot be of list type", columnName, tableName);
 		Validator.validateFalse(sets.containsKey(columnName),
-				"Primary key '%s' for table '%s' cannot be of set type",
-				columnName, tableName);
+				"Partition component '%s' for table '%s' cannot be of set type", columnName, tableName);
 		Validator.validateFalse(maps.containsKey(columnName),
-				"Primary key '%s' for table '%s' cannot be of map type",
+				"Partition component '%s' for table '%s' cannot be of map type", columnName, tableName);
+
+		Validator.validateTrue(columns.containsKey(columnName),
+				"Property '%s' for table '%s' cannot be found. Did you forget to declare it as column first ?",
 				columnName, tableName);
 
-		Validator
-				.validateTrue(
-						columns.containsKey(columnName),
-						"Property '%s' for table '%s' cannot be found. Did you forget to declare it as column first ?",
-						columnName, tableName);
-
-		primaryKeys.add(columnName);
+		partitionComponents.add(columnName);
 
 		return this;
 	}
 
-	public CQLTableBuilder addPrimaryKeys(List<String> columnsName) {
-		for (String columnName : columnsName) {
-			addPrimaryKey(columnName);
-		}
+	public CQLTableBuilder addClusteringComponent(String columnName) {
+		Validator.validateFalse(lists.containsKey(columnName),
+				"Clustering component '%s' for table '%s' cannot be of list type", columnName, tableName);
+		Validator.validateFalse(sets.containsKey(columnName),
+				"Clustering component '%s' for table '%s' cannot be of set type", columnName, tableName);
+		Validator.validateFalse(maps.containsKey(columnName),
+				"Clustering component '%s' for table '%s' cannot be of map type", columnName, tableName);
+
+		Validator.validateTrue(columns.containsKey(columnName),
+				"Property '%s' for table '%s' cannot be found. Did you forget to declare it as column first ?",
+				columnName, tableName);
+
+		clusteringComponents.add(columnName);
+
 		return this;
 	}
 
 	public CQLTableBuilder addComment(String comment) {
-		Validator.validateNotBlank(comment,
-				"Comment for table '%s' should not be blank", tableName);
+		Validator.validateNotBlank(comment, "Comment for table '%s' should not be blank", tableName);
 		this.comment = comment.replaceAll("'", "\"");
 		return this;
 	}
@@ -179,7 +179,16 @@ public class CQLTableBuilder {
 
 		ddl.append("\t\t");
 		ddl.append("PRIMARY KEY(");
-		ddl.append(StringUtils.join(primaryKeys, ", "));
+
+		if (partitionComponents.size() > 1)
+			ddl.append("(").append(StringUtils.join(partitionComponents, ", ")).append(")");
+		else
+			ddl.append(partitionComponents.get(0));
+
+		if (clusteringComponents.size() > 0) {
+			ddl.append(", ");
+			ddl.append(StringUtils.join(clusteringComponents, ", "));
+		}
 		ddl.append(")\n");
 
 		ddl.append("\t)");
@@ -191,11 +200,8 @@ public class CQLTableBuilder {
 
 	private String generateCounterTable() {
 
-		Validator
-				.validateTrue(
-						columns.size() == primaryKeys.size() + 1,
-						"Counter table '%s' should contain only one counter column and primary keys",
-						tableName);
+		Validator.validateTrue(columns.size() == partitionComponents.size() + clusteringComponents.size() + 1,
+				"Counter table '%s' should contain only one counter column and primary keys", tableName);
 
 		StringBuilder ddl = new StringBuilder();
 
@@ -210,15 +216,11 @@ public class CQLTableBuilder {
 			ddl.append("\t\t");
 			ddl.append(columnName);
 			ddl.append(" ");
-			if (primaryKeys.contains(columnName)) {
+			if (partitionComponents.contains(columnName) || clusteringComponents.contains(columnName)) {
 				ddl.append(valueType);
 			} else {
-				Validator
-						.validateTrue(
-								StringUtils.equals(valueType,
-										COUNTER.toString()),
-								"Column '%s' of table '%s' should be of type 'counter'",
-								columnName, tableName);
+				Validator.validateTrue(StringUtils.equals(valueType, COUNTER.toString()),
+						"Column '%s' of table '%s' should be of type 'counter'", columnName, tableName);
 				ddl.append("counter");
 			}
 			ddl.append(",\n");
@@ -226,7 +228,17 @@ public class CQLTableBuilder {
 
 		ddl.append("\t\t");
 		ddl.append("PRIMARY KEY(");
-		ddl.append(StringUtils.join(primaryKeys, ", "));
+
+		if (partitionComponents.size() > 1)
+			ddl.append("(").append(StringUtils.join(partitionComponents, ", ")).append(")");
+		else
+			ddl.append(partitionComponents.get(0));
+
+		if (clusteringComponents.size() > 0) {
+			ddl.append(", ");
+			ddl.append(StringUtils.join(clusteringComponents, ", "));
+		}
+
 		ddl.append(")\n");
 
 		ddl.append("\t)");

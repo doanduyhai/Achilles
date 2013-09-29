@@ -24,9 +24,7 @@ import org.junit.Test;
 public class CQLConsistencyConvertorTest {
 	@Test
 	public void should_get_hector_level_from_achilles_level() throws Exception {
-		assertThat(
-				CQLConsistencyConvertor
-						.getCQLLevel(ConsistencyLevel.EACH_QUORUM)).isEqualTo(
+		assertThat(CQLConsistencyConvertor.getCQLLevel(ConsistencyLevel.EACH_QUORUM)).isEqualTo(
 				com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 	}
 }

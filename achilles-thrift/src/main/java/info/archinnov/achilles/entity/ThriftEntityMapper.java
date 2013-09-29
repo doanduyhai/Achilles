@@ -34,14 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftEntityMapper extends EntityMapper {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftEntityMapper.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityMapper.class);
 
-	public void setEagerPropertiesToEntity(Object key,
-			List<Pair<Composite, String>> columns, EntityMeta entityMeta,
+	public void setEagerPropertiesToEntity(Object key, List<Pair<Composite, String>> columns, EntityMeta entityMeta,
 			Object entity) {
-		log.trace("Set eager properties to entity {} ",
-				entityMeta.getClassName());
+		log.trace("Set eager properties to entity {} ", entityMeta.getClassName());
 
 		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
 		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
@@ -60,24 +57,19 @@ public class ThriftEntityMapper extends EntityMapper {
 
 				switch (propertyMeta.type()) {
 				case SIMPLE:
-					propertyMeta.setValueToField(entity,
-							propertyMeta.forceDecodeFromJSON(pair.right));
+					propertyMeta.setValueToField(entity, propertyMeta.forceDecodeFromJSON(pair.right));
 					break;
 				case LIST:
-					addToList(listProperties, propertyMeta,
-							propertyMeta.forceDecodeFromJSON(pair.right));
+					addToList(listProperties, propertyMeta, propertyMeta.forceDecodeFromJSON(pair.right));
 					break;
 				case SET:
-					addToSet(setProperties, propertyMeta,
-							propertyMeta.decode(pair.left.get(2, STRING_SRZ)));
+					addToSet(setProperties, propertyMeta, propertyMeta.decode(pair.left.get(2, STRING_SRZ)));
 					break;
 				case MAP:
-					Object decodedKey = propertyMeta.forceDecodeFromJSON(
-							pair.left.get(2, STRING_SRZ),
+					Object decodedKey = propertyMeta.forceDecodeFromJSON(pair.left.get(2, STRING_SRZ),
 							propertyMeta.getKeyClass());
 					Object decodedValue = propertyMeta.decode(pair.right);
-					addToMap(mapProperties, propertyMeta, decodedKey,
-							decodedValue);
+					addToMap(mapProperties, propertyMeta, decodedKey, decodedValue);
 					break;
 				default:
 					log.debug("Property {} is lazy or of proxy type, do not set to entity now");
@@ -88,21 +80,18 @@ public class ThriftEntityMapper extends EntityMapper {
 			}
 		}
 
-		setMultiValuesProperties(entity, listProperties, setProperties,
-				mapProperties, propertyMetas);
+		setMultiValuesProperties(entity, listProperties, setProperties, mapProperties, propertyMetas);
 	}
 
-	public <T> T initClusteredEntity(Class<T> entityClass, EntityMeta meta,
-			Object embeddedId) {
+	public <T> T initClusteredEntity(Class<T> entityClass, EntityMeta meta, Object embeddedId) {
 		T clusteredEntity = null;
 		clusteredEntity = meta.<T> instanciate();
 		meta.setPrimaryKey(clusteredEntity, embeddedId);
 		return clusteredEntity;
 	}
 
-	public <T> T createClusteredEntityWithValue(Class<T> entityClass,
-			EntityMeta meta, PropertyMeta pm, Object embeddedId,
-			Object clusteredValue) {
+	public <T> T createClusteredEntityWithValue(Class<T> entityClass, EntityMeta meta, PropertyMeta pm,
+			Object embeddedId, Object clusteredValue) {
 		T clusteredEntity = null;
 		clusteredEntity = meta.<T> instanciate();
 		meta.setPrimaryKey(clusteredEntity, embeddedId);
@@ -111,25 +100,19 @@ public class ThriftEntityMapper extends EntityMapper {
 		return clusteredEntity;
 	}
 
-	private void setMultiValuesProperties(Object entity,
-			Map<String, List<Object>> listProperties,
-			Map<String, Set<Object>> setProperties,
-			Map<String, Map<Object, Object>> mapProperties,
+	private void setMultiValuesProperties(Object entity, Map<String, List<Object>> listProperties,
+			Map<String, Set<Object>> setProperties, Map<String, Map<Object, Object>> mapProperties,
 			Map<String, PropertyMeta> propertyMetas) {
 		for (Entry<String, List<Object>> entry : listProperties.entrySet()) {
-			propertyMetas.get(entry.getKey()).setValueToField(entity,
-					entry.getValue());
+			propertyMetas.get(entry.getKey()).setValueToField(entity, entry.getValue());
 		}
 
 		for (Entry<String, Set<Object>> entry : setProperties.entrySet()) {
-			propertyMetas.get(entry.getKey()).setValueToField(entity,
-					entry.getValue());
+			propertyMetas.get(entry.getKey()).setValueToField(entity, entry.getValue());
 		}
 
-		for (Entry<String, Map<Object, Object>> entry : mapProperties
-				.entrySet()) {
-			propertyMetas.get(entry.getKey()).setValueToField(entity,
-					entry.getValue());
+		for (Entry<String, Map<Object, Object>> entry : mapProperties.entrySet()) {
+			propertyMetas.get(entry.getKey()).setValueToField(entity, entry.getValue());
 		}
 	}
 }

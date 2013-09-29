@@ -69,17 +69,12 @@ public class ThriftBatchingFlushContextTest {
 
 	@Before
 	public void setUp() {
-		context = new ThriftBatchingFlushContext(
-				thriftDaoContext,
-				consistencyContext,
-				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-				hasCustomConsistencyLevels);
+		context = new ThriftBatchingFlushContext(thriftDaoContext, consistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(), hasCustomConsistencyLevels);
 
-		Whitebox.setInternalState(context, ThriftConsistencyContext.class,
-				consistencyContext);
+		Whitebox.setInternalState(context, ThriftConsistencyContext.class, consistencyContext);
 		Whitebox.setInternalState(context, "mutatorMap", mutatorMap);
-		Whitebox.setInternalState(context, ThriftDaoContext.class,
-				thriftDaoContext);
+		Whitebox.setInternalState(context, ThriftDaoContext.class, thriftDaoContext);
 		mutatorMap.clear();
 	}
 
@@ -98,8 +93,7 @@ public class ThriftBatchingFlushContextTest {
 
 	@Test
 	public void should_end_batch() throws Exception {
-		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair
-				.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
+		Pair<Mutator<?>, ThriftAbstractDao> pair = Pair.<Mutator<?>, ThriftAbstractDao> create(mutator, entityDao);
 		mutatorMap.put("cf", pair);
 
 		context.endBatch();
@@ -116,11 +110,8 @@ public class ThriftBatchingFlushContextTest {
 
 	@Test
 	public void should_duplicate_without_ttl() throws Exception {
-		context = new ThriftBatchingFlushContext(
-				thriftDaoContext,
-				consistencyContext,
-				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(),
-				true);
+		context = new ThriftBatchingFlushContext(thriftDaoContext, consistencyContext,
+				new HashMap<String, Pair<Mutator<Object>, ThriftAbstractDao>>(), true);
 		ThriftBatchingFlushContext actual = context.duplicate();
 
 		assertThat(actual).isNotNull();

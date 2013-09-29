@@ -30,22 +30,18 @@ import me.prettyprint.hector.api.query.SliceCounterQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftCounterSliceIterator<K> extends
-		ThriftAbstractSliceIterator<HCounterColumn<Composite>> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftCounterSliceIterator.class);
+public class ThriftCounterSliceIterator<K> extends ThriftAbstractSliceIterator<HCounterColumn<Composite>> {
+	private static final Logger log = LoggerFactory.getLogger(ThriftCounterSliceIterator.class);
 
 	private SliceCounterQuery<K, Composite> query;
 
-	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			final Composite finish, boolean reversed) {
+	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, final Composite finish, boolean reversed) {
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			final Composite finish, boolean reversed, int count) {
+	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, final Composite finish, boolean reversed, int count) {
 		this(policy, cf, query, start, new ColumnSliceFinish() {
 
 			@Override
@@ -55,19 +51,17 @@ public class ThriftCounterSliceIterator<K> extends
 		}, reversed, count);
 	}
 
-	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed) {
+	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, ColumnSliceFinish finish, boolean reversed) {
 		this(policy, cf, query, start, finish, reversed, DEFAULT_LENGTH);
 	}
 
-	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy,
-			String cf, SliceCounterQuery<K, Composite> query, Composite start,
-			ColumnSliceFinish finish, boolean reversed, int count) {
+	public ThriftCounterSliceIterator(AchillesConsistencyLevelPolicy policy, String cf,
+			SliceCounterQuery<K, Composite> query, Composite start, ColumnSliceFinish finish, boolean reversed,
+			int count) {
 		super(policy, cf, start, finish, reversed, count);
 		this.query = query;
-		this.query.setRange(this.start, this.finish.function(), this.reversed,
-				this.count);
+		this.query.setRange(this.start, this.finish.function(), this.reversed, this.count);
 	}
 
 	@Override

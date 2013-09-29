@@ -31,7 +31,7 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +78,7 @@ public class ThriftEntityPersisterTest {
 	@Mock
 	private ThriftConsistencyLevelPolicy policy;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private ThriftPersistenceContext context;
 
@@ -93,15 +92,13 @@ public class ThriftEntityPersisterTest {
 
 		entityDaosMap.clear();
 		context = ThriftPersistenceContextTestBuilder
-				.context(entityMeta, thriftCounterDao, policy,
-						CompleteBean.class, entity.getId()).entity(entity)
+				.context(entityMeta, thriftCounterDao, policy, CompleteBean.class, entity.getId()).entity(entity)
 				.entityDaosMap(entityDaosMap).build();
 	}
 
 	@Test
 	public void should_persist_simple_property() throws Exception {
-		PropertyMeta simpleMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).type(PropertyType.SIMPLE).build();
+		PropertyMeta simpleMeta = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("simpleMeta", simpleMeta));
 
@@ -112,12 +109,34 @@ public class ThriftEntityPersisterTest {
 	}
 
 	@Test
-	public void should_persist_counter_property() throws Exception {
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(PropertyType.COUNTER).build();
+	public void should_persist_partition_key_property() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).build();
 
-		entityMeta
-				.setPropertyMetas(ImmutableMap.of("counterMeta", counterMeta));
+		entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
+
+		persister.persist(context);
+
+		verify(persisterImpl).removeEntityBatch(context);
+		verify(persisterImpl).batchPersistSimpleProperty(context, idMeta);
+	}
+
+	@Test
+	public void should_persist_composite_partition_key_property() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(EMBEDDED_ID).build();
+
+		entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
+
+		persister.persist(context);
+
+		verify(persisterImpl).removeEntityBatch(context);
+		verify(persisterImpl).batchPersistSimpleProperty(context, idMeta);
+	}
+
+	@Test
+	public void should_persist_counter_property() throws Exception {
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(PropertyType.COUNTER).build();
+
+		entityMeta.setPropertyMetas(ImmutableMap.of("counterMeta", counterMeta));
 
 		persister.persist(context);
 
@@ -129,14 +148,12 @@ public class ThriftEntityPersisterTest {
 	public void should_persist_list() throws Exception {
 		ArrayList<String> list = new ArrayList<String>();
 
-		PropertyMeta listMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
+		PropertyMeta listMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
 				.accessors().type(LIST).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("listMeta", listMeta));
 
-		when(invoker.getValueFromField(entity, listMeta.getGetter()))
-				.thenReturn(list);
+		when(invoker.getValueFromField(entity, listMeta.getGetter())).thenReturn(list);
 		persister.persist(context);
 
 		verify(persisterImpl).removeEntityBatch(context);
@@ -147,14 +164,12 @@ public class ThriftEntityPersisterTest {
 	public void should_persist_set() throws Exception {
 		Set<String> set = new HashSet<String>();
 
-		PropertyMeta setMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta setMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
 				.accessors().type(SET).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("setMeta", setMeta));
 
-		when(invoker.getValueFromField(entity, setMeta.getGetter()))
-				.thenReturn(set);
+		when(invoker.getValueFromField(entity, setMeta.getGetter())).thenReturn(set);
 		persister.persist(context);
 
 		verify(persisterImpl).removeEntityBatch(context);
@@ -165,14 +180,12 @@ public class ThriftEntityPersisterTest {
 	public void should_persist_map() throws Exception {
 		Map<Integer, String> map = new HashMap<Integer, String>();
 
-		PropertyMeta mapMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
+		PropertyMeta mapMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
 				.accessors().type(MAP).invoker(invoker).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.of("mapMeta", mapMeta));
 
-		when(invoker.getValueFromField(entity, mapMeta.getGetter()))
-				.thenReturn(map);
+		when(invoker.getValueFromField(entity, mapMeta.getGetter())).thenReturn(map);
 		persister.persist(context);
 
 		verify(persisterImpl).removeEntityBatch(context);
@@ -184,49 +197,41 @@ public class ThriftEntityPersisterTest {
 		Object partitionKey = 10L;
 		Object clusteredValue = "clusteredValue";
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).field("id").type(EMBEDDED_ID)
 				.invoker(invoker).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 
-		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(
-				partitionKey);
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-				clusteredValue);
+		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(clusteredValue);
 
 		persister.persist(context);
 
-		verify(persisterImpl).persistClusteredEntity(persister, context,
-				partitionKey, clusteredValue);
+		verify(persisterImpl).persistClusteredEntity(context, clusteredValue);
 	}
 
 	@Test
 	public void should_persist_value_less_clustered_entity() throws Exception {
 		Object partitionKey = 10L;
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).field("id").type(EMBEDDED_ID)
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).field("id").type(EMBEDDED_ID)
 				.invoker(invoker).build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
-		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(
-				partitionKey);
+		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
 
 		persister.persist(context);
 
-		verify(persisterImpl).persistClusteredEntity(persister, context,
-				partitionKey, "");
+		verify(persisterImpl).persistClusteredEntity(context, "");
 
 	}
 
@@ -235,23 +240,19 @@ public class ThriftEntityPersisterTest {
 		Object clusteredValue = "clusteredValue";
 		Object partitionKey = RandomUtils.nextLong();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.invoker(invoker).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).invoker(invoker)
+				.build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setPropertyMetas(ImmutableMap.of("pm", pm));
 
-		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(
-				partitionKey);
+		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
 		persister.persistClusteredValue(context, clusteredValue);
 
-		verify(persisterImpl).persistClusteredValueBatch(context, partitionKey,
-				clusteredValue, persister);
+		verify(persisterImpl).persistClusteredValueBatch(context, clusteredValue);
 	}
 
 	@Test
@@ -264,18 +265,16 @@ public class ThriftEntityPersisterTest {
 	public void should_remove_clustered_entity() throws Exception {
 		Object partitionKey = 10L;
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID)
-				.invoker(invoker).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).invoker(invoker)
+				.build();
 
 		entityMeta.setClusteredEntity(true);
 		entityMeta.setIdMeta(idMeta);
-		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(
-				partitionKey);
+		when(invoker.getPartitionKey(entity.getId(), idMeta)).thenReturn(partitionKey);
 
 		persister.remove(context);
 
-		verify(persisterImpl).removeClusteredEntity(context, partitionKey);
+		verify(persisterImpl).removeClusteredEntity(context);
 	}
 
 	@Test

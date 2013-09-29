@@ -25,10 +25,8 @@ import org.junit.Test;
 public class ThriftConsistencyConvertorTest {
 	@Test
 	public void should_get_hector_level_from_achilles_level() throws Exception {
-		assertThat(
-				ThriftConsistencyConvertor
-						.getHectorLevel(ConsistencyLevel.EACH_QUORUM))
-				.isEqualTo(HConsistencyLevel.EACH_QUORUM);
+		assertThat(ThriftConsistencyConvertor.getHectorLevel(ConsistencyLevel.EACH_QUORUM)).isEqualTo(
+				HConsistencyLevel.EACH_QUORUM);
 	}
 
 }

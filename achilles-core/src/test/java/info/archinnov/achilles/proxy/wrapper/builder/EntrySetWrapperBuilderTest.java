@@ -64,22 +64,15 @@ public class EntrySetWrapperBuilderTest {
 		target.put(2, "Paris");
 		target.put(3, "75014");
 
-		EntrySetWrapper wrapper = EntrySetWrapperBuilder
-				.builder(context, target.entrySet()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier)
-				.build();
+		EntrySetWrapper wrapper = EntrySetWrapperBuilder.builder(context, target.entrySet()).dirtyMap(dirtyMap)
+				.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
 
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(
-				target.entrySet());
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(
-				setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(target.entrySet());
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

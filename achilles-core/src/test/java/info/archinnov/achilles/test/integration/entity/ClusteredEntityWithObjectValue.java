@@ -177,8 +177,7 @@ public class ClusteredEntityWithObjectValue {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((content == null) ? 0 : content.hashCode());
+			result = prime * result + ((content == null) ? 0 : content.hashCode());
 			return result;
 		}
 

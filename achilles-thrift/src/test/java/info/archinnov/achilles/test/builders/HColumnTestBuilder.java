@@ -29,15 +29,12 @@ public class HColumnTestBuilder {
 
 	public static <V> HColumn<Composite, V> simple(Composite name, V value) {
 		return HFactory.createColumn(name, value, COMPOSITE_SRZ,
-				(Serializer<V>) ThriftSerializerTypeInferer
-						.getSerializer(value));
+				(Serializer<V>) ThriftSerializerTypeInferer.getSerializer(value));
 	}
 
-	public static <V> HColumn<Composite, V> simple(Composite name, V value,
-			int ttl) {
+	public static <V> HColumn<Composite, V> simple(Composite name, V value, int ttl) {
 		return HFactory.createColumn(name, value, ttl, COMPOSITE_SRZ,
-				(Serializer<V>) ThriftSerializerTypeInferer
-						.getSerializer(value));
+				(Serializer<V>) ThriftSerializerTypeInferer.getSerializer(value));
 	}
 
 	public static HCounterColumn<Composite> counter(Composite name, Long value) {

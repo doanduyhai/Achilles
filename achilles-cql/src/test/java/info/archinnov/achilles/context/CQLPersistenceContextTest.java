@@ -97,13 +97,12 @@ public class CQLPersistenceContextTest {
 
 	private Long primaryKey = RandomUtils.nextLong();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder()
-			.id(primaryKey).buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(ID).accessors().invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
+				.invoker(invoker).build();
 
 		meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -117,10 +116,8 @@ public class CQLPersistenceContextTest {
 		Whitebox.setInternalState(context, EntityRefresher.class, refresher);
 		Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
 		Whitebox.setInternalState(context, "initializer", initializer);
-		Whitebox.setInternalState(context, "options",
-				OptionsBuilder.noOptions());
-		Whitebox.setInternalState(context, CQLAbstractFlushContext.class,
-				flushContext);
+		Whitebox.setInternalState(context, "options", OptionsBuilder.noOptions());
+		Whitebox.setInternalState(context, CQLAbstractFlushContext.class, flushContext);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}
@@ -191,8 +188,7 @@ public class CQLPersistenceContextTest {
 
 		context.bindForSimpleCounterIncrement(counterMeta, 11L);
 
-		verify(daoContext).bindForSimpleCounterIncrement(context, meta,
-				counterMeta, 11L);
+		verify(daoContext).bindForSimpleCounterIncrement(context, meta, counterMeta, 11L);
 	}
 
 	@Test
@@ -201,8 +197,7 @@ public class CQLPersistenceContextTest {
 
 		context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-		verify(daoContext).incrementSimpleCounter(context, meta, counterMeta,
-				11L, LOCAL_QUORUM);
+		verify(daoContext).incrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
 	}
 
 	@Test
@@ -211,8 +206,7 @@ public class CQLPersistenceContextTest {
 
 		context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-		verify(daoContext).decrementSimpleCounter(context, meta, counterMeta,
-				11L, LOCAL_QUORUM);
+		verify(daoContext).decrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
 	}
 
 	@Test
@@ -220,8 +214,7 @@ public class CQLPersistenceContextTest {
 		PropertyMeta counterMeta = new PropertyMeta();
 
 		Row row = mock(Row.class);
-		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM))
-				.thenReturn(row);
+		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
 		when(row.getLong(CQL_COUNTER_VALUE)).thenReturn(11L);
 		Long counterValue = context.getSimpleCounter(counterMeta, LOCAL_QUORUM);
 
@@ -229,15 +222,12 @@ public class CQLPersistenceContextTest {
 	}
 
 	@Test
-	public void should_return_null_when_no_simple_counter_value()
-			throws Exception {
+	public void should_return_null_when_no_simple_counter_value() throws Exception {
 		PropertyMeta counterMeta = new PropertyMeta();
 
-		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM))
-				.thenReturn(null);
+		when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
 
-		assertThat(context.getSimpleCounter(counterMeta, LOCAL_QUORUM))
-				.isNull();
+		assertThat(context.getSimpleCounter(counterMeta, LOCAL_QUORUM)).isNull();
 	}
 
 	@Test
@@ -246,8 +236,7 @@ public class CQLPersistenceContextTest {
 
 		context.bindForSimpleCounterRemoval(counterMeta);
 
-		verify(daoContext).bindForSimpleCounterDelete(context, meta,
-				counterMeta, entity.getId());
+		verify(daoContext).bindForSimpleCounterDelete(context, meta, counterMeta, entity.getId());
 	}
 
 	// Clustered counter
@@ -257,8 +246,7 @@ public class CQLPersistenceContextTest {
 
 		context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
-		verify(daoContext).pushClusteredCounterIncrementStatement(context,
-				meta, counterMeta, 11L);
+		verify(daoContext).pushClusteredCounterIncrementStatement(context, meta, counterMeta, 11L);
 	}
 
 	@Test
@@ -267,8 +255,7 @@ public class CQLPersistenceContextTest {
 
 		context.incrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-		verify(daoContext).incrementClusteredCounter(context, meta,
-				counterMeta, 11L, LOCAL_QUORUM);
+		verify(daoContext).incrementClusteredCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
 	}
 
 	@Test
@@ -277,8 +264,7 @@ public class CQLPersistenceContextTest {
 
 		context.decrementClusteredCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-		verify(daoContext).decrementClusteredCounter(context, meta,
-				counterMeta, 11L, LOCAL_QUORUM);
+		verify(daoContext).decrementClusteredCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
 	}
 
 	@Test
@@ -287,25 +273,20 @@ public class CQLPersistenceContextTest {
 		counterMeta.setPropertyName("count");
 
 		Row row = mock(Row.class);
-		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM))
-				.thenReturn(row);
+		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
 		when(row.getLong("count")).thenReturn(11L);
-		Long counterValue = context.getClusteredCounter(counterMeta,
-				LOCAL_QUORUM);
+		Long counterValue = context.getClusteredCounter(counterMeta, LOCAL_QUORUM);
 
 		assertThat(counterValue).isEqualTo(11L);
 	}
 
 	@Test
-	public void should_return_null_when_no_clustered_counter_value()
-			throws Exception {
+	public void should_return_null_when_no_clustered_counter_value() throws Exception {
 		PropertyMeta counterMeta = new PropertyMeta();
 
-		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM))
-				.thenReturn(null);
+		when(daoContext.getClusteredCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
 
-		assertThat(context.getClusteredCounter(counterMeta, LOCAL_QUORUM))
-				.isNull();
+		assertThat(context.getClusteredCounter(counterMeta, LOCAL_QUORUM)).isNull();
 	}
 
 	@Test
@@ -314,8 +295,7 @@ public class CQLPersistenceContextTest {
 
 		context.bindForClusteredCounterRemoval(counterMeta);
 
-		verify(daoContext).bindForClusteredCounterDelete(context, meta,
-				counterMeta, entity.getId());
+		verify(daoContext).bindForClusteredCounterDelete(context, meta, counterMeta, entity.getId());
 	}
 
 	@Test
@@ -346,12 +326,9 @@ public class CQLPersistenceContextTest {
 		when(bsWrapper.getValues()).thenReturn(boundValues);
 
 		ResultSet resultSet = mock(ResultSet.class);
-		when(
-				flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM,
-						boundValues)).thenReturn(resultSet);
+		when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM, boundValues)).thenReturn(resultSet);
 
-		ResultSet actual = context.executeImmediateWithConsistency(bsWrapper,
-				EACH_QUORUM);
+		ResultSet actual = context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
 
 		assertThat(actual).isSameAs(resultSet);
 	}

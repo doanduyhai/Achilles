@@ -67,17 +67,15 @@ public class EntrySetWrapperTest {
 
 	private EntityMeta entityMeta;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Before
 	public void setUp() throws Exception {
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-				//
-				.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).accessors().build();
+		//
+				.completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).accessors().build();
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
@@ -165,16 +163,14 @@ public class EntrySetWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_remove_external_element()
-			throws Exception {
+	public void should_not_mark_dirty_on_remove_external_element() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
-		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
+		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 		wrapper.remove(entry);
 
 		verify(dirtyMap, never()).put(setter, propertyMeta);
@@ -197,8 +193,7 @@ public class EntrySetWrapperTest {
 		list.add(entry1);
 		list.add(entry2);
 
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list))
-				.thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -207,8 +202,7 @@ public class EntrySetWrapperTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_not_mark_dirty_on_remove_all_not_matching()
-			throws Exception {
+	public void should_not_mark_dirty_on_remove_all_not_matching() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
@@ -216,10 +210,8 @@ public class EntrySetWrapperTest {
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 
-		Map.Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
-		Map.Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(
-				5, "csdf");
+		Map.Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
+		Map.Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(5, "csdf");
 
 		wrapper.removeAll(Arrays.asList(entry1, entry2));
 
@@ -239,8 +231,7 @@ public class EntrySetWrapperTest {
 		Entry<Object, Object> entry2 = iterator.next();
 		List<Entry<Object, Object>> list = Arrays.asList(entry1, entry2);
 
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list))
-				.thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
@@ -254,11 +245,9 @@ public class EntrySetWrapperTest {
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		map.put(1, "FR");
 
-		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(
-				1, "FR");
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(1, "FR");
 		List<Entry<Object, Object>> list = Arrays.asList(entry1);
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list))
-				.thenReturn(list);
+		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 		EntrySetWrapper wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);
@@ -286,8 +275,7 @@ public class EntrySetWrapperTest {
 
 		assertThat(array).hasSize(1);
 		assertThat(array[0]).isInstanceOf(Map.Entry.class);
-		assertThat(((Entry<Object, Object>) array[0]).getValue()).isEqualTo(
-				"FR");
+		assertThat(((Entry<Object, Object>) array[0]).getValue()).isEqualTo("FR");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -303,8 +291,7 @@ public class EntrySetWrapperTest {
 		Object[] array = wrapper.toArray(new Entry[] { entry });
 
 		assertThat(array).hasSize(1);
-		assertThat(((Entry<Object, Object>) array[0]).getValue()).isEqualTo(
-				"FR");
+		assertThat(((Entry<Object, Object>) array[0]).getValue()).isEqualTo("FR");
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -316,8 +303,7 @@ public class EntrySetWrapperTest {
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 
-		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
+		Map.Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 
 		wrapper.add(entry);
 	}
@@ -332,10 +318,8 @@ public class EntrySetWrapperTest {
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 
-		Map.Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(
-				4, "csdf");
-		Map.Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(
-				5, "csdf");
+		Map.Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
+		Map.Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(5, "csdf");
 
 		wrapper.addAll(Arrays.asList(entry1, entry2));
 	}

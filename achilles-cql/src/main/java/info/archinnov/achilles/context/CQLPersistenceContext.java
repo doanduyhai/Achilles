@@ -46,35 +46,27 @@ public class CQLPersistenceContext extends PersistenceContext {
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 	private EntityRefresher<CQLPersistenceContext> refresher;
 
-	public CQLPersistenceContext(EntityMeta entityMeta,
-			ConfigurationContext configContext, CQLDaoContext daoContext,
-			CQLAbstractFlushContext<?> flushContext, Class<?> entityClass,
-			Object primaryKey, Options options) {
-		super(entityMeta, configContext, entityClass, primaryKey, flushContext,
-				options);
+	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, CQLDaoContext daoContext,
+			CQLAbstractFlushContext<?> flushContext, Class<?> entityClass, Object primaryKey, Options options) {
+		super(entityMeta, configContext, entityClass, primaryKey, flushContext, options);
 		initCollaborators(daoContext, flushContext);
 	}
 
-	public CQLPersistenceContext(EntityMeta entityMeta,
-			ConfigurationContext configContext, CQLDaoContext daoContext,
-			CQLAbstractFlushContext<?> flushContext, Object entity,
-			Options options) {
+	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, CQLDaoContext daoContext,
+			CQLAbstractFlushContext<?> flushContext, Object entity, Options options) {
 		super(entityMeta, configContext, entity, flushContext, options);
 		initCollaborators(daoContext, flushContext);
 	}
 
-	private void initCollaborators(CQLDaoContext daoContext,
-			CQLAbstractFlushContext<?> flushContext) {
-		this.refresher = new EntityRefresher<CQLPersistenceContext>(loader,
-				proxifier);
+	private void initCollaborators(CQLDaoContext daoContext, CQLAbstractFlushContext<?> flushContext) {
+		this.refresher = new EntityRefresher<CQLPersistenceContext>(loader, proxifier);
 		this.daoContext = daoContext;
 		this.flushContext = flushContext;
 	}
 
 	@Override
 	public CQLPersistenceContext duplicate(Object entity) {
-		return new CQLPersistenceContext(entityMeta, configContext, daoContext,
-				flushContext.duplicate(), entity,
+		return new CQLPersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicate(), entity,
 				options.duplicateWithoutTtlAndTimestamp());
 	}
 
@@ -99,26 +91,19 @@ public class CQLPersistenceContext extends PersistenceContext {
 	}
 
 	// Simple counter
-	public void bindForSimpleCounterIncrement(PropertyMeta counterMeta,
-			Long increment) {
-		daoContext.bindForSimpleCounterIncrement(this, entityMeta, counterMeta,
-				increment);
+	public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment) {
+		daoContext.bindForSimpleCounterIncrement(this, entityMeta, counterMeta, increment);
 	}
 
-	public void incrementSimpleCounter(PropertyMeta counterMeta,
-			Long increment, ConsistencyLevel consistency) {
-		daoContext.incrementSimpleCounter(this, entityMeta, counterMeta,
-				increment, consistency);
+	public void incrementSimpleCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency) {
+		daoContext.incrementSimpleCounter(this, entityMeta, counterMeta, increment, consistency);
 	}
 
-	public void decrementSimpleCounter(PropertyMeta counterMeta,
-			Long decrement, ConsistencyLevel consistency) {
-		daoContext.decrementSimpleCounter(this, entityMeta, counterMeta,
-				decrement, consistency);
+	public void decrementSimpleCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency) {
+		daoContext.decrementSimpleCounter(this, entityMeta, counterMeta, decrement, consistency);
 	}
 
-	public Long getSimpleCounter(PropertyMeta counterMeta,
-			ConsistencyLevel consistency) {
+	public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency) {
 		Row row = daoContext.getSimpleCounter(this, counterMeta, consistency);
 		if (row != null) {
 			return row.getLong(CQL_COUNTER_VALUE);
@@ -127,31 +112,23 @@ public class CQLPersistenceContext extends PersistenceContext {
 	}
 
 	public void bindForSimpleCounterRemoval(PropertyMeta counterMeta) {
-		daoContext.bindForSimpleCounterDelete(this, entityMeta, counterMeta,
-				primaryKey);
+		daoContext.bindForSimpleCounterDelete(this, entityMeta, counterMeta, primaryKey);
 	}
 
 	// Clustered counter
-	public void pushClusteredCounterIncrementStatement(
-			PropertyMeta counterMeta, Long increment) {
-		daoContext.pushClusteredCounterIncrementStatement(this, entityMeta,
-				counterMeta, increment);
+	public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment) {
+		daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
 	}
 
-	public void incrementClusteredCounter(PropertyMeta counterMeta,
-			Long increment, ConsistencyLevel consistency) {
-		daoContext.incrementClusteredCounter(this, entityMeta, counterMeta,
-				increment, consistency);
+	public void incrementClusteredCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency) {
+		daoContext.incrementClusteredCounter(this, entityMeta, counterMeta, increment, consistency);
 	}
 
-	public void decrementClusteredCounter(PropertyMeta counterMeta,
-			Long decrement, ConsistencyLevel consistency) {
-		daoContext.decrementClusteredCounter(this, entityMeta, counterMeta,
-				decrement, consistency);
+	public void decrementClusteredCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency) {
+		daoContext.decrementClusteredCounter(this, entityMeta, counterMeta, decrement, consistency);
 	}
 
-	public Long getClusteredCounter(PropertyMeta counterMeta,
-			ConsistencyLevel readLevel) {
+	public Long getClusteredCounter(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
 		Row row = daoContext.getClusteredCounter(this, counterMeta, readLevel);
 		if (row != null) {
 			return row.getLong(counterMeta.getPropertyName());
@@ -160,16 +137,14 @@ public class CQLPersistenceContext extends PersistenceContext {
 	}
 
 	public void bindForClusteredCounterRemoval(PropertyMeta counterMeta) {
-		daoContext.bindForClusteredCounterDelete(this, entityMeta, counterMeta,
-				primaryKey);
+		daoContext.bindForClusteredCounterDelete(this, entityMeta, counterMeta, primaryKey);
 	}
 
 	public ResultSet bindAndExecute(PreparedStatement ps, Object... params) {
 		return daoContext.bindAndExecute(ps, params);
 	}
 
-	public void pushBoundStatement(BoundStatementWrapper bsWrapper,
-			ConsistencyLevel writeLevel) {
+	public void pushBoundStatement(BoundStatementWrapper bsWrapper, ConsistencyLevel writeLevel) {
 		flushContext.pushBoundStatement(bsWrapper, writeLevel);
 	}
 
@@ -177,11 +152,10 @@ public class CQLPersistenceContext extends PersistenceContext {
 		flushContext.pushStatement(statement, writeLevel);
 	}
 
-	public ResultSet executeImmediateWithConsistency(
-			BoundStatementWrapper bsWrapper,
+	public ResultSet executeImmediateWithConsistency(BoundStatementWrapper bsWrapper,
 			ConsistencyLevel readConsistencyLevel) {
-		return flushContext.executeImmediateWithConsistency(bsWrapper.getBs(),
-				readConsistencyLevel, bsWrapper.getValues());
+		return flushContext.executeImmediateWithConsistency(bsWrapper.getBs(), readConsistencyLevel,
+				bsWrapper.getValues());
 	}
 
 	@Override
@@ -226,8 +200,7 @@ public class CQLPersistenceContext extends PersistenceContext {
 
 	@Override
 	public <T> T initialize(T entity) {
-		final EntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier
-				.getInterceptor(entity);
+		final EntityInterceptor<CQLPersistenceContext, T> interceptor = proxifier.getInterceptor(entity);
 		initializer.initializeEntity(entity, entityMeta, interceptor);
 		return entity;
 	}

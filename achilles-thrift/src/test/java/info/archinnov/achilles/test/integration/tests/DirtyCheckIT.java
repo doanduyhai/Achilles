@@ -46,24 +46,21 @@ import org.junit.Test;
 
 public class DirtyCheckIT {
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean");
 
 	private ThriftEntityManager em = resource.getEm();
 
-	private ThriftGenericEntityDao dao = resource
-			.getEntityDao(
-					normalizerAndValidateColumnFamilyName(CompleteBean.class
-							.getName()), Long.class);
+	private ThriftGenericEntityDao dao = resource.getEntityDao(
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
 	private CompleteBean bean;
 
 	@Before
 	public void setUp() {
-		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-				.age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
+				.addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
+				.addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
 	}
@@ -77,8 +74,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat(columns.get(2).right).isEqualTo("qux");
@@ -93,8 +89,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(3);
 		assertThat(columns.get(1).right).isEqualTo("qux");
@@ -110,8 +105,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 		assertThat(columns.get(2).right).isEqualTo("qux");
@@ -127,15 +121,13 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(0);
 	}
 
 	@Test
-	public void should_dirty_check_list_element_remove_at_index()
-			throws Exception {
+	public void should_dirty_check_list_element_remove_at_index() throws Exception {
 		bean.getFriends().remove(0);
 
 		em.merge(bean);
@@ -143,16 +135,14 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_remove_element()
-			throws Exception {
+	public void should_dirty_check_list_element_remove_element() throws Exception {
 		bean.getFriends().remove("bar");
 
 		em.merge(bean);
@@ -160,8 +150,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("foo");
@@ -176,8 +165,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -192,16 +180,14 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("foo");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_sub_list_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_sub_list_remove() throws Exception {
 		bean.getFriends().subList(0, 1).remove(0);
 
 		em.merge(bean);
@@ -209,8 +195,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
@@ -225,16 +210,14 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(1).right).isEqualTo("qux");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().iterator();
 
 		iter.next();
@@ -245,16 +228,14 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_list_element_list_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
@@ -265,16 +246,14 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).right).isEqualTo("bar");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_set()
-			throws Exception {
+	public void should_dirty_check_list_element_list_iterator_set() throws Exception {
 		ListIterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
@@ -285,8 +264,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForList();
 		Composite endComp = endComptForList();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).right).isEqualTo("qux");
@@ -301,8 +279,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 
@@ -319,8 +296,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -341,8 +317,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(4);
 
@@ -361,8 +336,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -380,8 +354,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
@@ -397,8 +370,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("1");
@@ -408,8 +380,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_map_keyset_iterator_remove() throws Exception {
 		Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
 
 		iter.next();
@@ -420,8 +391,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -439,8 +409,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -451,8 +420,7 @@ public class DirtyCheckIT {
 
 	@Test
 	public void should_dirty_check_map_valueset_remove_all() throws Exception {
-		bean.getPreferences().values()
-				.removeAll(Arrays.asList("FR", "Paris", "test"));
+		bean.getPreferences().values().removeAll(Arrays.asList("FR", "Paris", "test"));
 
 		em.merge(bean);
 
@@ -460,8 +428,7 @@ public class DirtyCheckIT {
 
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
@@ -470,16 +437,14 @@ public class DirtyCheckIT {
 
 	@Test
 	public void should_dirty_check_map_valueset_retain_all() throws Exception {
-		bean.getPreferences().values()
-				.retainAll(Arrays.asList("FR", "Paris", "test"));
+		bean.getPreferences().values().retainAll(Arrays.asList("FR", "Paris", "test"));
 
 		em.merge(bean);
 
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("1");
@@ -489,8 +454,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_valueset_iterator_remove()
-			throws Exception {
+	public void should_dirty_check_map_valueset_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getPreferences().values().iterator();
 
 		iter.next();
@@ -501,8 +465,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -525,8 +488,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(2);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("2");
@@ -537,8 +499,7 @@ public class DirtyCheckIT {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_dirty_check_map_entrySet_remove_all_entry()
-			throws Exception {
+	public void should_dirty_check_map_entrySet_remove_all_entry() throws Exception {
 
 		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
@@ -554,8 +515,7 @@ public class DirtyCheckIT {
 		Composite startComp = startCompForMap();
 		Composite endComp = endCompForMap();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startComp, endComp, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startComp, endComp, false, 20);
 
 		assertThat(columns).hasSize(1);
 		assertThat(columns.get(0).left.get(2, STRING_SRZ)).isEqualTo("3");
@@ -595,8 +555,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_lazy_simple_property_after_loading()
-			throws Exception {
+	public void should_dirty_check_lazy_simple_property_after_loading() throws Exception {
 		assertThat(bean.getLabel()).isNull();
 
 		bean.setLabel("label");

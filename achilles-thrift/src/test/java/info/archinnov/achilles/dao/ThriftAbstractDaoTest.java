@@ -38,8 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class ThriftAbstractDaoTest {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			"CompleteBean");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource("CompleteBean");
 
 	private ThriftGenericEntityDao abstractDao;
 
@@ -55,16 +54,15 @@ public class ThriftAbstractDaoTest {
 
 	@Before
 	public void setUp() {
-		abstractDao = new ThriftGenericEntityDao(cluster, keyspace,
-				columnFamily, policy, Pair.create(Long.class, String.class));
+		abstractDao = new ThriftGenericEntityDao(cluster, keyspace, columnFamily, policy, Pair.create(Long.class,
+				String.class));
 	}
 
 	@Test
 	public void should_reinit_consistency_level() throws Exception {
 
 		Composite composite = new Composite();
-		composite
-				.setComponent(0, SIMPLE.flag(), ThriftSerializerUtils.BYTE_SRZ);
+		composite.setComponent(0, SIMPLE.flag(), ThriftSerializerUtils.BYTE_SRZ);
 		composite.setComponent(1, "name", ThriftSerializerUtils.STRING_SRZ);
 		abstractDao.getValue(123L, composite);
 		verify(policy).loadConsistencyLevelForRead(columnFamily);
@@ -72,13 +70,11 @@ public class ThriftAbstractDaoTest {
 	}
 
 	@Test
-	public void should_reinit_consistency_level_after_exception()
-			throws Exception {
+	public void should_reinit_consistency_level_after_exception() throws Exception {
 		Whitebox.setInternalState(abstractDao, "columnFamily", "xxx");
 		try {
 			Composite composite = new Composite();
-			composite.setComponent(0, SIMPLE.flag(),
-					ThriftSerializerUtils.BYTE_SRZ);
+			composite.setComponent(0, SIMPLE.flag(), ThriftSerializerUtils.BYTE_SRZ);
 			composite.setComponent(1, "name", ThriftSerializerUtils.STRING_SRZ);
 			abstractDao.getValue(123L, composite);
 		} catch (RuntimeException e) {

@@ -85,8 +85,7 @@ public class EntityMapperTest {
 
 		Map<String, List<Object>> listProperties = new HashMap<String, List<Object>>();
 
-		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
+		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
@@ -105,23 +104,20 @@ public class EntityMapperTest {
 		friends.add("test2");
 
 		listProperties.put("friends", friends);
-		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
+		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
 				.field("friends").accessors().build();
 		mapper.addToList(listProperties, listPropertyMeta, "foo");
 
 		assertThat(listProperties).hasSize(1);
 		assertThat(listProperties).containsKey("friends");
-		assertThat(listProperties.get("friends")).containsExactly("test1",
-				"test2", "foo");
+		assertThat(listProperties.get("friends")).containsExactly("test1", "test2", "foo");
 	}
 
 	@Test
 	public void should_add_to_empty_set() throws Exception {
 
 		Map<String, Set<Object>> setProperties = new HashMap<String, Set<Object>>();
-		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
+		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
@@ -139,25 +135,21 @@ public class EntityMapperTest {
 		set.addAll(Arrays.asList("test1", "test2"));
 		setProperties.put("followers", set);
 
-		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
+		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
 				.field("followers").accessors().build();
 		mapper.addToSet(setProperties, setPropertyMeta, "George");
 
 		assertThat(setProperties).hasSize(1);
 		assertThat(setProperties).containsKey("followers");
-		assertThat(setProperties.get("followers")).containsOnly("test1",
-				"test2", "George");
+		assertThat(setProperties.get("followers")).containsOnly("test1", "test2", "George");
 	}
 
 	@Test
 	public void should_add_to_empty_map() throws Exception {
 
 		Map<String, Map<Object, Object>> mapProperties = new HashMap<String, Map<Object, Object>>();
-		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Integer.class, String.class)
-				.field("preferences").type(MAP).mapper(objectMapper)
-				.accessors().build();
+		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Integer.class, String.class)
+				.field("preferences").type(MAP).mapper(objectMapper).accessors().build();
 		mapper.addToMap(mapProperties, mapPropertyMeta, 1, "FR");
 
 		assertThat(mapProperties).hasSize(1);
@@ -175,10 +167,8 @@ public class EntityMapperTest {
 		map.put(3, "75014");
 		mapProperties.put("preferences", map);
 
-		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Integer.class, String.class)
-				.field("preferences").type(MAP).mapper(objectMapper)
-				.accessors().build();
+		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Integer.class, String.class)
+				.field("preferences").type(MAP).mapper(objectMapper).accessors().build();
 
 		mapper.addToMap(mapProperties, mapPropertyMeta, 1, "FR");
 

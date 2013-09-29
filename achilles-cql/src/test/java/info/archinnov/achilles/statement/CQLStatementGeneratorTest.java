@@ -31,7 +31,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -82,54 +82,43 @@ public class CQLStatementGeneratorTest {
 	private ArgumentCaptor<Statement> statementCaptor;
 
 	@Test
-	public void should_create_select_statement_for_entity_simple_id()
-			throws Exception {
+	public void should_create_select_statement_for_entity_simple_id() throws Exception {
 		EntityMeta meta = prepareEntityMeta("id");
 
 		Select select = generator.generateSelectEntity(meta);
 
-		assertThat(select.getQueryString()).isEqualTo(
-				"SELECT id,age,name,label FROM table;");
+		assertThat(select.getQueryString()).isEqualTo("SELECT id,age,name,label FROM table;");
 	}
 
 	@Test
-	public void should_create_select_statement_for_entity_compound_id()
-			throws Exception {
+	public void should_create_select_statement_for_entity_compound_id() throws Exception {
 
 		EntityMeta meta = prepareEntityMeta("id", "a", "b");
 
 		Select select = generator.generateSelectEntity(meta);
 
-		assertThat(select.getQueryString()).isEqualTo(
-				"SELECT id,a,b,age,name,label FROM table;");
+		assertThat(select.getQueryString()).isEqualTo("SELECT id,a,b,age,name,label FROM table;");
 	}
 
 	@Test
 	public void should_generate_slice_select_query() throws Exception {
 		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
 		when(sliceQuery.getMeta()).thenReturn(meta);
-		when(sliceQuery.getCQLOrdering())
-				.thenReturn(QueryBuilder.desc("comp1"));
-		when(sliceQuery.getConsistencyLevel()).thenReturn(
-				ConsistencyLevel.EACH_QUORUM);
-		when(
-				sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(
-						eq(sliceQuery), any(Select.class))).thenAnswer(
+		when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
+		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), any(Select.class))).thenAnswer(
 				new Answer<Statement>() {
 
 					@Override
-					public Statement answer(InvocationOnMock invocation)
-							throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation
-								.getArguments()[1]);
+					public Statement answer(InvocationOnMock invocation) throws Throwable {
+						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
 					}
 				});
 
 		Query query = generator.generateSelectSliceQuery(sliceQuery, 98);
 
-		assertThat(query.toString())
-				.isEqualTo(
-						"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 98;");
+		assertThat(query.toString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 98;");
 	}
 
 	@Test
@@ -137,35 +126,26 @@ public class CQLStatementGeneratorTest {
 		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getLimit()).thenReturn(99);
-		when(sliceQuery.getCQLOrdering())
-				.thenReturn(QueryBuilder.desc("comp1"));
-		when(sliceQuery.getConsistencyLevel()).thenReturn(
-				ConsistencyLevel.EACH_QUORUM);
-		when(
-				sliceQueryPreparedGenerator
-						.generateWhereClauseForIteratorSliceQuery(
-								eq(sliceQuery), any(Select.class))).thenAnswer(
-				new Answer<Statement>() {
+		when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
+		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(eq(sliceQuery), any(Select.class)))
+				.thenAnswer(new Answer<Statement>() {
 
 					@Override
-					public Statement answer(InvocationOnMock invocation)
-							throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation
-								.getArguments()[1]);
+					public Statement answer(InvocationOnMock invocation) throws Throwable {
+						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
 					}
 				});
 		PreparedStatement ps = mock(PreparedStatement.class);
 
 		when(daoContext.prepare(statementCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.generateIteratorSliceQuery(
-				sliceQuery, daoContext);
+		PreparedStatement actual = generator.generateIteratorSliceQuery(sliceQuery, daoContext);
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(statementCaptor.getValue().getQueryString())
-				.isEqualTo(
-						"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 99;");
+		assertThat(statementCaptor.getValue().getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 99;");
 
 		verify(ps).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
 	}
@@ -176,79 +156,64 @@ public class CQLStatementGeneratorTest {
 		meta.setTableName("table");
 
 		when(sliceQuery.getMeta()).thenReturn(meta);
-		when(
-				sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(
-						eq(sliceQuery), any(Delete.class))).thenAnswer(
+		when(sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(eq(sliceQuery), any(Delete.class))).thenAnswer(
 				new Answer<Statement>() {
 					@Override
-					public Statement answer(InvocationOnMock invocation)
-							throws Throwable {
-						return buildFakeWhereForDelete((Delete) invocation
-								.getArguments()[1]);
+					public Statement answer(InvocationOnMock invocation) throws Throwable {
+						return buildFakeWhereForDelete((Delete) invocation.getArguments()[1]);
 					}
 				});
 
 		Query query = generator.generateRemoveSliceQuery(sliceQuery);
 
-		assertThat(query.toString()).isEqualTo(
-				"DELETE  FROM table WHERE fake='fake';");
+		assertThat(query.toString()).isEqualTo("DELETE  FROM table WHERE fake='fake';");
 	}
 
 	@Test
 	public void should_generate_insert_for_simple_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("age").accessors()
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
 				.type(SIMPLE).invoker(invoker).build();
 
-		PropertyMeta followersMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
 				.accessors().type(SET).invoker(invoker).build();
 
-		PropertyMeta preferencesMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(MAP).invoker(invoker).build();
+		PropertyMeta preferencesMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
+				.field("preferences").accessors().type(MAP).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
-		meta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta, followersMeta,
-				preferencesMeta));
+		meta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta, followersMeta, preferencesMeta));
 		meta.setIdMeta(idMeta);
 
 		Long id = RandomUtils.nextLong();
 		Long age = RandomUtils.nextLong();
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age)
-				.addFollowers("john", "helen").addPreference(1, "FR")
-				.addPreference(2, "Paris").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFollowers("john", "helen")
+				.addPreference(1, "FR").addPreference(2, "Paris").buid();
 
 		Insert insert = generator.generateInsert(entity, meta);
 
 		assertThat(insert.getQueryString()).isEqualTo(
-				"INSERT INTO table(id,age,followers,preferences) VALUES (" + id
-						+ "," + age + ",{'helen','john'},{1:'FR',2:'Paris'});");
+				"INSERT INTO table(id,age,followers,preferences) VALUES (" + id + "," + age
+						+ ",{'helen','john'},{1:'FR',2:'Paris'});");
 
 	}
 
 	@Test
 	public void should_generate_insert_for_clustered_id() throws Exception {
 		Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
-		Method valueGetter = ClusteredEntity.class
-				.getDeclaredMethod("getValue");
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compNames("id", "name")
-				.compClasses(Long.class, String.class)
-				.compGetters(userIdGetter, nameGetter).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("id", "name")
+				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).field("id")
 				.type(EMBEDDED_ID).invoker(invoker).build();
 		idMeta.setGetter(idGetter);
 
-		PropertyMeta valueMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).field("value").type(SIMPLE)
+		PropertyMeta valueMeta = PropertyMetaTestBuilder.valueClass(String.class).field("value").type(SIMPLE)
 				.invoker(invoker).build();
 		valueMeta.setGetter(valueGetter);
 
@@ -259,84 +224,70 @@ public class CQLStatementGeneratorTest {
 
 		Long userId = RandomUtils.nextLong();
 		ClusteredEntity entity = new ClusteredEntity();
-		CompoundKey embeddedId = new CompoundKey();
-		embeddedId.setUserId(userId);
-		embeddedId.setName("name");
-		entity.setId(embeddedId);
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+		embeddedKey.setUserId(userId);
+		embeddedKey.setName("name");
+		entity.setId(embeddedKey);
 		entity.setValue("value");
 
 		Insert insert = generator.generateInsert(entity, meta);
 
 		assertThat(insert.getQueryString()).isEqualTo(
-				"INSERT INTO table(id,name,value) VALUES (" + userId
-						+ ",'name','value');");
+				"INSERT INTO table(id,name,value) VALUES (" + userId + ",'name','value');");
 
 	}
 
 	@Test
 	public void should_generate_update_for_simple_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("age").accessors()
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
 				.type(SIMPLE).invoker(invoker).build();
 
-		PropertyMeta friendsMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
+		PropertyMeta friendsMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
 				.accessors().type(LAZY_LIST).invoker(invoker).build();
 
-		PropertyMeta followersMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
 				.accessors().type(SET).invoker(invoker).build();
 
-		PropertyMeta preferencesMeta = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
-				.accessors().type(MAP).invoker(invoker).build();
+		PropertyMeta preferencesMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
+				.field("preferences").accessors().type(MAP).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
-		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "age", ageMeta,
-				"followers", followersMeta, "preferences", preferencesMeta));
+		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "age", ageMeta, "followers", followersMeta, "preferences",
+				preferencesMeta));
 		meta.setIdMeta(idMeta);
 
 		Long id = RandomUtils.nextLong();
 		Long age = RandomUtils.nextLong();
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age)
-				.addFriends("foo", "bar").addFollowers("john", "helen")
-				.addPreference(1, "FR").addPreference(2, "Paris").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFriends("foo", "bar")
+				.addFollowers("john", "helen").addPreference(1, "FR").addPreference(2, "Paris").buid();
 
-		Update.Assignments update = generator.generateUpdateFields(entity,
-				meta, Arrays.asList(ageMeta, friendsMeta, followersMeta,
-						preferencesMeta));
+		Update.Assignments update = generator.generateUpdateFields(entity, meta,
+				Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
 
-		assertThat(update.getQueryString())
-				.isEqualTo(
-						"UPDATE table SET age="
-								+ age
-								+ ",friends=['foo','bar'],followers={'helen','john'},preferences={1:'FR',2:'Paris'} WHERE id="
-								+ id + ";");
+		assertThat(update.getQueryString()).isEqualTo(
+				"UPDATE table SET age=" + age
+						+ ",friends=['foo','bar'],followers={'helen','john'},preferences={1:'FR',2:'Paris'} WHERE id="
+						+ id + ";");
 
 	}
 
 	@Test
 	public void should_generate_update_for_clustered_id() throws Exception {
 		Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
-		Method valueGetter = ClusteredEntity.class
-				.getDeclaredMethod("getValue");
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compNames("id", "name")
-				.compClasses(Long.class, String.class)
-				.compGetters(userIdGetter, nameGetter).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("id", "name")
+				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).field("id")
 				.type(EMBEDDED_ID).invoker(invoker).build();
 		idMeta.setGetter(idGetter);
 
-		PropertyMeta valueMeta = PropertyMetaTestBuilder
-				.valueClass(String.class).field("value").type(SIMPLE)
+		PropertyMeta valueMeta = PropertyMetaTestBuilder.valueClass(String.class).field("value").type(SIMPLE)
 				.invoker(invoker).build();
 		valueMeta.setGetter(valueGetter);
 
@@ -347,45 +298,36 @@ public class CQLStatementGeneratorTest {
 
 		Long userId = RandomUtils.nextLong();
 		ClusteredEntity entity = new ClusteredEntity();
-		CompoundKey embeddedId = new CompoundKey();
-		embeddedId.setUserId(userId);
-		embeddedId.setName("name");
-		entity.setId(embeddedId);
+		EmbeddedKey embeddedKey = new EmbeddedKey();
+		embeddedKey.setUserId(userId);
+		embeddedKey.setName("name");
+		entity.setId(embeddedKey);
 		entity.setValue("value");
 
-		Update.Assignments update = generator.generateUpdateFields(entity,
-				meta, Arrays.asList(valueMeta));
+		Update.Assignments update = generator.generateUpdateFields(entity, meta, Arrays.asList(valueMeta));
 
 		assertThat(update.getQueryString()).isEqualTo(
-				"UPDATE table SET value='value' WHERE id=" + userId
-						+ " AND name='name';");
+				"UPDATE table SET value='value' WHERE id=" + userId + " AND name='name';");
 
 	}
 
-	private EntityMeta prepareEntityMeta(String... componentNames)
-			throws Exception {
+	private EntityMeta prepareEntityMeta(String... componentNames) throws Exception {
 		PropertyMeta idMeta;
 		if (componentNames.length > 1) {
-			idMeta = PropertyMetaTestBuilder
-					.completeBean(Void.class, CompoundKey.class).field("id")
-					.compNames(componentNames).type(PropertyType.EMBEDDED_ID)
-					.build();
+			idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
+					.compNames(componentNames).type(PropertyType.EMBEDDED_ID).build();
 		} else {
-			idMeta = PropertyMetaTestBuilder
-					.completeBean(Void.class, Long.class)
-					.field(componentNames[0]).type(ID).build();
+			idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field(componentNames[0]).type(ID)
+					.build();
 		}
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
 				.build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
-		PropertyMeta labelMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("label")
+		PropertyMeta labelMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("label")
 				.type(SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();

@@ -35,45 +35,36 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
 public class EntityInitializer {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityInitializer.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityInitializer.class);
 
 	private EntityProxifier<PersistenceContext> proxifier = new EntityProxifier<PersistenceContext>() {
 
 		@Override
-		public <T> EntityInterceptor<PersistenceContext, T> buildInterceptor(
-				PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
+		public <T> EntityInterceptor<PersistenceContext, T> buildInterceptor(PersistenceContext context, T entity,
+				Set<Method> alreadyLoaded) {
 			return null;
 		}
 	};
 
-	public <T, CONTEXT extends PersistenceContext> void initializeEntity(
-			T entity, EntityMeta entityMeta,
+	public <T, CONTEXT extends PersistenceContext> void initializeEntity(T entity, EntityMeta entityMeta,
 			EntityInterceptor<CONTEXT, T> interceptor) {
 
-		log.debug("Initializing lazy fields for entity {} of class {}", entity,
-				entityMeta.getClassName());
+		log.debug("Initializing lazy fields for entity {} of class {}", entity, entityMeta.getClassName());
 
-		Set<PropertyMeta> alreadyLoadedMetas = FluentIterable
-				.from(interceptor.getAlreadyLoaded())
-				.transform(
-						new AlreadyLoadedTransformer(entityMeta
-								.getGetterMetas())).toImmutableSet();
+		Set<PropertyMeta> alreadyLoadedMetas = FluentIterable.from(interceptor.getAlreadyLoaded())
+				.transform(new AlreadyLoadedTransformer(entityMeta.getGetterMetas())).toImmutableSet();
 
-		Set<PropertyMeta> allLazyMetas = FluentIterable
-				.from(entityMeta.getPropertyMetas().values()).filter(lazyType)
+		Set<PropertyMeta> allLazyMetas = FluentIterable.from(entityMeta.getPropertyMetas().values()).filter(lazyType)
 				.toImmutableSet();
 
-		Set<PropertyMeta> toBeLoadedMetas = Sets.difference(allLazyMetas,
-				alreadyLoadedMetas);
+		Set<PropertyMeta> toBeLoadedMetas = Sets.difference(allLazyMetas, alreadyLoadedMetas);
 
 		for (PropertyMeta propertyMeta : toBeLoadedMetas) {
 			Object value = propertyMeta.getValueFromField(entity);
 			if (propertyMeta.isCounter()) {
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
-				propertyMeta.setValueToField(realObject,
-						CounterBuilder.incr(counter.get()));
+				propertyMeta.setValueToField(realObject, CounterBuilder.incr(counter.get()));
 			}
 		}
 
@@ -82,8 +73,7 @@ public class EntityInitializer {
 				Object value = propertyMeta.getValueFromField(entity);
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
-				propertyMeta.setValueToField(realObject,
-						CounterBuilder.incr(counter.get()));
+				propertyMeta.setValueToField(realObject, CounterBuilder.incr(counter.get()));
 			}
 		}
 	}

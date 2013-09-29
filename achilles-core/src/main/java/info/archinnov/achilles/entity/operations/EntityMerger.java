@@ -31,23 +31,20 @@ import org.slf4j.LoggerFactory;
 
 public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityMerger.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
 
 	protected Merger<CONTEXT> merger;
 	protected EntityPersister<CONTEXT> persister;
 	protected EntityProxifier<CONTEXT> proxifier;
 
 	public <T> T merge(CONTEXT context, T entity) {
-		log.debug("Merging entity of class {} with primary key {}", context
-				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
 
 		EntityMeta entityMeta = context.getEntityMeta();
 
-		Validator.validateNotNull(entity,
-				"Proxy object should not be null for merge");
-		Validator.validateNotNull(entityMeta,
-				"entityMeta should not be null for merge");
+		Validator.validateNotNull(entity, "Proxy object should not be null for merge");
+		Validator.validateNotNull(entityMeta, "entityMeta should not be null for merge");
 
 		T proxy;
 		if (proxifier.isProxy(entity)) {
@@ -56,8 +53,7 @@ public abstract class EntityMerger<CONTEXT extends PersistenceContext> {
 			T realObject = proxifier.getRealObject(entity);
 			context.setEntity(realObject);
 
-			EntityInterceptor<CONTEXT, T> interceptor = proxifier
-					.getInterceptor(entity);
+			EntityInterceptor<CONTEXT, T> interceptor = proxifier.getInterceptor(entity);
 			Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
 			merger.merge(context, dirtyMap);
 			interceptor.setContext(context);

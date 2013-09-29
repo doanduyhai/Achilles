@@ -21,10 +21,8 @@ import java.util.ListIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ListIteratorWrapper extends AbstractWrapper implements
-		ListIterator<Object> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ListIteratorWrapper.class);
+public class ListIteratorWrapper extends AbstractWrapper implements ListIterator<Object> {
+	private static final Logger log = LoggerFactory.getLogger(ListIteratorWrapper.class);
 
 	private ListIterator<Object> target;
 
@@ -34,10 +32,8 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public void add(Object e) {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element addition",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark list property {} of entity class {} dirty upon element addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.add(proxifier.unwrap(e));
 		this.markDirty();
 	}
@@ -54,9 +50,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object next() {
-		log.trace(
-				"Return next element from list property {} of entity class {}",
-				propertyMeta.getPropertyName(),
+		log.trace("Return next element from list property {} of entity class {}", propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
 		return this.target.next();
 	}
@@ -68,9 +62,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public Object previous() {
-		log.trace(
-				"Return previous element from list property {} of entity class {}",
-				propertyMeta.getPropertyName(),
+		log.trace("Return previous element from list property {} of entity class {}", propertyMeta.getPropertyName(),
 				propertyMeta.getEntityClassName());
 		return this.target.previous();
 	}
@@ -82,20 +74,16 @@ public class ListIteratorWrapper extends AbstractWrapper implements
 
 	@Override
 	public void remove() {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element removal",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark list property {} of entity class {} dirty upon element removal",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.remove();
 		this.markDirty();
 	}
 
 	@Override
 	public void set(Object e) {
-		log.trace(
-				"Mark list property {} of entity class {} dirty upon element set at current position",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark list property {} of entity class {} dirty upon element set at current position",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.set(proxifier.unwrap(e));
 		this.markDirty();
 	}

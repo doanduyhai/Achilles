@@ -34,18 +34,15 @@ import com.google.common.collect.FluentIterable;
 
 public class CQLPreparedStatementBinder {
 
-	public BoundStatementWrapper bindForInsert(PreparedStatement ps,
-			EntityMeta entityMeta, Object entity) {
+	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity) {
 		List<Object> values = new ArrayList<Object>();
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable
-				.from(entityMeta.getAllMetasExceptIdMeta())
+		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(
-				nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
 
 		for (PropertyMeta pm : fieldMetas) {
 			Object value = pm.getValueFromField(entity);
@@ -59,8 +56,8 @@ public class CQLPreparedStatementBinder {
 		return new BoundStatementWrapper(bs, boundValues);
 	}
 
-	public BoundStatementWrapper bindForUpdate(PreparedStatement ps,
-			EntityMeta entityMeta, List<PropertyMeta> pms, Object entity) {
+	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
+			Object entity) {
 		List<Object> values = new ArrayList<Object>();
 		for (PropertyMeta pm : pms) {
 			Object value = pm.getValueFromField(entity);
@@ -76,8 +73,8 @@ public class CQLPreparedStatementBinder {
 		return new BoundStatementWrapper(bs, boundValues);
 	}
 
-	public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(
-			PreparedStatement ps, EntityMeta entityMeta, Object primaryKey) {
+	public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PreparedStatement ps, EntityMeta entityMeta,
+			Object primaryKey) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		List<Object> values = bindPrimaryKey(primaryKey, idMeta);
 
@@ -87,71 +84,55 @@ public class CQLPreparedStatementBinder {
 		return new BoundStatementWrapper(bs, boundValues);
 	}
 
-	public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey, Long increment) {
-		Object[] boundValues = ArrayUtils
-				.add(extractValuesForSimpleCounterBinding(entityMeta, pm,
-						primaryKey), 0, increment);
-
-		BoundStatement bs = ps.bind(boundValues);
-
-		return new BoundStatementWrapper(bs, boundValues);
-
-	}
-
-	public BoundStatementWrapper bindForSimpleCounterSelect(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey) {
-		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta,
-				pm, primaryKey);
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues);
-	}
-
-	public BoundStatementWrapper bindForSimpleCounterDelete(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey) {
-		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta,
-				pm, primaryKey);
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues);
-	}
-
-	public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey, Long increment) {
-		List<Object> primarykeys = bindPrimaryKey(primaryKey,
-				entityMeta.getIdMeta());
-		Object[] keys = ArrayUtils.add(
-				primarykeys.toArray(new Object[primarykeys.size()]), 0,
+	public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey, Long increment) {
+		Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0,
 				increment);
+
+		BoundStatement bs = ps.bind(boundValues);
+
+		return new BoundStatementWrapper(bs, boundValues);
+
+	}
+
+	public BoundStatementWrapper bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey) {
+		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+		BoundStatement bs = ps.bind(boundValues);
+		return new BoundStatementWrapper(bs, boundValues);
+	}
+
+	public BoundStatementWrapper bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey) {
+		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+		BoundStatement bs = ps.bind(boundValues);
+		return new BoundStatementWrapper(bs, boundValues);
+	}
+
+	public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey, Long increment) {
+		List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+		Object[] keys = ArrayUtils.add(primarykeys.toArray(new Object[primarykeys.size()]), 0, increment);
 
 		BoundStatement bs = ps.bind(keys);
 
 		return new BoundStatementWrapper(bs, keys);
 	}
 
-	public BoundStatementWrapper bindForClusteredCounterSelect(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey) {
-		List<Object> primarykeys = bindPrimaryKey(primaryKey,
-				entityMeta.getIdMeta());
-		Object[] boundValues = primarykeys.toArray(new Object[primarykeys
-				.size()]);
+	public BoundStatementWrapper bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey) {
+		List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+		Object[] boundValues = primarykeys.toArray(new Object[primarykeys.size()]);
 
 		BoundStatement bs = ps.bind(boundValues);
 
 		return new BoundStatementWrapper(bs, boundValues);
 	}
 
-	public BoundStatementWrapper bindForClusteredCounterDelete(
-			PreparedStatement ps, EntityMeta entityMeta, PropertyMeta pm,
-			Object primaryKey) {
-		List<Object> primarykeys = bindPrimaryKey(primaryKey,
-				entityMeta.getIdMeta());
-		Object[] boundValues = primarykeys.toArray(new Object[primarykeys
-				.size()]);
+	public BoundStatementWrapper bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
+			PropertyMeta pm, Object primaryKey) {
+		List<Object> primarykeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+		Object[] boundValues = primarykeys.toArray(new Object[primarykeys.size()]);
 		BoundStatement bs = ps.bind(boundValues);
 
 		return new BoundStatementWrapper(bs, boundValues);
@@ -183,17 +164,14 @@ public class CQLPreparedStatementBinder {
 			case LAZY_MAP:
 				return pm.encode((Map<?, ?>) value);
 			default:
-				throw new AchillesException("Cannot encode value '" + value
-						+ "' for Cassandra for property '"
-						+ pm.getPropertyName() + "' of type '"
-						+ pm.type().name() + "'");
+				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
+						+ pm.getPropertyName() + "' of type '" + pm.type().name() + "'");
 			}
 		}
 		return value;
 	}
 
-	private Object[] extractValuesForSimpleCounterBinding(
-			EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {
+	private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		String fqcn = entityMeta.getClassName();
 		String primaryKeyAsString = idMeta.forceEncodeToJSON(primaryKey);

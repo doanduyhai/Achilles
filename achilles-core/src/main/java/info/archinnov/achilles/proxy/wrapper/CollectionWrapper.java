@@ -24,10 +24,8 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CollectionWrapper extends AbstractWrapper implements
-		Collection<Object> {
-	private static final Logger log = LoggerFactory
-			.getLogger(CollectionWrapper.class);
+public class CollectionWrapper extends AbstractWrapper implements Collection<Object> {
+	private static final Logger log = LoggerFactory.getLogger(CollectionWrapper.class);
 
 	protected Collection<Object> target;
 
@@ -37,10 +35,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 
 	@Override
 	public boolean add(Object arg0) {
-		log.trace(
-				"Mark collection property {} of entity class {} dirty upon element addition",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark collection property {} of entity class {} dirty upon element addition",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.markDirty();
 		boolean result = target.add(proxifier.unwrap(arg0));
 
@@ -52,10 +48,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = target.addAll(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon elements addition",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark collection property {} of entity class {} dirty upon elements addition",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -64,10 +58,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 	@Override
 	public void clear() {
 		if (this.target.size() > 0) {
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon clearance",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark collection property {} of entity class {} dirty upon clearance",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		this.target.clear();
@@ -90,15 +82,12 @@ public class CollectionWrapper extends AbstractWrapper implements
 
 	@Override
 	public Iterator<Object> iterator() {
-		log.trace(
-				"Build iterator wrapper for collection property {} of entity class {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Build iterator wrapper for collection property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		return IteratorWrapperBuilder.builder(context, this.target.iterator())
-				//
-				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.proxifier(proxifier).build();
+		//
+				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
 	}
 
 	@Override
@@ -106,10 +95,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.remove(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon element removal",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark collection property {} of entity class {} dirty upon element removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -120,10 +107,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.removeAll(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon elements removal",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark collection property {} of entity class {} dirty upon elements removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -134,10 +119,8 @@ public class CollectionWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.retainAll(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark collection property {} of entity class {} dirty upon elements retentions",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark collection property {} of entity class {} dirty upon elements retentions",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;

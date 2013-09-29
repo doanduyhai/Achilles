@@ -66,8 +66,7 @@ public class EntityMergerTest {
 	@Mock
 	private EntityInterceptor<PersistenceContext, CompleteBean> interceptor;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private EntityMeta meta = new EntityMeta();
 
@@ -79,14 +78,11 @@ public class EntityMergerTest {
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(entityMerger, Merger.class, merger);
-		Whitebox.setInternalState(entityMerger, EntityPersister.class,
-				persister);
-		Whitebox.setInternalState(entityMerger, EntityProxifier.class,
-				proxifier);
+		Whitebox.setInternalState(entityMerger, EntityPersister.class, persister);
+		Whitebox.setInternalState(entityMerger, EntityProxifier.class, proxifier);
 
 		when(context.getEntity()).thenReturn(entity);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 
 		allMetas.clear();
@@ -100,9 +96,8 @@ public class EntityMergerTest {
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, UserBean.class).field("user")
-				.type(SIMPLE).accessors().build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+				.accessors().build();
 
 		meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
 

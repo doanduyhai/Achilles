@@ -62,8 +62,7 @@ public class CQLDaoContextBuilder {
 	private Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> clusteredCounterTransformer = new Function<EntityMeta, Map<CQLQueryType, PreparedStatement>>() {
 		@Override
 		public Map<CQLQueryType, PreparedStatement> apply(EntityMeta meta) {
-			return queryGenerator
-					.prepareClusteredCounterQueryMap(session, meta);
+			return queryGenerator.prepareClusteredCounterQueryMap(session, meta);
 		}
 	};
 
@@ -75,11 +74,9 @@ public class CQLDaoContextBuilder {
 		this.session = session;
 	}
 
-	public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap,
-			boolean hasSimpleCounter) {
-		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(
-				Maps.transformValues(Maps.filterValues(entityMetaMap,
-						excludeClusteredCounterFilter), insertPSTransformer));
+	public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
+		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
+				Maps.filterValues(entityMetaMap, excludeClusteredCounterFilter), insertPSTransformer));
 
 		Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap<Class<?>, PreparedStatement>(
 				Maps.transformValues(entityMetaMap, selectEagerPSTransformer));
@@ -87,24 +84,21 @@ public class CQLDaoContextBuilder {
 		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<Class<?>, Map<String, PreparedStatement>>(
 				Maps.transformValues(entityMetaMap, removePSTransformer));
 
-		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder
-				.newBuilder().maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE)
-				.build();
+		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder.newBuilder()
+				.maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE).build();
 
 		Map<CQLQueryType, PreparedStatement> counterQueryMap;
 		if (hasSimpleCounter) {
-			counterQueryMap = queryGenerator
-					.prepareSimpleCounterQueryMap(session);
+			counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
 		} else {
 			counterQueryMap = new HashMap<CQLQueryType, PreparedStatement>();
 		}
 
 		Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap<Class<?>, Map<CQLQueryType, PreparedStatement>>(
-				Maps.transformValues(Maps.filterValues(entityMetaMap,
-						clusteredCounterFilter), clusteredCounterTransformer));
+				Maps.transformValues(Maps.filterValues(entityMetaMap, clusteredCounterFilter),
+						clusteredCounterTransformer));
 
-		return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap,
-				removePSMap, counterQueryMap, clusteredCounterQueriesMap,
-				session);
+		return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap, counterQueryMap,
+				clusteredCounterQueriesMap, session);
 	}
 }

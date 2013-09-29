@@ -34,10 +34,8 @@ import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushContext<T>>
-		extends FlushContext<T> {
-	protected static final Logger log = LoggerFactory
-			.getLogger(ThriftAbstractFlushContext.class);
+public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushContext<T>> extends FlushContext<T> {
+	protected static final Logger log = LoggerFactory.getLogger(ThriftAbstractFlushContext.class);
 
 	protected ThriftDaoContext thriftDaoContext;
 	protected ThriftConsistencyContext consistencyContext;
@@ -46,18 +44,15 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 	protected boolean hasCustomConsistencyLevels = false;
 	protected ConsistencyLevel consistencyLevel;
 
-	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
-			AchillesConsistencyLevelPolicy policy,
+	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext, AchillesConsistencyLevelPolicy policy,
 			ConsistencyLevel consistencyLevel) {
 		this.thriftDaoContext = thriftDaoContext;
-		this.consistencyContext = new ThriftConsistencyContext(policy,
-				consistencyLevel);
+		this.consistencyContext = new ThriftConsistencyContext(policy, consistencyLevel);
 	}
 
 	protected ThriftAbstractFlushContext(ThriftDaoContext thriftDaoContext,
 			ThriftConsistencyContext consistencyContext,
-			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap,
-			boolean hasCustomConsistencyLevels) {
+			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap, boolean hasCustomConsistencyLevels) {
 		this.thriftDaoContext = thriftDaoContext;
 		this.consistencyContext = consistencyContext;
 		this.mutatorMap = mutatorMap;
@@ -67,8 +62,7 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 	protected void doFlush() {
 		log.debug("Execute mutations flush");
 		try {
-			for (Entry<String, Pair<Mutator<Object>, ThriftAbstractDao>> entry : mutatorMap
-					.entrySet()) {
+			for (Entry<String, Pair<Mutator<Object>, ThriftAbstractDao>> entry : mutatorMap.entrySet()) {
 				ThriftAbstractDao dao = entry.getValue().right;
 				Mutator<?> mutator = entry.getValue().left;
 				dao.executeMutator(mutator);
@@ -103,14 +97,11 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 		if (mutatorMap.containsKey(tableName)) {
 			mutator = mutatorMap.get(tableName).left;
 		} else {
-			ThriftGenericEntityDao entityDao = thriftDaoContext
-					.findEntityDao(tableName);
+			ThriftGenericEntityDao entityDao = thriftDaoContext.findEntityDao(tableName);
 
 			if (entityDao != null) {
 				mutator = entityDao.buildMutator();
-				mutatorMap.put(tableName, Pair
-						.<Mutator<Object>, ThriftAbstractDao> create(mutator,
-								entityDao));
+				mutatorMap.put(tableName, Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, entityDao));
 			}
 		}
 		return mutator;
@@ -121,14 +112,11 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 		if (mutatorMap.containsKey(tableName)) {
 			mutator = mutatorMap.get(tableName).left;
 		} else {
-			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext
-					.findWideRowDao(tableName);
+			ThriftGenericWideRowDao columnFamilyDao = thriftDaoContext.findWideRowDao(tableName);
 
 			if (columnFamilyDao != null) {
 				mutator = columnFamilyDao.buildMutator();
-				mutatorMap.put(tableName, Pair
-						.<Mutator<Object>, ThriftAbstractDao> create(mutator,
-								columnFamilyDao));
+				mutatorMap.put(tableName, Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, columnFamilyDao));
 			}
 		}
 		return mutator;
@@ -139,12 +127,10 @@ public abstract class ThriftAbstractFlushContext<T extends ThriftAbstractFlushCo
 		if (mutatorMap.containsKey(AchillesCounter.THRIFT_COUNTER_CF)) {
 			mutator = mutatorMap.get(AchillesCounter.THRIFT_COUNTER_CF).left;
 		} else {
-			ThriftCounterDao thriftCounterDao = thriftDaoContext
-					.getCounterDao();
+			ThriftCounterDao thriftCounterDao = thriftDaoContext.getCounterDao();
 			mutator = thriftCounterDao.buildMutator();
-			mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF, Pair
-					.<Mutator<Object>, ThriftAbstractDao> create(mutator,
-							thriftCounterDao));
+			mutatorMap.put(AchillesCounter.THRIFT_COUNTER_CF,
+					Pair.<Mutator<Object>, ThriftAbstractDao> create(mutator, thriftCounterDao));
 		}
 		return mutator;
 	}

@@ -25,8 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertyFilter {
-	private static final Logger log = LoggerFactory
-			.getLogger(PropertyFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
 	static final List<Class<?>> acceptedAnnotations = new ArrayList<Class<?>>();
 
@@ -37,9 +36,8 @@ public class PropertyFilter {
 	}
 
 	public boolean matches(Field field) {
-		log.trace(
-				"Does the field {} of class {} has the annotations @Id/@EmbeddedId/@Column ?",
-				field.getName(), field.getDeclaringClass().getCanonicalName());
+		log.trace("Does the field {} of class {} has the annotations @Id/@EmbeddedId/@Column ?", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
 
 		for (Class<?> clazz : acceptedAnnotations) {
 			if (hasAnnotation(field, clazz)) {
@@ -50,9 +48,8 @@ public class PropertyFilter {
 	}
 
 	public boolean matches(Field field, Class<?> annotation) {
-		log.trace("Does the field {} of class {} has the annotations {} ?",
-				field.getName(), field.getDeclaringClass().getCanonicalName(),
-				annotation.getCanonicalName());
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field.getDeclaringClass()
+				.getCanonicalName(), annotation.getCanonicalName());
 		if (hasAnnotation(field, annotation)) {
 			return true;
 		}
@@ -61,12 +58,10 @@ public class PropertyFilter {
 
 	public boolean matches(Field field, Class<?> annotation, String propertyName) {
 
-		log.trace("Does the field {} of class {} has the annotations {} ?",
-				field.getName(), field.getDeclaringClass().getCanonicalName(),
-				annotation.getCanonicalName());
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field.getDeclaringClass()
+				.getCanonicalName(), annotation.getCanonicalName());
 
-		if (hasAnnotation(field, annotation)
-				&& field.getName().equals(propertyName)) {
+		if (hasAnnotation(field, annotation) && field.getName().equals(propertyName)) {
 			return true;
 		}
 		return false;
@@ -74,9 +69,8 @@ public class PropertyFilter {
 
 	@SuppressWarnings("unchecked")
 	public boolean hasAnnotation(Field field, Class<?> annotationClass) {
-		log.trace("Does the field {} of class {} has the annotations {} ?",
-				field.getName(), field.getDeclaringClass().getCanonicalName(),
-				annotationClass.getCanonicalName());
+		log.trace("Does the field {} of class {} has the annotations {} ?", field.getName(), field.getDeclaringClass()
+				.getCanonicalName(), annotationClass.getCanonicalName());
 		return field.getAnnotation((Class<Annotation>) annotationClass) != null;
 	}
 

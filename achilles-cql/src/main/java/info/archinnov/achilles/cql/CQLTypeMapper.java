@@ -90,55 +90,37 @@ public class CQLTypeMapper {
 		cql2Java.put(CUSTOM, ByteBuffer.class);
 
 		try {
-			rowPropertyInvoker.put(Boolean.class,
-					Row.class.getDeclaredMethod("getBool", String.class));
-			rowPropertyInvoker.put(boolean.class,
-					Row.class.getDeclaredMethod("getBool", String.class));
+			rowPropertyInvoker.put(Boolean.class, Row.class.getDeclaredMethod("getBool", String.class));
+			rowPropertyInvoker.put(boolean.class, Row.class.getDeclaredMethod("getBool", String.class));
 
-			rowPropertyInvoker.put(Integer.class,
-					Row.class.getDeclaredMethod("getInt", String.class));
-			rowPropertyInvoker.put(int.class,
-					Row.class.getDeclaredMethod("getInt", String.class));
+			rowPropertyInvoker.put(Integer.class, Row.class.getDeclaredMethod("getInt", String.class));
+			rowPropertyInvoker.put(int.class, Row.class.getDeclaredMethod("getInt", String.class));
 
-			rowPropertyInvoker.put(Long.class,
-					Row.class.getDeclaredMethod("getLong", String.class));
-			rowPropertyInvoker.put(long.class,
-					Row.class.getDeclaredMethod("getLong", String.class));
+			rowPropertyInvoker.put(Long.class, Row.class.getDeclaredMethod("getLong", String.class));
+			rowPropertyInvoker.put(long.class, Row.class.getDeclaredMethod("getLong", String.class));
 
-			rowPropertyInvoker.put(Date.class,
-					Row.class.getDeclaredMethod("getDate", String.class));
+			rowPropertyInvoker.put(Date.class, Row.class.getDeclaredMethod("getDate", String.class));
 
-			rowPropertyInvoker.put(Float.class,
-					Row.class.getDeclaredMethod("getFloat", String.class));
-			rowPropertyInvoker.put(float.class,
-					Row.class.getDeclaredMethod("getFloat", String.class));
+			rowPropertyInvoker.put(Float.class, Row.class.getDeclaredMethod("getFloat", String.class));
+			rowPropertyInvoker.put(float.class, Row.class.getDeclaredMethod("getFloat", String.class));
 
-			rowPropertyInvoker.put(Double.class,
-					Row.class.getDeclaredMethod("getDouble", String.class));
-			rowPropertyInvoker.put(double.class,
-					Row.class.getDeclaredMethod("getDouble", String.class));
+			rowPropertyInvoker.put(Double.class, Row.class.getDeclaredMethod("getDouble", String.class));
+			rowPropertyInvoker.put(double.class, Row.class.getDeclaredMethod("getDouble", String.class));
 
-			rowPropertyInvoker.put(ByteBuffer.class,
-					Row.class.getDeclaredMethod("getBytes", String.class));
+			rowPropertyInvoker.put(ByteBuffer.class, Row.class.getDeclaredMethod("getBytes", String.class));
 
-			rowPropertyInvoker.put(String.class,
-					Row.class.getDeclaredMethod("getString", String.class));
+			rowPropertyInvoker.put(String.class, Row.class.getDeclaredMethod("getString", String.class));
 
-			rowPropertyInvoker.put(BigInteger.class,
-					Row.class.getDeclaredMethod("getVarint", String.class));
+			rowPropertyInvoker.put(BigInteger.class, Row.class.getDeclaredMethod("getVarint", String.class));
 
-			rowPropertyInvoker.put(BigDecimal.class,
-					Row.class.getDeclaredMethod("getDecimal", String.class));
+			rowPropertyInvoker.put(BigDecimal.class, Row.class.getDeclaredMethod("getDecimal", String.class));
 
-			rowPropertyInvoker.put(UUID.class,
-					Row.class.getDeclaredMethod("getUUID", String.class));
+			rowPropertyInvoker.put(UUID.class, Row.class.getDeclaredMethod("getUUID", String.class));
 
-			rowPropertyInvoker.put(InetAddress.class,
-					Row.class.getDeclaredMethod("getInet", String.class));
+			rowPropertyInvoker.put(InetAddress.class, Row.class.getDeclaredMethod("getInet", String.class));
 
 		} catch (Exception e) {
-			throw new AchillesException("Cannot find getter in '"
-					+ Row.class.getCanonicalName() + "' ", e);
+			throw new AchillesException("Cannot find getter in '" + Row.class.getCanonicalName() + "' ", e);
 		}
 
 	}

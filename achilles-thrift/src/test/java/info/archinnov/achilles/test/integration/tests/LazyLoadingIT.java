@@ -31,8 +31,8 @@ import org.junit.Test;
 
 public class LazyLoadingIT {
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean");
 
 	private ThriftEntityManager em = resource.getEm();
 
@@ -40,8 +40,8 @@ public class LazyLoadingIT {
 
 	@Before
 	public void setUp() {
-		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-				.age(35L).addFriends("foo", "bar").label("label").buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
+				.label("label").buid();
 
 		em.persist(bean);
 	}
@@ -51,8 +51,7 @@ public class LazyLoadingIT {
 		bean = em.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
-		ThriftEntityInterceptor<?> interceptor = (ThriftEntityInterceptor<?>) proxy
-				.getCallback(0);
+		ThriftEntityInterceptor<?> interceptor = (ThriftEntityInterceptor<?>) proxy.getCallback(0);
 		CompleteBean trueBean = (CompleteBean) interceptor.getTarget();
 
 		assertThat(trueBean.getLabel()).isNull();

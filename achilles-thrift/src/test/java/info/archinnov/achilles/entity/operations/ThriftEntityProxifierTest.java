@@ -55,8 +55,7 @@ public class ThriftEntityProxifierTest {
 		Long primaryKey = 11L;
 		entity.setId(primaryKey);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
 				.build();
 
 		EntityMeta meta = new EntityMeta();
@@ -66,13 +65,12 @@ public class ThriftEntityProxifierTest {
 		meta.setIdMeta(idMeta);
 
 		when(context.getEntityMeta()).thenReturn(meta);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityDao()).thenReturn(entityDao);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 
-		ThriftEntityInterceptor<CompleteBean> interceptor = proxifier
-				.buildInterceptor(context, entity, new HashSet<Method>());
+		ThriftEntityInterceptor<CompleteBean> interceptor = proxifier.buildInterceptor(context, entity,
+				new HashSet<Method>());
 
 		assertThat(interceptor).isInstanceOf(ThriftEntityInterceptor.class);
 		assertThat(interceptor.getTarget()).isSameAs(entity);
@@ -97,8 +95,7 @@ public class ThriftEntityProxifierTest {
 		meta.setClusteredEntity(true);
 
 		when(context.getEntityMeta()).thenReturn(meta);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 
 		exception.expect(AchillesException.class);
 

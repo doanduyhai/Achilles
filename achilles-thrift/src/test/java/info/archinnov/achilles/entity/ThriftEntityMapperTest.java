@@ -28,7 +28,7 @@ import info.archinnov.achilles.test.builders.EntityMetaTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,9 +87,8 @@ public class ThriftEntityMapperTest {
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, Long.class).field("id")
-				.invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, Long.class).field("id").invoker(invoker)
+				.build();
 	}
 
 	@Test
@@ -97,63 +96,41 @@ public class ThriftEntityMapperTest {
 
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker)
+		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
+				.field("name").type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker).build();
+
+		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
+				.field("friends").type(LIST).mapper(objectMapper).accessors().invoker(invoker).build();
+
+		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
+				.field("followers").type(SET).mapper(objectMapper).accessors().invoker(invoker).build();
+
+		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Integer.class, String.class)
+				.field("preferences").type(MAP).mapper(objectMapper).invoker(invoker).accessors().build();
+
+		entityMeta = EntityMetaTestBuilder.builder(idMeta).addPropertyMeta(namePropertyMeta)
+				.addPropertyMeta(listPropertyMeta).addPropertyMeta(setPropertyMeta).addPropertyMeta(mapPropertyMeta)
 				.build();
-
-		PropertyMeta listPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
-				.field("friends").type(LIST).mapper(objectMapper).accessors()
-				.invoker(invoker).build();
-
-		PropertyMeta setPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class)
-				.field("followers").type(SET).mapper(objectMapper).accessors()
-				.invoker(invoker).build();
-
-		PropertyMeta mapPropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Integer.class, String.class)
-				.field("preferences").type(MAP).mapper(objectMapper)
-				.invoker(invoker).accessors().build();
-
-		entityMeta = EntityMetaTestBuilder.builder(idMeta)
-				.addPropertyMeta(namePropertyMeta)
-				.addPropertyMeta(listPropertyMeta)
-				.addPropertyMeta(setPropertyMeta)
-				.addPropertyMeta(mapPropertyMeta).build();
 
 		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
 		columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
 
-		columns.add(Pair
-				.create(buildListPropertyComposite("friends", 0), "foo"));
-		columns.add(Pair
-				.create(buildListPropertyComposite("friends", 1), "bar"));
+		columns.add(Pair.create(buildListPropertyComposite("friends", 0), "foo"));
+		columns.add(Pair.create(buildListPropertyComposite("friends", 1), "bar"));
 
-		columns.add(Pair.create(
-				buildSetPropertyComposite("followers", "George"), ""));
-		columns.add(Pair.create(buildSetPropertyComposite("followers", "Paul"),
-				""));
+		columns.add(Pair.create(buildSetPropertyComposite("followers", "George"), ""));
+		columns.add(Pair.create(buildSetPropertyComposite("followers", "Paul"), ""));
 
-		columns.add(Pair.create(buildMapPropertyComposite("preferences", 1),
-				"FR"));
-		columns.add(Pair.create(buildMapPropertyComposite("preferences", 2),
-				"Paris"));
-		columns.add(Pair.create(buildMapPropertyComposite("preferences", 3),
-				"75014"));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 1), "FR"));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 2), "Paris"));
+		columns.add(Pair.create(buildMapPropertyComposite("preferences", 3), "75014"));
 
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(idMeta.getSetter()), idCaptor.capture());
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(setPropertyMeta.getSetter()), setCaptor.capture());
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(listPropertyMeta.getSetter()), listCaptor.capture());
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(mapPropertyMeta.getSetter()), mapCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(idMeta.getSetter()), idCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(setPropertyMeta.getSetter()), setCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(listPropertyMeta.getSetter()), listCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(mapPropertyMeta.getSetter()), mapCaptor.capture());
 
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 
@@ -176,10 +153,8 @@ public class ThriftEntityMapperTest {
 	public void should_do_nothing_for_unmapped_property() throws Exception {
 		CompleteBean entity = new CompleteBean();
 
-		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder
-				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker)
-				.build();
+		PropertyMeta namePropertyMeta = PropertyMetaTestBuilder.of(CompleteBean.class, Void.class, String.class)
+				.field("name").type(SIMPLE).mapper(objectMapper).accessors().invoker(invoker).build();
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
 				.addPropertyMeta(namePropertyMeta).build();
@@ -187,16 +162,13 @@ public class ThriftEntityMapperTest {
 		List<Pair<Composite, String>> columns = new ArrayList<Pair<Composite, String>>();
 
 		columns.add(Pair.create(buildSimplePropertyComposite("name"), "name"));
-		columns.add(Pair.create(buildSimplePropertyComposite("unmapped"),
-				"unmapped property"));
+		columns.add(Pair.create(buildSimplePropertyComposite("unmapped"), "unmapped property"));
 
-		doNothing().when(invoker).setValueToField(eq(entity),
-				eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
+		doNothing().when(invoker).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()), simpleCaptor.capture());
 
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 
-		verify(invoker).setValueToField(eq(entity),
-				eq(namePropertyMeta.getSetter()), any(List.class));
+		verify(invoker).setValueToField(eq(entity), eq(namePropertyMeta.getSetter()), any(List.class));
 
 		assertThat(simpleCaptor.getValue()).isEqualTo("name");
 
@@ -208,8 +180,8 @@ public class ThriftEntityMapperTest {
 
 		PropertyMeta lazyNamePropertyMeta = PropertyMetaTestBuilder
 				//
-				.of(CompleteBean.class, Void.class, String.class).field("name")
-				.type(LAZY_SIMPLE).mapper(objectMapper).accessors().build();
+				.of(CompleteBean.class, Void.class, String.class).field("name").type(LAZY_SIMPLE).mapper(objectMapper)
+				.accessors().build();
 
 		entityMeta = EntityMetaTestBuilder.builder(idMeta) //
 				.addPropertyMeta(lazyNamePropertyMeta).build();
@@ -220,31 +192,29 @@ public class ThriftEntityMapperTest {
 
 		mapper.setEagerPropertiesToEntity(2L, columns, entityMeta, entity);
 
-		verify(invoker, never()).setValueToField(entity,
-				lazyNamePropertyMeta.getSetter(), "name");
+		verify(invoker, never()).setValueToField(entity, lazyNamePropertyMeta.getSetter(), "name");
 
 	}
 
 	@Test
 	public void should_init_clustered_entity() throws Exception {
 		BeanWithClusteredId entity = new BeanWithClusteredId();
-		CompoundKey compoundKey = new CompoundKey();
+		EmbeddedKey embeddedKey = new EmbeddedKey();
 		entityMeta = mock(EntityMeta.class);
 
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		BeanWithClusteredId actual = mapper.initClusteredEntity(
-				BeanWithClusteredId.class, entityMeta, compoundKey);
+		BeanWithClusteredId actual = mapper.initClusteredEntity(BeanWithClusteredId.class, entityMeta, embeddedKey);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(entityMeta).setPrimaryKey(entity, compoundKey);
+		verify(entityMeta).setPrimaryKey(entity, embeddedKey);
 	}
 
 	@Test
 	public void should_create_clustered_entity_with_value() throws Exception {
 		BeanWithClusteredId entity = new BeanWithClusteredId();
-		CompoundKey compoundKey = new CompoundKey();
+		EmbeddedKey embeddedKey = new EmbeddedKey();
 		String clusteredValue = "clusteredValue";
 
 		PropertyMeta pm = mock(PropertyMeta.class);
@@ -255,13 +225,12 @@ public class ThriftEntityMapperTest {
 
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		BeanWithClusteredId actual = mapper.createClusteredEntityWithValue(
-				BeanWithClusteredId.class, entityMeta, pm, compoundKey,
-				clusteredValue);
+		BeanWithClusteredId actual = mapper.createClusteredEntityWithValue(BeanWithClusteredId.class, entityMeta, pm,
+				embeddedKey, clusteredValue);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(entityMeta).setPrimaryKey(entity, compoundKey);
+		verify(entityMeta).setPrimaryKey(entity, embeddedKey);
 		verify(pm).setValueToField(entity, clusteredValue);
 	}
 
@@ -281,8 +250,7 @@ public class ThriftEntityMapperTest {
 		return comp;
 	}
 
-	private Composite buildSetPropertyComposite(String propertyName,
-			String value) {
+	private Composite buildSetPropertyComposite(String propertyName, String value) {
 		Composite comp = new Composite();
 		comp.add(0, SET.flag());
 		comp.add(1, propertyName);

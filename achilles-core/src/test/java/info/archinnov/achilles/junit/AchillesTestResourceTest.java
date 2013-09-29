@@ -29,8 +29,7 @@ public class AchillesTestResourceTest {
 	private AchillesTestResource resource;
 
 	@Test
-	public void should_trigger_before_and_after_when_steps_is_both()
-			throws Throwable {
+	public void should_trigger_before_and_after_when_steps_is_both() throws Throwable {
 		final StringBuilder witness = new StringBuilder();
 		resource = new AchillesTestResource(Steps.BOTH, "table") {
 
@@ -50,8 +49,7 @@ public class AchillesTestResourceTest {
 	}
 
 	@Test
-	public void should_trigger_only_before_when_steps_is_before()
-			throws Throwable {
+	public void should_trigger_only_before_when_steps_is_before() throws Throwable {
 		final StringBuilder witness = new StringBuilder();
 		resource = new AchillesTestResource(Steps.BEFORE_TEST, "table") {
 
@@ -71,8 +69,7 @@ public class AchillesTestResourceTest {
 	}
 
 	@Test
-	public void should_trigger_only_after_when_steps_is_after()
-			throws Throwable {
+	public void should_trigger_only_after_when_steps_is_after() throws Throwable {
 		final StringBuilder witness = new StringBuilder();
 		resource = new AchillesTestResource(Steps.AFTER_TEST, "table") {
 

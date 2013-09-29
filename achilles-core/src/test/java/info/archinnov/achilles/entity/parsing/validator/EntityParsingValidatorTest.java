@@ -45,24 +45,18 @@ public class EntityParsingValidatorTest {
 	@Test
 	public void should_exception_when_no_id_meta() throws Exception {
 		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The entity '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
+		exception.expectMessage("The entity '" + CompleteBean.class.getCanonicalName()
+				+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
 		validator.validateHasIdMeta(CompleteBean.class, null);
 	}
 
 	@Test
-	public void should_exception_when_value_less_property_meta_map()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+	public void should_exception_when_value_less_property_meta_map() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.ID).build();
 
-		EntityParsingContext context = new EntityParsingContext(null,
-				CompleteBean.class);
-		context.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id",
-				idMeta));
+		EntityParsingContext context = new EntityParsingContext(null, CompleteBean.class);
+		context.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id", idMeta));
 		exception.expect(AchillesBeanMappingException.class);
 		exception
 				.expectMessage("The entity '"
@@ -73,10 +67,8 @@ public class EntityParsingValidatorTest {
 	}
 
 	@Test
-	public void should_skip_wide_row_validation_when_not_wide_row_with_thrift_impl()
-			throws Exception {
-		EntityParsingContext context = new EntityParsingContext(null,
-				CompleteBean.class);
+	public void should_skip_wide_row_validation_when_not_wide_row_with_thrift_impl() throws Exception {
+		EntityParsingContext context = new EntityParsingContext(null, CompleteBean.class);
 		context.setClusteredEntity(false);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
@@ -84,12 +76,10 @@ public class EntityParsingValidatorTest {
 	}
 
 	@Test
-	public void should_skip_wide_row_validation_when_not_wide_row_with_cql_impl()
-			throws Exception {
+	public void should_skip_wide_row_validation_when_not_wide_row_with_cql_impl() throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(configContext,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
 
 		context.setClusteredEntity(false);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
@@ -98,12 +88,10 @@ public class EntityParsingValidatorTest {
 	}
 
 	@Test
-	public void should_skip_wide_row_validation_for_wide_row_but_with_cql_impl()
-			throws Exception {
+	public void should_skip_wide_row_validation_for_wide_row_but_with_cql_impl() throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(configContext,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
 
 		context.setClusteredEntity(true);
 		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
@@ -112,12 +100,10 @@ public class EntityParsingValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_more_than_two_property_metas_for_wide_row()
-			throws Exception {
+	public void should_exception_when_more_than_two_property_metas_for_wide_row() throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
@@ -126,21 +112,17 @@ public class EntityParsingValidatorTest {
 		context.setClusteredEntity(true);
 
 		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The clustered entity '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
+		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
+				+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
 
 		validator.validateClusteredEntities(context);
 	}
 
 	@Test
-	public void should_exception_when_no_embedded_id_found_for_wide_row()
-			throws Exception {
+	public void should_exception_when_no_embedded_id_found_for_wide_row() throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder //
@@ -154,20 +136,17 @@ public class EntityParsingValidatorTest {
 		context.setClusteredEntity(true);
 
 		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("The clustered entity '"
-				+ CompleteBean.class.getCanonicalName()
+		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
 				+ "' should have an @EmbeddedId");
 
 		validator.validateClusteredEntities(context);
 	}
 
 	@Test
-	public void should_exception_when_incorrect_clustered_value_type_for_wide_row()
-			throws Exception {
+	public void should_exception_when_incorrect_clustered_value_type_for_wide_row() throws Exception {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext,
-				CompleteBean.class);
+		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
 		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder //
@@ -181,20 +160,16 @@ public class EntityParsingValidatorTest {
 		context.setClusteredEntity(true);
 
 		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The clustered entity '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' should have a single @Column property of type simple/counter");
+		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
+				+ "' should have a single @Column property of type simple/counter");
 
 		validator.validateClusteredEntities(context);
 	}
 
 	@Test
-	public void should_exception_when_no_entity_found_after_parsing()
-			throws Exception {
+	public void should_exception_when_no_entity_found_after_parsing() throws Exception {
 		List<Class<?>> entities = new ArrayList<Class<?>>();
-		List<String> entityPackages = Arrays.asList("com.package1",
-				"com.package2");
+		List<String> entityPackages = Arrays.asList("com.package1", "com.package2");
 
 		exception.expect(AchillesBeanMappingException.class);
 		exception

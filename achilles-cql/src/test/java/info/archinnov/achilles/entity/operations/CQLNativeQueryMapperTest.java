@@ -73,29 +73,20 @@ public class CQLNativeQueryMapperTest {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("id"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id",
-				iden1, LongType.instance);
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
 
-		ColumnIdentifier iden2 = new ColumnIdentifier(
-				UTF8Type.instance.decompose(name), UTF8Type.instance);
-		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "name",
-				iden2, UTF8Type.instance);
+		ColumnIdentifier iden2 = new ColumnIdentifier(UTF8Type.instance.decompose(name), UTF8Type.instance);
+		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "name", iden2, UTF8Type.instance);
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
-		def2 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec2);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
+		def2 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec2);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(
-				Arrays.asList(def1, def2).iterator());
+		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
 
-		when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "id"))
-				.thenReturn(id);
-		when(cqlRowInvoker.invokeOnRowForType(row, String.class, "name"))
-				.thenReturn(name);
+		when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "id")).thenReturn(id);
+		when(cqlRowInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn(name);
 
 		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
 
@@ -115,13 +106,11 @@ public class CQLNativeQueryMapperTest {
 	public void should_map_rows_with_list() throws Exception {
 		ArrayList<String> friends = new ArrayList<String>();
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("friends"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace",
-				"friends", iden1, ListType.getInstance(UTF8Type.instance));
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("friends"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "friends", iden1,
+				ListType.getInstance(UTF8Type.instance));
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1).iterator());
@@ -140,13 +129,11 @@ public class CQLNativeQueryMapperTest {
 	public void should_map_rows_with_set() throws Exception {
 		Set<String> followers = new HashSet<String>();
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("followers"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace",
-				"followers", iden1, SetType.getInstance(UTF8Type.instance));
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("followers"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "followers", iden1,
+				SetType.getInstance(UTF8Type.instance));
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1).iterator());
@@ -165,20 +152,16 @@ public class CQLNativeQueryMapperTest {
 	public void should_map_rows_with_map() throws Exception {
 		Map<BigInteger, String> preferences = new HashMap<BigInteger, String>();
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("preferences"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace",
-				"followers", iden1, MapType.getInstance(IntegerType.instance,
-						UTF8Type.instance));
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("preferences"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "followers", iden1, MapType.getInstance(
+				IntegerType.instance, UTF8Type.instance));
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1).iterator());
 
-		when(row.getMap("preferences", BigInteger.class, String.class))
-				.thenReturn(preferences);
+		when(row.getMap("preferences", BigInteger.class, String.class)).thenReturn(preferences);
 		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
@@ -190,13 +173,10 @@ public class CQLNativeQueryMapperTest {
 
 	@Test
 	public void should_return_empty_list_when_no_column() throws Exception {
-		ColumnIdentifier iden1 = new ColumnIdentifier(
-				UTF8Type.instance.decompose("id"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id",
-				iden1, LongType.instance);
+		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
+		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
 
-		def1 = Whitebox.invokeMethod(Definition.class,
-				"fromTransportSpecification", spec1);
+		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
 
 		when(row.getColumnDefinitions()).thenReturn(null);
 

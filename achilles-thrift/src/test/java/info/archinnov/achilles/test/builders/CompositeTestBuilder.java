@@ -56,8 +56,7 @@ public class CompositeTestBuilder {
 		if (!CollectionUtils.isEmpty(values)) {
 			for (int i = 0; i < values.size(); i++) {
 				Object value = values.get(i);
-				built.setComponent(i, value,
-						SerializerTypeInferer.getSerializer(value));
+				built.setComponent(i, value, SerializerTypeInferer.getSerializer(value));
 			}
 		}
 		return built;

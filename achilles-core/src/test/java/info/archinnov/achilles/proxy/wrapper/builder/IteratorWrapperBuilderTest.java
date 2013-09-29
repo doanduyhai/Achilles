@@ -65,20 +65,15 @@ public class IteratorWrapperBuilderTest {
 		Iterator<Object> iterator = target.iterator();
 		IteratorWrapper wrapper = IteratorWrapperBuilder
 				//
-				.builder(context, iterator).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.builder(context, iterator).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 
-		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(
-				iterator);
+		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(iterator);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
-		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(
-				setter);
-		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta"))
-				.isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(
-				proxifier);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(
-				context);
+		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
+		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
+		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
+		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

@@ -30,23 +30,19 @@ import com.google.common.collect.Lists;
 public class LoggerHelperTest {
 
 	@Test
-	public void should_transform_class_list_to_canonical_class_name_list()
-			throws Exception {
+	public void should_transform_class_list_to_canonical_class_name_list() throws Exception {
 		List<Class<?>> classes = new ArrayList<Class<?>>();
 		classes.add(Long.class);
 
-		assertThat(Lists.transform(classes, LoggerHelper.fqcnToStringFn))
-				.contains(Long.class.getCanonicalName());
+		assertThat(Lists.transform(classes, LoggerHelper.fqcnToStringFn)).contains(Long.class.getCanonicalName());
 	}
 
 	@Test
-	public void should_transform_field_list_to_field_name_list()
-			throws Exception {
+	public void should_transform_field_list_to_field_name_list() throws Exception {
 		Field field = CompleteBean.class.getDeclaredField("id");
 		List<Field> fields = new ArrayList<Field>();
 		fields.add(field);
 
-		assertThat(Lists.transform(fields, LoggerHelper.fieldToStringFn))
-				.contains("id");
+		assertThat(Lists.transform(fields, LoggerHelper.fieldToStringFn)).contains("id");
 	}
 }

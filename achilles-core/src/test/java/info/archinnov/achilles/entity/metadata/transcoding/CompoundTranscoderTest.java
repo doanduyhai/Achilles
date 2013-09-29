@@ -23,7 +23,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -57,17 +57,15 @@ public class CompoundTranscoderTest {
 	public void should_encode_to_components() throws Exception {
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
-		CompoundKey compound = new CompoundKey(userId, name);
+		EmbeddedKey compound = new EmbeddedKey(userId, name);
 
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
-				.compGetters(userIdGetter, nameGetter).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
 
-		when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(
-				userId);
+		when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(userId);
 		when(invoker.getValueFromField(compound, nameGetter)).thenReturn(name);
 
 		List<Object> actual = transcoder.encodeToComponents(pm, compound);
@@ -78,12 +76,11 @@ public class CompoundTranscoderTest {
 	@Test
 	public void should_encode_to_null_components() throws Exception {
 
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
-				.compGetters(userIdGetter, nameGetter).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
 		List<Object> actual = transcoder.encodeToComponents(pm, (Object) null);
 
 		assertThat(actual).isEmpty();
@@ -91,15 +88,13 @@ public class CompoundTranscoderTest {
 
 	@Test
 	public void should_not_encode_to_null_components() throws Exception {
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
-				.compGetters(userIdGetter, nameGetter).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
 
-		List<Object> actual = transcoder.encodeToComponents(pm,
-				Arrays.<Object> asList());
+		List<Object> actual = transcoder.encodeToComponents(pm, Arrays.<Object> asList());
 
 		assertThat(actual).isEmpty();
 	}
@@ -109,10 +104,8 @@ public class CompoundTranscoderTest {
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID)
-				.compClasses(Long.class, String.class, PropertyType.class)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class, PropertyType.class).build();
 
 		List<Object> actual = transcoder.encodeToComponents(pm,
 				Arrays.<Object> asList(userId, PropertyType.EMBEDDED_ID, name));
@@ -122,40 +115,31 @@ public class CompoundTranscoderTest {
 
 	@Test
 	public void should_encode_null_components() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID)
-				.compClasses(Long.class, String.class, PropertyType.class)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class, PropertyType.class).build();
 
-		List<Object> actual = transcoder.encodeToComponents(pm,
-				Arrays.<Object> asList(null, null));
+		List<Object> actual = transcoder.encodeToComponents(pm, Arrays.<Object> asList(null, null));
 
 		assertThat(actual).isEmpty();
 	}
 
 	@Test
-	public void should_decode_from_components_with_injection_by_setters()
-			throws Exception {
+	public void should_decode_from_components_with_injection_by_setters() throws Exception {
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
 
-		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId",
-				Long.class);
-		Method namesetter = CompoundKey.class.getDeclaredMethod("setName",
-				String.class);
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(EMBEDDED_ID).compClasses(Long.class, String.class)
-				.compSetters(userIdSetter, namesetter).invoker(invoker).build();
+		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
+		Method namesetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+				.compClasses(Long.class, String.class).compSetters(userIdSetter, namesetter).invoker(invoker).build();
 
-		when(invoker.instanciate(CompoundKey.class)).thenReturn(
-				new CompoundKey());
+		when(invoker.instanciate(EmbeddedKey.class)).thenReturn(new EmbeddedKey());
 
-		Object actual = transcoder.decodeFromComponents(pm,
-				Arrays.<Object> asList(userId, name));
+		Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
 
-		assertThat(actual).isInstanceOf(CompoundKey.class);
+		assertThat(actual).isInstanceOf(EmbeddedKey.class);
 
-		CompoundKey compound = (CompoundKey) actual;
+		EmbeddedKey compound = (EmbeddedKey) actual;
 
 		assertThat(compound.getUserId()).isEqualTo(userId);
 		assertThat(compound.getName()).isEqualTo(name);

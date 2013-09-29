@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.query;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -48,26 +48,23 @@ public class SliceQueryTest {
 
 		List<Object> fromComponents = Arrays.<Object> asList(11L, "a");
 		List<Object> toComponents = Arrays.<Object> asList(11L, "b");
-		when(idMeta.encodeToComponents(fromComponents)).thenReturn(
-				fromComponents);
+		when(idMeta.encodeToComponents(fromComponents)).thenReturn(fromComponents);
 		when(idMeta.encodeToComponents(toComponents)).thenReturn(toComponents);
 
-		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(
-				ClusteredEntity.class, meta, 11L, new Object[] { "a" },
-				new Object[] { "b" }, OrderingMode.ASCENDING,
-				BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta,
+				Arrays.<Object> asList(11L), Arrays.<Object> asList("a"), Arrays.<Object> asList("b"),
+				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
 
 		assertThat(sliceQuery.getEntityClass()).isSameAs(ClusteredEntity.class);
 		assertThat(sliceQuery.getBatchSize()).isEqualTo(99);
-		assertThat(sliceQuery.getBounding()).isEqualTo(
-				BoundingMode.INCLUSIVE_BOUNDS);
+		assertThat(sliceQuery.getBounding()).isEqualTo(BoundingMode.INCLUSIVE_BOUNDS);
 		assertThat(sliceQuery.getClusteringsFrom()).containsExactly(11L, "a");
 		assertThat(sliceQuery.getClusteringsTo()).containsExactly(11L, "b");
 		assertThat(sliceQuery.getConsistencyLevel()).isNull();
 		assertThat(sliceQuery.getLimit()).isEqualTo(100);
 		assertThat(sliceQuery.getMeta()).isSameAs(meta);
 		assertThat(sliceQuery.getOrdering()).isSameAs(OrderingMode.ASCENDING);
-		assertThat(sliceQuery.getPartitionKey()).isEqualTo(11L);
+		assertThat(sliceQuery.getPartitionComponents()).containsExactly(11L);
 		assertThat(sliceQuery.isLimitSet()).isFalse();
 	}
 
@@ -77,10 +74,9 @@ public class SliceQueryTest {
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
-		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(
-				ClusteredEntity.class, meta, 11L, null, null,
-				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null,
-				100, 99, false);
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta,
+				Arrays.<Object> asList(11L), Arrays.<Object> asList(), Arrays.<Object> asList(),
+				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
 
 		assertThat(sliceQuery.hasNoComponent()).isTrue();
 	}

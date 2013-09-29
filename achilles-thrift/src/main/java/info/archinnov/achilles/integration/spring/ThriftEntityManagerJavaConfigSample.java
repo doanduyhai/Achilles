@@ -90,37 +90,31 @@ public class ThriftEntityManagerJavaConfigSample {
 		configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objecMapperFactory);
 
 		if (isNotBlank(consistencyLevelReadDefault)) {
-			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM,
-					consistencyLevelReadDefault);
+			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
 		}
 		if (isNotBlank(consistencyLevelWriteDefault)) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM,
-					consistencyLevelWriteDefault);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
 		}
 
 		if (isNotBlank(consistencyLevelReadMap)) {
-			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
-					extractConsistencyMap(consistencyLevelReadMap));
+			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, extractConsistencyMap(consistencyLevelReadMap));
 		}
 		if (isNotBlank(consistencyLevelWriteMap)) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
-					extractConsistencyMap(consistencyLevelWriteMap));
+			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, extractConsistencyMap(consistencyLevelWriteMap));
 		}
 
-		configMap.put(FORCE_CF_CREATION_PARAM,
-				Boolean.parseBoolean(forceColumnFamilyCreation));
+		configMap.put(FORCE_CF_CREATION_PARAM, Boolean.parseBoolean(forceColumnFamilyCreation));
 
 		return configMap;
 	}
 
-	private Map<String, String> extractConsistencyMap(
-			String consistencyMapProperty) {
+	private Map<String, String> extractConsistencyMap(String consistencyMapProperty) {
 		Map<String, String> consistencyMap = new HashMap<String, String>();
 
 		for (String entry : split(consistencyMapProperty, ",")) {
 			String[] entryValue = StringUtils.split(entry, ":");
-			assert entryValue.length == 2 : "Invalid map value : " + entry
-					+ " for the property : " + consistencyMapProperty;
+			assert entryValue.length == 2 : "Invalid map value : " + entry + " for the property : "
+					+ consistencyMapProperty;
 			consistencyMap.put(entryValue[0], entryValue[1]);
 		}
 		return consistencyMap;

@@ -46,8 +46,8 @@ public class ThriftCompositeTransformer {
 
 	// //////////////////// Clustered Entities
 
-	public <T> Function<HColumn<Composite, Object>, T> clusteredEntityTransformer(
-			final Class<T> entityClass, final ThriftPersistenceContext context) {
+	public <T> Function<HColumn<Composite, Object>, T> clusteredEntityTransformer(final Class<T> entityClass,
+			final ThriftPersistenceContext context) {
 		return new Function<HColumn<Composite, Object>, T>() {
 			@Override
 			public T apply(HColumn<Composite, Object> hColumn) {
@@ -56,52 +56,44 @@ public class ThriftCompositeTransformer {
 		};
 	}
 
-	public <T> Function<HColumn<Composite, Object>, T> valuelessClusteredEntityTransformer(
-			final Class<T> entityClass, final ThriftPersistenceContext context) {
+	public <T> Function<HColumn<Composite, Object>, T> valuelessClusteredEntityTransformer(final Class<T> entityClass,
+			final ThriftPersistenceContext context) {
 		return new Function<HColumn<Composite, Object>, T>() {
 			@Override
 			public T apply(HColumn<Composite, Object> hColumn) {
-				return buildClusteredEntityWithIdOnly(entityClass, context,
-						hColumn.getName().getComponents());
+				return buildClusteredEntityWithIdOnly(entityClass, context, hColumn.getName().getComponents());
 			}
 		};
 	}
 
-	public <T> Function<HCounterColumn<Composite>, T> counterClusteredEntityTransformer(
-			final Class<T> entityClass, final ThriftPersistenceContext context) {
+	public <T> Function<HCounterColumn<Composite>, T> counterClusteredEntityTransformer(final Class<T> entityClass,
+			final ThriftPersistenceContext context) {
 		return new Function<HCounterColumn<Composite>, T>() {
 			@Override
 			public T apply(HCounterColumn<Composite> hColumn) {
-				return buildClusteredEntityWithIdOnly(entityClass, context,
-						hColumn.getName().getComponents());
+				return buildClusteredEntityWithIdOnly(entityClass, context, hColumn.getName().getComponents());
 			}
 		};
 	}
 
-	public <T> T buildClusteredEntity(Class<T> entityClass,
-			ThriftPersistenceContext context, HColumn<Composite, Object> hColumn) {
+	public <T> T buildClusteredEntity(Class<T> entityClass, ThriftPersistenceContext context,
+			HColumn<Composite, Object> hColumn) {
 		PropertyMeta pm = context.getFirstMeta();
-		Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn
-				.getName().getComponents());
-		Object clusteredValue = hColumn.getValue();
-		Object value = pm.decode(clusteredValue);
-		return mapper.createClusteredEntityWithValue(entityClass,
-				context.getEntityMeta(), pm, embeddedId, value);
+		Object embeddedId = buildEmbeddedIdFromComponents(context, hColumn.getName().getComponents());
+		Object value = pm.decode(hColumn.getValue());
+		return mapper.createClusteredEntityWithValue(entityClass, context.getEntityMeta(), pm, embeddedId, value);
 	}
 
-	public <T> T buildClusteredEntityWithIdOnly(Class<T> entityClass,
-			ThriftPersistenceContext context, List<Component<?>> components) {
+	public <T> T buildClusteredEntityWithIdOnly(Class<T> entityClass, ThriftPersistenceContext context,
+			List<Component<?>> components) {
 		Object embeddedId = buildEmbeddedIdFromComponents(context, components);
-		return mapper.initClusteredEntity(entityClass, context.getEntityMeta(),
-				embeddedId);
+		return mapper.initClusteredEntity(entityClass, context.getEntityMeta(), embeddedId);
 	}
 
-	private Object buildEmbeddedIdFromComponents(
-			ThriftPersistenceContext context, List<Component<?>> components) {
-		Object partitionKey = context.getPartitionKey();
+	private Object buildEmbeddedIdFromComponents(ThriftPersistenceContext context, List<Component<?>> components) {
+		Object primaryKey = context.getPrimaryKey();
 		PropertyMeta idMeta = context.getIdMeta();
-		return compoundKeyMapper.fromCompositeToEmbeddedId(idMeta, components,
-				partitionKey);
+		return compoundKeyMapper.fromCompositeToEmbeddedId(idMeta, components, primaryKey);
 	}
 
 }

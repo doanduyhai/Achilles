@@ -44,26 +44,21 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
 
 	private CQLTypedQueryValidator typedQueryValidator = new CQLTypedQueryValidator();
 
-	protected CQLEntityManager(
-			Map<Class<?>, EntityMeta> entityMetaMap, //
-			CQLPersistenceContextFactory contextFactory,
-			CQLDaoContext daoContext, ConfigurationContext configContext) {
+	protected CQLEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+			CQLPersistenceContextFactory contextFactory, CQLDaoContext daoContext, ConfigurationContext configContext) {
 		super(entityMetaMap, configContext);
 		this.daoContext = daoContext;
 		super.proxifier = new CQLEntityProxifier();
-		super.entityValidator = new EntityValidator<CQLPersistenceContext>(
-				proxifier);
+		super.entityValidator = new EntityValidator<CQLPersistenceContext>(proxifier);
 		this.contextFactory = contextFactory;
-		this.sliceQueryExecutor = new CQLSliceQueryExecutor(contextFactory,
-				configContext, daoContext);
+		this.sliceQueryExecutor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
 	}
 
 	@Override
-	public <T> SliceQueryBuilder<CQLPersistenceContext, T> sliceQuery(
-			Class<T> entityClass) {
+	public <T> SliceQueryBuilder<CQLPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
-		return new SliceQueryBuilder<CQLPersistenceContext, T>(
-				sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
+		return new SliceQueryBuilder<CQLPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator, entityClass,
+				meta);
 	}
 
 	/**
@@ -76,8 +71,7 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
 	 * @return CQLNativeQueryBuilder
 	 */
 	public CQLNativeQueryBuilder nativeQuery(String queryString) {
-		Validator.validateNotBlank(queryString,
-				"The query string for native query should not be blank");
+		Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
 		return new CQLNativeQueryBuilder(daoContext, queryString);
 	}
 
@@ -95,22 +89,16 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
 	 * 
 	 * @return CQLTypedQueryBuilder<T>
 	 */
-	public <T> CQLTypedQueryBuilder<T> typedQuery(Class<T> entityClass,
-			String queryString) {
-		Validator.validateNotNull(entityClass,
-				"The entityClass for typed query should not be null");
-		Validator.validateNotBlank(queryString,
-				"The query string for typed query should not be blank");
-		Validator
-				.validateTrue(
-						entityMetaMap.containsKey(entityClass),
-						"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
-						entityClass.getCanonicalName());
+	public <T> CQLTypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString) {
+		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
+		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
+				entityClass.getCanonicalName());
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-		return new CQLTypedQueryBuilder<T>(entityClass, daoContext,
-				queryString, meta, contextFactory, true);
+		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, true);
 	}
 
 	/**
@@ -128,34 +116,25 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
 	 * 
 	 * @return CQLTypedQueryBuilder<T>
 	 */
-	public <T> CQLTypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass,
-			String queryString) {
-		Validator.validateNotNull(entityClass,
-				"The entityClass for typed query should not be null");
-		Validator.validateNotBlank(queryString,
-				"The query string for typed query should not be blank");
-		Validator
-				.validateTrue(
-						entityMetaMap.containsKey(entityClass),
-						"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
-						entityClass.getCanonicalName());
+	public <T> CQLTypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass, String queryString) {
+		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
+		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
+				entityClass.getCanonicalName());
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
-		typedQueryValidator.validateRawTypedQuery(entityClass, queryString,
-				meta);
-		return new CQLTypedQueryBuilder<T>(entityClass, daoContext,
-				queryString, meta, contextFactory, false);
+		typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
+		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false);
 	}
 
 	@Override
-	protected CQLPersistenceContext initPersistenceContext(Object entity,
-			Options options) {
+	protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
 		return contextFactory.newContext(entity, options);
 	}
 
 	@Override
-	protected CQLPersistenceContext initPersistenceContext(
-			Class<?> entityClass, Object primaryKey, Options options) {
+	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
 		return contextFactory.newContext(entityClass, primaryKey, options);
 	}
 

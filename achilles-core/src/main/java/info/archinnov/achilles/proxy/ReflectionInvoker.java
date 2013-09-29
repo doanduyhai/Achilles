@@ -28,25 +28,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ReflectionInvoker {
-	private static final Logger log = LoggerFactory
-			.getLogger(ReflectionInvoker.class);
+	private static final Logger log = LoggerFactory.getLogger(ReflectionInvoker.class);
 
 	public Object getPrimaryKey(Object entity, PropertyMeta idMeta) {
 		Method getter = idMeta.getGetter();
 
-		log.trace("Get primary key {} from instance {} of class {}", idMeta
-				.getPropertyName(), entity, getter.getDeclaringClass()
-				.getCanonicalName());
+		log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(), entity, getter
+				.getDeclaringClass().getCanonicalName());
 
 		if (entity != null) {
 			try {
 				return getter.invoke(entity);
 			} catch (Exception e) {
-				throw new AchillesException(
-						"Cannot get primary key value by invoking getter '"
-								+ getter.getName() + "' of type '"
-								+ getter.getDeclaringClass().getCanonicalName()
-								+ "' from entity '" + entity + "'", e);
+				throw new AchillesException("Cannot get primary key value by invoking getter '" + getter.getName()
+						+ "' of type '" + getter.getDeclaringClass().getCanonicalName() + "' from entity '" + entity
+						+ "'", e);
 			}
 		}
 		return null;
@@ -58,22 +54,18 @@ public class ReflectionInvoker {
 			try {
 				return partitionKeyGetter.invoke(compoundKey);
 			} catch (Exception e) {
-				throw new AchillesException(
-						"Cannot get partition key value by invoking getter '"
-								+ partitionKeyGetter.getName()
-								+ "' of type '"
-								+ partitionKeyGetter.getDeclaringClass()
-										.getCanonicalName()
-								+ "' from compoundKey '" + compoundKey + "'", e);
+				throw new AchillesException("Cannot get partition key value by invoking getter '"
+						+ partitionKeyGetter.getName() + "' of type '"
+						+ partitionKeyGetter.getDeclaringClass().getCanonicalName() + "' from compoundKey '"
+						+ compoundKey + "'", e);
 			}
 		}
 		return null;
 	}
 
 	public Object getValueFromField(Object target, Method getter) {
-		log.trace("Get value with getter {} from instance {} of class {}",
-				getter.getName(), target, getter.getDeclaringClass()
-						.getCanonicalName());
+		log.trace("Get value with getter {} from instance {} of class {}", getter.getName(), target, getter
+				.getDeclaringClass().getCanonicalName());
 
 		Object value = null;
 
@@ -81,10 +73,8 @@ public class ReflectionInvoker {
 			try {
 				value = getter.invoke(target);
 			} catch (Exception e) {
-				throw new AchillesException("Cannot invoke '"
-						+ getter.getName() + "' of type '"
-						+ getter.getDeclaringClass().getCanonicalName()
-						+ "' on instance '" + target + "'", e);
+				throw new AchillesException("Cannot invoke '" + getter.getName() + "' of type '"
+						+ getter.getDeclaringClass().getCanonicalName() + "' on instance '" + target + "'", e);
 			}
 		}
 
@@ -105,19 +95,15 @@ public class ReflectionInvoker {
 	}
 
 	public void setValueToField(Object target, Method setter, Object args) {
-		log.trace(
-				"Set value with setter {} to instance {} of class {} with {}",
-				setter.getName(), target, setter.getDeclaringClass()
-						.getCanonicalName(), args);
+		log.trace("Set value with setter {} to instance {} of class {} with {}", setter.getName(), target, setter
+				.getDeclaringClass().getCanonicalName(), args);
 
 		if (target != null) {
 			try {
 				setter.invoke(target, args);
 			} catch (Exception e) {
-				throw new AchillesException("Cannot invoke '"
-						+ setter.getName() + "' of type '"
-						+ setter.getDeclaringClass().getCanonicalName()
-						+ "' on instance '" + target + "'", e);
+				throw new AchillesException("Cannot invoke '" + setter.getName() + "' of type '"
+						+ setter.getDeclaringClass().getCanonicalName() + "' on instance '" + target + "'", e);
 			}
 		}
 	}
@@ -128,19 +114,22 @@ public class ReflectionInvoker {
 			newInstance = entityClass.newInstance();
 		} catch (Exception e) {
 			throw new AchillesException(
-					"Cannot instanciate entity from class '"
-							+ entityClass.getCanonicalName() + "'", e);
+					"Cannot instanciate entity from class '" + entityClass.getCanonicalName() + "'", e);
 		}
 		return newInstance;
 	}
 
-	public Object instanciateEmbeddedIdWithPartitionKey(PropertyMeta idMeta,
-			Object partitionKey) {
+	public Object instanciateEmbeddedIdWithPartitionComponents(PropertyMeta idMeta, List<Object> partitionComponents) {
 
 		Class<?> valueClass = idMeta.getValueClass();
 		Object newInstance = instanciate(valueClass);
-		setValueToField(newInstance, idMeta.getPartitionKeySetter(),
-				partitionKey);
+		List<Method> setters = idMeta.getPartitionComponentSetters();
+
+		for (int i = 0; i < setters.size(); i++) {
+			Method setter = setters.get(i);
+			Object component = partitionComponents.get(i);
+			setValueToField(newInstance, setter, component);
+		}
 		return newInstance;
 	}
 }

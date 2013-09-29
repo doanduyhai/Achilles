@@ -58,8 +58,7 @@ public class ThriftMergerImplTest {
 	@Mock
 	private ThriftPersistenceContext context;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-			.buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	private EntityMeta meta = new EntityMeta();
 
@@ -76,14 +75,12 @@ public class ThriftMergerImplTest {
 
 	@Test
 	public void should_merge_simple_property() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-				"name");
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn("name");
 
 		mergerImpl.merge(context, dirtyMap);
 
@@ -92,14 +89,12 @@ public class ThriftMergerImplTest {
 
 	@Test
 	public void should_merge_multi_values_property() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(LIST).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").accessors()
+				.type(LIST).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-				Arrays.asList("friends"));
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(Arrays.asList("friends"));
 
 		mergerImpl.merge(context, dirtyMap);
 
@@ -109,14 +104,12 @@ public class ThriftMergerImplTest {
 
 	@Test
 	public void should_remove_property_when_null() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 
-		when(invoker.getValueFromField(entity, pm.getGetter()))
-				.thenReturn(null);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
 
 		mergerImpl.merge(context, dirtyMap);
 
@@ -125,16 +118,13 @@ public class ThriftMergerImplTest {
 	}
 
 	@Test
-	public void should_remove_clustered_entity_when_value_dirty()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+	public void should_remove_clustered_entity_when_value_dirty() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 		meta.setClusteredEntity(true);
-		when(invoker.getValueFromField(entity, pm.getGetter()))
-				.thenReturn(null);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(null);
 
 		mergerImpl.merge(context, dirtyMap);
 
@@ -144,14 +134,12 @@ public class ThriftMergerImplTest {
 	@Test
 	public void should_merge_value_for_clustered_entity() throws Exception {
 		Object clusteredValue = "clusteredValue";
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).invoker(invoker).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+				.type(SIMPLE).invoker(invoker).build();
 
 		dirtyMap.put(pm.getSetter(), pm);
 		meta.setClusteredEntity(true);
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(
-				clusteredValue);
+		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn(clusteredValue);
 
 		mergerImpl.merge(context, dirtyMap);
 

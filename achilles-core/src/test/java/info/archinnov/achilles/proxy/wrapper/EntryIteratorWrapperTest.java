@@ -52,8 +52,7 @@ public class EntryIteratorWrapperTest {
 	public void should_return_true_on_hasNext() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		map.put(1, "FR");
-		EntryIteratorWrapper wrapper = new EntryIteratorWrapper(map.entrySet()
-				.iterator());
+		EntryIteratorWrapper wrapper = new EntryIteratorWrapper(map.entrySet().iterator());
 
 		assertThat(wrapper.hasNext()).isTrue();
 	}
@@ -66,8 +65,7 @@ public class EntryIteratorWrapperTest {
 		map.put(2, "Paris");
 		map.put(3, "75014");
 
-		EntryIteratorWrapper wrapper = new EntryIteratorWrapper(map.entrySet()
-				.iterator());
+		EntryIteratorWrapper wrapper = new EntryIteratorWrapper(map.entrySet().iterator());
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);

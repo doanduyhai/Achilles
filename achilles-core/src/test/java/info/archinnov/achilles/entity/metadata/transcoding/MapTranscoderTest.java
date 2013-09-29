@@ -31,14 +31,11 @@ import com.google.common.collect.ImmutableMap;
 
 public class MapTranscoderTest {
 
-	private MapTranscoder transcoder = new MapTranscoder(
-			mock(ObjectMapper.class));
+	private MapTranscoder transcoder = new MapTranscoder(mock(ObjectMapper.class));
 
 	@Test
 	public void should_encode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
 		Map actual = transcoder.encode(pm, ImmutableMap.of(1, "value"));
 
@@ -48,26 +45,21 @@ public class MapTranscoderTest {
 
 	@Test
 	public void should_encode_key() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(MAP).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(MAP).build();
 
 		assertThat(transcoder.encodeKey(pm, 11)).isEqualTo(11);
 	}
 
 	@Test
 	public void should_encode_value() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
 		assertThat(transcoder.encode(pm, "value")).isEqualTo("value");
 	}
 
 	@Test
 	public void should_decode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
 		Map actual = transcoder.decode(pm, ImmutableMap.of(1, "value"));
 
@@ -77,17 +69,14 @@ public class MapTranscoderTest {
 
 	@Test
 	public void should_decode_key() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(MAP).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(MAP).build();
 
 		assertThat(transcoder.decodeKey(pm, 11)).isEqualTo(11);
 	}
 
 	@Test
 	public void should_decode_value() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, String.class).type(SIMPLE)
-				.build();
+		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
 		assertThat(transcoder.decode(pm, "value")).isEqualTo("value");
 	}

@@ -47,8 +47,7 @@ import com.google.common.collect.ImmutableMap;
 public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
 	private static final Object SEMAPHORE = new Object();
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ThriftEmbeddedServer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ThriftEmbeddedServer.class);
 
 	private static String entityPackages;
 	private static boolean initialized = false;
@@ -59,11 +58,9 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 	private static ThriftEntityManagerFactory emf;
 	private static ThriftEntityManager em;
 
-	public ThriftEmbeddedServer(boolean cleanCassandraDataFile,
-			String entityPackages, String keyspaceName) {
+	public ThriftEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
 		synchronized (SEMAPHORE) {
 			if (!initialized) {
@@ -76,22 +73,19 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
 	private void initialize(String keyspaceName) {
 		String cassandraHost = System.getProperty(CASSANDRA_HOST);
-		if (StringUtils.isNotBlank(cassandraHost)
-				&& cassandraHost.contains(":")) {
-			CassandraHostConfigurator hostConfigurator = new CassandraHostConfigurator(
-					cassandraHost);
+		if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
+			CassandraHostConfigurator hostConfigurator = new CassandraHostConfigurator(cassandraHost);
 			cluster = HFactory.getOrCreateCluster("achilles", hostConfigurator);
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		} else {
 			createAchillesKeyspace(keyspaceName);
-			cluster = HFactory.getOrCreateCluster("Achilles-cluster",
-					CASSANDRA_TEST_HOST + ":" + CASSANDRA_THRIFT_TEST_PORT);
+			cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
+					+ CASSANDRA_THRIFT_TEST_PORT);
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		}
 
-		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM,
-				entityPackages, CLUSTER_PARAM, cluster, KEYSPACE_PARAM,
-				getKeyspace(), FORCE_CF_CREATION_PARAM, true);
+		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, entityPackages, CLUSTER_PARAM, cluster,
+				KEYSPACE_PARAM, getKeyspace(), FORCE_CF_CREATION_PARAM, true);
 
 		emf = new ThriftEntityManagerFactory(configMap);
 		em = emf.createEntityManager();
@@ -101,8 +95,7 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
 	private void createAchillesKeyspace(String keyspaceName) {
 
-		TTransport tr = new TFramedTransport(new TSocket("localhost",
-				CASSANDRA_THRIFT_TEST_PORT));
+		TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
 		TProtocol proto = new TBinaryProtocol(tr, true, true);
 		Cassandra.Client client = new Cassandra.Client(proto);
 		try {

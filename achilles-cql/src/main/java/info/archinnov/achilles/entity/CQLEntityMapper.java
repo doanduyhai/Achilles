@@ -31,8 +31,7 @@ public class CQLEntityMapper extends EntityMapper {
 
 	private CQLRowMethodInvoker cqlRowInvoker = new CQLRowMethodInvoker();
 
-	public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta,
-			Object entity) {
+	public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
 		for (PropertyMeta pm : entityMeta.getEagerMetas()) {
 			setPropertyToEntity(row, pm, entity);
 		}
@@ -41,8 +40,7 @@ public class CQLEntityMapper extends EntityMapper {
 	public void setPropertyToEntity(Row row, PropertyMeta pm, Object entity) {
 		if (row != null) {
 			if (pm.isEmbeddedId()) {
-				Object compoundKey = cqlRowInvoker
-						.extractCompoundPrimaryKeyFromRow(row, pm, true);
+				Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true);
 				pm.setValueToField(entity, compoundKey);
 			} else {
 				String propertyName = pm.getPropertyName();
@@ -54,9 +52,8 @@ public class CQLEntityMapper extends EntityMapper {
 		}
 	}
 
-	public <T> T mapRowToEntityWithPrimaryKey(Class<T> entityClass,
-			EntityMeta meta, Row row, Map<String, PropertyMeta> propertiesMap,
-			boolean isEntityManaged) {
+	public <T> T mapRowToEntityWithPrimaryKey(Class<T> entityClass, EntityMeta meta, Row row,
+			Map<String, PropertyMeta> propertiesMap, boolean isEntityManaged) {
 		T entity = null;
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 		if (columnDefinitions != null) {
@@ -71,9 +68,7 @@ public class CQLEntityMapper extends EntityMapper {
 			}
 			PropertyMeta idMeta = meta.getIdMeta();
 			if (idMeta.isEmbeddedId()) {
-				Object compoundKey = cqlRowInvoker
-						.extractCompoundPrimaryKeyFromRow(row, idMeta,
-								isEntityManaged);
+				Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, isEntityManaged);
 				idMeta.setValueToField(entity, compoundKey);
 			}
 		}

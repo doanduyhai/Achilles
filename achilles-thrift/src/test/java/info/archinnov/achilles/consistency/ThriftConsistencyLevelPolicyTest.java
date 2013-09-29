@@ -30,10 +30,8 @@ import org.junit.Test;
 
 public class ThriftConsistencyLevelPolicyTest {
 
-	private ThriftConsistencyLevelPolicy policy = new ThriftConsistencyLevelPolicy(
-			ConsistencyLevel.ONE, ConsistencyLevel.ONE,
-			new HashMap<String, ConsistencyLevel>(),
-			new HashMap<String, ConsistencyLevel>());
+	private ThriftConsistencyLevelPolicy policy = new ThriftConsistencyLevelPolicy(ConsistencyLevel.ONE,
+			ConsistencyLevel.ONE, new HashMap<String, ConsistencyLevel>(), new HashMap<String, ConsistencyLevel>());
 
 	@Before
 	public void setUp() {
@@ -45,15 +43,13 @@ public class ThriftConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_get_default_consistency_level_for_read_and_write()
-			throws Exception {
+	public void should_get_default_consistency_level_for_read_and_write() throws Exception {
 		assertThat(policy.get(READ)).isEqualTo(ONE);
 		assertThat(policy.get(WRITE)).isEqualTo(ONE);
 	}
 
 	@Test
-	public void should_get_consistency_level_for_read_and_write_from_thread_local()
-			throws Exception {
+	public void should_get_consistency_level_for_read_and_write_from_thread_local() throws Exception {
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
 
@@ -62,8 +58,7 @@ public class ThriftConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_get_consistency_level_for_meta_read_and_write_from_default()
-			throws Exception {
+	public void should_get_consistency_level_for_meta_read_and_write_from_default() throws Exception {
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
 
@@ -72,8 +67,7 @@ public class ThriftConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_get_consistency_level_for_read_and_write_from_thread_local_and_cf()
-			throws Exception {
+	public void should_get_consistency_level_for_read_and_write_from_thread_local_and_cf() throws Exception {
 
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
@@ -83,8 +77,7 @@ public class ThriftConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_get_consistency_level_for_meta_read_and_write_from_default_and_cf()
-			throws Exception {
+	public void should_get_consistency_level_for_meta_read_and_write_from_default_and_cf() throws Exception {
 		defaultReadConsistencyLevelTL.set(LOCAL_QUORUM);
 		defaultWriteConsistencyLevelTL.set(ANY);
 
@@ -105,8 +98,7 @@ public class ThriftConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_load_current_consistency_level_for_read_and_write()
-			throws Exception {
+	public void should_load_current_consistency_level_for_read_and_write() throws Exception {
 		currentReadConsistencyLevel.set(ConsistencyLevel.EACH_QUORUM);
 		currentWriteConsistencyLevel.set(ConsistencyLevel.LOCAL_QUORUM);
 
@@ -117,14 +109,12 @@ public class ThriftConsistencyLevelPolicyTest {
 		policy.loadConsistencyLevelForWrite("cf2");
 
 		assertThat(defaultReadConsistencyLevelTL.get()).isEqualTo(EACH_QUORUM);
-		assertThat(defaultWriteConsistencyLevelTL.get())
-				.isEqualTo(LOCAL_QUORUM);
+		assertThat(defaultWriteConsistencyLevelTL.get()).isEqualTo(LOCAL_QUORUM);
 
 	}
 
 	@Test
-	public void should_reinit_consistency_level_for_read_and_write()
-			throws Exception {
+	public void should_reinit_consistency_level_for_read_and_write() throws Exception {
 		policy.setConsistencyLevelForRead(ConsistencyLevel.QUORUM, "cf3");
 		policy.setConsistencyLevelForWrite(ConsistencyLevel.THREE, "cf3");
 
@@ -137,15 +127,13 @@ public class ThriftConsistencyLevelPolicyTest {
 	@Test
 	public void should_get_current_read_level() throws Exception {
 		currentReadConsistencyLevel.set(ConsistencyLevel.LOCAL_QUORUM);
-		assertThat(policy.getCurrentReadLevel()).isEqualTo(
-				ConsistencyLevel.LOCAL_QUORUM);
+		assertThat(policy.getCurrentReadLevel()).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_set_current_read_level() throws Exception {
 		policy.setCurrentReadLevel(ConsistencyLevel.LOCAL_QUORUM);
-		assertThat(currentReadConsistencyLevel.get()).isEqualTo(
-				ConsistencyLevel.LOCAL_QUORUM);
+		assertThat(currentReadConsistencyLevel.get()).isEqualTo(ConsistencyLevel.LOCAL_QUORUM);
 	}
 
 	@AfterClass

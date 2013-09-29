@@ -68,8 +68,7 @@ public class CollectionWrapperTest {
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).accessors().build();
 
 		entityMeta = new EntityMeta();
@@ -109,8 +108,7 @@ public class CollectionWrapperTest {
 
 		wrapper.setProxifier(proxifier);
 
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
-				list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.addAll(list);
 
@@ -162,16 +160,14 @@ public class CollectionWrapperTest {
 
 	@Test
 	public void should_return_true_on_contains() throws Exception {
-		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a",
-				"b"));
+		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a", "b"));
 		when(proxifier.unwrap("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
 
 	@Test
 	public void should_return_true_on_contains_all() throws Exception {
-		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a",
-				"b", "c", "d"));
+		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a", "b", "c", "d"));
 
 		List<Object> check = Arrays.<Object> asList("a", "c");
 		when(proxifier.unwrap(check)).thenReturn(check);
@@ -200,8 +196,7 @@ public class CollectionWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_remove_when_no_match()
-			throws Exception {
+	public void should_not_mark_dirty_on_remove_when_no_match() throws Exception {
 
 		ArrayList<Object> target = new ArrayList<Object>();
 		target.add("a");
@@ -227,8 +222,7 @@ public class CollectionWrapperTest {
 		wrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
-				list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -239,8 +233,7 @@ public class CollectionWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_remove_all_when_no_match()
-			throws Exception {
+	public void should_not_mark_dirty_on_remove_all_when_no_match() throws Exception {
 
 		ArrayList<Object> target = new ArrayList<Object>();
 		target.add("a");
@@ -267,8 +260,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
-				list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 
@@ -280,8 +272,7 @@ public class CollectionWrapperTest {
 	}
 
 	@Test
-	public void should_not_mark_dirty_on_retain_all_when_all_match()
-			throws Exception {
+	public void should_not_mark_dirty_on_retain_all_when_all_match() throws Exception {
 
 		ArrayList<Object> target = new ArrayList<Object>();
 		target.add("a");
@@ -290,8 +281,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "b", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(
-				list);
+		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 
@@ -352,8 +342,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 
 		when(propertyMeta.type()).thenReturn(PropertyType.LIST);
-		assertThat(wrapper.toArray(new String[] { "a", "c" })).contains("a",
-				"c");
+		assertThat(wrapper.toArray(new String[] { "a", "c" })).contains("a", "c");
 	}
 
 	@Test

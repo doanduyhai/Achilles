@@ -30,8 +30,7 @@ import com.google.common.collect.Sets;
 
 public abstract class SliceQueryExecutor<CONTEXT extends PersistenceContext> {
 
-	public static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional
-			.<ConsistencyLevel> absent();
+	public static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional.<ConsistencyLevel> absent();
 	public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
 	protected EntityProxifier<CONTEXT> proxifier;
@@ -49,17 +48,14 @@ public abstract class SliceQueryExecutor<CONTEXT extends PersistenceContext> {
 
 	protected abstract <T> CONTEXT buildContextForQuery(SliceQuery<T> sliceQuery);
 
-	protected abstract <T> CONTEXT buildNewContext(SliceQuery<T> sliceQuery,
-			T clusteredEntity);
+	protected abstract <T> CONTEXT buildNewContext(SliceQuery<T> sliceQuery, T clusteredEntity);
 
-	protected <T> Function<T, T> getProxyTransformer(
-			final SliceQuery<T> sliceQuery, final List<Method> getters) {
+	protected <T> Function<T, T> getProxyTransformer(final SliceQuery<T> sliceQuery, final List<Method> getters) {
 		return new Function<T, T>() {
 			@Override
 			public T apply(T clusteredEntity) {
 				CONTEXT context = buildNewContext(sliceQuery, clusteredEntity);
-				return proxifier.buildProxy(clusteredEntity, context,
-						Sets.newHashSet(getters));
+				return proxifier.buildProxy(clusteredEntity, context, Sets.newHashSet(getters));
 			}
 		};
 	}

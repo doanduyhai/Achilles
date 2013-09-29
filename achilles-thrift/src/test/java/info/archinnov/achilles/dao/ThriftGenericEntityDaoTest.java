@@ -55,22 +55,18 @@ public class ThriftGenericEntityDaoTest {
 	@Test
 	public void should_build_start_composite_for_eager_fetch() throws Exception {
 
-		Composite comp = Whitebox.getInternalState(dao,
-				"startCompositeForEagerFetch");
+		Composite comp = Whitebox.getInternalState(dao, "startCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(START_EAGER);
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(
-				ComponentEquality.EQUAL);
+		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.EQUAL);
 	}
 
 	@Test
 	public void should_build_end_composite_for_eager_fetch() throws Exception {
 
-		Composite comp = Whitebox.getInternalState(dao,
-				"endCompositeForEagerFetch");
+		Composite comp = Whitebox.getInternalState(dao, "endCompositeForEagerFetch");
 
 		assertThat(comp.getComponent(0).getValue()).isEqualTo(END_EAGER);
-		assertThat(comp.getComponent(0).getEquality()).isSameAs(
-				ComponentEquality.GREATER_THAN_EQUAL);
+		assertThat(comp.getComponent(0).getEquality()).isSameAs(ComponentEquality.GREATER_THAN_EQUAL);
 	}
 }

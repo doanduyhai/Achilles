@@ -25,7 +25,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,21 +112,19 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_decode_unsopported_type_to_json() throws Exception {
 		UserBean bean = new UserBean();
-		when(objectMapper.readValue("json_bean", UserBean.class)).thenReturn(
-				bean);
+		when(objectMapper.readValue("json_bean", UserBean.class)).thenReturn(bean);
 		Object actual = transcoder.decodeInternal(UserBean.class, "json_bean");
 
 		assertThat(actual).isEqualTo(bean);
 	}
 
 	@Test
-	public void should_exception_when_unsupported_type_for_decoding_is_not_string()
-			throws Exception {
+	public void should_exception_when_unsupported_type_for_decoding_is_not_string() throws Exception {
 		UserBean bean = new UserBean();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Error while decoding value '" + bean
-				+ "' to type '" + UserBean.class.getCanonicalName() + "'");
+		exception.expectMessage("Error while decoding value '" + bean + "' to type '"
+				+ UserBean.class.getCanonicalName() + "'");
 
 		transcoder.decodeInternal(UserBean.class, bean);
 	}
@@ -136,12 +134,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_encode_object() throws Exception {
 		UserBean bean = new UserBean();
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode value '" + bean
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot encode value '" + bean + "' for type '" + pm.type().name() + "'");
 
 		transcoder.encode(pm, bean);
 	}
@@ -149,12 +145,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_encode_key() throws Exception {
 		UserBean bean = new UserBean();
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode key '" + bean
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot encode key '" + bean + "' for type '" + pm.type().name() + "'");
 
 		transcoder.encodeKey(pm, bean);
 	}
@@ -162,12 +156,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_encode_list() throws Exception {
 		List<UserBean> list = Arrays.asList(new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode value '" + list
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot encode value '" + list + "' for type '" + pm.type().name() + "'");
 
 		transcoder.encode(pm, list);
 	}
@@ -175,12 +167,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_encode_set() throws Exception {
 		Set<UserBean> set = Sets.newHashSet(new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode value '" + set
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot encode value '" + set + "' for type '" + pm.type().name() + "'");
 
 		transcoder.encode(pm, set);
 	}
@@ -188,40 +178,32 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_encode_map() throws Exception {
 		Map<Integer, UserBean> map = ImmutableMap.of(1, new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode value '" + map
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot encode value '" + map + "' for type '" + pm.type().name() + "'");
 
 		transcoder.encode(pm, map);
 	}
 
 	@Test
-	public void should_exception_by_default_on_encode_to_components()
-			throws Exception {
-		CompoundKey compound = new CompoundKey();
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(SIMPLE).build();
+	public void should_exception_by_default_on_encode_to_components() throws Exception {
+		EmbeddedKey compound = new EmbeddedKey();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot encode from value '"
-				+ compound + "' to components for type '" + pm.type().name()
-				+ "'");
+		exception.expectMessage("Transcoder cannot encode from value '" + compound + "' to components for type '"
+				+ pm.type().name() + "'");
 
 		transcoder.encodeToComponents(pm, compound);
 	}
 
 	@Test
-	public void should_exception_by_default_on_encode_to_list_of_components()
-			throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(SIMPLE).build();
+	public void should_exception_by_default_on_encode_to_list_of_components() throws Exception {
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Transcoder cannot encode components value '[]'");
+		exception.expectMessage("Transcoder cannot encode components value '[]'");
 
 		transcoder.encodeToComponents(pm, Arrays.asList());
 	}
@@ -229,25 +211,20 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_decode_object() throws Exception {
 		UserBean bean = new UserBean();
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot decode value '" + bean
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode value '" + bean + "' for type '" + pm.type().name() + "'");
 
 		transcoder.decode(pm, bean);
 	}
 
 	@Test
 	public void should_exception_by_default_on_decode_key() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Transcoder cannot decode key 'null' for type '"
-						+ pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode key 'null' for type '" + pm.type().name() + "'");
 
 		transcoder.decodeKey(pm, null);
 	}
@@ -255,12 +232,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_decode_list() throws Exception {
 		List<UserBean> list = Arrays.asList(new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot decode value '" + list
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode value '" + list + "' for type '" + pm.type().name() + "'");
 
 		transcoder.decode(pm, list);
 	}
@@ -268,12 +243,10 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_decode_set() throws Exception {
 		Set<UserBean> set = Sets.newHashSet(new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot decode value '" + set
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode value '" + set + "' for type '" + pm.type().name() + "'");
 
 		transcoder.decode(pm, set);
 	}
@@ -281,28 +254,22 @@ public class AbstractTranscoderTest {
 	@Test
 	public void should_exception_by_default_on_decode_map() throws Exception {
 		Map<Integer, UserBean> map = ImmutableMap.of(1, new UserBean());
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Transcoder cannot decode value '" + map
-				+ "' for type '" + pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode value '" + map + "' for type '" + pm.type().name() + "'");
 
 		transcoder.decode(pm, map);
 	}
 
 	@Test
-	public void should_exception_by_default_on_decode_from_components()
-			throws Exception {
+	public void should_exception_by_default_on_decode_from_components() throws Exception {
 		List<Object> components = new ArrayList<Object>();
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(SIMPLE).build();
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Transcoder cannot decode from components '"
-						+ components + "' to value for type '"
-						+ pm.type().name() + "'");
+		exception.expectMessage("Transcoder cannot decode from components '" + components + "' to value for type '"
+				+ pm.type().name() + "'");
 
 		transcoder.decodeFromComponents(pm, components);
 	}
@@ -327,10 +294,8 @@ public class AbstractTranscoderTest {
 	}
 
 	@Test
-	public void should_exception_when_error_on_force_encode_to_json()
-			throws Exception {
-		doThrow(new RuntimeException()).when(objectMapper).writeValueAsString(
-				11L);
+	public void should_exception_when_error_on_force_encode_to_json() throws Exception {
+		doThrow(new RuntimeException()).when(objectMapper).writeValueAsString(11L);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Error while encoding value '11'");
@@ -342,27 +307,22 @@ public class AbstractTranscoderTest {
 	public void should_force_decode_from_json_object_type() throws Exception {
 		when(objectMapper.readValue("10", Long.class)).thenReturn(10L);
 
-		assertThat(transcoder.forceDecodeFromJSON("10", Long.class)).isEqualTo(
-				10L);
+		assertThat(transcoder.forceDecodeFromJSON("10", Long.class)).isEqualTo(10L);
 	}
 
 	@Test
-	public void should_exception_when_error_on_force_decode_from_json()
-			throws Exception {
-		doThrow(new RuntimeException()).when(objectMapper).readValue("11",
-				Long.class);
+	public void should_exception_when_error_on_force_decode_from_json() throws Exception {
+		doThrow(new RuntimeException()).when(objectMapper).readValue("11", Long.class);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Error while decoding value '11' to type 'java.lang.Long'");
+		exception.expectMessage("Error while decoding value '11' to type 'java.lang.Long'");
 
 		transcoder.forceDecodeFromJSON("11", Long.class);
 	}
 
 	@Test
 	public void should_force_decode_to_json_string_type() throws Exception {
-		assertThat(transcoder.forceDecodeFromJSON("test", String.class))
-				.isEqualTo("test");
+		assertThat(transcoder.forceDecodeFromJSON("test", String.class)).isEqualTo("test");
 		verifyZeroInteractions(objectMapper);
 	}
 

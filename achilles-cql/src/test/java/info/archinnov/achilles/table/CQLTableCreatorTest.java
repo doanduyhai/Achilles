@@ -24,7 +24,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
 import java.util.ArrayList;
@@ -82,10 +82,8 @@ public class CQLTableCreatorTest {
 	@Before
 	public void setUp() {
 		tableMetas = new LinkedHashMap<String, TableMetadata>();
-		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(
-				keyspaceMeta);
-		when(keyspaceMeta.getTables()).thenReturn(
-				new ArrayList<TableMetadata>());
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
 
 		creator = new CQLTableCreator(cluster, session, keyspaceName);
 		Whitebox.setInternalState(creator, Map.class, tableMetas);
@@ -94,25 +92,21 @@ public class CQLTableCreatorTest {
 
 	@Test
 	public void should_create_complete_table() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(ID).field("id").build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
-		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("longCol").build();
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
-		PropertyMeta longListColPM = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(LIST).field("longListCol").build();
+		PropertyMeta longListColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(LIST).field("longListCol")
+				.build();
 
-		PropertyMeta longSetColPM = PropertyMetaTestBuilder
-				.valueClass(Long.class).type(SET).field("longSetCol").build();
+		PropertyMeta longSetColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SET).field("longSetCol")
+				.build();
 
-		PropertyMeta longMapColPM = PropertyMetaTestBuilder
-				.keyValueClass(Integer.class, Long.class).type(MAP)
+		PropertyMeta longMapColPM = PropertyMetaTestBuilder.keyValueClass(Integer.class, Long.class).type(MAP)
 				.field("longMapCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, longListColPM,
-				longSetColPM, longMapColPM));
+		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM, longListColPM, longSetColPM, longMapColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -121,28 +115,20 @@ public class CQLTableCreatorTest {
 
 		verify(session).execute(stringCaptor.capture());
 
-		assertThat(stringCaptor.getValue())
-				.isEqualTo(
-						"\n\tCREATE TABLE tableName(\n"
-								+ "\t\tlongCol bigint,\n"
-								+ "\t\tid bigint,\n"
-								+ "\t\tlongListCol list<bigint>,\n"
-								+ "\t\tlongSetCol set<bigint>,\n"
-								+ "\t\tlongMapCol map<int,bigint>,\n"
-								+ "\t\tPRIMARY KEY(id)\n"
-								+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tid bigint,\n"
+						+ "\t\tlongListCol list<bigint>,\n" + "\t\tlongSetCol set<bigint>,\n"
+						+ "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id)\n"
+						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
 	}
 
 	@Test
 	public void should_create_clustered_table() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID).field("id")
-				.compNames("index", "count", "uuid")
-				.compClasses(Long.class, Integer.class, UUID.class)
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).field("id")
+				.compNames("index", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class)
 				.compTimeUUID("uuid").build();
 
-		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("longCol").build();
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
 		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
@@ -154,27 +140,19 @@ public class CQLTableCreatorTest {
 
 		verify(session).execute(stringCaptor.capture());
 
-		assertThat(stringCaptor.getValue())
-				.isEqualTo(
-						"\n\tCREATE TABLE tableName(\n"
-								+ "\t\tlongCol bigint,\n"
-								+ "\t\tindex bigint,\n"
-								+ "\t\tcount int,\n"
-								+ "\t\tuuid timeuuid,\n"
-								+ "\t\tPRIMARY KEY(index, count, uuid)\n"
-								+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tindex bigint,\n" + "\t\tcount int,\n"
+						+ "\t\tuuid timeuuid,\n" + "\t\tPRIMARY KEY(index, count, uuid)\n"
+						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
 
 	}
 
 	@Test
 	public void should_create_clustered_counter_table() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(EMBEDDED_ID).field("id")
-				.compNames("index", "count", "uuid")
-				.compClasses(Long.class, Integer.class, UUID.class).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).field("id")
+				.compNames("index", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class).build();
 
-		PropertyMeta counterColPM = PropertyMetaTestBuilder
-				.keyValueClass(Void.class, Counter.class).type(COUNTER)
+		PropertyMeta counterColPM = PropertyMetaTestBuilder.keyValueClass(Void.class, Counter.class).type(COUNTER)
 				.field("counterCol").build();
 
 		meta = new EntityMeta();
@@ -188,15 +166,10 @@ public class CQLTableCreatorTest {
 
 		verify(session).execute(stringCaptor.capture());
 
-		assertThat(stringCaptor.getValue())
-				.isEqualTo(
-						"\n\tCREATE TABLE tableName(\n"
-								+ "\t\tindex bigint,\n"
-								+ "\t\tcount int,\n"
-								+ "\t\tuuid uuid,\n"
-								+ "\t\tcounterCol counter,\n"
-								+ "\t\tPRIMARY KEY(index, count, uuid)\n"
-								+ "\t) WITH COMMENT = 'Create table for clustered counter entity \"entityName\"'");
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\n\tCREATE TABLE tableName(\n" + "\t\tindex bigint,\n" + "\t\tcount int,\n" + "\t\tuuid uuid,\n"
+						+ "\t\tcounterCol counter,\n" + "\t\tPRIMARY KEY(index, count, uuid)\n"
+						+ "\t) WITH COMMENT = 'Create table for clustered counter entity \"entityName\"'");
 
 	}
 
@@ -222,8 +195,7 @@ public class CQLTableCreatorTest {
 		meta.setClassName("entityName");
 
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
+		exception.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
 
 		creator.validateOrCreateTableForEntity(meta, false);
 	}
@@ -234,37 +206,16 @@ public class CQLTableCreatorTest {
 
 		verify(session).execute(stringCaptor.capture());
 
-		assertThat(stringCaptor.getValue())
-				.isEqualTo(
-						"\n\tCREATE TABLE "
-								+ CQL_COUNTER_TABLE
-								+ "(\n"
-								+ "\t\t"
-								+ CQL_COUNTER_FQCN
-								+ " text,\n"
-								+ "\t\t"
-								+ CQL_COUNTER_PRIMARY_KEY
-								+ " text,\n"
-								+ "\t\t"
-								+ CQL_COUNTER_PROPERTY_NAME
-								+ " text,\n"
-								+ "\t\t"
-								+ CQL_COUNTER_VALUE
-								+ " counter,\n"
-								+ "\t\tPRIMARY KEY("
-								+ CQL_COUNTER_FQCN
-								+ ", "
-								+ CQL_COUNTER_PRIMARY_KEY
-								+ ", "
-								+ CQL_COUNTER_PROPERTY_NAME
-								+ ")\n"
-								+ "\t) WITH COMMENT = 'Create default Achilles counter table \""
-								+ CQL_COUNTER_TABLE + "\"'");
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\n\tCREATE TABLE " + CQL_COUNTER_TABLE + "(\n" + "\t\t" + CQL_COUNTER_FQCN + " text,\n" + "\t\t"
+						+ CQL_COUNTER_PRIMARY_KEY + " text,\n" + "\t\t" + CQL_COUNTER_PROPERTY_NAME + " text,\n"
+						+ "\t\t" + CQL_COUNTER_VALUE + " counter,\n" + "\t\tPRIMARY KEY((" + CQL_COUNTER_FQCN + ", "
+						+ CQL_COUNTER_PRIMARY_KEY + "), " + CQL_COUNTER_PROPERTY_NAME + ")\n"
+						+ "\t) WITH COMMENT = 'Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"'");
 	}
 
 	@Test
-	public void should_validate_achilles_counter_table_when_already_exist()
-			throws Exception {
+	public void should_validate_achilles_counter_table_when_already_exist() throws Exception {
 		TableMetadata tableMetadata = mock(TableMetadata.class);
 		tableMetas.put(CQL_COUNTER_TABLE, tableMetadata);
 
@@ -275,12 +226,10 @@ public class CQLTableCreatorTest {
 	}
 
 	@Test
-	public void should_exception_when_achilles_counter_table_does_not_exist()
-			throws Exception {
+	public void should_exception_when_achilles_counter_table_does_not_exist() throws Exception {
 
 		exception.expect(AchillesInvalidTableException.class);
-		exception.expectMessage("The required generic table '"
-				+ CQL_COUNTER_TABLE + "' does not exist");
+		exception.expectMessage("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
 
 		creator.validateOrCreateTableForCounter(false);
 	}

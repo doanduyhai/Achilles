@@ -60,8 +60,7 @@ public class ThriftEntityManagerFactoryBeanTest {
 	@Test
 	public void should_exception_when_no_entity_packages() throws Exception {
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("Entity packages should be provided for entity scanning");
+		exception.expectMessage("Entity packages should be provided for entity scanning");
 		factory.initialize();
 	}
 
@@ -70,8 +69,7 @@ public class ThriftEntityManagerFactoryBeanTest {
 		factory.setEntityPackages("com.test");
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("Either a Cassandra cluster or hostname:port & clusterName should be provided");
+		exception.expectMessage("Either a Cassandra cluster or hostname:port & clusterName should be provided");
 		factory.initialize();
 	}
 
@@ -81,8 +79,7 @@ public class ThriftEntityManagerFactoryBeanTest {
 		factory.setCassandraHost("localhost:9160");
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("Either a Cassandra cluster or hostname:port & clusterName should be provided");
+		exception.expectMessage("Either a Cassandra cluster or hostname:port & clusterName should be provided");
 		factory.initialize();
 	}
 
@@ -93,14 +90,12 @@ public class ThriftEntityManagerFactoryBeanTest {
 		factory.setClusterName("test");
 
 		exception.expect(IllegalArgumentException.class);
-		exception
-				.expectMessage("Either a Cassandra keyspace or keyspaceName should be provided");
+		exception.expectMessage("Either a Cassandra keyspace or keyspaceName should be provided");
 		factory.initialize();
 	}
 
 	@Test
-	public void should_build_with_cluster_and_keyspace_objects()
-			throws Exception {
+	public void should_build_with_cluster_and_keyspace_objects() throws Exception {
 		factory.setEntityPackages("info.archinnov.achilles.test.integration.entity");
 		factory.setCluster(cluster);
 		factory.setKeyspace(keyspace);

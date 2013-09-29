@@ -41,22 +41,19 @@ public class ConsistencyLevelPriorityOrderingIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "clustered");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "clustered");
 
 	private ThriftEntityManagerFactory emf = resource.getFactory();
 
 	private ThriftEntityManager em = resource.getEm();
 
-	private ThriftConsistencyLevelPolicy policy = resource
-			.getConsistencyPolicy();
+	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
 	// Normal type
 	@Test
-	public void should_override_mapping_on_class_by_runtime_value_on_batch_mode_for_normal_type()
-			throws Exception {
+	public void should_override_mapping_on_class_by_runtime_value_on_batch_mode_for_normal_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		long id = RandomUtils.nextLong();
 		entity.setId(id);
@@ -68,8 +65,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		batchEm.startBatch(ONE);
 		logAsserter.prepareLogLevel();
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class,
-				entity.getId());
+		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 		batchEm.endBatch();
@@ -80,8 +76,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx.expect(AchillesException.class);
 		expectedEx
 				.expectMessage("Error when loading entity type '"
-						+ EntityWithConsistencyLevelOnClassAndField.class
-								.getCanonicalName()
+						+ EntityWithConsistencyLevelOnClassAndField.class.getCanonicalName()
 						+ "' with key '"
 						+ id
 						+ "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
@@ -89,8 +84,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	}
 
 	@Test
-	public void should_not_override_batch_mode_level_by_runtime_value_for_normal_type()
-			throws Exception {
+	public void should_not_override_batch_mode_level_by_runtime_value_for_normal_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name sdfsdf");
@@ -104,14 +98,12 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class,
-				entity.getId(), ONE);
+		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
 	}
 
 	// Counter type
 	@Test
-	public void should_override_mapping_on_class_by_mapping_on_field_for_counter_type()
-			throws Exception {
+	public void should_override_mapping_on_class_by_mapping_on_field_for_counter_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
@@ -127,8 +119,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	}
 
 	@Test
-	public void should_override_mapping_on_field_by_batch_value_for_counter_type()
-			throws Exception {
+	public void should_override_mapping_on_field_by_batch_value_for_counter_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
@@ -147,8 +138,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	}
 
 	@Test
-	public void should_override_mapping_on_field_by_runtime_value_for_counter_type()
-			throws Exception {
+	public void should_override_mapping_on_field_by_runtime_value_for_counter_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
@@ -166,8 +156,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	}
 
 	@Test
-	public void should_override_batch_level_by_runtime_value_for_counter_type()
-			throws Exception {
+	public void should_override_batch_level_by_runtime_value_for_counter_type() throws Exception {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
@@ -188,8 +177,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	}
 
 	@Test
-	public void should_override_batch_level_by_runtime_value_for_slice_query()
-			throws Exception {
+	public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
 		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
 		batchEm.startBatch(ONE);
@@ -198,8 +186,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx
 				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
-		batchEm.sliceQuery(ClusteredEntity.class).partitionKey(11L)
-				.consistencyLevel(EACH_QUORUM).get(10);
+		batchEm.sliceQuery(ClusteredEntity.class).partitionKey(11L).consistencyLevel(EACH_QUORUM).get(10);
 	}
 
 	private void assertThatConsistencyLevelsAreReinitialized() {

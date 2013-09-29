@@ -81,8 +81,7 @@ public class EntityIntrospectorTest {
 			Boolean old;
 		}
 
-		String[] getterNames = introspector.deriveGetterName(Test.class
-				.getDeclaredField("old"));
+		String[] getterNames = introspector.deriveGetterName(Test.class.getDeclaredField("old"));
 		assertThat(getterNames).hasSize(1);
 		assertThat(getterNames[0]).isEqualTo("getOld");
 	}
@@ -96,8 +95,7 @@ public class EntityIntrospectorTest {
 			boolean old;
 		}
 
-		String[] getterNames = introspector.deriveGetterName(Test.class
-				.getDeclaredField("old"));
+		String[] getterNames = introspector.deriveGetterName(Test.class.getDeclaredField("old"));
 		assertThat(getterNames).hasSize(2);
 		assertThat(getterNames[0]).isEqualTo("isOld");
 		assertThat(getterNames[1]).isEqualTo("getOld");
@@ -110,9 +108,7 @@ public class EntityIntrospectorTest {
 			boolean a;
 		}
 
-		assertThat(
-				introspector.deriveSetterName(Test.class.getDeclaredField("a")))
-				.isEqualTo("setA");
+		assertThat(introspector.deriveSetterName(Test.class.getDeclaredField("a"))).isEqualTo("setA");
 	}
 
 	@Test
@@ -124,11 +120,9 @@ public class EntityIntrospectorTest {
 		}
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The getter for field 'name' of type 'null' does not exist");
+		expectedEx.expectMessage("The getter for field 'name' of type 'null' does not exist");
 
-		introspector
-				.findGetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -144,11 +138,9 @@ public class EntityIntrospectorTest {
 		}
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The setter for field 'name' of type 'null' does not exist");
+		expectedEx.expectMessage("The setter for field 'name' of type 'null' does not exist");
 
-		introspector
-				.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -165,16 +157,13 @@ public class EntityIntrospectorTest {
 
 		}
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The getter for field 'name' of type 'null' does not return correct type");
+		expectedEx.expectMessage("The getter for field 'name' of type 'null' does not return correct type");
 
-		introspector
-				.findGetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findGetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
-	public void should_exception_when_setter_returning_wrong_type()
-			throws Exception {
+	public void should_exception_when_setter_returning_wrong_type() throws Exception {
 
 		@SuppressWarnings("unused")
 		class Test {
@@ -193,13 +182,11 @@ public class EntityIntrospectorTest {
 		expectedEx
 				.expectMessage("The setter for field 'name' of type 'null' does not return correct type or does not have the correct parameter");
 
-		introspector
-				.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
-	public void should_exception_when_setter_taking_wrong_type()
-			throws Exception {
+	public void should_exception_when_setter_taking_wrong_type() throws Exception {
 
 		@SuppressWarnings("unused")
 		class Test {
@@ -215,11 +202,9 @@ public class EntityIntrospectorTest {
 		}
 
 		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx
-				.expectMessage("The setter for field 'name' of type 'null' does not exist or is incorrect");
+		expectedEx.expectMessage("The setter for field 'name' of type 'null' does not exist or is incorrect");
 
-		introspector
-				.findSetter(Test.class, Test.class.getDeclaredField("name"));
+		introspector.findSetter(Test.class, Test.class.getDeclaredField("name"));
 	}
 
 	@Test
@@ -237,8 +222,7 @@ public class EntityIntrospectorTest {
 			}
 		}
 
-		Method[] accessors = introspector.findAccessors(Test.class,
-				Test.class.getDeclaredField("old"));
+		Method[] accessors = introspector.findAccessors(Test.class, Test.class.getDeclaredField("old"));
 
 		assertThat(accessors[0].getName()).isEqualTo("isOld");
 	}
@@ -258,8 +242,7 @@ public class EntityIntrospectorTest {
 			}
 		}
 
-		Method[] accessors = introspector.findAccessors(Test.class,
-				Test.class.getDeclaredField("old"));
+		Method[] accessors = introspector.findAccessors(Test.class, Test.class.getDeclaredField("old"));
 
 		assertThat(accessors[0].getName()).isEqualTo("getOld");
 	}
@@ -271,10 +254,8 @@ public class EntityIntrospectorTest {
 				Bean.class.getDeclaredField("complicatedAttributeName"));
 
 		assertThat(accessors).hasSize(2);
-		assertThat(accessors[0].getName()).isEqualTo(
-				"getComplicatedAttributeName");
-		assertThat(accessors[1].getName()).isEqualTo(
-				"setComplicatedAttributeName");
+		assertThat(accessors[0].getName()).isEqualTo("getComplicatedAttributeName");
+		assertThat(accessors[1].getName()).isEqualTo("setComplicatedAttributeName");
 	}
 
 	@Test
@@ -300,8 +281,7 @@ public class EntityIntrospectorTest {
 
 	@Test
 	public void should_get_inherited_fields() throws Exception {
-		List<Field> fields = introspector
-				.getInheritedPrivateFields(ChildBean.class);
+		List<Field> fields = introspector.getInheritedPrivateFields(ChildBean.class);
 
 		assertThat(fields).hasSize(4);
 		assertThat(fields.get(0).getName()).isEqualTo("nickname");
@@ -313,63 +293,51 @@ public class EntityIntrospectorTest {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_get_inherited_field_by_annotation() throws Exception {
-		Field id = introspector.getInheritedPrivateFields(ChildBean.class,
-				Id.class);
+		Field id = introspector.getInheritedPrivateFields(ChildBean.class, Id.class);
 
 		assertThat(id.getName()).isEqualTo("id");
 		assertThat(id.getType()).isEqualTo((Class) Long.class);
 	}
 
 	@Test
-	public void should_not_get_inherited_field_by_annotation_when_no_match()
-			throws Exception {
-		assertThat(
-				introspector.getInheritedPrivateFields(ChildBean.class,
-						javax.persistence.Basic.class)).isNull();
+	public void should_not_get_inherited_field_by_annotation_when_no_match() throws Exception {
+		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class)).isNull();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
-	public void should_get_inherited_field_by_annotation_and_name()
-			throws Exception {
-		Field address = introspector.getInheritedPrivateFields(ChildBean.class,
-				Column.class, "address");
+	public void should_get_inherited_field_by_annotation_and_name() throws Exception {
+		Field address = introspector.getInheritedPrivateFields(ChildBean.class, Column.class, "address");
 
 		assertThat(address.getName()).isEqualTo("address");
 		assertThat(address.getType()).isEqualTo((Class) String.class);
 	}
 
 	@Test
-	public void should_not_get_inherited_field_by_annotation_and_name_when_no_match()
-			throws Exception {
-		assertThat(
-				introspector.getInheritedPrivateFields(ChildBean.class,
-						javax.persistence.Basic.class, "address")).isNull();
+	public void should_not_get_inherited_field_by_annotation_and_name_when_no_match() throws Exception {
+		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class, "address"))
+				.isNull();
 	}
 
 	@Test
 	public void should_infer_column_family_from_annotation() throws Exception {
-		String cfName = introspector.inferColumnFamilyName(
-				BeanWithColumnFamilyName.class, "canonicalName");
+		String cfName = introspector.inferColumnFamilyName(BeanWithColumnFamilyName.class, "canonicalName");
 		assertThat(cfName).isEqualTo("myOwnCF");
 	}
 
 	@Test
 	public void should_infer_column_family_from_default_name() throws Exception {
-		String cfName = introspector.inferColumnFamilyName(CompleteBean.class,
-				"canonicalName");
+		String cfName = introspector.inferColumnFamilyName(CompleteBean.class, "canonicalName");
 		assertThat(cfName).isEqualTo("canonicalName");
 	}
 
 	@Test
-	public void should_infer_column_family_from_default_name_when_empty_annotation_name()
-			throws Exception {
+	public void should_infer_column_family_from_default_name_when_empty_annotation_name() throws Exception {
 		@Table(name = "")
 		class Test {
 
 		}
-		String cfName = introspector.inferColumnFamilyName(Test.class,
-				"canonicalName");
+		String cfName = introspector.inferColumnFamilyName(Test.class, "canonicalName");
 		assertThat(cfName).isEqualTo("canonicalName");
 	}
 
@@ -379,54 +347,43 @@ public class EntityIntrospectorTest {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
-				.findConsistencyLevels(Test.class, policy);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, policy);
 
 		assertThat(levels.left).isEqualTo(ANY);
 		assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
 	}
 
 	@Test
-	public void should_find_one_one_consistency_level_by_default()
-			throws Exception {
+	public void should_find_one_one_consistency_level_by_default() throws Exception {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector
-				.findConsistencyLevels(Test.class, policy);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, policy);
 
 		assertThat(levels.left).isEqualTo(ONE);
 		assertThat(levels.right).isEqualTo(ONE);
 	}
 
 	@Test
-	public void should_get_defaul_global_read_consistency_from_config()
-			throws Exception {
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(
-				LOCAL_QUORUM);
-		assertThat(introspector.getDefaultGlobalReadConsistency(policy))
-				.isEqualTo(LOCAL_QUORUM);
+	public void should_get_defaul_global_read_consistency_from_config() throws Exception {
+		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+		assertThat(introspector.getDefaultGlobalReadConsistency(policy)).isEqualTo(LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_get_defaul_global_read_consistency() throws Exception {
-		assertThat(introspector.getDefaultGlobalReadConsistency(policy))
-				.isEqualTo(ONE);
+		assertThat(introspector.getDefaultGlobalReadConsistency(policy)).isEqualTo(ONE);
 	}
 
 	@Test
-	public void should_get_defaul_global_write_consistency_from_config()
-			throws Exception {
-		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(
-				LOCAL_QUORUM);
-		assertThat(introspector.getDefaultGlobalWriteConsistency(policy))
-				.isEqualTo(LOCAL_QUORUM);
+	public void should_get_defaul_global_write_consistency_from_config() throws Exception {
+		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+		assertThat(introspector.getDefaultGlobalWriteConsistency(policy)).isEqualTo(LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_get_defaul_global_write_consistency() throws Exception {
-		assertThat(introspector.getDefaultGlobalWriteConsistency(policy))
-				.isEqualTo(ONE);
+		assertThat(introspector.getDefaultGlobalWriteConsistency(policy)).isEqualTo(ONE);
 	}
 
 	class Bean {

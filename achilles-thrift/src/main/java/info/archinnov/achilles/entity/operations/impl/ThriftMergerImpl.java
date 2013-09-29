@@ -31,21 +31,18 @@ import org.slf4j.LoggerFactory;
 
 public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftMergerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftMergerImpl.class);
 	private ThriftEntityPersister persister = new ThriftEntityPersister();
 
 	@Override
-	public void merge(ThriftPersistenceContext context,
-			Map<Method, PropertyMeta> dirtyMap) {
+	public void merge(ThriftPersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
 		if (dirtyMap.size() > 0) {
-			Object entity = context.getEntity();
 			EntityMeta meta = context.getEntityMeta();
 
 			if (meta.isClusteredEntity()) {
-				mergeClusteredEntity(context, dirtyMap, entity);
+				mergeClusteredEntity(context, dirtyMap);
 			} else {
-				mergeEntity(context, dirtyMap, entity);
+				mergeEntity(context, dirtyMap);
 			}
 		}
 
@@ -53,8 +50,8 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 
 	}
 
-	private void mergeEntity(ThriftPersistenceContext context,
-			Map<Method, PropertyMeta> dirtyMap, Object entity) {
+	private void mergeEntity(ThriftPersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
+		Object entity = context.getEntity();
 		for (Entry<Method, PropertyMeta> entry : dirtyMap.entrySet()) {
 			PropertyMeta pm = entry.getValue();
 			boolean removeProperty = pm.getValueFromField(entity) == null;
@@ -64,9 +61,7 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 				persister.removePropertyBatch(context, pm);
 			} else {
 				if (multiValuesNonProxyTypes.contains(pm.type())) {
-					log.debug(
-							"Removing dirty collection/map {} before merging",
-							pm.getPropertyName());
+					log.debug("Removing dirty collection/map {} before merging", pm.getPropertyName());
 					persister.removePropertyBatch(context, pm);
 				}
 				persister.persistPropertyBatch(context, pm);
@@ -74,8 +69,8 @@ public class ThriftMergerImpl implements Merger<ThriftPersistenceContext> {
 		}
 	}
 
-	private void mergeClusteredEntity(ThriftPersistenceContext context,
-			Map<Method, PropertyMeta> dirtyMap, Object entity) {
+	private void mergeClusteredEntity(ThriftPersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
+		Object entity = context.getEntity();
 		PropertyMeta pm = dirtyMap.entrySet().iterator().next().getValue();
 		Object clusteredValue = pm.getValueFromField(entity);
 		if (clusteredValue == null) {

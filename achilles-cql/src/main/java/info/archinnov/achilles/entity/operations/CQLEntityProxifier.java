@@ -26,10 +26,9 @@ import java.util.Set;
 public class CQLEntityProxifier extends EntityProxifier<CQLPersistenceContext> {
 
 	@Override
-	public <T> CQLEntityInterceptor<T> buildInterceptor(
-			CQLPersistenceContext context, T entity, Set<Method> alreadyLoaded) {
-		return new CQLEntityInterceptorBuilder<T>(context, entity)
-				.alreadyLoaded(alreadyLoaded).build();
+	public <T> CQLEntityInterceptor<T> buildInterceptor(CQLPersistenceContext context, T entity,
+			Set<Method> alreadyLoaded) {
+		return new CQLEntityInterceptorBuilder<T>(context, entity).alreadyLoaded(alreadyLoaded).build();
 	}
 
 }

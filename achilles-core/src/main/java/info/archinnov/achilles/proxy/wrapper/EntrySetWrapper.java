@@ -26,10 +26,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EntrySetWrapper extends AbstractWrapper implements
-		Set<Entry<Object, Object>> {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntrySetWrapper.class);
+public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object, Object>> {
+	private static final Logger log = LoggerFactory.getLogger(EntrySetWrapper.class);
 
 	private Set<Entry<Object, Object>> target;
 
@@ -39,22 +37,18 @@ public class EntrySetWrapper extends AbstractWrapper implements
 
 	@Override
 	public boolean add(Entry<Object, Object> arg0) {
-		throw new UnsupportedOperationException(
-				"This method is not supported for an Entry set");
+		throw new UnsupportedOperationException("This method is not supported for an Entry set");
 	}
 
 	@Override
 	public boolean addAll(Collection<? extends Entry<Object, Object>> arg0) {
-		throw new UnsupportedOperationException(
-				"This method is not supported for an Entry set");
+		throw new UnsupportedOperationException("This method is not supported for an Entry set");
 	}
 
 	@Override
 	public void clear() {
-		log.trace(
-				"Mark dirty for property {} of entity class {} upon entry set clearance",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Mark dirty for property {} of entity class {} upon entry set clearance",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		this.target.clear();
 		this.markDirty();
 	}
@@ -76,15 +70,12 @@ public class EntrySetWrapper extends AbstractWrapper implements
 
 	@Override
 	public Iterator<Entry<Object, Object>> iterator() {
-		log.trace(
-				"Build iterator wrapper for entry set of property {} of entity class {}",
-				propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
+		log.trace("Build iterator wrapper for entry set of property {} of entity class {}",
+				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return EntryIteratorWrapperBuilder
 				//
-				.builder(context, this.target.iterator()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier)
-				.build();
+				.builder(context, this.target.iterator()).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.proxifier(proxifier).build();
 	}
 
 	@Override
@@ -92,10 +83,8 @@ public class EntrySetWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.remove(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark dirty for property {} of entity class {} upon entry removal",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark dirty for property {} of entity class {} upon entry removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -106,10 +95,8 @@ public class EntrySetWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.removeAll(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark dirty for property {} of entity class {} upon all entries removal",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark dirty for property {} of entity class {} upon all entries removal",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;
@@ -120,10 +107,8 @@ public class EntrySetWrapper extends AbstractWrapper implements
 		boolean result = false;
 		result = this.target.retainAll(proxifier.unwrap(arg0));
 		if (result) {
-			log.trace(
-					"Mark dirty for property {} of entity class {} upon entries retaining",
-					propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
+			log.trace("Mark dirty for property {} of entity class {} upon entries retaining",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 			this.markDirty();
 		}
 		return result;

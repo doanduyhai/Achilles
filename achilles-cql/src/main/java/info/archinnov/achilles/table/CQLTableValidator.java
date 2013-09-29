@@ -42,8 +42,7 @@ public class CQLTableValidator {
 		this.keyspaceName = keyspaceName;
 	}
 
-	public void validateForEntity(EntityMeta entityMeta,
-			TableMetadata tableMetadata) {
+	public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		if (entityMeta.isClusteredCounter()) {
 
@@ -52,31 +51,20 @@ public class CQLTableValidator {
 
 	}
 
-	private void validateTable(EntityMeta entityMeta,
-			TableMetadata tableMetadata, PropertyMeta idMeta) {
+	private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, PropertyMeta idMeta) {
 		if (idMeta.isEmbeddedId()) {
-			List<String> componentNames = idMeta.getComponentNames();
-			List<Class<?>> componentClasses = idMeta.getComponentClasses();
-			for (int i = 0; i < componentNames.size(); i++) {
-				Class<?> componentClass = componentClasses.get(i);
-				String componentName = componentNames.get(i);
-				if (idMeta.isComponentTimeUUID(componentName)) {
-					componentClass = InternalTimeUUID.class;
-				}
-				validateColumn(tableMetadata, componentName.toLowerCase(),
-						componentClass);
-			}
+			validatePrimaryKeyComponents(tableMetadata, idMeta, true);
+			validatePrimaryKeyComponents(tableMetadata, idMeta, false);
 		} else {
-			validateColumn(tableMetadata, idMeta.getPropertyName()
-					.toLowerCase(), idMeta.getValueClassForTableCreation());
+			validateColumn(tableMetadata, idMeta.getPropertyName().toLowerCase(),
+					idMeta.getValueClassForTableCreation());
 		}
 
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
 			switch (pm.type()) {
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				validateColumn(tableMetadata, pm.getPropertyName()
-						.toLowerCase(), pm.getValueClassForTableCreation());
+				validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(), pm.getValueClassForTableCreation());
 				break;
 			case LIST:
 			case SET:
@@ -93,146 +81,149 @@ public class CQLTableValidator {
 	}
 
 	public void validateAchillesCounter() {
-		KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(
-				keyspaceName);
-		TableMetadata tableMetadata = keyspaceMetadata
-				.getTable(CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(tableMetadata != null,
-				"Cannot find table '%s' from keyspace '%s'", CQL_COUNTER_TABLE,
-				keyspaceName);
+		KeyspaceMetadata keyspaceMetadata = cluster.getMetadata().getKeyspace(keyspaceName);
+		TableMetadata tableMetaData = keyspaceMetadata.getTable(CQL_COUNTER_TABLE);
+		Validator.validateTableTrue(tableMetaData != null, "Cannot find table '%s' from keyspace '%s'",
+				CQL_COUNTER_TABLE, keyspaceName);
 
-		ColumnMetadata fqcnColumn = tableMetadata.getColumn(CQL_COUNTER_FQCN);
-		Validator.validateTableTrue(fqcnColumn != null,
-				"Cannot find column '%s' from table '%s'", CQL_COUNTER_FQCN,
+		ColumnMetadata fqcnColumn = tableMetaData.getColumn(CQL_COUNTER_FQCN);
+		Validator.validateTableTrue(fqcnColumn != null, "Cannot find column '%s' from table '%s'", CQL_COUNTER_FQCN,
 				CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(fqcnColumn.getType() == text(),
-				"Column '%s' of type '%s' should be of type '%s'",
+		Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
 				CQL_COUNTER_FQCN, fqcnColumn.getType(), text());
+		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(fqcnColumn),
+				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_FQCN, CQL_COUNTER_TABLE);
 
-		ColumnMetadata pkColumn = tableMetadata
-				.getColumn(CQL_COUNTER_PRIMARY_KEY);
-		Validator.validateTableTrue(pkColumn != null,
-				"Cannot find column '%s' from table '%s'",
+		ColumnMetadata pkColumn = tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY);
+		Validator.validateTableTrue(pkColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE);
+		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(pkColumn),
+				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_PRIMARY_KEY,
+				CQL_COUNTER_TABLE);
 
-		Validator.validateTableTrue(pkColumn.getType() == text(),
-				"Column '%s' of type '%s' should be of type '%s'",
+		Validator.validateTableTrue(pkColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
 				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text());
 
-		ColumnMetadata propertyNameColumn = tableMetadata
-				.getColumn(CQL_COUNTER_PROPERTY_NAME);
-		Validator.validateTableTrue(propertyNameColumn != null,
-				"Cannot find column '%s' from table '%s'",
+		ColumnMetadata propertyNameColumn = tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME);
+		Validator.validateTableTrue(propertyNameColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PROPERTY_NAME, CQL_COUNTER_TABLE);
-		Validator
-				.validateTableTrue(propertyNameColumn.getType() == text(),
-						"Column '%s' of type '%s' should be of type '%s'",
-						CQL_COUNTER_PROPERTY_NAME,
-						propertyNameColumn.getType(), text());
-
-		ColumnMetadata counterValueColumn = tableMetadata
-				.getColumn(CQL_COUNTER_VALUE);
-		Validator.validateTableTrue(counterValueColumn != null,
-				"Cannot find column '%s' from table '%s'", counterValueColumn,
+		Validator.validateTableTrue(propertyNameColumn.getType() == text(),
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PROPERTY_NAME,
+				propertyNameColumn.getType(), text());
+		Validator.validateBeanMappingTrue(tableMetaData.getClusteringKey().contains(propertyNameColumn),
+				"Column '%s' of table '%s' should be a clustering key component", CQL_COUNTER_PROPERTY_NAME,
 				CQL_COUNTER_TABLE);
+
+		ColumnMetadata counterValueColumn = tableMetaData.getColumn(CQL_COUNTER_VALUE);
+		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
+				counterValueColumn, CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(counterValueColumn.getType() == counter(),
-				"Column '%s' of type '%s' should be of type '%s'",
-				counterValueColumn, counterValueColumn.getType(), counter());
+				"Column '%s' of type '%s' should be of type '%s'", counterValueColumn, counterValueColumn.getType(),
+				counter());
 
 	}
 
-	private void validateColumn(TableMetadata tableMetadata, String columnName,
-			Class<?> columnJavaType) {
-		String tableName = tableMetadata.getName();
-		ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
+	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+		String tableName = tableMetaData.getName();
+		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Name expectedType = toCQLType(columnJavaType);
 
-		Validator.validateTableTrue(columnMetadata != null,
-				"Cannot find column '%s' in the table '%s'", columnName,
+		Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
 				tableName);
 
 		Name realType = columnMetadata.getType().getName();
-		Validator
-				.validateTableTrue(
-						expectedType == realType,
-						"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed",
-						columnName, tableName, realType, expectedType);
+		Validator.validateTableTrue(expectedType == realType,
+				"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
+				realType, expectedType);
 	}
 
-	private void validateCollectionAndMapColumn(TableMetadata tableMetadata,
-			PropertyMeta pm) {
+	private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+		validateColumn(tableMetaData, columnName, columnJavaType);
+		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
+		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(columnMetadata),
+				"Column '%s' of table '%s' should be a partition key component", columnName, tableMetaData.getName());
+	}
+
+	private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+		validateColumn(tableMetaData, columnName, columnJavaType);
+		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
+		Validator.validateBeanMappingTrue(tableMetaData.getClusteringKey().contains(columnMetadata),
+				"Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());
+	}
+
+	private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm) {
 		String columnName = pm.getPropertyName().toLowerCase();
 		String tableName = tableMetadata.getName();
 		ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
 
-		Validator.validateTableTrue(columnMetadata != null,
-				"Cannot find column '%s' in the table '%s'", columnName,
+		Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
 				tableName);
 		Name realType = columnMetadata.getType().getName();
 		Name expectedValueType = toCQLType(pm.getValueClassForTableCreation());
 
 		switch (pm.type()) {
 		case LIST:
-			Validator
-					.validateTableTrue(
-							realType == Name.LIST,
-							"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed",
-							columnName, tableName, realType, Name.LIST);
-			Name realListValueType = columnMetadata.getType()
-					.getTypeArguments().get(0).getName();
-			Validator
-					.validateTableTrue(
-							realListValueType == expectedValueType,
-							"Column '%s' of table '%s' of type 'List<%s>' should be of type 'List<%s>' indeed",
-							columnName, tableName, realListValueType,
-							expectedValueType);
+			Validator.validateTableTrue(realType == Name.LIST,
+					"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
+					realType, Name.LIST);
+			Name realListValueType = columnMetadata.getType().getTypeArguments().get(0).getName();
+			Validator.validateTableTrue(realListValueType == expectedValueType,
+					"Column '%s' of table '%s' of type 'List<%s>' should be of type 'List<%s>' indeed", columnName,
+					tableName, realListValueType, expectedValueType);
 
 			break;
 		case SET:
-			Validator
-					.validateTableTrue(
-							realType == Name.SET,
-							"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed",
-							columnName, tableName, realType, Name.SET);
-			Name realSetValueType = columnMetadata.getType().getTypeArguments()
-					.get(0).getName();
+			Validator.validateTableTrue(realType == Name.SET,
+					"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
+					realType, Name.SET);
+			Name realSetValueType = columnMetadata.getType().getTypeArguments().get(0).getName();
 
-			Validator
-					.validateTableTrue(
-							realSetValueType == expectedValueType,
-							"Column '%s' of table '%s' of type 'Set<%s>' should be of type 'Set<%s>' indeed",
-							columnName, tableName, realSetValueType,
-							expectedValueType);
+			Validator.validateTableTrue(realSetValueType == expectedValueType,
+					"Column '%s' of table '%s' of type 'Set<%s>' should be of type 'Set<%s>' indeed", columnName,
+					tableName, realSetValueType, expectedValueType);
 			break;
 		case MAP:
-			Validator
-					.validateTableTrue(
-							realType == Name.MAP,
-							"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed",
-							columnName, tableName, realType, Name.MAP);
+			Validator.validateTableTrue(realType == Name.MAP,
+					"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
+					realType, Name.MAP);
 
 			Name expectedMapKeyType = toCQLType(pm.getKeyClass());
-			Name realMapKeyType = columnMetadata.getType().getTypeArguments()
-					.get(0).getName();
-			Name realMapValueType = columnMetadata.getType().getTypeArguments()
-					.get(1).getName();
-			Validator
-					.validateTableTrue(
-							realMapKeyType == expectedMapKeyType,
-							"Column %s' of table '%s' of type 'Map<%s,?>' should be of type 'Map<%s,?>' indeed",
-							columnName, tableName, realMapKeyType,
-							expectedMapKeyType);
+			Name realMapKeyType = columnMetadata.getType().getTypeArguments().get(0).getName();
+			Name realMapValueType = columnMetadata.getType().getTypeArguments().get(1).getName();
+			Validator.validateTableTrue(realMapKeyType == expectedMapKeyType,
+					"Column %s' of table '%s' of type 'Map<%s,?>' should be of type 'Map<%s,?>' indeed", columnName,
+					tableName, realMapKeyType, expectedMapKeyType);
 
-			Validator
-					.validateTableTrue(
-							realMapValueType == expectedValueType,
-							"Column '%s' of table '%s' of type 'Map<?,%s>' should be of type 'Map<?,%s>' indeed",
-							columnName, tableName, realMapValueType,
-							expectedValueType);
+			Validator.validateTableTrue(realMapValueType == expectedValueType,
+					"Column '%s' of table '%s' of type 'Map<?,%s>' should be of type 'Map<?,%s>' indeed", columnName,
+					tableName, realMapValueType, expectedValueType);
 			break;
 		default:
 			break;
 		}
 	}
 
+	private void validatePrimaryKeyComponents(TableMetadata tableMetadata, PropertyMeta idMeta, boolean partitionKey) {
+		List<String> componentNames;
+		List<Class<?>> componentClasses;
+		if (partitionKey) {
+			componentNames = idMeta.getPartitionComponentNames();
+			componentClasses = idMeta.getPartitionComponentClasses();
+		} else {
+			componentNames = idMeta.getClusteringComponentNames();
+			componentClasses = idMeta.getClusteringComponentClasses();
+		}
+
+		for (int i = 0; i < componentNames.size(); i++) {
+			Class<?> componentClass = componentClasses.get(i);
+			String componentName = componentNames.get(i);
+			if (idMeta.isComponentTimeUUID(componentName)) {
+				componentClass = InternalTimeUUID.class;
+			}
+			if (partitionKey)
+				validatePartitionComponent(tableMetadata, componentName.toLowerCase(), componentClass);
+			else
+				validateClusteringComponent(tableMetadata, componentName.toLowerCase(), componentClass);
+		}
+	}
 }

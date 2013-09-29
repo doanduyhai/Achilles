@@ -24,8 +24,7 @@ public class OptionsBuilder {
 		return noOptions;
 	}
 
-	public static WithTtlAndTimestamp withConsistency(
-			ConsistencyLevel consistencyLevel) {
+	public static WithTtlAndTimestamp withConsistency(ConsistencyLevel consistencyLevel) {
 		return new WithTtlAndTimestamp(consistencyLevel);
 	}
 
@@ -101,8 +100,7 @@ public class OptionsBuilder {
 
 		public ReadOnlyOptions consistency(ConsistencyLevel consistencyLevel) {
 			super.consistency = consistencyLevel;
-			return new ReadOnlyOptions(super.consistency, super.ttl,
-					super.timestamp);
+			return new ReadOnlyOptions(super.consistency, super.ttl, super.timestamp);
 		}
 
 	}
@@ -116,8 +114,7 @@ public class OptionsBuilder {
 
 		public ReadOnlyOptions ttl(Integer ttl) {
 			super.ttl = ttl;
-			return new ReadOnlyOptions(super.consistency, super.ttl,
-					super.timestamp);
+			return new ReadOnlyOptions(super.consistency, super.ttl, super.timestamp);
 		}
 
 	}
@@ -131,15 +128,13 @@ public class OptionsBuilder {
 
 		public ReadOnlyOptions timestamp(Long timestamp) {
 			super.timestamp = timestamp;
-			return new ReadOnlyOptions(super.consistency, super.ttl,
-					super.timestamp);
+			return new ReadOnlyOptions(super.consistency, super.ttl, super.timestamp);
 		}
 	}
 
 	public static class ReadOnlyOptions extends Options {
 
-		public ReadOnlyOptions(ConsistencyLevel consistencyLevel, Integer ttl,
-				Long timestamp) {
+		public ReadOnlyOptions(ConsistencyLevel consistencyLevel, Integer ttl, Long timestamp) {
 			super.consistency = consistencyLevel;
 			super.ttl = ttl;
 			super.timestamp = timestamp;

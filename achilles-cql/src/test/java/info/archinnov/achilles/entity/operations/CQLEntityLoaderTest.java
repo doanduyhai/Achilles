@@ -64,8 +64,8 @@ public class CQLEntityLoaderTest {
 	@Before
 	public void setUp() throws Exception {
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").accessors().invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors().invoker(invoker)
+				.build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClusteredEntity(false);
@@ -94,8 +94,7 @@ public class CQLEntityLoaderTest {
 	@Test
 	public void should_load_entity() throws Exception {
 		when(context.isLoadEagerFields()).thenReturn(true);
-		when(loaderImpl.eagerLoadEntity(context, CompleteBean.class))
-				.thenReturn(entity);
+		when(loaderImpl.eagerLoadEntity(context, CompleteBean.class)).thenReturn(entity);
 
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 
@@ -108,8 +107,7 @@ public class CQLEntityLoaderTest {
 	public void should_load_property_into_object() throws Exception {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).build();
 
 		loader.loadPropertyIntoObject(context, entity, pm);
 
@@ -117,12 +115,10 @@ public class CQLEntityLoaderTest {
 	}
 
 	@Test
-	public void should_not_load_property_into_object_for_proxy_type()
-			throws Exception {
+	public void should_not_load_property_into_object_for_proxy_type() throws Exception {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class)
-				.type(COUNTER).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).build();
 
 		loader.loadPropertyIntoObject(context, entity, pm);
 

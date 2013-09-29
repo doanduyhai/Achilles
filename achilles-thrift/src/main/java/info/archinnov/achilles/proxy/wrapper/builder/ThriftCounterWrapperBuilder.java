@@ -29,8 +29,7 @@ public class ThriftCounterWrapperBuilder {
 	private ThriftPersistenceContext context;
 	private ConsistencyLevel consistencyLevel;
 
-	public static ThriftCounterWrapperBuilder builder(
-			ThriftPersistenceContext context) {
+	public static ThriftCounterWrapperBuilder builder(ThriftPersistenceContext context) {
 		return new ThriftCounterWrapperBuilder(context);
 	}
 
@@ -53,8 +52,7 @@ public class ThriftCounterWrapperBuilder {
 		return this;
 	}
 
-	public ThriftCounterWrapperBuilder consistencyLevel(
-			ConsistencyLevel consistencyLevel) {
+	public ThriftCounterWrapperBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 		this.consistencyLevel = consistencyLevel;
 		return this;
 	}

@@ -74,8 +74,7 @@ public class ThriftLoggerHelperTest {
 		comp.addComponent(1, 12L, GREATER_THAN_EQUAL);
 		comp.addComponent(2, uuid, GREATER_THAN_EQUAL);
 
-		assertThat(format(comp)).isEqualTo(
-				"[text:12:" + uuid + "(GREATER_THAN_EQUAL)]");
+		assertThat(format(comp)).isEqualTo("[text:12:" + uuid + "(GREATER_THAN_EQUAL)]");
 	}
 
 	@Test
@@ -88,13 +87,11 @@ public class ThriftLoggerHelperTest {
 	}
 
 	@Test
-	public void should_transform_serializer_list_to_serializer_type_name_list()
-			throws Exception {
+	public void should_transform_serializer_list_to_serializer_type_name_list() throws Exception {
 		List<Serializer<?>> serializers = new ArrayList<Serializer<?>>();
 		serializers.add(TIMEUUID_SRZ);
 
-		assertThat(
-				Lists.transform(serializers, ThriftLoggerHelper.srzToStringFn))
-				.contains(TIMEUUID_SRZ.getComparatorType().getTypeName());
+		assertThat(Lists.transform(serializers, ThriftLoggerHelper.srzToStringFn)).contains(
+				TIMEUUID_SRZ.getComparatorType().getTypeName());
 	}
 }

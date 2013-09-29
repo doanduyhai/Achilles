@@ -44,10 +44,8 @@ public class MapTranscoder extends AbstractTranscoder {
 	public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue) {
 		Map<Object, Object> encoded = new HashMap<Object, Object>();
 		for (Entry<?, ?> entry : entityValue.entrySet()) {
-			Object encodedKey = super.encodeInternal(pm.getKeyClass(),
-					entry.getKey());
-			Object encodedValue = super.encodeInternal(pm.getValueClass(),
-					entry.getValue());
+			Object encodedKey = super.encodeInternal(pm.getKeyClass(), entry.getKey());
+			Object encodedValue = super.encodeInternal(pm.getValueClass(), entry.getValue());
 			encoded.put(encodedKey, encodedValue);
 		}
 		return encoded;
@@ -67,10 +65,8 @@ public class MapTranscoder extends AbstractTranscoder {
 	public Map<Object, Object> decode(PropertyMeta pm, Map<?, ?> cassandraValue) {
 		Map<Object, Object> decoded = new HashMap<Object, Object>();
 		for (Entry<?, ?> entry : cassandraValue.entrySet()) {
-			Object decodedKey = super.decodeInternal(pm.getKeyClass(),
-					entry.getKey());
-			Object decodedValue = super.decodeInternal(pm.getValueClass(),
-					entry.getValue());
+			Object decodedKey = super.decodeInternal(pm.getKeyClass(), entry.getKey());
+			Object decodedValue = super.decodeInternal(pm.getValueClass(), entry.getValue());
 			decoded.put(decodedKey, decodedValue);
 		}
 		return decoded;

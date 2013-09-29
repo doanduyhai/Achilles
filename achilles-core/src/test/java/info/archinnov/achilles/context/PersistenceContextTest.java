@@ -42,8 +42,7 @@ public class PersistenceContextTest {
 	@Before
 	public void setUp() {
 		doCallRealMethod().when(context).setEntityMeta(any(EntityMeta.class));
-		doCallRealMethod().when(context).setFlushContext(
-				any(FlushContext.class));
+		doCallRealMethod().when(context).setFlushContext(any(FlushContext.class));
 
 		context.setEntityMeta(entityMeta);
 		context.setFlushContext(flushContext);

@@ -28,7 +28,9 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -68,36 +70,31 @@ public class CQLPersistenceContextFactoryTest {
 	@Before
 	public void setUp() throws Exception {
 		meta = new EntityMeta();
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
-				.field("id").type(ID).accessors().invoker(invoker).build();
+		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
+				.invoker(invoker).build();
 		meta.setIdMeta(idMeta);
 		meta.setEntityClass(CompleteBean.class);
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(CompleteBean.class, meta);
 
-		factory = new CQLPersistenceContextFactory(daoContext, configContext,
-				entityMetaMap);
+		factory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		Whitebox.setInternalState(factory, ReflectionInvoker.class, invoker);
 	}
 
 	@Test
-	public void should_create_new_context_for_entity_with_consistency_and_ttl()
-			throws Exception {
+	public void should_create_new_context_for_entity_with_consistency_and_ttl() throws Exception {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean entity = new CompleteBean(primaryKey);
 
-		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
-				CompleteBean.class);
+		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = factory.newContext(entity,
-				OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
+		CQLPersistenceContext actual = factory.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass())
-				.isSameAs((Class) CompleteBean.class);
+		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().get()).isEqualTo(95);
@@ -108,34 +105,29 @@ public class CQLPersistenceContextFactoryTest {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean entity = new CompleteBean(primaryKey);
 
-		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(
-				CompleteBean.class);
+		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		CQLPersistenceContext actual = factory.newContext(entity);
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass())
-				.isSameAs((Class) CompleteBean.class);
+		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
-		assertThat(actual.getTtt()).isSameAs(
-				CQLPersistenceContextFactory.NO_TTL);
+		assertThat(actual.getTtt()).isSameAs(CQLPersistenceContextFactory.NO_TTL);
 	}
 
 	@Test
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
 
-		CQLPersistenceContext context = factory.newContext(CompleteBean.class,
-				primaryKey, OptionsBuilder.withConsistency(LOCAL_QUORUM)
-						.ttl(98));
+		CQLPersistenceContext context = factory.newContext(CompleteBean.class, primaryKey, OptionsBuilder
+				.withConsistency(LOCAL_QUORUM).ttl(98));
 
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(context.getEntityClass()).isSameAs(
-				(Class) CompleteBean.class);
+		assertThat(context.getEntityClass()).isSameAs((Class) CompleteBean.class);
 		assertThat(context.getEntityMeta()).isSameAs(meta);
 		assertThat(context.getIdMeta()).isSameAs(idMeta);
 		assertThat(context.getTtt().get()).isEqualTo(98);
@@ -144,16 +136,15 @@ public class CQLPersistenceContextFactoryTest {
 	@Test
 	public void should_create_new_context_for_slice_query() throws Exception {
 		Long primaryKey = RandomUtils.nextLong();
-		when(invoker.instanciateEmbeddedIdWithPartitionKey(idMeta, primaryKey))
-				.thenReturn(primaryKey);
+		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
+		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = factory.newContextForSliceQuery(
-				CompleteBean.class, primaryKey, EACH_QUORUM);
+		CQLPersistenceContext actual = factory.newContextForSliceQuery(CompleteBean.class, partitionComponents,
+				EACH_QUORUM);
 
 		assertThat(actual.getEntity()).isNull();
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass())
-				.isSameAs((Class) CompleteBean.class);
+		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().isPresent()).isFalse();

@@ -27,10 +27,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Documented
 public @interface Lazy {
-    /**
-     * <p>
-     * Lazy property. The property will be loaded at the first access, cached
-     * and returned on subsequent invocation
-     * </p>
-     */
+	/**
+	 * <p>
+	 * Lazy property. The property will be loaded at the first access, cached
+	 * and returned on subsequent invocation
+	 * </p>
+	 */
 }

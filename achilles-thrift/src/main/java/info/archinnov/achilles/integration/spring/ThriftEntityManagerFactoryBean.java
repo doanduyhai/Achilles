@@ -32,8 +32,7 @@ import me.prettyprint.hector.api.Keyspace;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
-public class ThriftEntityManagerFactoryBean extends
-		AbstractFactoryBean<ThriftEntityManager> {
+public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEntityManager> {
 	private static ThriftEntityManager em;
 	private String entityPackages;
 
@@ -67,15 +66,13 @@ public class ThriftEntityManagerFactoryBean extends
 
 		configMap.put(FORCE_CF_CREATION_PARAM, forceColumnFamilyCreation);
 
-		ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory(
-				configMap);
+		ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory(configMap);
 		em = factory.createEntityManager();
 	}
 
 	private void fillEntityPackages(Map<String, Object> configMap) {
 		if (isBlank(entityPackages)) {
-			throw new IllegalArgumentException(
-					"Entity packages should be provided for entity scanning");
+			throw new IllegalArgumentException("Entity packages should be provided for entity scanning");
 		}
 		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 	}
@@ -96,8 +93,7 @@ public class ThriftEntityManagerFactoryBean extends
 			configMap.put(KEYSPACE_PARAM, keyspace);
 		} else {
 			if (isBlank(keyspaceName)) {
-				throw new IllegalArgumentException(
-						"Either a Cassandra keyspace or keyspaceName should be provided");
+				throw new IllegalArgumentException("Either a Cassandra keyspace or keyspaceName should be provided");
 			}
 			configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 		}
@@ -114,21 +110,17 @@ public class ThriftEntityManagerFactoryBean extends
 
 	private void fillConsistencyLevels(Map<String, Object> configMap) {
 		if (consistencyLevelReadDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM,
-					consistencyLevelReadDefault);
+			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
 		}
 		if (consistencyLevelWriteDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM,
-					consistencyLevelWriteDefault);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
 		}
 
 		if (consistencyLevelReadMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM,
-					consistencyLevelReadMap);
+			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, consistencyLevelReadMap);
 		}
 		if (consistencyLevelWriteMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM,
-					consistencyLevelWriteMap);
+			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, consistencyLevelWriteMap);
 		}
 	}
 
@@ -168,23 +160,19 @@ public class ThriftEntityManagerFactoryBean extends
 		this.objectMapper = objectMapper;
 	}
 
-	public void setConsistencyLevelReadDefault(
-			String consistencyLevelReadDefault) {
+	public void setConsistencyLevelReadDefault(String consistencyLevelReadDefault) {
 		this.consistencyLevelReadDefault = consistencyLevelReadDefault;
 	}
 
-	public void setConsistencyLevelWriteDefault(
-			String consistencyLevelWriteDefault) {
+	public void setConsistencyLevelWriteDefault(String consistencyLevelWriteDefault) {
 		this.consistencyLevelWriteDefault = consistencyLevelWriteDefault;
 	}
 
-	public void setConsistencyLevelReadMap(
-			Map<String, String> consistencyLevelReadMap) {
+	public void setConsistencyLevelReadMap(Map<String, String> consistencyLevelReadMap) {
 		this.consistencyLevelReadMap = consistencyLevelReadMap;
 	}
 
-	public void setConsistencyLevelWriteMap(
-			Map<String, String> consistencyLevelWriteMap) {
+	public void setConsistencyLevelWriteMap(Map<String, String> consistencyLevelWriteMap) {
 		this.consistencyLevelWriteMap = consistencyLevelWriteMap;
 	}
 

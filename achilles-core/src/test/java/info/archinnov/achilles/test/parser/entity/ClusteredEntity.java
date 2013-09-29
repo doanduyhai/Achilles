@@ -24,16 +24,16 @@ import javax.persistence.Entity;
 public class ClusteredEntity {
 
 	@EmbeddedId
-	private CompoundKey id;
+	private EmbeddedKey id;
 
 	@Column
 	private String value;
 
-	public CompoundKey getId() {
+	public EmbeddedKey getId() {
 		return id;
 	}
 
-	public void setId(CompoundKey id) {
+	public void setId(EmbeddedKey id) {
 		this.id = id;
 	}
 

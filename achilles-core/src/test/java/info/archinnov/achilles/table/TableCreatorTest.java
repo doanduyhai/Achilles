@@ -51,8 +51,7 @@ public class TableCreatorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, Long.class)
-				.type(SIMPLE).field("id").build();
+		idMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, Long.class).type(SIMPLE).field("id").build();
 		configContext.setForceColumnFamilyCreation(true);
 	}
 
@@ -60,8 +59,7 @@ public class TableCreatorTest {
 	public void should_validate_or_create_for_entity() throws Exception {
 		prepareData();
 
-		doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap,
-				configContext, false);
+		doCallRealMethod().when(creator).validateOrCreateTables(entityMetaMap, configContext, false);
 		creator.validateOrCreateTables(entityMetaMap, configContext, false);
 		verify(creator).validateOrCreateTableForEntity(entityMeta, true);
 	}
@@ -69,29 +67,25 @@ public class TableCreatorTest {
 	@Test
 	public void should_validate_or_create_for_counter() throws Exception {
 		HashMap<Class<?>, EntityMeta> metaMap = new HashMap<Class<?>, EntityMeta>();
-		doCallRealMethod().when(creator).validateOrCreateTables(metaMap,
-				configContext, true);
+		doCallRealMethod().when(creator).validateOrCreateTables(metaMap, configContext, true);
 		creator.validateOrCreateTables(metaMap, configContext, true);
 		verify(creator).validateOrCreateTableForCounter(true);
 	}
 
-	private void prepareData(PropertyMeta... extraPropertyMetas)
-			throws Exception {
+	private void prepareData(PropertyMeta... extraPropertyMetas) throws Exception {
 		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
 		for (PropertyMeta propertyMeta : extraPropertyMetas) {
 			propertyMetas.put(propertyMeta.getPropertyName(), propertyMeta);
 		}
 
-		simplePropertyMeta = PropertyMetaTestBuilder
-				.keyValueClass(Void.class, String.class).type(SIMPLE)
-				.field("name").build();
+		simplePropertyMeta = PropertyMetaTestBuilder.keyValueClass(Void.class, String.class).type(SIMPLE).field("name")
+				.build();
 
 		propertyMetas.put("name", simplePropertyMeta);
 
-		entityMeta = entityMetaBuilder(idMeta).className("TestBean")
-				.columnFamilyName("testCF").propertyMetas(propertyMetas)
-				.build();
+		entityMeta = entityMetaBuilder(idMeta).className("TestBean").columnFamilyName("testCF")
+				.propertyMetas(propertyMetas).build();
 
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(this.getClass(), entityMeta);

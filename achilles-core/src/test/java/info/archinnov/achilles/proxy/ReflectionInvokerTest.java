@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.proxy;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -51,8 +51,7 @@ public class ReflectionInvokerTest {
 	public void should_get_value_from_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method getter = Bean.class
-				.getDeclaredMethod("getComplicatedAttributeName");
+		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
 
 		String value = (String) invoker.getValueFromField(bean, getter);
 		assertThat(value).isEqualTo("test");
@@ -60,22 +59,18 @@ public class ReflectionInvokerTest {
 
 	@Test
 	public void should_get_value_from_null_field() throws Exception {
-		Method getter = Bean.class
-				.getDeclaredMethod("getComplicatedAttributeName");
+		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
 		assertThat(invoker.getValueFromField(null, getter)).isNull();
 	}
 
 	@Test
-	public void should_exception_when_getting_value_from_field()
-			throws Exception {
+	public void should_exception_when_getting_value_from_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method getter = Bean.class
-				.getDeclaredMethod("getComplicatedAttributeName");
+		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot invoke '" + getter.getName()
-				+ "' of type '" + Bean.class.getCanonicalName()
+		exception.expectMessage("Cannot invoke '" + getter.getName() + "' of type '" + Bean.class.getCanonicalName()
 				+ "' on instance 'bean'");
 
 		invoker.getValueFromField("bean", getter);
@@ -84,8 +79,7 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_set_value_to_field() throws Exception {
 		Bean bean = new Bean();
-		Method setter = Bean.class.getDeclaredMethod(
-				"setComplicatedAttributeName", String.class);
+		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
 
 		invoker.setValueToField(bean, setter, "fecezzef");
 
@@ -94,8 +88,7 @@ public class ReflectionInvokerTest {
 
 	@Test
 	public void should_not_set_value_when_null_field() throws Exception {
-		Method setter = Bean.class.getDeclaredMethod(
-				"setComplicatedAttributeName", String.class);
+		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
 		invoker.setValueToField(null, setter, "fecezzef");
 	}
 
@@ -103,12 +96,10 @@ public class ReflectionInvokerTest {
 	public void should_exception_when_setting_value_to_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method setter = Bean.class.getDeclaredMethod(
-				"setComplicatedAttributeName", String.class);
+		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot invoke '" + setter.getName()
-				+ "' of type '" + Bean.class.getCanonicalName()
+		exception.expectMessage("Cannot invoke '" + setter.getName() + "' of type '" + Bean.class.getCanonicalName()
 				+ "' on instance 'bean'");
 
 		invoker.setValueToField("bean", setter, "test");
@@ -121,8 +112,7 @@ public class ReflectionInvokerTest {
 		Method getter = CompleteBean.class.getDeclaredMethod("getFriends");
 
 		@SuppressWarnings("unchecked")
-		List<String> value = (List<String>) invoker.getListValueFromField(bean,
-				getter);
+		List<String> value = (List<String>) invoker.getListValueFromField(bean, getter);
 		assertThat(value).containsExactly("foo", "bar");
 	}
 
@@ -133,8 +123,7 @@ public class ReflectionInvokerTest {
 		Method getter = CompleteBean.class.getDeclaredMethod("getFollowers");
 
 		@SuppressWarnings("unchecked")
-		Set<String> value = (Set<String>) invoker.getSetValueFromField(bean,
-				getter);
+		Set<String> value = (Set<String>) invoker.getSetValueFromField(bean, getter);
 		assertThat(value).containsOnly("foo", "bar");
 	}
 
@@ -145,8 +134,7 @@ public class ReflectionInvokerTest {
 		Method getter = CompleteBean.class.getDeclaredMethod("getPreferences");
 
 		@SuppressWarnings("unchecked")
-		Map<Integer, String> value = (Map<Integer, String>) invoker
-				.getMapValueFromField(bean, getter);
+		Map<Integer, String> value = (Map<Integer, String>) invoker.getMapValueFromField(bean, getter);
 		assertThat(value).containsKey(1).containsValue("FR");
 	}
 
@@ -155,8 +143,7 @@ public class ReflectionInvokerTest {
 		Long id = RandomUtils.nextLong();
 		CompleteBean bean = new CompleteBean(id);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).type(ID).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).type(ID).field("id")
 				.accessors().build();
 
 		Object key = invoker.getPrimaryKey(bean, idMeta);
@@ -166,23 +153,19 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_exception_when_getting_primary_key() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).type(ID).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).type(ID).field("id")
 				.accessors().build();
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot get primary key value by invoking getter 'getId' of type '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' from entity 'bean'");
+		exception.expectMessage("Cannot get primary key value by invoking getter 'getId' of type '"
+				+ CompleteBean.class.getCanonicalName() + "' from entity 'bean'");
 
 		invoker.getPrimaryKey("bean", idMeta);
 	}
 
 	@Test
 	public void should_return_null_key_when_null_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
 				.build();
 		assertThat(invoker.getPrimaryKey(null, idMeta)).isNull();
 	}
@@ -190,82 +173,69 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_get_partition_key() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compGetters(userIdGetter)
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
 				.type(PropertyType.EMBEDDED_ID).build();
 
-		CompoundKey compoundKey = new CompoundKey(partitionKey, "name");
+		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
 
-		assertThat(invoker.getPartitionKey(compoundKey, idMeta)).isEqualTo(
-				partitionKey);
+		assertThat(invoker.getPartitionKey(embeddedKey, idMeta)).isEqualTo(partitionKey);
 	}
 
 	@Test
 	public void should_exception_when_getting_partition_key() throws Exception {
 
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compGetters(userIdGetter)
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
 				.type(PropertyType.EMBEDDED_ID).build();
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Cannot get partition key value by invoking getter 'getUserId' of type '"
-						+ CompoundKey.class.getCanonicalName()
-						+ "' from compoundKey 'compound'");
+		exception.expectMessage("Cannot get partition key value by invoking getter 'getUserId' of type '"
+				+ EmbeddedKey.class.getCanonicalName() + "' from compoundKey 'compound'");
 
 		invoker.getPartitionKey("compound", idMeta);
 	}
 
 	@Test
-	public void should_return_null_for_partition_key_if_not_embedded_id()
-			throws Exception {
+	public void should_return_null_for_partition_key_if_not_embedded_id() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compGetters(userIdGetter)
+		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
 				.type(PropertyType.ID).build();
 
-		CompoundKey compoundKey = new CompoundKey(partitionKey, "name");
-		assertThat(invoker.getPartitionKey(compoundKey, idMeta)).isNull();
+		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
+		assertThat(invoker.getPartitionKey(embeddedKey, idMeta)).isNull();
 	}
 
 	@Test
 	public void should_instanciate_entity_from_class() throws Exception {
-		CompoundKey actual = invoker.instanciate(CompoundKey.class);
+		EmbeddedKey actual = invoker.instanciate(EmbeddedKey.class);
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isNull();
 		assertThat(actual.getName()).isNull();
 	}
 
 	@Test
-	public void should_instanciate_embedded_id_with_partition_key_using_default_constructor()
-			throws Exception {
+	public void should_instanciate_embedded_id_with_partition_key_using_default_constructor() throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 
-		Method userIdSetter = CompoundKey.class.getDeclaredMethod("setUserId",
-				Long.class);
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compSetters(userIdSetter)
-				.build();
+		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compSetters(userIdSetter).build();
 
-		Object actual = invoker.instanciateEmbeddedIdWithPartitionKey(idMeta,
-				partitionKey);
+		Object actual = invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta,
+				Arrays.<Object> asList(partitionKey));
 
 		assertThat(actual).isNotNull();
-		CompoundKey compoundKey = (CompoundKey) actual;
-		assertThat(compoundKey.getUserId()).isEqualTo(partitionKey);
-		assertThat(compoundKey.getName()).isNull();
+		EmbeddedKey embeddedKey = (EmbeddedKey) actual;
+		assertThat(embeddedKey.getUserId()).isEqualTo(partitionKey);
+		assertThat(embeddedKey.getName()).isNull();
 	}
 
 	@Test
-	public void should_throw_exception_when_cannot_instanciate_entity_from_class()
-			throws Exception {
+	public void should_throw_exception_when_cannot_instanciate_entity_from_class() throws Exception {
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot instanciate entity from class '"
-				+ Pair.class.getCanonicalName() + "'");
+		exception.expectMessage("Cannot instanciate entity from class '" + Pair.class.getCanonicalName() + "'");
 
 		invoker.instanciate(Pair.class);
 	}

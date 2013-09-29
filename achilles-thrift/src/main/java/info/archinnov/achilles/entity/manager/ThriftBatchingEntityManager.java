@@ -33,17 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThriftBatchingEntityManager extends ThriftEntityManager {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftBatchingEntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftBatchingEntityManager.class);
 
 	private ThriftBatchingFlushContext flushContext;
 
 	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap,
-			ThriftPersistenceContextFactory contextFactory,
-			ThriftDaoContext daoContext, ConfigurationContext configContext) {
+			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext,
+			ConfigurationContext configContext) {
 		super(entityMetaMap, contextFactory, daoContext, configContext);
-		this.flushContext = new ThriftBatchingFlushContext(daoContext,
-				consistencyPolicy, null);
+		this.flushContext = new ThriftBatchingFlushContext(daoContext, consistencyPolicy, null);
 	}
 
 	/**
@@ -59,8 +57,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager {
 	 * mutator.
 	 */
 	public void startBatch(ConsistencyLevel consistencyLevel) {
-		log.debug("Starting batch mode with write consistency level {}",
-				consistencyLevel);
+		log.debug("Starting batch mode with write consistency level {}", consistencyLevel);
 		startBatch();
 		flushContext.setConsistencyLevel(consistencyLevel);
 
@@ -119,8 +116,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager {
 	}
 
 	@Override
-	public <T> T find(final Class<T> entityClass, final Object primaryKey,
-			ConsistencyLevel readLevel) {
+	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
@@ -131,8 +127,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager {
 	}
 
 	@Override
-	public <T> T getReference(final Class<T> entityClass,
-			final Object primaryKey, ConsistencyLevel readLevel) {
+	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
@@ -143,8 +138,7 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager {
 	}
 
 	@Override
-	public void refresh(final Object entity, ConsistencyLevel readLevel)
-			throws AchillesStaleObjectStateException {
+	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
 		if (readLevel != null) {
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
@@ -154,25 +148,20 @@ public class ThriftBatchingEntityManager extends ThriftEntityManager {
 	}
 
 	@Override
-	protected ThriftPersistenceContext initPersistenceContext(
-			Class<?> entityClass, Object primaryKey, Options options) {
-		log.trace(
-				"Initializing new persistence context for entity class {} and primary key {}",
+	protected ThriftPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
 
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
-		return new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, flushContext, entityClass, primaryKey, options);
+		return new ThriftPersistenceContext(entityMeta, configContext, daoContext, flushContext, entityClass,
+				primaryKey, options);
 	}
 
 	@Override
-	protected ThriftPersistenceContext initPersistenceContext(Object entity,
-			Options options) {
+	protected ThriftPersistenceContext initPersistenceContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
 
-		EntityMeta entityMeta = this.entityMetaMap.get(proxifier
-				.deriveBaseClass(entity));
-		return new ThriftPersistenceContext(entityMeta, configContext,
-				daoContext, flushContext, entity, options);
+		EntityMeta entityMeta = this.entityMetaMap.get(proxifier.deriveBaseClass(entity));
+		return new ThriftPersistenceContext(entityMeta, configContext, daoContext, flushContext, entity, options);
 	}
 }

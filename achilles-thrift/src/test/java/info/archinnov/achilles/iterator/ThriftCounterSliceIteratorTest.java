@@ -91,21 +91,16 @@ public class ThriftCounterSliceIteratorTest {
 
 		Long val1 = 11L, val2 = 12L, val3 = 13L;
 
-		HCounterColumn<Composite> hCol1 = HFactory.createCounterColumn(name1,
-				val1, COMPOSITE_SRZ);
-		HCounterColumn<Composite> hCol2 = HFactory.createCounterColumn(name2,
-				val2, COMPOSITE_SRZ);
-		HCounterColumn<Composite> hCol3 = HFactory.createCounterColumn(name3,
-				val3, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol1 = HFactory.createCounterColumn(name1, val1, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol2 = HFactory.createCounterColumn(name2, val2, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol3 = HFactory.createCounterColumn(name3, val3, COMPOSITE_SRZ);
 
-		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true,
-				true, true, false);
+		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true, true, true, false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
-		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily,
-				query, start, end, false, 10);
+		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily, query, start, end, false, 10);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HCounterColumn<Composite> h1 = iterator.next();
@@ -147,21 +142,16 @@ public class ThriftCounterSliceIteratorTest {
 
 		Long val1 = 11L, val2 = 12L, val3 = 13L;
 
-		HCounterColumn<Composite> hCol1 = HFactory.createCounterColumn(name1,
-				val1, COMPOSITE_SRZ);
-		HCounterColumn<Composite> hCol2 = HFactory.createCounterColumn(name2,
-				val2, COMPOSITE_SRZ);
-		HCounterColumn<Composite> hCol3 = HFactory.createCounterColumn(name3,
-				val3, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol1 = HFactory.createCounterColumn(name1, val1, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol2 = HFactory.createCounterColumn(name2, val2, COMPOSITE_SRZ);
+		HCounterColumn<Composite> hCol3 = HFactory.createCounterColumn(name3, val3, COMPOSITE_SRZ);
 
-		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true,
-				false, true, false, false);
+		when(counterColumnsIterator.hasNext()).thenReturn(true, true, true, false, true, false, false);
 		when(counterColumnsIterator.next()).thenReturn(hCol1, hCol2, hCol3);
 
 		when(policy.getCurrentReadLevel()).thenReturn(LOCAL_QUORUM, ONE);
 
-		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily,
-				query, start, end, false, count);
+		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily, query, start, end, false, count);
 
 		assertThat(iterator.hasNext()).isEqualTo(true);
 		HCounterColumn<Composite> h1 = iterator.next();
@@ -191,8 +181,7 @@ public class ThriftCounterSliceIteratorTest {
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_remove() throws Exception {
 		Composite start = new Composite(), end = new Composite();
-		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily,
-				query, start, end, false, 10);
+		iterator = new ThriftCounterSliceIterator<Long>(policy, columnFamily, query, start, end, false, 10);
 
 		iterator.remove();
 	}

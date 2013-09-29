@@ -38,15 +38,13 @@ import com.google.common.base.Optional;
 public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "clustered_with_enum_compound");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"clustered_with_enum_compound");
 
 	private ThriftEntityManager em = resource.getEm();
 
-	private ThriftGenericWideRowDao dao = resource
-			.getColumnFamilyDao(
-					normalizerAndValidateColumnFamilyName("clustered_with_enum_compound"),
-					Long.class, String.class);
+	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
+			normalizerAndValidateColumnFamilyName("clustered_with_enum_compound"), Long.class, String.class);
 
 	private ClusteredEntityWithEnumCompoundKey entity;
 
@@ -56,13 +54,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_persist_and_get_reference() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		em.persist(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.getReference(
-				ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = em.getReference(ClusteredEntityWithEnumCompoundKey.class,
+				compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -72,13 +69,11 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_merge_and_find() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		em.merge(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.find(
-				ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -89,8 +84,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.FILE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
@@ -106,16 +100,13 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public void should_remove() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.IMAGE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
 		em.remove(entity);
 
-		assertThat(
-				em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey))
-				.isNull();
+		assertThat(em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
 
 	}
 
@@ -125,16 +116,15 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 		long partitionKey = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(partitionKey, Type.FILE);
 
-		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey,
-				"clustered_value");
+		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
 		entity = em.merge(entity);
 
 		Composite comp = new Composite();
 		comp.setComponent(0, "FILE", ThriftSerializerUtils.STRING_SRZ);
 		Mutator<Long> mutator = dao.buildMutator();
-		dao.insertColumnBatch(partitionKey, comp, "new_clustered_value",
-				Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
+		dao.insertColumnBatch(partitionKey, comp, "new_clustered_value", Optional.<Integer> absent(),
+				Optional.<Long> absent(), mutator);
 		dao.executeMutator(mutator);
 
 		em.refresh(entity);

@@ -29,24 +29,18 @@ import org.apache.cassandra.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftBatchingFlushContext extends
-		ThriftAbstractFlushContext<ThriftBatchingFlushContext> {
+public class ThriftBatchingFlushContext extends ThriftAbstractFlushContext<ThriftBatchingFlushContext> {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftImmediateFlushContext.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftImmediateFlushContext.class);
 
-	public ThriftBatchingFlushContext(ThriftDaoContext thriftDaoContext,
-			AchillesConsistencyLevelPolicy policy,
+	public ThriftBatchingFlushContext(ThriftDaoContext thriftDaoContext, AchillesConsistencyLevelPolicy policy,
 			ConsistencyLevel consistencyLevel) {
 		super(thriftDaoContext, policy, consistencyLevel);
 	}
 
-	public ThriftBatchingFlushContext(ThriftDaoContext thriftDaoContext,
-			ThriftConsistencyContext consistencyContext,
-			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap,
-			boolean hasCustomConsistencyLevels) {
-		super(thriftDaoContext, consistencyContext, mutatorMap,
-				hasCustomConsistencyLevels);
+	public ThriftBatchingFlushContext(ThriftDaoContext thriftDaoContext, ThriftConsistencyContext consistencyContext,
+			Map<String, Pair<Mutator<Object>, ThriftAbstractDao>> mutatorMap, boolean hasCustomConsistencyLevels) {
+		super(thriftDaoContext, consistencyContext, mutatorMap, hasCustomConsistencyLevels);
 	}
 
 	@Override
@@ -75,7 +69,7 @@ public class ThriftBatchingFlushContext extends
 
 	@Override
 	public ThriftBatchingFlushContext duplicate() {
-		return new ThriftBatchingFlushContext(thriftDaoContext,
-				consistencyContext, mutatorMap, hasCustomConsistencyLevels);
+		return new ThriftBatchingFlushContext(thriftDaoContext, consistencyContext, mutatorMap,
+				hasCustomConsistencyLevels);
 	}
 }

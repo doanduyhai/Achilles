@@ -68,15 +68,13 @@ public class PropertyFilterTest {
 	public void should_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(filter.hasAnnotation(name, javax.persistence.Column.class))
-				.isTrue();
+		assertThat(filter.hasAnnotation(name, javax.persistence.Column.class)).isTrue();
 	}
 
 	@Test
 	public void should_not_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(filter.hasAnnotation(name, javax.persistence.Id.class))
-				.isFalse();
+		assertThat(filter.hasAnnotation(name, javax.persistence.Id.class)).isFalse();
 	}
 }

@@ -16,20 +16,21 @@
  */
 package info.archinnov.achilles.composite;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
+import static info.archinnov.achilles.type.BoundingMode.*;
+import static info.archinnov.achilles.type.OrderingMode.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
+import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.Arrays;
 import java.util.List;
@@ -69,36 +70,37 @@ public class ThriftCompositeFactoryTest {
 	@Mock
 	private DataTranscoder transcoder;
 
+	@Mock
+	private ThriftPersistenceContext context;
+
 	@Before
 	public void setUp() {
 
+		when(context.getIdMeta()).thenReturn(embeddedIdMeta);
 		when(embeddedIdMeta.isEmbeddedId()).thenReturn(true);
 		when(embeddedIdMeta.getPropertyName()).thenReturn("property");
 	}
 
 	@Test
-	public void should_create_for_embedded_id_insert() throws Exception {
+	public void should_create_for_clustering_components() throws Exception {
 		TweetCompoundKey tweetKey = new TweetCompoundKey();
 		Composite comp = new Composite();
 
-		when(
-				compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(
-						tweetKey, embeddedIdMeta)).thenReturn(comp);
+		when(context.getPrimaryKey()).thenReturn(tweetKey);
+		when(compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(tweetKey, embeddedIdMeta)).thenReturn(comp);
 
-		Composite actual = factory.createCompositeForClustered(embeddedIdMeta,
-				tweetKey);
+		Composite actual = factory.createCompositeForClusteringComponents(context);
 
 		assertThat(actual).isSameAs(comp);
 	}
 
 	@Test
 	public void should_create_key_for_counter() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.transcoder(transcoder).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).transcoder(transcoder).build();
 
 		when(transcoder.forceEncodeToJSON(11L)).thenReturn("11");
 
-		Composite comp = factory.createKeyForCounter("fqcn", 11L, idMeta);
+		Composite comp = factory.createRowKeyForCounter("fqcn", 11L, idMeta);
 
 		assertThat(comp.getComponents()).hasSize(2);
 		assertThat(comp.getComponent(0).getValue(STRING_SRZ)).isEqualTo("fqcn");
@@ -107,14 +109,12 @@ public class ThriftCompositeFactoryTest {
 
 	@Test
 	public void should_create_base_for_get() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createBaseForGet(meta);
 
 		assertThat(comp.getComponents()).hasSize(3);
-		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
-				SIMPLE.flag());
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
 		assertThat(comp.getComponent(1).getEquality()).isEqualTo(EQUAL);
@@ -124,24 +124,19 @@ public class ThriftCompositeFactoryTest {
 
 	@Test
 	public void should_create_base_for_clustered_get() throws Exception {
-		Object compoundKey = new CompoundKey();
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).type(SIMPLE).build();
+		Object compoundKey = new EmbeddedKey();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(SIMPLE).build();
 
 		Composite comp = new Composite();
-		when(
-				compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(
-						compoundKey, idMeta)).thenReturn(comp);
-		Composite actual = factory.createBaseForClusteredGet(compoundKey,
-				idMeta);
+		when(compoundKeyMapper.fromCompoundToCompositeForInsertOrGet(compoundKey, idMeta)).thenReturn(comp);
+		Composite actual = factory.createBaseForClusteredGet(compoundKey, idMeta);
 
 		assertThat(actual).isSameAs(comp);
 	}
 
 	@Test
 	public void should_create_base_for_counter_get() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createBaseForCounterGet(meta);
 
@@ -152,39 +147,32 @@ public class ThriftCompositeFactoryTest {
 
 	@Test
 	public void should_create_base_for_query() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createBaseForQuery(meta, GREATER_THAN_EQUAL);
 
 		assertThat(comp.getComponents()).hasSize(2);
-		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
-				SIMPLE.flag());
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(0).getEquality()).isEqualTo(EQUAL);
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
-		assertThat(comp.getComponent(1).getEquality()).isEqualTo(
-				GREATER_THAN_EQUAL);
+		assertThat(comp.getComponent(1).getEquality()).isEqualTo(GREATER_THAN_EQUAL);
 	}
 
 	@Test
 	public void should_create_for_batch_insert_single() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createForBatchInsertSingleValue(meta);
 
 		assertThat(comp.getComponents()).hasSize(3);
-		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
-				SIMPLE.flag());
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
 		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("0");
 	}
 
 	@Test
-	public void should_create_for_batch_insert_single_counter()
-			throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+	public void should_create_for_batch_insert_single_counter() throws Exception {
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createForBatchInsertSingleCounter(meta);
 
@@ -194,29 +182,24 @@ public class ThriftCompositeFactoryTest {
 
 	@Test
 	public void should_create_for_batch_insert_list_value() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createForBatchInsertList(meta, 21);
 
 		assertThat(comp.getComponents()).hasSize(3);
-		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
-				SIMPLE.flag());
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
-		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo(
-				"000021");
+		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("000021");
 	}
 
 	@Test
 	public void should_create_for_batch_insert_set_map_value() throws Exception {
-		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name").build();
+		PropertyMeta meta = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name").build();
 
 		Composite comp = factory.createForBatchInsertSetOrMap(meta, "text");
 
 		assertThat(comp.getComponents()).hasSize(3);
-		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(
-				SIMPLE.flag());
+		assertThat(comp.getComponent(0).getValue(BYTE_SRZ)).isEqualTo(SIMPLE.flag());
 		assertThat(comp.getComponent(1).getValue(STRING_SRZ)).isEqualTo("name");
 		assertThat(comp.getComponent(2).getValue(STRING_SRZ)).isEqualTo("text");
 	}
@@ -224,35 +207,27 @@ public class ThriftCompositeFactoryTest {
 	@Test
 	public void should_create_for_clustered_query() throws Exception {
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class)
-				.type(SIMPLE).field("name")
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name")
 				.compClasses(Long.class, String.class).build();
 
 		List<Object> clusteringFrom = Arrays.<Object> asList(11L, "z");
 		List<Object> clusteringTo = Arrays.<Object> asList(11L, "a");
 		Composite from = new Composite(), to = new Composite();
 
-		when(calculator.determineEquality(EXCLUSIVE_BOUNDS, DESCENDING))
-				.thenReturn(
-						new ComponentEquality[] { LESS_THAN_EQUAL,
-								GREATER_THAN_EQUAL });
+		when(calculator.determineEquality(EXCLUSIVE_BOUNDS, DESCENDING)).thenReturn(
+				new ComponentEquality[] { LESS_THAN_EQUAL, GREATER_THAN_EQUAL });
 
-		when(
-				compoundKeyMapper.fromComponentsToCompositeForQuery(
-						clusteringFrom, pm, LESS_THAN_EQUAL)).thenReturn(from);
+		when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm, LESS_THAN_EQUAL)).thenReturn(from);
 
-		when(
-				compoundKeyMapper.fromComponentsToCompositeForQuery(
-						clusteringTo, pm, GREATER_THAN_EQUAL)).thenReturn(to);
+		when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm, GREATER_THAN_EQUAL)).thenReturn(to);
 
-		Composite[] composites = factory.createForClusteredQuery(pm,
-				clusteringFrom, clusteringTo, EXCLUSIVE_BOUNDS, DESCENDING);
+		Composite[] composites = factory.createForClusteredQuery(pm, clusteringFrom, clusteringTo, EXCLUSIVE_BOUNDS,
+				DESCENDING);
 
 		assertThat(composites[0]).isSameAs(from);
 		assertThat(composites[1]).isSameAs(to);
 
-		verify(compoundKeyValidator).validateComponentsForSliceQuery(pm,
-				clusteringFrom, clusteringTo, DESCENDING);
+		verify(compoundKeyValidator).validateComponentsForSliceQuery(pm, clusteringFrom, clusteringTo, DESCENDING);
 
 	}
 }

@@ -68,8 +68,7 @@ public class CQLEntityPersisterTest {
 
 	private Long primaryKey = RandomUtils.nextLong();
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder()
-			.id(primaryKey).buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 
 	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
@@ -83,8 +82,7 @@ public class CQLEntityPersisterTest {
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 		when(context.getEntity()).thenReturn(entity);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(
-				CompleteBean.class);
+		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
 	}
 
@@ -92,8 +90,7 @@ public class CQLEntityPersisterTest {
 	public void should_persist() throws Exception {
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("count")
+		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.type(COUNTER).build();
 
 		allMetas.add(counterMeta);
@@ -101,11 +98,9 @@ public class CQLEntityPersisterTest {
 		persister.persist(context);
 
 		verify(persisterImpl).persist(context);
-		verify(persisterImpl).persistCounters(eq(context),
-				metaSetCaptor.capture());
+		verify(persisterImpl).persistCounters(eq(context), metaSetCaptor.capture());
 
-		assertThat(metaSetCaptor.getAllValues().get(0)).containsOnly(
-				counterMeta);
+		assertThat(metaSetCaptor.getAllValues().get(0)).containsOnly(counterMeta);
 	}
 
 	@Test

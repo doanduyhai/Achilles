@@ -54,8 +54,8 @@ public class BatchModeIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "CompleteBean", "Tweet", "User");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
+			"Tweet", "User");
 
 	private CQLEntityManagerFactory emf = resource.getFactory();
 
@@ -71,8 +71,7 @@ public class BatchModeIT {
 
 	@Before
 	public void setUp() {
-		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln")
-				.buid();
+		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
 	}
 
 	@Test
@@ -81,57 +80,44 @@ public class BatchModeIT {
 		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
 		batchEm.startBatch();
 
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
 		entity = batchEm.merge(entity);
 
 		entity.setLabel("label");
 
-		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId()
-				.content("welcomeTweet").buid();
+		Tweet welcomeTweet = TweetTestBuilder.tweet().randomId().content("welcomeTweet").buid();
 		entity.setWelcomeTweet(welcomeTweet);
 
 		entity.getVersion().incr(10L);
 		batchEm.merge(entity);
 
-		Row result = session.execute(
-				"SELECT label from CompleteBean where id=" + entity.getId())
-				.one();
+		Row result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
 		assertThat(result).isNull();
 
 		result = session.execute(
-				"SELECT counter_value from achilles_counter_table where fqcn='"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + entity.getId()
-						+ "' and property_name='version'").one();
+				"SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").one();
 		assertThat(result.getLong("counter_value")).isEqualTo(10L);
 
 		// Flush
 		batchEm.endBatch();
 
-		result = session.execute(
-				"SELECT label from CompleteBean where id=" + entity.getId())
-				.one();
+		result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
 		assertThat(result.getString("label")).isEqualTo("label");
 
 		result = session.execute(
-				"SELECT counter_value from achilles_counter_table where fqcn='"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + entity.getId()
-						+ "' and property_name='version'").one();
+				"SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").one();
 		assertThat(result.getLong("counter_value")).isEqualTo(10L);
 		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
 	public void should_batch_several_entities() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("name").buid();
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("tweet1")
-				.buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2")
-				.buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
 		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
@@ -170,10 +156,8 @@ public class BatchModeIT {
 
 	@Test
 	public void should_reinit_batch_context_after_exception() throws Exception {
-		User user = UserTestBuilder.user().id(123456494L)
-				.firstname("firstname").lastname("lastname").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet").creator(user).buid();
+		User user = UserTestBuilder.user().id(123456494L).firstname("firstname").lastname("lastname").buid();
+		Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
 		// Start batch
 		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
@@ -201,22 +185,17 @@ public class BatchModeIT {
 
 		Tweet foundTweet = batchEm.find(Tweet.class, tweet.getId());
 		assertThat(foundTweet.getContent()).isEqualTo("simple_tweet");
-		assertThat(foundTweet.getCreator().getId())
-				.isEqualTo(foundUser.getId());
-		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo(
-				"firstname");
+		assertThat(foundTweet.getCreator().getId()).isEqualTo(foundUser.getId());
+		assertThat(foundTweet.getCreator().getFirstname()).isEqualTo("firstname");
 		assertThat(foundTweet.getCreator().getLastname()).isEqualTo("lastname");
 		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
 	@Test
 	public void should_batch_with_custom_consistency_level() throws Exception {
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet1").buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet2").buid();
-		Tweet tweet3 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet3").buid();
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
+		Tweet tweet3 = TweetTestBuilder.tweet().randomId().content("simple_tweet3").buid();
 
 		em.persist(tweet1);
 
@@ -242,12 +221,9 @@ public class BatchModeIT {
 	}
 
 	@Test
-	public void should_reinit_batch_context_and_consistency_after_exception()
-			throws Exception {
-		Tweet tweet1 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet1").buid();
-		Tweet tweet2 = TweetTestBuilder.tweet().randomId()
-				.content("simple_tweet2").buid();
+	public void should_reinit_batch_context_and_consistency_after_exception() throws Exception {
+		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
+		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 
 		em.persist(tweet1);
 
@@ -271,14 +247,11 @@ public class BatchModeIT {
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 	}
 
-	private void assertThatBatchContextHasBeenReset(
-			CQLBatchingEntityManager batchEm) {
-		CQLBatchingFlushContext flushContext = Whitebox.getInternalState(
-				batchEm, CQLBatchingFlushContext.class);
-		Optional<ConsistencyLevel> consistencyLevel = Whitebox
-				.getInternalState(flushContext, "consistencyLevel");
-		List<BoundStatementWrapper> boundStatementWrappers = Whitebox
-				.getInternalState(flushContext, "boundStatementWrappers");
+	private void assertThatBatchContextHasBeenReset(CQLBatchingEntityManager batchEm) {
+		CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
+		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
+		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
+				"boundStatementWrappers");
 
 		assertThat(consistencyLevel).isNull();
 		assertThat(boundStatementWrappers).isEmpty();

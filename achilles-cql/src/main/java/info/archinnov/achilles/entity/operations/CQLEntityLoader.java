@@ -31,14 +31,10 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 
-		Validator.validateNotNull(entityClass,
-				"Entity class should not be null");
-		Validator.validateNotNull(primaryKey,
-				"Entity '%s' key should not be null",
-				entityClass.getCanonicalName());
-		Validator.validateNotNull(entityMeta,
-				"Entity meta for '%s' should not be null",
-				entityClass.getCanonicalName());
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
+		Validator
+				.validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
 		T entity = null;
 
@@ -53,8 +49,7 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 	}
 
 	@Override
-	public <V> void loadPropertyIntoObject(CQLPersistenceContext context,
-			Object realObject, PropertyMeta pm) {
+	public <V> void loadPropertyIntoObject(CQLPersistenceContext context, Object realObject, PropertyMeta pm) {
 		PropertyType type = pm.type();
 		if (!type.isCounter()) {
 			loaderImpl.loadPropertyIntoEntity(context, pm, realObject);

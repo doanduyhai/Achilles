@@ -26,29 +26,23 @@ import info.archinnov.achilles.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftEntityLoader implements
-		EntityLoader<ThriftPersistenceContext> {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftEntityLoader.class);
+public class ThriftEntityLoader implements EntityLoader<ThriftPersistenceContext> {
+	private static final Logger log = LoggerFactory.getLogger(ThriftEntityLoader.class);
 
 	private ThriftLoaderImpl loaderImpl = new ThriftLoaderImpl();
 
 	@Override
 	public <T> T load(ThriftPersistenceContext context, Class<T> entityClass) {
-		log.debug("Loading entity of class {} with primary key {}", context
-				.getEntityClass().getCanonicalName(), context.getPrimaryKey());
+		log.debug("Loading entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+				context.getPrimaryKey());
 
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 
-		Validator.validateNotNull(entityClass,
-				"Entity class should not be null");
-		Validator.validateNotNull(primaryKey,
-				"Entity '%s' key should not be null",
-				entityClass.getCanonicalName());
-		Validator.validateNotNull(entityMeta,
-				"Entity meta for '%s' should not be null",
-				entityClass.getCanonicalName());
+		Validator.validateNotNull(entityClass, "Entity class should not be null");
+		Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
+		Validator
+				.validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
 		T entity = null;
 		try {
@@ -60,20 +54,17 @@ public class ThriftEntityLoader implements
 				entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 			}
 		} catch (Exception e) {
-			throw new AchillesException("Error when loading entity type '"
-					+ entityClass.getCanonicalName() + "' with key '"
-					+ primaryKey + "'. Cause : " + e.getMessage(), e);
+			throw new AchillesException("Error when loading entity type '" + entityClass.getCanonicalName()
+					+ "' with key '" + primaryKey + "'. Cause : " + e.getMessage(), e);
 		}
 		return entity;
 	}
 
 	@Override
-	public <V> void loadPropertyIntoObject(ThriftPersistenceContext context,
-			Object realObject, PropertyMeta propertyMeta) {
-		log.debug(
-				"Loading eager properties into entity of class {} with primary key {}",
-				context.getEntityClass().getCanonicalName(),
-				context.getPrimaryKey());
+	public <V> void loadPropertyIntoObject(ThriftPersistenceContext context, Object realObject,
+			PropertyMeta propertyMeta) {
+		log.debug("Loading eager properties into entity of class {} with primary key {}", context.getEntityClass()
+				.getCanonicalName(), context.getPrimaryKey());
 
 		Object value = null;
 		switch (propertyMeta.type()) {
@@ -99,8 +90,7 @@ public class ThriftEntityLoader implements
 		propertyMeta.setValueToField(realObject, value);
 	}
 
-	protected Object loadPrimaryKey(ThriftPersistenceContext context,
-			PropertyMeta propertyMeta) {
+	protected Object loadPrimaryKey(ThriftPersistenceContext context, PropertyMeta propertyMeta) {
 		return loaderImpl.loadSimpleProperty(context, propertyMeta);
 	}
 }

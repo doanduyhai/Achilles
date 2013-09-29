@@ -43,10 +43,8 @@ public class AchillesConsistencyLevelPolicyTest {
 
 	@Before
 	public void setUp() {
-		doCallRealMethod().when(policy).setReadCfConsistencyLevels(
-				Mockito.<Map<String, ConsistencyLevel>> any());
-		doCallRealMethod().when(policy).setWriteCfConsistencyLevels(
-				Mockito.<Map<String, ConsistencyLevel>> any());
+		doCallRealMethod().when(policy).setReadCfConsistencyLevels(Mockito.<Map<String, ConsistencyLevel>> any());
+		doCallRealMethod().when(policy).setWriteCfConsistencyLevels(Mockito.<Map<String, ConsistencyLevel>> any());
 
 		policy.setReadCfConsistencyLevels(readCfConsistencyLevels);
 		policy.setWriteCfConsistencyLevels(writeCfConsistencyLevels);
@@ -54,19 +52,14 @@ public class AchillesConsistencyLevelPolicyTest {
 		readCfConsistencyLevels.clear();
 		writeCfConsistencyLevels.clear();
 
-		doCallRealMethod().when(policy).getConsistencyLevelForRead(
-				any(String.class));
-		doCallRealMethod().when(policy).getConsistencyLevelForWrite(
-				any(String.class));
+		doCallRealMethod().when(policy).getConsistencyLevelForRead(any(String.class));
+		doCallRealMethod().when(policy).getConsistencyLevelForWrite(any(String.class));
 	}
 
 	@Test
-	public void should_get_consistency_for_read_and_write_from_map()
-			throws Exception {
-		doCallRealMethod().when(policy).setConsistencyLevelForRead(
-				any(ConsistencyLevel.class), any(String.class));
-		doCallRealMethod().when(policy).setConsistencyLevelForWrite(
-				any(ConsistencyLevel.class), any(String.class));
+	public void should_get_consistency_for_read_and_write_from_map() throws Exception {
+		doCallRealMethod().when(policy).setConsistencyLevelForRead(any(ConsistencyLevel.class), any(String.class));
+		doCallRealMethod().when(policy).setConsistencyLevelForWrite(any(ConsistencyLevel.class), any(String.class));
 
 		policy.setConsistencyLevelForRead(ONE, "cf1");
 		policy.setConsistencyLevelForWrite(TWO, "cf1");
@@ -76,12 +69,9 @@ public class AchillesConsistencyLevelPolicyTest {
 	}
 
 	@Test
-	public void should_get_consistency_for_read_and_write_from_default()
-			throws Exception {
-		doCallRealMethod().when(policy).setDefaultGlobalReadConsistencyLevel(
-				any(ConsistencyLevel.class));
-		doCallRealMethod().when(policy).setDefaultGlobalWriteConsistencyLevel(
-				any(ConsistencyLevel.class));
+	public void should_get_consistency_for_read_and_write_from_default() throws Exception {
+		doCallRealMethod().when(policy).setDefaultGlobalReadConsistencyLevel(any(ConsistencyLevel.class));
+		doCallRealMethod().when(policy).setDefaultGlobalWriteConsistencyLevel(any(ConsistencyLevel.class));
 
 		policy.setDefaultGlobalReadConsistencyLevel(THREE);
 		policy.setDefaultGlobalWriteConsistencyLevel(QUORUM);

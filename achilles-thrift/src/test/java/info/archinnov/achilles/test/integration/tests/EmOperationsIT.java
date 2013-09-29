@@ -55,16 +55,13 @@ public class EmOperationsIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(
-			Steps.AFTER_TEST, "CompleteBean", "Tweet", "User",
-			"achillesCounterCF");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
+			"CompleteBean", "Tweet", "User", "achillesCounterCF");
 
 	private ThriftEntityManager em = resource.getEm();
 
-	private ThriftGenericEntityDao dao = resource
-			.getEntityDao(
-					normalizerAndValidateColumnFamilyName(CompleteBean.class
-							.getName()), Long.class);
+	private ThriftGenericEntityDao dao = resource.getEntityDao(
+			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
 
 	private ThriftCounterDao counterDao = resource.getCounterDao();
 
@@ -77,24 +74,19 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_persist() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014")
-				.version(CounterBuilder.incr(15L)).buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
 		em.persist(bean);
 
 		Composite startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0, START_EAGER,
-				ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, START_EAGER, ComponentEquality.EQUAL);
 
 		Composite endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0, END_EAGER,
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, END_EAGER, ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startCompositeForEagerFetch,
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
 				endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(8);
@@ -139,20 +131,14 @@ public class EmOperationsIT {
 		assertThat(_75014.right).isEqualTo("75014");
 
 		startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(),
-				ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(1, "friends",
-				ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(),
-				ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(1, "friends",
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(),
-				startCompositeForEagerFetch, endCompositeForEagerFetch, false,
-				20);
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 		assertThat(columns).hasSize(2);
 
 		Pair<Composite, String> foo = columns.get(0);
@@ -164,8 +150,7 @@ public class EmOperationsIT {
 		assertThat(bar.right).isEqualTo("bar");
 
 		Composite counterRowKey = new Composite();
-		counterRowKey.setComponent(0, CompleteBean.class.getCanonicalName(),
-				STRING_SRZ);
+		counterRowKey.setComponent(0, CompleteBean.class.getCanonicalName(), STRING_SRZ);
 		counterRowKey.setComponent(1, bean.getId().toString(), STRING_SRZ);
 
 		Composite counterName = new Composite();
@@ -187,13 +172,10 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_clean_collections_and_maps_before_persist()
-			throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").addFriends("foo", "bar", "qux")
-				.addFollowers("John", "Helen").addPreference(1, "Paris")
-				.addPreference(2, "Ile de France").addPreference(3, "FRANCE")
-				.buid();
+	public void should_clean_collections_and_maps_before_persist() throws Exception {
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
+				.addFriends("foo", "bar", "qux").addFollowers("John", "Helen").addPreference(1, "Paris")
+				.addPreference(2, "Ile de France").addPreference(3, "FRANCE").buid();
 
 		em.persist(entity);
 
@@ -214,8 +196,7 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_find() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
 
 		em.persist(bean);
 
@@ -228,16 +209,14 @@ public class EmOperationsIT {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_find_lazy_simple() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").label("label").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").label("label").buid();
 
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
-		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory
-				.getCallback(0);
+		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
 		Method getLabel = CompleteBean.class.getDeclaredMethod("getLabel");
 		String label = (String) getLabel.invoke(interceptor.getTarget());
@@ -253,23 +232,19 @@ public class EmOperationsIT {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_find_lazy_list() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
+				.addPreference(2, "New York").buid();
 
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
-		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory
-				.getCallback(0);
+		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
 
-		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends",
-				(Class<?>[]) null);
-		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor
-				.getTarget());
+		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
+		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
 
 		assertThat(lazyFriends).isNull();
 
@@ -282,10 +257,9 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_merge_modifications() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
+				.addPreference(2, "New York").buid();
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
@@ -304,33 +278,23 @@ public class EmOperationsIT {
 		assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
 
 		Composite composite = new Composite();
-		composite.addComponent(0, PropertyType.SIMPLE.flag(),
-				ComponentEquality.EQUAL);
+		composite.addComponent(0, PropertyType.SIMPLE.flag(), ComponentEquality.EQUAL);
 		composite.addComponent(1, "age_in_years", ComponentEquality.EQUAL);
 		composite.addComponent(2, "0", ComponentEquality.EQUAL);
 
-		assertThat(
-				readLong(dao.<Long, String> getValue(bean.getId(), composite)))
-				.isEqualTo(100L);
+		assertThat(readLong(dao.<Long, String> getValue(bean.getId(), composite))).isEqualTo(100L);
 
 		Composite startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0,
-				PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(1, "friends",
-				ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(2, "0",
-				ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(2, "0", ComponentEquality.EQUAL);
 
 		Composite endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0,
-				PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(1, "friends",
-				ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(2, "2",
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, PropertyType.LAZY_LIST.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "friends", ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(2, "2", ComponentEquality.GREATER_THAN_EQUAL);
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), startCompositeForEagerFetch,
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch,
 				endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(3);
@@ -341,24 +305,16 @@ public class EmOperationsIT {
 		assertThat(eve.right).isEqualTo("eve");
 
 		startCompositeForEagerFetch = new Composite();
-		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
-				ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(1, "preferences",
-				ComponentEquality.EQUAL);
-		startCompositeForEagerFetch.addComponent(2, "0",
-				ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+		startCompositeForEagerFetch.addComponent(2, "0", ComponentEquality.EQUAL);
 
 		endCompositeForEagerFetch = new Composite();
-		endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(),
-				ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(1, "preferences",
-				ComponentEquality.EQUAL);
-		endCompositeForEagerFetch.addComponent(2, "2",
-				ComponentEquality.GREATER_THAN_EQUAL);
+		endCompositeForEagerFetch.addComponent(0, PropertyType.MAP.flag(), ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(1, "preferences", ComponentEquality.EQUAL);
+		endCompositeForEagerFetch.addComponent(2, "2", ComponentEquality.GREATER_THAN_EQUAL);
 
-		columns = dao.findColumnsRange(bean.getId(),
-				startCompositeForEagerFetch, endCompositeForEagerFetch, false,
-				20);
+		columns = dao.findColumnsRange(bean.getId(), startCompositeForEagerFetch, endCompositeForEagerFetch, false, 20);
 
 		assertThat(columns).hasSize(2);
 
@@ -371,10 +327,9 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_remove_property_after_merge() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
+				.addPreference(2, "New York").buid();
 		em.persist(bean);
 
 		CompleteBean found = em.find(CompleteBean.class, bean.getId());
@@ -396,18 +351,15 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_exception_when_trying_to_modify_primary_key()
-			throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").age(40L).addFriends("bob", "alice")
-				.addFollowers("Billy", "Stephen", "Jacky")
-				.addPreference(1, "US").addPreference(2, "New York").buid();
+	public void should_exception_when_trying_to_modify_primary_key() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
+				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
+				.addPreference(2, "New York").buid();
 
 		bean = em.merge(bean);
 
 		exception.expect(IllegalAccessException.class);
-		exception
-				.expectMessage("Cannot change primary key value for existing entity");
+		exception.expectMessage("Cannot change primary key value for existing entity");
 
 		bean.setId(RandomUtils.nextLong());
 	}
@@ -421,13 +373,10 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_return_same_entity_as_merged_bean_when_managed()
-			throws Exception {
+	public void should_return_same_entity_as_merged_bean_when_managed() throws Exception {
 
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("Jonathan").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet")
-				.buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
+		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
 		bean = em.merge(bean);
@@ -441,9 +390,8 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
@@ -454,8 +402,7 @@ public class EmOperationsIT {
 
 		assertThat(foundBean).isNull();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), null, null, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), null, null, false, 20);
 
 		assertThat(columns).hasSize(0);
 
@@ -463,9 +410,8 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_remove_by_id() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
@@ -476,19 +422,16 @@ public class EmOperationsIT {
 
 		assertThat(foundBean).isNull();
 
-		List<Pair<Composite, String>> columns = dao.findColumnsRange(
-				bean.getId(), null, null, false, 20);
+		List<Pair<Composite, String>> columns = dao.findColumnsRange(bean.getId(), null, null, false, 20);
 
 		assertThat(columns).hasSize(0);
 
 	}
 
 	@Test(expected = IllegalStateException.class)
-	public void should_exception_when_removing_transient_entity()
-			throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+	public void should_exception_when_removing_transient_entity() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		em.remove(bean);
@@ -496,15 +439,13 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_get_reference() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		em.persist(bean);
 
-		CompleteBean foundBean = em.getReference(CompleteBean.class,
-				bean.getId());
+		CompleteBean foundBean = em.getReference(CompleteBean.class, bean.getId());
 
 		assertThat(foundBean).isNotNull();
 
@@ -534,22 +475,18 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_exception_refreshing_non_managed_entity()
-			throws Exception {
-		CompleteBean completeBean = CompleteBeanTestBuilder.builder()
-				.randomId().name("name").buid();
+	public void should_exception_refreshing_non_managed_entity() throws Exception {
+		CompleteBean completeBean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		exception.expect(IllegalStateException.class);
-		exception.expectMessage("The entity '" + completeBean
-				+ "' is not in 'managed' state");
+		exception.expectMessage("The entity '" + completeBean + "' is not in 'managed' state");
 		em.refresh(completeBean);
 	}
 
 	@Test
 	public void should_refresh() throws Exception {
 
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
@@ -561,16 +498,14 @@ public class EmOperationsIT {
 
 		nameMeta.setPropertyName("name");
 
-		Composite nameComposite = thriftCompositeFactory
-				.createForBatchInsertSingleValue(nameMeta);
+		Composite nameComposite = thriftCompositeFactory.createForBatchInsertSingleValue(nameMeta);
 		dao.setValue(bean.getId(), nameComposite, "DuyHai_modified");
 
 		PropertyMeta listLazyMeta = new PropertyMeta();
 		listLazyMeta.setType(LAZY_LIST);
 		listLazyMeta.setPropertyName("friends");
 
-		Composite friend3Composite = thriftCompositeFactory
-				.createForBatchInsertSetOrMap(listLazyMeta, "2");
+		Composite friend3Composite = thriftCompositeFactory.createForBatchInsertSetOrMap(listLazyMeta, "2");
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 
 		em.refresh(bean);
@@ -582,11 +517,9 @@ public class EmOperationsIT {
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void should_exception_when_staled_object_during_refresh()
-			throws Exception {
+	public void should_exception_when_staled_object_during_refresh() throws Exception {
 
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai").buid();
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
 		bean = em.merge(bean);
 
@@ -600,12 +533,9 @@ public class EmOperationsIT {
 
 	@Test
 	public void should_find_unmapped_field() throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder()
-				.randomId()
-				.name("DuyHai")
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
 				//
-				.label("label").age(35L).addFriends("foo", "bar")
-				.addFollowers("George", "Paul").addPreference(1, "FR")
+				.label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		bean = em.merge(bean);
@@ -615,10 +545,8 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_return_null_and_not_wrapper_for_null_values()
-			throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai") //
+	public void should_return_null_and_not_wrapper_for_null_values() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
 				.buid();
 
 		bean.setFriends(null);
@@ -637,10 +565,8 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_not_exception_when_loading_column_family_with_unmapped_property()
-			throws Exception {
-		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId()
-				.name("DuyHai") //
+	public void should_not_exception_when_loading_column_family_with_unmapped_property() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
 				.buid();
 
 		em.persist(bean);

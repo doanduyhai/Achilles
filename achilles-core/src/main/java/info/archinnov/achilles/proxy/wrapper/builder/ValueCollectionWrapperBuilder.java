@@ -21,24 +21,20 @@ import info.archinnov.achilles.proxy.wrapper.ValueCollectionWrapper;
 
 import java.util.Collection;
 
-public class ValueCollectionWrapperBuilder extends
-		AbstractWrapperBuilder<ValueCollectionWrapperBuilder> {
+public class ValueCollectionWrapperBuilder extends AbstractWrapperBuilder<ValueCollectionWrapperBuilder> {
 	private Collection<Object> target;
 
-	public ValueCollectionWrapperBuilder(PersistenceContext context,
-			Collection<Object> target) {
+	public ValueCollectionWrapperBuilder(PersistenceContext context, Collection<Object> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static ValueCollectionWrapperBuilder builder(
-			PersistenceContext context, Collection<Object> target) {
+	public static ValueCollectionWrapperBuilder builder(PersistenceContext context, Collection<Object> target) {
 		return new ValueCollectionWrapperBuilder(context, target);
 	}
 
 	public ValueCollectionWrapper build() {
-		ValueCollectionWrapper valueCollectionWrapper = new ValueCollectionWrapper(
-				this.target);
+		ValueCollectionWrapper valueCollectionWrapper = new ValueCollectionWrapper(this.target);
 		super.build(valueCollectionWrapper);
 		return valueCollectionWrapper;
 	}

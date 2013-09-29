@@ -34,9 +34,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftTableCreator extends TableCreator {
-	private static final Logger log = LoggerFactory
-			.getLogger(ThriftTableCreator.class);
+public class ThriftColumnFamilyCreator extends TableCreator {
+	private static final Logger log = LoggerFactory.getLogger(ThriftColumnFamilyCreator.class);
 	private Cluster cluster;
 	private Keyspace keyspace;
 	private ThriftColumnFamilyFactory columnFamilyFactory = new ThriftColumnFamilyFactory();
@@ -45,14 +44,12 @@ public class ThriftTableCreator extends TableCreator {
 	private List<ColumnFamilyDefinition> cfDefs;
 	private Set<String> columnFamilyNames = new HashSet<String>();
 
-	public ThriftTableCreator(Cluster cluster, Keyspace keyspace) {
+	public ThriftColumnFamilyCreator(Cluster cluster, Keyspace keyspace) {
 		this.cluster = cluster;
 		this.keyspace = keyspace;
-		KeyspaceDefinition keyspaceDef = cluster.describeKeyspace(keyspace
-				.getKeyspaceName());
+		KeyspaceDefinition keyspaceDef = cluster.describeKeyspace(keyspace.getKeyspaceName());
 
-		Validator.validateNotNull(keyspaceDef,
-				"The keyspace '%s' provided by configuration does not exist",
+		Validator.validateNotNull(keyspaceDef, "The keyspace '%s' provided by configuration does not exist",
 				keyspace.getKeyspaceName());
 
 		if (keyspaceDef != null && keyspaceDef.getCfDefs() != null) {
@@ -62,26 +59,21 @@ public class ThriftTableCreator extends TableCreator {
 	}
 
 	@Override
-	protected void validateOrCreateTableForEntity(EntityMeta entityMeta,
-			boolean forceTableCreation) {
+	protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceTableCreation) {
 		String tableName = entityMeta.getTableName();
 		ColumnFamilyDefinition cfDef = this.discoverTable(tableName);
 		if (cfDef == null) {
 			if (forceTableCreation) {
-				log.debug("Force creation of column family for entityMeta {}",
-						entityMeta.getClassName());
+				log.debug("Force creation of column family for entityMeta {}", entityMeta.getClassName());
 
 				createTable(entityMeta);
 			} else {
-				throw new AchillesInvalidTableException(
-						"The required column family '" + tableName
-								+ "' does not exist for entity '"
-								+ entityMeta.getClassName() + "'");
+				throw new AchillesInvalidTableException("The required column family '" + tableName
+						+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
 			}
 		} else {
 			if (entityMeta.isClusteredEntity()) {
-				columnFamilyValidator.validateCFForClusteredEntity(cfDef,
-						entityMeta, tableName);
+				columnFamilyValidator.validateCFForClusteredEntity(cfDef, entityMeta);
 			} else {
 				columnFamilyValidator.validateCFForEntity(cfDef, entityMeta);
 			}
@@ -89,20 +81,16 @@ public class ThriftTableCreator extends TableCreator {
 	}
 
 	@Override
-	protected void validateOrCreateTableForCounter(
-			boolean forceColumnFamilyCreation) {
-		ColumnFamilyDefinition cfDef = this
-				.discoverTable(AchillesCounter.THRIFT_COUNTER_CF);
+	protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
+		ColumnFamilyDefinition cfDef = this.discoverTable(AchillesCounter.THRIFT_COUNTER_CF);
 		if (cfDef == null) {
 			if (forceColumnFamilyCreation) {
 				log.debug("Force creation of column family for counters");
 
 				this.createCounterColumnFamily();
 			} else {
-				throw new AchillesInvalidTableException(
-						"The required column family '"
-								+ AchillesCounter.THRIFT_COUNTER_CF
-								+ "' does not exist");
+				throw new AchillesInvalidTableException("The required column family '"
+						+ AchillesCounter.THRIFT_COUNTER_CF + "' does not exist");
 			}
 		} else {
 			columnFamilyValidator.validateCounterCF(cfDef);
@@ -130,17 +118,14 @@ public class ThriftTableCreator extends TableCreator {
 	}
 
 	protected void createTable(EntityMeta entityMeta) {
-		log.debug("Creating column family for entityMeta {}",
-				entityMeta.getClassName());
+		log.debug("Creating column family for entityMeta {}", entityMeta.getClassName());
 		String columnFamilyName = entityMeta.getTableName();
 		if (!columnFamilyNames.contains(columnFamilyName)) {
 			ColumnFamilyDefinition cfDef;
 			if (entityMeta.isClusteredEntity()) {
-				cfDef = columnFamilyFactory.createClusteredEntityCF(
-						this.keyspace.getKeyspaceName(), entityMeta);
+				cfDef = columnFamilyFactory.createClusteredEntityCF(this.keyspace.getKeyspaceName(), entityMeta);
 			} else {
-				cfDef = columnFamilyFactory.createEntityCF(entityMeta,
-						this.keyspace.getKeyspaceName());
+				cfDef = columnFamilyFactory.createEntityCF(entityMeta, this.keyspace.getKeyspaceName());
 
 			}
 			this.addTable(cfDef);
@@ -151,8 +136,7 @@ public class ThriftTableCreator extends TableCreator {
 	private void createCounterColumnFamily() {
 		log.debug("Creating generic counter column family");
 		if (!columnFamilyNames.contains(AchillesCounter.THRIFT_COUNTER_CF)) {
-			ColumnFamilyDefinition cfDef = columnFamilyFactory
-					.createCounterCF(this.keyspace.getKeyspaceName());
+			ColumnFamilyDefinition cfDef = columnFamilyFactory.createCounterCF(this.keyspace.getKeyspaceName());
 			this.addTable(cfDef);
 		}
 	}

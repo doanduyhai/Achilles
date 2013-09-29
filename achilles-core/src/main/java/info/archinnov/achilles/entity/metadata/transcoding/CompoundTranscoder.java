@@ -32,16 +32,14 @@ public class CompoundTranscoder extends AbstractTranscoder {
 	}
 
 	@Override
-	public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey) {
+	public List<Object> encodeToComponents(PropertyMeta idMeta, Object compoundKey) {
 		List<Object> compoundComponents = new ArrayList<Object>();
-		List<Method> componentGetters = pm.getComponentGetters();
-		List<Class<?>> componentClasses = pm.getComponentClasses();
+		List<Method> componentGetters = idMeta.getComponentGetters();
+		List<Class<?>> componentClasses = idMeta.getComponentClasses();
 		if (compoundKey != null) {
 			for (int i = 0; i < componentGetters.size(); i++) {
-				Object component = invoker.getValueFromField(compoundKey,
-						componentGetters.get(i));
-				Object encoded = super.encodeInternal(componentClasses.get(i),
-						component);
+				Object component = invoker.getValueFromField(compoundKey, componentGetters.get(i));
+				Object encoded = super.encodeInternal(componentClasses.get(i), component);
 				compoundComponents.add(encoded);
 			}
 		}
@@ -55,14 +53,10 @@ public class CompoundTranscoder extends AbstractTranscoder {
 		for (Object component : components) {
 			if (component != null) {
 				Class<?> componentClass = component.getClass();
-				Validator
-						.validateTrue(
-								componentClasses.contains(componentClass),
-								"The component {} for embedded id {} has an unknown type. Valid types are {}",
-								component, pm.getValueClass()
-										.getCanonicalName(), componentClasses);
-				Object encoded = super
-						.encodeInternal(componentClass, component);
+				Validator.validateTrue(componentClasses.contains(componentClass),
+						"The component {} for embedded id {} has an unknown type. Valid types are {}", component, pm
+								.getValueClass().getCanonicalName(), componentClasses);
+				Object encoded = super.encodeInternal(componentClass, component);
 				encodedComponents.add(encoded);
 			}
 		}
@@ -70,32 +64,28 @@ public class CompoundTranscoder extends AbstractTranscoder {
 	}
 
 	@Override
-	public Object decodeFromComponents(PropertyMeta pm, List<?> components) {
-		List<Method> componentSetters = pm.getComponentSetters();
+	public Object decodeFromComponents(PropertyMeta idMeta, List<?> components) {
+		List<Method> componentSetters = idMeta.getComponentSetters();
 
 		List<Object> decodedComponents = new ArrayList<Object>();
-		List<Class<?>> componentClasses = pm.getComponentClasses();
+		List<Class<?>> componentClasses = idMeta.getComponentClasses();
 		for (int i = 0; i < components.size(); i++) {
-			Object decoded = super.decodeInternal(componentClasses.get(i),
-					components.get(i));
+			Object decoded = super.decodeInternal(componentClasses.get(i), components.get(i));
 			decodedComponents.add(decoded);
 		}
 
 		Object compoundKey;
-		compoundKey = injectValuesBySetter(pm, decodedComponents,
-				componentSetters);
+		compoundKey = injectValuesBySetter(idMeta, decodedComponents, componentSetters);
 		return compoundKey;
 	}
 
-	private Object injectValuesBySetter(PropertyMeta pm, List<?> components,
-			List<Method> componentSetters) {
+	private Object injectValuesBySetter(PropertyMeta pm, List<?> components, List<Method> componentSetters) {
 
 		Object compoundKey = pm.instanciate();
 
 		for (int i = 0; i < components.size(); i++) {
 			Object compValue = components.get(i);
-			invoker.setValueToField(compoundKey, componentSetters.get(i),
-					compValue);
+			invoker.setValueToField(compoundKey, componentSetters.get(i), compValue);
 		}
 		return compoundKey;
 	}

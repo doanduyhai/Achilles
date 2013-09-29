@@ -27,13 +27,11 @@ import org.junit.Test;
 
 public class SimpleTranscoderTest {
 
-	private SimpleTranscoder transcoder = new SimpleTranscoder(
-			mock(ObjectMapper.class));
+	private SimpleTranscoder transcoder = new SimpleTranscoder(mock(ObjectMapper.class));
 
 	@Test
 	public void should_encode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
 		Object actual = transcoder.encode(pm, "value");
 
@@ -42,8 +40,7 @@ public class SimpleTranscoderTest {
 
 	@Test
 	public void should_decode() throws Exception {
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
 		Object actual = transcoder.decode(pm, "value");
 

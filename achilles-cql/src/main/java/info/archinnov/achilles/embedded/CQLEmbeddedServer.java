@@ -44,10 +44,8 @@ import com.datastax.driver.core.SimpleStatement;
 
 public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static final Object SEMAPHORE = new Object();
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(CQLEmbeddedServer.class);
-	private static final Logger DML_LOGGER = LoggerFactory
-			.getLogger(ACHILLES_DML_STATEMENT);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CQLEmbeddedServer.class);
+	private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
 	private static String entityPackages;
 	private static boolean initialized = false;
@@ -56,11 +54,9 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static CQLEntityManagerFactory emf;
 	private static CQLEntityManager em;
 
-	public CQLEmbeddedServer(boolean cleanCassandraDataFile,
-			String entityPackages, String keyspaceName) {
+	public CQLEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
 		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException(
-					"Entity packages should be provided");
+			throw new IllegalArgumentException("Entity packages should be provided");
 
 		synchronized (SEMAPHORE) {
 			if (!initialized) {
@@ -76,8 +72,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 		Map<String, Object> configMap = new HashMap<String, Object>();
 
 		String cassandraHost = System.getProperty(CASSANDRA_HOST);
-		if (StringUtils.isNotBlank(cassandraHost)
-				&& cassandraHost.contains(":")) {
+		if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
 			String[] split = cassandraHost.split(":");
 			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, split[0]);
 			configMap.put(CONNECTION_PORT_PARAM, Integer.parseInt(split[1]));
@@ -111,8 +106,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 
 	private void createAchillesKeyspace(String keyspaceName) {
 
-		TTransport tr = new TFramedTransport(new TSocket("localhost",
-				CASSANDRA_THRIFT_TEST_PORT));
+		TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
 		TProtocol proto = new TBinaryProtocol(tr, true, true);
 		Cassandra.Client client = new Cassandra.Client(proto);
 		try {
@@ -120,8 +114,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 
 			String checkKeyspace = "SELECT keyspace_name from system.schema_keyspaces WHERE keyspace_name='"
 					+ keyspaceName + "'";
-			CqlResult cqlResult = client.execute_cql3_query(
-					ByteBuffer.wrap(checkKeyspace.getBytes()),
+			CqlResult cqlResult = client.execute_cql3_query(ByteBuffer.wrap(checkKeyspace.getBytes()),
 					Compression.NONE, ConsistencyLevel.ONE);
 
 			if (cqlResult.getRowsSize() == 0) {
@@ -129,10 +122,9 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 
 				String cql = "CREATE keyspace "
 						+ keyspaceName
-						+ " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}";
+						+ " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false";
 
-				client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()),
-						Compression.NONE, ConsistencyLevel.ONE);
+				client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()), Compression.NONE, ConsistencyLevel.ONE);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -142,10 +134,8 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	}
 
 	public void truncateTable(String tableName) {
-		String query = "truncate " + tableName;
-		session.execute(new SimpleStatement(query)
-				.setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
-		DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]",
-				"Simple query", query, "ALL");
+		String query = "TRUNCATE " + tableName;
+		session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
+		DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "Simple query", query, "ALL");
 	}
 }

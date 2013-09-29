@@ -30,8 +30,7 @@ import org.junit.Test;
 public class ValuelessEntityIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-			Steps.AFTER_TEST, "ValuelessEntity");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ValuelessEntity");
 
 	private CQLEntityManager em = resource.getEm();
 

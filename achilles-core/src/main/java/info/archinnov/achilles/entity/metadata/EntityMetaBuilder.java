@@ -36,8 +36,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 public class EntityMetaBuilder {
-	private static final Logger log = LoggerFactory
-			.getLogger(EntityMetaBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
 	public static final Predicate<EntityMeta> clusteredCounterFilter = new Predicate<EntityMeta>() {
 		@Override
@@ -64,13 +63,9 @@ public class EntityMetaBuilder {
 	public EntityMeta build() {
 		log.debug("Build entityMeta for entity class {}", className);
 
-		Validator.validateNotNull(idMeta,
-				"idMeta should not be null for entity meta creation");
-		Validator
-				.validateNotEmpty(propertyMetas,
-						"propertyMetas map should not be empty for entity meta creation");
-		Validator.validateRegExp(columnFamilyName, TABLE_PATTERN,
-				"columnFamilyName for entity meta creation");
+		Validator.validateNotNull(idMeta, "idMeta should not be null for entity meta creation");
+		Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty for entity meta creation");
+		Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName for entity meta creation");
 
 		EntityMeta meta = new EntityMeta();
 
@@ -80,40 +75,31 @@ public class EntityMetaBuilder {
 		meta.setClassName(className);
 		meta.setTableName(columnFamilyName);
 		meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
-		meta.setGetterMetas(Collections
-				.unmodifiableMap(extractGetterMetas(propertyMetas)));
-		meta.setSetterMetas(Collections
-				.unmodifiableMap(extractSetterMetas(propertyMetas)));
+		meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
+		meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
 		meta.setConsistencyLevels(consistencyLevels);
 
-		List<PropertyMeta> eagerMetas = FluentIterable
-				.from(propertyMetas.values()).filter(eagerType)
-				.toImmutableList();
+		List<PropertyMeta> eagerMetas = FluentIterable.from(propertyMetas.values()).filter(eagerType).toImmutableList();
 
 		meta.setEagerMetas(eagerMetas);
-		meta.setEagerGetters(Collections
-				.unmodifiableList(extractEagerGetters(eagerMetas)));
+		meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
 
-		List<PropertyMeta> allMetasExceptIdMeta = FluentIterable
-				.from(propertyMetas.values()).filter(excludeIdType)
+		List<PropertyMeta> allMetasExceptIdMeta = FluentIterable.from(propertyMetas.values()).filter(excludeIdType)
 				.toImmutableList();
 		meta.setAllMetasExceptIdMeta(allMetasExceptIdMeta);
 
-		PropertyMeta firstMeta = allMetasExceptIdMeta.isEmpty() ? null
-				: allMetasExceptIdMeta.get(0);
+		PropertyMeta firstMeta = allMetasExceptIdMeta.isEmpty() ? null : allMetasExceptIdMeta.get(0);
 		meta.setFirstMeta(firstMeta);
 
-		boolean clusteredEntity = idMeta.isEmbeddedId();
+		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;
 		meta.setClusteredEntity(clusteredEntity);
 
-		boolean clusteredCounter = clusteredEntity && firstMeta != null
-				&& firstMeta.isCounter();
+		boolean clusteredCounter = clusteredEntity && firstMeta != null && firstMeta.isCounter();
 		meta.setClusteredCounter(clusteredCounter);
 		return meta;
 	}
 
-	private Map<Method, PropertyMeta> extractGetterMetas(
-			Map<String, PropertyMeta> propertyMetas) {
+	private Map<Method, PropertyMeta> extractGetterMetas(Map<String, PropertyMeta> propertyMetas) {
 		Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -121,8 +107,7 @@ public class EntityMetaBuilder {
 		return getterMetas;
 	}
 
-	private Map<Method, PropertyMeta> extractSetterMetas(
-			Map<String, PropertyMeta> propertyMetas) {
+	private Map<Method, PropertyMeta> extractSetterMetas(Map<String, PropertyMeta> propertyMetas) {
 		Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
@@ -154,14 +139,12 @@ public class EntityMetaBuilder {
 		return this;
 	}
 
-	public EntityMetaBuilder propertyMetas(
-			Map<String, PropertyMeta> propertyMetas) {
+	public EntityMetaBuilder propertyMetas(Map<String, PropertyMeta> propertyMetas) {
 		this.propertyMetas = propertyMetas;
 		return this;
 	}
 
-	public EntityMetaBuilder consistencyLevels(
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public EntityMetaBuilder consistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 		return this;
 	}

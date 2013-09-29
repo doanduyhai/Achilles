@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.dao;
 
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -25,7 +26,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
 import java.util.Arrays;
@@ -78,21 +79,15 @@ public class ThriftDaoFactoryTest {
 
 	@Test
 	public void should_create_counter_dao() throws Exception {
-		ThriftCounterDao thriftCounterDao = factory.createCounterDao(cluster,
-				keyspace, configContext);
+		ThriftCounterDao thriftCounterDao = factory.createCounterDao(cluster, keyspace, configContext);
 
 		assertThat(thriftCounterDao).isNotNull();
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "cluster"))
-				.isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(thriftCounterDao, "keyspace"))
-				.isSameAs(keyspace);
-		assertThat(
-				Whitebox.getInternalState(thriftCounterDao,
-						"columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
-		Pair<Class<Composite>, Class<Long>> rowAndValueClases = Whitebox
-				.getInternalState(thriftCounterDao, "rowkeyAndValueClasses");
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(thriftCounterDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+		Pair<Class<Composite>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(thriftCounterDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClases.left).isSameAs(Composite.class);
 		assertThat(rowAndValueClases.right).isSameAs(Long.class);
 	}
@@ -109,25 +104,49 @@ public class ThriftDaoFactoryTest {
 		entityMeta.setIdClass(Long.class);
 		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
-		factory.createDaosForEntity(cluster, keyspace, configContext,
-				entityMeta, entityDaosMap, wideRowDaosMap);
+		factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
 
 		ThriftGenericEntityDao entityDao = entityDaosMap.get("cf");
 
 		assertThat(entityDao).isNotNull();
 		assertThat(entityDao.getColumnFamily()).isEqualTo("cf");
-		assertThat(Whitebox.getInternalState(entityDao, "policy")).isSameAs(
-				consistencyPolicy);
-		assertThat(Whitebox.getInternalState(entityDao, "cluster")).isSameAs(
-				cluster);
-		assertThat(Whitebox.getInternalState(entityDao, "keyspace")).isSameAs(
-				keyspace);
-		assertThat(Whitebox.getInternalState(entityDao, "columnNameSerializer"))
-				.isSameAs(COMPOSITE_SRZ);
+		assertThat(Whitebox.getInternalState(entityDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(entityDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(entityDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(entityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
 
-		Pair<Class<Long>, Class<String>> rowAndValueClases = Whitebox
-				.getInternalState(entityDao, "rowkeyAndValueClasses");
+		Pair<Class<Long>, Class<String>> rowAndValueClases = Whitebox.getInternalState(entityDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClases.left).isSameAs(Long.class);
+		assertThat(rowAndValueClases.right).isSameAs(String.class);
+	}
+
+	@Test
+	public void should_create_entity_dao_with_composite_partition_key() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).field("id")
+				.partitionClasses(Long.class, String.class).build();
+
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setClusteredEntity(false);
+		entityMeta.setTableName("cf");
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setIdClass(Long.class);
+		entityMeta.setPropertyMetas(new HashMap<String, PropertyMeta>());
+
+		factory.createDaosForEntity(cluster, keyspace, configContext, entityMeta, entityDaosMap, wideRowDaosMap);
+
+		ThriftGenericEntityDao entityDao = entityDaosMap.get("cf");
+
+		assertThat(entityDao).isNotNull();
+		assertThat(entityDao.getColumnFamily()).isEqualTo("cf");
+		assertThat(Whitebox.getInternalState(entityDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(entityDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(entityDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(entityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+
+		Pair<Class<Composite>, Class<String>> rowAndValueClases = Whitebox.getInternalState(entityDao,
+				"rowkeyAndValueClasses");
+		assertThat(rowAndValueClases.left).isSameAs(Composite.class);
 		assertThat(rowAndValueClases.right).isSameAs(String.class);
 	}
 
@@ -135,13 +154,11 @@ public class ThriftDaoFactoryTest {
 	@Test
 	public void should_create_clustered_entity_dao() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Integer.class, String.class, UUID.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Integer.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID)
+				.build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClusteredEntity(true);
@@ -151,39 +168,65 @@ public class ThriftDaoFactoryTest {
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		entityMeta.setFirstMeta(pm);
 
-		factory.createClusteredEntityDao(cluster, keyspace, configContext,
-				entityMeta, wideRowDaosMap);
+		factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
 		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
 
 		assertThat(clusteredEntityDao).isNotNull();
 		assertThat(clusteredEntityDao.getColumnFamily()).isEqualTo("cf");
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster"))
-				.isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace"))
-				.isSameAs(keyspace);
-		assertThat(
-				Whitebox.getInternalState(clusteredEntityDao,
-						"columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
 
-		Pair<Class<Integer>, Class<Date>> rowAndValueClasses = Whitebox
-				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
+		Pair<Class<Integer>, Class<Date>> rowAndValueClasses = Whitebox.getInternalState(clusteredEntityDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClasses.left).isSameAs(Integer.class);
+		assertThat(rowAndValueClasses.right).isSameAs(Date.class);
+	}
+
+	@Test
+	public void should_create_clustered_entity_dao_with_composite_partition_key() throws Exception {
+
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.partitionClasses(Long.class, String.class).clusteringClasses(UUID.class).field("id").type(EMBEDDED_ID)
+				.build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Date.class).type(SIMPLE).build();
+
+		EntityMeta entityMeta = new EntityMeta();
+		entityMeta.setClusteredEntity(true);
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setTableName("cf");
+		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta, "pm", pm));
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setFirstMeta(pm);
+
+		factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
+
+		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
+
+		assertThat(clusteredEntityDao).isNotNull();
+		assertThat(clusteredEntityDao.getColumnFamily()).isEqualTo("cf");
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+
+		Pair<Class<Composite>, Class<Date>> rowAndValueClasses = Whitebox.getInternalState(clusteredEntityDao,
+				"rowkeyAndValueClasses");
+		assertThat(rowAndValueClasses.left).isSameAs(Composite.class);
 		assertThat(rowAndValueClasses.right).isSameAs(Date.class);
 	}
 
 	@Test
 	public void should_create_counter_clustered_entity_dao() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Integer.class, String.class, UUID.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Integer.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID)
+				.build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class)
-				.type(PropertyType.COUNTER).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(PropertyType.COUNTER).build();
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClusteredEntity(true);
@@ -193,28 +236,24 @@ public class ThriftDaoFactoryTest {
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		entityMeta.setFirstMeta(pm);
 
-		factory.createClusteredEntityDao(cluster, keyspace, configContext,
-				entityMeta, wideRowDaosMap);
+		factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
 		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
 
-		Pair<Class<Integer>, Class<Long>> rowAndValueClases = Whitebox
-				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
+		Pair<Class<Integer>, Class<Long>> rowAndValueClases = Whitebox.getInternalState(clusteredEntityDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClases.left).isSameAs(Integer.class);
 		assertThat(rowAndValueClases.right).isSameAs(Long.class);
 	}
 
 	@Test
-	public void should_create_object_type_clustered_entity_dao()
-			throws Exception {
+	public void should_create_object_type_clustered_entity_dao() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Integer.class, String.class, UUID.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Integer.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID)
+				.build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class)
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(UserBean.class).type(PropertyType.SIMPLE).build();
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClusteredEntity(true);
@@ -224,25 +263,22 @@ public class ThriftDaoFactoryTest {
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
 		entityMeta.setFirstMeta(pm);
 
-		factory.createClusteredEntityDao(cluster, keyspace, configContext,
-				entityMeta, wideRowDaosMap);
+		factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
 		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
 
-		Pair<Class<Integer>, Class<String>> rowAndValueClases = Whitebox
-				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
+		Pair<Class<Integer>, Class<String>> rowAndValueClases = Whitebox.getInternalState(clusteredEntityDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClases.left).isSameAs(Integer.class);
 		assertThat(rowAndValueClases.right).isSameAs(String.class);
 	}
 
 	@Test
-	public void should_create_value_less_clustered_entity_dao()
-			throws Exception {
+	public void should_create_value_less_clustered_entity_dao() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class)
-				.compClasses(Integer.class, String.class, UUID.class)
-				.field("id").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+				.compClasses(Integer.class, String.class, UUID.class).field("id").type(PropertyType.EMBEDDED_ID)
+				.build();
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClusteredEntity(true);
@@ -250,25 +286,19 @@ public class ThriftDaoFactoryTest {
 		entityMeta.setTableName("cf");
 		entityMeta.setPropertyMetas(ImmutableMap.of("id", idMeta));
 
-		factory.createClusteredEntityDao(cluster, keyspace, configContext,
-				entityMeta, wideRowDaosMap);
+		factory.createClusteredEntityDao(cluster, keyspace, configContext, entityMeta, wideRowDaosMap);
 
 		ThriftGenericWideRowDao clusteredEntityDao = wideRowDaosMap.get("cf");
 
 		assertThat(clusteredEntityDao).isNotNull();
 		assertThat(clusteredEntityDao.getColumnFamily()).isEqualTo("cf");
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy"))
-				.isSameAs(consistencyPolicy);
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster"))
-				.isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace"))
-				.isSameAs(keyspace);
-		assertThat(
-				Whitebox.getInternalState(clusteredEntityDao,
-						"columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "policy")).isSameAs(consistencyPolicy);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "cluster")).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "keyspace")).isSameAs(keyspace);
+		assertThat(Whitebox.getInternalState(clusteredEntityDao, "columnNameSerializer")).isSameAs(COMPOSITE_SRZ);
 
-		Pair<Class<Integer>, Class<String>> rowAndValueClasses = Whitebox
-				.getInternalState(clusteredEntityDao, "rowkeyAndValueClasses");
+		Pair<Class<Integer>, Class<String>> rowAndValueClasses = Whitebox.getInternalState(clusteredEntityDao,
+				"rowkeyAndValueClasses");
 		assertThat(rowAndValueClasses.left).isSameAs(Integer.class);
 		assertThat(rowAndValueClasses.right).isSameAs(String.class);
 	}

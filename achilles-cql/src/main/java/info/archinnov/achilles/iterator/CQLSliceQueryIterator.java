@@ -44,8 +44,7 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 	private CQLRowMethodInvoker cqlInvoker = new CQLRowMethodInvoker();
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 
-	public CQLSliceQueryIterator(CQLSliceQuery<T> sliceQuery,
-			CQLPersistenceContext context, Iterator<Row> iterator,
+	public CQLSliceQueryIterator(CQLSliceQuery<T> sliceQuery, CQLPersistenceContext context, Iterator<Row> iterator,
 			PreparedStatement ps) {
 		this.context = context;
 		this.iterator = iterator;
@@ -59,8 +58,7 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 	@Override
 	public boolean hasNext() {
 		if (!iterator.hasNext() && count == batchSize) {
-			iterator = context.bindAndExecute(ps, lastVaryingComponentValue)
-					.iterator();
+			iterator = context.bindAndExecute(ps, lastVaryingComponentValue).iterator();
 			count = 0;
 		}
 		return iterator.hasNext();
@@ -70,8 +68,7 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 	public T next() {
 
 		Row row = iterator.next();
-		lastVaryingComponentValue = cqlInvoker.invokeOnRowForType(row,
-				varyingComponentClass, varyingComponentName);
+		lastVaryingComponentValue = cqlInvoker.invokeOnRowForType(row, varyingComponentClass, varyingComponentName);
 		T clusteredEntity = meta.<T> instanciate();
 		mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
 		count++;
@@ -80,8 +77,7 @@ public class CQLSliceQueryIterator<T> implements Iterator<T> {
 
 	@Override
 	public void remove() {
-		throw new UnsupportedOperationException(
-				"Cannot remove clustered entity with iterator");
+		throw new UnsupportedOperationException("Cannot remove clustered entity with iterator");
 	}
 
 	private T proxify(T clusteredEntity) {

@@ -20,7 +20,7 @@ import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -53,8 +53,7 @@ public class ThriftCompoundKeyValidatorTest {
 	}
 
 	@Test
-	public void should_validate_components_for_query_in_ascending_order_for_query()
-			throws Exception {
+	public void should_validate_components_for_query_in_ascending_order_for_query() throws Exception {
 		List<Object> start;
 		List<Object> end;
 
@@ -103,8 +102,7 @@ public class ThriftCompoundKeyValidatorTest {
 	}
 
 	@Test
-	public void should_validate_components_for_query_in_descending_order_for_query()
-			throws Exception {
+	public void should_validate_components_for_query_in_descending_order_for_query() throws Exception {
 		List<Object> start;
 		List<Object> end;
 
@@ -153,8 +151,7 @@ public class ThriftCompoundKeyValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_start_greater_than_end_for_ascending_for_query()
-			throws Exception {
+	public void should_exception_when_start_greater_than_end_for_ascending_for_query() throws Exception {
 		List<Object> start;
 		List<Object> end;
 
@@ -170,8 +167,7 @@ public class ThriftCompoundKeyValidatorTest {
 	}
 
 	@Test
-	public void should_exception_when_start_lesser_than_end_for_descending_for_query()
-			throws Exception {
+	public void should_exception_when_start_lesser_than_end_for_descending_for_query() throws Exception {
 		List<Object> start;
 		List<Object> end;
 
@@ -211,8 +207,8 @@ public class ThriftCompoundKeyValidatorTest {
 	public void should_validate_compound_keys() throws Exception {
 		when(pm.isEmbeddedId()).thenReturn(true);
 
-		CompoundKey start = new CompoundKey();
-		CompoundKey end = new CompoundKey();
+		EmbeddedKey start = new EmbeddedKey();
+		EmbeddedKey end = new EmbeddedKey();
 
 		List<Method> getters = Arrays.<Method> asList();
 		List<Object> startComps = Arrays.<Object> asList();

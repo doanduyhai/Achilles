@@ -30,8 +30,7 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class CQLSliceQueryStatementGenerator {
 
-	public <T> Statement generateWhereClauseForSelectSliceQuery(
-			CQLSliceQuery<T> sliceQuery, Select select) {
+	public <T> Statement generateWhereClauseForSelectSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
 
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
@@ -107,13 +106,11 @@ public class CQLSliceQueryStatementGenerator {
 		return where;
 	}
 
-	public <T> Statement generateWhereClauseForDeleteSliceQuery(
-			CQLSliceQuery<T> sliceQuery, Delete delete) {
+	public <T> Statement generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<T> sliceQuery, Delete delete) {
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
 
-		com.datastax.driver.core.querybuilder.Delete.Where where = delete
-				.where();
+		com.datastax.driver.core.querybuilder.Delete.Where where = delete.where();
 
 		for (int i = 0; i < fixedComponents.size(); i++) {
 			where.and(eq(componentNames.get(i), fixedComponents.get(i)));

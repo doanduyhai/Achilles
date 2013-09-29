@@ -21,17 +21,14 @@ import info.archinnov.achilles.proxy.wrapper.IteratorWrapper;
 
 import java.util.Iterator;
 
-public class IteratorWrapperBuilder extends
-		AbstractWrapperBuilder<IteratorWrapperBuilder> {
+public class IteratorWrapperBuilder extends AbstractWrapperBuilder<IteratorWrapperBuilder> {
 	private Iterator<Object> target;
 
-	public static IteratorWrapperBuilder builder(PersistenceContext context,
-			Iterator<Object> target) {
+	public static IteratorWrapperBuilder builder(PersistenceContext context, Iterator<Object> target) {
 		return new IteratorWrapperBuilder(context, target);
 	}
 
-	public IteratorWrapperBuilder(PersistenceContext context,
-			Iterator<Object> target) {
+	public IteratorWrapperBuilder(PersistenceContext context, Iterator<Object> target) {
 		super.context = context;
 		this.target = target;
 	}

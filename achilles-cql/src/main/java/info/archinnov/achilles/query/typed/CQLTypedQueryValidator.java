@@ -22,8 +22,7 @@ import info.archinnov.achilles.validation.Validator;
 
 public class CQLTypedQueryValidator {
 
-	public void validateTypedQuery(Class<?> entityClass, String queryString,
-			EntityMeta meta) {
+	public void validateTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
 		PropertyMeta idMeta = meta.getIdMeta();
 		String normalizedQuery = queryString.toLowerCase();
 
@@ -33,36 +32,25 @@ public class CQLTypedQueryValidator {
 			if (idMeta.isEmbeddedId()) {
 
 				for (String component : idMeta.getComponentNames()) {
-					Validator
-							.validateTrue(
-									normalizedQuery.contains(component
-											.toLowerCase()),
-									"The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
-									queryString, component, idMeta
-											.getValueClass().getCanonicalName());
+					Validator.validateTrue(normalizedQuery.contains(component.toLowerCase()),
+							"The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
+							queryString, component, idMeta.getValueClass().getCanonicalName());
 				}
 			} else {
 				String idColumn = idMeta.getPropertyName();
-				Validator
-						.validateTrue(
-								normalizedQuery
-										.contains(idColumn.toLowerCase()),
-								"The typed query [%s] should contain the id column '%s'",
-								queryString, idColumn);
+				Validator.validateTrue(normalizedQuery.contains(idColumn.toLowerCase()),
+						"The typed query [%s] should contain the id column '%s'", queryString, idColumn);
 			}
 		}
 	}
 
-	public void validateRawTypedQuery(Class<?> entityClass, String queryString,
-			EntityMeta meta) {
+	public void validateRawTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
 		String tableName = meta.getTableName().toLowerCase();
 		String normalizedQuery = queryString.toLowerCase();
 
-		Validator
-				.validateTrue(
-						normalizedQuery.contains(" from " + tableName),
-						"The typed query [%s] should contain the ' from %s' clause if type is '%s'",
-						queryString, tableName, entityClass.getCanonicalName());
+		Validator.validateTrue(normalizedQuery.contains(" from " + tableName),
+				"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
+				entityClass.getCanonicalName());
 
 	}
 }

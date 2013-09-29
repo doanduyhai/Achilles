@@ -22,17 +22,14 @@ import info.archinnov.achilles.proxy.wrapper.EntrySetWrapper;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class EntrySetWrapperBuilder extends
-		AbstractWrapperBuilder<EntrySetWrapperBuilder> {
+public class EntrySetWrapperBuilder extends AbstractWrapperBuilder<EntrySetWrapperBuilder> {
 	private Set<Entry<Object, Object>> target;
 
-	public static EntrySetWrapperBuilder builder(PersistenceContext context,
-			Set<Entry<Object, Object>> target) {
+	public static EntrySetWrapperBuilder builder(PersistenceContext context, Set<Entry<Object, Object>> target) {
 		return new EntrySetWrapperBuilder(context, target);
 	}
 
-	public EntrySetWrapperBuilder(PersistenceContext context,
-			Set<Entry<Object, Object>> target) {
+	public EntrySetWrapperBuilder(PersistenceContext context, Set<Entry<Object, Object>> target) {
 		super.context = context;
 		this.target = target;
 	}

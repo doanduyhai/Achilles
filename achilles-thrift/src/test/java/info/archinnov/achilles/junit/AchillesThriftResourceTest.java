@@ -40,27 +40,22 @@ public class AchillesThriftResourceTest {
 
 	@Rule
 	public AchillesThriftResource resource = new AchillesThriftResource(
-			"info.archinnov.achilles.test.integration.entity",
-			Steps.AFTER_TEST, "User");
+			"info.archinnov.achilles.test.integration.entity", Steps.AFTER_TEST, "User");
 
 	private Cluster cluster = resource.getCluster();
 	private Keyspace keyspace = resource.getKeyspace();
 	private ThriftEntityManagerFactory emf = resource.getFactory();
 	private ThriftEntityManager em = resource.getEm();
-	private ThriftConsistencyLevelPolicy policy = resource
-			.getConsistencyPolicy();
-	private ThriftGenericEntityDao dao = resource.getEntityDao("User",
-			Long.class);
+	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
+	private ThriftGenericEntityDao dao = resource.getEntityDao("User", Long.class);
 
 	@Test
-	public void should_bootstrap_embedded_server_and_entity_manager()
-			throws Exception {
+	public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
 		Long id = RandomUtils.nextLong();
 		em.persist(new User(id, "fn", "ln"));
 
-		List<Pair<Composite, Object>> columnsRange = dao.findColumnsRange(id,
-				null, null, false, 100);
+		List<Pair<Composite, Object>> columnsRange = dao.findColumnsRange(id, null, null, false, 100);
 
 		assertThat(columnsRange).hasSize(3);
 
@@ -85,8 +80,7 @@ public class AchillesThriftResourceTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesThriftResource resource = new AchillesThriftResource(
-				"info.archinnov.achilles.junit.test.entity");
+		AchillesThriftResource resource = new AchillesThriftResource("info.archinnov.achilles.junit.test.entity");
 
 		assertThat(resource.getCluster()).isSameAs(cluster);
 		assertThat(resource.getKeyspace()).isSameAs(keyspace);

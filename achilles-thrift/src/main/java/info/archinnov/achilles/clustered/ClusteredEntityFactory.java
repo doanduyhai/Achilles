@@ -33,8 +33,7 @@ public class ClusteredEntityFactory {
 
 	private ThriftCompositeTransformer transformer = new ThriftCompositeTransformer();
 
-	public <T> List<T> buildClusteredEntities(Class<T> entityClass,
-			ThriftPersistenceContext context,
+	public <T> List<T> buildClusteredEntities(Class<T> entityClass, ThriftPersistenceContext context,
 			List<HColumn<Composite, Object>> hColumns) {
 		if (hColumns.isEmpty()) {
 			return new ArrayList<T>();
@@ -43,27 +42,22 @@ public class ClusteredEntityFactory {
 		}
 	}
 
-	private <T> List<T> buildSimpleClusteredEntities(Class<T> entityClass,
-			ThriftPersistenceContext context,
+	private <T> List<T> buildSimpleClusteredEntities(Class<T> entityClass, ThriftPersistenceContext context,
 			List<HColumn<Composite, Object>> hColumns) {
 		Function<HColumn<Composite, Object>, T> function;
 		if (context.isValueless()) {
-
-			function = transformer.valuelessClusteredEntityTransformer(
-					entityClass, context);
+			function = transformer.valuelessClusteredEntityTransformer(entityClass, context);
 		} else {
-			function = transformer.clusteredEntityTransformer(entityClass,
-					context);
+			function = transformer.clusteredEntityTransformer(entityClass, context);
 		}
 
 		return Lists.transform(hColumns, function);
 	}
 
-	public <T> List<T> buildCounterClusteredEntities(Class<T> entityClass,
-			ThriftPersistenceContext context,
+	public <T> List<T> buildCounterClusteredEntities(Class<T> entityClass, ThriftPersistenceContext context,
 			List<HCounterColumn<Composite>> hColumns) {
-		Function<HCounterColumn<Composite>, T> function = transformer
-				.counterClusteredEntityTransformer(entityClass, context);
+		Function<HCounterColumn<Composite>, T> function = transformer.counterClusteredEntityTransformer(entityClass,
+				context);
 
 		return Lists.transform(hColumns, function);
 	}

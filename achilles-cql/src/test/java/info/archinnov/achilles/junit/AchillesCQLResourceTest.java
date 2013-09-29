@@ -32,8 +32,7 @@ import com.datastax.driver.core.Session;
 public class AchillesCQLResourceTest {
 
 	@Rule
-	public AchillesCQLResource resource = new AchillesCQLResource(
-			"info.archinnov.achilles.test.integration.entity",
+	public AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.test.integration.entity",
 			Steps.AFTER_TEST, "User");
 
 	private CQLEntityManagerFactory emf = resource.getFactory();
@@ -41,8 +40,7 @@ public class AchillesCQLResourceTest {
 	private Session session = resource.getNativeSession();
 
 	@Test
-	public void should_bootstrap_embedded_server_and_entity_manager()
-			throws Exception {
+	public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
 		Long id = RandomUtils.nextLong();
 		em.persist(new User(id, "fn", "ln"));
@@ -57,8 +55,7 @@ public class AchillesCQLResourceTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesCQLResource resource = new AchillesCQLResource(
-				"info.archinnov.achilles.junit.test.entity");
+		AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.junit.test.entity");
 
 		assertThat(resource.getFactory()).isSameAs(emf);
 		assertThat(resource.getEm()).isSameAs(em);
@@ -66,14 +63,12 @@ public class AchillesCQLResourceTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_null_entity_package_provided()
-			throws Exception {
+	public void should_exception_when_null_entity_package_provided() throws Exception {
 		new AchillesCQLResource(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_no_entity_package_provided()
-			throws Exception {
+	public void should_exception_when_no_entity_package_provided() throws Exception {
 		new AchillesCQLResource("");
 	}
 }
