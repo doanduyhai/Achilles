@@ -434,6 +434,14 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		protected DefaultQueryBuilder() {
 		}
 
+		public DefaultQueryBuilder conditions(Collection<IndexCondition> indexConditions, boolean allowFiltering) {
+			for (IndexCondition indexCondition : indexConditions) {
+				SliceQueryBuilder.super.addCondition(indexCondition);
+			}
+			SliceQueryBuilder.super.withAllowFiltering(allowFiltering);
+			return this;
+		}
+
 		/**
 		 * Set ordering<br/>
 		 * <br/>

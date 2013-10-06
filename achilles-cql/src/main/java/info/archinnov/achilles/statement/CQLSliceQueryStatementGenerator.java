@@ -34,97 +34,94 @@ public class CQLSliceQueryStatementGenerator {
 	public <T> Statement generateWhereClauseForSelectSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
 
 		Where where = select.where();
-		if (!sliceQuery.hasIndexConditions()) {
-			List<Object> fixedComponents = sliceQuery.getFixedComponents();
-			List<String> componentNames = sliceQuery.getComponentNames();
-			String varyingComponentName = sliceQuery.getVaryingComponentName();
-			OrderingMode ordering = sliceQuery.getAchillesOrdering();
+		List<Object> fixedComponents = sliceQuery.getFixedComponents();
+		List<String> componentNames = sliceQuery.getComponentNames();
+		String varyingComponentName = componentNames.size()>0 ? sliceQuery.getVaryingComponentName():null;
+		OrderingMode ordering = sliceQuery.getAchillesOrdering();
 
-			Object lastStartComp = sliceQuery.getLastStartComponent();
-			Object lastEndComp = sliceQuery.getLastEndComponent();
+		Object lastStartComp = sliceQuery.getLastStartComponent();
+		Object lastEndComp = sliceQuery.getLastEndComponent();
 
-			for (int i = 0; i < fixedComponents.size(); i++) {
-				where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+		for (int i = 0; i < fixedComponents.size(); i++) {
+			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+		}
+
+		if (ordering == ASCENDING) {
+			switch (sliceQuery.getBounding()) {
+			case INCLUSIVE_BOUNDS:
+				if (lastStartComp != null)
+					where.and(gte(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(lte(varyingComponentName, lastEndComp));
+				break;
+			case EXCLUSIVE_BOUNDS:
+				if (lastStartComp != null)
+					where.and(gt(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(lt(varyingComponentName, lastEndComp));
+				break;
+			case INCLUSIVE_START_BOUND_ONLY:
+				if (lastStartComp != null)
+					where.and(gte(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(lt(varyingComponentName, lastEndComp));
+				break;
+			case INCLUSIVE_END_BOUND_ONLY:
+				if (lastStartComp != null)
+					where.and(gt(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(lte(varyingComponentName, lastEndComp));
+				break;
+			}
+		} else // ordering == DESCENDING
+		{
+			switch (sliceQuery.getBounding()) {
+			case INCLUSIVE_BOUNDS:
+				if (lastStartComp != null)
+					where.and(lte(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(gte(varyingComponentName, lastEndComp));
+				break;
+			case EXCLUSIVE_BOUNDS:
+				if (lastStartComp != null)
+					where.and(lt(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(gt(varyingComponentName, lastEndComp));
+				break;
+			case INCLUSIVE_START_BOUND_ONLY:
+				if (lastStartComp != null)
+					where.and(lte(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(gt(varyingComponentName, lastEndComp));
+				break;
+			case INCLUSIVE_END_BOUND_ONLY:
+				if (lastStartComp != null)
+					where.and(lt(varyingComponentName, lastStartComp));
+				if (lastEndComp != null)
+					where.and(gte(varyingComponentName, lastEndComp));
+				break;
 			}
 
-			if (ordering == ASCENDING) {
-				switch (sliceQuery.getBounding()) {
-				case INCLUSIVE_BOUNDS:
-					if (lastStartComp != null)
-						where.and(gte(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(lte(varyingComponentName, lastEndComp));
-					break;
-				case EXCLUSIVE_BOUNDS:
-					if (lastStartComp != null)
-						where.and(gt(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(lt(varyingComponentName, lastEndComp));
-					break;
-				case INCLUSIVE_START_BOUND_ONLY:
-					if (lastStartComp != null)
-						where.and(gte(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(lt(varyingComponentName, lastEndComp));
-					break;
-				case INCLUSIVE_END_BOUND_ONLY:
-					if (lastStartComp != null)
-						where.and(gt(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(lte(varyingComponentName, lastEndComp));
-					break;
-				}
-			} else // ordering == DESCENDING
-			{
-				switch (sliceQuery.getBounding()) {
-				case INCLUSIVE_BOUNDS:
-					if (lastStartComp != null)
-						where.and(lte(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(gte(varyingComponentName, lastEndComp));
-					break;
-				case EXCLUSIVE_BOUNDS:
-					if (lastStartComp != null)
-						where.and(lt(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(gt(varyingComponentName, lastEndComp));
-					break;
-				case INCLUSIVE_START_BOUND_ONLY:
-					if (lastStartComp != null)
-						where.and(lte(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(gt(varyingComponentName, lastEndComp));
-					break;
-				case INCLUSIVE_END_BOUND_ONLY:
-					if (lastStartComp != null)
-						where.and(lt(varyingComponentName, lastStartComp));
-					if (lastEndComp != null)
-						where.and(gte(varyingComponentName, lastEndComp));
-					break;
-				}
-
-			}
-		} else {
-			for (IndexCondition indexCondition : sliceQuery.getIndexConditions()) {
-				String columnName = indexCondition.getColumnName().toString();
-				Object columnValue = indexCondition.getColumnValue();
-				switch (indexCondition.getIndexEquality()) {
-				case EQUAL:
-					where.and(eq(columnName, columnValue));
-					break;
-				case GREATER:
-					where.and(gt(columnName, columnValue));
-					break;
-				case GREATER_OR_EQUAL:
-					where.and(gte(columnName, columnValue));
-					break;
-				case LESS:
-					where.and(lt(columnName, columnValue));
-					break;
-				case LESS_OR_EQUAL:
-					where.and(lte(columnName, columnValue));
-					break;
-				}
+		}
+		for (IndexCondition indexCondition : sliceQuery.getIndexConditions()) {
+			String columnName = indexCondition.getColumnName().toString();
+			Object columnValue = indexCondition.getColumnValue();
+			switch (indexCondition.getIndexEquality()) {
+			case EQUAL:
+				where.and(eq(columnName, columnValue));
+				break;
+			case GREATER:
+				where.and(gt(columnName, columnValue));
+				break;
+			case GREATER_OR_EQUAL:
+				where.and(gte(columnName, columnValue));
+				break;
+			case LESS:
+				where.and(lt(columnName, columnValue));
+				break;
+			case LESS_OR_EQUAL:
+				where.and(lte(columnName, columnValue));
+				break;
 			}
 		}
 		return where;

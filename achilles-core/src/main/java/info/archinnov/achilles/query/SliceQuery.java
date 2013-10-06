@@ -58,8 +58,6 @@ public class SliceQuery<T> {
 		this.entityClass = entityClass;
 		this.meta = meta;
 
-		this.partitionKey = partitionKey;
-		this.noComponent = clusteringsFrom == null && clusteringsTo == null;
 		this.indexConditions = indexConditions;
 		this.ordering = ordering;
 		this.bounding = bounding;
@@ -67,17 +65,20 @@ public class SliceQuery<T> {
 		this.limit = limit;
 		this.batchSize = batchSize;
 		this.allowFiltering = allowfiltering;
-		if (!hasIndexConditions()) {
-			Validator
-					.validateNotNull(partitionKey, "Partition key should be set for slice query for entity class '%s'",
-							entityClass.getCanonicalName());
+		this.partitionKey = partitionKey;
+		this.noComponent = clusteringsFrom == null && clusteringsTo == null;
+		if (partitionKey != null) {
 			PropertyMeta idMeta = meta.getIdMeta();
 			List<Object> componentsFrom = Arrays.<Object> asList(ArrayUtils.add(clusteringsFrom, 0, partitionKey));
 			this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
 			List<Object> componentsTo = Arrays.<Object> asList(ArrayUtils.add(clusteringsTo, 0, partitionKey));
 			this.clusteringsTo = idMeta.encodeToComponents(componentsTo);
 		}
-
+		/*
+		 * if (!hasIndexConditions()) { Validator.validateNotNull(partitionKey,
+		 * "Partition key should be set for slice query for entity class '%s'",
+		 * entityClass.getCanonicalName()); }
+		 */
 	}
 
 	public Class<T> getEntityClass() {

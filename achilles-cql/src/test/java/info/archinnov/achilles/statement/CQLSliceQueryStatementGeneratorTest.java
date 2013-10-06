@@ -252,7 +252,8 @@ public class CQLSliceQueryStatementGeneratorTest {
 		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
 		when(sliceQuery.getIndexConditions()).thenReturn(indexConditions);
 		when(sliceQuery.hasIndexConditions()).thenReturn(true);
-
+		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
+		
 		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo("SELECT test FROM table WHERE test='value';");
 

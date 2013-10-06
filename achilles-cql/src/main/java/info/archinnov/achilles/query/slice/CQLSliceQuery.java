@@ -47,13 +47,10 @@ public class CQLSliceQuery<T> {
 	public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {
 		this.sliceQuery = sliceQuery;
 		this.defaultReadLevel = defaultReadLevel;
-		if (!sliceQuery.hasIndexConditions()) {
-			validateClusteringComponents(sliceQuery);
-			this.fixedComponents = determineFixedComponents(sliceQuery);
-			Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
-			this.lastStartComp = lastComponents.left;
-			this.lastEndComp = lastComponents.right;
-		}
+		this.fixedComponents = determineFixedComponents(sliceQuery);
+		Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
+		this.lastStartComp = lastComponents.left;
+		this.lastEndComp = lastComponents.right;
 	}
 
 	public List<Object> getFixedComponents() {
@@ -93,7 +90,12 @@ public class CQLSliceQuery<T> {
 	public Ordering getCQLOrdering() {
 		OrderingMode ordering = sliceQuery.getOrdering();
 		String orderingComponentName = sliceQuery.getMeta().getIdMeta().getOrderingComponent();
-		if (orderingComponentName != null) {
+		if (orderingComponentName != null && !sliceQuery.hasIndexConditions()) { // order
+																					// by
+																					// forbidden
+																					// with
+																					// secondary
+																					// index
 			if (ordering.isReverse()) {
 				return QueryBuilder.desc(orderingComponentName);
 			} else {
@@ -148,48 +150,49 @@ public class CQLSliceQuery<T> {
 
 		List<Object> endComponents = sliceQuery.getClusteringsTo();
 
-		int startIndex = validator.getLastNonNullIndex(startComponents);
-		int endIndex = validator.getLastNonNullIndex(endComponents);
+		if (startComponents != null && endComponents != null) {
+			int startIndex = validator.getLastNonNullIndex(startComponents);
+			int endIndex = validator.getLastNonNullIndex(endComponents);
 
-		int minIndex = Math.min(startIndex, endIndex);
+			int minIndex = Math.min(startIndex, endIndex);
 
-		if (startIndex == endIndex) {
-			for (int i = 0; i <= minIndex && startComponents.get(i).equals(endComponents.get(i)); i++) {
-				fixedComponents.add(startComponents.get(i));
-			}
-		} else {
-			for (int i = 0; i <= minIndex; i++) {
-				fixedComponents.add(startComponents.get(i));
+			if (startIndex == endIndex) {
+				for (int i = 0; i <= minIndex && startComponents.get(i).equals(endComponents.get(i)); i++) {
+					fixedComponents.add(startComponents.get(i));
+				}
+			} else {
+				for (int i = 0; i <= minIndex; i++) {
+					fixedComponents.add(startComponents.get(i));
+				}
 			}
 		}
-
 		return fixedComponents;
 	}
 
 	private Pair<Object, Object> determineLastComponents(SliceQuery<T> sliceQuery) {
-		Object lastStartComp;
-		Object lastEndComp;
+		Object lastStartComp = null;
+		Object lastEndComp = null;
 
 		List<Object> startComponents = sliceQuery.getClusteringsFrom();
 		List<Object> endComponents = sliceQuery.getClusteringsTo();
+		if (startComponents != null && endComponents != null) {
+			int startIndex = validator.getLastNonNullIndex(startComponents);
+			int endIndex = validator.getLastNonNullIndex(endComponents);
 
-		int startIndex = validator.getLastNonNullIndex(startComponents);
-		int endIndex = validator.getLastNonNullIndex(endComponents);
-
-		if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
-			lastStartComp = startComponents.get(startIndex);
-			lastEndComp = endComponents.get(endIndex);
-		} else if (startIndex < endIndex) {
-			lastStartComp = null;
-			lastEndComp = endComponents.get(endIndex);
-		} else if (startIndex > endIndex) {
-			lastStartComp = startComponents.get(startIndex);
-			lastEndComp = null;
-		} else {
-			lastStartComp = null;
-			lastEndComp = null;
+			if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
+				lastStartComp = startComponents.get(startIndex);
+				lastEndComp = endComponents.get(endIndex);
+			} else if (startIndex < endIndex) {
+				lastStartComp = null;
+				lastEndComp = endComponents.get(endIndex);
+			} else if (startIndex > endIndex) {
+				lastStartComp = startComponents.get(startIndex);
+				lastEndComp = null;
+			} else {
+				lastStartComp = null;
+				lastEndComp = null;
+			}
 		}
-
 		return Pair.create(lastStartComp, lastEndComp);
 	}
 
