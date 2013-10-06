@@ -76,6 +76,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 # Changes log
 * **2.0.7**:
+    * **BREAKING CHANGE** Rename all xxEntityManagerxx to xxPersistenceManagerxx
     * Fixes #30 Create partition row key
     * **BREAKING CHANGE** Remove join feature. Is usage is not relevant enough in real use-cases
     * Fixes #29 [All] Separate Achilles annotations and custom types in a dedicated **achilles-model** Maven module
