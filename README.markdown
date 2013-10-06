@@ -10,13 +10,12 @@
  - Dirty check for simple and collection/map type properties
  - Lazy loading
  - Collections and map support
- - Support for clustered entities in Thrift & CQL
- - Join columns with cascading support
+ - Support for clustered entities in Thrift & CQL3
  - Support for counters
  - Advanced queries (slice, native or typed) in CQL3
  - Support for counters
  - Support for runtime setting of consistency level, ttl and timestamp
- - Batch mode for atomic commits soon (atomicity only available for **CQL** impl)
+ - Batch mode for atomic commits soon (atomicity only available for **CQL3** impl)
 
 # Installation #
 
@@ -27,7 +26,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.6</version>
+		<version>2.0.7</version>
 	</dependency>  
  
   For **Thrift** version:
@@ -35,7 +34,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.6</version>
+		<version>2.0.7</version>
 	</dependency> 
 
  
@@ -76,7 +75,16 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 # Changes log
-
+* **2.0.7**:
+    * Fixes #30 Create partition row key
+    * **BREAKING CHANGE** Remove join feature. Is usage is not relevant enough in real use-cases
+    * Fixes #29 [All] Separate Achilles annotations and custom types in a dedicated **achilles-model** Maven module
+    * Allow injection of **CQL3** cluster and session object into `CQLEntityManagerFactory`
+    * Fixes #27 [CQL] Cannot map compound primary key from CQL resulset back to entity for typed queries
+    * Fixes #25 [CQL] Introduce new @TimeUUID annotation to translate into timeuuid in Cassandra enhancement
+    * Fix #26 Lift the constraint on mandatory "entityPackages" parameters and mandatory entity class to bootstrap Achilles in **CQL3**
+    * Fixes #13 Redesign collections & map impl to match the one used in CQL3
+    * Add Eclipse cleanUp, codeTemplates and formatter for contributors
 * **2.0.6**:
     * Add cleaning of embedded Cassandra data files before launching the server in JUnit rule
     * Upgrade to Hector 1.1-4 for Achilles Thrift
