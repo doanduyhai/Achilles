@@ -113,21 +113,25 @@
 			<version>${cassandra.version}</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>guava</artifactId>
 					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
 				</exclusion>
 				<exclusion>
-					<artifactId>slf4j-api</artifactId>
 					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
 					<artifactId>jackson-core-asl</artifactId>
-					<groupId>org.codehaus.jackson</groupId>
 				</exclusion>
 				<exclusion>
-					<artifactId>jackson-mapper-asl</artifactId>
 					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-mapper-asl</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>				
 			</exclusions>
 		</dependency>
 
@@ -136,6 +140,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Utils -->
 		<dependency>
