@@ -16,7 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -36,8 +37,7 @@ import com.datastax.driver.core.Session;
 public class ClusteredEntityWithCounterIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			"clustered_with_counter_value");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -125,8 +125,8 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("UPDATE clustered_with_counter_value SET counter = counter + " + incr + " WHERE id="
-				+ partitionKey + " AND name='name'");
+		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
+				+ " AND name='name'");
 
 		// Wait for the counter to be updated
 		Thread.sleep(1000);
@@ -147,8 +147,8 @@ public class ClusteredEntityWithCounterIT {
 
 		insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
-				.toClusterings("name4").get();
+		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey)
+				.fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
 

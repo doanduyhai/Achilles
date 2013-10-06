@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.*;
 import info.archinnov.achilles.annotations.Order;
 
 import javax.persistence.Column;
@@ -24,8 +25,10 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "clustered_with_object_value")
+@Table(name = TABLE_NAME)
 public class ClusteredEntityWithObjectValue {
+
+	public static final String TABLE_NAME = "clustered_with_object_value";
 
 	@EmbeddedId
 	private ClusteredKey id;

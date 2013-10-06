@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.*;
 import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
@@ -48,14 +49,12 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			ClusteredEntityWithCompositePartitionKey.class.getName());
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName(ClusteredEntityWithCompositePartitionKey.class.getName()),
-			Composite.class, String.class);
+			normalizerAndValidateColumnFamilyName(TABLE_NAME), Composite.class, String.class);
 
 	private ClusteredEntityWithCompositePartitionKey entity;
 
@@ -274,8 +273,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long id = RandomUtils.nextLong();
-		ClusteredEntityWithCompositePartitionKey entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
-				.partitionKey(id, "type").getFirstOccurence();
+		ClusteredEntityWithCompositePartitionKey entity = manager
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type")
+				.getFirstOccurence();
 
 		assertThat(entity).isNull();
 
@@ -300,8 +300,8 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	public void should_query_with_getLast() throws Exception {
 		long id = RandomUtils.nextLong();
 
-		ClusteredEntityWithCompositePartitionKey entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
-				.partitionKey(id, "type").getLastOccurence();
+		ClusteredEntityWithCompositePartitionKey entity = manager
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").getLastOccurence();
 
 		assertThat(entity).isNull();
 
@@ -478,7 +478,8 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		long id = RandomUtils.nextLong();
 		insertValues(id, 5);
 
-		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").removeFirstOccurence();
+		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type")
+				.removeFirstOccurence();
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").get(100);
@@ -513,7 +514,8 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		long id = RandomUtils.nextLong();
 		insertValues(id, 5);
 
-		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").removeLastOccurence();
+		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type")
+				.removeLastOccurence();
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").get(100);

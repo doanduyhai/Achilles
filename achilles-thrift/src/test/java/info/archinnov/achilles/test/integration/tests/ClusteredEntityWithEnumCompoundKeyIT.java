@@ -16,8 +16,9 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -38,13 +39,12 @@ import com.google.common.base.Optional;
 public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			"clustered_with_enum_compound");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName("clustered_with_enum_compound"), Long.class, String.class);
+			normalizerAndValidateColumnFamilyName(TABLE_NAME), Long.class, String.class);
 
 	private ClusteredEntityWithEnumCompoundKey entity;
 

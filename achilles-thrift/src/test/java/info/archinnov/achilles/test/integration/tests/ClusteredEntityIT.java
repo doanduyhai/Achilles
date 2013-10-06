@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
 import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
@@ -49,12 +50,12 @@ public class ClusteredEntityIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "clustered");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName("clustered"), Long.class, String.class);
+			normalizerAndValidateColumnFamilyName(TABLE_NAME), Long.class, String.class);
 
 	private ClusteredEntity entity;
 
@@ -303,7 +304,8 @@ public class ClusteredEntityIT {
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirstOccurence();
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getFirstOccurence();
 
 		assertThat(entity).isNull();
 
@@ -313,7 +315,8 @@ public class ClusteredEntityIT {
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirst(3);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getFirst(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 1);
@@ -335,7 +338,8 @@ public class ClusteredEntityIT {
 	public void should_query_with_getLast() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLastOccurence();
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getLastOccurence();
 
 		assertThat(entity).isNull();
 
@@ -345,7 +349,8 @@ public class ClusteredEntityIT {
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLast(3);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getLast(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 5);
@@ -372,7 +377,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).iterator();
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntity next = iter.next();
@@ -417,7 +423,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 1);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).iterator();
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.iterator();
 
 		iter.hasNext();
 		ClusteredEntity clusteredEntity = iter.next();
@@ -465,8 +472,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2, "name2").toClusterings(4)
-				.remove();
+		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2, "name2")
+				.toClusterings(4).remove();
 
 		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
 
@@ -481,8 +488,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(5).toClusterings(1, "name2")
-				.bounding(EXCLUSIVE_BOUNDS).ordering(DESCENDING).limit(2).remove();
+		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(5)
+				.toClusterings(1, "name2").bounding(EXCLUSIVE_BOUNDS).ordering(DESCENDING).limit(2).remove();
 
 		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
 

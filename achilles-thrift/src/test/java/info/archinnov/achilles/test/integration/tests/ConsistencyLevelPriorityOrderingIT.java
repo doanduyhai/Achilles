@@ -16,8 +16,9 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftBatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
@@ -41,7 +42,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "clustered");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 

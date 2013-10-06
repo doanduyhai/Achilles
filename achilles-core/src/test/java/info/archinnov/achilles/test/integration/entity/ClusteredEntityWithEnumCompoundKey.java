@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.*;
 import info.archinnov.achilles.annotations.Order;
 
 import javax.persistence.Column;
@@ -24,8 +25,11 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "clustered_with_enum_compound")
+@Table(name = TABLE_NAME)
 public class ClusteredEntityWithEnumCompoundKey {
+
+	public static final String TABLE_NAME = "clustered_with_enum_compound";
+
 	@EmbeddedId
 	private ClusteredKey id;
 

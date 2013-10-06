@@ -16,8 +16,9 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.context.CQLBatchingFlushContext;
 import info.archinnov.achilles.entity.manager.CQLBatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
@@ -49,7 +50,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 

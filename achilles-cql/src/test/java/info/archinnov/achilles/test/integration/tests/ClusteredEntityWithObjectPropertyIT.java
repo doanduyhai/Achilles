@@ -16,7 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -37,8 +38,7 @@ import com.datastax.driver.core.Session;
 public class ClusteredEntityWithObjectPropertyIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			"clustered_with_object_value");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -122,8 +122,8 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("UPDATE clustered_with_object_value SET value='" + mapper.writeValueAsString(newHolder)
-				+ "' where id=" + partitionKey + " and name='name'");
+		session.execute("UPDATE " + TABLE_NAME + " SET value='" + mapper.writeValueAsString(newHolder) + "' where id="
+				+ partitionKey + " and name='name'");
 		manager.refresh(entity);
 
 		assertThat(entity.getValue()).isEqualTo(newHolder);

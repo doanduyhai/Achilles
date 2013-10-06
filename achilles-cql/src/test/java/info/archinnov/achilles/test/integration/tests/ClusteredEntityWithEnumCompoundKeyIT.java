@@ -16,7 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -33,8 +34,7 @@ import com.datastax.driver.core.Session;
 public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			"clustered_with_enum_compound");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -114,7 +114,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("UPDATE clustered_with_enum_compound set value='new_clustered_value' where id=" + partitionKey
+		session.execute("UPDATE " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and type = 'FILE'");
 
 		manager.refresh(entity);

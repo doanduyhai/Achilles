@@ -16,10 +16,11 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
+import static info.archinnov.achilles.type.BoundingMode.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.OrderingMode.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
@@ -44,7 +45,7 @@ public class ClusteredEntityIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -166,8 +167,8 @@ public class ClusteredEntityIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("update clustered set value='new_clustered_value' where id=" + partitionKey + " and count="
-				+ count + " and name='" + name + "'");
+		session.execute("update " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
+				+ " and count=" + count + " and name='" + name + "'");
 
 		manager.refresh(entity);
 
@@ -290,7 +291,8 @@ public class ClusteredEntityIT {
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirstOccurence();
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getFirstOccurence();
 
 		assertThat(entity).isNull();
 
@@ -304,7 +306,8 @@ public class ClusteredEntityIT {
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirst(3);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getFirst(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 1);
@@ -327,7 +330,8 @@ public class ClusteredEntityIT {
 	public void should_query_with_getLast() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLastOccurence();
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getLastOccurence();
 
 		assertThat(entity).isNull();
 
@@ -337,7 +341,8 @@ public class ClusteredEntityIT {
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLast(3);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.getLast(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo(clusteredValuePrefix + 5);
@@ -364,7 +369,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).iterator();
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntity next = iter.next();
@@ -409,7 +415,8 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 1, 1);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).iterator();
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+				.iterator();
 
 		iter.hasNext();
 		ClusteredEntity clusteredEntity = iter.next();
@@ -459,7 +466,8 @@ public class ClusteredEntityIT {
 		insertValues(partitionKey, 2, 3);
 		insertValues(partitionKey, 3, 1);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2).toClusterings(2).remove();
+		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2).toClusterings(2)
+				.remove();
 
 		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
 
@@ -482,8 +490,8 @@ public class ClusteredEntityIT {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("CQL does not support slice delete with varying compound components");
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(1).toClusterings(1, "name2")
-				.ordering(DESCENDING).limit(2).remove();
+		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(1)
+				.toClusterings(1, "name2").ordering(DESCENDING).limit(2).remove();
 
 	}
 

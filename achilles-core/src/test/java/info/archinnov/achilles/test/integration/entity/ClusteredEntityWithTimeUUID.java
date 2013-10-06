@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID.*;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.TimeUUID;
 
@@ -27,8 +28,10 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "clustered_with_time_uuid")
+@Table(name = TABLE_NAME)
 public class ClusteredEntityWithTimeUUID {
+
+	public static final String TABLE_NAME = "clustered_with_time_uuid";
 
 	@EmbeddedId
 	private ClusteredKey id;

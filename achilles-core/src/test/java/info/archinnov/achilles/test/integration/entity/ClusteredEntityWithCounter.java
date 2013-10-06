@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.*;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 
@@ -25,8 +26,10 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "clustered_with_counter_value")
+@Table(name = TABLE_NAME)
 public class ClusteredEntityWithCounter {
+
+	public static final String TABLE_NAME = "clustered_with_counter_value";
 
 	@EmbeddedId
 	private ClusteredKey id;

@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.*;
 import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
@@ -42,8 +43,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			ClusteredEntityWithCompositePartitionKey.class.getSimpleName());
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -147,8 +147,8 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("UPDATE ClusteredEntityWithCompositePartitionKey SET value='new_clustered_value' WHERE id="
-				+ id + " AND type='type' AND indexes=11");
+		session.execute("UPDATE " + TABLE_NAME + " SET value='new_clustered_value' WHERE id=" + id
+				+ " AND type='type' AND indexes=11");
 
 		manager.refresh(entity);
 
@@ -256,8 +256,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long id = RandomUtils.nextLong();
-		ClusteredEntityWithCompositePartitionKey entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
-				.partitionKey(id, "type").getFirstOccurence();
+		ClusteredEntityWithCompositePartitionKey entity = manager
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type")
+				.getFirstOccurence();
 
 		assertThat(entity).isNull();
 
@@ -282,8 +283,8 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	public void should_query_with_getLast() throws Exception {
 		long id = RandomUtils.nextLong();
 
-		ClusteredEntityWithCompositePartitionKey entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
-				.partitionKey(id, "type").getLastOccurence();
+		ClusteredEntityWithCompositePartitionKey entity = manager
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionKey(id, "type").getLastOccurence();
 
 		assertThat(entity).isNull();
 

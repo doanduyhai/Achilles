@@ -17,15 +17,15 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftBatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -36,6 +36,7 @@ import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,7 +51,8 @@ public class ConsistencyLevelIT {
 
 	@Rule
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			"CompleteBean", "Tweet", "consistency_test1", "consistency_test2");
+			"CompleteBean", "Tweet", EntityWithLocalQuorumConsistency.TABLE_NAME,
+			EntityWithWriteOneAndReadLocalQuorumConsistency.TABLE_NAME);
 
 	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 

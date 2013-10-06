@@ -16,7 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.test.integration.entity.EntityWithLocalQuorumConsistency.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import info.archinnov.achilles.annotations.Consistency;
 
 import javax.persistence.Column;
@@ -26,8 +27,10 @@ import javax.persistence.Table;
 
 @Entity
 @Consistency(read = LOCAL_QUORUM, write = LOCAL_QUORUM)
-@Table(name = "consistency_test1")
+@Table(name = TABLE_NAME)
 public class EntityWithLocalQuorumConsistency {
+
+	public static final String TABLE_NAME = "consistency_test1";
 
 	@Id
 	private Long id;

@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
@@ -47,8 +48,9 @@ import org.junit.Test;
 public class QueryIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
-			"clustered", AchillesCounter.CQL_COUNTER_TABLE);
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+			CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
+			AchillesCounter.CQL_COUNTER_TABLE);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -129,7 +131,8 @@ public class QueryIT {
 		manager.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
 		Map<String, Object> result = manager.nativeQuery(
-				"SELECT now(),dateOf(date),unixTimestampOf(date) FROM clustered_with_time_uuid WHERE id=" + id).first();
+				"SELECT now(),dateOf(date),unixTimestampOf(date) FROM " + ClusteredEntityWithTimeUUID.TABLE_NAME
+						+ " WHERE id=" + id).first();
 		assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
 		assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
 		assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
@@ -487,7 +490,7 @@ public class QueryIT {
 		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
 		manager.persist(entity);
 
-		String queryString = "SELECT * FROM clustered LIMIT 3";
+		String queryString = "SELECT * FROM " + TABLE_NAME + " LIMIT 3";
 		ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
 
 		assertThat(actual).isNotNull();
@@ -533,7 +536,7 @@ public class QueryIT {
 		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
 		manager.persist(entity);
 
-		String queryString = "SELECT id,count,name,value FROM clustered LIMIT 3";
+		String queryString = "SELECT id,count,name,value FROM " + TABLE_NAME + " LIMIT 3";
 		ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
 
 		assertThat(actual).isNotNull();

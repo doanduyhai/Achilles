@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -44,7 +44,7 @@ public class ConsistencyLevelIT {
 
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
-			"consistency_test1", "consistency_test2");
+			EntityWithLocalQuorumConsistency.TABLE_NAME, EntityWithWriteOneAndReadLocalQuorumConsistency.TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 

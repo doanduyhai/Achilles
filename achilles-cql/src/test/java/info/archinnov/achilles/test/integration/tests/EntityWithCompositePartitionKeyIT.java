@@ -1,5 +1,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
@@ -18,8 +19,7 @@ import com.datastax.driver.core.Session;
 public class EntityWithCompositePartitionKeyIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			EntityWithCompositePartitionKey.class.getSimpleName());
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -32,8 +32,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		manager.persist(entity);
 
-		Row row = session.execute("SELECT * FROM EntityWithCompositePartitionKey WHERE id=" + id + " AND type='type'")
-				.one();
+		Row row = session.execute("SELECT * FROM " + TABLE_NAME + " WHERE id=" + id + " AND type='type'").one();
 
 		assertThat(row).isNotNull();
 		assertThat(row.getLong("id")).isEqualTo(id);
@@ -126,8 +125,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		entity = manager.merge(entity);
 
-		session.execute("UPDATE EntityWithCompositePartitionKey SET value='new_value' WHERE id=" + id
-				+ " AND type='type'");
+		session.execute("UPDATE " + TABLE_NAME + " SET value='new_value' WHERE id=" + id + " AND type='type'");
 
 		manager.refresh(entity);
 

@@ -3,6 +3,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
@@ -28,13 +29,12 @@ import com.google.common.base.Optional;
 public class EntityWithCompositePartitionKeyIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			"EntityWithCompositePartitionKey");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
-	private ThriftGenericEntityDao dao = resource.getEntityDao(
-			normalizerAndValidateColumnFamilyName(EntityWithCompositePartitionKey.class.getName()), Composite.class);
+	private ThriftGenericEntityDao dao = resource.getEntityDao(normalizerAndValidateColumnFamilyName(TABLE_NAME),
+			Composite.class);
 
 	private byte[] START_EAGER = new byte[] { 0 };
 	private byte[] END_EAGER = new byte[] { 20 };
@@ -97,7 +97,8 @@ public class EntityWithCompositePartitionKeyIT {
 
 		manager.merge(entity);
 
-		EntityWithCompositePartitionKey found = manager.getReference(EntityWithCompositePartitionKey.class, compositeRowKey);
+		EntityWithCompositePartitionKey found = manager.getReference(EntityWithCompositePartitionKey.class,
+				compositeRowKey);
 
 		assertThat(found.getId()).isEqualTo(compositeRowKey);
 		assertThat(found.getValue()).isEqualTo("value");

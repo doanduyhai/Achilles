@@ -16,9 +16,10 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
-import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
+import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.*;
+import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -41,13 +42,12 @@ import org.junit.Test;
 public class ClusteredEntityWithCounterIT {
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			"clustered_with_counter_value");
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, TABLE_NAME);
 
 	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericWideRowDao dao = resource.getColumnFamilyDao(
-			normalizerAndValidateColumnFamilyName("clustered_with_counter_value"), Long.class, Long.class);
+			normalizerAndValidateColumnFamilyName(TABLE_NAME), Long.class, Long.class);
 
 	private ClusteredEntityWithCounter entity;
 
@@ -157,8 +157,8 @@ public class ClusteredEntityWithCounterIT {
 
 		insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
-				.toClusterings("name4").get();
+		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey)
+				.fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
 
