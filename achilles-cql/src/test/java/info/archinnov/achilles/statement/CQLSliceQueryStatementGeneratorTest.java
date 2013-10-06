@@ -22,8 +22,12 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,251 +62,200 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 	// ///////////////////////////////////// ASCENDING
 	@Test
-	public void should_generate_where_clause_when_same_number_of_components_ascending()
-			throws Exception {
+	public void should_generate_where_clause_when_same_number_of_components_ascending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1 AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1 AND c<=2;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1 AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1 AND c<2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1 AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1 AND c<2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1 AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1 AND c<=2;");
 
 	}
 
 	@Test
-	public void should_generate_where_clause_when_more_components_for_start_ascending()
-			throws Exception {
+	public void should_generate_where_clause_when_more_components_for_start_ascending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1;");
 
 	}
 
 	@Test
-	public void should_generate_where_clause_when_more_components_for_end_ascending()
-			throws Exception {
+	public void should_generate_where_clause_when_more_components_for_end_ascending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(null);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
 	}
 
 	// ///////////////////////////////////// DESCENDING
 	@Test
-	public void should_generate_where_clause_when_same_number_of_components_descending()
-			throws Exception {
+	public void should_generate_where_clause_when_same_number_of_components_descending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2 AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2 AND c>=1;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2 AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2 AND c>1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2 AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2 AND c>1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2 AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2 AND c>=1;");
 
 	}
 
 	@Test
-	public void should_generate_where_clause_when_more_components_for_start_descending()
-			throws Exception {
+	public void should_generate_where_clause_when_more_components_for_start_descending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<=2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c<2;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<2;");
 
 	}
 
 	@Test
-	public void should_generate_where_clause_when_more_components_for_end_descending()
-			throws Exception {
+	public void should_generate_where_clause_when_more_components_for_end_descending() throws Exception {
 		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(null);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
 		when(sliceQuery.getBounding()).thenReturn(EXCLUSIVE_BOUNDS);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_START_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>1;");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_END_BOUND_ONLY);
-		statement = generator.generateWhereClauseForSelectSliceQuery(
-				sliceQuery, buildFakeSelect());
+		statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
-				"SELECT test FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author' AND c>=1;");
+				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
 	}
 
 	@Test
 	public void should_generate_where_clause() throws Exception {
-		when(sliceQuery.getFixedComponents()).thenReturn(
-				Arrays.<Object> asList(11L, uuid1, "author"));
+		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 
-		Statement statement = generator.generateWhereClauseForDeleteSliceQuery(
-				sliceQuery, buildFakeDelete());
+		Statement statement = generator.generateWhereClauseForDeleteSliceQuery(sliceQuery, buildFakeDelete());
 
 		assertThat(statement.getQueryString()).isEqualTo(
-				"DELETE  FROM table WHERE id=11 AND a=" + uuid1
-						+ " AND b='author';");
+				"DELETE  FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author';");
+	}
+
+	@Test
+	public void should_generate_where_clause_with_index_conditions() throws Exception {
+		Collection<IndexCondition> indexConditions = new LinkedList<IndexCondition>();
+		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
+		when(sliceQuery.getIndexConditions()).thenReturn(indexConditions);
+		when(sliceQuery.hasIndexConditions()).thenReturn(true);
+
+		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+		assertThat(statement.getQueryString()).isEqualTo("SELECT test FROM table WHERE test='value';");
+
 	}
 
 	private Select buildFakeSelect() {

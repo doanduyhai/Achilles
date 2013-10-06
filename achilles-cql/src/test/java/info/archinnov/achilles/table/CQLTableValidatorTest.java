@@ -36,6 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.ColumnMetadata.IndexMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -70,12 +71,9 @@ public class CQLTableValidatorTest {
 
 	@Test
 	public void should_validate_id_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -84,23 +82,19 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getName()).thenReturn("table");
 		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("name"))
-				.thenReturn(columnMetadataForField);
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("name")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
-
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
 	public void should_validate_embedded_id_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compNames("userId", "name")
-				.compClasses(Long.class, String.class).type(EMBEDDED_ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).compNames("userId", "name")
+				.compClasses(Long.class, String.class).type(EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("string")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -115,23 +109,18 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getColumn("name")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.text());
 
-		when(tableMetadata.getColumn("string")).thenReturn(
-				columnMetadataForField);
+		when(tableMetadata.getColumn("string")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
-
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
-	public void should_validate_embedded_id_with_time_uuid_for_entity()
-			throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.valueClass(CompoundKey.class).compNames("userId", "date")
-				.compClasses(Long.class, UUID.class).type(EMBEDDED_ID)
-				.compTimeUUID("date").build();
+	public void should_validate_embedded_id_with_time_uuid_for_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).compNames("userId", "date")
+				.compClasses(Long.class, UUID.class).type(EMBEDDED_ID).compTimeUUID("date").build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("string")
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -146,22 +135,18 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getColumn("date")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.timeuuid());
 
-		when(tableMetadata.getColumn("string")).thenReturn(
-				columnMetadataForField);
+		when(tableMetadata.getColumn("string")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
-
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
 	public void should_validate_simple_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+				.build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
@@ -169,28 +154,24 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getName()).thenReturn("table");
 		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("name"))
-				.thenReturn(columnMetadataForField);
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("name")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
-
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 
-		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class)
-				.field("name").type(LAZY_SIMPLE).build();
+		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(LAZY_SIMPLE).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("name", pm));
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
-	public void should_validate_list_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+	public void should_validate_simple_indexed_field_for_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("friends")
-				.type(LIST).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+				.build();
+		pm.setIndexed(true);
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
@@ -198,29 +179,49 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getName()).thenReturn("table");
 		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("name")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
-		when(tableMetadata.getColumn("friends")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.list(DataType.text()));
+		IndexMetadata indexMetadata = mock(IndexMetadata.class);
+		when(indexMetadata.getName()).thenReturn("table(name)");
+		when(indexMetadata.getIndexedColumn()).thenReturn(columnMetadataForField);
 
+		when(columnMetadataForField.getIndex()).thenReturn(indexMetadata);
 		validator.validateForEntity(entityMeta, tableMetadata);
 
-		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class)
-				.field("friends").type(LAZY_LIST).build();
+	}
+
+	@Test
+	public void should_validate_list_field_for_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").type(LIST)
+				.build();
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+
+		when(tableMetadata.getName()).thenReturn("table");
+		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
+		when(columnMetadata.getType()).thenReturn(DataType.bigint());
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("friends")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.list(DataType.text()));
+		when(columnMetadataForField.getIndex()).thenReturn(null);
+		validator.validateForEntity(entityMeta, tableMetadata);
+
+		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").type(LAZY_LIST).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("friends", pm));
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
 	public void should_validate_set_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Void.class, String.class).field("followers")
-				.type(SET).build();
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers").type(SET)
+				.build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
@@ -228,23 +229,18 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getName()).thenReturn("table");
 		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("followers")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.set(DataType.text()));
-
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("followers")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.set(DataType.text()));
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
 
 	@Test
 	public void should_validate_map_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(ID)
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder
-				.completeBean(Integer.class, String.class).field("preferences")
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
 				.type(MAP).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -253,16 +249,14 @@ public class CQLTableValidatorTest {
 		when(tableMetadata.getName()).thenReturn("table");
 		when(tableMetadata.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
-		when(tableMetadata.getColumn("preferences")).thenReturn(
-				columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(
-				DataType.map(DataType.cint(), DataType.text()));
-
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetadata.getColumn("preferences")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.map(DataType.cint(), DataType.text()));
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetadata);
 
-		pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
-				.field("preferences").type(LAZY_MAP).build();
+		pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences").type(LAZY_MAP)
+				.build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
 		validator.validateForEntity(entityMeta, tableMetadata);
 	}
@@ -270,26 +264,20 @@ public class CQLTableValidatorTest {
 	@Test
 	public void should_validate_achilles_counter() throws Exception {
 		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
-		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(
-				keyspaceMeta);
-		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE))
-				.thenReturn(tableMetadata);
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetadata);
 
 		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
-		when(tableMetadata.getColumn(CQL_COUNTER_FQCN)).thenReturn(
-				fqcnColumnMeta);
+		when(tableMetadata.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
 
 		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
-		when(tableMetadata.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(
-				pkColumnMeta);
+		when(tableMetadata.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
 
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
-		when(tableMetadata.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(
-				propertyColumnMeta);
+		when(tableMetadata.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
 
 		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);
-		when(tableMetadata.getColumn(CQL_COUNTER_VALUE)).thenReturn(
-				counterColumnMeta);
+		when(tableMetadata.getColumn(CQL_COUNTER_VALUE)).thenReturn(counterColumnMeta);
 
 		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
 		when(pkColumnMeta.getType()).thenReturn(DataType.text());

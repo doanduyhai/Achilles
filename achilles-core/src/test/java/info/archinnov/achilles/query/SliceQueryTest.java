@@ -23,6 +23,8 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.Arrays;
@@ -48,19 +50,15 @@ public class SliceQueryTest {
 
 		List<Object> fromComponents = Arrays.<Object> asList(11L, "a");
 		List<Object> toComponents = Arrays.<Object> asList(11L, "b");
-		when(idMeta.encodeToComponents(fromComponents)).thenReturn(
-				fromComponents);
+		when(idMeta.encodeToComponents(fromComponents)).thenReturn(fromComponents);
 		when(idMeta.encodeToComponents(toComponents)).thenReturn(toComponents);
-
-		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(
-				ClusteredEntity.class, meta, 11L, new Object[] { "a" },
-				new Object[] { "b" }, OrderingMode.ASCENDING,
-				BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, 11L,
+				new Object[] { "a" }, new Object[] { "b" }, OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS,
+				null, 100, 99, false, false, null);
 
 		assertThat(sliceQuery.getEntityClass()).isSameAs(ClusteredEntity.class);
 		assertThat(sliceQuery.getBatchSize()).isEqualTo(99);
-		assertThat(sliceQuery.getBounding()).isEqualTo(
-				BoundingMode.INCLUSIVE_BOUNDS);
+		assertThat(sliceQuery.getBounding()).isEqualTo(BoundingMode.INCLUSIVE_BOUNDS);
 		assertThat(sliceQuery.getClusteringsFrom()).containsExactly(11L, "a");
 		assertThat(sliceQuery.getClusteringsTo()).containsExactly(11L, "b");
 		assertThat(sliceQuery.getConsistencyLevel()).isNull();
@@ -72,15 +70,35 @@ public class SliceQueryTest {
 	}
 
 	@Test
+	public void should_build_new_slice_query_with_index_condition() throws Exception {
+		PropertyMeta idMeta = mock(PropertyMeta.class);
+
+		EntityMeta meta = new EntityMeta();
+		meta.setIdMeta(idMeta);
+		IndexCondition indexCondition = new IndexCondition("test", IndexEquality.EQUAL, "value");
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, null,
+				null, null, null, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false, false,
+				Arrays.asList(indexCondition));
+
+		assertThat(sliceQuery.getEntityClass()).isSameAs(ClusteredEntity.class);
+		assertThat(sliceQuery.getBatchSize()).isEqualTo(99);
+		assertThat(sliceQuery.getConsistencyLevel()).isNull();
+		assertThat(sliceQuery.getLimit()).isEqualTo(100);
+		assertThat(sliceQuery.getMeta()).isSameAs(meta);
+		assertThat(sliceQuery.getOrdering()).isNull();
+		assertThat(sliceQuery.getPartitionKey()).isNull();
+		assertThat(sliceQuery.isLimitSet()).isFalse();
+		assertThat(sliceQuery.getIndexConditions()).contains(indexCondition);
+	}
+
+	@Test
 	public void should_return_true_when_no_component() throws Exception {
 		PropertyMeta idMeta = mock(PropertyMeta.class);
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
-		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(
-				ClusteredEntity.class, meta, 11L, null, null,
-				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null,
-				100, 99, false);
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, 11L,
+				null, null, OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false, false, null);
 
 		assertThat(sliceQuery.hasNoComponent()).isTrue();
 	}

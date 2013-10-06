@@ -17,6 +17,7 @@
 package info.archinnov.achilles.helper;
 
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -37,8 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertyHelper {
-	private static final Logger log = LoggerFactory
-			.getLogger(PropertyHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
 	protected EntityIntrospector entityIntrospector = new EntityIntrospector();
@@ -90,11 +90,9 @@ public class PropertyHelper {
 	public PropertyHelper() {
 	}
 
-	public <T> Class<T> inferValueClassForListOrSet(Type genericType,
-			Class<?> entityClass) {
-		log.debug(
-				"Infer parameterized value class for collection type {} of entity class {} ",
-				genericType.toString(), entityClass.getCanonicalName());
+	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass) {
+		log.debug("Infer parameterized value class for collection type {} of entity class {} ", genericType.toString(),
+				entityClass.getCanonicalName());
 
 		Class<T> valueClass;
 		if (genericType instanceof ParameterizedType) {
@@ -104,16 +102,12 @@ public class PropertyHelper {
 				Type type = actualTypeArguments[actualTypeArguments.length - 1];
 				valueClass = getClassFromType(type);
 			} else {
-				throw new AchillesBeanMappingException("The type '"
-						+ genericType.getClass().getCanonicalName()
-						+ "' of the entity '" + entityClass.getCanonicalName()
-						+ "' should be parameterized");
+				throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+						+ "' of the entity '" + entityClass.getCanonicalName() + "' should be parameterized");
 			}
 		} else {
-			throw new AchillesBeanMappingException("The type '"
-					+ genericType.getClass().getCanonicalName()
-					+ "' of the entity '" + entityClass.getCanonicalName()
-					+ "' should be parameterized");
+			throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+					+ "' of the entity '" + entityClass.getCanonicalName() + "' should be parameterized");
 		}
 
 		log.trace("Inferred value class : {}", valueClass.getCanonicalName());
@@ -122,8 +116,8 @@ public class PropertyHelper {
 	}
 
 	public boolean isLazy(Field field) {
-		log.debug("Check @Lazy annotation on field {} of class {}",
-				field.getName(), field.getDeclaringClass().getCanonicalName());
+		log.debug("Check @Lazy annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
 
 		boolean lazy = false;
 		if (field.getAnnotation(Lazy.class) != null) {
@@ -132,9 +126,20 @@ public class PropertyHelper {
 		return lazy;
 	}
 
+	public boolean isIndexed(Field field) {
+		log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
+
+		boolean indexed = false;
+		if (field.getAnnotation(Index.class) != null) {
+			indexed = true;
+		}
+		return indexed;
+	}
+
 	public boolean hasConsistencyAnnotation(Field field) {
-		log.debug("Check @Consistency annotation on field {} of class {}",
-				field.getName(), field.getDeclaringClass().getCanonicalName());
+		log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
 
 		boolean consistency = false;
 		if (field.getAnnotation(Consistency.class) != null) {
@@ -147,25 +152,22 @@ public class PropertyHelper {
 		return allowedTypes.contains(valueClass);
 	}
 
-	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(
-			Field field, AchillesConsistencyLevelPolicy policy) {
-		log.debug("Find consistency configuration for field {} of class {}",
-				field.getName(), field.getDeclaringClass().getCanonicalName());
+	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
+			AchillesConsistencyLevelPolicy policy) {
+		log.debug("Find consistency configuration for field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
 
 		Consistency clevel = field.getAnnotation(Consistency.class);
 
-		ConsistencyLevel defaultGlobalRead = entityIntrospector
-				.getDefaultGlobalReadConsistency(policy);
-		ConsistencyLevel defaultGlobalWrite = entityIntrospector
-				.getDefaultGlobalWriteConsistency(policy);
+		ConsistencyLevel defaultGlobalRead = entityIntrospector.getDefaultGlobalReadConsistency(policy);
+		ConsistencyLevel defaultGlobalWrite = entityIntrospector.getDefaultGlobalWriteConsistency(policy);
 
 		if (clevel != null) {
 			defaultGlobalRead = clevel.read();
 			defaultGlobalWrite = clevel.write();
 		}
 
-		log.trace("Found consistency levels : {} / {}", defaultGlobalRead,
-				defaultGlobalWrite);
+		log.trace("Found consistency levels : {} / {}", defaultGlobalRead, defaultGlobalWrite);
 		return Pair.create(defaultGlobalRead, defaultGlobalWrite);
 	}
 
@@ -177,8 +179,7 @@ public class PropertyHelper {
 		} else if (type instanceof Class) {
 			return (Class<T>) type;
 		} else {
-			throw new IllegalArgumentException(
-					"Cannot determine java class of type '" + type + "'");
+			throw new IllegalArgumentException("Cannot determine java class of type '" + type + "'");
 		}
 	}
 }

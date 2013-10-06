@@ -38,8 +38,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 public class CQLTableCreator extends TableCreator {
-	private static final Logger log = LoggerFactory
-			.getLogger(CQLTableCreator.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLTableCreator.class);
 
 	private Session session;
 	private String keyspaceName;
@@ -57,49 +56,42 @@ public class CQLTableCreator extends TableCreator {
 	}
 
 	@Override
-	protected void validateOrCreateTableForEntity(EntityMeta entityMeta,
-			boolean forceColumnFamilyCreation) {
+	protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
 		String tableName = entityMeta.getTableName().toLowerCase();
 		if (tableMetas.containsKey(tableName)) {
 			validator.validateForEntity(entityMeta, tableMetas.get(tableName));
 		} else {
 			if (forceColumnFamilyCreation) {
-				log.debug("Force creation of table for entityMeta {}",
-						entityMeta.getClassName());
+				log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
 				createTableForEntity(entityMeta);
 			} else {
-				throw new AchillesInvalidTableException("The required table '"
-						+ tableName + "' does not exist for entity '"
-						+ entityMeta.getClassName() + "'");
+				throw new AchillesInvalidTableException("The required table '" + tableName
+						+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
 			}
 		}
 
 	}
 
 	@Override
-	protected void validateOrCreateTableForCounter(
-			boolean forceColumnFamilyCreation) {
+	protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
 		if (tableMetas.containsKey(CQL_COUNTER_TABLE)) {
 			validator.validateAchillesCounter();
 		} else {
 			if (forceColumnFamilyCreation) {
-				CQLTableBuilder builder = CQLTableBuilder
-						.createTable(CQL_COUNTER_TABLE);
+				CQLTableBuilder builder = CQLTableBuilder.createTable(CQL_COUNTER_TABLE);
 				builder.addColumn(CQL_COUNTER_FQCN, String.class);
 				builder.addColumn(CQL_COUNTER_PRIMARY_KEY, String.class);
 				builder.addColumn(CQL_COUNTER_PROPERTY_NAME, String.class);
 				builder.addColumn(CQL_COUNTER_VALUE, Counter.class);
-				builder.addPrimaryKeys(Arrays.asList(CQL_COUNTER_FQCN,
-						CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_PROPERTY_NAME));
+				builder.addPrimaryKeys(Arrays.asList(CQL_COUNTER_FQCN, CQL_COUNTER_PRIMARY_KEY,
+						CQL_COUNTER_PROPERTY_NAME));
 
-				builder.addComment("Create default Achilles counter table '"
-						+ CQL_COUNTER_TABLE + "'");
+				builder.addComment("Create default Achilles counter table '" + CQL_COUNTER_TABLE + "'");
 
 				session.execute(builder.generateDDLScript());
 			} else {
-				throw new AchillesInvalidTableException(
-						"The required generic table '" + CQL_COUNTER_TABLE
-								+ "' does not exist");
+				throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
+						+ "' does not exist");
 			}
 		}
 
@@ -126,6 +118,9 @@ public class CQLTableCreator extends TableCreator {
 			case SIMPLE:
 			case LAZY_SIMPLE:
 				builder.addColumn(propertyName, valueClass);
+				if (pm.isIndexed()) {
+					builder.addIndex(propertyName);
+				}
 				break;
 			case LIST:
 			case LAZY_LIST:
@@ -145,25 +140,27 @@ public class CQLTableCreator extends TableCreator {
 
 		}
 		buildPrimaryKeys(entityMeta.getIdMeta(), builder);
-		builder.addComment("Create table for entity '"
-				+ entityMeta.getClassName() + "'");
+		builder.addComment("Create table for entity '" + entityMeta.getClassName() + "'");
 		session.execute(builder.generateDDLScript());
+		if (builder.hasIndices()) {
+			for (String indexScript : builder.generateIndices()) {
+				session.execute(indexScript);
+			}
+		}
+
 	}
 
 	private void createTableForClusteredCounter(EntityMeta meta) {
 		PropertyMeta pm = meta.getFirstMeta();
 
-		log.debug("Creating table for counter property {} for entity {}",
-				pm.getPropertyName(), meta.getClassName());
+		log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
 
-		CQLTableBuilder builder = CQLTableBuilder.createCounterTable(meta
-				.getTableName());
+		CQLTableBuilder builder = CQLTableBuilder.createCounterTable(meta.getTableName());
 		PropertyMeta idMeta = meta.getIdMeta();
 		buildPrimaryKeys(idMeta, builder);
 		builder.addColumn(pm.getPropertyName(), pm.getValueClass());
 
-		builder.addComment("Create table for clustered counter entity '"
-				+ meta.getClassName() + "'");
+		builder.addComment("Create table for clustered counter entity '" + meta.getClassName() + "'");
 
 		session.execute(builder.generateDDLScript());
 
@@ -171,11 +168,9 @@ public class CQLTableCreator extends TableCreator {
 
 	private Map<String, TableMetadata> fetchTableMetaData() {
 		Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
-		KeyspaceMetadata keyspaceMeta = cluster.getMetadata().getKeyspace(
-				keyspaceName);
+		KeyspaceMetadata keyspaceMeta = cluster.getMetadata().getKeyspace(keyspaceName);
 
-		Validator.validateTableTrue(keyspaceMeta != null,
-				"Keyspace '%s' doest not exist or cannot be found",
+		Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
 				keyspaceName);
 
 		for (TableMetadata tableMeta : keyspaceMeta.getTables()) {

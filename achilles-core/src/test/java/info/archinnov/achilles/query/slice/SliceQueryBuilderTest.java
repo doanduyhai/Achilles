@@ -27,9 +27,13 @@ import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.CompoundKey;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -66,15 +70,12 @@ public class SliceQueryBuilderTest {
 		Method userIdGetter = CompoundKey.class.getDeclaredMethod("getUserId");
 		Method nameGetter = CompoundKey.class.getDeclaredMethod("getName");
 
-		idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class)
-				.compGetters(userIdGetter, nameGetter)
-				.compClasses(Long.class, String.class).transcoder(transcoder)
-				.build();
+		idMeta = PropertyMetaTestBuilder.valueClass(CompoundKey.class).compGetters(userIdGetter, nameGetter)
+				.compClasses(Long.class, String.class).transcoder(transcoder).build();
 
 		meta.setIdMeta(idMeta);
 
-		builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(
-				sliceQueryExecutor, compoundKeyValidator,
+		builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(sliceQueryExecutor, compoundKeyValidator,
 				ClusteredEntity.class, meta);
 		Whitebox.setInternalState(builder, "meta", meta);
 	}
@@ -89,15 +90,13 @@ public class SliceQueryBuilderTest {
 	}
 
 	@Test
-	public void should_set_from_embedded_id_and_create_builder()
-			throws Exception {
+	public void should_set_from_embedded_id_and_create_builder() throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(partitionKey, name);
 
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
-		when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(
-				components);
+		when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(components);
 
 		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceFromEmbeddedIdBuilder embeddedIdBuilder = builder
 				.fromEmbeddedId(compoundKey);
@@ -112,8 +111,7 @@ public class SliceQueryBuilderTest {
 		CompoundKey compoundKey = new CompoundKey(partitionKey, name);
 
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
-		when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(
-				components);
+		when(transcoder.encodeToComponents(idMeta, compoundKey)).thenReturn(components);
 
 		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
 				.toEmbeddedId(compoundKey);
@@ -121,4 +119,17 @@ public class SliceQueryBuilderTest {
 		assertThat(embeddedIdBuilder).isNotNull();
 
 	}
+
+	@Test
+	public void should_add_conditions_and_create_builder() throws Exception {
+		Collection<IndexCondition> indexConditions = new LinkedList<IndexCondition>();
+		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
+
+		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.DefaultQueryBuilder embeddedIdBuilder = builder
+				.conditions(indexConditions, false);
+
+		assertThat(embeddedIdBuilder).isNotNull();
+
+	}
+
 }

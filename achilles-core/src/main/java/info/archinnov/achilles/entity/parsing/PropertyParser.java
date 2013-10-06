@@ -48,8 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PropertyParser {
-	private static final Logger log = LoggerFactory
-			.getLogger(PropertyFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
 	private PropertyHelper propertyHelper = new PropertyHelper();
 	private CompoundKeyParser compoundKeyParser = new CompoundKeyParser();
@@ -58,16 +57,15 @@ public class PropertyParser {
 	private PropertyFilter filter = new PropertyFilter();
 
 	public PropertyMeta parse(PropertyParsingContext context) {
-		log.debug("Parsing property {} of entity class {}", context
-				.getCurrentPropertyName(), context.getCurrentEntityClass()
-				.getCanonicalName());
+		log.debug("Parsing property {} of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
 
 		Field field = context.getCurrentField();
 		inferPropertyName(context);
-		context.setCustomConsistencyLevels(propertyHelper
-				.hasConsistencyAnnotation(context.getCurrentField()));
+		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context.getCurrentField()));
 
 		validator.validateNoDuplicate(context);
+		validator.validateIndexIfSet(context);
 
 		Class<?> fieldType = field.getType();
 		PropertyMeta propertyMeta;
@@ -87,98 +85,72 @@ public class PropertyParser {
 			propertyMeta.setType(ID);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
+			propertyMeta.setIndexed(propertyHelper.isIndexed(field));
 		}
-		context.getPropertyMetas().put(context.getCurrentPropertyName(),
-				propertyMeta);
+		context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		return propertyMeta;
 	}
 
 	protected PropertyMeta parseEmbeddedId(PropertyParsingContext context) {
-		log.debug("Parsing property {} as embedded id of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+		log.debug("Parsing property {} as embedded id of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = EMBEDDED_ID;
 
-		EmbeddedIdProperties embeddedIdProperties = parseCompoundKey(field
-				.getType());
-		PropertyMeta propertyMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
-				.propertyName(context.getCurrentPropertyName())
-				.embeddedIdProperties(embeddedIdProperties)
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.accessors(accessors)
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.build(Void.class, field.getType());
+		EmbeddedIdProperties embeddedIdProperties = parseCompoundKey(field.getType());
+		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
+				.propertyName(context.getCurrentPropertyName()).embeddedIdProperties(embeddedIdProperties)
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
+				.consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
 
-		log.trace(
-				"Built embedded id property meta for property {} of entity class {} : {}",
-				propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), propertyMeta);
+		log.trace("Built embedded id property meta for property {} of entity class {} : {}",
+				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
 		return propertyMeta;
 	}
 
 	protected PropertyMeta parseSimpleProperty(PropertyParsingContext context) {
-		log.debug("Parsing property {} as simple property of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+		log.debug("Parsing property {} as simple property of entity class {}", context.getCurrentPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 		boolean timeUUID = isTimeUUID(context, field);
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
 
-		PropertyMeta propertyMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
+		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.accessors(accessors)
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.timeuuid(timeUUID).build(Void.class, field.getType());
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
+				.consistencyLevels(context.getCurrentConsistencyLevels()).timeuuid(timeUUID)
+				.build(Void.class, field.getType());
 
-		log.trace(
-				"Built simple property meta for property {} of entity class {} : {}",
-				propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), propertyMeta);
+		log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
 		return propertyMeta;
 	}
 
 	protected PropertyMeta parseCounterProperty(PropertyParsingContext context) {
-		log.debug("Parsing property {} as counter property of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+		log.debug("Parsing property {} as counter property of entity class {}", context.getCurrentPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 
 		PropertyType type = PropertyType.COUNTER;
 
-		CounterProperties counterProperties = new CounterProperties(context
-				.getCurrentEntityClass().getCanonicalName());
+		CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass().getCanonicalName());
 
-		PropertyMeta propertyMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
+		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.accessors(accessors).counterProperties(counterProperties)
-				.consistencyLevels(context.getCurrentConsistencyLevels())
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
+				.counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels())
 				.build(Void.class, field.getType());
 
 		context.hasSimpleCounterType();
@@ -187,54 +159,42 @@ public class PropertyParser {
 			parseSimpleCounterConsistencyLevel(context, propertyMeta);
 		}
 
-		log.trace(
-				"Built simple property meta for property {} of entity class {} : {}",
-				propertyMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), propertyMeta);
+		log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
 		return propertyMeta;
 	}
 
 	public <V> PropertyMeta parseListProperty(PropertyParsingContext context) {
 
-		log.debug("Parsing property {} as list property of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+		log.debug("Parsing property {} as list property of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
 		boolean timeUUID = isTimeUUID(context, field);
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
-		valueClass = propertyHelper.inferValueClassForListOrSet(genericType,
-				entityClass);
+		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
 
-		PropertyMeta listMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
+		PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).timeuuid(timeUUID)
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
 				.build(Void.class, valueClass);
 
-		log.trace(
-				"Built list property meta for property {} of entity class {} : {}",
-				listMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), listMeta);
+		log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName(), listMeta);
 
 		return listMeta;
 
 	}
 
 	public <V> PropertyMeta parseSetProperty(PropertyParsingContext context) {
-		log.debug("Parsing property {} as set property of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+		log.debug("Parsing property {} as set property of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
@@ -243,35 +203,25 @@ public class PropertyParser {
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
 
-		valueClass = propertyHelper.inferValueClassForListOrSet(genericType,
-				entityClass);
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
 
-		PropertyMeta setMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
+		PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).timeuuid(timeUUID)
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
 				.build(Void.class, valueClass);
 
-		log.trace(
-				"Built set property meta for property {} of  entity class {} : {}",
-				setMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), setMeta);
+		log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
+				context.getCurrentEntityClass().getCanonicalName(), setMeta);
 
 		return setMeta;
 	}
 
-	protected <K, V> PropertyMeta parseMapProperty(
-			PropertyParsingContext context) {
-		log.debug("Parsing property {} as map property of entity class {}",
-				context.getCurrentPropertyName(), context
-						.getCurrentEntityClass().getCanonicalName());
+	protected <K, V> PropertyMeta parseMapProperty(PropertyParsingContext context) {
+		log.debug("Parsing property {} as map property of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
@@ -283,39 +233,30 @@ public class PropertyParser {
 		Class<K> keyClass = types.left;
 		Class<V> valueClass = types.right;
 
-		Method[] accessors = entityIntrospector.findAccessors(entityClass,
-				field);
+		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
 
-		PropertyMeta mapMeta = factory()
-				.objectMapper(context.getCurrentObjectMapper())
-				.type(type)
+		PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(
-						context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-				.accessors(accessors).timeuuid(timeUUID)
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
 				.build(keyClass, valueClass);
 
-		log.trace(
-				"Built map property meta for property {} of entity class {} : {}",
-				mapMeta.getPropertyName(), context.getCurrentEntityClass()
-						.getCanonicalName(), mapMeta);
+		log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName(), mapMeta);
 
 		return mapMeta;
 
 	}
 
 	private void inferPropertyName(PropertyParsingContext context) {
-		log.trace("Infering property name for property {}",
-				context.getCurrentPropertyName());
+		log.trace("Infering property name for property {}", context.getCurrentPropertyName());
 
 		String propertyName = null;
 		Field field = context.getCurrentField();
 		Column column = field.getAnnotation(Column.class);
 		if (column != null) {
-			propertyName = StringUtils.isNotBlank(column.name()) ? column
-					.name() : field.getName();
+			propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
 		} else {
 			propertyName = field.getName();
 		}
@@ -323,18 +264,15 @@ public class PropertyParser {
 	}
 
 	private <K, V> Pair<Class<K>, Class<V>> determineMapGenericTypes(Field field) {
-		log.trace(
-				"Determine generic types for field Map<K,V> {} of entity class {}",
-				field.getName(), field.getDeclaringClass().getCanonicalName());
+		log.trace("Determine generic types for field Map<K,V> {} of entity class {}", field.getName(), field
+				.getDeclaringClass().getCanonicalName());
 
 		Type genericType = field.getGenericType();
 		ParameterizedType pt = (ParameterizedType) genericType;
 		Type[] actualTypeArguments = pt.getActualTypeArguments();
 
-		Class<K> keyClass = propertyHelper
-				.getClassFromType(actualTypeArguments[0]);
-		Class<V> valueClass = propertyHelper
-				.getClassFromType(actualTypeArguments[1]);
+		Class<K> keyClass = propertyHelper.getClassFromType(actualTypeArguments[0]);
+		Class<V> valueClass = propertyHelper.getClassFromType(actualTypeArguments[1]);
 
 		return Pair.create(keyClass, valueClass);
 	}
@@ -349,17 +287,13 @@ public class PropertyParser {
 		return embeddedIdProperties;
 	}
 
-	private void parseSimpleCounterConsistencyLevel(
-			PropertyParsingContext context, PropertyMeta propertyMeta) {
+	private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context, PropertyMeta propertyMeta) {
 
-		log.trace("Parse custom consistency levels for counter property {}",
-				propertyMeta);
-		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper
-				.findConsistencyLevels(context.getCurrentField(),
-						context.getConfigurableCLPolicy());
+		log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
+		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper.findConsistencyLevels(
+				context.getCurrentField(), context.getConfigurableCLPolicy());
 
-		validator
-				.validateConsistencyLevelForCounter(context, consistencyLevels);
+		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 
 		log.trace("Found custom consistency levels : {}", consistencyLevels);
 		propertyMeta.setConsistencyLevels(consistencyLevels);
@@ -368,12 +302,9 @@ public class PropertyParser {
 	private boolean isTimeUUID(PropertyParsingContext context, Field field) {
 		boolean timeUUID = false;
 		if (filter.hasAnnotation(field, TimeUUID.class)) {
-			Validator
-					.validateBeanMappingTrue(
-							field.getType().equals(UUID.class),
-							"The field '%s' from class '%s' annotated with @TimeUUID should be of java.util.UUID type",
-							field.getName(), context.getCurrentEntityClass()
-									.getCanonicalName());
+			Validator.validateBeanMappingTrue(field.getType().equals(UUID.class),
+					"The field '%s' from class '%s' annotated with @TimeUUID should be of java.util.UUID type",
+					field.getName(), context.getCurrentEntityClass().getCanonicalName());
 			timeUUID = true;
 		}
 		return timeUUID;

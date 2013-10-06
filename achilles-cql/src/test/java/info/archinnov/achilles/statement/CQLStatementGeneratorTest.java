@@ -131,6 +131,34 @@ public class CQLStatementGeneratorTest {
 				.isEqualTo(
 						"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 98;");
 	}
+	
+	@Test
+	public void should_generate_slice_select_query_without_ordering() throws Exception {
+		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
+		when(sliceQuery.getMeta()).thenReturn(meta);
+		when(sliceQuery.getCQLOrdering())
+				.thenReturn(null);
+		when(sliceQuery.getConsistencyLevel()).thenReturn(
+				ConsistencyLevel.EACH_QUORUM);
+		when(
+				sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(
+						eq(sliceQuery), any(Select.class))).thenAnswer(
+				new Answer<Statement>() {
+
+					@Override
+					public Statement answer(InvocationOnMock invocation)
+							throws Throwable {
+						return buildFakeWhereForSelect((Select) invocation
+								.getArguments()[1]);
+					}
+				});
+
+		Query query = generator.generateSelectSliceQuery(sliceQuery, 98);
+
+		assertThat(query.toString())
+				.isEqualTo(
+						"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' LIMIT 98;");
+	}
 
 	@Test
 	public void should_generate_slice_iterator_query() throws Exception {

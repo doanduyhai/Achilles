@@ -102,16 +102,11 @@ public class CQLSliceQueryExecutorTest {
 
 	@Before
 	public void setUp() {
-		when(
-				configContext.getConsistencyPolicy()
-						.getDefaultGlobalReadConsistencyLevel()).thenReturn(
-				EACH_QUORUM);
+		when(configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel()).thenReturn(EACH_QUORUM);
 
-		executor = new CQLSliceQueryExecutor(contextFactory, configContext,
-				daoContext);
+		executor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
 		executor.proxifier = proxifier;
-		Whitebox.setInternalState(executor, CQLStatementGenerator.class,
-				generator);
+		Whitebox.setInternalState(executor, CQLStatementGenerator.class, generator);
 		Whitebox.setInternalState(executor, CQLEntityMapper.class, mapper);
 
 		meta = new EntityMeta();
@@ -119,14 +114,11 @@ public class CQLSliceQueryExecutorTest {
 		meta.setIdMeta(idMeta);
 		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
 
-		when(idMeta.getComponentNames())
-				.thenReturn(Arrays.asList("id", "name"));
-		when(idMeta.getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, String.class));
+		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
+		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class,
-				meta, partitionKey, clusteringsFrom, clusteringsTo, ASCENDING,
-				EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
+		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionKey, clusteringsFrom,
+				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true, false, null);
 
 	}
 
@@ -134,9 +126,7 @@ public class CQLSliceQueryExecutorTest {
 	public void should_get_clustered_entities() throws Exception {
 
 		Query query = mock(Query.class);
-		when(
-				generator.generateSelectSliceQuery(any(CQLSliceQuery.class),
-						eq(limit))).thenReturn(query);
+		when(generator.generateSelectSliceQuery(any(CQLSliceQuery.class), eq(limit))).thenReturn(query);
 
 		Row row = mock(Row.class);
 		List<Row> rows = Arrays.asList(row);
@@ -151,24 +141,17 @@ public class CQLSliceQueryExecutorTest {
 	}
 
 	@Test
-	public void should_create_iterator_for_clustered_entities()
-			throws Exception {
+	public void should_create_iterator_for_clustered_entities() throws Exception {
 		Query query = mock(Query.class);
-		when(
-				generator.generateSelectSliceQuery(any(CQLSliceQuery.class),
-						eq(limit))).thenReturn(query);
+		when(generator.generateSelectSliceQuery(any(CQLSliceQuery.class), eq(limit))).thenReturn(query);
 
 		Iterator<Row> iterator = mock(Iterator.class);
 		when(daoContext.execute(query).iterator()).thenReturn(iterator);
 
 		PreparedStatement ps = mock(PreparedStatement.class);
-		when(
-				generator.generateIteratorSliceQuery(any(CQLSliceQuery.class),
-						eq(daoContext))).thenReturn(ps);
+		when(generator.generateIteratorSliceQuery(any(CQLSliceQuery.class), eq(daoContext))).thenReturn(ps);
 
-		when(
-				contextFactory.newContextForSliceQuery(ClusteredEntity.class,
-						ps, LOCAL_QUORUM)).thenReturn(context);
+		when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, ps, LOCAL_QUORUM)).thenReturn(context);
 
 		Iterator<ClusteredEntity> iter = executor.iterator(sliceQuery);
 
@@ -178,13 +161,11 @@ public class CQLSliceQueryExecutorTest {
 
 	@Test
 	public void should_remove_clustered_entities() throws Exception {
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class,
-				meta, partitionKey, null, null, ASCENDING, EXCLUSIVE_BOUNDS,
-				LOCAL_QUORUM, limit, batchSize, false);
+		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionKey, null, null, ASCENDING,
+				EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, false, false, null);
 
 		Query query = mock(Query.class);
-		when(generator.generateRemoveSliceQuery(any(CQLSliceQuery.class)))
-				.thenReturn(query);
+		when(generator.generateRemoveSliceQuery(any(CQLSliceQuery.class))).thenReturn(query);
 
 		executor.remove(sliceQuery);
 

@@ -35,6 +35,7 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
@@ -47,30 +48,39 @@ public class CQLStatementGenerator {
 	private CQLSliceQueryStatementGenerator sliceQueryGenerator = new CQLSliceQueryStatementGenerator();
 	private CQLSliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new CQLSliceQueryPreparedStatementGenerator();
 
-	public <T> Query generateSelectSliceQuery(CQLSliceQuery<T> sliceQuery,
-			int limit) {
+	public <T> Query generateSelectSliceQuery(CQLSliceQuery<T> sliceQuery, int limit) {
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(limit);
-		select.orderBy(sliceQuery.getCQLOrdering());
+		Ordering ordering = sliceQuery.getCQLOrdering();
+		if (ordering != null) {
+			select.orderBy(ordering);
+		}
+		if (sliceQuery.isAllowFiltering()) {
+			select.allowFiltering();
+		}
 
-		Statement where = sliceQueryGenerator
-				.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
+		Statement where = sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
 
 		return where.setConsistencyLevel(sliceQuery.getConsistencyLevel());
 	}
 
-	public <T> PreparedStatement generateIteratorSliceQuery(
-			CQLSliceQuery<T> sliceQuery, CQLDaoContext daoContext) {
+	public <T> PreparedStatement generateIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, CQLDaoContext daoContext) {
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(sliceQuery.getLimit());
-		select.orderBy(sliceQuery.getCQLOrdering());
 
-		Statement where = sliceQueryPreparedGenerator
-				.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);
+		Ordering ordering = sliceQuery.getCQLOrdering();
+		if (ordering != null) {
+			select.orderBy(ordering);
+		}
+		if (sliceQuery.isAllowFiltering()) {
+			select.allowFiltering();
+		}
+
+		Statement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);
 
 		PreparedStatement preparedStatement = daoContext.prepare(where);
 		preparedStatement.setConsistencyLevel(sliceQuery.getConsistencyLevel());
@@ -81,8 +91,7 @@ public class CQLStatementGenerator {
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Delete delete = QueryBuilder.delete().from(meta.getTableName());
-		Statement where = sliceQueryGenerator
-				.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
+		Statement where = sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
 
 		return where.setConsistencyLevel(sliceQuery.getConsistencyLevel());
 	}
@@ -94,8 +103,7 @@ public class CQLStatementGenerator {
 
 		generateSelectForPrimaryKey(idMeta, select);
 
-		List<PropertyMeta> eagerMetas = FluentIterable
-				.from(entityMeta.getEagerMetas())
+		List<PropertyMeta> eagerMetas = FluentIterable.from(entityMeta.getEagerMetas())
 				.filter(PropertyType.excludeIdType).toImmutableList();
 
 		for (PropertyMeta pm : eagerMetas) {
@@ -109,12 +117,10 @@ public class CQLStatementGenerator {
 		Insert insert = insertInto(entityMeta.getTableName());
 		generateInsertPrimaryKey(entity, idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable
-				.from(entityMeta.getAllMetasExceptIdMeta())
+		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(
-				nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
 		fieldMetas.remove(idMeta);
 
 		for (PropertyMeta pm : fieldMetas) {
@@ -125,8 +131,7 @@ public class CQLStatementGenerator {
 		return insert;
 	}
 
-	public Update.Assignments generateUpdateFields(Object entity,
-			EntityMeta entityMeta, List<PropertyMeta> pms) {
+	public Update.Assignments generateUpdateFields(Object entity, EntityMeta entityMeta, List<PropertyMeta> pms) {
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 
@@ -145,16 +150,14 @@ public class CQLStatementGenerator {
 		return generateWhereClauseForUpdate(entity, idMeta, assignments);
 	}
 
-	private Update.Assignments generateWhereClauseForUpdate(Object entity,
-			PropertyMeta idMeta, Assignments update) {
+	private Update.Assignments generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta, Assignments update) {
 		Object primaryKey = idMeta.getPrimaryKey(entity);
 		if (idMeta.isEmbeddedId()) {
 			Update.Where where = null;
 			int index = 0;
 
 			List<String> componentNames = idMeta.getComponentNames();
-			List<Object> encodedComponents = idMeta
-					.encodeToComponents(primaryKey);
+			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
@@ -172,13 +175,11 @@ public class CQLStatementGenerator {
 		return update;
 	}
 
-	private void generateInsertPrimaryKey(Object entity, PropertyMeta idMeta,
-			Insert insert) {
+	private void generateInsertPrimaryKey(Object entity, PropertyMeta idMeta, Insert insert) {
 		Object primaryKey = idMeta.getPrimaryKey(entity);
 		if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
-			List<Object> encodedComponents = idMeta
-					.encodeToComponents(primaryKey);
+			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
@@ -206,17 +207,14 @@ public class CQLStatementGenerator {
 			case LAZY_MAP:
 				return pm.encode((Map<?, ?>) value);
 			default:
-				throw new AchillesException("Cannot encode value '" + value
-						+ "' for Cassandra for property '"
-						+ pm.getPropertyName() + "' of type '"
-						+ pm.type().name() + "'");
+				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
+						+ pm.getPropertyName() + "' of type '" + pm.type().name() + "'");
 			}
 		}
 		return value;
 	}
 
-	private void generateSelectForPrimaryKey(PropertyMeta idMeta,
-			Selection select) {
+	private void generateSelectForPrimaryKey(PropertyMeta idMeta, Selection select) {
 		if (idMeta.isEmbeddedId()) {
 			for (String component : idMeta.getComponentNames()) {
 				select.column(component);

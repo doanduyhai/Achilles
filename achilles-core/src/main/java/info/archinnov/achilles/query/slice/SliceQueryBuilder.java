@@ -23,18 +23,18 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
-		RootSliceQueryBuilder<CONTEXT, T> {
+public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
-	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
-			CompoundKeyValidator compoundKeyValidator, Class<T> entityClass,
-			EntityMeta meta) {
+	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, CompoundKeyValidator compoundKeyValidator,
+			Class<T> entityClass, EntityMeta meta) {
 		super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
 	}
 
@@ -51,6 +51,15 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		return new SliceShortcutQueryBuilder();
 	}
 
+	public DefaultQueryBuilder conditions(Collection<IndexCondition> indexConditions, boolean allowFiltering) {
+		Validator.validateNotEmpty(indexConditions, "indexConditions should not be empty", null);
+		for (IndexCondition indexCondition : indexConditions) {
+			super.addCondition(indexCondition);
+		}
+		super.withAllowFiltering(allowFiltering);
+		return new DefaultQueryBuilder();
+	}
+
 	/**
 	 * Query by from & to embeddedIds<br/>
 	 * <br/>
@@ -63,15 +72,13 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 	public SliceFromEmbeddedIdBuilder fromEmbeddedId(Object fromEmbeddedId) {
 		Class<?> embeddedIdClass = meta.getIdClass();
 		PropertyMeta idMeta = meta.getIdMeta();
-		Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass,
-				"fromEmbeddedId should be of type '%s'",
+		Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
 		List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
 		List<Object> clusteringFrom = components.subList(1, components.size());
 
 		super.partitionKeyInternal(components.get(0));
-		this.fromClusteringsInternal(clusteringFrom
-				.toArray(new Object[clusteringFrom.size()]));
+		this.fromClusteringsInternal(clusteringFrom.toArray(new Object[clusteringFrom.size()]));
 
 		return new SliceFromEmbeddedIdBuilder();
 	}
@@ -88,16 +95,14 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 	public SliceToEmbeddedIdBuilder toEmbeddedId(Object toEmbeddedId) {
 		Class<?> embeddedIdClass = meta.getIdClass();
 		PropertyMeta idMeta = meta.getIdMeta();
-		Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass,
-				"toEmbeddedId should be of type '%s'",
+		Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
 
 		List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
 		List<Object> clusteringTo = components.subList(1, components.size());
 
 		super.partitionKeyInternal(components.get(0));
-		this.toClusteringsInternal(clusteringTo.toArray(new Object[clusteringTo
-				.size()]));
+		this.toClusteringsInternal(clusteringTo.toArray(new Object[clusteringTo.size()]));
 
 		return new SliceToEmbeddedIdBuilder();
 	}
@@ -115,8 +120,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *            consistency level
 		 * @return SliceShortcutQueryBuilder
 		 */
-		public SliceShortcutQueryBuilder consistencyLevel(
-				ConsistencyLevel consistencyLevel) {
+		public SliceShortcutQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 			SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
 			return this;
 		}
@@ -130,10 +134,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return SliceFromClusteringsBuilder
 		 */
-		public SliceFromClusteringsBuilder fromClusterings(
-				Object... clusteringComponents) {
-			SliceQueryBuilder.super
-					.fromClusteringsInternal(clusteringComponents);
+		public SliceFromClusteringsBuilder fromClusterings(Object... clusteringComponents) {
+			SliceQueryBuilder.super.fromClusteringsInternal(clusteringComponents);
 			return new SliceFromClusteringsBuilder();
 		}
 
@@ -146,8 +148,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return SliceToClusteringsBuilder
 		 */
-		public SliceToClusteringsBuilder toClusterings(
-				Object... clusteringComponents) {
+		public SliceToClusteringsBuilder toClusterings(Object... clusteringComponents) {
 			SliceQueryBuilder.super.toClusteringsInternal(clusteringComponents);
 			return new SliceToClusteringsBuilder();
 		}
@@ -190,8 +191,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *         components if any, or null if no matching entity is found
 		 */
 		public T getFirstOccurence(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.getFirstOccurence(clusteringComponents);
+			return SliceQueryBuilder.super.getFirstOccurence(clusteringComponents);
 		}
 
 		/**
@@ -222,8 +222,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 *         components if any, or null if no matching entity is found
 		 */
 		public T getLastOccurence(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.getLastOccurence(clusteringComponents);
+			return SliceQueryBuilder.super.getLastOccurence(clusteringComponents);
 		}
 
 		/**
@@ -253,8 +252,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * @return iterator on found entities
 		 */
 		public Iterator<T> iterator(Object... clusteringComponents) {
-			return SliceQueryBuilder.super
-					.iteratorWithComponents(clusteringComponents);
+			return SliceQueryBuilder.super.iteratorWithComponents(clusteringComponents);
 		}
 
 		/**
@@ -269,10 +267,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return iterator on found entities
 		 */
-		public Iterator<T> iterator(int batchSize,
-				Object... clusteringComponents) {
-			return SliceQueryBuilder.super.iteratorWithComponents(batchSize,
-					clusteringComponents);
+		public Iterator<T> iterator(int batchSize, Object... clusteringComponents) {
+			return SliceQueryBuilder.super.iteratorWithComponents(batchSize, clusteringComponents);
 		}
 
 		/**
@@ -353,16 +349,13 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		public DefaultQueryBuilder toEmbeddedId(Object toEmbeddedId) {
 			Class<?> embeddedIdClass = meta.getIdClass();
 			PropertyMeta idMeta = meta.getIdMeta();
-			Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass,
-					"toEmbeddedId should be of type '%s'",
+			Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
 					embeddedIdClass.getCanonicalName());
 
 			List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
-			List<Object> clusteringTo = components
-					.subList(1, components.size());
+			List<Object> clusteringTo = components.subList(1, components.size());
 
-			SliceQueryBuilder.super.toClusteringsInternal(clusteringTo
-					.toArray(new Object[clusteringTo.size()]));
+			SliceQueryBuilder.super.toClusteringsInternal(clusteringTo.toArray(new Object[clusteringTo.size()]));
 
 			return new DefaultQueryBuilder();
 		}
@@ -384,16 +377,13 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		public DefaultQueryBuilder fromEmbeddedId(Object fromEmbeddedId) {
 			Class<?> embeddedIdClass = meta.getIdClass();
 			PropertyMeta idMeta = meta.getIdMeta();
-			Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass,
-					"fromEmbeddedId should be of type '%s'",
+			Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
 					embeddedIdClass.getCanonicalName());
 
 			List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
-			List<Object> clusteringFrom = components.subList(1,
-					components.size());
+			List<Object> clusteringFrom = components.subList(1, components.size());
 
-			SliceQueryBuilder.super.fromClusteringsInternal(clusteringFrom
-					.toArray(new Object[clusteringFrom.size()]));
+			SliceQueryBuilder.super.fromClusteringsInternal(clusteringFrom.toArray(new Object[clusteringFrom.size()]));
 
 			return new DefaultQueryBuilder();
 		}
@@ -433,10 +423,8 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
-		public DefaultQueryBuilder fromClusterings(
-				Object... clusteringComponents) {
-			SliceQueryBuilder.super
-					.fromClusteringsInternal(clusteringComponents);
+		public DefaultQueryBuilder fromClusterings(Object... clusteringComponents) {
+			SliceQueryBuilder.super.fromClusteringsInternal(clusteringComponents);
 			return new DefaultQueryBuilder();
 		}
 	}
@@ -484,8 +472,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
-		public DefaultQueryBuilder consistencyLevel(
-				ConsistencyLevel consistencyLevel) {
+		public DefaultQueryBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
 			SliceQueryBuilder.super.consistencyLevelInternal(consistencyLevel);
 			return this;
 		}
