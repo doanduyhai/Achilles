@@ -33,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftEntityManagerFactoryBeanTest {
+public class ThriftPersistenceManagerFactoryBeanTest {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -44,7 +44,7 @@ public class ThriftEntityManagerFactoryBeanTest {
 	@Mock
 	private Keyspace keyspace;
 
-	private ThriftEntityManagerFactoryBean factory;
+	private ThriftPersistenceManagerFactoryBean factory;
 
 	@Mock
 	private ObjectMapper objectMapper;
@@ -54,7 +54,7 @@ public class ThriftEntityManagerFactoryBeanTest {
 
 	@Before
 	public void setUp() {
-		factory = new ThriftEntityManagerFactoryBean();
+		factory = new ThriftPersistenceManagerFactoryBean();
 	}
 
 	@Test

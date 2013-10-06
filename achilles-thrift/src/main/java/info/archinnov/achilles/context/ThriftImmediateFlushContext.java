@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.context.FlushContext.FlushType.IMMEDIATE;
+import static info.archinnov.achilles.context.FlushContext.FlushType.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -45,7 +45,7 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext<Thri
 	@Override
 	public void startBatch() {
 		throw new UnsupportedOperationException(
-				"Cannot start a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
+				"Cannot start a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class ThriftImmediateFlushContext extends ThriftAbstractFlushContext<Thri
 	@Override
 	public void endBatch() {
 		throw new UnsupportedOperationException(
-				"Cannot end a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
+				"Cannot end a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}
 
 	@Override

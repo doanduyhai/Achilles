@@ -32,13 +32,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CQLBatchingEntityManager extends CQLEntityManager {
+public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 
-	private static final Logger log = LoggerFactory.getLogger(CQLBatchingEntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLBatchingPersistenceManager.class);
 
 	private CQLBatchingFlushContext flushContext;
 
-	CQLBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, CQLPersistenceContextFactory contextFactory,
+	CQLBatchingPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, CQLPersistenceContextFactory contextFactory,
 			CQLDaoContext daoContext, ConfigurationContext configContext) {
 		super(entityMetaMap, contextFactory, daoContext, configContext);
 		this.flushContext = new CQLBatchingFlushContext(daoContext, null);

@@ -84,7 +84,6 @@ public class ThriftPersisterImpl {
 
 			CounterImpl counterValue = (CounterImpl) counter;
 			context.getCounterDao().incrementCounter(rowKey, name, counterValue.get());
-			System.out.println("Done");
 		}
 	}
 

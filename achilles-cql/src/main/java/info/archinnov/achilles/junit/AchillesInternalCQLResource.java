@@ -18,8 +18,8 @@ package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
 import com.datastax.driver.core.Session;
 
@@ -27,8 +27,8 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 
 	private static final String ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 
-	private final CQLEntityManagerFactory factory;
-	private final CQLEntityManager em;
+	private final CQLPersistenceManagerFactory pmf;
+	private final CQLPersistenceManager manager;
 	private final CQLEmbeddedServer server;
 	private final Session session;
 
@@ -42,9 +42,9 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 		super(tables);
 
 		server = new CQLEmbeddedServer(true, ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
-		factory = server.getEmf();
-		em = server.getEm();
-		session = em.getNativeSession();
+		pmf = server.getPersistenceManagerFactory();
+		manager = server.getPersistenceManager();
+		session = manager.getNativeSession();
 	}
 
 	/**
@@ -64,27 +64,27 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 		super(cleanUpSteps, tables);
 
 		server = new CQLEmbeddedServer(true, ENTITY_PACKAGES, CASSANDRA_TEST_KEYSPACE_NAME);
-		factory = server.getEmf();
-		em = server.getEm();
-		session = em.getNativeSession();
+		pmf = server.getPersistenceManagerFactory();
+		manager = server.getPersistenceManager();
+		session = manager.getNativeSession();
 	}
 
 	/**
-	 * Return a singleton CQLEntityManagerFactory
+	 * Return a singleton CQLPersistenceManagerFactory
 	 * 
-	 * @return CQLEntityManagerFactory singleton
+	 * @return CQLPersistenceManagerFactory singleton
 	 */
-	public CQLEntityManagerFactory getFactory() {
-		return factory;
+	public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
+		return pmf;
 	}
 
 	/**
-	 * Return a singleton CQLEntityManager
+	 * Return a singleton CQLPersistenceManager
 	 * 
-	 * @return CQLEntityManager singleton
+	 * @return CQLPersistenceManager singleton
 	 */
-	public CQLEntityManager getEm() {
-		return em;
+	public CQLPersistenceManager getPersistenceManager() {
+		return manager;
 	}
 
 	/**

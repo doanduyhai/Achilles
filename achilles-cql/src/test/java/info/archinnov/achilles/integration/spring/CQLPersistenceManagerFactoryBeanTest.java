@@ -34,12 +34,12 @@ import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLEntityManagerFactoryBeanTest {
+public class CQLPersistenceManagerFactoryBeanTest {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CQLEntityManagerFactoryBean factory;
+	private CQLPersistenceManagerFactoryBean factory;
 
 	@Mock
 	private ObjectMapper objectMapper;
@@ -49,7 +49,7 @@ public class CQLEntityManagerFactoryBeanTest {
 
 	@Before
 	public void setUp() {
-		factory = new CQLEntityManagerFactoryBean();
+		factory = new CQLPersistenceManagerFactoryBean();
 	}
 
 	@Test

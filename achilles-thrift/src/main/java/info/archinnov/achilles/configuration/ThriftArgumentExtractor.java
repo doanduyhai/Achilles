@@ -38,10 +38,10 @@ public class ThriftArgumentExtractor extends ArgumentExtractor {
 
 			Validator.validateNotBlank(cassandraHost, "Either '" + CLUSTER_PARAM + "' property or '" + HOSTNAME_PARAM
 					+ "'/'" + CLUSTER_NAME_PARAM
-					+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+					+ "' properties should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 			Validator.validateNotBlank(cassandraClusterName, "Either '" + CLUSTER_PARAM + "' property or '"
 					+ HOSTNAME_PARAM + "'/'" + CLUSTER_NAME_PARAM
-					+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+					+ "' properties should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 
 			cluster = HFactory.getOrCreateCluster(cassandraClusterName, new CassandraHostConfigurator(cassandraHost));
 		}
@@ -56,7 +56,7 @@ public class ThriftArgumentExtractor extends ArgumentExtractor {
 			String keyspaceName = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
 			Validator.validateNotBlank(keyspaceName, "Either '" + KEYSPACE_PARAM + "' property or '"
 					+ KEYSPACE_NAME_PARAM
-					+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+					+ "' property should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		}

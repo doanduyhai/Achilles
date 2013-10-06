@@ -17,8 +17,8 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesException;
 
@@ -87,7 +87,7 @@ public class ThriftArgumentExtractorTest {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Either '" + CLUSTER_PARAM + "' property or '" + HOSTNAME_PARAM + "'/'"
 				+ CLUSTER_NAME_PARAM
-				+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+				+ "' properties should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 		extractor.initCluster(configMap);
 	}
 
@@ -98,7 +98,7 @@ public class ThriftArgumentExtractorTest {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Either '" + CLUSTER_PARAM + "' property or '" + HOSTNAME_PARAM + "'/'"
 				+ CLUSTER_NAME_PARAM
-				+ "' properties should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+				+ "' properties should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 		extractor.initCluster(configMap);
 	}
 
@@ -129,7 +129,7 @@ public class ThriftArgumentExtractorTest {
 	public void should_exception_when_keyspace_and_keyspacename_not_set() throws Exception {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Either '" + KEYSPACE_PARAM + "' property or '" + KEYSPACE_NAME_PARAM
-				+ "' property should be provided for Achilles ThrifEntityManagerFactory bootstraping");
+				+ "' property should be provided for Achilles ThrifPersistenceManagerFactory bootstraping");
 		extractor.initKeyspace(null, policy, configMap);
 	}
 }

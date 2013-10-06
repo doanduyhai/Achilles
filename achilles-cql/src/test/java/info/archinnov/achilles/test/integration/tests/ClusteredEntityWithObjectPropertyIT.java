@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithObjectValue;
@@ -40,7 +40,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
 			"clustered_with_object_value");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -56,9 +56,9 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		ClusteredEntityWithObjectValue found = em.find(ClusteredEntityWithObjectValue.class, compoundKey);
+		ClusteredEntityWithObjectValue found = manager.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo(holder);
@@ -70,9 +70,9 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		em.merge(entity);
+		manager.merge(entity);
 
-		ClusteredEntityWithObjectValue found = em.getReference(ClusteredEntityWithObjectValue.class, compoundKey);
+		ClusteredEntityWithObjectValue found = manager.getReference(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo(holder);
@@ -86,12 +86,12 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		entity.setValue(newHolder);
-		em.merge(entity);
+		manager.merge(entity);
 
-		entity = em.find(ClusteredEntityWithObjectValue.class, compoundKey);
+		entity = manager.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(entity.getValue()).isEqualTo(newHolder);
 	}
@@ -102,11 +102,11 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
-		em.remove(entity);
+		manager.remove(entity);
 
-		assertThat(em.find(ClusteredEntityWithObjectValue.class, compoundKey)).isNull();
+		assertThat(manager.find(ClusteredEntityWithObjectValue.class, compoundKey)).isNull();
 
 	}
 
@@ -120,11 +120,11 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		session.execute("UPDATE clustered_with_object_value SET value='" + mapper.writeValueAsString(newHolder)
 				+ "' where id=" + partitionKey + " and name='name'");
-		em.refresh(entity);
+		manager.refresh(entity);
 
 		assertThat(entity.getValue()).isEqualTo(newHolder);
 	}
@@ -132,14 +132,14 @@ public class ClusteredEntityWithObjectPropertyIT {
 	@Test
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		List<ClusteredEntityWithObjectValue> entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
+		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.partitionKey(partitionKey).fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = em.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey)
+		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey)
 				.fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
@@ -154,7 +154,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
 
-		entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
+		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.fromEmbeddedId(new ClusteredKey(partitionKey, "name2"))
 				.toEmbeddedId(new ClusteredKey(partitionKey, "name4")).get();
 
@@ -177,7 +177,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntityWithObjectValue> iter = em.sliceQuery(ClusteredEntityWithObjectValue.class)
+		Iterator<ClusteredEntityWithObjectValue> iter = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.partitionKey(partitionKey).iterator();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -218,10 +218,10 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 3);
 
-		em.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey).fromClusterings("name2")
+		manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey).fromClusterings("name2")
 				.toClusterings("name2").remove();
 
-		List<ClusteredEntityWithObjectValue> entities = em.sliceQuery(ClusteredEntityWithObjectValue.class)
+		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
 				.partitionKey(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
@@ -233,7 +233,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	private void insertClusteredEntity(Long partitionKey, String name, Holder clusteredValue) {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
 		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(embeddedId, clusteredValue);
-		em.persist(entity);
+		manager.persist(entity);
 	}
 
 	private void insertValues(long partitionKey, int count) {

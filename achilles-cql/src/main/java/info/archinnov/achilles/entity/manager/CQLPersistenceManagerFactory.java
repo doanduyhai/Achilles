@@ -37,21 +37,21 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 
-public class CQLEntityManagerFactory extends EntityManagerFactory {
-	private static final Logger log = LoggerFactory.getLogger(CQLEntityManagerFactory.class);
+public class CQLPersistenceManagerFactory extends PersistenceManagerFactory {
+	private static final Logger log = LoggerFactory.getLogger(CQLPersistenceManagerFactory.class);
 	private Cluster cluster;
 	private Session session;
 	private CQLDaoContext daoContext;
 	private CQLPersistenceContextFactory contextFactory;
 
 	/**
-	 * Create a new CQLEntityManagerFactory with a configuration map
+	 * Create a new CQLPersistenceManagerFactory with a configuration map
 	 * 
 	 * @param configurationMap
 	 *            Check documentation for more details on configuration
 	 *            parameters
 	 */
-	public CQLEntityManagerFactory(Map<String, Object> configurationMap) {
+	public CQLPersistenceManagerFactory(Map<String, Object> configurationMap) {
 		super(configurationMap, new CQLArgumentExtractor());
 		configContext.setImpl(Impl.CQL);
 
@@ -73,27 +73,27 @@ public class CQLEntityManagerFactory extends EntityManagerFactory {
 	}
 
 	/**
-	 * Create a new CQLEntityManager. This instance of CQLEntityManager is
-	 * <strong>thread-safe</strong>
+	 * Create a new CQLPersistenceManager. This instance of
+	 * CQLPersistenceManager is <strong>thread-safe</strong>
 	 * 
-	 * @return CQLEntityManager
+	 * @return CQLPersistenceManager
 	 */
-	public CQLEntityManager createEntityManager() {
-		return new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
+	public CQLPersistenceManager createPersistenceManager() {
+		return new CQLPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	/**
-	 * Create a new state-full EntityManager for batch handling <br/>
+	 * Create a new state-full PersistenceManager for batch handling <br/>
 	 * <br/>
 	 * 
-	 * <strong>WARNING : This EntityManager is state-full and not thread-safe.
-	 * In case of exception, you MUST not re-use it but create another
-	 * one</strong>
+	 * <strong>WARNING : This PersistenceManager is state-full and not
+	 * thread-safe. In case of exception, you MUST not re-use it but create
+	 * another one</strong>
 	 * 
-	 * @return a new state-full EntityManager
+	 * @return a new state-full PersistenceManager
 	 */
-	public CQLBatchingEntityManager createBatchingEntityManager() {
-		return new CQLBatchingEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
+	public CQLBatchingPersistenceManager createBatchingPersistenceManager() {
+		return new CQLBatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	@Override

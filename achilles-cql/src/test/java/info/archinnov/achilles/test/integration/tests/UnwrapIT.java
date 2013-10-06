@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.*;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -35,7 +35,7 @@ public class UnwrapIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"Tweet");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_unproxy_object() throws Exception {
@@ -43,9 +43,9 @@ public class UnwrapIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
-		bean = em.unwrap(bean);
+		bean = manager.unwrap(bean);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
 	}

@@ -19,8 +19,8 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -55,8 +55,8 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 	private static Keyspace keyspace;
 	private static ThriftConsistencyLevelPolicy policy;
 
-	private static ThriftEntityManagerFactory emf;
-	private static ThriftEntityManager em;
+	private static ThriftPersistenceManagerFactory pmf;
+	private static ThriftPersistenceManager manager;
 
 	public ThriftEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
 		if (StringUtils.isEmpty(entityPackages))
@@ -87,9 +87,9 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, entityPackages, CLUSTER_PARAM, cluster,
 				KEYSPACE_PARAM, getKeyspace(), FORCE_CF_CREATION_PARAM, true);
 
-		emf = new ThriftEntityManagerFactory(configMap);
-		em = emf.createEntityManager();
-		policy = emf.getConsistencyPolicy();
+		pmf = new ThriftPersistenceManagerFactory(configMap);
+		manager = pmf.createPersistenceManager();
+		policy = pmf.getConsistencyPolicy();
 		initialized = true;
 	}
 
@@ -131,12 +131,12 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 		return keyspace;
 	}
 
-	public ThriftEntityManagerFactory getEmf() {
-		return emf;
+	public ThriftPersistenceManagerFactory getPersistenceManagerFactory() {
+		return pmf;
 	}
 
-	public ThriftEntityManager getEm() {
-		return em;
+	public ThriftPersistenceManager getPersistenceManager() {
+		return manager;
 	}
 
 	public ThriftConsistencyLevelPolicy getConsistencyPolicy() {

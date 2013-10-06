@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.CASSANDRA_TEST_KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
@@ -38,8 +38,8 @@ public class AchillesThriftResource extends AchillesTestResource {
 	private final Keyspace keyspace;
 	private final ThriftConsistencyLevelPolicy policy;
 
-	private final ThriftEntityManagerFactory factory;
-	private final ThriftEntityManager em;
+	private final ThriftPersistenceManagerFactory pmf;
+	private final ThriftPersistenceManager manager;
 
 	/**
 	 * Initialize a new embedded Cassandra server
@@ -59,8 +59,8 @@ public class AchillesThriftResource extends AchillesTestResource {
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
-		factory = server.getEmf();
-		em = server.getEm();
+		pmf = server.getPersistenceManagerFactory();
+		manager = server.getPersistenceManager();
 	}
 
 	/**
@@ -88,8 +88,8 @@ public class AchillesThriftResource extends AchillesTestResource {
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
-		factory = server.getEmf();
-		em = server.getEm();
+		pmf = server.getPersistenceManagerFactory();
+		manager = server.getPersistenceManager();
 	}
 
 	/**
@@ -111,21 +111,21 @@ public class AchillesThriftResource extends AchillesTestResource {
 	}
 
 	/**
-	 * Return a singleton ThriftEntityManagerFactory
+	 * Return a singleton ThriftPersistenceManagerFactory
 	 * 
-	 * @return ThriftEntityManagerFactory singleton
+	 * @return ThriftPersistenceManagerFactory singleton
 	 */
-	public ThriftEntityManagerFactory getFactory() {
-		return factory;
+	public ThriftPersistenceManagerFactory getPersistenceManagerFactory() {
+		return pmf;
 	}
 
 	/**
-	 * Return a singleton ThriftEntityManager
+	 * Return a singleton ThriftPersistenceManager
 	 * 
-	 * @return ThriftEntityManager singleton
+	 * @return ThriftPersistenceManager singleton
 	 */
-	public ThriftEntityManager getEm() {
-		return em;
+	public ThriftPersistenceManager getPersistenceManager() {
+		return manager;
 	}
 
 	/**

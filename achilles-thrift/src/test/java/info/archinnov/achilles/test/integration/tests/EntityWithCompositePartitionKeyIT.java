@@ -5,7 +5,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static info.archinnov.achilles.table.TableNameNormalizer.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey;
@@ -31,7 +31,7 @@ public class EntityWithCompositePartitionKeyIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"EntityWithCompositePartitionKey");
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericEntityDao dao = resource.getEntityDao(
 			normalizerAndValidateColumnFamilyName(EntityWithCompositePartitionKey.class.getName()), Composite.class);
@@ -44,7 +44,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		em.persist(entity);
+		manager.persist(entity);
 
 		Composite rowKey = new Composite();
 		rowKey.addComponent(id, LONG_SRZ);
@@ -76,9 +76,9 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		EntityWithCompositePartitionKey found = em.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
+		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
 
 		assertThat(found).isNotNull();
@@ -95,9 +95,9 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		em.merge(entity);
+		manager.merge(entity);
 
-		EntityWithCompositePartitionKey found = em.getReference(EntityWithCompositePartitionKey.class, compositeRowKey);
+		EntityWithCompositePartitionKey found = manager.getReference(EntityWithCompositePartitionKey.class, compositeRowKey);
 
 		assertThat(found.getId()).isEqualTo(compositeRowKey);
 		assertThat(found.getValue()).isEqualTo("value");
@@ -108,12 +108,12 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		entity.setValue("value2");
-		em.merge(entity);
+		manager.merge(entity);
 
-		EntityWithCompositePartitionKey found = em.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
+		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
 		assertThat(found.getValue()).isEqualTo("value2");
 	}
@@ -123,11 +123,11 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
-		em.remove(entity);
+		manager.remove(entity);
 
-		EntityWithCompositePartitionKey found = em.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
+		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
 		assertThat(found).isNull();
 	}
@@ -139,11 +139,11 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
-		em.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
+		manager.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
 
-		assertThat(em.find(EntityWithCompositePartitionKey.class, compositeRowKey)).isNull();
+		assertThat(manager.find(EntityWithCompositePartitionKey.class, compositeRowKey)).isNull();
 
 	}
 
@@ -153,7 +153,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		Composite rowKey = new Composite();
 		rowKey.addComponent(id, LONG_SRZ);
@@ -168,7 +168,7 @@ public class EntityWithCompositePartitionKeyIT {
 		dao.insertColumnBatch(rowKey, comp, "new_value", Optional.<Integer> absent(), Optional.<Long> absent(), mutator);
 		dao.executeMutator(mutator);
 
-		em.refresh(entity);
+		manager.refresh(entity);
 
 		assertThat(entity.getValue()).isEqualTo("new_value");
 

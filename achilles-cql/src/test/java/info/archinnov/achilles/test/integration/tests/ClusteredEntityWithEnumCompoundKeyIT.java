@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
@@ -36,7 +36,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
 			"clustered_with_enum_compound");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -50,9 +50,9 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.getReference(ClusteredEntityWithEnumCompoundKey.class,
+		ClusteredEntityWithEnumCompoundKey found = manager.getReference(ClusteredEntityWithEnumCompoundKey.class,
 				compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
@@ -65,9 +65,9 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		em.merge(entity);
+		manager.merge(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -80,12 +80,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		entity.setValue("new_clustered_value");
-		em.merge(entity);
+		manager.merge(entity);
 
-		entity = em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
+		entity = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
 		assertThat(entity.getValue()).isEqualTo("new_clustered_value");
 	}
@@ -96,11 +96,11 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
-		em.remove(entity);
+		manager.remove(entity);
 
-		assertThat(em.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
+		assertThat(manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
 
 	}
 
@@ -112,12 +112,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		session.execute("UPDATE clustered_with_enum_compound set value='new_clustered_value' where id=" + partitionKey
 				+ " and type = 'FILE'");
 
-		em.refresh(entity);
+		manager.refresh(entity);
 
 		assertThat(entity.getValue()).isEqualTo("new_clustered_value");
 	}

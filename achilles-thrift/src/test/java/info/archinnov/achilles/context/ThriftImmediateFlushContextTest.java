@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.FlushContext.FlushType;
@@ -91,7 +91,7 @@ public class ThriftImmediateFlushContextTest {
 	public void should_exception_when_start_batch() throws Exception {
 		exception.expect(UnsupportedOperationException.class);
 		exception
-				.expectMessage("Cannot start a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
+				.expectMessage("Cannot start a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 		context.startBatch();
 	}
 
@@ -111,7 +111,7 @@ public class ThriftImmediateFlushContextTest {
 	public void should_exception_when_end_batch() throws Exception {
 		exception.expect(UnsupportedOperationException.class);
 		exception
-				.expectMessage("Cannot end a batch with a normal EntityManager. Please create a BatchingEntityManager instead");
+				.expectMessage("Cannot end a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 		context.endBatch();
 
 	}
@@ -134,7 +134,7 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_get_new_entity_mutator() throws Exception {
-		when((ThriftGenericEntityDao) thriftDaoContext.findEntityDao("cf")).thenReturn(entityDao);
+		when(thriftDaoContext.findEntityDao("cf")).thenReturn(entityDao);
 		when(entityDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getEntityMutator("cf");
@@ -154,7 +154,7 @@ public class ThriftImmediateFlushContextTest {
 
 	@Test
 	public void should_get_new_cf_mutator() throws Exception {
-		when((ThriftGenericWideRowDao) thriftDaoContext.findWideRowDao("cf")).thenReturn(cfDao);
+		when(thriftDaoContext.findWideRowDao("cf")).thenReturn(cfDao);
 		when(cfDao.buildMutator()).thenReturn(mutator);
 
 		Mutator<Object> actual = context.getWideRowMutator("cf");

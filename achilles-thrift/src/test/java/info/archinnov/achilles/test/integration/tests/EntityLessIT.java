@@ -2,7 +2,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.HashMap;
@@ -26,6 +26,6 @@ public class EntityLessIT {
 		configMap.put(CLUSTER_PARAM, cluster);
 		configMap.put(KEYSPACE_PARAM, keyspace);
 
-		new ThriftEntityManagerFactory(configMap);
+		new ThriftPersistenceManagerFactory(configMap);
 	}
 }

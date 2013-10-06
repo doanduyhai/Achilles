@@ -30,8 +30,8 @@ import java.lang.annotation.Target;
 @Documented
 /**
  * <p>
- * Define the consistency level for an Entity or External Wide Map
- * For ThriftEntityManager, the consistency level applies on all the fields on the entity, except join fields and external wide map field
+ * Define the consistency level for an Entity 
+ * For PersistenceManager, the consistency level applies on all the fields on the entity
  * </p>
  */
 public @interface Consistency {

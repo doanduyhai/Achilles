@@ -17,8 +17,8 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ThriftArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -36,16 +36,17 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftEntityManagerFactoryTest {
+public class ThriftPersistenceManagerFactoryTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private ThriftEntityManagerFactory factory;
+	private ThriftPersistenceManagerFactory pmf;
 
 	@Test
 	public void should_create_entity_manager() throws Exception {
@@ -57,21 +58,21 @@ public class ThriftEntityManagerFactoryTest {
 		when(consistencyPolicy.getDefaultGlobalReadConsistencyLevel()).thenReturn(EACH_QUORUM);
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
-		doCallRealMethod().when(factory).setThriftDaoContext(any(ThriftDaoContext.class));
-		doCallRealMethod().when(factory).setConfigContext(any(ConfigurationContext.class));
-		doCallRealMethod().when(factory).setEntityMetaMap((Map<Class<?>, EntityMeta>) any(Map.class));
+		doCallRealMethod().when(pmf).setThriftDaoContext(any(ThriftDaoContext.class));
+		doCallRealMethod().when(pmf).setConfigContext(any(ConfigurationContext.class));
+		doCallRealMethod().when(pmf).setEntityMetaMap(Mockito.<Map<Class<?>, EntityMeta>> any());
 
-		factory.setThriftDaoContext(daoContext);
-		factory.setConfigContext(configContext);
-		factory.setEntityMetaMap(entityMetaMap);
+		pmf.setThriftDaoContext(daoContext);
+		pmf.setConfigContext(configContext);
+		pmf.setEntityMetaMap(entityMetaMap);
 
-		doCallRealMethod().when(factory).createEntityManager();
+		doCallRealMethod().when(pmf).createPersistenceManager();
 
-		ThriftEntityManager em = (ThriftEntityManager) factory.createEntityManager();
+		ThriftPersistenceManager manager = pmf.createPersistenceManager();
 
-		assertThat(Whitebox.getInternalState(em, ThriftDaoContext.class)).isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(em, "configContext")).isSameAs(configContext);
-		Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox.getInternalState(em, "entityMetaMap");
+		assertThat(Whitebox.getInternalState(manager, ThriftDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(manager, "configContext")).isSameAs(configContext);
+		Map<Class<?>, EntityMeta> builtEntityMetaMap = Whitebox.getInternalState(manager, "entityMetaMap");
 		assertThat(builtEntityMetaMap).isNotNull();
 		assertThat(builtEntityMetaMap).isEmpty();
 
@@ -91,9 +92,9 @@ public class ThriftEntityManagerFactoryTest {
 		when(argumentExtractor.initReadConsistencyMap(configMap)).thenReturn(readLevels);
 		when(argumentExtractor.initWriteConsistencyMap(configMap)).thenReturn(writeLevels);
 
-		doCallRealMethod().when(factory).initConsistencyLevelPolicy(configMap, argumentExtractor);
+		doCallRealMethod().when(pmf).initConsistencyLevelPolicy(configMap, argumentExtractor);
 
-		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) factory.initConsistencyLevelPolicy(
+		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) pmf.initConsistencyLevelPolicy(
 				configMap, argumentExtractor);
 
 		assertThat(policy.getDefaultGlobalReadConsistencyLevel()).isEqualTo(ONE);

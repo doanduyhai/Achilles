@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
@@ -50,7 +50,7 @@ public class QueryIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"clustered", AchillesCounter.CQL_COUNTER_TABLE);
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_return_rows_for_native_query() throws Exception {
@@ -62,13 +62,13 @@ public class QueryIT {
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
 
-		em.persist(entity1);
-		em.persist(entity2);
+		manager.persist(entity1);
+		manager.persist(entity2);
 
 		String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
 				+ entity1.getId() + "," + entity2.getId() + ")";
 
-		List<Map<String, Object>> actual = em.nativeQuery(nativeQuery).get();
+		List<Map<String, Object>> actual = manager.nativeQuery(nativeQuery).get();
 
 		assertThat(actual).hasSize(2);
 
@@ -97,9 +97,9 @@ public class QueryIT {
 	public void should_return_count_for_native_query() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		Long count = (Long) em.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
+		Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
 				.get("count");
 
 		assertThat(count).isEqualTo(1L);
@@ -111,9 +111,9 @@ public class QueryIT {
 
 		Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
 
-		em.persist(entity, OptionsBuilder.withTtl(1000).timestamp(timestamp));
+		manager.persist(entity, OptionsBuilder.withTtl(1000).timestamp(timestamp));
 
-		Map<String, Object> result = em.nativeQuery(
+		Map<String, Object> result = manager.nativeQuery(
 				"SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
 
 		assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
@@ -126,9 +126,9 @@ public class QueryIT {
 		Long id = RandomUtils.nextLong();
 		UUID date = UUIDGen.getTimeUUID();
 
-		em.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
+		manager.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
-		Map<String, Object> result = em.nativeQuery(
+		Map<String, Object> result = manager.nativeQuery(
 				"SELECT now(),dateOf(date),unixTimestampOf(date) FROM clustered_with_time_uuid WHERE id=" + id).first();
 		assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
 		assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
@@ -147,11 +147,11 @@ public class QueryIT {
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(counter2).buid();
 
-		em.persist(entity1);
-		em.persist(entity2);
+		manager.persist(entity1);
+		manager.persist(entity2);
 
 		String queryString = "SELECT * FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = em.typedQuery(CompleteBean.class, queryString).get();
+		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
 
 		assertThat(actual).hasSize(2);
 
@@ -243,11 +243,11 @@ public class QueryIT {
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(counter2).buid();
 
-		em.persist(entity1);
-		em.persist(entity2);
+		manager.persist(entity1);
+		manager.persist(entity2);
 
 		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = em.typedQuery(CompleteBean.class, queryString).get();
+		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
 
 		assertThat(actual).hasSize(2);
 
@@ -329,11 +329,11 @@ public class QueryIT {
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(counter2).buid();
 
-		em.persist(entity1);
-		em.persist(entity2);
+		manager.persist(entity1);
+		manager.persist(entity2);
 
 		String queryString = "SELECT * FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = em.rawTypedQuery(CompleteBean.class, queryString).get();
+		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
 
 		assertThat(actual).hasSize(2);
 
@@ -403,11 +403,11 @@ public class QueryIT {
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(counter2).buid();
 
-		em.persist(entity1);
-		em.persist(entity2);
+		manager.persist(entity1);
+		manager.persist(entity2);
 
 		String queryString = "  SELECT id, name, friends   FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = em.rawTypedQuery(CompleteBean.class, queryString).get();
+		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
 
 		assertThat(actual).hasSize(2);
 
@@ -455,10 +455,10 @@ public class QueryIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-		em.persist(entity);
+		manager.persist(entity);
 
 		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		CompleteBean actual = em.typedQuery(CompleteBean.class, queryString).getFirst();
+		CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
 
 		Factory factory1 = (Factory) actual;
 		CQLEntityInterceptor<CompleteBean> interceptor1 = (CQLEntityInterceptor<CompleteBean>) factory1.getCallback(0);
@@ -485,10 +485,10 @@ public class QueryIT {
 		Long id = RandomUtils.nextLong();
 
 		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-		em.persist(entity);
+		manager.persist(entity);
 
 		String queryString = "SELECT * FROM clustered LIMIT 3";
-		ClusteredEntity actual = em.typedQuery(ClusteredEntity.class, queryString).getFirst();
+		ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
 
 		assertThat(actual).isNotNull();
 		assertThat(actual).isInstanceOf(Factory.class);
@@ -507,10 +507,10 @@ public class QueryIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-		em.persist(entity);
+		manager.persist(entity);
 
 		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		CompleteBean actual = em.rawTypedQuery(CompleteBean.class, queryString).getFirst();
+		CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, queryString).getFirst();
 
 		assertThat(Factory.class.isAssignableFrom(actual.getClass())).isFalse();
 
@@ -531,10 +531,10 @@ public class QueryIT {
 		Long id = RandomUtils.nextLong();
 
 		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-		em.persist(entity);
+		manager.persist(entity);
 
 		String queryString = "SELECT id,count,name,value FROM clustered LIMIT 3";
-		ClusteredEntity actual = em.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
+		ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
 
 		assertThat(actual).isNotNull();
 

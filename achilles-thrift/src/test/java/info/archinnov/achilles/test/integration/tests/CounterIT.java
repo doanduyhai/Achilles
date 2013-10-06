@@ -20,7 +20,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.THRIFT_COUNTER_CF;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftCounterDao;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -39,9 +39,9 @@ public class CounterIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource("CompleteBean",
 			THRIFT_COUNTER_CF);
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
-	private ThriftCounterDao thriftCounterDao = resource.getCounterDao();
+	private ThriftCounterDao counterDao = resource.getCounterDao();
 
 	private CompleteBean bean;
 
@@ -49,12 +49,12 @@ public class CounterIT {
 	public void should_persist_counter() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 		bean.getVersion().incr(2L);
 
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
-		Long actual = thriftCounterDao.getCounterValue(keyComp, comp);
+		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(2L);
 	}
@@ -64,7 +64,7 @@ public class CounterIT {
 		long version = 10L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 		bean.getVersion().incr(version);
 
 		assertThat(bean.getVersion().get()).isEqualTo(version);
@@ -74,20 +74,20 @@ public class CounterIT {
 	public void should_remove_counter() throws Exception {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 		bean.getVersion().incr(version);
 		Composite keyComp = createCounterKey(CompleteBean.class, bean.getId());
 		Composite comp = createCounterName("version");
-		Long actual = thriftCounterDao.getCounterValue(keyComp, comp);
+		Long actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isEqualTo(version);
 
 		// Pause required to let Cassandra remove counter columns
 		Thread.sleep(1000);
 
-		em.remove(bean);
+		manager.remove(bean);
 
-		actual = thriftCounterDao.getCounterValue(keyComp, comp);
+		actual = counterDao.getCounterValue(keyComp, comp);
 
 		assertThat(actual).isNull();
 	}

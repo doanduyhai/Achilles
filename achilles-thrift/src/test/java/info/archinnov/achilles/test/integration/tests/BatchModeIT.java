@@ -28,9 +28,9 @@ import info.archinnov.achilles.dao.ThriftAbstractDao;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
-import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftBatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -66,9 +66,9 @@ public class BatchModeIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"CompleteBean", "User", "Tweet");
 
-	private ThriftEntityManagerFactory emf = resource.getFactory();
+	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftCounterDao thriftCounterDao = resource.getCounterDao();
 
@@ -91,7 +91,7 @@ public class BatchModeIT {
 	@Test
 	public void should_batch_counters() throws Exception {
 		// Start batch
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -134,7 +134,7 @@ public class BatchModeIT {
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.merge(bean);
@@ -175,7 +175,7 @@ public class BatchModeIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
 		// Start batch
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		try {
@@ -213,10 +213,10 @@ public class BatchModeIT {
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 		Tweet tweet3 = TweetTestBuilder.tweet().randomId().content("simple_tweet3").buid();
 
-		em.persist(tweet1);
+		manager.persist(tweet1);
 
 		// Start batch
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(QUORUM);
@@ -242,10 +242,10 @@ public class BatchModeIT {
 		Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 
-		em.persist(tweet1);
+		manager.persist(tweet1);
 
 		// Start batch
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(EACH_QUORUM);
@@ -270,7 +270,7 @@ public class BatchModeIT {
 		assertThat(policy.getCurrentWriteLevel()).isNull();
 	}
 
-	private void assertThatBatchContextHasBeenReset(ThriftBatchingEntityManager batchEm) {
+	private void assertThatBatchContextHasBeenReset(ThriftBatchingPersistenceManager batchEm) {
 		ThriftBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, "flushContext");
 		Map<String, Pair<Mutator<?>, ThriftAbstractDao>> mutatorMap = Whitebox.getInternalState(flushContext,
 				"mutatorMap");

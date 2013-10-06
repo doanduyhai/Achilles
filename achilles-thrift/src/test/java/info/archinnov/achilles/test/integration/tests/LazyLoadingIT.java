@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.ThriftEntityInterceptor;
@@ -34,7 +34,7 @@ public class LazyLoadingIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"CompleteBean");
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private CompleteBean bean;
 
@@ -43,12 +43,12 @@ public class LazyLoadingIT {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar")
 				.label("label").buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 	}
 
 	@Test
 	public void should_not_load_lazy_fields() throws Exception {
-		bean = em.find(CompleteBean.class, bean.getId());
+		bean = manager.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
 		ThriftEntityInterceptor<?> interceptor = (ThriftEntityInterceptor<?>) proxy.getCallback(0);
@@ -67,7 +67,7 @@ public class LazyLoadingIT {
 
 	@Test
 	public void should_set_lazy_field() throws Exception {
-		bean = em.find(CompleteBean.class, bean.getId());
+		bean = manager.find(CompleteBean.class, bean.getId());
 
 		bean.setLabel("newLabel");
 

@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessage;
@@ -45,7 +45,7 @@ public class ClusteredEntityIT2 {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ClusteredTweet",
 			"ClusteredMessage");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -59,9 +59,9 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
-		em.persist(tweet);
+		manager.persist(tweet);
 
-		ClusteredTweet found = em.find(ClusteredTweet.class, id);
+		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
 
 		assertThat(found.getContent()).isEqualTo("this is a tweet");
 		assertThat(found.getOriginalAuthorId()).isEqualTo(userId);
@@ -79,15 +79,15 @@ public class ClusteredEntityIT2 {
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
 		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
-		tweet = em.merge(tweet);
+		tweet = manager.merge(tweet);
 
 		tweet.setContent("this is a new tweet2");
 		tweet.setIsARetweet(true);
 		tweet.setOriginalAuthorId(originalAuthorId);
 
-		em.merge(tweet);
+		manager.merge(tweet);
 
-		ClusteredTweet found = em.find(ClusteredTweet.class, id);
+		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
 
 		assertThat(found.getContent()).isEqualTo("this is a new tweet2");
 		assertThat(found.getOriginalAuthorId()).isEqualTo(originalAuthorId);
@@ -104,11 +104,11 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
-		tweet = em.merge(tweet);
+		tweet = manager.merge(tweet);
 
-		em.remove(tweet);
+		manager.remove(tweet);
 
-		ClusteredTweet found = em.find(ClusteredTweet.class, id);
+		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
 
 		assertThat(found).isNull();
 	}
@@ -125,7 +125,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
 
-		tweet = em.merge(tweet);
+		tweet = manager.merge(tweet);
 
 		session.execute("update clusteredtweet set content='New tweet',original_author_id=" + originalAuthorId
 				+ ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId + " and creation_date="
@@ -133,7 +133,7 @@ public class ClusteredEntityIT2 {
 
 		Thread.sleep(100);
 
-		em.refresh(tweet);
+		manager.refresh(tweet);
 
 		assertThat(tweet.getContent()).isEqualTo("New tweet");
 		assertThat(tweet.getOriginalAuthorId()).isEqualTo(originalAuthorId);
@@ -147,9 +147,9 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessage message = new ClusteredMessage(messageId, "a message");
 
-		em.persist(message);
+		manager.persist(message);
 
-		ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
 
 		ClusteredMessageId foundCompoundKey = found.getId();
 		assertThat(foundCompoundKey.getId()).isEqualTo(id);
@@ -163,13 +163,13 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessage message = new ClusteredMessage(messageId, "an image");
 
-		message = em.merge(message);
+		message = manager.merge(message);
 
 		message.setLabel("a JPEG image");
 
-		em.merge(message);
+		manager.merge(message);
 
-		ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
 
 		assertThat(found.getLabel()).isEqualTo("a JPEG image");
 	}
@@ -181,11 +181,11 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessage message = new ClusteredMessage(messageId, "an mp3");
 
-		message = em.merge(message);
+		message = manager.merge(message);
 
-		em.remove(message);
+		manager.remove(message);
 
-		ClusteredMessage found = em.find(ClusteredMessage.class, messageId);
+		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
 
 		assertThat(found).isNull();
 	}
@@ -200,17 +200,17 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessage message = new ClusteredMessage(messageId, label);
 
-		message = em.merge(message);
+		message = manager.merge(message);
 
 		String updateQuery = "update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'";
 
-		CQLDaoContext daoContext = Whitebox.getInternalState(em, CQLDaoContext.class);
+		CQLDaoContext daoContext = Whitebox.getInternalState(manager, CQLDaoContext.class);
 
 		daoContext.execute(new SimpleStatement(updateQuery));
 
 		Thread.sleep(2000);
 
-		em.refresh(message, ConsistencyLevel.ALL);
+		manager.refresh(message, ConsistencyLevel.ALL);
 
 		assertThat(message.getLabel()).isEqualTo("a pdf file");
 	}

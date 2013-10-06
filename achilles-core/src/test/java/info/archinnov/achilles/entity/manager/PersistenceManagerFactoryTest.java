@@ -45,12 +45,12 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityManagerFactoryTest {
+public class PersistenceManagerFactoryTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private EntityManagerFactory factory;
+	private PersistenceManagerFactory pmf;
 
 	@Mock
 	private TableCreator tableCreator;
@@ -73,34 +73,34 @@ public class EntityManagerFactoryTest {
 
 	@Before
 	public void setUp() {
-		doCallRealMethod().when(factory).setEntityMetaMap(Mockito.<Map<Class<?>, EntityMeta>> any());
-		doCallRealMethod().when(factory).setEntityPackages(Mockito.<List<String>> any());
-		doCallRealMethod().when(factory).setEntityParser(any(EntityParser.class));
-		doCallRealMethod().when(factory).setEntityExplorer(any(EntityExplorer.class));
+		doCallRealMethod().when(pmf).setEntityMetaMap(Mockito.<Map<Class<?>, EntityMeta>> any());
+		doCallRealMethod().when(pmf).setEntityPackages(Mockito.<List<String>> any());
+		doCallRealMethod().when(pmf).setEntityParser(any(EntityParser.class));
+		doCallRealMethod().when(pmf).setEntityExplorer(any(EntityExplorer.class));
 
-		factory.setEntityMetaMap(entityMetaMap);
-		factory.setEntityPackages(entityPackages);
-		factory.setEntityParser(achillesEntityParser);
-		factory.setEntityExplorer(achillesEntityExplorer);
+		pmf.setEntityMetaMap(entityMetaMap);
+		pmf.setEntityPackages(entityPackages);
+		pmf.setEntityParser(achillesEntityParser);
+		pmf.setEntityExplorer(achillesEntityExplorer);
 	}
 
 	@Test
 	public void should_bootstrap() throws Exception {
 
-		when(factory.discoverEntities()).thenReturn(true);
-		doCallRealMethod().when(factory).bootstrap();
-		boolean hasSimpleCounter = factory.bootstrap();
+		when(pmf.discoverEntities()).thenReturn(true);
+		doCallRealMethod().when(pmf).bootstrap();
+		boolean hasSimpleCounter = pmf.bootstrap();
 		assertThat(hasSimpleCounter).isTrue();
 	}
 
 	@Test
 	public void should_exception_during_boostrap() throws Exception {
-		when(factory.discoverEntities()).thenThrow(new RuntimeException("test"));
-		doCallRealMethod().when(factory).bootstrap();
+		when(pmf.discoverEntities()).thenThrow(new RuntimeException("test"));
+		doCallRealMethod().when(pmf).bootstrap();
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Exception during entity parsing : test");
-		factory.bootstrap();
+		pmf.bootstrap();
 
 	}
 
@@ -114,8 +114,8 @@ public class EntityManagerFactoryTest {
 		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
 		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
 
-		doCallRealMethod().when(factory).discoverEntities();
-		factory.discoverEntities();
+		doCallRealMethod().when(pmf).discoverEntities();
+		pmf.discoverEntities();
 
 		assertThat(entityMetaMap).containsKey(Long.class);
 		assertThat(entityMetaMap).containsValue(entityMeta);
@@ -130,8 +130,8 @@ public class EntityManagerFactoryTest {
 		when(achillesEntityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
 		when(achillesEntityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
 
-		doCallRealMethod().when(factory).discoverEntities();
-		factory.discoverEntities();
+		doCallRealMethod().when(pmf).discoverEntities();
+		pmf.discoverEntities();
 
 		assertThat(entityMetaMap).isEmpty();
 
@@ -144,12 +144,12 @@ public class EntityManagerFactoryTest {
 		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
 		Map<String, Object> configurationMap = new HashMap<String, Object>();
 		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
-		when(factory.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
+		when(pmf.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
 		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
 
-		doCallRealMethod().when(factory).parseConfiguration(configurationMap, extractor);
+		doCallRealMethod().when(pmf).parseConfiguration(configurationMap, extractor);
 
-		ConfigurationContext builtContext = factory.parseConfiguration(configurationMap, extractor);
+		ConfigurationContext builtContext = pmf.parseConfiguration(configurationMap, extractor);
 
 		assertThat(builtContext).isNotNull();
 		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();

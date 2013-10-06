@@ -20,8 +20,8 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.User;
 
@@ -44,8 +44,8 @@ public class AchillesThriftResourceTest {
 
 	private Cluster cluster = resource.getCluster();
 	private Keyspace keyspace = resource.getKeyspace();
-	private ThriftEntityManagerFactory emf = resource.getFactory();
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
 	private ThriftGenericEntityDao dao = resource.getEntityDao("User", Long.class);
 
@@ -53,7 +53,7 @@ public class AchillesThriftResourceTest {
 	public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
 		Long id = RandomUtils.nextLong();
-		em.persist(new User(id, "fn", "ln"));
+		manager.persist(new User(id, "fn", "ln"));
 
 		List<Pair<Composite, Object>> columnsRange = dao.findColumnsRange(id, null, null, false, 100);
 
@@ -84,8 +84,8 @@ public class AchillesThriftResourceTest {
 
 		assertThat(resource.getCluster()).isSameAs(cluster);
 		assertThat(resource.getKeyspace()).isSameAs(keyspace);
-		assertThat(resource.getFactory()).isSameAs(emf);
-		assertThat(resource.getEm()).isSameAs(em);
+		assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
+		assertThat(resource.getPersistenceManager()).isSameAs(manager);
 		assertThat(resource.getConsistencyPolicy()).isSameAs(policy);
 	}
 }

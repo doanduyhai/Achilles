@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
@@ -36,7 +36,7 @@ public class InitializeIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"CompleteBean", "Tweet");
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_initialize_lazy_properties() throws Exception {
@@ -49,11 +49,11 @@ public class InitializeIT {
 
 		entity.setVersion(CounterBuilder.incr(11L));
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		CompleteBean foundEntity = em.find(CompleteBean.class, entity.getId());
+		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
 
-		CompleteBean rawEntity = em.initAndUnwrap(foundEntity);
+		CompleteBean rawEntity = manager.initAndUnwrap(foundEntity);
 
 		assertThat(rawEntity.getName()).isEqualTo("name");
 		assertThat(rawEntity.getLabel()).isEqualTo("label");
@@ -68,13 +68,13 @@ public class InitializeIT {
 	public void should_initialize_counter_value() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		entity.getVersion().incr(2L);
 
-		CompleteBean foundEntity = em.find(CompleteBean.class, entity.getId());
+		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
 
-		CompleteBean rawEntity = em.initAndUnwrap(foundEntity);
+		CompleteBean rawEntity = manager.initAndUnwrap(foundEntity);
 
 		assertThat(rawEntity.getVersion()).isInstanceOf(CounterImpl.class);
 		assertThat(rawEntity.getVersion().get()).isEqualTo(2L);

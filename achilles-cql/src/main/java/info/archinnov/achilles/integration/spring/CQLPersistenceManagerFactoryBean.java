@@ -19,8 +19,8 @@ package info.archinnov.achilles.integration.spring;
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.*;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.HashMap;
@@ -38,8 +38,8 @@ import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
 
-public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityManager> {
-	private static CQLEntityManager em;
+public class CQLPersistenceManagerFactoryBean extends AbstractFactoryBean<CQLPersistenceManager> {
+	private static CQLPersistenceManager manager;
 	private String entityPackages;
 
 	private String contactPoints;
@@ -92,8 +92,8 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 
 		configMap.put(FORCE_CF_CREATION_PARAM, forceColumnFamilyCreation);
 
-		CQLEntityManagerFactory factory = new CQLEntityManagerFactory(configMap);
-		em = factory.createEntityManager();
+		CQLPersistenceManagerFactory pmf = new CQLPersistenceManagerFactory(configMap);
+		manager = pmf.createPersistenceManager();
 	}
 
 	private void fillEntityPackages(Map<String, Object> configMap) {
@@ -284,7 +284,7 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 
 	@Override
 	public Class<?> getObjectType() {
-		return CQLEntityManager.class;
+		return CQLPersistenceManager.class;
 	}
 
 	@Override
@@ -293,13 +293,13 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 	}
 
 	@Override
-	protected CQLEntityManager createInstance() throws Exception {
+	protected CQLPersistenceManager createInstance() throws Exception {
 		synchronized (this) {
-			if (em == null) {
+			if (manager == null) {
 				initialize();
 			}
 		}
-		return em;
+		return manager;
 	}
 
 }

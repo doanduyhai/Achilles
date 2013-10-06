@@ -48,12 +48,12 @@ import org.powermock.reflect.Whitebox;
 import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftEntityManagerTest {
+public class ThriftPersistenceManagerTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock(answer = Answers.CALLS_REAL_METHODS)
-	private ThriftEntityManager em;
+	private ThriftPersistenceManager manager;
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
@@ -91,13 +91,13 @@ public class ThriftEntityManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		em.setContextFactory(contextFactory);
-		em.setQueryExecutor(queryExecutor);
-		em.setCompoundKeyValidator(compoundKeyValidator);
-		em.setProxifier(proxifier);
-		em.setEntityMetaMap(entityMetaMap);
-		em.setConfigContext(configContext);
-		em.setThriftDaoContext(daoContext);
+		manager.setContextFactory(contextFactory);
+		manager.setQueryExecutor(queryExecutor);
+		manager.setCompoundKeyValidator(compoundKeyValidator);
+		manager.setProxifier(proxifier);
+		manager.setEntityMetaMap(entityMetaMap);
+		manager.setConfigContext(configContext);
+		manager.setThriftDaoContext(daoContext);
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class ThriftEntityManagerTest {
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 		when(daoContext.findEntityDao("table")).thenReturn(entityDao);
 
-		ThriftPersistenceContext actual = em.initPersistenceContext(CompleteBean.class, entity.getId(),
+		ThriftPersistenceContext actual = manager.initPersistenceContext(CompleteBean.class, entity.getId(),
 				OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
@@ -120,7 +120,7 @@ public class ThriftEntityManagerTest {
 		ThriftPersistenceContext context = mock(ThriftPersistenceContext.class);
 		when(contextFactory.newContext(entity, OptionsBuilder.noOptions())).thenReturn(context);
 
-		ThriftPersistenceContext actual = em.initPersistenceContext(entity, OptionsBuilder.noOptions());
+		ThriftPersistenceContext actual = manager.initPersistenceContext(entity, OptionsBuilder.noOptions());
 
 		assertThat(actual).isSameAs(context);
 
@@ -130,7 +130,7 @@ public class ThriftEntityManagerTest {
 	public void should_create_slice_query_builder() throws Exception {
 		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
 
-		SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = em.sliceQuery(CompleteBean.class);
+		SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = manager.sliceQuery(CompleteBean.class);
 
 		assertThat(builder).isNotNull();
 		assertThat(Whitebox.getInternalState(builder, "sliceQueryExecutor")).isSameAs(queryExecutor);

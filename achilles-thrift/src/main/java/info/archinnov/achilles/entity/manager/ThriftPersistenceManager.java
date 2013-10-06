@@ -33,8 +33,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext> {
-	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManager.class);
+public class ThriftPersistenceManager extends PersistenceManager<ThriftPersistenceContext> {
+	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceManager.class);
 
 	protected ThriftDaoContext daoContext;
 	protected ThriftPersistenceContextFactory contextFactory;
@@ -42,13 +42,13 @@ public class ThriftEntityManager extends EntityManager<ThriftPersistenceContext>
 	private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
 	/**
-	 * Create a new ThriftEntityManager with a configuration map
+	 * Create a new ThriftPersistenceManager with a configuration map
 	 * 
 	 * @param configurationMap
 	 *            Check documentation for more details on configuration
 	 *            parameters
 	 */
-	ThriftEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+	ThriftPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext, //
 			ConfigurationContext configContext) {
 		super(entityMetaMap, configContext);

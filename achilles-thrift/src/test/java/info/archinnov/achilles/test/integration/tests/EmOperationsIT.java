@@ -23,7 +23,7 @@ import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -58,7 +58,7 @@ public class EmOperationsIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"CompleteBean", "Tweet", "User", "achillesCounterCF");
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftGenericEntityDao dao = resource.getEntityDao(
 			normalizerAndValidateColumnFamilyName(CompleteBean.class.getName()), Long.class);
@@ -78,7 +78,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
 		Composite startCompositeForEagerFetch = new Composite();
 		startCompositeForEagerFetch.addComponent(0, START_EAGER, ComponentEquality.EQUAL);
@@ -164,9 +164,9 @@ public class EmOperationsIT {
 	public void should_persist_empty_bean() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(found).isNotNull();
 	}
@@ -177,16 +177,16 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar", "qux").addFollowers("John", "Helen").addPreference(1, "Paris")
 				.addPreference(2, "Ile de France").addPreference(3, "FRANCE").buid();
 
-		em.persist(entity);
+		manager.persist(entity);
 
 		entity.getFriends().clear();
 		entity.getFollowers().clear();
 		entity.getPreferences().clear();
 
 		// Should clean collections & maps before persisting again
-		em.persist(entity);
+		manager.persist(entity);
 
-		entity = em.find(CompleteBean.class, entity.getId());
+		entity = manager.find(CompleteBean.class, entity.getId());
 
 		assertThat(entity.getFriends()).isNull();
 		assertThat(entity.getFollowers()).isNull();
@@ -198,9 +198,9 @@ public class EmOperationsIT {
 	public void should_find() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(found).isNotNull();
 		assertThat(found).isInstanceOf(Factory.class);
@@ -211,9 +211,9 @@ public class EmOperationsIT {
 	public void should_find_lazy_simple() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").label("label").buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
 		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
@@ -236,9 +236,9 @@ public class EmOperationsIT {
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		Factory factory = (Factory) found;
 		ThriftEntityInterceptor interceptor = (ThriftEntityInterceptor) factory.getCallback(0);
@@ -260,15 +260,15 @@ public class EmOperationsIT {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		found.setAge(100L);
 		found.getFriends().add("eve");
 		found.getPreferences().put(1, "FR");
 
-		CompleteBean merged = em.merge(found);
+		CompleteBean merged = manager.merge(found);
 
 		assertThat(merged).isSameAs(found);
 
@@ -330,18 +330,18 @@ public class EmOperationsIT {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean found = em.find(CompleteBean.class, bean.getId());
+		CompleteBean found = manager.find(CompleteBean.class, bean.getId());
 
 		found.setName(null);
 		found.setFriends(null);
 		found.setFollowers(null);
 		found.setPreferences(null);
 
-		em.merge(found);
+		manager.merge(found);
 
-		found = em.find(CompleteBean.class, bean.getId());
+		found = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(found.getName()).isNull();
 		assertThat(found.getFriends()).isNull();
@@ -356,7 +356,7 @@ public class EmOperationsIT {
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
 		exception.expect(IllegalAccessException.class);
 		exception.expectMessage("Cannot change primary key value for existing entity");
@@ -367,7 +367,7 @@ public class EmOperationsIT {
 	@Test
 	public void should_return_managed_entity_after_merge() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().buid();
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
 		assertThat(bean).isInstanceOf(Factory.class);
 	}
@@ -379,9 +379,9 @@ public class EmOperationsIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
-		CompleteBean bean2 = em.merge(bean);
+		CompleteBean bean2 = manager.merge(bean);
 
 		assertThat(bean2).isSameAs(bean);
 		assertThat(bean.getWelcomeTweet()).isEqualTo(tweet);
@@ -394,11 +394,11 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
-		em.remove(bean);
+		manager.remove(bean);
 
-		CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
+		CompleteBean foundBean = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(foundBean).isNull();
 
@@ -414,11 +414,11 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
-		em.removeById(CompleteBean.class, bean.getId());
+		manager.removeById(CompleteBean.class, bean.getId());
 
-		CompleteBean foundBean = em.find(CompleteBean.class, bean.getId());
+		CompleteBean foundBean = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(foundBean).isNull();
 
@@ -434,7 +434,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		em.remove(bean);
+		manager.remove(bean);
 	}
 
 	@Test
@@ -443,14 +443,14 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		CompleteBean foundBean = em.getReference(CompleteBean.class, bean.getId());
+		CompleteBean foundBean = manager.getReference(CompleteBean.class, bean.getId());
 
 		assertThat(foundBean).isNotNull();
 
 		// Real object should be empty
-		CompleteBean realObject = em.unwrap(foundBean);
+		CompleteBean realObject = manager.unwrap(foundBean);
 
 		assertThat(realObject.getId()).isEqualTo(bean.getId());
 		assertThat(realObject.getName()).isNull();
@@ -479,7 +479,7 @@ public class EmOperationsIT {
 		CompleteBean completeBean = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("The entity '" + completeBean + "' is not in 'managed' state");
-		em.refresh(completeBean);
+		manager.refresh(completeBean);
 	}
 
 	@Test
@@ -489,7 +489,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
 		bean.getFriends();
 
@@ -508,7 +508,7 @@ public class EmOperationsIT {
 		Composite friend3Composite = thriftCompositeFactory.createForBatchInsertSetOrMap(listLazyMeta, "2");
 		dao.setValue(bean.getId(), friend3Composite, "qux");
 
-		em.refresh(bean);
+		manager.refresh(bean);
 
 		assertThat(bean.getName()).isEqualTo("DuyHai_modified");
 		assertThat(bean.getFriends()).hasSize(3);
@@ -521,13 +521,13 @@ public class EmOperationsIT {
 
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
 		Mutator<Object> mutator = dao.buildMutator();
 		dao.removeRowBatch(bean.getId(), mutator);
 		dao.executeMutator(mutator);
 
-		em.refresh(bean);
+		manager.refresh(bean);
 
 	}
 
@@ -538,7 +538,7 @@ public class EmOperationsIT {
 				.label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 
 		assertThat(bean.getLabel()).isEqualTo("label");
 
@@ -553,9 +553,9 @@ public class EmOperationsIT {
 		bean.setFollowers(null);
 		bean.setPreferences(null);
 
-		em.persist(bean);
+		manager.persist(bean);
 
-		bean = em.find(CompleteBean.class, bean.getId());
+		bean = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(bean.getFriends()).isNull();
 		assertThat(bean.getFollowers()).isNull();
@@ -569,7 +569,7 @@ public class EmOperationsIT {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("DuyHai") //
 				.buid();
 
-		em.persist(bean);
+		manager.persist(bean);
 
 		Composite composite = new Composite();
 		composite.addComponent(0, SIMPLE.flag(), ComponentEquality.EQUAL);
@@ -578,7 +578,7 @@ public class EmOperationsIT {
 
 		dao.setValue(bean.getId(), composite, "this is an unmapped property");
 
-		bean = em.find(CompleteBean.class, bean.getId());
+		bean = manager.find(CompleteBean.class, bean.getId());
 
 		assertThat(bean.getName()).isEqualTo("DuyHai");
 

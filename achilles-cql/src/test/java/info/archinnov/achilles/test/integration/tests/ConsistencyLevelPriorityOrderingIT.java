@@ -19,9 +19,9 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.CQLBatchingFlushContext;
-import info.archinnov.achilles.entity.manager.CQLBatchingEntityManager;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.CQLBatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -51,9 +51,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "clustered");
 
-	private CQLEntityManagerFactory emf = resource.getFactory();
+	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -65,9 +65,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(id);
 		entity.setName("name");
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		logAsserter.prepareLogLevel();
 
@@ -82,7 +82,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx.expect(InvalidQueryException.class);
 		expectedEx
 				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
-		em.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+		manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 	}
 
 	@Test
@@ -90,9 +90,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name sdfsdf");
-		em.persist(entity);
+		manager.persist(entity);
 
-		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 
 		batchEm.startBatch(EACH_QUORUM);
 
@@ -109,7 +109,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -125,7 +125,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(THREE);
 		entity = batchEm.merge(entity);
 
@@ -142,7 +142,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -160,7 +160,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		entity = batchEm.merge(entity);
 
@@ -177,7 +177,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Test
 	public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
-		CQLBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 
 		expectedEx.expect(InvalidQueryException.class);
@@ -186,7 +186,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		batchEm.sliceQuery(ClusteredEntity.class).partitionKey(11L).consistencyLevel(EACH_QUORUM).get(10);
 	}
 
-	private void assertThatBatchContextHasBeenReset(CQLBatchingEntityManager batchEm) {
+	private void assertThatBatchContextHasBeenReset(CQLBatchingPersistenceManager batchEm) {
 		CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
 		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,

@@ -35,8 +35,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class EntityManagerFactory {
-	private static final Logger log = LoggerFactory.getLogger(EntityManagerFactory.class);
+public abstract class PersistenceManagerFactory {
+	private static final Logger log = LoggerFactory.getLogger(PersistenceManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected ConfigurationContext configContext;
@@ -45,16 +45,18 @@ public abstract class EntityManagerFactory {
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
 
-	protected EntityManagerFactory(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
-		Validator.validateNotNull(configurationMap, "Configuration map for EntityManagerFactory should not be null");
-		Validator.validateNotEmpty(configurationMap, "Configuration map for EntityManagerFactory should not be empty");
+	protected PersistenceManagerFactory(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
+		Validator.validateNotNull(configurationMap,
+				"Configuration map for PersistenceManagerFactory should not be null");
+		Validator.validateNotEmpty(configurationMap,
+				"Configuration map for PersistenceManagerFactory should not be empty");
 
 		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
 		configContext = parseConfiguration(configurationMap, argumentExtractor);
 	}
 
 	protected boolean bootstrap() {
-		log.info("Bootstraping Achilles EntityManagerFactory ");
+		log.info("Bootstraping Achilles PersistenceManagerFactory ");
 
 		boolean hasSimpleCounter = false;
 		try {

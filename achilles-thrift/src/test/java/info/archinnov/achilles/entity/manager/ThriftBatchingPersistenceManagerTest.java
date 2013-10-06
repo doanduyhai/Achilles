@@ -19,11 +19,11 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.CQLConsistencyLevelPolicy;
-import info.archinnov.achilles.context.CQLBatchingFlushContext;
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.context.CQLPersistenceContextFactory;
+import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.ThriftBatchingFlushContext;
+import info.archinnov.achilles.context.ThriftDaoContext;
+import info.archinnov.achilles.context.ThriftPersistenceContextFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -41,30 +41,29 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLBatchingEntityManagerTest {
-
+public class ThriftBatchingPersistenceManagerTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CQLBatchingEntityManager em;
+	private ThriftBatchingPersistenceManager manager;
 
 	@Mock
-	private CQLPersistenceContextFactory contextFactory;
+	private ThriftPersistenceContextFactory contextFactory;
 
 	@Mock
-	private CQLDaoContext daoContext;
+	private ThriftDaoContext daoContext;
 
 	@Mock
 	private ConfigurationContext configContext;
 
 	@Mock
-	private CQLConsistencyLevelPolicy consistencyPolicy;
+	private ThriftConsistencyLevelPolicy consistencyPolicy;
 
 	@Mock
-	private CQLBatchingFlushContext flushContext;
+	private ThriftBatchingFlushContext flushContext;
 
 	@Mock
-	private EntityManagerFactory emf;
+	private PersistenceManagerFactory pmf;
 
 	@Captor
 	private ArgumentCaptor<ConsistencyLevel> consistencyCaptor;
@@ -72,19 +71,19 @@ public class CQLBatchingEntityManagerTest {
 	@Before
 	public void setUp() {
 		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
-		em = new CQLBatchingEntityManager(null, contextFactory, daoContext, configContext);
-		Whitebox.setInternalState(em, CQLBatchingFlushContext.class, flushContext);
+		manager = new ThriftBatchingPersistenceManager(null, contextFactory, daoContext, configContext);
+		Whitebox.setInternalState(manager, ThriftBatchingFlushContext.class, flushContext);
 	}
 
 	@Test
 	public void should_start_batch() throws Exception {
-		em.startBatch();
+		manager.startBatch();
 		verify(flushContext).startBatch();
 	}
 
 	@Test
 	public void should_start_batch_with_consistency_level() throws Exception {
-		em.startBatch(EACH_QUORUM);
+		manager.startBatch(EACH_QUORUM);
 		verify(flushContext).startBatch();
 		verify(flushContext).setConsistencyLevel(consistencyCaptor.capture());
 
@@ -93,25 +92,13 @@ public class CQLBatchingEntityManagerTest {
 
 	@Test
 	public void should_end_batch() throws Exception {
-		em.endBatch();
+		manager.endBatch();
 		verify(flushContext).endBatch();
-		verify(flushContext).cleanUp();
-	}
-
-	@Test
-	public void should_clean_flush_context_when_exception() throws Exception {
-		doThrow(new RuntimeException()).when(flushContext).endBatch();
-		try {
-			em.endBatch();
-		} catch (RuntimeException ex) {
-			verify(flushContext).endBatch();
-			verify(flushContext).cleanUp();
-		}
 	}
 
 	@Test
 	public void should_clean_batch() throws Exception {
-		em.cleanBatch();
+		manager.cleanBatch();
 		verify(flushContext).cleanUp();
 	}
 
@@ -121,7 +108,7 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+		manager.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
 
 	@Test
@@ -130,7 +117,7 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.merge(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+		manager.merge(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
 
 	@Test
@@ -139,7 +126,7 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.remove(new CompleteBean(), ONE);
+		manager.remove(new CompleteBean(), ONE);
 	}
 
 	@Test
@@ -148,7 +135,7 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.find(CompleteBean.class, 11L, ONE);
+		manager.find(CompleteBean.class, 11L, ONE);
 	}
 
 	@Test
@@ -157,7 +144,7 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.getReference(CompleteBean.class, 11L, ONE);
+		manager.getReference(CompleteBean.class, 11L, ONE);
 	}
 
 	@Test
@@ -166,6 +153,6 @@ public class CQLBatchingEntityManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
 
-		em.refresh(new CompleteBean(), ONE);
+		manager.refresh(new CompleteBean(), ONE);
 	}
 }

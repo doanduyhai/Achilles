@@ -36,7 +36,7 @@ import java.util.Map;
 
 import com.datastax.driver.core.Session;
 
-public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
+public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceContext> {
 	private CQLCompoundKeyValidator compoundKeyValidator = new CQLCompoundKeyValidator();
 	private CQLSliceQueryExecutor sliceQueryExecutor;
 	private CQLPersistenceContextFactory contextFactory;
@@ -44,7 +44,7 @@ public class CQLEntityManager extends EntityManager<CQLPersistenceContext> {
 
 	private CQLTypedQueryValidator typedQueryValidator = new CQLTypedQueryValidator();
 
-	protected CQLEntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+	protected CQLPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			CQLPersistenceContextFactory contextFactory, CQLDaoContext daoContext, ConfigurationContext configContext) {
 		super(entityMetaMap, configContext);
 		this.daoContext = daoContext;

@@ -56,12 +56,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityManagerTest {
+public class PersistenceManagerTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
-	private EntityManager<PersistenceContext> em;
+	private PersistenceManager<PersistenceContext> manager;
 
 	@Mock
 	private EntityPersister<PersistenceContext> persister;
@@ -103,18 +103,18 @@ public class EntityManagerTest {
 	public void setUp() throws Exception {
 
 		forceMethodCallsOnMock();
-		when(em.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
+		when(manager.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
 				context);
-		when(em.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
+		when(manager.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
 	}
 
 	@Test
 	public void should_persist() throws Exception {
 		when(proxifier.isProxy(entity)).thenReturn(false);
-		doCallRealMethod().when(em).persist(entity);
-		doCallRealMethod().when(em).persist(eq(entity), any(Options.class));
+		doCallRealMethod().when(manager).persist(entity);
+		doCallRealMethod().when(manager).persist(eq(entity), any(Options.class));
 
-		em.persist(entity);
+		manager.persist(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(context).persist();
@@ -128,9 +128,9 @@ public class EntityManagerTest {
 	@Test
 	public void should_persist_with_options() throws Exception {
 		when(proxifier.isProxy(entity)).thenReturn(false);
-		doCallRealMethod().when(em).persist(eq(entity), optionsCaptor.capture());
+		doCallRealMethod().when(manager).persist(eq(entity), optionsCaptor.capture());
 
-		em.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(150).timestamp(100L));
+		manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(150).timestamp(100L));
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(context).persist();
@@ -144,21 +144,21 @@ public class EntityManagerTest {
 	@Test
 	public void should_exception_trying_to_persist_a_managed_entity() throws Exception {
 		when(proxifier.isProxy(entity)).thenReturn(true);
-		doCallRealMethod().when(em).persist(entity);
-		doCallRealMethod().when(em).persist(eq(entity), any(Options.class));
+		doCallRealMethod().when(manager).persist(entity);
+		doCallRealMethod().when(manager).persist(eq(entity), any(Options.class));
 
 		exception.expect(IllegalStateException.class);
 
-		em.persist(entity);
+		manager.persist(entity);
 	}
 
 	@Test
 	public void should_merge() throws Exception {
 		when(context.merge(entity)).thenReturn(entity);
-		doCallRealMethod().when(em).merge(entity);
-		doCallRealMethod().when(em).merge(eq(entity), optionsCaptor.capture());
+		doCallRealMethod().when(manager).merge(entity);
+		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
 
-		CompleteBean mergedEntity = em.merge(entity);
+		CompleteBean mergedEntity = manager.merge(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 
@@ -173,9 +173,9 @@ public class EntityManagerTest {
 	@Test
 	public void should_merge_with_options() throws Exception {
 		when(context.merge(entity)).thenReturn(entity);
-		doCallRealMethod().when(em).merge(eq(entity), optionsCaptor.capture());
+		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
 
-		CompleteBean mergedEntity = em.merge(entity,
+		CompleteBean mergedEntity = manager.merge(entity,
 				OptionsBuilder.withConsistency(EACH_QUORUM).ttl(150).timestamp(100L));
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
@@ -189,10 +189,10 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_remove() throws Exception {
-		doCallRealMethod().when(em).remove(entity);
-		doCallRealMethod().when(em).remove(eq(entity), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).remove(entity);
+		doCallRealMethod().when(manager).remove(eq(entity), any(ConsistencyLevel.class));
 
-		em.remove(entity);
+		manager.remove(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
@@ -205,11 +205,11 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_remove_with_consistency() throws Exception {
-		when(em.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
-		doCallRealMethod().when(em).remove(entity, EACH_QUORUM);
-		doCallRealMethod().when(em).remove(eq(entity), any(ConsistencyLevel.class));
+		when(manager.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
+		doCallRealMethod().when(manager).remove(entity, EACH_QUORUM);
+		doCallRealMethod().when(manager).remove(eq(entity), any(ConsistencyLevel.class));
 
-		em.remove(entity, EACH_QUORUM);
+		manager.remove(entity, EACH_QUORUM);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
@@ -222,11 +222,11 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_remove_by_id() throws Exception {
-		doCallRealMethod().when(em).removeById(CompleteBean.class, primaryKey);
+		doCallRealMethod().when(manager).removeById(CompleteBean.class, primaryKey);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		em.removeById(CompleteBean.class, primaryKey);
+		manager.removeById(CompleteBean.class, primaryKey);
 
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		verify(context).remove();
@@ -239,11 +239,11 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_remove_by_id_with_consistency() throws Exception {
-		doCallRealMethod().when(em).removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
+		doCallRealMethod().when(manager).removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		em.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
+		manager.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
 
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		verify(context).remove();
@@ -255,14 +255,14 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_find() throws Exception {
-		doCallRealMethod().when(em).find(CompleteBean.class, primaryKey);
-		doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).find(CompleteBean.class, primaryKey);
+		doCallRealMethod().when(manager).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean bean = em.find(CompleteBean.class, primaryKey);
+		CompleteBean bean = manager.find(CompleteBean.class, primaryKey);
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
 
@@ -274,14 +274,14 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_find_with_consistency() throws Exception {
-		doCallRealMethod().when(em).find(CompleteBean.class, primaryKey, EACH_QUORUM);
-		doCallRealMethod().when(em).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).find(CompleteBean.class, primaryKey, EACH_QUORUM);
+		doCallRealMethod().when(manager).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean bean = em.find(CompleteBean.class, primaryKey, EACH_QUORUM);
+		CompleteBean bean = manager.find(CompleteBean.class, primaryKey, EACH_QUORUM);
 
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
@@ -295,13 +295,13 @@ public class EntityManagerTest {
 	@Test
 	public void should_get_reference() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
-		doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey);
-		doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey);
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean bean = em.getReference(CompleteBean.class, primaryKey);
+		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey);
 
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
@@ -315,13 +315,13 @@ public class EntityManagerTest {
 	@Test
 	public void should_get_reference_with_consistency() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
-		doCallRealMethod().when(em).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
-		doCallRealMethod().when(em).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean bean = em.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
+		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
@@ -334,10 +334,10 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_refresh() throws Exception {
-		doCallRealMethod().when(em).refresh(entity);
-		doCallRealMethod().when(em).refresh(eq(entity), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).refresh(entity);
+		doCallRealMethod().when(manager).refresh(eq(entity), any(ConsistencyLevel.class));
 
-		em.refresh(entity);
+		manager.refresh(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
@@ -351,10 +351,10 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_refresh_with_consistency() throws Exception {
-		doCallRealMethod().when(em).refresh(entity, EACH_QUORUM);
-		doCallRealMethod().when(em).refresh(eq(entity), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).refresh(entity, EACH_QUORUM);
+		doCallRealMethod().when(manager).refresh(eq(entity), any(ConsistencyLevel.class));
 
-		em.refresh(entity, EACH_QUORUM);
+		manager.refresh(entity, EACH_QUORUM);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
@@ -368,9 +368,9 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_initialize_entity() throws Exception {
-		doCallRealMethod().when(em).initialize(entity);
+		doCallRealMethod().when(manager).initialize(entity);
 		when(context.initialize(entity)).thenReturn(entity);
-		CompleteBean actual = em.initialize(entity);
+		CompleteBean actual = manager.initialize(entity);
 		verify(proxifier).ensureProxy(entity);
 		assertThat(actual).isSameAs(entity);
 
@@ -382,10 +382,10 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_initialize_list_of_entities() throws Exception {
-		when(em.initialize(entity)).thenReturn(entity);
+		when(manager.initialize(entity)).thenReturn(entity);
 		List<CompleteBean> entities = Arrays.asList(entity);
-		doCallRealMethod().when(em).initialize(entities);
-		List<CompleteBean> actual = em.initialize(entities);
+		doCallRealMethod().when(manager).initialize(entities);
+		List<CompleteBean> actual = manager.initialize(entities);
 
 		assertThat(actual).containsExactly(entity);
 
@@ -393,10 +393,10 @@ public class EntityManagerTest {
 
 	@Test
 	public void should_initialize_set_of_entities() throws Exception {
-		when(em.initialize(entity)).thenReturn(entity);
+		when(manager.initialize(entity)).thenReturn(entity);
 		Set<CompleteBean> entities = Sets.newHashSet(entity);
-		doCallRealMethod().when(em).initialize(entities);
-		Set<CompleteBean> actual = em.initialize(entities);
+		doCallRealMethod().when(manager).initialize(entities);
+		Set<CompleteBean> actual = manager.initialize(entities);
 
 		assertThat(actual).containsExactly(entity);
 
@@ -405,8 +405,8 @@ public class EntityManagerTest {
 	@Test
 	public void should_unwrap_entity() throws Exception {
 		when(proxifier.unwrap(entity)).thenReturn(entity);
-		doCallRealMethod().when(em).unwrap(entity);
-		CompleteBean actual = em.unwrap(entity);
+		doCallRealMethod().when(manager).unwrap(entity);
+		CompleteBean actual = manager.unwrap(entity);
 
 		assertThat(actual).isSameAs(entity);
 	}
@@ -416,8 +416,8 @@ public class EntityManagerTest {
 		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
 		when(proxifier.unwrap(proxies)).thenReturn(proxies);
 
-		doCallRealMethod().when(em).unwrap(proxies);
-		List<CompleteBean> actual = em.unwrap(proxies);
+		doCallRealMethod().when(manager).unwrap(proxies);
+		List<CompleteBean> actual = manager.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
 	}
@@ -428,20 +428,20 @@ public class EntityManagerTest {
 
 		when(proxifier.unwrap(proxies)).thenReturn(proxies);
 
-		doCallRealMethod().when(em).unwrap(proxies);
-		Set<CompleteBean> actual = em.unwrap(proxies);
+		doCallRealMethod().when(manager).unwrap(proxies);
+		Set<CompleteBean> actual = manager.unwrap(proxies);
 
 		assertThat(actual).isSameAs(proxies);
 	}
 
 	@Test
 	public void should_init_and_unwrap_entity() throws Exception {
-		when(em.initialize(entity)).thenReturn(entity);
-		when(em.unwrap(entity)).thenReturn(entity);
+		when(manager.initialize(entity)).thenReturn(entity);
+		when(manager.unwrap(entity)).thenReturn(entity);
 
-		doCallRealMethod().when(em).initAndUnwrap(entity);
+		doCallRealMethod().when(manager).initAndUnwrap(entity);
 
-		CompleteBean actual = em.initAndUnwrap(entity);
+		CompleteBean actual = manager.initAndUnwrap(entity);
 
 		assertThat(actual).isSameAs(entity);
 
@@ -451,12 +451,12 @@ public class EntityManagerTest {
 	public void should_init_and_unwrap_list_of_entities() throws Exception {
 		List<CompleteBean> entities = Arrays.asList(entity);
 
-		when(em.initialize(entities)).thenReturn(entities);
-		when(em.unwrap(entities)).thenReturn(entities);
+		when(manager.initialize(entities)).thenReturn(entities);
+		when(manager.unwrap(entities)).thenReturn(entities);
 
-		doCallRealMethod().when(em).initAndUnwrap(entities);
+		doCallRealMethod().when(manager).initAndUnwrap(entities);
 
-		List<CompleteBean> actual = em.initAndUnwrap(entities);
+		List<CompleteBean> actual = manager.initAndUnwrap(entities);
 
 		assertThat(actual).isSameAs(entities);
 	}
@@ -465,27 +465,27 @@ public class EntityManagerTest {
 	public void should_init_and_unwrap_set_of_entities() throws Exception {
 		Set<CompleteBean> entities = Sets.newHashSet(entity);
 
-		when(em.initialize(entities)).thenReturn(entities);
-		when(em.unwrap(entities)).thenReturn(entities);
+		when(manager.initialize(entities)).thenReturn(entities);
+		when(manager.unwrap(entities)).thenReturn(entities);
 
-		doCallRealMethod().when(em).initAndUnwrap(entities);
+		doCallRealMethod().when(manager).initAndUnwrap(entities);
 
-		Set<CompleteBean> actual = em.initAndUnwrap(entities);
+		Set<CompleteBean> actual = manager.initAndUnwrap(entities);
 
 		assertThat(actual).isSameAs(entities);
 	}
 
 	private void forceMethodCallsOnMock() {
-		doCallRealMethod().when(em).setInitializer(initializer);
-		em.setInitializer(initializer);
+		doCallRealMethod().when(manager).setInitializer(initializer);
+		manager.setInitializer(initializer);
 
-		doCallRealMethod().when(em).setProxifier(proxifier);
-		em.setProxifier(proxifier);
+		doCallRealMethod().when(manager).setProxifier(proxifier);
+		manager.setProxifier(proxifier);
 
-		doCallRealMethod().when(em).setEntityValidator(entityValidator);
-		em.setEntityValidator(entityValidator);
+		doCallRealMethod().when(manager).setEntityValidator(entityValidator);
+		manager.setEntityValidator(entityValidator);
 
-		doCallRealMethod().when(em).setEntityMetaMap(entityMetaMap);
-		em.setEntityMetaMap(entityMetaMap);
+		doCallRealMethod().when(manager).setEntityMetaMap(entityMetaMap);
+		manager.setEntityMetaMap(entityMetaMap);
 	}
 }

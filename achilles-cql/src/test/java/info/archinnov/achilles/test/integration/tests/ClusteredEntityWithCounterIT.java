@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
@@ -39,7 +39,7 @@ public class ClusteredEntityWithCounterIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
 			"clustered_with_counter_value");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -54,9 +54,9 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		ClusteredEntityWithCounter found = em.find(ClusteredEntityWithCounter.class, compoundKey);
+		ClusteredEntityWithCounter found = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
@@ -68,9 +68,9 @@ public class ClusteredEntityWithCounterIT {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		em.merge(entity);
+		manager.merge(entity);
 
-		ClusteredEntityWithCounter found = em.getReference(ClusteredEntityWithCounter.class, compoundKey);
+		ClusteredEntityWithCounter found = manager.getReference(ClusteredEntityWithCounter.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
@@ -85,11 +85,11 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		entity.getCounter().incr(incr);
 
-		entity = em.find(ClusteredEntityWithCounter.class, compoundKey);
+		entity = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
 		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
 	}
@@ -102,13 +102,13 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
-		em.remove(entity);
+		manager.remove(entity);
 
 		Thread.sleep(2000);
 
-		assertThat(em.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
+		assertThat(manager.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
 
 	}
 
@@ -123,7 +123,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		session.execute("UPDATE clustered_with_counter_value SET counter = counter + " + incr + " WHERE id="
 				+ partitionKey + " AND name='name'");
@@ -131,7 +131,7 @@ public class ClusteredEntityWithCounterIT {
 		// Wait for the counter to be updated
 		Thread.sleep(1000);
 
-		em.refresh(entity);
+		manager.refresh(entity);
 
 		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
 
@@ -140,14 +140,14 @@ public class ClusteredEntityWithCounterIT {
 	@Test
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		List<ClusteredEntityWithCounter> entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
 				.partitionKey(partitionKey).fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = em.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
+		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
 				.toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
@@ -162,7 +162,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
 
-		entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+		entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
 				.fromEmbeddedId(new ClusteredKey(partitionKey, "name2"))
 				.toEmbeddedId(new ClusteredKey(partitionKey, "name4")).get();
 
@@ -184,7 +184,7 @@ public class ClusteredEntityWithCounterIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntityWithCounter> iter = em.sliceQuery(ClusteredEntityWithCounter.class)
+		Iterator<ClusteredEntityWithCounter> iter = manager.sliceQuery(ClusteredEntityWithCounter.class)
 				.partitionKey(partitionKey).iterator();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -225,14 +225,14 @@ public class ClusteredEntityWithCounterIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 3);
 
-		em.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
+		manager.sliceQuery(ClusteredEntityWithCounter.class).partitionKey(partitionKey).fromClusterings("name2")
 				.toClusterings("name2").remove();
 
 		// Wait until counter column is really removed because of absence of
 		// tombstone
 		Thread.sleep(1000);
 
-		List<ClusteredEntityWithCounter> entities = em.sliceQuery(ClusteredEntityWithCounter.class)
+		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
 				.partitionKey(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
@@ -245,7 +245,7 @@ public class ClusteredEntityWithCounterIT {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(embeddedId,
 				CounterBuilder.incr(clusteredCounter));
-		em.persist(entity);
+		manager.persist(entity);
 	}
 
 	private void insertValues(long partitionKey, int count) {

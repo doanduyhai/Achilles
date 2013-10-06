@@ -44,7 +44,7 @@ import org.powermock.reflect.Whitebox;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersistenceContextFactoryTest {
 
-	private CQLPersistenceContextFactory factory;
+	private CQLPersistenceContextFactory pmf;
 
 	@Mock
 	private CQLDaoContext daoContext;
@@ -77,8 +77,8 @@ public class CQLPersistenceContextFactoryTest {
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(CompleteBean.class, meta);
 
-		factory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
-		Whitebox.setInternalState(factory, ReflectionInvoker.class, invoker);
+		pmf = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
+		Whitebox.setInternalState(pmf, ReflectionInvoker.class, invoker);
 	}
 
 	@Test
@@ -89,7 +89,7 @@ public class CQLPersistenceContextFactoryTest {
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = factory.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
+		CQLPersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
@@ -108,7 +108,7 @@ public class CQLPersistenceContextFactoryTest {
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = factory.newContext(entity);
+		CQLPersistenceContext actual = pmf.newContext(entity);
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
@@ -122,7 +122,7 @@ public class CQLPersistenceContextFactoryTest {
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
 
-		CQLPersistenceContext context = factory.newContext(CompleteBean.class, primaryKey, OptionsBuilder
+		CQLPersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey, OptionsBuilder
 				.withConsistency(LOCAL_QUORUM).ttl(98));
 
 		assertThat(context.getEntity()).isNull();
@@ -139,7 +139,7 @@ public class CQLPersistenceContextFactoryTest {
 		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
 		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = factory.newContextForSliceQuery(CompleteBean.class, partitionComponents,
+		CQLPersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents,
 				EACH_QUORUM);
 
 		assertThat(actual.getEntity()).isNull();

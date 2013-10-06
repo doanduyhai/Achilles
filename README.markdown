@@ -5,13 +5,13 @@
 
 # Presentation #
 
- Achilles is an open source Entity Manager for Apache Cassandra. Among all the features:
+ Achilles is an open source Persistence Manager for Apache Cassandra. Among all the features:
  - 2 implementations: Thrift & CQL3
  - Dirty check for simple and collection/map type properties
  - Lazy loading
  - Collections and map support
  - Support for clustered entities in Thrift & CQL3
- - Support for counters
+ - Support for compound primary key and composite partition key
  - Advanced queries (slice, native or typed) in CQL3
  - Support for counters
  - Support for runtime setting of consistency level, ttl and timestamp
@@ -44,9 +44,9 @@
  1. cassandra 1.2.8
  2. cassandra-driver-core 1.0.2 for the **CQL** version
  3. hector-core 1.1-4 for the **Thrift** version
- 3. CGLIB nodep 2.2.2 for proxy building
- 4. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
- 5. Jackson asl, mapper & xc 1.9.3 
+ 4. CGLIB nodep 2.2.2 for proxy building
+ 5. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
+ 6. Jackson asl, mapper & xc 1.9.3 
    
   
 # 5 minutes tutorial

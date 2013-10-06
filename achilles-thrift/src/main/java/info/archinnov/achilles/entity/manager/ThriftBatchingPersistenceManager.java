@@ -32,12 +32,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftBatchingEntityManager extends ThriftEntityManager {
-	private static final Logger log = LoggerFactory.getLogger(ThriftBatchingEntityManager.class);
+public class ThriftBatchingPersistenceManager extends ThriftPersistenceManager {
+	private static final Logger log = LoggerFactory.getLogger(ThriftBatchingPersistenceManager.class);
 
 	private ThriftBatchingFlushContext flushContext;
 
-	ThriftBatchingEntityManager(Map<Class<?>, EntityMeta> entityMetaMap,
+	ThriftBatchingPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap,
 			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext,
 			ConfigurationContext configContext) {
 		super(entityMetaMap, contextFactory, daoContext, configContext);

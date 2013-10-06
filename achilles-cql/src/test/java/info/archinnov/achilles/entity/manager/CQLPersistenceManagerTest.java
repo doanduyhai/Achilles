@@ -53,11 +53,11 @@ import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLEntityManagerTest {
-	private CQLEntityManager manager;
+public class CQLPersistenceManagerTest {
+	private CQLPersistenceManager manager;
 
 	@Mock
-	private CQLEntityManagerFactory factory;
+	private CQLPersistenceManagerFactory pmf;
 
 	@Mock
 	private CQLEntityProxifier proxifier;
@@ -102,7 +102,7 @@ public class CQLEntityManagerTest {
 		when(configContext.getConsistencyPolicy()).thenReturn(policy);
 		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
-		manager = new CQLEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
+		manager = new CQLPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 		Whitebox.setInternalState(manager, CQLEntityProxifier.class, proxifier);
 		Whitebox.setInternalState(manager, CQLTypedQueryValidator.class, typedQueryValidator);
 

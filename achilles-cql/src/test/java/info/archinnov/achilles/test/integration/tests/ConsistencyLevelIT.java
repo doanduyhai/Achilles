@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -46,7 +46,7 @@ public class ConsistencyLevelIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"consistency_test1", "consistency_test2");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -62,7 +62,7 @@ public class ConsistencyLevelIT {
 		expectedEx
 				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 
-		em.persist(bean);
+		manager.persist(bean);
 	}
 
 	@Test
@@ -70,13 +70,13 @@ public class ConsistencyLevelIT {
 		EntityWithWriteOneAndReadLocalQuorumConsistency bean = new EntityWithWriteOneAndReadLocalQuorumConsistency(id,
 				"FN", "LN");
 
-		em.persist(bean);
+		manager.persist(bean);
 
 		expectedEx.expect(InvalidQueryException.class);
 		expectedEx
 				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 
-		em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
+		manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 	}
 
 	@Test
@@ -85,8 +85,8 @@ public class ConsistencyLevelIT {
 				"FN", "LN");
 
 		try {
-			em.persist(bean);
-			em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
+			manager.persist(bean);
+			manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 		} catch (InvalidQueryException e) {
 			// Should recover from exception
 		}
@@ -94,9 +94,9 @@ public class ConsistencyLevelIT {
 		newBean.setId(id);
 		newBean.setName("name");
 
-		em.persist(newBean);
+		manager.persist(newBean);
 
-		newBean = em.find(CompleteBean.class, newBean.getId());
+		newBean = manager.find(CompleteBean.class, newBean.getId());
 
 		assertThat(newBean).isNotNull();
 		assertThat(newBean.getName()).isEqualTo("name");
@@ -107,7 +107,7 @@ public class ConsistencyLevelIT {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zerferg").buid();
 
 		try {
-			em.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
@@ -115,8 +115,8 @@ public class ConsistencyLevelIT {
 		}
 
 		logAsserter.prepareLogLevel();
-		em.persist(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.persist(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zerferg");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -126,7 +126,7 @@ public class ConsistencyLevelIT {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zeruioze").buid();
 
 		try {
-			em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
@@ -134,8 +134,8 @@ public class ConsistencyLevelIT {
 		}
 
 		logAsserter.prepareLogLevel();
-		em.merge(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.merge(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zeruioze");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -143,15 +143,15 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_find_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name rtprt").buid();
-		em.persist(entity);
+		manager.persist(entity);
 
 		try {
-			em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
+			manager.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
 		} catch (InvalidQueryException e) {
 			assertThat(e).hasMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
 		}
 		logAsserter.prepareLogLevel();
-		CompleteBean found = em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.ALL);
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId(), ConsistencyLevel.ALL);
 		assertThat(found.getName()).isEqualTo("name rtprt");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
@@ -159,33 +159,33 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_refresh_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		try {
-			em.refresh(entity, ConsistencyLevel.EACH_QUORUM);
+			manager.refresh(entity, ConsistencyLevel.EACH_QUORUM);
 		} catch (InvalidQueryException e) {
 			assertThat(e).hasMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
 		}
 		logAsserter.prepareLogLevel();
-		em.refresh(entity, ConsistencyLevel.ALL);
+		manager.refresh(entity, ConsistencyLevel.ALL);
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
 	public void should_remove_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		try {
-			em.remove(entity, ConsistencyLevel.EACH_QUORUM);
+			manager.remove(entity, ConsistencyLevel.EACH_QUORUM);
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
 							"consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 		}
 		logAsserter.prepareLogLevel();
-		em.remove(entity, ConsistencyLevel.ALL);
-		assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
+		manager.remove(entity, ConsistencyLevel.ALL);
+		assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
@@ -193,15 +193,15 @@ public class ConsistencyLevelIT {
 	public void should_reinit_consistency_level_after_exception() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name qzerferf").buid();
 		try {
-			em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
 							"consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 		}
 		logAsserter.prepareLogLevel();
-		em.merge(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.merge(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name qzerferf");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -209,7 +209,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_get_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().get(ConsistencyLevel.EACH_QUORUM);
 		} catch (InvalidQueryException e) {
@@ -220,7 +220,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_increment_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().incr(ConsistencyLevel.THREE);
 		} catch (UnavailableException e) {
@@ -232,7 +232,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_increment_n_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().incr(10L, ConsistencyLevel.THREE);
 		} catch (UnavailableException e) {
@@ -244,7 +244,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_decrement_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().decr(ConsistencyLevel.THREE);
 		} catch (UnavailableException e) {
@@ -256,7 +256,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_decrement_counter_n_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().decr(10L, ConsistencyLevel.THREE);
 		} catch (UnavailableException e) {

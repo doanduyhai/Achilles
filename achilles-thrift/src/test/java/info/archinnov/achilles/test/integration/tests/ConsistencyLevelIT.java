@@ -20,9 +20,9 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
-import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftBatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -52,9 +52,9 @@ public class ConsistencyLevelIT {
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
 			"CompleteBean", "Tweet", "consistency_test1", "consistency_test2");
 
-	private ThriftEntityManagerFactory emf = resource.getFactory();
+	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
 
@@ -72,7 +72,7 @@ public class ConsistencyLevelIT {
 		expectedEx
 				.expectMessage("InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
 
-		em.persist(bean);
+		manager.persist(bean);
 		assertThatConsistencyLevelsAreReinitialized();
 	}
 
@@ -81,7 +81,7 @@ public class ConsistencyLevelIT {
 		EntityWithWriteOneAndReadLocalQuorumConsistency bean = new EntityWithWriteOneAndReadLocalQuorumConsistency(id,
 				"FN", "LN");
 
-		em.persist(bean);
+		manager.persist(bean);
 
 		expectedEx.expect(AchillesException.class);
 		expectedEx
@@ -91,7 +91,7 @@ public class ConsistencyLevelIT {
 						+ id
 						+ "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 
-		em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
+		manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 		assertThatConsistencyLevelsAreReinitialized();
 	}
 
@@ -101,8 +101,8 @@ public class ConsistencyLevelIT {
 				"FN", "LN");
 
 		try {
-			em.persist(bean);
-			em.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
+			manager.persist(bean);
+			manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 		} catch (AchillesException e) {
 			// Should reinit consistency level to default
 		}
@@ -110,9 +110,9 @@ public class ConsistencyLevelIT {
 		newBean.setId(id);
 		newBean.setName("name");
 
-		em.persist(newBean);
+		manager.persist(newBean);
 
-		newBean = em.find(CompleteBean.class, newBean.getId());
+		newBean = manager.find(CompleteBean.class, newBean.getId());
 
 		assertThat(newBean).isNotNull();
 		assertThat(newBean.getName()).isEqualTo("name");
@@ -124,7 +124,7 @@ public class ConsistencyLevelIT {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zerferg").buid();
 
 		try {
-			em.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (HInvalidRequestException e) {
 			assertThat(e)
 					.hasMessage(
@@ -134,8 +134,8 @@ public class ConsistencyLevelIT {
 		assertThatConsistencyLevelsAreReinitialized();
 
 		logAsserter.prepareLogLevel();
-		em.persist(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.persist(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zerferg");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -145,7 +145,7 @@ public class ConsistencyLevelIT {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name zeruioze").buid();
 
 		try {
-			em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (HInvalidRequestException e) {
 			assertThat(e)
 					.hasMessage(
@@ -154,8 +154,8 @@ public class ConsistencyLevelIT {
 		assertThatConsistencyLevelsAreReinitialized();
 
 		logAsserter.prepareLogLevel();
-		em.merge(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.merge(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name zeruioze");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -163,10 +163,10 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_find_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name rtprt").buid();
-		em.persist(entity);
+		manager.persist(entity);
 
 		try {
-			em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
+			manager.find(CompleteBean.class, entity.getId(), ConsistencyLevel.EACH_QUORUM);
 		} catch (AchillesException e) {
 			assertThat(e)
 					.hasMessage(
@@ -178,7 +178,7 @@ public class ConsistencyLevelIT {
 		}
 		assertThatConsistencyLevelsAreReinitialized();
 		logAsserter.prepareLogLevel();
-		CompleteBean found = em.find(CompleteBean.class, entity.getId(), ConsistencyLevel.ALL);
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId(), ConsistencyLevel.ALL);
 		assertThat(found.getName()).isEqualTo("name rtprt");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
@@ -186,10 +186,10 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_refresh_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		try {
-			em.refresh(entity, ConsistencyLevel.EACH_QUORUM);
+			manager.refresh(entity, ConsistencyLevel.EACH_QUORUM);
 		} catch (AchillesException e) {
 			assertThat(e)
 					.hasMessage(
@@ -201,17 +201,17 @@ public class ConsistencyLevelIT {
 		}
 		assertThatConsistencyLevelsAreReinitialized();
 		logAsserter.prepareLogLevel();
-		em.refresh(entity, ConsistencyLevel.ALL);
+		manager.refresh(entity, ConsistencyLevel.ALL);
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ALL, ConsistencyLevel.QUORUM);
 	}
 
 	@Test
 	public void should_remove_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		try {
-			em.remove(entity, ConsistencyLevel.EACH_QUORUM);
+			manager.remove(entity, ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {
 			assertThat(e)
 					.hasMessage(
@@ -219,8 +219,8 @@ public class ConsistencyLevelIT {
 		}
 		assertThatConsistencyLevelsAreReinitialized();
 		logAsserter.prepareLogLevel();
-		em.remove(entity, ConsistencyLevel.ALL);
-		assertThat(em.find(CompleteBean.class, entity.getId())).isNull();
+		manager.remove(entity, ConsistencyLevel.ALL);
+		assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
 
@@ -228,7 +228,7 @@ public class ConsistencyLevelIT {
 	public void should_reinit_consistency_level_after_exception() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name qzerferf").buid();
 		try {
-			em.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
+			manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 		} catch (HInvalidRequestException e) {
 			assertThat(e)
 					.hasMessage(
@@ -236,8 +236,8 @@ public class ConsistencyLevelIT {
 		}
 		assertThatConsistencyLevelsAreReinitialized();
 		logAsserter.prepareLogLevel();
-		em.merge(entity, OptionsBuilder.withConsistency(ALL));
-		CompleteBean found = em.find(CompleteBean.class, entity.getId());
+		manager.merge(entity, OptionsBuilder.withConsistency(ALL));
+		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 		assertThat(found.getName()).isEqualTo("name qzerferf");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
@@ -248,19 +248,19 @@ public class ConsistencyLevelIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("test_tweet").buid();
 
 		logAsserter.prepareLogLevel();
-		ThriftBatchingEntityManager batchingEm = emf.createBatchingEntityManager();
-		batchingEm.startBatch(ONE);
-		batchingEm.persist(entity);
-		batchingEm.persist(tweet);
+		ThriftBatchingPersistenceManager batchingManager = pmf.createBatchingPersistenceManager();
+		batchingManager.startBatch(ONE);
+		batchingManager.persist(entity);
+		batchingManager.persist(tweet);
 
-		batchingEm.endBatch();
+		batchingManager.endBatch();
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 	}
 
 	@Test
 	public void should_get_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().get(ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {
@@ -273,7 +273,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_increment_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().incr(ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {
@@ -287,7 +287,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_increment_n_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().incr(10L, ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {
@@ -301,7 +301,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_decrement_counter_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().decr(ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {
@@ -315,7 +315,7 @@ public class ConsistencyLevelIT {
 	@Test
 	public void should_decrement_counter_n_with_consistency_level() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 		try {
 			entity.getVersion().decr(10L, ConsistencyLevel.EACH_QUORUM);
 		} catch (HInvalidRequestException e) {

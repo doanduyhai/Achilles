@@ -19,8 +19,8 @@ package info.archinnov.achilles.integration.spring;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.*;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.HashMap;
@@ -32,8 +32,8 @@ import me.prettyprint.hector.api.Keyspace;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
-public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEntityManager> {
-	private static ThriftEntityManager em;
+public class ThriftPersistenceManagerFactoryBean extends AbstractFactoryBean<ThriftPersistenceManager> {
+	private static ThriftPersistenceManager manager;
 	private String entityPackages;
 
 	private Cluster cluster;
@@ -66,8 +66,8 @@ public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEn
 
 		configMap.put(FORCE_CF_CREATION_PARAM, forceColumnFamilyCreation);
 
-		ThriftEntityManagerFactory factory = new ThriftEntityManagerFactory(configMap);
-		em = factory.createEntityManager();
+		ThriftPersistenceManagerFactory pmf = new ThriftPersistenceManagerFactory(configMap);
+		manager = pmf.createPersistenceManager();
 	}
 
 	private void fillEntityPackages(Map<String, Object> configMap) {
@@ -178,7 +178,7 @@ public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEn
 
 	@Override
 	public Class<?> getObjectType() {
-		return ThriftEntityManager.class;
+		return ThriftPersistenceManager.class;
 	}
 
 	@Override
@@ -187,13 +187,13 @@ public class ThriftEntityManagerFactoryBean extends AbstractFactoryBean<ThriftEn
 	}
 
 	@Override
-	protected ThriftEntityManager createInstance() throws Exception {
+	protected ThriftPersistenceManager createInstance() throws Exception {
 		synchronized (this) {
-			if (em == null) {
+			if (manager == null) {
 				initialize();
 			}
 		}
-		return em;
+		return manager;
 	}
 
 }

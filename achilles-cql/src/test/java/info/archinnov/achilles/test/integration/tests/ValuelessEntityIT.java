@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.ValuelessEntity;
@@ -32,16 +32,16 @@ public class ValuelessEntityIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ValuelessEntity");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_persist_and_find() throws Exception {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		ValuelessEntity found = em.find(ValuelessEntity.class, id);
+		ValuelessEntity found = manager.find(ValuelessEntity.class, id);
 
 		assertThat(found).isNotNull();
 	}
@@ -51,9 +51,9 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		em.merge(entity);
+		manager.merge(entity);
 
-		ValuelessEntity found = em.getReference(ValuelessEntity.class, id);
+		ValuelessEntity found = manager.getReference(ValuelessEntity.class, id);
 
 		assertThat(found).isNotNull();
 	}
@@ -63,11 +63,11 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		em.persist(entity, OptionsBuilder.withTtl(2));
+		manager.persist(entity, OptionsBuilder.withTtl(2));
 
 		Thread.sleep(3000);
 
-		assertThat(em.find(ValuelessEntity.class, id)).isNull();
+		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
 	}
 
 	@Test
@@ -75,10 +75,10 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		em.merge(entity, OptionsBuilder.withTtl(2));
+		manager.merge(entity, OptionsBuilder.withTtl(2));
 
 		Thread.sleep(3000);
 
-		assertThat(em.find(ValuelessEntity.class, id)).isNull();
+		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
 	}
 }

@@ -19,8 +19,8 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.context.CQLDaoContext.*;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
-import info.archinnov.achilles.entity.manager.CQLEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -51,8 +51,8 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static boolean initialized = false;
 
 	private static Session session;
-	private static CQLEntityManagerFactory emf;
-	private static CQLEntityManager em;
+	private static CQLPersistenceManagerFactory pmf;
+	private static CQLPersistenceManager manager;
 
 	public CQLEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
 		if (StringUtils.isEmpty(entityPackages))
@@ -86,9 +86,9 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 		configMap.put(KEYSPACE_NAME_PARAM, CASSANDRA_TEST_KEYSPACE_NAME);
 		configMap.put(FORCE_CF_CREATION_PARAM, true);
 
-		emf = new CQLEntityManagerFactory(configMap);
-		em = emf.createEntityManager();
-		session = em.getNativeSession();
+		pmf = new CQLPersistenceManagerFactory(configMap);
+		manager = pmf.createPersistenceManager();
+		session = manager.getNativeSession();
 		initialized = true;
 	}
 
@@ -96,12 +96,12 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 		return CASSANDRA_CQL_TEST_PORT;
 	}
 
-	public CQLEntityManagerFactory getEmf() {
-		return emf;
+	public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
+		return pmf;
 	}
 
-	public CQLEntityManager getEm() {
-		return em;
+	public CQLPersistenceManager getPersistenceManager() {
+		return manager;
 	}
 
 	private void createAchillesKeyspace(String keyspaceName) {

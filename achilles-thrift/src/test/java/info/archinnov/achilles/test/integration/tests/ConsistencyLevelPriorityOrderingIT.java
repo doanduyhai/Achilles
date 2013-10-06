@@ -19,9 +19,9 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
-import info.archinnov.achilles.entity.manager.ThriftBatchingEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManager;
-import info.archinnov.achilles.entity.manager.ThriftEntityManagerFactory;
+import info.archinnov.achilles.entity.manager.ThriftBatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
+import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -43,9 +43,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Rule
 	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST, "clustered");
 
-	private ThriftEntityManagerFactory emf = resource.getFactory();
+	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private ThriftEntityManager em = resource.getEm();
+	private ThriftPersistenceManager manager = resource.getPersistenceManager();
 
 	private ThriftConsistencyLevelPolicy policy = resource.getConsistencyPolicy();
 
@@ -59,9 +59,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(id);
 		entity.setName("name");
 
-		em.persist(entity);
+		manager.persist(entity);
 
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		logAsserter.prepareLogLevel();
 
@@ -80,7 +80,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 						+ "' with key '"
 						+ id
 						+ "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
-		em.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+		manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 	}
 
 	@Test
@@ -88,9 +88,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name sdfsdf");
-		em.persist(entity);
+		manager.persist(entity);
 
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 
 		batchEm.startBatch(EACH_QUORUM);
 
@@ -107,7 +107,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -124,7 +124,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(EACH_QUORUM);
 		entity = batchEm.merge(entity);
 
@@ -142,7 +142,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = em.merge(entity);
+		entity = manager.merge(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -161,7 +161,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		entity = batchEm.merge(entity);
 
@@ -179,7 +179,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Test
 	public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
-		ThriftBatchingEntityManager batchEm = emf.createBatchingEntityManager();
+		ThriftBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 
 		expectedEx.expect(HInvalidRequestException.class);

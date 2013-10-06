@@ -17,7 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.*;
-import info.archinnov.achilles.entity.manager.CQLEntityManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -44,7 +44,7 @@ public class DirtyCheckIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
-	private CQLEntityManager em = resource.getEm();
+	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -56,14 +56,14 @@ public class DirtyCheckIT {
 				.addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
 				.addPreference(3, "75014").buid();
 
-		bean = em.merge(bean);
+		bean = manager.merge(bean);
 	}
 
 	@Test
 	public void should_dirty_check_list_element_add() throws Exception {
 		bean.getFriends().add("qux");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -76,7 +76,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_add_at_index() throws Exception {
 		bean.getFriends().add(1, "qux");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 
@@ -91,7 +91,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_add_all() throws Exception {
 		bean.getFriends().addAll(Arrays.asList("qux", "baz"));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -105,7 +105,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_clear() throws Exception {
 		bean.getFriends().clear();
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		assertThat(row.isNull("friends")).isTrue();
@@ -115,7 +115,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_remove_at_index() throws Exception {
 		bean.getFriends().remove(0);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -128,7 +128,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_remove_element() throws Exception {
 		bean.getFriends().remove("bar");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -141,7 +141,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_remove_all() throws Exception {
 		bean.getFriends().removeAll(Arrays.asList("foo", "qux"));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -154,7 +154,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_retain_all() throws Exception {
 		bean.getFriends().retainAll(Arrays.asList("foo", "qux"));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -167,7 +167,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_sub_list_remove() throws Exception {
 		bean.getFriends().subList(0, 1).remove(0);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -180,7 +180,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_list_element_set() throws Exception {
 		bean.getFriends().set(1, "qux");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -196,7 +196,7 @@ public class DirtyCheckIT {
 		iter.next();
 		iter.remove();
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -212,7 +212,7 @@ public class DirtyCheckIT {
 		iter.next();
 		iter.remove();
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -228,7 +228,7 @@ public class DirtyCheckIT {
 		iter.next();
 		iter.set("qux");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
@@ -241,7 +241,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_put_element() throws Exception {
 		bean.getPreferences().put(4, "test");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -254,7 +254,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_remove_key() throws Exception {
 		bean.getPreferences().remove(1);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -271,7 +271,7 @@ public class DirtyCheckIT {
 		map.put(4, "test");
 		bean.getPreferences().putAll(map);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -286,7 +286,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_keyset_remove() throws Exception {
 		bean.getPreferences().keySet().remove(1);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -301,7 +301,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_keyset_remove_all() throws Exception {
 		bean.getPreferences().keySet().removeAll(Arrays.asList(1, 2, 5));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -315,7 +315,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_keyset_retain_all() throws Exception {
 		bean.getPreferences().keySet().retainAll(Arrays.asList(1, 3));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -333,7 +333,7 @@ public class DirtyCheckIT {
 		iter.next();
 		iter.remove();
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -348,7 +348,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_valueset_remove() throws Exception {
 		bean.getPreferences().values().remove("FR");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -362,7 +362,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_valueset_remove_all() throws Exception {
 		bean.getPreferences().values().removeAll(Arrays.asList("FR", "Paris", "test"));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -375,7 +375,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_map_valueset_retain_all() throws Exception {
 		bean.getPreferences().values().retainAll(Arrays.asList("FR", "Paris", "test"));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -392,7 +392,7 @@ public class DirtyCheckIT {
 		iter.next();
 		iter.remove();
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -412,7 +412,7 @@ public class DirtyCheckIT {
 
 		entrySet.remove(entry);
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -435,7 +435,7 @@ public class DirtyCheckIT {
 
 		entrySet.removeAll(Arrays.asList(entry1, entry2));
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
@@ -448,7 +448,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_simple_property() throws Exception {
 		bean.setName("another_name");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select name from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedName = row.getString("name");
@@ -460,7 +460,7 @@ public class DirtyCheckIT {
 	public void should_dirty_check_lazy_simple_property() throws Exception {
 		bean.setLabel("label");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedLabel = row.getString("label");
@@ -474,7 +474,7 @@ public class DirtyCheckIT {
 
 		bean.setLabel("label");
 
-		em.merge(bean);
+		manager.merge(bean);
 
 		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
 		Object reloadedLabel = row.getString("label");

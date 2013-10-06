@@ -38,9 +38,9 @@ import me.prettyprint.hector.api.Keyspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThriftEntityManagerFactory extends EntityManagerFactory {
+public class ThriftPersistenceManagerFactory extends PersistenceManagerFactory {
 
-	private static final Logger log = LoggerFactory.getLogger(ThriftEntityManagerFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(ThriftPersistenceManagerFactory.class);
 
 	private Cluster cluster;
 	private Keyspace keyspace;
@@ -50,13 +50,13 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 	private ThriftConsistencyLevelPolicy policy;
 
 	/**
-	 * Create a new ThriftEntityManagerFactoryImpl with a configuration map
+	 * Create a new ThriftPersistenceManagerFactoryImpl with a configuration map
 	 * 
 	 * @param configurationMap
 	 *            Check documentation for more details on configuration
 	 *            parameters
 	 */
-	public ThriftEntityManagerFactory(Map<String, Object> configurationMap) {
+	public ThriftPersistenceManagerFactory(Map<String, Object> configurationMap) {
 		super(configurationMap, new ThriftArgumentExtractor());
 		configContext.setImpl(Impl.THRIFT);
 
@@ -66,10 +66,10 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 				(ThriftConsistencyLevelPolicy) configContext.getConsistencyPolicy(), configurationMap);
 
 		Validator.validateNotEmpty(entityPackages,
-				"'%s' property should be set for Achilles ThrifEntityManagerFactory bootstraping",
+				"'%s' property should be set for Achilles ThrifPersistenceManagerFactory bootstraping",
 				ENTITY_PACKAGES_PARAM);
 
-		log.info("Initializing Achilles ThriftEntityManagerFactory for cluster '{}' and keyspace '{}' ",
+		log.info("Initializing Achilles ThriftPersistenceManagerFactory for cluster '{}' and keyspace '{}' ",
 				cluster.getName(), keyspace.getKeyspaceName());
 
 		boolean hasSimpleCounter = bootstrap();
@@ -82,30 +82,30 @@ public class ThriftEntityManagerFactory extends EntityManagerFactory {
 	}
 
 	/**
-	 * Create a new ThriftEntityManager. This instance of ThriftEntityManager is
-	 * <strong>thread-safe</strong>
+	 * Create a new ThriftPersistenceManager. This instance of
+	 * ThriftPersistenceManager is <strong>thread-safe</strong>
 	 * 
-	 * @return ThriftEntityManager
+	 * @return ThriftPersistenceManager
 	 */
-	public ThriftEntityManager createEntityManager() {
-		log.info("Create new Thrift-based Entity Manager ");
+	public ThriftPersistenceManager createPersistenceManager() {
+		log.info("Create new Thrift-based Persistence Manager ");
 
-		return new ThriftEntityManager(Collections.unmodifiableMap(entityMetaMap), //
+		return new ThriftPersistenceManager(Collections.unmodifiableMap(entityMetaMap), //
 				contextFactory, daoContext, configContext);
 	}
 
 	/**
-	 * Create a new state-full EntityManager for batch handling <br/>
+	 * Create a new state-full PersistenceManager for batch handling <br/>
 	 * <br/>
 	 * 
-	 * <strong>WARNING : This EntityManager is state-full and not thread-safe.
-	 * In case of exception, you MUST not re-use it but create another
-	 * one</strong>
+	 * <strong>WARNING : This PersistenceManager is state-full and not
+	 * thread-safe. In case of exception, you MUST not re-use it but create
+	 * another one</strong>
 	 * 
-	 * @return a new state-full EntityManager
+	 * @return a new state-full PersistenceManager
 	 */
-	public ThriftBatchingEntityManager createBatchingEntityManager() {
-		return new ThriftBatchingEntityManager(entityMetaMap, contextFactory, daoContext, configContext);
+	public ThriftBatchingPersistenceManager createBatchingPersistenceManager() {
+		return new ThriftBatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
 	@Override

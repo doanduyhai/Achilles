@@ -39,11 +39,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 
-public abstract class EntityManager<CONTEXT extends PersistenceContext> {
+public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	protected static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional.<ConsistencyLevel> absent();
 
-	private static final Logger log = LoggerFactory.getLogger(EntityManager.class);
+	private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap;
 	protected AchillesConsistencyLevelPolicy consistencyPolicy;
@@ -53,7 +53,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	protected EntityValidator<CONTEXT> entityValidator;
 	protected EntityInitializer initializer = new EntityInitializer();
 
-	EntityManager(Map<Class<?>, EntityMeta> entityMetaMap, //
+	PersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ConfigurationContext configContext) {
 		this.entityMetaMap = entityMetaMap;
 		this.configContext = configContext;
@@ -396,7 +396,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Shorthand for em.unwrap(em.initialize(T entity))
+	 * Shorthand for manager.unwrap(manager.initialize(T entity))
 	 * 
 	 */
 	public <T> T initAndUnwrap(T entity) {
@@ -404,7 +404,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Shorthand for em.unwrap(em.initialize(Set<T> entities))
+	 * Shorthand for manager.unwrap(manager.initialize(Set<T> entities))
 	 * 
 	 */
 	public <T> Set<T> initAndUnwrap(Set<T> entities) {
@@ -412,7 +412,7 @@ public abstract class EntityManager<CONTEXT extends PersistenceContext> {
 	}
 
 	/**
-	 * Shorthand for em.unwrap(em.initialize(List<T> entities))
+	 * Shorthand for manager.unwrap(manager.initialize(List<T> entities))
 	 * 
 	 */
 	public <T> List<T> initAndUnwrap(List<T> entities) {

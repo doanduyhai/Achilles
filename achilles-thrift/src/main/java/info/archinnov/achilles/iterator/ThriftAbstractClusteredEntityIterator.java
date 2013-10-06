@@ -56,7 +56,7 @@ public abstract class ThriftAbstractClusteredEntityIterator<T> implements Iterat
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException(
-				"Remove from iterator is not supported. Please use entityManager.remove() instead");
+				"Remove from iterator is not supported. Please use persistenceManager.remove() instead");
 	}
 
 	protected T proxifyClusteredEntity(T target) {
