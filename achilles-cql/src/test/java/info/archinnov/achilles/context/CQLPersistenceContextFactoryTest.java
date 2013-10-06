@@ -122,8 +122,8 @@ public class CQLPersistenceContextFactoryTest {
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
 
-		CQLPersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey, OptionsBuilder
-				.withConsistency(LOCAL_QUORUM).ttl(98));
+		CQLPersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey,
+				OptionsBuilder.withConsistency(LOCAL_QUORUM).ttl(98));
 
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getPrimaryKey()).isSameAs(primaryKey);
@@ -139,8 +139,8 @@ public class CQLPersistenceContextFactoryTest {
 		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
 		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents,
-				EACH_QUORUM);
+		CQLPersistenceContext actual = pmf
+				.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
 
 		assertThat(actual.getEntity()).isNull();
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);

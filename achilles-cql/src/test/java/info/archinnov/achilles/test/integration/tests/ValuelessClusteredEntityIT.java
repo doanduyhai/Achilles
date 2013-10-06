@@ -137,9 +137,9 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
-		Iterator<ValuelessClusteredEntity> iterator = manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
-				.fromClusterings(name5).toClusterings(name2).bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
-				.ordering(OrderingMode.DESCENDING).iterator();
+		Iterator<ValuelessClusteredEntity> iterator = manager.sliceQuery(ValuelessClusteredEntity.class)
+				.partitionKey(id).fromClusterings(name5).toClusterings(name2)
+				.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY).ordering(OrderingMode.DESCENDING).iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next().getId().getName()).isEqualTo(name5);
@@ -162,7 +162,8 @@ public class ValuelessClusteredEntityIT {
 		manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id).fromClusterings(name2).toClusterings(name2)
 				.remove();
 
-		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id).get();
+		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
+				.get();
 
 		assertThat(result).hasSize(2);
 		assertThat(result.get(0).getId().getName()).isEqualTo(name1);
