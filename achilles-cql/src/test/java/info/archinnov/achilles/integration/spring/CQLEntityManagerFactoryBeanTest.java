@@ -53,17 +53,10 @@ public class CQLEntityManagerFactoryBeanTest {
 	}
 
 	@Test
-	public void should_exception_when_no_entity_packages() throws Exception {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("'entityPackages' should be provided for entity scanning");
-		factory.initialize();
-	}
-
-	@Test
 	public void should_exception_when_no_contact_point_set() throws Exception {
 		factory.setEntityPackages("com.test");
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
+		exception.expectMessage("Either 'contactPoints/port/keyspace name' or 'cluster/session' should be provided");
 		factory.initialize();
 	}
 
@@ -73,7 +66,7 @@ public class CQLEntityManagerFactoryBeanTest {
 		factory.setContactPoints("localhost");
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("'contactPoints' and 'port' for Cassandra connection should be provided");
+		exception.expectMessage("Either 'contactPoints/port/keyspace name' or 'cluster/session' should be provided");
 		factory.initialize();
 	}
 
@@ -84,7 +77,7 @@ public class CQLEntityManagerFactoryBeanTest {
 		factory.setPort(9160);
 
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("'keyspaceName' for Cassandra connection should be provided");
+		exception.expectMessage("Either 'contactPoints/port/keyspace name' or 'cluster/session' should be provided");
 		factory.initialize();
 	}
 

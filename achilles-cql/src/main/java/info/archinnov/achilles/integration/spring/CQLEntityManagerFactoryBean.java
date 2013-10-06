@@ -30,8 +30,10 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -43,6 +45,9 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 	private String contactPoints;
 	private Integer port;
 	private String keyspaceName;
+	private Cluster cluster;
+	private Session session;
+
 	private Compression compression;
 	private RetryPolicy retryPolicy;
 	private LoadBalancingPolicy loadBalancingPolicy;
@@ -89,29 +94,28 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 
 		CQLEntityManagerFactory factory = new CQLEntityManagerFactory(configMap);
 		em = factory.createEntityManager();
-
-		System.out.println(" CREATE " + this.toString());
 	}
 
 	private void fillEntityPackages(Map<String, Object> configMap) {
-		if (isBlank(entityPackages)) {
-			throw new IllegalArgumentException("'entityPackages' should be provided for entity scanning");
+		if (isNotBlank(entityPackages)) {
+			configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 		}
-		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 	}
 
 	private void fillCluster(Map<String, Object> configMap) {
-		if (isBlank(contactPoints) || port == null) {
-			throw new IllegalArgumentException("'contactPoints' and 'port' for Cassandra connection should be provided");
+		if ((isBlank(contactPoints) || port == null || isBlank(keyspaceName)) && (cluster == null || session == null)) {
+			throw new IllegalArgumentException(
+					"Either 'contactPoints/port/keyspace name' or 'cluster/session' should be provided");
 		}
-		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
-		configMap.put(CONNECTION_PORT_PARAM, port);
 
-		if (isBlank(keyspaceName)) {
-			throw new IllegalArgumentException("'keyspaceName' for Cassandra connection should be provided");
+		if (cluster != null && session != null) {
+			configMap.put(CLUSTER_PARAM, cluster);
+			configMap.put(NATIVE_SESSION_PARAM, session);
+		} else {
+			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
+			configMap.put(CONNECTION_PORT_PARAM, port);
+			configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 		}
-		configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
-
 	}
 
 	private void fillCompression(Map<String, Object> configMap) {
@@ -196,6 +200,14 @@ public class CQLEntityManagerFactoryBean extends AbstractFactoryBean<CQLEntityMa
 
 	public void setKeyspaceName(String keyspaceName) {
 		this.keyspaceName = keyspaceName;
+	}
+
+	public void setCluster(Cluster cluster) {
+		this.cluster = cluster;
+	}
+
+	public void setSession(Session session) {
+		this.session = session;
 	}
 
 	public void setCompression(Compression compression) {

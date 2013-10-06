@@ -98,12 +98,9 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 
 			String[] contactPointsList = StringUtils.split(contactPoints, ",");
 
-			Builder clusterBuilder = Cluster
-					.builder()
-					//
-					.addContactPoints(contactPointsList).withPort(port).withCompression(compression)
-					.withRetryPolicy(retryPolicy).withLoadBalancingPolicy(loadBalancingPolicy)
-					.withReconnectionPolicy(reconnectionPolicy);
+			Builder clusterBuilder = Cluster.builder().addContactPoints(contactPointsList).withPort(port)
+					.withCompression(compression).withRetryPolicy(retryPolicy)
+					.withLoadBalancingPolicy(loadBalancingPolicy).withReconnectionPolicy(reconnectionPolicy);
 
 			if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
 				clusterBuilder.withCredentials(username, password);
