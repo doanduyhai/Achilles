@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.CASSANDRA_TEST_KEYSPACE_NAME;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
@@ -40,11 +40,8 @@ public class AchillesCQLResource extends AchillesTestResource {
 	 * @param tables
 	 *            list of tables to truncate before and after tests
 	 */
-	public AchillesCQLResource(String entityPackages, String... tables) {
+	AchillesCQLResource(String entityPackages, String... tables) {
 		super(tables);
-		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException("Entity packages should be provided");
-
 		server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
 		pmf = server.getPersistenceManagerFactory();
 		manager = server.getPersistenceManager();
@@ -67,7 +64,7 @@ public class AchillesCQLResource extends AchillesTestResource {
 	 *            list of tables to truncate before, after or before and after
 	 *            tests, depending on the 'cleanUpSteps' parameters
 	 */
-	public AchillesCQLResource(String entityPackages, Steps cleanUpSteps, String... tables) {
+	AchillesCQLResource(String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
 		if (StringUtils.isEmpty(entityPackages))
 			throw new IllegalArgumentException("Entity packages should be provided");

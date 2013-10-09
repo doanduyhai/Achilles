@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.junit;
+package info.archinnov.achilles.test.integration;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
@@ -29,11 +29,9 @@ import org.junit.Test;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-public class AchillesCQLResourceTest {
-
+public class AchillesInternalCQLResourceTest {
 	@Rule
-	public AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.test.integration.entity",
-			Steps.AFTER_TEST, "User");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "User");
 
 	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
@@ -55,10 +53,11 @@ public class AchillesCQLResourceTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesCQLResource resource = new AchillesCQLResource("info.archinnov.achilles.junit.test.entity");
+		AchillesInternalCQLResource resource = new AchillesInternalCQLResource();
 
 		assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
 		assertThat(resource.getPersistenceManager()).isSameAs(manager);
 		assertThat(resource.getNativeSession()).isSameAs(session);
 	}
+
 }

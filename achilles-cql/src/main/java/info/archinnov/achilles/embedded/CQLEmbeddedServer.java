@@ -18,7 +18,7 @@ package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.context.CQLDaoContext.*;
+import static info.archinnov.achilles.context.CQLDaoContext.ACHILLES_DML_STATEMENT;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
@@ -55,9 +55,6 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static CQLPersistenceManager manager;
 
 	public CQLEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
-		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException("Entity packages should be provided");
-
 		synchronized (SEMAPHORE) {
 			if (!initialized) {
 				startServer(cleanCassandraDataFile);

@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.junit;
+package info.archinnov.achilles.test.integration;
 
-import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.CASSANDRA_TEST_KEYSPACE_NAME;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.junit.AchillesTestResource;
 
 import com.datastax.driver.core.Session;
 

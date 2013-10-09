@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.configuration.CQLArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -31,6 +31,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class CQLPersistenceManagerFactory extends PersistenceManagerFactory {
 		session = extractor.initSession(cluster, configurationMap);
 
 		boolean hasSimpleCounter = false;
-		if (configurationMap.containsKey(ENTITY_PACKAGES_PARAM)) {
+		if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
 			hasSimpleCounter = bootstrap();
 		}
 
