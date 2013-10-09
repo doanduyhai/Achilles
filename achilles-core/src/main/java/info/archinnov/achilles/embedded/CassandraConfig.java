@@ -57,7 +57,6 @@ public class CassandraConfig {
 		config.commitlog_sync = CommitLogSync.periodic;
 		config.commitlog_sync_period_in_ms = 10000;
 		config.commitlog_segment_size_in_mb = 32;
-		config.flush_largest_memtables_at = 0.9;
 		config.reduce_cache_sizes_at = 0.85;
 		config.reduce_cache_capacity_to = 0.6;
 		config.concurrent_reads = 32;
@@ -103,6 +102,10 @@ public class CassandraConfig {
 		config.internode_compression = InternodeCompression.all;
 		config.inter_dc_tcp_nodelay = true;
 
+		// Tuning for perf
+		config.memtable_total_space_in_mb = 64;
+		config.commitlog_total_space_in_mb = 32;
+		config.flush_largest_memtables_at = 0.99;
 	}
 
 	private void updateWithHomePath(File cassandraHome) {

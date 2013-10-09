@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableNameNormalizer.*;
-import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.TABLE_NAME;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -113,7 +113,7 @@ public class ClusteredEntityWithCounterIT {
 
 		manager.remove(entity);
 
-		Thread.sleep(2000);
+		Thread.sleep(100);
 
 		assertThat(manager.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
 
@@ -240,7 +240,7 @@ public class ClusteredEntityWithCounterIT {
 
 		// Wait until counter column is really removed because of absence of
 		// tombstone
-		Thread.sleep(1000);
+		Thread.sleep(100);
 
 		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
 				.partitionKey(partitionKey).get(100);

@@ -258,7 +258,7 @@ public class BatchModeIT {
 			assertThatConsistencyLevelHasBeenReset();
 		}
 
-		Thread.sleep(1000);
+		Thread.sleep(100);
 		logAsserter.prepareLogLevel();
 		batchEm.persist(tweet2);
 		logAsserter.assertConsistencyLevels(QUORUM, QUORUM);

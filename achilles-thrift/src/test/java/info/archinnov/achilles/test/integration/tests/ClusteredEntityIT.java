@@ -17,12 +17,12 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.table.TableNameNormalizer.*;
-import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.type.BoundingMode.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.junit.AchillesInternalThriftResource;
@@ -81,11 +81,11 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.persist(entity, OptionsBuilder.withTtl(2));
+		manager.persist(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
-		Thread.sleep(2000);
+		Thread.sleep(1000);
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNull();
 	}
@@ -124,11 +124,11 @@ public class ClusteredEntityIT {
 	public void should_merge_with_ttl() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
-		entity = manager.merge(entity, OptionsBuilder.withTtl(2));
+		entity = manager.merge(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
-		Thread.sleep(2000);
+		Thread.sleep(1000);
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNull();
 	}

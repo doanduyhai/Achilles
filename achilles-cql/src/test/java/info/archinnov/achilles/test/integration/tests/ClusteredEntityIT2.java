@@ -208,7 +208,7 @@ public class ClusteredEntityIT2 {
 
 		daoContext.execute(new SimpleStatement(updateQuery));
 
-		Thread.sleep(2000);
+		// Thread.sleep(200);
 
 		manager.refresh(message, ConsistencyLevel.ALL);
 

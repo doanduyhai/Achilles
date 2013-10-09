@@ -83,7 +83,7 @@ public class CounterIT {
 		assertThat(actual).isEqualTo(version);
 
 		// Pause required to let Cassandra remove counter columns
-		Thread.sleep(1000);
+		Thread.sleep(100);
 
 		manager.remove(bean);
 

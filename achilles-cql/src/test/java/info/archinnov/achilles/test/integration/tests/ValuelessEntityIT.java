@@ -63,9 +63,9 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.persist(entity, OptionsBuilder.withTtl(2));
+		manager.persist(entity, OptionsBuilder.withTtl(1));
 
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 
 		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
 	}
@@ -75,9 +75,9 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.merge(entity, OptionsBuilder.withTtl(2));
+		manager.merge(entity, OptionsBuilder.withTtl(1));
 
-		Thread.sleep(3000);
+		Thread.sleep(1000);
 
 		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
 	}
