@@ -23,9 +23,11 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,10 +44,29 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 	 * 
 	 * @param partitionComponents
 	 *            Partition key components
-	 * @return ThriftShortcutQueryBuilder<T>
+	 * @return SliceShortcutQueryBuilder<T>
 	 */
 	public SliceShortcutQueryBuilder partitionKey(Object... partitionComponents) {
 		super.partitionKeyInternal(partitionComponents);
+		return new SliceShortcutQueryBuilder();
+	}
+
+    /**
+     * Query by indexed columns<br/>
+     * <br/>
+     *
+     * @param indexConditions
+     *            list of indexedConditions on indexed columns
+     * @param allowFiltering
+     *            allow filtering
+     * @return SliceShortcutQueryBuilder
+     */
+	public SliceShortcutQueryBuilder indexedConditions(Collection<IndexCondition> indexConditions, boolean allowFiltering) {
+		Validator.validateNotEmpty(indexConditions, "indexConditions should not be empty", null);
+		for (IndexCondition indexCondition : indexConditions) {
+			super.addCondition(indexCondition);
+		}
+		super.withAllowFiltering(allowFiltering);
 		return new SliceShortcutQueryBuilder();
 	}
 
@@ -145,7 +166,23 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 			return new SliceToClusteringsBuilder();
 		}
 
-		/**
+        /**
+         * Query by indexed columns<br/>
+         * <br/>
+         *
+         * @param indexConditions
+         *            list of indexedConditions on indexed columns
+         * @param allowFiltering
+         *            allow filtering
+         * @return SliceShortcutQueryBuilder
+         */
+        public SliceShortcutQueryBuilder indexedConditions(Collection<IndexCondition> indexConditions,
+                                                           boolean allowFiltering) {
+            SliceQueryBuilder.this.indexedConditions(indexConditions, allowFiltering);
+            return this;
+        }
+
+        /**
 		 * Set ordering<br/>
 		 * <br/>
 		 * 
@@ -345,6 +382,23 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 			SliceQueryBuilder.this.toEmbeddedId(toEmbeddedId);
 			return new DefaultQueryBuilder();
 		}
+
+        /**
+         * Query by indexed columns<br/>
+         * <br/>
+         *
+         * @param indexConditions
+         *            list of indexedConditions on indexed columns
+         * @param allowFiltering
+         *            allow filtering
+         * @return SliceFromEmbeddedIdBuilder
+         */
+        public SliceFromEmbeddedIdBuilder indexedConditions(Collection<IndexCondition> indexConditions,
+                                                            boolean allowFiltering) {
+            SliceQueryBuilder.this.indexedConditions(indexConditions, allowFiltering);
+            return this;
+        }
+
 	}
 
 	public class SliceToEmbeddedIdBuilder {
@@ -364,6 +418,22 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 			SliceQueryBuilder.this.fromEmbeddedId(fromEmbeddedId);
 			return new DefaultQueryBuilder();
 		}
+
+        /**
+         * Query by indexed columns<br/>
+         * <br/>
+         *
+         * @param indexConditions
+         *            list of indexedConditions on indexed columns
+         * @param allowFiltering
+         *            allow filtering
+         * @return SliceToEmbeddedIdBuilder
+         */
+        public SliceToEmbeddedIdBuilder indexedConditions(Collection<IndexCondition> indexConditions,
+                                                          boolean allowFiltering) {
+            SliceQueryBuilder.this.indexedConditions(indexConditions, allowFiltering);
+            return this;
+        }
 	}
 
 	public class SliceFromClusteringsBuilder extends DefaultQueryBuilder {
@@ -384,6 +454,22 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 			SliceQueryBuilder.super.toClusteringsInternal(clusteringComponents);
 			return new DefaultQueryBuilder();
 		}
+
+        /**
+         * Query by indexed columns<br/>
+         * <br/>
+         *
+         * @param indexConditions
+         *            list of indexedConditions on indexed columns
+         * @param allowFiltering
+         *            allow filtering
+         * @return SliceFromClusteringsBuilder
+         */
+        public SliceFromClusteringsBuilder indexedConditions(Collection<IndexCondition> indexConditions,
+                                                             boolean allowFiltering) {
+            SliceQueryBuilder.this.indexedConditions(indexConditions, allowFiltering);
+            return this;
+        }
 	}
 
 	public class SliceToClusteringsBuilder extends DefaultQueryBuilder {
@@ -404,6 +490,22 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 			SliceQueryBuilder.super.fromClusteringsInternal(clusteringComponents);
 			return new DefaultQueryBuilder();
 		}
+
+        /**
+         * Query by indexed columns<br/>
+         * <br/>
+         *
+         * @param indexConditions
+         *            list of indexedConditions on indexed columns
+         * @param allowFiltering
+         *            allow filtering
+         * @return SliceToClusteringsBuilder
+         */
+        public SliceToClusteringsBuilder indexedConditions(Collection<IndexCondition> indexConditions,
+                                                           boolean allowFiltering) {
+            SliceQueryBuilder.this.indexedConditions(indexConditions, allowFiltering);
+            return this;
+        }
 	}
 
 	public class DefaultQueryBuilder {

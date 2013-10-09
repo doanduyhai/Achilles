@@ -26,8 +26,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Before;
@@ -300,5 +304,19 @@ public class CQLSliceQueryTest {
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
 		assertThat(cqlSliceQuery.getEntityClass()).isSameAs(ClusteredEntity.class);
+	}
+
+	@Test
+	public void should_get_index_conditions() throws Exception {
+		Collection<IndexCondition> indexConditions = new LinkedList<IndexCondition>();
+		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
+		when(sliceQuery.getIndexConditions()).thenReturn(indexConditions);
+		when(sliceQuery.hasIndexConditions()).thenReturn(true);
+
+		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
+
+		assertThat(cqlSliceQuery.getIndexConditions()).isSameAs(indexConditions);
+		;
+		assertThat(cqlSliceQuery.hasIndexConditions()).isTrue();
 	}
 }

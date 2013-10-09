@@ -45,6 +45,7 @@ public class PropertyMeta {
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private boolean timeUUID = false;
+	private boolean indexed = false;
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
@@ -388,6 +389,14 @@ public class PropertyMeta {
 
 	public void setEntityClassName(String entityClassName) {
 		this.entityClassName = entityClassName;
+	}
+	
+	public boolean isIndexed(){
+		return this.indexed;
+	}
+	
+	public void setIndexed(boolean indexed){
+		this.indexed = indexed;
 	}
 
 	public DataTranscoder getTranscoder() {

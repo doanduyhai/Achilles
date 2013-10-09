@@ -65,6 +65,7 @@ public class PropertyParser {
 		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context.getCurrentField()));
 
 		validator.validateNoDuplicate(context);
+		validator.validateIndexIfSet(context);
 
 		Class<?> fieldType = field.getType();
 		PropertyMeta propertyMeta;
@@ -84,6 +85,7 @@ public class PropertyParser {
 			propertyMeta.setType(ID);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
+			propertyMeta.setIndexed(propertyHelper.isIndexed(field));
 		}
 		context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		return propertyMeta;

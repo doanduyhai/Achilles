@@ -57,14 +57,15 @@ public class CQLTableValidator {
 			validatePrimaryKeyComponents(tableMetadata, idMeta, false);
 		} else {
 			validateColumn(tableMetadata, idMeta.getPropertyName().toLowerCase(),
-					idMeta.getValueClassForTableCreation());
+					idMeta.getValueClassForTableCreation(),idMeta.isIndexed());
 		}
 
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
 			switch (pm.type()) {
 			case SIMPLE:
 			case LAZY_SIMPLE:
-				validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(), pm.getValueClassForTableCreation());
+				validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(), pm.getValueClassForTableCreation(),
+						pm.isIndexed());
 				break;
 			case LIST:
 			case SET:
@@ -123,7 +124,7 @@ public class CQLTableValidator {
 
 	}
 
-	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
 		String tableName = tableMetaData.getName();
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Name expectedType = toCQLType(columnJavaType);
@@ -131,6 +132,11 @@ public class CQLTableValidator {
 		Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
 				tableName);
 
+        boolean columnIsIndexed = columnMetadata.getIndex() != null;
+
+		Validator.validateTableTrue(!(columnIsIndexed ^ indexed),
+				"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",
+				columnName, tableName);
 		Name realType = columnMetadata.getType().getName();
 		Validator.validateTableTrue(expectedType == realType,
 				"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
@@ -138,14 +144,14 @@ public class CQLTableValidator {
 	}
 
 	private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
-		validateColumn(tableMetaData, columnName, columnJavaType);
+		validateColumn(tableMetaData, columnName, columnJavaType,false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(columnMetadata),
 				"Column '%s' of table '%s' should be a partition key component", columnName, tableMetaData.getName());
 	}
 
 	private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
-		validateColumn(tableMetaData, columnName, columnJavaType);
+		validateColumn(tableMetaData, columnName, columnJavaType,false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Validator.validateBeanMappingTrue(tableMetaData.getClusteringKey().contains(columnMetadata),
 				"Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());

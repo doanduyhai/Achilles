@@ -18,6 +18,8 @@ package info.archinnov.achilles.entity.parsing.validator;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -31,6 +33,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.persistence.EmbeddedId;
+import javax.persistence.Id;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Rule;
@@ -144,6 +149,21 @@ public class PropertyParsingValidatorTest {
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void should_validate_index() throws Exception {
+		class Test {
+			@SuppressWarnings("unused")
+			@Index
+			public Long counter;
+		}
+		Field counterField = Test.class.getField("counter");
+		when(context.getCurrentField()).thenReturn(counterField);
+		when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
+
+		validator.validateIndexIfSet(context);
+	}
+
 	@Test
 	public void should_exception_when_type_not_allowed() throws Exception {
 		Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
@@ -157,6 +177,108 @@ public class PropertyParsingValidatorTest {
 
 		PropertyParsingValidator.validateAllowedTypes(CorrectEmbeddedKey.class, allowedTypes, "msg1");
 		PropertyParsingValidator.validateAllowedTypes(CustomEnum.class, allowedTypes, "msg1");
+	}
+
+	@Test
+	public void should_exception_when_index_type_not_allowed() throws Exception {
+		class Test {
+			@SuppressWarnings({ "rawtypes", "unused" })
+			@Index
+			public Map firstName;
+		}
+
+		Field nameField = Test.class.getField("firstName");
+
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		propertyMetas.put("firstName", null);
+		when(context.getCurrentField()).thenReturn(nameField);
+		when(context.getCurrentPropertyName()).thenReturn("firstName");
+		when(context.getPropertyMetas()).thenReturn(propertyMetas);
+		when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
+
+		exception.expect(AchillesBeanMappingException.class);
+		exception
+				.expectMessage("Property field 'firstName' of entity 'null' cannot have an index annotation (class not supported)");
+
+		validator.validateIndexIfSet(context);
+	}
+
+	@Test
+	public void should_exception_when_index_not_allowed_on_primary_key() throws Exception {
+		class Test {
+			@SuppressWarnings({ "rawtypes", "unused" })
+			@Id
+			@Index
+			public String firstName;
+		}
+
+		Field nameField = Test.class.getField("firstName");
+
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		propertyMetas.put("firstName", null);
+		when(context.getCurrentField()).thenReturn(nameField);
+		when(context.getCurrentPropertyName()).thenReturn("firstName");
+		when(context.getPropertyMetas()).thenReturn(propertyMetas);
+		when(context.isPrimaryKey()).thenReturn(true);
+		when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
+
+		exception.expect(AchillesBeanMappingException.class);
+		exception
+				.expectMessage("Property field 'firstName' of entity 'null' is a primary key and therefore cannot have an index annotation");
+
+		validator.validateIndexIfSet(context);
+	}
+
+	@Test
+	public void should_exception_when_index_not_allowed_on_embedded_id() throws Exception {
+		class Test {
+			@SuppressWarnings({ "rawtypes", "unused" })
+			@EmbeddedId
+			@Index
+			public String firstName;
+		}
+
+		Field nameField = Test.class.getField("firstName");
+
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		propertyMetas.put("firstName", null);
+		when(context.getCurrentField()).thenReturn(nameField);
+		when(context.getCurrentPropertyName()).thenReturn("firstName");
+		when(context.getPropertyMetas()).thenReturn(propertyMetas);
+		when(context.isPrimaryKey()).thenReturn(true);
+		when(context.isEmbeddedId()).thenReturn(true);
+		when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
+
+		exception.expect(AchillesBeanMappingException.class);
+		exception
+				.expectMessage("Property field 'firstName' of entity 'null' is part of the primary key (embedded key) and therefore cannot have an index annotation");
+
+		validator.validateIndexIfSet(context);
+	}
+
+	@Test
+	public void should_exception_when_index_not_allowed_lazy_field() throws Exception {
+		class Test {
+			@SuppressWarnings({ "rawtypes", "unused" })
+			@Lazy
+			@Index
+			public String firstName;
+		}
+
+		Field nameField = Test.class.getField("firstName");
+
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		propertyMetas.put("firstName", null);
+		when(context.getCurrentField()).thenReturn(nameField);
+		when(context.getCurrentPropertyName()).thenReturn("firstName");
+		when(context.getPropertyMetas()).thenReturn(propertyMetas);
+		when((Class<Test>) context.getCurrentEntityClass()).thenReturn(Test.class);
+
+		exception.expect(AchillesBeanMappingException.class);
+		exception
+				.expectMessage("Property field 'firstName' of entity 'null' is lazy and therefore cannot have an index annotation");
+
+		validator.validateIndexIfSet(context);
 	}
 
 	public static enum CustomEnum {

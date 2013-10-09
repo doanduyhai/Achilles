@@ -50,8 +50,12 @@ public class EmOperationsIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
-
 	private Session session = manager.getNativeSession();
+
+	@Test
+	public void should_test() throws Exception {
+
+	}
 
 	@Test
 	public void should_persist() throws Exception {

@@ -25,12 +25,15 @@ import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, T> {
@@ -50,7 +53,9 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	private int limit = DEFAULT_LIMIT;
 	private int batchSize = DEFAULT_BATCH_SIZE;
 	private boolean limitHasBeenSet = false;
+	private boolean allowFiltering = false;
 	private boolean orderingHasBeenSet = false;
+	private Collection<IndexCondition> indexConditions =  new LinkedList<IndexCondition>();
 
 	RootSliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, CompoundKeyValidator compoundKeyValidator,
 			Class<T> entityClass, EntityMeta meta) {
@@ -121,6 +126,22 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	protected RootSliceQueryBuilder<CONTEXT, T> limit(int limit) {
 		this.limit = limit;
 		limitHasBeenSet = true;
+		return this;
+	}
+
+	protected RootSliceQueryBuilder<CONTEXT, T> withAllowFiltering(boolean filtering) {
+		allowFiltering = filtering;
+		return this;
+	}
+
+	protected RootSliceQueryBuilder<CONTEXT, T> addCondition(IndexCondition indexCondition) {
+		Validator.validateNotNull(indexCondition, "Index Condition for slice query for entity '%s' should not be null",
+				meta.getClassName());
+		Validator.validateTrue(indexCondition.getColumnName() != null && indexCondition.getIndexEquality() != null
+				&& indexCondition.getColumnValue() != null,
+				"Index Condition parameters for slice query for entity '%s' should not be null", meta.getClassName());
+
+		this.indexConditions.add(indexCondition);
 		return this;
 	}
 
@@ -221,11 +242,13 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	}
 
 	protected void remove() {
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling remove()");
 		SliceQuery<T> clusteredQuery = buildClusterQuery();
 		sliceQueryExecutor.remove(clusteredQuery);
 	}
 
 	protected void remove(int n) {
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling remove(int n)");
 		Validator.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling remove(int n)");
 		limit = n;
 		limitHasBeenSet = true;
@@ -237,6 +260,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling removeFirst()");
 		Validator.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling removeFirst()");
 		limit = 1;
 		limitHasBeenSet = true;
@@ -248,6 +272,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling removeFirst(int n)");
 		Validator
 				.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling removeFirst(int n)");
 		limit = n;
@@ -260,6 +285,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling removeLast()");
 		Validator
 				.validateFalse(orderingHasBeenSet, "You should not set 'ordering' parameter when calling removeLast()");
 		Validator.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling removeLast()");
@@ -274,6 +300,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
+        Validator.validateTrue(indexConditions.isEmpty(),"You should not set indexed indexedConditions when calling removeLast(int n)");
 		Validator.validateFalse(orderingHasBeenSet,
 				"You should not set 'ordering' parameter when calling removeLast(int n)");
 		Validator.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling removeLast(int n)");
@@ -286,6 +313,6 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 
 	protected SliceQuery<T> buildClusterQuery() {
 		return new SliceQuery<T>(entityClass, meta, partitionComponents, fromClusterings, toClusterings, ordering,
-				bounding, consistencyLevel, limit, batchSize, limitHasBeenSet);
+				bounding, consistencyLevel, limit, batchSize, limitHasBeenSet,allowFiltering, indexConditions);
 	}
 }

@@ -31,10 +31,13 @@ import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -89,10 +92,12 @@ public class RootSliceQueryBuilderTest {
 		Whitebox.setInternalState(builder, "idMeta", idMeta);
 		Whitebox.setInternalState(builder, "fromClusterings", new ArrayList<Object>());
 		Whitebox.setInternalState(builder, "toClusterings", new ArrayList<Object>());
+		Whitebox.setInternalState(builder, "indexConditions", new LinkedList<IndexCondition>());
 
 		when(meta.getIdMeta()).thenReturn(idMeta);
 		when(meta.getClassName()).thenReturn("entityClass");
 		doCallRealMethod().when(builder).partitionKeyInternal(any());
+		doCallRealMethod().when(builder).addCondition((IndexCondition) any());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,6 +181,13 @@ public class RootSliceQueryBuilderTest {
 		builder.partitionKeyInternal(10L).limit(53);
 
 		assertThat(builder.buildClusterQuery().getLimit()).isEqualTo(53);
+	}
+
+	@Test
+	public void should_add_condition() throws Exception {
+		IndexCondition indexCondition = new IndexCondition("test", IndexEquality.EQUAL, "value");
+        builder.partitionKeyInternal(11L).addCondition(indexCondition);
+		assertThat(builder.buildClusterQuery().getIndexConditions()).contains(indexCondition);
 	}
 
 	@Test
@@ -496,6 +508,12 @@ public class RootSliceQueryBuilderTest {
 		builder.partitionKeyInternal(partitionKey).removeLast(10, clusteringComponents);
 
 		assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(DESCENDING);
+		assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
+		assertThat(Whitebox.<List<Object>> getInternalState(builder, "fromClusterings")).containsExactly(
+				clusteringComponents);
+
+		assertThat(Whitebox.getInternalState(builder, "ordering")).isEqualTo(
+				DESCENDING);
 		assertThat(Whitebox.getInternalState(builder, "limit")).isEqualTo(10);
 		assertThat(Whitebox.<List<Object>> getInternalState(builder, "fromClusterings")).containsExactly(
 				clusteringComponents);

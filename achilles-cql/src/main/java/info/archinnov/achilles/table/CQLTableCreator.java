@@ -24,6 +24,7 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,9 @@ public class CQLTableCreator extends TableCreator {
 			case SIMPLE:
 			case LAZY_SIMPLE:
 				builder.addColumn(propertyName, valueClass);
+				if (pm.isIndexed()) {
+					builder.addIndex(propertyName);
+				}
 				break;
 			case LIST:
 			case LAZY_LIST:
@@ -139,6 +143,12 @@ public class CQLTableCreator extends TableCreator {
 		buildPrimaryKey(entityMeta.getIdMeta(), builder);
 		builder.addComment("Create table for entity '" + entityMeta.getClassName() + "'");
 		session.execute(builder.generateDDLScript());
+		if (builder.hasIndices()) {
+			for (String indexScript : builder.generateIndices()) {
+				session.execute(indexScript);
+			}
+		}
+
 	}
 
 	private void createTableForClusteredCounter(EntityMeta meta) {

@@ -35,6 +35,7 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
@@ -52,7 +53,13 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(limit);
-		select.orderBy(sliceQuery.getCQLOrdering());
+		Ordering ordering = sliceQuery.getCQLOrdering();
+		if (ordering != null) {
+			select.orderBy(ordering);
+		}
+		if (sliceQuery.isAllowFiltering()) {
+			select.allowFiltering();
+		}
 
 		Statement where = sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
 
@@ -64,7 +71,14 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(sliceQuery.getLimit());
-		select.orderBy(sliceQuery.getCQLOrdering());
+
+		Ordering ordering = sliceQuery.getCQLOrdering();
+		if (ordering != null) {
+			select.orderBy(ordering);
+		}
+		if (sliceQuery.isAllowFiltering()) {
+			select.allowFiltering();
+		}
 
 		Statement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);
 

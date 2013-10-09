@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -29,6 +29,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -128,13 +129,15 @@ public class ThriftPersistenceManagerTest {
 
 	@Test
 	public void should_create_slice_query_builder() throws Exception {
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+		when(entityMetaMap.get(ClusteredEntity.class)).thenReturn(entityMeta);
+		when(entityMeta.isClusteredEntity()).thenReturn(true);
 
-		SliceQueryBuilder<ThriftPersistenceContext, CompleteBean> builder = manager.sliceQuery(CompleteBean.class);
+		SliceQueryBuilder<ThriftPersistenceContext, ClusteredEntity> builder = manager
+				.sliceQuery(ClusteredEntity.class);
 
 		assertThat(builder).isNotNull();
 		assertThat(Whitebox.getInternalState(builder, "sliceQueryExecutor")).isSameAs(queryExecutor);
 		assertThat(Whitebox.getInternalState(builder, "meta")).isSameAs(entityMeta);
-		assertThat(Whitebox.getInternalState(builder, "entityClass")).isEqualTo(CompleteBean.class);
+		assertThat(Whitebox.getInternalState(builder, "entityClass")).isEqualTo(ClusteredEntity.class);
 	}
 }

@@ -123,7 +123,7 @@ public class CQLSliceQueryExecutorTest {
 		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
 		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
-				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
+				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true,false, null);
 
 	}
 
@@ -166,7 +166,7 @@ public class CQLSliceQueryExecutorTest {
 	public void should_remove_clustered_entities() throws Exception {
 		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents,
 				Arrays.<Object> asList(), Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit,
-				batchSize, false);
+				batchSize, false,false, null);
 
 		Query query = mock(Query.class);
 		when(generator.generateRemoveSliceQuery(anySliceQuery())).thenReturn(query);

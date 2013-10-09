@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
+import static com.datastax.driver.core.ColumnMetadata.IndexMetadata;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.mockito.Mockito.*;
@@ -66,6 +67,8 @@ public class CQLTableValidatorTest {
 	public void setUp() {
 		validator = new CQLTableValidator(cluster, keyspaceName);
 		entityMeta = new EntityMeta();
+        when(columnMetadata.getIndex()).thenReturn(null);
+        when(columnMetadataForField.getIndex()).thenReturn(null);
 	}
 
 	@Test
@@ -157,10 +160,10 @@ public class CQLTableValidatorTest {
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
 		when(columnMetadata.getType()).thenReturn(DataType.bigint());
-
+		when(columnMetadata.getIndex()).thenReturn(null);
 		when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
-
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetaData);
 
 		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(LAZY_SIMPLE).build();
@@ -169,6 +172,33 @@ public class CQLTableValidatorTest {
 	}
 
 	@Test
+	public void should_validate_simple_indexed_field_for_entity() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+				.build();
+		pm.setIndexed(true);
+
+		entityMeta.setIdMeta(idMeta);
+		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+
+		when(tableMetaData.getName()).thenReturn("table");
+		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
+		when(columnMetadata.getType()).thenReturn(DataType.bigint());
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.text());
+
+		IndexMetadata indexMetadata = mock(IndexMetadata.class);
+		when(indexMetadata.getName()).thenReturn("table(name)");
+		when(indexMetadata.getIndexedColumn()).thenReturn(columnMetadataForField);
+
+		when(columnMetadataForField.getIndex()).thenReturn(indexMetadata);
+		validator.validateForEntity(entityMeta, tableMetaData);
+
+	}
+
+@Test
 	public void should_validate_list_field_for_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 

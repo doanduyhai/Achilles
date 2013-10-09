@@ -57,6 +57,8 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 	@Override
 	public <T> SliceQueryBuilder<CQLPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
+        Validator.validateTrue(meta.isClusteredEntity(),"Cannot perform slice query on entity type '%s' because it is " +
+                "not a clustered entity",meta.getClassName());
 		return new SliceQueryBuilder<CQLPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator, entityClass,
 				meta);
 	}

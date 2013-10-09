@@ -20,6 +20,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -290,7 +291,8 @@ public class PropertyParserTest {
 				this.counter = counter;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("counter"));
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("counter"));
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
@@ -360,10 +362,12 @@ public class PropertyParserTest {
 				this.type = type;
 			}
 		}
-		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("type"));
+		PropertyParsingContext context = newContext(Test.class,
+				Test.class.getDeclaredField("type"));
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat((Class<PropertyType>) meta.getValueClass()).isEqualTo(PropertyType.class);
+		assertThat((Class<PropertyType>) meta.getValueClass()).isEqualTo(
+				PropertyType.class);
 	}
 
 	@Test
@@ -407,6 +411,28 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("friends"));
 		PropertyMeta meta = parser.parse(context);
 		assertThat(meta.type().isLazy()).isTrue();
+	}
+
+	@Test
+	public void should_parse_index() throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			@Column
+			@Index
+			private String firstname;
+
+			public String getFirstname() {
+				return firstname;
+			}
+
+			public void setFirstname(String firstname) {
+				this.firstname = firstname;
+			}
+
+		}
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("firstname"));
+		PropertyMeta meta = parser.parse(context);
+		assertThat(meta.isIndexed()).isTrue();
 	}
 
 	@SuppressWarnings("rawtypes")

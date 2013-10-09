@@ -17,6 +17,7 @@
 package info.archinnov.achilles.helper;
 
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -123,6 +124,17 @@ public class PropertyHelper {
 			lazy = true;
 		}
 		return lazy;
+	}
+
+	public boolean isIndexed(Field field) {
+		log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
+
+		boolean indexed = false;
+		if (field.getAnnotation(Index.class) != null) {
+			indexed = true;
+		}
+		return indexed;
 	}
 
 	public boolean hasConsistencyAnnotation(Field field) {

@@ -19,6 +19,7 @@ package info.archinnov.achilles.entity.parsing.validator;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -97,6 +98,34 @@ public class PropertyParsingValidator {
 							+ "' of entity '"
 							+ context.getCurrentEntityClass().getCanonicalName()
 							+ "' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
+		}
+	}
+
+	public void validateIndexIfSet(PropertyParsingContext context) {
+		log.debug("Validate that this property {} of entity class {} has a properly set index parameter, if set",
+				context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+		PropertyHelper propertyHelper = new PropertyHelper();
+		if (propertyHelper.isIndexed(context.getCurrentField())) {
+			if (!PropertyHelper.isSupportedType(context.getCurrentField().getType())) {
+				throw new AchillesBeanMappingException("Property field '" + context.getCurrentField().getName()
+						+ "' of entity '" + context.getCurrentEntityClass().getCanonicalName()
+						+ "' cannot have an index annotation (class not supported)");
+			}
+			if (context.isEmbeddedId()) {
+				throw new AchillesBeanMappingException("Property field '" + context.getCurrentField().getName()
+						+ "' of entity '" + context.getCurrentEntityClass().getCanonicalName()
+						+ "' is part of the primary key (embedded key) and therefore cannot have an index annotation");
+			}
+			if (context.isPrimaryKey()) {
+				throw new AchillesBeanMappingException("Property field '" + context.getCurrentField().getName()
+						+ "' of entity '" + context.getCurrentEntityClass().getCanonicalName()
+						+ "' is a primary key and therefore cannot have an index annotation");
+			}
+			if (propertyHelper.isLazy(context.getCurrentField())) {
+				throw new AchillesBeanMappingException("Property field '" + context.getCurrentField().getName()
+						+ "' of entity '" + context.getCurrentEntityClass().getCanonicalName()
+						+ "' is lazy and therefore cannot have an index annotation");
+			}
 		}
 	}
 

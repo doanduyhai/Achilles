@@ -22,10 +22,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.cassandra.utils.Pair;
@@ -44,13 +46,15 @@ public class CQLSliceQuery<T> {
 
 	public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {
 
-		validateClusteringComponents(sliceQuery);
-		this.sliceQuery = sliceQuery;
-		this.defaultReadLevel = defaultReadLevel;
-		this.fixedComponents = determineFixedComponents(sliceQuery);
-		Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
-		this.lastStartComp = lastComponents.left;
-		this.lastEndComp = lastComponents.right;
+        this.sliceQuery = sliceQuery;
+        this.defaultReadLevel = defaultReadLevel;
+
+        validateClusteringComponents(sliceQuery);
+
+        this.fixedComponents = determineFixedComponents(sliceQuery);
+        Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
+        this.lastStartComp = lastComponents.left;
+        this.lastEndComp = lastComponents.right;
 	}
 
 	public List<Object> getFixedComponents() {
@@ -67,6 +71,10 @@ public class CQLSliceQuery<T> {
 
 	public int getLimit() {
 		return sliceQuery.getLimit();
+	}
+
+	public boolean isAllowFiltering() {
+		return sliceQuery.isAllowFiltering();
 	}
 
 	public com.datastax.driver.core.ConsistencyLevel getConsistencyLevel() {
@@ -86,12 +94,14 @@ public class CQLSliceQuery<T> {
 	public Ordering getCQLOrdering() {
 		OrderingMode ordering = sliceQuery.getOrdering();
 		String orderingComponentName = sliceQuery.getMeta().getIdMeta().getOrderingComponent();
-		if (ordering.isReverse()) {
-			return QueryBuilder.desc(orderingComponentName);
-		} else {
-
-			return QueryBuilder.asc(orderingComponentName);
-		}
+        if(!hasIndexConditions()) {
+			if (ordering.isReverse()) {
+				return QueryBuilder.desc(orderingComponentName);
+			} else {
+				return QueryBuilder.asc(orderingComponentName);
+			}
+        }
+		return null;
 	}
 
 	public List<String> getComponentNames() {
@@ -118,18 +128,24 @@ public class CQLSliceQuery<T> {
 		return sliceQuery.getBatchSize();
 	}
 
-	private void validateClusteringComponents(SliceQuery<T> sliceQuery) {
-		validator.validateComponentsForSliceQuery(sliceQuery.getClusteringsFrom(), sliceQuery.getClusteringsTo(),
-				sliceQuery.getOrdering());
+	public Collection<IndexCondition> getIndexConditions() {
+		return sliceQuery.getIndexConditions();
+	}
 
+	public boolean hasIndexConditions() {
+		return sliceQuery.hasIndexConditions();
+	}
+
+	private void validateClusteringComponents(SliceQuery<T> sliceQuery) {
+        validator.validateComponentsForSliceQuery(sliceQuery.getClusteringsFrom(), sliceQuery.getClusteringsTo(),
+            sliceQuery.getOrdering());
 	}
 
 	private List<Object> determineFixedComponents(SliceQuery<T> sliceQuery) {
 		List<Object> fixedComponents = new ArrayList<Object>();
-
 		List<Object> startComponents = sliceQuery.getClusteringsFrom();
-
 		List<Object> endComponents = sliceQuery.getClusteringsTo();
+
 
 		int startIndex = validator.getLastNonNullIndex(startComponents);
 		int endIndex = validator.getLastNonNullIndex(endComponents);

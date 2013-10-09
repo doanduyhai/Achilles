@@ -18,6 +18,7 @@ package info.archinnov.achilles.helper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -109,6 +110,18 @@ public class PropertyHelperTest {
 		Field field = Test.class.getDeclaredField("name");
 
 		assertThat(helper.isLazy(field)).isTrue();
+	}
+
+	@Test
+	public void should_find_index() throws Exception {
+		class Test {
+			@Index
+			private String name;
+		}
+
+		Field field = Test.class.getDeclaredField("name");
+
+		assertThat(helper.isIndexed(field)).isTrue();
 	}
 
 	@Test
