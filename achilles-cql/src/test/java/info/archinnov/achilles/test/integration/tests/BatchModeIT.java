@@ -240,7 +240,7 @@ public class BatchModeIT {
 			assertThatBatchContextHasBeenReset(batchEm);
 		}
 
-		Thread.sleep(10);
+		Thread.sleep(1000);
 		logAsserter.prepareLogLevel();
 		batchEm.persist(tweet2);
 		batchEm.endBatch();

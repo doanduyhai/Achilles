@@ -113,7 +113,7 @@ public class ClusteredEntityWithCounterIT {
 
 		manager.remove(entity);
 
-		Thread.sleep(100);
+		Thread.sleep(2000);
 
 		assertThat(manager.find(ClusteredEntityWithCounter.class, compoundKey)).isNull();
 

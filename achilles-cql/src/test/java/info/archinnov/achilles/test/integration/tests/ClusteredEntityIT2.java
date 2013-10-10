@@ -17,7 +17,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -35,7 +34,6 @@ import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -204,11 +202,9 @@ public class ClusteredEntityIT2 {
 
 		String updateQuery = "update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'";
 
-		CQLDaoContext daoContext = Whitebox.getInternalState(manager, CQLDaoContext.class);
+		session.execute(new SimpleStatement(updateQuery));
 
-		daoContext.execute(new SimpleStatement(updateQuery));
-
-		// Thread.sleep(200);
+		Thread.sleep(200);
 
 		manager.refresh(message, ConsistencyLevel.ALL);
 
