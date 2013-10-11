@@ -21,12 +21,12 @@ import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
+import info.archinnov.achilles.type.CounterBuilder;
 
 import java.lang.reflect.Method;
 import java.util.List;

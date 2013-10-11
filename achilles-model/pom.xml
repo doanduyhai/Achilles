@@ -7,5 +7,24 @@
   </parent>
   <artifactId>achilles-model</artifactId>
   <name>Achilles Model</name>
-  <description>Achilles Model Module</description>        
+  <description>Achilles Model Module</description>    
+  <dependencies>
+  			<!-- JPA -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<version>${hibernate.jpa2.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>		
+  </dependencies>    
 </project>

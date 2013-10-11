@@ -37,12 +37,12 @@ import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftEntityPersister;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;

@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.proxy.wrapper;
-
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Counter;
+package info.archinnov.achilles.type;
 
 public class CounterBuilder {
 	public static Counter incr() {

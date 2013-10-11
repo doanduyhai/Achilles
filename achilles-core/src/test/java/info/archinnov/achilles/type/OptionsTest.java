@@ -25,7 +25,7 @@ public class OptionsTest {
 
 	@Test
 	public void should_duplicate_without_ttl_and_timestamp() throws Exception {
-		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).ttl(10).timestamp(100L);
+		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
 
 		Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
@@ -36,7 +36,7 @@ public class OptionsTest {
 
 	@Test
 	public void should_duplicate_with_new_consistency_level() throws Exception {
-		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).ttl(10).timestamp(100L);
+		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
 
 		Options newOptions = options.duplicateWithNewConsistencyLevel(LOCAL_QUORUM);
 

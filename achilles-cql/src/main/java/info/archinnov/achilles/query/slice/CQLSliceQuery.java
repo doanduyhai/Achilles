@@ -99,7 +99,7 @@ public class CQLSliceQuery<T> {
 	}
 
 	public String getVaryingComponentName() {
-		return sliceQuery.getMeta().getIdMeta().getComponentNames().get(fixedComponents.size());
+		return sliceQuery.getMeta().getIdMeta().getCQLComponentNames().get(fixedComponents.size());
 	}
 
 	public Class<?> getVaryingComponentClass() {

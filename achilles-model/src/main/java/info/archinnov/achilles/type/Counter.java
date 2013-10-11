@@ -16,6 +16,14 @@
  */
 package info.archinnov.achilles.type;
 
+import info.archinnov.achilles.json.CounterDeserializer;
+import info.archinnov.achilles.json.CounterSerializer;
+
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+@JsonDeserialize(using = CounterDeserializer.class)
+@JsonSerialize(using = CounterSerializer.class)
 public interface Counter {
 	public Long get();
 

@@ -21,7 +21,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder.CounterImpl;
+import info.archinnov.achilles.type.CounterBuilder.CounterImpl;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.Collection;

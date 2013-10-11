@@ -20,7 +20,7 @@ import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.compound.CQLCompoundKeyValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
@@ -35,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -49,7 +50,7 @@ public class CQLSliceQueryTest {
 
 	private CQLSliceQuery<ClusteredEntity> cqlSliceQuery;
 
-	@Mock
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private SliceQuery<ClusteredEntity> sliceQuery;
 
 	@Mock
@@ -180,7 +181,6 @@ public class CQLSliceQueryTest {
 
 	@Test
 	public void should_get_ordering_asc() throws Exception {
-		sliceQuery = mock(SliceQuery.class, RETURNS_DEEP_STUBS);
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L));
 		when(sliceQuery.getMeta().getIdMeta().getOrderingComponent()).thenReturn("orderingComp");
@@ -195,7 +195,6 @@ public class CQLSliceQueryTest {
 
 	@Test
 	public void should_get_ordering_desc() throws Exception {
-		sliceQuery = mock(SliceQuery.class, RETURNS_DEEP_STUBS);
 
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L));
@@ -211,7 +210,6 @@ public class CQLSliceQueryTest {
 
 	@Test
 	public void should_get_components_name() throws Exception {
-		sliceQuery = mock(SliceQuery.class, RETURNS_DEEP_STUBS);
 
 		when(sliceQuery.getMeta().getIdMeta().getComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
 
@@ -222,12 +220,11 @@ public class CQLSliceQueryTest {
 
 	@Test
 	public void should_get_varying_component_name() throws Exception {
-		sliceQuery = mock(SliceQuery.class, RETURNS_DEEP_STUBS);
 
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L, 2, "a"));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L, 2));
 
-		when(sliceQuery.getMeta().getIdMeta().getComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
+		when(sliceQuery.getMeta().getIdMeta().getCQLComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
 
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
@@ -236,7 +233,6 @@ public class CQLSliceQueryTest {
 
 	@Test
 	public void should_get_varying_component_class() throws Exception {
-		sliceQuery = mock(SliceQuery.class, RETURNS_DEEP_STUBS);
 		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L, 2));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L, 3));

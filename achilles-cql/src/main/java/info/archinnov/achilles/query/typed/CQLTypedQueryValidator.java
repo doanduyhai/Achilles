@@ -31,8 +31,8 @@ public class CQLTypedQueryValidator {
 		if (!normalizedQuery.contains("select *")) {
 			if (idMeta.isEmbeddedId()) {
 
-				for (String component : idMeta.getComponentNames()) {
-					Validator.validateTrue(normalizedQuery.contains(component.toLowerCase()),
+				for (String component : idMeta.getCQLComponentNames()) {
+					Validator.validateTrue(normalizedQuery.contains(component),
 							"The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
 							queryString, component, idMeta.getValueClass().getCanonicalName());
 				}

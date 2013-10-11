@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
@@ -89,7 +89,7 @@ public class CQLPersistenceContextFactoryTest {
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).ttl(95));
+		CQLPersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
@@ -122,8 +122,8 @@ public class CQLPersistenceContextFactoryTest {
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
 
-		CQLPersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey, OptionsBuilder
-				.withConsistency(LOCAL_QUORUM).ttl(98));
+		CQLPersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey,
+				OptionsBuilder.withConsistency(LOCAL_QUORUM).withTtl(98));
 
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getPrimaryKey()).isSameAs(primaryKey);
@@ -139,8 +139,8 @@ public class CQLPersistenceContextFactoryTest {
 		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
 		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
-		CQLPersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents,
-				EACH_QUORUM);
+		CQLPersistenceContext actual = pmf
+				.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
 
 		assertThat(actual.getEntity()).isNull();
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);

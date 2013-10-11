@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.proxy.wrapper;
+package info.archinnov.achilles.type;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.type.Counter;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,5 +123,20 @@ public class CounterBuilderTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception.expectMessage("This method is not meant to be called");
 		counter.decr(10L, EACH_QUORUM);
+	}
+
+	@Test
+	public void should_be_able_to_serialize_and_deserialize_counter_impl() throws Exception {
+
+		ObjectMapper mapper = new ObjectMapper();
+		Counter counter = CounterBuilder.incr(11L);
+
+		String serialized = mapper.writeValueAsString(counter);
+		assertThat(serialized).isEqualTo("\"11\"");
+
+		Counter deserialized = mapper.readValue(serialized, Counter.class);
+		assertThat(deserialized.get()).isEqualTo(11L);
+
+		assertThat(mapper.writeValueAsString(CounterBuilder.incr(null))).isEqualTo("\"0\"");
 	}
 }

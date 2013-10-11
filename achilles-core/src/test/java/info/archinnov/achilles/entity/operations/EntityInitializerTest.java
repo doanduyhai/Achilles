@@ -25,9 +25,9 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 
 import java.lang.reflect.Method;
 import java.util.Map;

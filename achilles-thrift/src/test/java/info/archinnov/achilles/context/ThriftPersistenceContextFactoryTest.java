@@ -16,11 +16,11 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.context.PersistenceContextFactory.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.context.PersistenceContextFactory.NO_TTL;
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
@@ -88,7 +88,7 @@ public class ThriftPersistenceContextFactoryTest {
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 
 		ThriftPersistenceContext actual = factory.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM)
-				.ttl(95));
+				.withTtl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
@@ -121,7 +121,7 @@ public class ThriftPersistenceContextFactoryTest {
 	public void should_create_new_context_with_primary_key() throws Exception {
 		Object primaryKey = RandomUtils.nextLong();
 		ThriftPersistenceContext context = factory.newContext(CompleteBean.class, primaryKey, OptionsBuilder
-				.withConsistency(EACH_QUORUM).ttl(98));
+				.withConsistency(EACH_QUORUM).withTtl(98));
 
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getPrimaryKey()).isSameAs(primaryKey);

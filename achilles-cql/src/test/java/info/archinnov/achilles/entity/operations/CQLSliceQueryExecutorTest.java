@@ -16,11 +16,11 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.type.BoundingMode.*;
+import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -156,6 +156,7 @@ public class CQLSliceQueryExecutorTest {
 		when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
 				.thenReturn(context);
 
+		when(idMeta.getCQLComponentNames()).thenReturn(Arrays.asList("id", "comp1"));
 		Iterator<ClusteredEntity> iter = executor.iterator(sliceQuery);
 
 		assertThat(iter).isNotNull();

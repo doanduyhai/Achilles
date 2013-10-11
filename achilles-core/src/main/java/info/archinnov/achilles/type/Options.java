@@ -51,6 +51,6 @@ public class Options {
 	}
 
 	public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
-		return OptionsBuilder.withConsistency(consistencyLevel).ttl(ttl).timestamp(timestamp);
+		return OptionsBuilder.withConsistency(consistencyLevel).withTtl(ttl).withTimestamp(timestamp);
 	}
 }

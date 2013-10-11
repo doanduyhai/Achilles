@@ -28,10 +28,25 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.cassandra.utils.Pair;
+import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.FluentIterable;
 
 public class PropertyMeta {
+
+	private static final Function<String, String> toLowerCase = new Function<String, String>() {
+
+		@Override
+		public String apply(String input) {
+			String result = null;
+			if (StringUtils.isNotBlank(input))
+				result = input.toLowerCase();
+
+			return result;
+		}
+	};
 
 	private PropertyType type;
 	private String propertyName;
@@ -86,6 +101,10 @@ public class PropertyMeta {
 			return embeddedIdProperties.getComponentNames();
 		}
 		return components;
+	}
+
+	public List<String> getCQLComponentNames() {
+		return FluentIterable.from(getComponentNames()).transform(toLowerCase).toImmutableList();
 	}
 
 	public List<String> getClusteringComponentNames() {

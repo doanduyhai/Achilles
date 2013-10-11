@@ -16,13 +16,12 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
-import info.archinnov.achilles.proxy.wrapper.CounterBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
@@ -30,6 +29,7 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUU
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Date;
@@ -113,7 +113,7 @@ public class QueryIT {
 
 		Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
 
-		manager.persist(entity, OptionsBuilder.withTtl(1000).timestamp(timestamp));
+		manager.persist(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
 		Map<String, Object> result = manager.nativeQuery(
 				"SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();

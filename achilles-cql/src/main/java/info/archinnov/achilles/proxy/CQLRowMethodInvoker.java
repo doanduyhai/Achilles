@@ -31,8 +31,9 @@ import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 
 public class CQLRowMethodInvoker {
+
 	public Object invokeOnRowForFields(Row row, PropertyMeta pm) {
-		String propertyName = pm.getPropertyName();
+		String propertyName = pm.getPropertyName().toLowerCase();
 		Object value = null;
 		if (row != null && !row.isNull(propertyName)) {
 			switch (pm.type()) {
@@ -63,7 +64,7 @@ public class CQLRowMethodInvoker {
 	}
 
 	public Object extractCompoundPrimaryKeyFromRow(Row row, PropertyMeta pm, boolean isManagedEntity) {
-		List<String> componentNames = pm.getComponentNames();
+		List<String> componentNames = pm.getCQLComponentNames();
 		List<Class<?>> componentClasses = pm.getComponentClasses();
 		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(componentNames.size(), null));
 
@@ -92,7 +93,7 @@ public class CQLRowMethodInvoker {
 		}
 	}
 
-	public Object invokeOnRowForProperty(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass) {
+	private Object invokeOnRowForProperty(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass) {
 		try {
 			Object rawValue = getRowMethod(valueClass).invoke(row, propertyName);
 			return pm.decode(rawValue);
