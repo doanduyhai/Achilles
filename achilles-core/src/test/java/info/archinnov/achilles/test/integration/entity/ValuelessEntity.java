@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 
 @Entity
 public class ValuelessEntity {

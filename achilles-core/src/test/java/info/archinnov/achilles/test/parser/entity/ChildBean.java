@@ -16,15 +16,11 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Entity;
 
-@Entity
-@Table(name = "ChildBean")
+@Entity(table = "ChildBean")
 public class ChildBean extends ParentBean {
-
-	public static final long serialVersionUID = 1L;
 
 	@Column
 	private String nickname;

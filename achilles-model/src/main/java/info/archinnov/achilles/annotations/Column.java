@@ -14,32 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.test.parser.entity;
 
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
+package info.archinnov.achilles.annotations;
 
-public class BeanWithClusteredId {
-	@EmbeddedId
-	private EmbeddedKey id;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	@Column
-	private String name;
+/**
+ * <p>
+ * Simple column
+ * </p>
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Documented
+public @interface Column {
 
-	public EmbeddedKey getId() {
-		return id;
-	}
-
-	public void setId(EmbeddedKey id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
+	/**
+	 * (Optional) The name of the column. Defaults to the property or field
+	 * name.
+	 */
+	String name() default "";
 }

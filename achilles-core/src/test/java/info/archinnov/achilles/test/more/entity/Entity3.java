@@ -16,11 +16,9 @@
  */
 package info.archinnov.achilles.test.more.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import info.archinnov.achilles.annotations.Entity;
 
 @Entity
-@Table
 public class Entity3 {
 
 }

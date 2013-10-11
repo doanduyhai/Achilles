@@ -17,12 +17,11 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.type.Counter;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 @Consistency(read = LOCAL_QUORUM, write = QUORUM)

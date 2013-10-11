@@ -16,8 +16,11 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.*;
+import static info.archinnov.achilles.entity.metadata.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
@@ -39,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.persistence.Column;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
@@ -80,13 +81,25 @@ public class PropertyParser {
 		} else if (context.isEmbeddedId()) {
 			propertyMeta = parseEmbeddedId(context);
 		} else if (context.isPrimaryKey()) {
-			propertyMeta = parseSimpleProperty(context);
-			propertyMeta.setType(ID);
+			propertyMeta = parseId(context);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
 		}
 		context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		return propertyMeta;
+	}
+
+	protected PropertyMeta parseId(PropertyParsingContext context) {
+		log.debug("Parsing property {} as id of entity class {}", context.getCurrentPropertyName(), context
+				.getCurrentEntityClass().getCanonicalName());
+
+		PropertyMeta idMeta = parseSimpleProperty(context);
+		idMeta.setType(ID);
+		Id id = context.getCurrentField().getAnnotation(Id.class);
+		String propertyName = StringUtils.isNotBlank(id.name()) ? id.name() : context.getCurrentPropertyName();
+		idMeta.setPropertyName(propertyName);
+
+		return idMeta;
 	}
 
 	protected PropertyMeta parseEmbeddedId(PropertyParsingContext context) {
@@ -95,13 +108,16 @@ public class PropertyParser {
 
 		Class<?> entityClass = context.getCurrentEntityClass();
 		Field field = context.getCurrentField();
+		EmbeddedId embeddedId = field.getAnnotation(EmbeddedId.class);
+		String propertyName = StringUtils.isNotBlank(embeddedId.name()) ? embeddedId.name() : context
+				.getCurrentPropertyName();
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = EMBEDDED_ID;
 
-		EmbeddedIdProperties embeddedIdProperties = parseCompoundKey(field.getType());
+		EmbeddedIdProperties embeddedIdProperties = extractEmbeddedIdProperties(field.getType());
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-				.propertyName(context.getCurrentPropertyName()).embeddedIdProperties(embeddedIdProperties)
+				.propertyName(propertyName).embeddedIdProperties(embeddedIdProperties)
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
 				.consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
 
@@ -275,7 +291,7 @@ public class PropertyParser {
 		return Pair.create(keyClass, valueClass);
 	}
 
-	private EmbeddedIdProperties parseCompoundKey(Class<?> keyClass) {
+	private EmbeddedIdProperties extractEmbeddedIdProperties(Class<?> keyClass) {
 		log.trace("Parsing compound key class", keyClass.getCanonicalName());
 		EmbeddedIdProperties embeddedIdProperties = null;
 

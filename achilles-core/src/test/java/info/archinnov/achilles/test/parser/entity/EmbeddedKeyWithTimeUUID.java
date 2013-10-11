@@ -17,12 +17,11 @@
 
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.TimeUUID;
 
 import java.util.UUID;
-
-import javax.persistence.Column;
 
 public class EmbeddedKeyWithTimeUUID {
 

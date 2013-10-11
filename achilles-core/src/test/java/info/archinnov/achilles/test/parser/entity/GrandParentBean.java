@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import javax.persistence.Id;
+import info.archinnov.achilles.annotations.Id;
 
 public class GrandParentBean {
 	@Id

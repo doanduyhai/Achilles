@@ -18,9 +18,9 @@ ce with the License.
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Entity;
 
 @Entity
 public class ClusteredMessage {

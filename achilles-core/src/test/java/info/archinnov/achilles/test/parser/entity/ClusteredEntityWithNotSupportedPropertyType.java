@@ -16,18 +16,18 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import java.util.Map;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Entity;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
+import java.util.Map;
 
 @Entity
 public class ClusteredEntityWithNotSupportedPropertyType {
 	@EmbeddedId
 	private EmbeddedKey id;
 
-	@Column(table = "xxx")
+	@Column
 	private Map<Long, String> map;
 
 	public EmbeddedKey getId() {

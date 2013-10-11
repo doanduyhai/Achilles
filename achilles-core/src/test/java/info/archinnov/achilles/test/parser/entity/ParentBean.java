@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import javax.persistence.Column;
+import info.archinnov.achilles.annotations.Column;
 
 public class ParentBean extends GrandParentBean {
 

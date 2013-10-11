@@ -16,11 +16,10 @@
  */
 package info.archinnov.achilles.test.mapping.entity;
 
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
 
 @Entity
 public class ClusteredEntity {

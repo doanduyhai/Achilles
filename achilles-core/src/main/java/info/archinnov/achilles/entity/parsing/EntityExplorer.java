@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
+import info.archinnov.achilles.annotations.Entity;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,8 +37,7 @@ public class EntityExplorer {
 
 		Set<Class<?>> candidateClasses = new HashSet<Class<?>>();
 		Reflections reflections = new Reflections(packageNames);
-		candidateClasses.addAll(reflections.getTypesAnnotatedWith(javax.persistence.Entity.class));
-		candidateClasses.addAll(reflections.getTypesAnnotatedWith(javax.persistence.Table.class));
+		candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
 		return new ArrayList<Class<?>>(candidateClasses);
 	}
 

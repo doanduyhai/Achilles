@@ -17,9 +17,12 @@
 package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -40,10 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Id;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,7 +79,7 @@ public class PropertyParserTest {
 	public void should_parse_primary_key() throws Exception {
 		@SuppressWarnings("unused")
 		class Test {
-			@Id
+			@Id(name = "pk")
 			private Long id;
 
 			public Long getId() {
@@ -97,7 +96,7 @@ public class PropertyParserTest {
 
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat(meta.getPropertyName()).isEqualTo("id");
+		assertThat(meta.getPropertyName()).isEqualTo("pk");
 		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
 		assertThat(context.getPropertyMetas()).hasSize(1);
 
@@ -108,7 +107,7 @@ public class PropertyParserTest {
 		@SuppressWarnings("unused")
 		class Test {
 
-			@EmbeddedId
+			@EmbeddedId(name = "embedded")
 			private EmbeddedKey id;
 
 			public EmbeddedKey getId() {
@@ -132,7 +131,7 @@ public class PropertyParserTest {
 		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 		Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
 
-		assertThat(meta.getPropertyName()).isEqualTo("id");
+		assertThat(meta.getPropertyName()).isEqualTo("embedded");
 		assertThat((Class) meta.getValueClass()).isEqualTo(EmbeddedKey.class);
 		EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
 		assertThat(embeddedIdProperties).isNotNull();

@@ -23,14 +23,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * <p>
+ * Map this type to Cassandra timeuuid type. This annotation should be used
+ * along side with java.util.UUID type
+ * </p>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 @Documented
 public @interface TimeUUID {
-	/**
-	 * <p>
-	 * Map this type to Cassandra timeuuid type. This annotation should be used
-	 * along side with java.util.UUID type
-	 * </p>
-	 */
+
 }

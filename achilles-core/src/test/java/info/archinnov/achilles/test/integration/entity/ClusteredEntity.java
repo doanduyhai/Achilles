@@ -16,16 +16,13 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
+import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Order;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-@Entity
-@Table(name = TABLE_NAME)
+@Entity(table = TABLE_NAME)
 public class ClusteredEntity {
 
 	public static final String TABLE_NAME = "clustered";

@@ -18,6 +18,7 @@ package info.archinnov.achilles.helper;
 
 import static info.archinnov.achilles.helper.LoggerHelper.fieldToStringFn;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.parsing.PropertyFilter;
@@ -29,8 +30,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.Table;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
@@ -137,10 +136,12 @@ public class EntityIntrospector {
 
 	public String inferColumnFamilyName(Class<?> entity, String canonicalName) {
 		String columnFamilyName = null;
-		Table table = entity.getAnnotation(javax.persistence.Table.class);
-		if (table != null) {
-			if (StringUtils.isNotBlank(table.name())) {
-				columnFamilyName = table.name();
+		Entity annotation = entity.getAnnotation(Entity.class);
+		if (annotation != null) {
+			if (StringUtils.isNotBlank(annotation.table())) {
+				System.out.println(String.format(" Table name on entity class '%s' : '%s' ", entity.getCanonicalName(),
+						annotation.table()));
+				columnFamilyName = annotation.table();
 			}
 		}
 

@@ -16,6 +16,10 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Id;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -30,9 +34,9 @@ public class PropertyFilter {
 	static final List<Class<?>> acceptedAnnotations = new ArrayList<Class<?>>();
 
 	static {
-		acceptedAnnotations.add(javax.persistence.Id.class);
-		acceptedAnnotations.add(javax.persistence.EmbeddedId.class);
-		acceptedAnnotations.add(javax.persistence.Column.class);
+		acceptedAnnotations.add(Id.class);
+		acceptedAnnotations.add(EmbeddedId.class);
+		acceptedAnnotations.add(Column.class);
 	}
 
 	public boolean matches(Field field) {

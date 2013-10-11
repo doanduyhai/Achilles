@@ -16,18 +16,15 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadLocalQuorumConsistency.*;
+import static info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadLocalQuorumConsistency.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
+@Entity(table = TABLE_NAME)
 @Consistency(read = LOCAL_QUORUM, write = ONE)
-@Table(name = TABLE_NAME)
 public class EntityWithWriteOneAndReadLocalQuorumConsistency {
 
 	public static final String TABLE_NAME = "consistency_test2";

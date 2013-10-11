@@ -19,7 +19,11 @@ package info.archinnov.achilles.helper;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -33,10 +37,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 import org.apache.cassandra.utils.Pair;
 import org.junit.Rule;
@@ -301,7 +301,7 @@ public class EntityIntrospectorTest {
 
 	@Test
 	public void should_not_get_inherited_field_by_annotation_when_no_match() throws Exception {
-		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class)).isNull();
+		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, TimeUUID.class)).isNull();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -315,8 +315,7 @@ public class EntityIntrospectorTest {
 
 	@Test
 	public void should_not_get_inherited_field_by_annotation_and_name_when_no_match() throws Exception {
-		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, javax.persistence.Basic.class, "address"))
-				.isNull();
+		assertThat(introspector.getInheritedPrivateFields(ChildBean.class, TimeUUID.class, "address")).isNull();
 	}
 
 	@Test
@@ -333,7 +332,7 @@ public class EntityIntrospectorTest {
 
 	@Test
 	public void should_infer_column_family_from_default_name_when_empty_annotation_name() throws Exception {
-		@Table(name = "")
+		@Entity(table = "")
 		class Test {
 
 		}

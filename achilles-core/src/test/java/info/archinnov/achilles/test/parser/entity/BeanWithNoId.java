@@ -16,9 +16,8 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import javax.persistence.Entity;
+import info.archinnov.achilles.annotations.Entity;
 
 @Entity
 public class BeanWithNoId {
-	public static final long serialVersionUID = 1L;
 }

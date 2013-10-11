@@ -16,16 +16,15 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.Counter;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 public class CompleteBean {

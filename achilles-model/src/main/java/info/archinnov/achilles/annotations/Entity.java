@@ -25,19 +25,18 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * To be used with <em>@EmbeddedId</em> annotation. Indicates the component
- * order of a property
+ * Marks a class as an entity
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target(ElementType.TYPE)
 @Documented
-public @interface Order {
+public @interface Entity {
 
 	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
+	 * (Optional) The name of the table. Defaults to the short class name. <br/>
+	 * Ex: for the class "info.archinnov.achilles.entity.UserEntity", the
+	 * default table name is "UserEntity"
 	 */
-	int value();
+	String table() default "";
 }

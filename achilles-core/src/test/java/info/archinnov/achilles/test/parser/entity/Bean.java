@@ -16,7 +16,10 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -24,14 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
 @Entity
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
 public class Bean {
-	public static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;

@@ -16,8 +16,9 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.reflections.ReflectionUtils.*;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.TimeUUID;
@@ -35,8 +36,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import javax.persistence.Column;
 
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;

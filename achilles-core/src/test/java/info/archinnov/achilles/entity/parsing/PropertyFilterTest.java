@@ -16,7 +16,9 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
@@ -68,13 +70,13 @@ public class PropertyFilterTest {
 	public void should_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(filter.hasAnnotation(name, javax.persistence.Column.class)).isTrue();
+		assertThat(filter.hasAnnotation(name, Column.class)).isTrue();
 	}
 
 	@Test
 	public void should_not_have_annotation() throws Exception {
 		Field name = CompleteBean.class.getDeclaredField("name");
 
-		assertThat(filter.hasAnnotation(name, javax.persistence.Id.class)).isFalse();
+		assertThat(filter.hasAnnotation(name, Id.class)).isFalse();
 	}
 }

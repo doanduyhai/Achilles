@@ -25,19 +25,20 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * To be used with <em>@EmbeddedId</em> annotation. Indicates the component
- * order of a property
+ * Indicates that a property is a compound primary key <br/>
+ * The compound primary key class should contain properties annotated with @Order
+ * <br/>
+ * For compound primary keys having composite partition key, use the @PartitionKey
+ * annotation
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
+@Target(ElementType.FIELD)
 @Documented
-public @interface Order {
-
+public @interface EmbeddedId {
 	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
+	 * (Optional) The name of the compound primary key. Defaults to the property
+	 * or field name.
 	 */
-	int value();
+	String name() default "";
 }

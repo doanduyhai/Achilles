@@ -16,13 +16,12 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Id;
 
 @Entity
 public class BeanWithDuplicatedColumnName {
-	public static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;

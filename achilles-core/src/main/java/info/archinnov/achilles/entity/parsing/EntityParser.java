@@ -16,7 +16,10 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.*;
+import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -28,10 +31,6 @@ import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Id;
 
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
