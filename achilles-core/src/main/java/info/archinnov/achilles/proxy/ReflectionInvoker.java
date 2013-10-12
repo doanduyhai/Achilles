@@ -18,6 +18,7 @@ package info.archinnov.achilles.proxy;
 
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -98,6 +99,12 @@ public class ReflectionInvoker {
 		log.trace("Set value with setter {} to instance {} of class {} with {}", setter.getName(), target, setter
 				.getDeclaringClass().getCanonicalName(), args);
 
+		Class<?> parameterClass = setter.getParameterTypes()[0];
+		if (parameterClass.isPrimitive()) {
+			Validator.validateNotNull(args,
+					"Cannot set null value to primitive type '%s' when invoking '%s' on instance of class'%s'",
+					parameterClass.getCanonicalName(), setter.getName(), setter.getDeclaringClass().getCanonicalName());
+		}
 		if (target != null) {
 			try {
 				setter.invoke(target, args);

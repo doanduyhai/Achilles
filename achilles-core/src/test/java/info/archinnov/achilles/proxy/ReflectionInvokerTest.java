@@ -240,7 +240,20 @@ public class ReflectionInvokerTest {
 		invoker.instanciate(Pair.class);
 	}
 
-	class Bean {
+	@Test
+	public void should_exception_when_setting_null_to_primitive_type() throws Exception {
+		Method setter = BeanWithPrimitive.class.getDeclaredMethod("setCount", int.class);
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Cannot set null value to primitive type 'int' when invoking 'setCount' on instance of class'"
+						+ BeanWithPrimitive.class.getCanonicalName() + "'");
+
+		invoker.setValueToField(new BeanWithPrimitive(), setter, null);
+
+	}
+
+	private class Bean {
 
 		private String complicatedAttributeName;
 
@@ -253,15 +266,15 @@ public class ReflectionInvokerTest {
 		}
 	}
 
-	class ComplexBean {
-		private List<String> friends;
+	private class BeanWithPrimitive {
+		private int count;
 
-		public List<String> getFriends() {
-			return friends;
+		public int getCount() {
+			return count;
 		}
 
-		public void setFriends(List<String> friends) {
-			this.friends = friends;
+		public void setCount(int count) {
+			this.count = count;
 		}
 	}
 }
