@@ -22,12 +22,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
-import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.IndexEquality;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -244,18 +240,6 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 		assertThat(statement.getQueryString()).isEqualTo(
 				"DELETE  FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author';");
-	}
-
-	@Test
-	public void should_generate_where_clause_with_index_conditions() throws Exception {
-		Collection<IndexCondition> indexConditions = new LinkedList<IndexCondition>();
-		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
-		when(sliceQuery.getIndexConditions()).thenReturn(indexConditions);
-		when(sliceQuery.hasIndexConditions()).thenReturn(true);
-
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
-		assertThat(statement.getQueryString()).isEqualTo("SELECT test FROM table WHERE test='value';");
-
 	}
 
 	private Select buildFakeSelect() {

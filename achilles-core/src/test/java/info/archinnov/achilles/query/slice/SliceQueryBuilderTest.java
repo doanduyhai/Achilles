@@ -27,13 +27,9 @@ import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.IndexEquality;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -115,18 +111,6 @@ public class SliceQueryBuilderTest {
 
 		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
 				.toEmbeddedId(embeddedKey);
-
-		assertThat(embeddedIdBuilder).isNotNull();
-
-	}
-
-	@Test
-	public void should_add_conditions_and_create_builder() throws Exception {
-		Collection<IndexCondition> indexConditions = new LinkedList<IndexCondition>();
-		indexConditions.add(new IndexCondition("test", IndexEquality.EQUAL, "value"));
-
-		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceShortcutQueryBuilder embeddedIdBuilder = builder
-				.indexedConditions(indexConditions, false);
 
 		assertThat(embeddedIdBuilder).isNotNull();
 
