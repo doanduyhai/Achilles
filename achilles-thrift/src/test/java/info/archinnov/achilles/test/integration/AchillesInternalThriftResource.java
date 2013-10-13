@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.junit;
+package info.archinnov.achilles.test.integration;
 
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -24,6 +24,8 @@ import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
+import info.archinnov.achilles.junit.AchillesTestResource;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;

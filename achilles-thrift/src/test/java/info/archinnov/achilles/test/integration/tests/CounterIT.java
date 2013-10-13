@@ -21,7 +21,7 @@ import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SR
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
-import info.archinnov.achilles.junit.AchillesInternalThriftResource;
+import info.archinnov.achilles.test.integration.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality;

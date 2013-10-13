@@ -25,8 +25,8 @@ import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
-import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.test.integration.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.EmbeddedKey;
 

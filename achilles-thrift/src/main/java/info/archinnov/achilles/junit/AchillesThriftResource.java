@@ -50,7 +50,7 @@ public class AchillesThriftResource extends AchillesTestResource {
 	 * @param tables
 	 *            list of tables to truncate before and after tests
 	 */
-	public AchillesThriftResource(String entityPackages, String... tables) {
+	AchillesThriftResource(String entityPackages, String... tables) {
 		super(tables);
 		if (StringUtils.isEmpty(entityPackages))
 			throw new IllegalArgumentException("Entity packages should be provided");
@@ -79,7 +79,7 @@ public class AchillesThriftResource extends AchillesTestResource {
 	 *            list of tables to truncate before, after or before and after
 	 *            tests, depending on the 'cleanUpSteps' parameters
 	 */
-	public AchillesThriftResource(String entityPackages, Steps cleanUpSteps, String... tables) {
+	AchillesThriftResource(String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
 		if (StringUtils.isEmpty(entityPackages))
 			throw new IllegalArgumentException("Entity packages should be provided");

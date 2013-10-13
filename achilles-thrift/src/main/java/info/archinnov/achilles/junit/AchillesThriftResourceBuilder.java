@@ -19,34 +19,27 @@ package info.archinnov.achilles.junit;
 
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 
-public class AchillesCQLResourceBuilder {
+public class AchillesThriftResourceBuilder {
 
 	private Steps cleanupSteps = Steps.BOTH;
 	private String[] tablesToCleanUp;
 	private String entityPackages;
 
-	private AchillesCQLResourceBuilder() {
+	private AchillesThriftResourceBuilder() {
 	}
 
-	private AchillesCQLResourceBuilder(String entityPackages) {
+	private AchillesThriftResourceBuilder(String entityPackages) {
 		this.entityPackages = entityPackages;
 	}
 
 	/**
-	 * Start building an AchillesCQLResource with entity packages
+	 * Start building an AchillesThriftResource with entity packages
 	 * 
 	 * @param entityPackages
 	 *            packages to scan for entity discovery, comma separated
 	 */
-	public static AchillesCQLResourceBuilder withEntityPackages(String entityPackages) {
-		return new AchillesCQLResourceBuilder(entityPackages);
-	}
-
-	/**
-	 * Start building an AchillesCQLResource with no entity packages
-	 */
-	public static AchillesCQLResource noEntityPackages() {
-		return new AchillesCQLResource(null);
+	public static AchillesThriftResourceBuilder withEntityPackages(String entityPackages) {
+		return new AchillesThriftResourceBuilder(entityPackages);
 	}
 
 	/**
@@ -55,7 +48,7 @@ public class AchillesCQLResourceBuilder {
 	 * @param tables
 	 *            list of tables to truncate before and/or after tests
 	 */
-	public AchillesCQLResourceBuilder tablesToTruncate(String... tablesToCleanUp) {
+	public AchillesThriftResourceBuilder tablesToTruncate(String... tablesToCleanUp) {
 		this.tablesToCleanUp = tablesToCleanUp;
 		return this;
 	}
@@ -63,7 +56,7 @@ public class AchillesCQLResourceBuilder {
 	/**
 	 * Truncate tables BEFORE each test
 	 */
-	public AchillesCQLResourceBuilder truncateBeforeTest() {
+	public AchillesThriftResourceBuilder truncateBeforeTest() {
 		this.cleanupSteps = Steps.BEFORE_TEST;
 		return this;
 	}
@@ -71,7 +64,7 @@ public class AchillesCQLResourceBuilder {
 	/**
 	 * Truncate tables AFTER each test
 	 */
-	public AchillesCQLResourceBuilder truncateAfterTest() {
+	public AchillesThriftResourceBuilder truncateAfterTest() {
 		this.cleanupSteps = Steps.AFTER_TEST;
 		return this;
 	}
@@ -79,12 +72,12 @@ public class AchillesCQLResourceBuilder {
 	/**
 	 * Truncate tables BEFORE and AFTER each test
 	 */
-	public AchillesCQLResourceBuilder truncateBeforeAndAfterTest() {
+	public AchillesThriftResourceBuilder truncateBeforeAndAfterTest() {
 		this.cleanupSteps = Steps.BOTH;
 		return this;
 	}
 
-	public AchillesCQLResource build() {
-		return new AchillesCQLResource(entityPackages, cleanupSteps, tablesToCleanUp);
+	public AchillesThriftResource build() {
+		return new AchillesThriftResource(entityPackages, cleanupSteps, tablesToCleanUp);
 	}
 }

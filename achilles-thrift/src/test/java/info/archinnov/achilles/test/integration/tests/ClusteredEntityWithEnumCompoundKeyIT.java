@@ -21,9 +21,9 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWit
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
-import info.archinnov.achilles.junit.AchillesInternalThriftResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.serializer.ThriftSerializerUtils;
+import info.archinnov.achilles.test.integration.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.Type;

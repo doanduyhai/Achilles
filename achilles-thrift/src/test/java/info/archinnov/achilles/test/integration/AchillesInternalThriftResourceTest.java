@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.junit;
+package info.archinnov.achilles.test.integration;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.STRING_SRZ;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -23,6 +23,7 @@ import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.test.integration.AchillesInternalThriftResource;
 import info.archinnov.achilles.test.integration.entity.User;
 
 import java.util.List;
