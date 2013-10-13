@@ -29,6 +29,8 @@
 		<version>2.0.7</version>
 	</dependency>  
  
+> **Warning!!! The Thrift version is experimental and will be dropped in the next major release. Please migrate to CQL3**
+
   For **Thrift** version:
  
 	<dependency>	
@@ -45,8 +47,7 @@
  2. cassandra-driver-core 1.0.2 for the **CQL** version
  3. hector-core 1.1-4 for the **Thrift** version
  4. CGLIB nodep 2.2.2 for proxy building
- 5. hibernate-jpa-2.0-api 1.0.1.Final (no reference jar for JPA 2, only vendor specific ones are available)
- 6. Jackson asl, mapper & xc 1.9.3 
+ 5. Jackson asl, mapper & xc 1.9.3 
    
   
 # 5 minutes tutorial
@@ -75,6 +76,12 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 # Changes log
+* **2.0.8**:
+    * Provide an HTML client (AngularJS) for the Twitter Demo
+    * Fixes #34 When it is impossible to call a setter on an entity, Achilles should report a better error
+    * **BREAKING CHANGE** stop importing JPA jar. The number of annotations used (5) does not worth pulling JPA dependencies
+    * Add custom **Jackson** serializer & deserializer on `Counter` interface to fix issue during serialization when `CounterImpl` is present
+    * Rework on `ResourceBuilder` for JUnit
 * **2.0.7**:
     * **BREAKING CHANGE** Rename all xxEntityManagerxx to xxPersistenceManagerxx
     * Fixes #30 Create partition row key
