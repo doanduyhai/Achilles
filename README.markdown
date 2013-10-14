@@ -7,7 +7,7 @@
 
   Achilles is an **open source** Persistence Manager for **Apache Cassandra**. Among all the features:
 
-- Advance bean mapping (compound primary key, composite partition key, timeUUID...)
+- Advanced bean mapping (compound primary key, composite partition key, timeUUID...)
 - Display of DML scripts & DDL statements
 - JUnit @Rule with embedded **Cassandra** server for productive development
 - Native collections and map support
