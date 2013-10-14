@@ -5,17 +5,18 @@
 
 # Presentation #
 
- Achilles is an open source Persistence Manager for Apache Cassandra. Among all the features:
- - 2 implementations: Thrift & CQL3
- - Dirty check for simple and collection/map type properties
- - Lazy loading
- - Collections and map support
- - Support for clustered entities in Thrift & CQL3
- - Support for compound primary key and composite partition key
- - Advanced queries (slice, native or typed) in CQL3
- - Support for counters
- - Support for runtime setting of consistency level, ttl and timestamp
- - Batch mode for atomic commits soon (atomicity only available for **CQL3** impl)
+  Achilles is an **open source** Persistence Manager for **Apache Cassandra**. Among all the features:
+
+- Advance bean mapping (compound primary key, composite partition key, timeUUID...)
+- Display of DML scripts & DDL statements
+- JUnit @Rule with embedded **Cassandra** server for productive development
+- Native collections and map support
+- Advanced queries (slice, native or typed)
+- Native support for counters 
+- Runtime setting of consistency level, ttl and timestamp
+- Batch mode for atomic commits in next major release (along side with migration to **Cassandra 2.0**)
+- Dirty check and lazy loading
+- And more to come ...
 
 # Installation #
 
