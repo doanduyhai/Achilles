@@ -126,15 +126,15 @@ public class PropertyHelper {
 		return lazy;
 	}
 
-	public boolean isIndexed(Field field) {
+	public String getIndexName(Field field) {
 		log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
 				.getCanonicalName());
-
-		boolean indexed = false;
-		if (field.getAnnotation(Index.class) != null) {
-			indexed = true;
+		String indexName = null;
+		Index index = field.getAnnotation(Index.class);
+		if (index != null) {
+			indexName = index.name();
 		}
-		return indexed;
+		return indexName;
 	}
 
 	public boolean hasConsistencyAnnotation(Field field) {

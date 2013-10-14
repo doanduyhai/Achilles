@@ -21,6 +21,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
@@ -85,7 +86,10 @@ public class PropertyParser {
 			propertyMeta.setType(ID);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
-			propertyMeta.setIndexed(propertyHelper.isIndexed(field));
+			String indexName = propertyHelper.getIndexName(field);
+			if(indexName!=null){
+				propertyMeta.setIndexProperties(new IndexProperties(indexName));
+			}
 		}
 		context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		return propertyMeta;

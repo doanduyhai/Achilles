@@ -59,17 +59,17 @@ public class CQLTypedQueryBuilder<T> {
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 
 	public CQLTypedQueryBuilder(Class<T> entityClass, CQLDaoContext daoContext, String queryString, EntityMeta meta,
-			CQLPersistenceContextFactory contextFactory, boolean managed) {
+			CQLPersistenceContextFactory contextFactory, boolean managed, boolean toLowerCase) {
 		this.entityClass = entityClass;
 		this.daoContext = daoContext;
-		this.normalizedQuery = queryString.toLowerCase();
+		this.normalizedQuery = toLowerCase ? queryString.toLowerCase() : queryString;
 		this.meta = meta;
 		this.contextFactory = contextFactory;
 		this.managed = managed;
 		this.propertiesMap = transformPropertiesMap(meta);
 		determineAlreadyLoadedSet();
 	}
-
+	
 	/**
 	 * Executes the query and returns entities
 	 * 

@@ -16,12 +16,12 @@
  */
 package info.archinnov.achilles.table;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -57,7 +57,7 @@ public class CQLTableBuilderTest {
 	public void should_generate_indices_scripts() throws Exception {
 		Collection<String> indicesScript = CQLTableBuilder.createTable("tableName").addColumn("longCol", Long.class)
 				.addColumn("enumCol", PropertyType.class).addColumn("intCol", Integer.class)
-				.addPartitionComponent("longCol").addClusteringComponent("enumCol").addIndex("intCol").generateIndices();
+				.addPartitionComponent("longCol").addClusteringComponent("enumCol").addIndex(new IndexProperties("", "intCol")).generateIndices();
 
 		assertThat(indicesScript.iterator().next()).isEqualTo(
 				"\nCREATE INDEX tableName_intCol\n" + "ON tableName (intCol);\n");

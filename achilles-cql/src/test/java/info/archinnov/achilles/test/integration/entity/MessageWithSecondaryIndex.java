@@ -1,14 +1,14 @@
 package info.archinnov.achilles.test.integration.entity;
 
-import java.util.UUID;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.TimeUUID;
 
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 
 @Entity
 public class MessageWithSecondaryIndex {

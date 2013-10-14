@@ -105,7 +105,7 @@ public class PropertyParsingValidator {
 		log.debug("Validate that this property {} of entity class {} has a properly set index parameter, if set",
 				context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 		PropertyHelper propertyHelper = new PropertyHelper();
-		if (propertyHelper.isIndexed(context.getCurrentField())) {
+		if (propertyHelper.getIndexName(context.getCurrentField())!=null) {
 			if (!PropertyHelper.isSupportedType(context.getCurrentField().getType())) {
 				throw new AchillesBeanMappingException("Property field '" + context.getCurrentField().getName()
 						+ "' of entity '" + context.getCurrentEntityClass().getCanonicalName()

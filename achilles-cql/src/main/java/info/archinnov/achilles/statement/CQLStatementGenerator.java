@@ -35,7 +35,6 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
@@ -53,12 +52,8 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(limit);
-		Ordering ordering = sliceQuery.getCQLOrdering();
-		if (ordering != null) {
-			select.orderBy(ordering);
-		}
-		if (sliceQuery.isAllowFiltering()) {
-			select.allowFiltering();
+		if(sliceQuery.getCQLOrdering()!=null){
+			select.orderBy(sliceQuery.getCQLOrdering());
 		}
 
 		Statement where = sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
@@ -71,13 +66,8 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(sliceQuery.getLimit());
-
-		Ordering ordering = sliceQuery.getCQLOrdering();
-		if (ordering != null) {
-			select.orderBy(ordering);
-		}
-		if (sliceQuery.isAllowFiltering()) {
-			select.allowFiltering();
+		if(sliceQuery.getCQLOrdering()!=null){
+			select.orderBy(sliceQuery.getCQLOrdering());
 		}
 
 		Statement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);

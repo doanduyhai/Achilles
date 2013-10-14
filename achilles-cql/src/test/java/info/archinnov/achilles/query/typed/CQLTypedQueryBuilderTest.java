@@ -274,7 +274,7 @@ public class CQLTypedQueryBuilderTest {
 	private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
 			boolean managed) {
 		builder = new CQLTypedQueryBuilder<CompleteBean>(entityClass, daoContext, queryString, meta, contextFactory,
-				managed);
+				managed, true);
 
 		Whitebox.setInternalState(builder, String.class, queryString);
 		Whitebox.setInternalState(builder, Class.class, (Object) entityClass);

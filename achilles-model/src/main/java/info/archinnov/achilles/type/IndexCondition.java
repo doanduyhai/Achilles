@@ -1,5 +1,6 @@
 package info.archinnov.achilles.type;
 
+
 public class IndexCondition {
 
 	private final String columnName;
@@ -23,6 +24,12 @@ public class IndexCondition {
 
 	public Object getColumnValue() {
 		return columnValue;
+	}
+	
+	@Override
+	public String toString(){
+		return new StringBuilder().append(columnName.toLowerCase()).append(indexEquality)
+				.append("'").append(columnValue).append("'").toString();
 	}
 
 }

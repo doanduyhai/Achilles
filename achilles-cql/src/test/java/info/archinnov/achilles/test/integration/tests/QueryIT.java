@@ -20,6 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.*;
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesInternalCQLResource;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.proxy.CQLEntityInterceptor;
@@ -30,7 +31,10 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUU
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.IndexEquality;
 import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.Date;
 import java.util.List;
@@ -233,7 +237,45 @@ public class QueryIT {
 			assertThat(found2.getVersion().get()).isEqualTo(referenceCount.get());
 		}
 	}
+	
+	@Test
+	public void should_return_entities_for_indexed_query() throws Exception {
+		Counter counter1 = CounterBuilder.incr(15L);
+		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
 
+		Counter counter2 = CounterBuilder.incr(17L);
+		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+				.addPreference(2, "NewYork").version(counter2).buid();
+
+		// tester tous les cas d'erreurs, et conditions de differents types
+		// choisir un autre objet?
+		manager.persist(entity1);
+		manager.persist(entity2);
+
+		IndexCondition condition = new IndexCondition("name", IndexEquality.EQUAL, "John DOO");
+		List<CompleteBean> actual = manager.indexedQuery(CompleteBean.class, condition).get();
+
+		assertThat(actual).hasSize(1);
+
+		CompleteBean found1 = actual.get(0);
+		assertThat(found1).isNotNull();
+		
+	}
+	
+	@Test(expected=AchillesException.class)
+	public void should_throw_clustered_exception_for_indexed_query() throws Exception {
+		IndexCondition condition = new IndexCondition("name", IndexEquality.EQUAL, "John DOO");
+		manager.indexedQuery(ClusteredEntity.class, condition).get();
+	}
+	
+	@Test(expected=AchillesException.class)
+	public void should_throw_empty_condition_exception_for_indexed_query() throws Exception {
+		manager.indexedQuery(CompleteBean.class, null).get();
+	}
+	
 	@Test
 	public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
 		Counter counter1 = CounterBuilder.incr(15L);

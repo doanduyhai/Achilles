@@ -21,6 +21,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -128,7 +129,7 @@ public class CQLTableCreatorTest {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
-		longColPM.setIndexed(true);
+		longColPM.setIndexProperties(new IndexProperties(""));
 
 		meta = new EntityMeta();
 		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
@@ -142,6 +143,28 @@ public class CQLTableCreatorTest {
 
 		assertThat(stringCaptor.getValue()).isEqualTo(
 				"\nCREATE INDEX tableName_longCol\n" + "ON tableName (longCol);\n");
+		
+	}
+	
+	@Test
+	public void should_create_indices_scripts_with_custom_name() throws Exception {
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
+
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+		longColPM.setIndexProperties(new IndexProperties("monIndex"));
+
+		meta = new EntityMeta();
+		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
+		meta.setIdMeta(idMeta);
+		meta.setTableName("tableName");
+		meta.setClassName("entityName");
+
+		creator.validateOrCreateTableForEntity(meta, true);
+
+		verify(session, new Times(2)).execute(stringCaptor.capture());
+
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\nCREATE INDEX monIndex\n" + "ON tableName (longCol);\n");
 	}
 
 	@Test

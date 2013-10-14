@@ -42,10 +42,10 @@ public class PropertyMeta {
 	private Method setter;
 	private CounterProperties counterProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
+	private IndexProperties indexProperties;
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private boolean timeUUID = false;
-	private boolean indexed = false;
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
@@ -392,11 +392,15 @@ public class PropertyMeta {
 	}
 	
 	public boolean isIndexed(){
-		return this.indexed;
+		return this.indexProperties!=null;
 	}
 	
-	public void setIndexed(boolean indexed){
-		this.indexed = indexed;
+	public IndexProperties getIndexProperties() {
+		return indexProperties;
+	}
+	
+	public void setIndexProperties(IndexProperties indexProperties){
+		this.indexProperties = indexProperties;
 	}
 
 	public DataTranscoder getTranscoder() {
