@@ -26,7 +26,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.7</version>
+		<version>2.0.8</version>
 	</dependency>  
  
 > **Warning!!! The Thrift version is experimental and will be dropped in the next major release. Please migrate to CQL3**
@@ -36,7 +36,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.7</version>
+		<version>2.0.8</version>
 	</dependency> 
 
  
