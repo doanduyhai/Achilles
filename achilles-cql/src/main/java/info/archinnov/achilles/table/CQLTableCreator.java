@@ -16,15 +16,19 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.validation.Validator;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +124,7 @@ public class CQLTableCreator extends TableCreator {
 			case LAZY_SIMPLE:
 				builder.addColumn(propertyName, valueClass);
 				if (pm.isIndexed()) {
-					builder.addIndex(propertyName);
+					builder.addIndex(new IndexProperties(pm.getIndexProperties().getName(), propertyName));
 				}
 				break;
 			case LIST:

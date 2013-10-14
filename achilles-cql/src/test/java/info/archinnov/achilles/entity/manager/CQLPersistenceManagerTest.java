@@ -29,6 +29,7 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.CQLTypedQueryBuilder;
@@ -133,16 +134,9 @@ public class CQLPersistenceManagerTest {
 		assertThat(actual).isSameAs(context);
 	}
 
-	@Test
+	@Test(expected=AchillesException.class)
 	public void should_return_slice_query_builder() throws Exception {
 		SliceQueryBuilder<CQLPersistenceContext, CompleteBean> builder = manager.sliceQuery(CompleteBean.class);
-
-		assertThat(builder).isNotNull();
-
-		assertThat(Whitebox.getInternalState(builder, SliceQueryExecutor.class)).isNotNull();
-		assertThat(Whitebox.getInternalState(builder, CompoundKeyValidator.class)).isNotNull();
-		assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isSameAs(CompleteBean.class);
 	}
 
 	@Test

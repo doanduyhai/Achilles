@@ -16,12 +16,15 @@
  */
 package info.archinnov.achilles.entity.operations;
 
+import java.util.Collection;
+
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.type.IndexCondition;
 
 public interface EntityLoader<CONTEXT extends PersistenceContext> {
 
 	public <T> T load(CONTEXT context, Class<T> entityClass);
-
+	
 	public <V> void loadPropertyIntoObject(CONTEXT context, Object realObject, PropertyMeta propertyMeta);
 }

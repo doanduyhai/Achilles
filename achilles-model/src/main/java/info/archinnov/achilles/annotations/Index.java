@@ -16,4 +16,5 @@ public @interface Index {
 	 * retrieve keys based on this field's value)
 	 * </p>
 	 */
+	String name() default "";
 }

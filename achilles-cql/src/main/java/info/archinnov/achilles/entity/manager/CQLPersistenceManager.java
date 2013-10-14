@@ -29,6 +29,7 @@ import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.CQLTypedQueryBuilder;
 import info.archinnov.achilles.query.typed.CQLTypedQueryValidator;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.validation.Validator;
 
@@ -92,6 +93,10 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 	 * @return CQLTypedQueryBuilder<T>
 	 */
 	public <T> CQLTypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString) {
+		return typedQuery(entityClass, queryString, true);
+	}
+	
+	private <T> CQLTypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString, boolean normalizeQuery) {
 		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
 		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
@@ -100,7 +105,36 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, true);
+		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, true, normalizeQuery);
+	}
+	
+	/**
+	 * Return a CQL indexed query builder
+	 * 
+	 * All found entities will be in 'managed' state
+	 * 
+	 * @param entityClass
+	 *            type of entity to be returned
+	 * 
+	 * @param indexConditions
+	 *            index conditions
+	 * 
+	 * @return CQLTypedQueryBuilder<T>
+	 */
+	public <T> CQLTypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition... indexConditions) {
+		EntityMeta entityMeta = entityMetaMap.get(entityClass);
+		Validator.validateFalse(entityMeta.isClusteredEntity(),"entity should not be clustered","");
+		Validator.validateNotNull(indexConditions, "Conditions should not be null","");
+		StringBuilder queryBuilder = new StringBuilder("select * from ");
+		queryBuilder.append(entityMeta.getTableName()).append(" where ");
+		
+		for(int i=0 ; i < indexConditions.length ; i++){
+			if(i>0){
+				queryBuilder.append(" and ");
+			}
+			queryBuilder.append(indexConditions[i]);
+		}
+		return typedQuery(entityClass, queryBuilder.toString(), false);
 	}
 
 	/**
@@ -127,7 +161,7 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false);
+		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true);
 	}
 
 	@Override

@@ -121,7 +121,7 @@ public class PropertyHelperTest {
 
 		Field field = Test.class.getDeclaredField("name");
 
-		assertThat(helper.isIndexed(field)).isTrue();
+		assertThat(helper.getIndexName(field)!=null).isTrue();
 	}
 
 	@Test

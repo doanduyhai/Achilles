@@ -52,7 +52,9 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(limit);
-		select.orderBy(sliceQuery.getCQLOrdering());
+		if(sliceQuery.getCQLOrdering()!=null){
+			select.orderBy(sliceQuery.getCQLOrdering());
+		}
 
 		Statement where = sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
 
@@ -64,7 +66,9 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(sliceQuery.getLimit());
-		select.orderBy(sliceQuery.getCQLOrdering());
+		if(sliceQuery.getCQLOrdering()!=null){
+			select.orderBy(sliceQuery.getCQLOrdering());
+		}
 
 		Statement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);
 

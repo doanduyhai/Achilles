@@ -21,6 +21,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -177,7 +178,7 @@ public class CQLTableValidatorTest {
 
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
 				.build();
-		pm.setIndexed(true);
+		pm.setIndexProperties(new IndexProperties(""));
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
