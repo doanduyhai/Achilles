@@ -1,83 +1,53 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>info.archinnov</groupId>
-    <artifactId>achilles</artifactId>
-    <version>2.0.9-SNAPSHOT</version>
-  </parent>
-  <artifactId>achilles-cql</artifactId>
-  <name>Achilles CQL</name>
-  <description>CQL implementation for Achilles using Datastax Java driver</description>
-  
-  <dependencies>
-	<!-- Achilles Core -->
-	<dependency>
-		<groupId>info.archinnov</groupId>
-		<artifactId>achilles-core</artifactId>
-	</dependency>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>info.archinnov</groupId>
+        <artifactId>achilles</artifactId>
+        <version>2.0.9-SNAPSHOT</version>
+    </parent>
+    <artifactId>achilles-cql</artifactId>
+    <name>Achilles CQL</name>
+    <description>CQL implementation for Achilles using Datastax Java driver</description>
 
-	 <!-- Datastax Java driver -->
-	 <dependency>
-		 <groupId>com.datastax.cassandra</groupId>
-		 <artifactId>cassandra-driver-core</artifactId>
-		 <version>1.0.2</version>
-		 <exclusions>
-		  	<exclusion>
-			 	<groupId>com.google.guava</groupId>
-			 	<artifactId>guava</artifactId>
-			</exclusion>
-		  	<exclusion>
-			 	<groupId>org.apache.cassandra</groupId>
-			 	<artifactId>cassandra-thrift</artifactId>
-			</exclusion>
-		  	<exclusion>
-			 	<groupId>org.apache.cassandra</groupId>
-			 	<artifactId>cassandra-all</artifactId>
-			</exclusion>
-		  </exclusions>
-	 </dependency>
+    <dependencies>
+        <!-- Achilles Core -->
+        <dependency>
+            <groupId>info.archinnov</groupId>
+            <artifactId>achilles-core</artifactId>
+        </dependency>
 
-	<!--  Spring Integration -->
-	 <dependency>
-	 	<groupId>org.springframework</groupId>
-	 	<artifactId>spring-beans</artifactId>
-	 	<version>3.2.0.RELEASE</version>
-	 	<scope>provided</scope>
-	 </dependency>
-	 <dependency>
-	 	<groupId>org.springframework</groupId>
-	 	<artifactId>spring-context</artifactId>
-	 	<version>3.2.0.RELEASE</version>
-	 	<scope>provided</scope>
-	 </dependency> 	  
-	 
-	<!--  TEST -->
-	<dependency>
-		<groupId>info.archinnov</groupId>
-		<artifactId>achilles-core</artifactId>
-		<classifier>tests</classifier>
-		<scope>test</scope>  		
-	</dependency>	
-  </dependencies>
-  <build>
-	<plugins>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-jar-plugin</artifactId>
-	        <executions>
-	        	<execution>
-	               	<goals>
-	                   	<goal>test-jar</goal>
-	                </goals>
-					<configuration>
-              			<includes>
-                			<include>**/embedded/*</include>
-                			<include>**/junit/*</include>
-              			</includes>
-            		</configuration>	                
-	            </execution>
-	        </executions>
-	    </plugin>
-	</plugins>  
-  </build>
+        <!-- Datastax Java driver -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+        </dependency>
+
+        <!--  Spring Support -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JUnit Rule -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--  TEST -->
+        <dependency>
+            <groupId>info.archinnov</groupId>
+            <artifactId>achilles-core</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

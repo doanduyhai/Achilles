@@ -54,6 +54,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
 		<cassandra.version>1.2.8</cassandra.version>
+        <datastax.driver.core.version>1.0.2</datastax.driver.core.version>
+        <hector.version>1.1-4</hector.version>
+        <spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
 		<jackson.version>1.9.2</jackson.version>
 		<commons.io.version>2.4</commons.io.version>
@@ -108,45 +111,224 @@
 				<artifactId>achilles-thrift</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+            <!-- Cassandra -->
+            <dependency>
+                <groupId>org.apache.cassandra</groupId>
+                <artifactId>cassandra-all</artifactId>
+                <version>${cassandra.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.jackson</groupId>
+                        <artifactId>jackson-core-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.jackson</groupId>
+                        <artifactId>jackson-mapper-asl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cassandra</groupId>
+                <artifactId>cassandra-thrift</artifactId>
+                <version>${cassandra.version}</version>
+            </dependency>
+
+            <!-- Datastax Java driver -->
+            <dependency>
+                <groupId>com.datastax.cassandra</groupId>
+                <artifactId>cassandra-driver-core</artifactId>
+                <version>${datastax.driver.core.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.cassandra</groupId>
+                        <artifactId>cassandra-thrift</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.cassandra</groupId>
+                        <artifactId>cassandra-all</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!--  Hector -->
+            <dependency>
+                <groupId>org.hectorclient</groupId>
+                <artifactId>hector-core</artifactId>
+                <version>${hector.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.cassandra</groupId>
+                        <artifactId>cassandra-thrift</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!--  Spring Support -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <!-- Utils -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons.collections.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- CGLIB -->
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib-nodep</artifactId>
+                <version>${cglib.version}</version>
+            </dependency>
+
+            <!-- Jackson Serializer -->
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-xc</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <!-- Embedded server & JUnit rule -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+            </dependency>
+
+            <!-- Logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <!-- TEST -->
+            <dependency>
+                <groupId>org.easytesting</groupId>
+                <artifactId>fest-assert-core</artifactId>
+                <version>${fest.assert.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.easytesting</groupId>
+                <artifactId>fest-util</artifactId>
+                <version>${fest.util.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>${powermock.version}</version>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-
-		<!-- Embedded server & JUnit rule -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		
-		<!-- TEST -->
-		<dependency>
-			<groupId>org.easytesting</groupId>
-			<artifactId>fest-assert-core</artifactId>
-			<version>${fest.assert.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.easytesting</groupId>
-			<artifactId>fest-util</artifactId>
-			<version>${fest.util.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-api-mockito</artifactId>
-			<version>${powermock.version}</version>
-			<scope>test</scope>
-		</dependency>
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert-core</artifactId>
+            <version>${fest.assert.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-util</artifactId>
+            <version>${fest.util.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
+
 	<build>
 		<finalName>Achilles</finalName>
 		<plugins>
@@ -263,11 +445,11 @@
 					</instrumentation>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.eluder.coveralls</groupId>
-				<artifactId>coveralls-maven-plugin</artifactId>
-				<version>2.0.0</version>
-			</plugin>
+			<!--<plugin>-->
+				<!--<groupId>org.eluder.coveralls</groupId>-->
+				<!--<artifactId>coveralls-maven-plugin</artifactId>-->
+				<!--<version>2.0.0</version>-->
+			<!--</plugin>-->
 		</plugins>
 	</build>
 	<profiles>
