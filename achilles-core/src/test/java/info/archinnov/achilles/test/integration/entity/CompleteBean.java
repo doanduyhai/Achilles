@@ -19,6 +19,7 @@ package info.archinnov.achilles.test.integration.entity;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.Counter;
 
@@ -33,6 +34,7 @@ public class CompleteBean {
 	private Long id;
 
 	@Column
+	@Index
 	private String name;
 
 	@Lazy

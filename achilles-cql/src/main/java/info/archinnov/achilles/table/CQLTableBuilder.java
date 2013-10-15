@@ -16,17 +16,22 @@
  */
 package info.archinnov.achilles.table;
 
-import static com.datastax.driver.core.DataType.Name.*;
-import static info.archinnov.achilles.cql.CQLTypeMapper.*;
-import static info.archinnov.achilles.table.TableCreator.*;
-import static info.archinnov.achilles.table.TableNameNormalizer.*;
+import static com.datastax.driver.core.DataType.Name.COUNTER;
+import static info.archinnov.achilles.cql.CQLTypeMapper.toCQLType;
+import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +46,7 @@ public class CQLTableBuilder {
 	private String comment;
 	private List<String> partitionComponents = new ArrayList<String>();
 	private List<String> clusteringComponents = new ArrayList<String>();
+	private Set<IndexProperties> indexedColumns = new HashSet<IndexProperties>();
 	private Map<String, String> columns = new LinkedHashMap<String, String>();
 	private Map<String, String> lists = new LinkedHashMap<String, String>();
 	private Map<String, String> sets = new LinkedHashMap<String, String>();
@@ -111,6 +117,30 @@ public class CQLTableBuilder {
 				columnName, tableName);
 
 		clusteringComponents.add(columnName);
+
+		return this;
+	}
+
+	public CQLTableBuilder addIndex(IndexProperties indexProperties) {
+		String columnName = indexProperties.getPropertyName();
+		Validator.validateFalse(lists.containsKey(columnName), "Index '%s' for table '%s' cannot be of list type",
+				columnName, tableName);
+		Validator.validateFalse(sets.containsKey(columnName), "Index '%s' for table '%s' cannot be of set type",
+				columnName, tableName);
+		Validator.validateFalse(maps.containsKey(columnName), "Index '%s' for table '%s' cannot be of map type",
+				columnName, tableName);
+		Validator.validateFalse(partitionComponents.contains(columnName),
+				"Index '%s' for table '%s' cannot be a partition key component", columnName, tableName);
+		Validator.validateFalse(clusteringComponents.contains(columnName),
+				"Index '%s' for table '%s' cannot be a clustering key component", columnName, tableName);
+		Validator.validateFalse(counter, "Index '%s' for table '%s' cannot be set on a counter table", columnName,
+				tableName);
+
+		Validator.validateTrue(columns.containsKey(columnName),
+				"Property '%s' for table '%s' cannot be found. Did you forget to declare it as column first ?",
+				columnName, tableName);
+
+		indexedColumns.add(indexProperties);
 
 		return this;
 	}
@@ -196,6 +226,27 @@ public class CQLTableBuilder {
 		// Add comments
 		ddl.append(" WITH COMMENT = '").append(comment).append("'");
 		return ddl.toString();
+	}
+
+	public boolean hasIndices() {
+		return indexedColumns.size() > 0;
+	}
+
+	public Collection<String> generateIndices() {
+		Collection<String> indicesScripts = new LinkedList<String>();
+		if (hasIndices()) {
+			for (IndexProperties indexProperties : indexedColumns) {
+				String indexName = indexProperties.getName();
+				indexName = indexName!=null && indexName.trim().length()>0 ? indexName : tableName + "_"+indexProperties.getPropertyName();
+				StringBuilder ddl = new StringBuilder();
+				ddl.append("\n");
+				ddl.append("CREATE INDEX ").append(indexName);
+				ddl.append("\n");
+				ddl.append("ON ").append(tableName).append(" (").append(indexProperties.getPropertyName()).append(");\n");
+				indicesScripts.add(ddl.toString());
+			}
+		}
+		return indicesScripts;
 	}
 
 	private String generateCounterTable() {

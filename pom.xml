@@ -40,6 +40,14 @@
 				<role>Developer</role>
 			</roles>
 		</developer>
+                <developer>
+                        <id>jsebrien</id>
+                        <name>Julien SEBRIEN</name>
+                        <email>julien.sebrien@gmail.com</email>
+                        <roles>
+                                <role>Developer</role>
+                        </roles>
+                </developer>
 	</developers>
 
 	<properties>

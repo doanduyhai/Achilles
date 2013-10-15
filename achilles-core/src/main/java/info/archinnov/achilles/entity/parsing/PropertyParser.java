@@ -24,6 +24,7 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
@@ -66,6 +67,7 @@ public class PropertyParser {
 		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context.getCurrentField()));
 
 		validator.validateNoDuplicate(context);
+		validator.validateIndexIfSet(context);
 
 		Class<?> fieldType = field.getType();
 		PropertyMeta propertyMeta;
@@ -84,6 +86,10 @@ public class PropertyParser {
 			propertyMeta = parseId(context);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
+			String indexName = propertyHelper.getIndexName(field);
+			if(indexName!=null){
+				propertyMeta.setIndexProperties(new IndexProperties(indexName));
+			}
 		}
 		context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
 		return propertyMeta;

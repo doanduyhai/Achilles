@@ -57,6 +57,7 @@ public class PropertyMeta {
 	private Method setter;
 	private CounterProperties counterProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
+	private IndexProperties indexProperties;
 	private Class<?> idClass;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private boolean timeUUID = false;
@@ -407,6 +408,18 @@ public class PropertyMeta {
 
 	public void setEntityClassName(String entityClassName) {
 		this.entityClassName = entityClassName;
+	}
+	
+	public boolean isIndexed(){
+		return this.indexProperties!=null;
+	}
+	
+	public IndexProperties getIndexProperties() {
+		return indexProperties;
+	}
+	
+	public void setIndexProperties(IndexProperties indexProperties){
+		this.indexProperties = indexProperties;
 	}
 
 	public DataTranscoder getTranscoder() {

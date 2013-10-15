@@ -94,8 +94,8 @@ public class ThriftPersistenceManagerFactoryTest {
 
 		doCallRealMethod().when(pmf).initConsistencyLevelPolicy(configMap, argumentExtractor);
 
-		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) pmf.initConsistencyLevelPolicy(
-				configMap, argumentExtractor);
+		ThriftConsistencyLevelPolicy policy = (ThriftConsistencyLevelPolicy) pmf.initConsistencyLevelPolicy(configMap,
+				argumentExtractor);
 
 		assertThat(policy.getDefaultGlobalReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(policy.getDefaultGlobalWriteConsistencyLevel()).isEqualTo(TWO);

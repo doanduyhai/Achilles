@@ -16,9 +16,10 @@
  */
 package info.archinnov.achilles.entity.parsing.validator;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.helper.PropertyHelper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 
@@ -64,27 +65,6 @@ public class PropertyParsingValidator {
 		}
 	}
 
-	public void validateWideMapGenerics(PropertyParsingContext context) {
-		log.debug("Validate parameterized types for property {} of entity class {}", context.getCurrentPropertyName(),
-				context.getCurrentEntityClass().getCanonicalName());
-
-		Type genericType = context.getCurrentField().getGenericType();
-		Class<?> entityClass = context.getCurrentEntityClass();
-
-		if (!(genericType instanceof ParameterizedType)) {
-			throw new AchillesBeanMappingException("The WideMap type should be parameterized for the entity '"
-					+ entityClass.getCanonicalName() + "'");
-		} else {
-			ParameterizedType pt = (ParameterizedType) genericType;
-			Type[] actualTypeArguments = pt.getActualTypeArguments();
-			if (actualTypeArguments.length <= 1) {
-				throw new AchillesBeanMappingException(
-						"The WideMap type should be parameterized with <K,V> for the entity '"
-								+ entityClass.getCanonicalName() + "'");
-			}
-		}
-	}
-
 	public void validateConsistencyLevelForCounter(PropertyParsingContext context,
 			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		log.debug("Validate that counter property {} of entity class {} does not have ANY consistency level",
@@ -97,6 +77,27 @@ public class PropertyParsingValidator {
 							+ "' of entity '"
 							+ context.getCurrentEntityClass().getCanonicalName()
 							+ "' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
+		}
+	}
+
+	public void validateIndexIfSet(PropertyParsingContext context) {
+		String fieldName = context.getCurrentPropertyName();
+		String className = context.getCurrentEntityClass().getCanonicalName();
+		log.debug("Validate that this property {} of entity class {} has a properly set index parameter, if set",
+				fieldName, className);
+		PropertyHelper propertyHelper = new PropertyHelper();
+		if (propertyHelper.getIndexName(context.getCurrentField()) != null) {
+
+			Validator.validateBeanMappingTrue(PropertyHelper.isSupportedType(context.getCurrentField().getType()),
+					"Property '%s' of entity '%s' cannot be indexed because the type '%s' is not supported", fieldName,
+					className, context.getCurrentField().getType().getCanonicalName());
+			Validator.validateBeanMappingFalse(context.isEmbeddedId(),
+					"Property '%s' of entity '%s' is part of a compound primary key and therefore cannot be indexed",
+					fieldName, className);
+
+			Validator.validateBeanMappingFalse(context.isPrimaryKey(),
+					"Property '%s' of entity '%s' is a primary key and therefore cannot be indexed", fieldName,
+					className);
 		}
 	}
 

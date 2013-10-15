@@ -133,6 +133,6 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	public void truncateTable(String tableName) {
 		String query = "TRUNCATE " + tableName;
 		session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
-		DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "Simple query", query, "ALL");
+		DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "  Simple query", query, "ALL");
 	}
 }

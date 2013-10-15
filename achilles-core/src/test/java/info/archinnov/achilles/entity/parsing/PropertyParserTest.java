@@ -17,12 +17,13 @@
 package info.archinnov.achilles.entity.parsing;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
@@ -79,7 +80,7 @@ public class PropertyParserTest {
 	public void should_parse_primary_key() throws Exception {
 		@SuppressWarnings("unused")
 		class Test {
-			@Id(name = "pk")
+			@Id
 			private Long id;
 
 			public Long getId() {
@@ -96,7 +97,7 @@ public class PropertyParserTest {
 
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat(meta.getPropertyName()).isEqualTo("pk");
+		assertThat(meta.getPropertyName()).isEqualTo("id");
 		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
 		assertThat(context.getPropertyMetas()).hasSize(1);
 
@@ -107,7 +108,7 @@ public class PropertyParserTest {
 		@SuppressWarnings("unused")
 		class Test {
 
-			@EmbeddedId(name = "embedded")
+			@EmbeddedId
 			private EmbeddedKey id;
 
 			public EmbeddedKey getId() {
@@ -131,7 +132,7 @@ public class PropertyParserTest {
 		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 		Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
 
-		assertThat(meta.getPropertyName()).isEqualTo("embedded");
+		assertThat(meta.getPropertyName()).isEqualTo("id");
 		assertThat((Class) meta.getValueClass()).isEqualTo(EmbeddedKey.class);
 		EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
 		assertThat(embeddedIdProperties).isNotNull();
@@ -406,6 +407,28 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("friends"));
 		PropertyMeta meta = parser.parse(context);
 		assertThat(meta.type().isLazy()).isTrue();
+	}
+
+	@Test
+	public void should_parse_index() throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			@Column
+			@Index
+			private String firstname;
+
+			public String getFirstname() {
+				return firstname;
+			}
+
+			public void setFirstname(String firstname) {
+				this.firstname = firstname;
+			}
+
+		}
+		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("firstname"));
+		PropertyMeta meta = parser.parse(context);
+		assertThat(meta.isIndexed()).isTrue();
 	}
 
 	@SuppressWarnings("rawtypes")

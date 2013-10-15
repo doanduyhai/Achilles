@@ -27,6 +27,7 @@ import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.Map;
 
@@ -70,6 +71,8 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 	@Override
 	public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
+        Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " +
+                        "because it is not a clustered entity", meta.getClassName());
 		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator,
 				entityClass, meta);
 	}

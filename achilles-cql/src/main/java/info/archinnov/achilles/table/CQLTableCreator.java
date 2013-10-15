@@ -16,8 +16,13 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
@@ -118,6 +123,9 @@ public class CQLTableCreator extends TableCreator {
 			case SIMPLE:
 			case LAZY_SIMPLE:
 				builder.addColumn(propertyName, valueClass);
+				if (pm.isIndexed()) {
+					builder.addIndex(new IndexProperties(pm.getIndexProperties().getName(), propertyName));
+				}
 				break;
 			case LIST:
 			case LAZY_LIST:
@@ -139,6 +147,12 @@ public class CQLTableCreator extends TableCreator {
 		buildPrimaryKey(entityMeta.getIdMeta(), builder);
 		builder.addComment("Create table for entity '" + entityMeta.getClassName() + "'");
 		session.execute(builder.generateDDLScript());
+		if (builder.hasIndices()) {
+			for (String indexScript : builder.generateIndices()) {
+				session.execute(indexScript);
+			}
+		}
+
 	}
 
 	private void createTableForClusteredCounter(EntityMeta meta) {
