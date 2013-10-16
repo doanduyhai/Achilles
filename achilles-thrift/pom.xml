@@ -49,8 +49,7 @@
         <!--  TEST -->
         <dependency>
             <groupId>info.archinnov</groupId>
-            <artifactId>achilles-core</artifactId>
-            <classifier>tests</classifier>
+            <artifactId>achilles-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

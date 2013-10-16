@@ -59,6 +59,7 @@
         <spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
 		<jackson.version>1.9.2</jackson.version>
+        <commons.lang.version>2.6</commons.lang.version>
 		<commons.io.version>2.4</commons.io.version>
 		<commons.collections.version>3.2.1</commons.collections.version>
 		<reflections.version>0.9.9-RC1</reflections.version>
@@ -84,6 +85,7 @@
 	<modules>
 		<module>achilles-model</module>
 		<module>achilles-core</module>
+        <module>achilles-test</module>
 		<module>achilles-thrift</module>
 		<module>achilles-cql</module>
 	</modules>
@@ -102,8 +104,7 @@
 			</dependency>
 			<dependency>
 				<groupId>info.archinnov</groupId>
-				<artifactId>achilles-core</artifactId>
-				<classifier>tests</classifier>
+				<artifactId>achilles-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -201,6 +202,11 @@
             </dependency>
 
             <!-- Utils -->
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons.lang.version}</version>
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>

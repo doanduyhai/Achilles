@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.test.parser.entity;
 
+import java.lang.annotation.ElementType;
 import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.entity.metadata.PropertyType;
 
 public class EmbeddedKeyWithEnum {
 
@@ -25,7 +25,7 @@ public class EmbeddedKeyWithEnum {
 	private Long id;
 
 	@Order(2)
-	private PropertyType type;
+	private ElementType type;
 
 	public Long getId() {
 		return id;
@@ -35,11 +35,11 @@ public class EmbeddedKeyWithEnum {
 		this.id = id;
 	}
 
-	public PropertyType getType() {
+	public ElementType getType() {
 		return type;
 	}
 
-	public void setType(PropertyType type) {
+	public void setType(ElementType type) {
 		this.type = type;
 	}
 }
