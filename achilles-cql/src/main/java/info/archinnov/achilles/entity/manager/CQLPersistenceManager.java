@@ -123,19 +123,14 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 	 * 
 	 * @return CQLTypedQueryBuilder<T>
 	 */
-	public <T> CQLTypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition... indexConditions) {
+	public <T> CQLTypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 		Validator.validateFalse(entityMeta.isClusteredEntity(), "Entity should not be clustered", "");
-		Validator.validateNotNull(indexConditions, "IndexeConditions should not be null", "");
+		Validator.validateNotNull(indexCondition, "IndexCondition should not be null", "");
+		Validator.validateNotNull(indexCondition.getColumnName(), "IndexeCondition column name should not be null", "");
 		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ");
 		queryBuilder.append(entityMeta.getTableName()).append(" WHERE ");
-
-		for (int i = 0; i < indexConditions.length; i++) {
-			if (i > 0) {
-				queryBuilder.append(" and ");
-			}
-			queryBuilder.append(indexConditions[i]);
-		}
+		queryBuilder.append(indexCondition);
 		return typedQuery(entityClass, queryBuilder.toString(), false);
 	}
 

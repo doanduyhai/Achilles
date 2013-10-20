@@ -274,6 +274,12 @@ public class QueryIT {
 	public void should_throw_empty_condition_exception_for_indexed_query() throws Exception {
 		manager.indexedQuery(CompleteBean.class, null).get();
 	}
+	
+	@Test(expected = AchillesException.class)
+	public void should_throw_empty_column_name_for_indexed_query() throws Exception {
+		IndexCondition condition = new IndexCondition(null, IndexEquality.EQUAL, "John DOO");
+		manager.indexedQuery(CompleteBean.class, condition).get();
+	}
 
 	@Test
 	public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
