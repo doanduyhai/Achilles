@@ -125,10 +125,10 @@ public class CQLArgumentExtractor extends ArgumentExtractor {
 	public Session initSession(Cluster cluster, Map<String, Object> configurationMap) {
 
 		Session nativeSession = (Session) configurationMap.get(NATIVE_SESSION_PARAM);
+		String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
+		Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 
 		if (nativeSession == null) {
-			String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
-			Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 			nativeSession = cluster.connect(keyspace);
 		}
 		return nativeSession;

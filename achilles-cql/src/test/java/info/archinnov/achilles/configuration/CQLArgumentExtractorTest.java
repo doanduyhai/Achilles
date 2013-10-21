@@ -17,8 +17,8 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.HashMap;
@@ -134,6 +134,7 @@ public class CQLArgumentExtractorTest {
 	@Test
 	public void should_get_native_session_from_parameter() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(KEYSPACE_NAME_PARAM, "achilles");
 		params.put(NATIVE_SESSION_PARAM, session);
 
 		Session actual = extractor.initSession(cluster, params);
