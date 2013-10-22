@@ -24,17 +24,20 @@ import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 
 public class CQLTableValidator {
 
-	private Cluster cluster;
+    private CQLColumnMetaDataComparator columnMetaDataComparator = new CQLColumnMetaDataComparator();
+    private Cluster cluster;
 	private String keyspaceName;
 
 	public CQLTableValidator(Cluster cluster, String keyspaceName) {
@@ -92,13 +95,14 @@ public class CQLTableValidator {
 				CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
 				CQL_COUNTER_FQCN, fqcnColumn.getType(), text());
-		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(fqcnColumn),
+
+        Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), fqcnColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_FQCN, CQL_COUNTER_TABLE);
 
 		ColumnMetadata pkColumn = tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY);
 		Validator.validateTableTrue(pkColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE);
-		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(pkColumn),
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), pkColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_PRIMARY_KEY,
 				CQL_COUNTER_TABLE);
 
@@ -111,7 +115,7 @@ public class CQLTableValidator {
 		Validator.validateTableTrue(propertyNameColumn.getType() == text(),
 				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PROPERTY_NAME,
 				propertyNameColumn.getType(), text());
-		Validator.validateBeanMappingTrue(tableMetaData.getClusteringKey().contains(propertyNameColumn),
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringKey(), propertyNameColumn),
 				"Column '%s' of table '%s' should be a clustering key component", CQL_COUNTER_PROPERTY_NAME,
 				CQL_COUNTER_TABLE);
 
@@ -124,7 +128,9 @@ public class CQLTableValidator {
 
 	}
 
-	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
+
+
+    private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
 		String tableName = tableMetaData.getName();
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Name expectedType = toCQLType(columnJavaType);
@@ -134,9 +140,10 @@ public class CQLTableValidator {
 
         boolean columnIsIndexed = columnMetadata.getIndex() != null;
 
-		Validator.validateTableTrue(!(columnIsIndexed ^ indexed),
-				"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",
-				columnName, tableName);
+		Validator.validateTableFalse((columnIsIndexed ^ indexed),
+                                     "Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it" +
+                                             " is (or not)",
+                                     columnName, tableName);
 		Name realType = columnMetadata.getType().getName();
 		Validator.validateTableTrue(expectedType == realType,
 				"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
@@ -146,14 +153,15 @@ public class CQLTableValidator {
 	private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 		validateColumn(tableMetaData, columnName, columnJavaType,false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
-		Validator.validateBeanMappingTrue(tableMetaData.getPartitionKey().contains(columnMetadata),
+
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(),columnMetadata),
 				"Column '%s' of table '%s' should be a partition key component", columnName, tableMetaData.getName());
 	}
 
 	private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 		validateColumn(tableMetaData, columnName, columnJavaType,false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
-		Validator.validateBeanMappingTrue(tableMetaData.getClusteringKey().contains(columnMetadata),
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringKey(),columnMetadata),
 				"Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());
 	}
 
@@ -232,4 +240,12 @@ public class CQLTableValidator {
 				validateClusteringComponent(tableMetadata, componentName.toLowerCase(), componentClass);
 		}
 	}
+
+    private boolean hasColumnMeta(Collection<ColumnMetadata> columnMetadatas, ColumnMetadata fqcnColumn) {
+        boolean fqcnColumnMatches = false;
+        for(ColumnMetadata columnMetadata : columnMetadatas) {
+            fqcnColumnMatches = fqcnColumnMatches || columnMetaDataComparator.isEqual(fqcnColumn,columnMetadata) ;
+        }
+        return fqcnColumnMatches;
+    }
 }

@@ -33,7 +33,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
@@ -54,6 +56,9 @@ public class CQLTableValidatorTest {
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private TableMetadata tableMetaData;
 
+    @Mock
+    private CQLColumnMetaDataComparator columnMetaDataComparator;
+
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private ColumnMetadata columnMetadata;
 
@@ -67,6 +72,7 @@ public class CQLTableValidatorTest {
 	@Before
 	public void setUp() {
 		validator = new CQLTableValidator(cluster, keyspaceName);
+        Whitebox.setInternalState(validator,"columnMetaDataComparator",columnMetaDataComparator);
 		entityMeta = new EntityMeta();
         when(columnMetadata.getIndex()).thenReturn(null);
         when(columnMetadataForField.getIndex()).thenReturn(null);
@@ -97,25 +103,31 @@ public class CQLTableValidatorTest {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("userId", "name")
 				.compClasses(Long.class, String.class).type(EMBEDDED_ID).build();
 
+
 		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
+        ColumnMetadata userColumn = mock(ColumnMetadata.class);
+        ColumnMetadata nameColumn = mock(ColumnMetadata.class);
+
 		when(tableMetaData.getName()).thenReturn("table");
 		ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("userid")).thenReturn(userIdMetadata);
 		when(userIdMetadata.getType()).thenReturn(DataType.bigint());
-		when(tableMetaData.getPartitionKey().contains(userIdMetadata)).thenReturn(true);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(userColumn));
+        when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
 
-		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
-		when(tableMetaData.getColumn("name")).thenReturn(nameMetadata);
-		when(nameMetadata.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey().contains(nameMetadata)).thenReturn(true);
+        ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
+        when(tableMetaData.getColumn("name")).thenReturn(nameMetadata);
+        when(nameMetadata.getType()).thenReturn(DataType.text());
+        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+        when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
-		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
-		when(columnMetadataForField.getType()).thenReturn(DataType.text());
+        when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
+        when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
@@ -131,16 +143,22 @@ public class CQLTableValidatorTest {
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
-		when(tableMetaData.getName()).thenReturn("table");
+        ColumnMetadata userColumn = mock(ColumnMetadata.class);
+        ColumnMetadata nameColumn = mock(ColumnMetadata.class);
+
+        when(tableMetaData.getName()).thenReturn("table");
 		ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("userid")).thenReturn(userIdMetadata);
 		when(userIdMetadata.getType()).thenReturn(DataType.bigint());
-		when(tableMetaData.getPartitionKey().contains(userIdMetadata)).thenReturn(true);
+        when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(userColumn));
+        when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
 
-		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
+
+        ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("date")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.timeuuid());
-		when(tableMetaData.getClusteringKey().contains(nameMetadata)).thenReturn(true);
+        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+        when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
 		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
@@ -274,17 +292,23 @@ public class CQLTableValidatorTest {
 		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
 		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
 
-		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
-		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
-		when(tableMetaData.getPartitionKey().contains(fqcnColumnMeta)).thenReturn(true);
+        ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+        ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+        ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
+        when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn,pkColumn));
+
+        ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+        when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+        when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
 
 		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
-		when(tableMetaData.getPartitionKey().contains(pkColumnMeta)).thenReturn(true);
+        when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
 
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
-		when(tableMetaData.getClusteringKey().contains(propertyColumnMeta)).thenReturn(true);
+        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+        when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
 
 		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_VALUE)).thenReturn(counterColumnMeta);
