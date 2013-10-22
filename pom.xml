@@ -52,9 +52,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<hibernate.jpa2.version>1.0.1.Final</hibernate.jpa2.version>
 		<cassandra.version>1.2.8</cassandra.version>
-        <datastax.driver.core.version>1.0.2</datastax.driver.core.version>
+        <datastax.driver.core.version>1.0.4</datastax.driver.core.version>
         <hector.version>1.1-4</hector.version>
         <spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
