@@ -1,6 +1,6 @@
 package info.archinnov.achilles.type;
 
-public enum IndexEquality {
+public enum IndexRelation {
 	EQUAL{
 		@Override
 		public String toString(){

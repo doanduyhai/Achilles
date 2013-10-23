@@ -190,14 +190,14 @@ public class ClusteredEntityIT {
 	@Test
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.fromClusterings(2, "name2").toClusterings(4, "name4").get();
 
 		assertThat(entities).isEmpty();
 
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2, "name2")
+		entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).fromClusterings(2, "name2")
 				.toClusterings(4, "name4").get();
 
 		assertThat(entities).hasSize(3);
@@ -240,7 +240,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 1);
 
-		ClusteredEntity clusteredEntity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		ClusteredEntity clusteredEntity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getFirstOccurence();
 
 		// Check for merge
@@ -267,7 +267,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.fromClusterings(4, "name4").toClusterings(1, "name1").bounding(INCLUSIVE_END_BOUND_ONLY)
 				.ordering(DESCENDING).limit(2).get();
 
@@ -297,25 +297,25 @@ public class ClusteredEntityIT {
 		exception
 				.expectMessage("InvalidRequestException(why:EACH_QUORUM ConsistencyLevel is only supported for writes)");
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2, "name2")
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).fromClusterings(2, "name2")
 				.toClusterings(4, "name4").consistencyLevel(EACH_QUORUM).get();
 	}
 
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getFirstOccurence();
 
 		assertThat(entity).isNull();
 
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirstOccurence();
+		entity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).getFirstOccurence();
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 1);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getFirst(3);
 
 		assertThat(entities).hasSize(3);
@@ -325,7 +325,7 @@ public class ClusteredEntityIT {
 
 		insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
 
-		entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getFirst(3, 4);
+		entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).getFirst(3, 4);
 
 		assertThat(entities).hasSize(2);
 
@@ -338,18 +338,18 @@ public class ClusteredEntityIT {
 	public void should_query_with_getLast() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 
-		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getLastOccurence();
 
 		assertThat(entity).isNull();
 
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		entity = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLastOccurence();
+		entity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).getLastOccurence();
 
 		assertThat(entity.getValue()).isEqualTo(clusteredValuePrefix + 5);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getLast(3);
 
 		assertThat(entities).hasSize(3);
@@ -362,7 +362,7 @@ public class ClusteredEntityIT {
 		insertClusteredEntity(partitionKey, 4, "name44", clusteredValuePrefix + 44);
 		insertClusteredEntity(partitionKey, 4, "name45", clusteredValuePrefix + 45);
 
-		entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).getLast(3, 4);
+		entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).getLast(3, 4);
 
 		assertThat(entities).hasSize(3);
 
@@ -377,7 +377,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.iterator();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -423,7 +423,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 1);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.iterator();
 
 		iter.hasNext();
@@ -453,7 +453,7 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey)
+		Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.fromClusterings(2).iterator(2);
 
 		assertThat(iter.hasNext()).isTrue();
@@ -472,10 +472,10 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(2, "name2")
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).fromClusterings(2, "name2")
 				.toClusterings(4).remove();
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
 
@@ -488,10 +488,10 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).fromClusterings(5)
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).fromClusterings(5)
 				.toClusterings(1, "name2").bounding(EXCLUSIVE_BOUNDS).ordering(DESCENDING).limit(2).remove();
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(3);
 
@@ -505,9 +505,9 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).remove(3);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).remove(3);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
 
@@ -520,9 +520,9 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeFirstOccurence();
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeFirstOccurence();
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(4);
 
@@ -540,9 +540,9 @@ public class ClusteredEntityIT {
 		insertClusteredEntity(partitionKey, 2, "name23", clusteredValuePrefix + 23);
 		insertClusteredEntity(partitionKey, 2, "name24", clusteredValuePrefix + 24);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeFirstOccurence(2);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeFirstOccurence(2);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(7);
 
@@ -560,9 +560,9 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeFirst(2);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeFirst(2);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(3);
 
@@ -579,9 +579,9 @@ public class ClusteredEntityIT {
 		insertClusteredEntity(partitionKey, 4, "name42", clusteredValuePrefix + 42);
 		insertClusteredEntity(partitionKey, 4, "name43", clusteredValuePrefix + 43);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeFirst(5, 4);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeFirst(5, 4);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(4);
 
@@ -596,9 +596,9 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeLastOccurence();
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeLastOccurence();
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(4);
 
@@ -613,9 +613,9 @@ public class ClusteredEntityIT {
 		long partitionKey = RandomUtils.nextLong();
 		String clusteredValuePrefix = insertValues(partitionKey, 5);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeLast(2);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeLast(2);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(3);
 
@@ -633,9 +633,9 @@ public class ClusteredEntityIT {
 		insertClusteredEntity(partitionKey, 4, "name43", clusteredValuePrefix + 43);
 		insertClusteredEntity(partitionKey, 4, "name44", clusteredValuePrefix + 44);
 
-		manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).removeLast(2, 4);
+		manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).removeLast(2, 4);
 
-		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionKey(partitionKey).get(100);
+		List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(6);
 

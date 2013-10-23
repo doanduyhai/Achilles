@@ -32,7 +32,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.IndexCondition;
-import info.archinnov.achilles.type.IndexEquality;
+import info.archinnov.achilles.type.IndexRelation;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Date;
@@ -254,7 +254,7 @@ public class QueryIT {
 		manager.persist(entity1);
 		manager.persist(entity2);
 
-		IndexCondition condition = new IndexCondition("name", IndexEquality.EQUAL, "John DOO");
+		IndexCondition condition = new IndexCondition("name", IndexRelation.EQUAL, "John DOO");
 		List<CompleteBean> actual = manager.indexedQuery(CompleteBean.class, condition).get();
 
 		assertThat(actual).hasSize(1);
@@ -266,7 +266,7 @@ public class QueryIT {
 
 	@Test(expected = AchillesException.class)
 	public void should_throw_clustered_exception_for_indexed_query() throws Exception {
-		IndexCondition condition = new IndexCondition("name", IndexEquality.EQUAL, "John DOO");
+		IndexCondition condition = new IndexCondition("name", IndexRelation.EQUAL, "John DOO");
 		manager.indexedQuery(ClusteredEntity.class, condition).get();
 	}
 
@@ -277,7 +277,7 @@ public class QueryIT {
 	
 	@Test(expected = AchillesException.class)
 	public void should_throw_empty_column_name_for_indexed_query() throws Exception {
-		IndexCondition condition = new IndexCondition(null, IndexEquality.EQUAL, "John DOO");
+		IndexCondition condition = new IndexCondition(null, IndexRelation.EQUAL, "John DOO");
 		manager.indexedQuery(CompleteBean.class, condition).get();
 	}
 

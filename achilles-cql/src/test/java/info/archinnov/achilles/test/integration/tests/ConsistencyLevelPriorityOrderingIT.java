@@ -184,7 +184,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx.expect(InvalidQueryException.class);
 		expectedEx.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
 
-		batchEm.sliceQuery(ClusteredEntity.class).partitionKey(11L).consistencyLevel(EACH_QUORUM).get(10);
+		batchEm.sliceQuery(ClusteredEntity.class).partitionComponents(11L).consistencyLevel(EACH_QUORUM).get(10);
 	}
 
 	private void assertThatBatchContextHasBeenReset(CQLBatchingPersistenceManager batchEm) {

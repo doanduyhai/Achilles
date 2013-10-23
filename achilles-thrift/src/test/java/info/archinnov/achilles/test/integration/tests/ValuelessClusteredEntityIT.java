@@ -112,7 +112,7 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
-		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
+		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id)
 				.fromClusterings(name5).toClusterings(name2).bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
 				.ordering(OrderingMode.DESCENDING).limit(3).get();
 
@@ -138,7 +138,7 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
 		Iterator<ValuelessClusteredEntity> iterator = manager.sliceQuery(ValuelessClusteredEntity.class)
-				.partitionKey(id).fromClusterings(name5).toClusterings(name2)
+				.partitionComponents(id).fromClusterings(name5).toClusterings(name2)
 				.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY).ordering(OrderingMode.DESCENDING).iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
@@ -159,10 +159,10 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
 
-		manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id).fromClusterings(name2).toClusterings(name2)
+		manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id).fromClusterings(name2).toClusterings(name2)
 				.remove();
 
-		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionKey(id)
+		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id)
 				.get();
 
 		assertThat(result).hasSize(2);

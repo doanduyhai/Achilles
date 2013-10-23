@@ -1,35 +1,47 @@
 package info.archinnov.achilles.type;
 
 
+import com.google.common.base.Objects;
+
 public class IndexCondition {
 
-	private final String columnName;
-	private final IndexEquality indexEquality;
-	private final Object columnValue;
+    private final String columnName;
 
-	public IndexCondition(String columnName, IndexEquality indexEquality, Object columnValue) {
-		super();
-		this.columnName = columnName;
-		this.indexEquality = indexEquality;
-		this.columnValue = columnValue;
-	}
+    private final IndexRelation indexRelation;
 
-	public String getColumnName() {
-		return columnName;
-	}
+    private final Object columnValue;
 
-	public IndexEquality getIndexEquality() {
-		return indexEquality;
-	}
+    public IndexCondition(String columnName, IndexRelation indexEquality, Object columnValue) {
+        super();
+        this.columnName = columnName;
+        this.indexRelation = indexEquality;
+        this.columnValue = columnValue;
+    }
 
-	public Object getColumnValue() {
-		return columnValue;
-	}
-	
-	@Override
-	public String toString(){
-		return new StringBuilder().append(columnName.toLowerCase()).append(indexEquality)
-				.append("'").append(columnValue).append("'").toString();
-	}
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public IndexRelation getIndexRelation() {
+        return indexRelation;
+    }
+
+    public Object getColumnValue() {
+        return columnValue;
+    }
+
+    public String generateWhereClause() {
+        return new StringBuilder().append(columnName.toLowerCase()).append(indexRelation)
+                                  .append("'").append(columnValue).append("'").toString();
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(IndexCondition.class)
+                      .add("columnName", columnValue)
+                      .add("columnValue", columnValue)
+                      .add("index relation", indexRelation)
+                      .toString();
+    }
 
 }

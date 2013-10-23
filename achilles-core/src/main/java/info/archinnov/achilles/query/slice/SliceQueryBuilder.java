@@ -37,26 +37,26 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 	}
 
 	/**
-	 * Query by partition key components and clustering components<br/>
+	 * Query by partition key component(s) and clustering components<br/>
 	 * <br/>
 	 * 
 	 * @param partitionComponents
-	 *            Partition key components
-	 * @return ThriftShortcutQueryBuilder<T>
+	 *            Partition key component(s)
+	 * @return SliceShortcutQueryBuilder
 	 */
-	public SliceShortcutQueryBuilder partitionKey(Object... partitionComponents) {
+	public SliceShortcutQueryBuilder partitionComponents(Object... partitionComponents) {
 		super.partitionKeyInternal(partitionComponents);
 		return new SliceShortcutQueryBuilder();
 	}
 
 	/**
-	 * Query by from & to embeddedIds<br/>
+	 * Query by 'from' & 'to' embeddedIds<br/>
 	 * <br/>
 	 * 
 	 * @param fromEmbeddedId
-	 *            From embeddedId
+	 *            'from' embeddedId
 	 * 
-	 * @return SliceFromEmbeddedIdBuilder<T>
+	 * @return SliceFromEmbeddedIdBuilder
 	 */
 	public SliceFromEmbeddedIdBuilder fromEmbeddedId(Object fromEmbeddedId) {
 		Class<?> embeddedIdClass = meta.getIdClass();
@@ -74,11 +74,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 	}
 
 	/**
-	 * Query by from & to embeddedIds<br/>
+	 * Query by 'from' & 'to' embeddedIds<br/>
 	 * <br/>
 	 * 
 	 * @param toEmbeddedId
-	 *            To embeddedId
+	 *            'to' embeddedId
 	 * 
 	 * @return SliceToEmbeddedIdBuilder
 	 */
@@ -118,11 +118,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set from clustering components<br/>
+		 * Set 'from' clustering component(s)<br/>
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            From clustering components
+		 *            'from' clustering component(s)
 		 * 
 		 * @return SliceFromClusteringsBuilder
 		 */
@@ -132,11 +132,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set to clustering components<br/>
+		 * Set 'to' clustering component(s)<br/>
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            To clustering components
+		 *            'to' clustering component(s)
 		 * 
 		 * @return SliceToClusteringsBuilder
 		 */
@@ -179,7 +179,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return first matching entity, filtered by provided clustering
 		 *         components if any, or null if no matching entity is found
@@ -196,7 +196,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 *            first n matching entities
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return list of n first matching entities, filtered by provided
 		 *         clustering components if any, or empty list
@@ -210,7 +210,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return last matching entity, filtered by provided clustering
 		 *         components if any, or null if no matching entity is found
@@ -227,7 +227,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 *            last n matching entities
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return list of last n matching entities, filtered by provided
 		 *         clustering components if any, or empty list
@@ -241,7 +241,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return iterator on found entities
 		 */
@@ -257,7 +257,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 *            batch loading size for iterator
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 * 
 		 * @return iterator on found entities
 		 */
@@ -282,7 +282,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 */
 		public void removeFirstOccurence(Object... clusteringComponents) {
 			SliceQueryBuilder.super.removeFirstOccurence(clusteringComponents);
@@ -296,7 +296,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 *            first n matching entities
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 */
 		public void removeFirst(int n, Object... clusteringComponents) {
 			SliceQueryBuilder.super.removeFirst(n, clusteringComponents);
@@ -321,7 +321,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		 *            last n matching entities
 		 * 
 		 * @param clusteringComponents
-		 *            optional clustering components for filtering
+		 *            optional clustering component(s) for filtering
 		 */
 		public void removeLast(int n, Object... clusteringComponents) {
 			SliceQueryBuilder.super.removeLast(n, clusteringComponents);
@@ -333,11 +333,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set to embeddedId<br/>
+		 * Set 'to' embeddedId<br/>
 		 * <br/>
 		 * 
 		 * @param toEmbeddedId
-		 *            To embeddedId
+		 *            'to' embeddedId
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
@@ -352,11 +352,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set from embeddedId<br/>
+		 * Set 'from' embeddedId<br/>
 		 * <br/>
 		 * 
 		 * @param fromEmbeddedId
-		 *            From embeddedId
+		 *            'from' embeddedId
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
@@ -372,11 +372,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set to clustering components<br/>
+		 * Set 'to' clustering component(s)<br/>
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            To clustering components
+		 *            'to' clustering component(s)
 		 * 
 		 * @return DefaultQueryBuilder
 		 */
@@ -392,11 +392,11 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		}
 
 		/**
-		 * Set from clustering components<br/>
+		 * Set 'from' clustering component(s)<br/>
 		 * <br/>
 		 * 
 		 * @param clusteringComponents
-		 *            From clustering components
+		 *            'from' clustering component(s)
 		 * 
 		 * @return DefaultQueryBuilder
 		 */

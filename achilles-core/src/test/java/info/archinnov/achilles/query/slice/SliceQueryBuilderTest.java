@@ -80,7 +80,7 @@ public class SliceQueryBuilderTest {
 	public void should_set_partition_key_and_create_builder() throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceShortcutQueryBuilder shortCutBuilder = builder
-				.partitionKey(partitionKey);
+				.partitionComponents(partitionKey);
 
 		assertThat(shortCutBuilder).isNotNull();
 	}

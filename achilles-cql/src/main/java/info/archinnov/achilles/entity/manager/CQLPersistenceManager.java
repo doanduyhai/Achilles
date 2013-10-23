@@ -118,19 +118,23 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 	 * @param entityClass
 	 *            type of entity to be returned
 	 * 
-	 * @param indexConditions
-	 *            index conditions
+	 * @param indexCondition
+	 *            index condition
 	 * 
 	 * @return CQLTypedQueryBuilder<T>
 	 */
 	public <T> CQLTypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
-		Validator.validateFalse(entityMeta.isClusteredEntity(), "Entity should not be clustered", "");
-		Validator.validateNotNull(indexCondition, "IndexCondition should not be null", "");
-		Validator.validateNotNull(indexCondition.getColumnName(), "IndexeCondition column name should not be null", "");
+
+        Validator.validateFalse(entityMeta.isClusteredEntity(), "Index query is not supported fir clustered entity");
+		Validator.validateNotNull(indexCondition, "Index condition should not be null");
+		Validator.validateNotBlank(indexCondition.getColumnName(), "Column name for index condition '%s' should be provided", indexCondition);
+		Validator.validateNotNull(indexCondition.getColumnValue(), "Column value for index condition '%s' should be provided", indexCondition);
+		Validator.validateNotNull(indexCondition.getIndexRelation(), "Index relation for index condition '%s' should be provided", indexCondition);
+
 		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ");
 		queryBuilder.append(entityMeta.getTableName()).append(" WHERE ");
-		queryBuilder.append(indexCondition);
+		queryBuilder.append(indexCondition.generateWhereClause());
 		return typedQuery(entityClass, queryBuilder.toString(), false);
 	}
 

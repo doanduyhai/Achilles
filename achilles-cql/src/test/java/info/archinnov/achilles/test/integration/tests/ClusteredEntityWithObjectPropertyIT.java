@@ -133,13 +133,13 @@ public class ClusteredEntityWithObjectPropertyIT {
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).fromClusterings("name2").toClusterings("name4").get();
+				.partitionComponents(partitionKey).fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey)
+		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionComponents(partitionKey)
 				.fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
@@ -178,7 +178,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		insertValues(partitionKey, 5);
 
 		Iterator<ClusteredEntityWithObjectValue> iter = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).iterator();
+				.partitionComponents(partitionKey).iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntityWithObjectValue next = iter.next();
@@ -218,11 +218,11 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 3);
 
-		manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionKey(partitionKey).fromClusterings("name2")
+		manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionComponents(partitionKey).fromClusterings("name2")
 				.toClusterings("name2").remove();
 
 		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionKey(partitionKey).get(100);
+				.partitionComponents(partitionKey).get(100);
 
 		assertThat(entities).hasSize(2);
 
