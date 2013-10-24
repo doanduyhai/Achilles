@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.entity.metadata.ClusteringKeys;
+import info.archinnov.achilles.entity.metadata.ClusteringComponents;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
-import info.archinnov.achilles.entity.metadata.PartitionKeys;
+import info.archinnov.achilles.entity.metadata.PartitionComponents;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
@@ -70,6 +70,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private List<String> clusteringNames;
 	private List<Method> clusteringGetters;
 	private List<Method> clusteringSetters;
+	private String reversedName;
 
 	private boolean buildAccessors;
 	private Class<?> idClass;
@@ -195,13 +196,13 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			clusteringSetters = this.clusteringSetters;
 		}
 
-		PartitionKeys partitionKeys = new PartitionKeys(partitionClasses, partitionNames, partitionGetters,
+		PartitionComponents partitionComponents = new PartitionComponents(partitionClasses, partitionNames, partitionGetters,
 				partitionSetters);
 
-		ClusteringKeys clusteringKeys = new ClusteringKeys(clusteringClasses, clusteringNames, clusteringGetters,
+		ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames, reversedName, clusteringGetters,
 				clusteringSetters);
 
-		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionKeys, clusteringKeys,
+		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
 				componentClasses, componentNames, componentGetters, componentSetters, compTimeUUID);
 
 		pm.setEmbeddedIdProperties(embeddedIdProperties);
@@ -251,6 +252,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	public PropertyMetaTestBuilder<T, K, V> type(PropertyType type) {
 		this.type = type;
+		return this;
+	}
+	
+	public PropertyMetaTestBuilder<T, K, V> reversed(String reversedName) {
+		this.reversedName = reversedName;
 		return this;
 	}
 

@@ -16,20 +16,40 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
+import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
+import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
+import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
+import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.entity.metadata.ClusteringComponents;
+import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.IndexProperties;
+import info.archinnov.achilles.entity.metadata.PartitionComponents;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -96,7 +116,8 @@ public class CQLTableCreatorTest {
 	public void should_create_complete_table() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
-		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol")
+				.build();
 
 		PropertyMeta longListColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(LIST).field("longListCol")
 				.build();
@@ -122,6 +143,49 @@ public class CQLTableCreatorTest {
 						+ "\t\tlongListCol list<bigint>,\n" + "\t\tlongSetCol set<bigint>,\n"
 						+ "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id)\n"
 						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+	}
+	
+	@Test
+	public void should_create_complete_table_with_clustering_order() throws Exception {
+		PropertyMeta idMeta = new PropertyMeta();
+		idMeta.setType(PropertyType.EMBEDDED_ID);
+		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class), Arrays.asList("id"),
+				new ArrayList<Method>(), new ArrayList<Method>());
+		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class),
+				Arrays.asList("name"), "name", null, null);
+		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"),
+				new ArrayList<Method>(), new ArrayList<Method>(), new ArrayList<String>());
+		idMeta.setEmbeddedIdProperties(props);
+		
+		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		PropertyMeta simpleMeta = new PropertyMeta();
+		simpleMeta.setType(SIMPLE);
+		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
+		simpleMeta.setGetter(getter);
+		Method setter = Bean.class.getDeclaredMethod("setName", String.class);
+		simpleMeta.setSetter(setter);
+		propertyMetas.put("name", simpleMeta);
+		
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol")
+				.build();
+
+		meta = new EntityMeta();
+		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
+		meta.setIdMeta(idMeta);
+		meta.setTableName("tableName");
+		meta.setClassName("entityName");
+
+		creator.validateOrCreateTableForEntity(meta, true);
+
+		verify(session).execute(stringCaptor.capture());
+
+		assertThat(stringCaptor.getValue()).isEqualTo(
+				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n"
+						+ "\t\tid bigint,\n"
+						+ "\t\tname text,\n"
+						+ "\t\tPRIMARY KEY(id, name)\n"
+						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'"
+						+ " AND CLUSTERING ORDER BY (name DESC)");
 	}
 
 	@Test

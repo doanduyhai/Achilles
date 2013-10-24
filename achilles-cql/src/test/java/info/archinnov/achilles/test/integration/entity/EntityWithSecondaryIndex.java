@@ -5,12 +5,10 @@ import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.TimeUUID;
-
-import java.util.UUID;
 
 @Entity
-public class MessageWithSecondaryIndex {
+public class EntityWithSecondaryIndex {
+
 	@EmbeddedId
 	private EmbeddedKey id;
 
@@ -22,11 +20,11 @@ public class MessageWithSecondaryIndex {
 	@Index
 	private Integer number;
 
-	public MessageWithSecondaryIndex() {
+	public EntityWithSecondaryIndex() {
 	}
 
-	public MessageWithSecondaryIndex(Long id, UUID date, String label, Integer number) {
-		this.id = new EmbeddedKey(id, date);
+	public EntityWithSecondaryIndex(Long id, Integer rank, String label, Integer number) {
+		this.id = new EmbeddedKey(id, rank);
 		this.label = label;
 		this.number = number;
 	}
@@ -60,16 +58,15 @@ public class MessageWithSecondaryIndex {
 		@Order(1)
 		private Long id;
 
-		@TimeUUID
 		@Order(2)
-		private UUID date;
+		private Integer rank;
 
 		public EmbeddedKey() {
 		}
 
-		public EmbeddedKey(Long id, UUID date) {
+		public EmbeddedKey(Long id, Integer rank) {
 			this.id = id;
-			this.date = date;
+			this.rank = rank;
 		}
 
 		public Long getId() {
@@ -80,12 +77,12 @@ public class MessageWithSecondaryIndex {
 			this.id = id;
 		}
 
-		public UUID getDate() {
-			return date;
+		public Integer getRank() {
+			return rank;
 		}
 
-		public void setDate(UUID date) {
-			this.date = date;
+		public void setRank(Integer rank) {
+			this.rank = rank;
 		}
 	}
 }

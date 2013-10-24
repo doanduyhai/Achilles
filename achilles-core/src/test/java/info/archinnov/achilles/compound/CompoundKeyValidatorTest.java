@@ -58,7 +58,7 @@ public class CompoundKeyValidatorTest {
 	public void should_validate_partition_keys() throws Exception {
 		when(pm.getPartitionComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		validator.validatePartitionKey(pm, Arrays.<Object> asList(11L, "type"));
+		validator.validatePartitionComponents(pm, Arrays.<Object>asList(11L, "type"));
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class CompoundKeyValidatorTest {
 		exception
 				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
-		validator.validatePartitionKey(pm, null);
+		validator.validatePartitionComponents(pm, null);
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class CompoundKeyValidatorTest {
 		exception
 				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
-		validator.validatePartitionKey(pm, Arrays.<Object> asList());
+		validator.validatePartitionComponents(pm, Arrays.<Object>asList());
 	}
 
 	@Test
@@ -89,7 +89,7 @@ public class CompoundKeyValidatorTest {
 		exception
 				.expectMessage("The type 'java.lang.String' of partition key component 'name' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Long'");
 
-		validator.validatePartitionKey(pm, Arrays.<Object> asList(11L, "name"));
+		validator.validatePartitionComponents(pm, Arrays.<Object>asList(11L, "name"));
 	}
 
 	@Test

@@ -22,10 +22,17 @@ public enum OrderingMode {
 	private boolean reverse;
 	private String string;
 
-	private OrderingMode(boolean equivalent, String string) {
-		this.reverse = equivalent;
+	private OrderingMode(boolean reverse, String string) {
+		this.reverse = reverse;
 		this.string = string;
 	}
+
+    public OrderingMode reverse() {
+        if(this == ASCENDING)
+            return DESCENDING;
+        else
+            return ASCENDING;
+    }
 
 	public boolean isReverse() {
 		return reverse;

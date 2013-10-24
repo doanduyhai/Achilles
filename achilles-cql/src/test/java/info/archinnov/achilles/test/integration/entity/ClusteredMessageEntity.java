@@ -23,7 +23,7 @@ import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Entity;
 
 @Entity
-public class ClusteredMessage {
+public class ClusteredMessageEntity {
 
 	@EmbeddedId
 	private ClusteredMessageId id;
@@ -31,10 +31,10 @@ public class ClusteredMessage {
 	@Column
 	private String label;
 
-	public ClusteredMessage() {
+	public ClusteredMessageEntity() {
 	}
 
-	public ClusteredMessage(ClusteredMessageId id, String label) {
+	public ClusteredMessageEntity(ClusteredMessageId id, String label) {
 		this.id = id;
 		this.label = label;
 	}

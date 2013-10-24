@@ -31,12 +31,12 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLCompoundKeyValidatorTest {
+public class CQLSliceQueryValidatorTest {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private CQLCompoundKeyValidator validator = new CQLCompoundKeyValidator();
+	private CQLSliceQueryValidator validator = new CQLSliceQueryValidator();
 
 	@Test
 	public void should_validate_single_key() throws Exception {

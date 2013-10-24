@@ -77,7 +77,7 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
-	 * @param Options
+	 * @param options
 	 *            options for consistency level, ttl and timestamp
 	 */
 	public void persist(final Object entity, Options options) {
@@ -146,7 +146,7 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 * @param entity
 	 *            Entity to be merged
-	 * @param Options
+	 * @param options
 	 *            options for consistency level, ttl and timestamp
 	 * @return Merged entity or a new proxified entity
 	 */
@@ -242,8 +242,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Entity type
 	 * @param primaryKey
 	 *            Primary key (Cassandra row key) of the entity to load
-	 * @param entity
-	 *            Found entity or null if no entity is found
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
@@ -259,8 +257,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Primary key (Cassandra row key) of the entity to load
 	 * @param readLevel
 	 *            Consistency Level for read
-	 * @param entity
-	 *            Found entity or null if no entity is found
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
@@ -282,8 +278,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Entity type
 	 * @param primaryKey
 	 *            Primary key (Cassandra row key) of the entity to initialize
-	 * @param entity
-	 *            Proxified empty entity
 	 */
 	public <T> T getReference(Class<T> entityClass, Object primaryKey) {
 		if (log.isDebugEnabled())
@@ -303,8 +297,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Primary key (Cassandra row key) of the entity to initialize
 	 * @param readLevel
 	 *            Consistency Level for read
-	 * @param entity
-	 *            Proxified empty entity
 	 */
 	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (log.isDebugEnabled())
@@ -444,8 +436,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 * See {@link #unwrap}
 	 * 
-	 * @param proxy
-	 *            list
+	 * @param proxies
+	 *            list of proxified entity
 	 * @return real object list
 	 */
 	public <T> List<T> unwrap(List<T> proxies) {
@@ -459,8 +451,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 * See {@link #unwrap}
 	 * 
-	 * @param proxy
-	 *            set
+	 * @param proxies
+	 *            set of proxified entities
 	 * @return real object set
 	 */
 	public <T> Set<T> unwrap(Set<T> proxies) {

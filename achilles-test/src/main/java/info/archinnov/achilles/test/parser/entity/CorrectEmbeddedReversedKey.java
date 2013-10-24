@@ -14,31 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package info.archinnov.achilles.test.parser.entity;
 
-package info.archinnov.achilles.annotations;
+import info.archinnov.achilles.annotations.Order;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class CorrectEmbeddedReversedKey {
+	@Order(1)
+	private String name;
 
-/**
- * 
- * To be used with <em>@EmbeddedId</em> annotation. Indicates the component
- * order of a property
- * 
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
-@Documented
-public @interface Order {
+	@Order(value=2, reversed=true)
+	private int rank;
 
-	/**
-	 * <p>
-	 * Indicates the key order. The order index start at 1
-	 * </p>
-	 */
-	int value();
-	boolean reversed() default false;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getRank() {
+		return rank;
+	}
+
+	public void setRank(int rank) {
+		this.rank = rank;
+	}
 }

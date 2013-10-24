@@ -16,19 +16,23 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedKey;
+import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedReversedKey;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyAsCompoundPartitionKey;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyIncorrectType;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyNotInstantiable;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithBadReversedPosition;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithCompoundPartitionKey;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithDuplicateOrder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithInconsistentCompoundPartitionKey;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithMutipleReversedPosition;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNegativeOrder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNoAnnotation;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithOnlyOneComponent;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithPartitionKeyAndBadReversedPosition;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithTimeUUID;
 
 import java.lang.reflect.Method;
@@ -70,6 +74,28 @@ public class EmbeddedIdParserTest {
 		assertThat(props.getPartitionComponentNames()).containsExactly("name");
 		assertThat(props.getPartitionComponentClasses()).containsExactly(String.class);
 	}
+	
+	@Test
+	public void should_parse_embedded_id_with_reversed_key() throws Exception {
+		Method nameGetter = CorrectEmbeddedReversedKey.class.getMethod("getName");
+		Method nameSetter = CorrectEmbeddedReversedKey.class.getMethod("setName", String.class);
+
+		Method rankGetter = CorrectEmbeddedReversedKey.class.getMethod("getRank");
+		Method rankSetter = CorrectEmbeddedReversedKey.class.getMethod("setRank", int.class);
+
+		EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedReversedKey.class);
+
+		assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter);
+		assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter);
+		assertThat(props.getComponentClasses()).containsExactly(String.class, int.class);
+		assertThat(props.getComponentNames()).containsExactly("name", "rank");
+		assertThat(props.getOrderingComponent()).isEqualTo("rank");
+		assertThat(props.getReversedComponent()).isEqualTo("rank");
+		assertThat(props.getClusteringComponentNames()).containsExactly("rank");
+		assertThat(props.getClusteringComponentClasses()).containsExactly(int.class);
+		assertThat(props.getPartitionComponentNames()).containsExactly("name");
+		assertThat(props.getPartitionComponentClasses()).containsExactly(String.class);
+	}
 
 	@Test
 	public void should_parse_embedded_id_with_time_uuid() throws Exception {
@@ -104,6 +130,33 @@ public class EmbeddedIdParserTest {
 				+ EmbeddedKeyWithNoAnnotation.class.getCanonicalName() + "'");
 
 		parser.parseEmbeddedId(EmbeddedKeyWithNoAnnotation.class);
+	}
+	
+	@Test
+	public void should_exception_when_embedded_id_has_bad_reversed_position() throws Exception {
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage("The composite clustered key must be set at position 2 for @EmbeddedId class '"
+				+ EmbeddedKeyWithBadReversedPosition.class.getCanonicalName() + "'");
+
+		parser.parseEmbeddedId(EmbeddedKeyWithBadReversedPosition.class);
+	}
+	
+	@Test
+	public void should_exception_when_embedded_id_partition_has_bad_reversed_position() throws Exception {
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage("The reversed clustered key must be set after the last partition key for @EmbeddedId class '"
+				+ EmbeddedKeyWithPartitionKeyAndBadReversedPosition.class.getCanonicalName() + "'");
+
+		parser.parseEmbeddedId(EmbeddedKeyWithPartitionKeyAndBadReversedPosition.class);
+	}
+	
+	@Test
+	public void should_exception_when_embedded_id_has_multiple_reversed_position() throws Exception {
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage("There should be at most 1 field annotated with @Order(reversed=true) for the @EmbeddedId class '"
+				+ EmbeddedKeyWithMutipleReversedPosition.class.getCanonicalName() + "'");
+
+		parser.parseEmbeddedId(EmbeddedKeyWithMutipleReversedPosition.class);
 	}
 
 	@Test

@@ -25,93 +25,109 @@ import com.google.common.base.Objects;
 
 public class EmbeddedIdProperties extends AbstractComponentProperties {
 
-	private final PartitionKeys partitionKeys;
-	private final ClusteringKeys clusteringKeys;
+	private final PartitionComponents partitionComponents;
+	private final ClusteringComponents clusteringComponents;
 	private final List<String> timeUUIDComponents;
 
-	public EmbeddedIdProperties(PartitionKeys partitionKeys, ClusteringKeys clusteringKeys,
+	public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents,
 			List<Class<?>> componentClasses, List<String> componentNames, List<Method> componentGetters,
 			List<Method> componentSetters, List<String> timeUUIDComponents) {
 		super(componentClasses, componentNames, componentGetters, componentSetters);
-		this.partitionKeys = partitionKeys;
-		this.clusteringKeys = clusteringKeys;
+		this.partitionComponents = partitionComponents;
+		this.clusteringComponents = clusteringComponents;
 		this.timeUUIDComponents = timeUUIDComponents;
 	}
 
-	public boolean isCompositePartitionKey() {
-		return partitionKeys.isComposite();
+    void validatePartitionComponents(String className, List<Object> partitionComponents) {
+        this.partitionComponents.validatePartitionComponents(className, partitionComponents);
+    }
+
+    void validateClusteringComponents(String className, List<Object> clusteringComponents) {
+        this.clusteringComponents.validateClusteringComponents(className, clusteringComponents);
+    }
+
+    boolean isCompositePartitionKey() {
+		return partitionComponents.isComposite();
 	}
 
-	public boolean isClustered() {
-		return clusteringKeys.isClustered();
+	boolean isClustered() {
+		return clusteringComponents.isClustered();
 	}
 
-	public String getOrderingComponent() {
-		return clusteringKeys.getOrderingComponent();
+	String getOrderingComponent() {
+		return clusteringComponents.getOrderingComponent();
 	}
 
-	public List<String> getClusteringComponentNames() {
-		return clusteringKeys.getComponentNames();
+	String getReversedComponent() {
+		return clusteringComponents.getReversedComponent();
 	}
 
-	public List<Class<?>> getClusteringComponentClasses() {
-		return clusteringKeys.getComponentClasses();
+    boolean hasReversedComponent() {
+        return clusteringComponents.hasReversedComponent();
+    }
+
+	List<String> getClusteringComponentNames() {
+		return clusteringComponents.getComponentNames();
 	}
 
-	public List<String> getPartitionComponentNames() {
-		return partitionKeys.getComponentNames();
+	List<Class<?>> getClusteringComponentClasses() {
+		return clusteringComponents.getComponentClasses();
 	}
 
-	public List<Class<?>> getPartitionComponentClasses() {
-		return partitionKeys.getComponentClasses();
+	List<String> getPartitionComponentNames() {
+		return partitionComponents.getComponentNames();
 	}
 
-	public List<Method> getPartitionComponentSetters() {
-		return partitionKeys.getComponentSetters();
+	List<Class<?>> getPartitionComponentClasses() {
+		return partitionComponents.getComponentClasses();
+	}
+
+	List<Method> getPartitionComponentSetters() {
+		return partitionComponents.getComponentSetters();
 	}
 
 	@Override
-	public List<Class<?>> getComponentClasses() {
+	List<Class<?>> getComponentClasses() {
 		return componentClasses;
 	}
 
 	@Override
-	public List<Method> getComponentGetters() {
+	List<Method> getComponentGetters() {
 		return componentGetters;
 	}
 
 	@Override
-	public List<Method> getComponentSetters() {
+	List<Method> getComponentSetters() {
 		return componentSetters;
 	}
 
 	@Override
-	public List<String> getComponentNames() {
+	List<String> getComponentNames() {
 		return componentNames;
 	}
 
-	public List<String> getTimeUUIDComponents() {
+	List<String> getTimeUUIDComponents() {
 		return timeUUIDComponents;
 	}
 
 	@Override
 	public String toString() {
 
-		return Objects.toStringHelper(this.getClass()).add("partitionKeys", partitionKeys)
-				.add("clusteringKeys", clusteringKeys).toString();
+		return Objects.toStringHelper(this.getClass()).add("partitionComponents", partitionComponents)
+				.add("clusteringComponents", clusteringComponents).toString();
 
 	}
 
-	public List<Object> extractPartitionComponents(List<Object> components) {
-		int partitionComponentsCount = partitionKeys.getComponentClasses().size();
+	List<Object> extractPartitionComponents(List<Object> components) {
+		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
 				"Cannot extract composite partition key components from components list '%s'", components);
 		return components.subList(0, partitionComponentsCount);
 	}
 
-	public List<Object> extractClusteringComponents(List<Object> components) {
-		int partitionComponentsCount = partitionKeys.getComponentClasses().size();
+	List<Object> extractClusteringComponents(List<Object> components) {
+		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
 				"Cannot extract clustering components from components list '%s'", components);

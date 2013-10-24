@@ -57,7 +57,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 	// /////////////////////// ASCENDING
 	@Test
 	public void should_generate_iterator_where_clause_for_ascending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
@@ -85,7 +85,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 
 	@Test
 	public void should_generate_iterator_where_clause_with_no_end_for_ascending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
@@ -114,7 +114,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 	// /////////////////////// DESCENDING
 	@Test
 	public void should_generate_iterator_where_clause_for_descending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(DESCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
@@ -142,7 +142,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 
 	@Test
 	public void should_generate_iterator_where_clause_with_no_end_for_descending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(DESCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);

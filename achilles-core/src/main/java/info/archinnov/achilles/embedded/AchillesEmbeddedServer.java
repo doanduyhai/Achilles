@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableSet;
 import info.archinnov.achilles.validation.Validator;
 
 public class AchillesEmbeddedServer {
-    ;
 
     public static final String CASSANDRA_HOST = "cassandraHost";
 
@@ -61,11 +60,6 @@ public class AchillesEmbeddedServer {
 
             CassandraConfig cassandraConfig = new CassandraConfig(parameters);
 
-            log.info(" Random embedded Cassandra RPC port/Thrift port = {}", cassandraConfig.getRPCPort());
-            log.info(" Random embedded Cassandra Native port/CQL3 port = {}", cassandraConfig.getCqlPort());
-            log.info(" Random embedded Cassandra Storage port = {}", cassandraConfig.getStoragePort());
-            log.info(" Random embedded Cassandra Storage SSL port = {}", cassandraConfig.getStorageSSLPort());
-
             // Start embedded server
             CASSANDRA_EMBEDDED.start(cassandraConfig);
         }
@@ -86,9 +80,9 @@ public class AchillesEmbeddedServer {
         final String commitLogFolder = (String) parameters.get(COMMIT_LOG_FOLDER);
         final String savedCachesFolder = (String) parameters.get(SAVED_CACHES_FOLDER);
 
-        log.info(" Embedded Cassandra data directory = {}", dataFolder);
-        log.info(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
-        log.info(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
+        log.debug(" Embedded Cassandra data directory = {}", dataFolder);
+        log.debug(" Embedded Cassandra commitlog directory = {}", commitLogFolder);
+        log.debug(" Embedded Cassandra saved caches directory = {}", savedCachesFolder);
 
         validateFolder(dataFolder);
         validateFolder(commitLogFolder);

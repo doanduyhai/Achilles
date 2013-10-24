@@ -171,14 +171,28 @@ public class PropertyMetaTest {
 	public void should_get_ordering_component() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
 
-		ClusteringKeys clusteringKeys = new ClusteringKeys(Arrays.<Class<?>> asList(Long.class, String.class),
+		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class),
 				Arrays.asList("age", "name"), null, null);
 
-		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringKeys, null, Arrays.asList("a", "b", "c"),
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b", "c"),
 				null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getOrderingComponent()).isEqualTo("age");
+	}
+	
+	@Test
+	public void should_get_reversed_component() throws Exception {
+		PropertyMeta meta = new PropertyMeta();
+
+		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class),
+				Arrays.asList("age", "name"), "name", null, null);
+
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b", "c"),
+				null, null, null);
+		meta.setEmbeddedIdProperties(props);
+
+		assertThat(meta.getReversedComponent()).isEqualTo("name");
 	}
 
 	@Test

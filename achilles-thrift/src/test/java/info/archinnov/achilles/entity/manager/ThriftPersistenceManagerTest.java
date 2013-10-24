@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
+
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -82,7 +82,7 @@ public class ThriftPersistenceManagerTest {
 
 	private ThriftSliceQueryExecutor queryExecutor;
 
-	private ThriftCompoundKeyValidator compoundKeyValidator;
+	private ThriftSliceQueryValidator compoundKeyValidator;
 
 	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
 	private Optional<Integer> noTtl = Optional.<Integer> absent();

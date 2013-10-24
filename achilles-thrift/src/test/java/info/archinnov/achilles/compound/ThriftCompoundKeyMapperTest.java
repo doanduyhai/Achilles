@@ -59,7 +59,7 @@ public class ThriftCompoundKeyMapperTest {
 	private ThriftCompoundKeyMapper mapper;
 
 	@Mock
-	private ThriftCompoundKeyValidator validator;
+	private ThriftSliceQueryValidator validator;
 
 	@Mock
 	private PropertyMeta compoundKeyMeta;

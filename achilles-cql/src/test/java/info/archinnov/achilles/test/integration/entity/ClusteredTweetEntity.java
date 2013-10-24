@@ -22,7 +22,7 @@ import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
-public class ClusteredTweet {
+public class ClusteredTweetEntity {
 	@EmbeddedId
 	private ClusteredTweetId id;
 
@@ -41,10 +41,10 @@ public class ClusteredTweet {
 	@Column
 	private Counter favoriteCount;
 
-	public ClusteredTweet() {
+	public ClusteredTweetEntity() {
 	}
 
-	public ClusteredTweet(ClusteredTweetId id, String content, Long originalAuthorId, Boolean isARetweet) {
+	public ClusteredTweetEntity(ClusteredTweetId id, String content, Long originalAuthorId, Boolean isARetweet) {
 		this.id = id;
 		this.content = content;
 		this.originalAuthorId = originalAuthorId;

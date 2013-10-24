@@ -205,6 +205,7 @@ public class CQLTableCreator extends TableCreator {
 		} else {
 			componentNames = pm.getClusteringComponentNames();
 			componentClasses = pm.getClusteringComponentClasses();
+			builder.setReversedClusteredComponent(pm.getReversedComponent());
 		}
 		for (int i = 0; i < componentNames.size(); i++) {
 			String componentName = componentNames.get(i);

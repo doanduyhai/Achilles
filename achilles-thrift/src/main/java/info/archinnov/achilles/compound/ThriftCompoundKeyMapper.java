@@ -40,7 +40,7 @@ public class ThriftCompoundKeyMapper {
 	private static final Logger log = LoggerFactory.getLogger(ThriftCompoundKeyMapper.class);
 	private static final ClassToSerializerTransformer classToSerializer = new ClassToSerializerTransformer();
 
-	private ThriftCompoundKeyValidator validator = new ThriftCompoundKeyValidator();
+	private ThriftSliceQueryValidator validator = new ThriftSliceQueryValidator();
 
 	public Object fromCompositeToEmbeddedId(PropertyMeta idMeta, List<Component<?>> components, Object primaryKey) {
 		if (log.isTraceEnabled()) {
@@ -151,7 +151,7 @@ public class ThriftCompoundKeyMapper {
 		Validator.validateTrue(srzCount >= columnComponents.size(),
 				"There should be at most %s values for the @EmbeddedId '%s'", srzCount, propertyName);
 
-		int lastNotNullIndex = validator.validateNoHoleAndReturnLastNonNullIndex(columnComponents);
+		int lastNotNullIndex = validator.getLastNonNullIndex(columnComponents);
 
 		for (int i = 0; i <= lastNotNullIndex; i++) {
 			Serializer<Object> srz = serializers.get(i);

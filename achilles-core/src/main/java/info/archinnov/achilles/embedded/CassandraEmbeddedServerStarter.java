@@ -37,9 +37,14 @@ public enum CassandraEmbeddedServerStarter {
 	public void start(final CassandraConfig config) {
 
 		if (isAlreadyRunning()) {
-			log.info("Cassandra is already running, not starting new one");
+			log.debug("Cassandra is already running, not starting new one");
 			return;
 		}
+
+        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
+        log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
+        log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
+        log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
 
 		log.info("Starting Cassandra...");
 		config.write();

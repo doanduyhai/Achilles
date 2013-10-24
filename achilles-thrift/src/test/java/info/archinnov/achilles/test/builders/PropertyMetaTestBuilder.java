@@ -23,10 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.cassandra.utils.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.entity.metadata.ClusteringKeys;
+import info.archinnov.achilles.entity.metadata.ClusteringComponents;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
-import info.archinnov.achilles.entity.metadata.PartitionKeys;
+import info.archinnov.achilles.entity.metadata.PartitionComponents;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
@@ -195,13 +195,13 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			clusteringSetters = this.clusteringSetters;
 		}
 
-		PartitionKeys partitionKeys = new PartitionKeys(partitionClasses, partitionNames, partitionGetters,
+		PartitionComponents partitionComponents = new PartitionComponents(partitionClasses, partitionNames, partitionGetters,
 				partitionSetters);
 
-		ClusteringKeys clusteringKeys = new ClusteringKeys(clusteringClasses, clusteringNames, clusteringGetters,
+		ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames, clusteringGetters,
 				clusteringSetters);
 
-		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionKeys, clusteringKeys,
+		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
 				componentClasses, componentNames, componentGetters, componentSetters, compTimeUUID);
 
 		pm.setEmbeddedIdProperties(embeddedIdProperties);

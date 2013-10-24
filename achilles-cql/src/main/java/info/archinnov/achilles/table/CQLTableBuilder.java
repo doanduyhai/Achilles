@@ -51,7 +51,7 @@ public class CQLTableBuilder {
 	private Map<String, String> lists = new LinkedHashMap<String, String>();
 	private Map<String, String> sets = new LinkedHashMap<String, String>();
 	private Map<String, Pair<String, String>> maps = new LinkedHashMap<String, Pair<String, String>>();
-
+	private String reversedComponent = null;
 	private boolean counter;
 
 	public static CQLTableBuilder createTable(String tableName) {
@@ -150,6 +150,11 @@ public class CQLTableBuilder {
 		this.comment = comment.replaceAll("'", "\"");
 		return this;
 	}
+	
+	public CQLTableBuilder setReversedClusteredComponent(String reversedComponent) {
+		this.reversedComponent = reversedComponent;
+		return this;
+	}
 
 	public String generateDDLScript() {
 
@@ -225,6 +230,9 @@ public class CQLTableBuilder {
 
 		// Add comments
 		ddl.append(" WITH COMMENT = '").append(comment).append("'");
+		if(reversedComponent!=null){
+			ddl.append(" AND CLUSTERING ORDER BY (").append(reversedComponent).append(" DESC)");
+		}
 		return ddl.toString();
 	}
 

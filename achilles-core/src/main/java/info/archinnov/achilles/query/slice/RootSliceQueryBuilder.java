@@ -25,6 +25,7 @@ import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -36,10 +37,10 @@ import java.util.List;
 public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, T> {
 
 	protected SliceQueryExecutor<CONTEXT> sliceQueryExecutor;
-	protected CompoundKeyValidator compoundKeyValidator;
 	protected Class<T> entityClass;
 	protected EntityMeta meta;
 
+    protected IndexCondition indexCondition;
 	protected List<Object> partitionComponents = new ArrayList<Object>();
 	private PropertyMeta idMeta;
 	private List<Object> fromClusterings = new ArrayList<Object>();
@@ -52,28 +53,38 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	private boolean limitHasBeenSet = false;
 	private boolean orderingHasBeenSet = false;
 
-	RootSliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, CompoundKeyValidator compoundKeyValidator,
+	RootSliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
 			Class<T> entityClass, EntityMeta meta) {
 		this.sliceQueryExecutor = sliceQueryExecutor;
-		this.compoundKeyValidator = compoundKeyValidator;
 		this.entityClass = entityClass;
 		this.meta = meta;
 		this.idMeta = meta.getIdMeta();
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> partitionKeyInternal(List<Object> partitionComponents) {
-		compoundKeyValidator.validatePartitionKey(idMeta, partitionComponents);
-		this.partitionComponents = partitionComponents;
-		return this;
+    protected RootSliceQueryBuilder<CONTEXT, T> indexConditionInternal(IndexCondition indexCondition) {
+        this.indexCondition = indexCondition;
+        return this;
+    }
+
+	protected RootSliceQueryBuilder<CONTEXT, T> partitionComponentsInternal(List<Object> partitionComponents) {
+        idMeta.validatePartitionComponents(partitionComponents);
+        if(this.partitionComponents.size()>0) {
+            Validator.validateTrue(this.partitionComponents.size() == partitionComponents.size(),"Partition components '%s' do not match with existing values '%s'",this.partitionComponents,partitionComponents);
+            for (int i = 0; i < partitionComponents.size(); i++) {
+                Validator.validateTrue(this.partitionComponents.get(i).equals(partitionComponents.get(i)),"Partition components '%s' do not match with existing values '%s'",this.partitionComponents,partitionComponents);
+            }
+        }
+        this.partitionComponents = partitionComponents;
+        return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> partitionKeyInternal(Object... partitionComponents) {
-		this.partitionKeyInternal(Arrays.asList(partitionComponents));
+	protected RootSliceQueryBuilder<CONTEXT, T> partitionComponentsInternal(Object... partitionComponents) {
+		this.partitionComponentsInternal(Arrays.asList(partitionComponents));
 		return this;
 	}
 
 	protected RootSliceQueryBuilder<CONTEXT, T> fromClusteringsInternal(List<Object> clusteringComponents) {
-		compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
+        idMeta.validateClusteringComponents(clusteringComponents);
 		fromClusterings = clusteringComponents;
 		return this;
 	}
@@ -84,7 +95,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	}
 
 	protected RootSliceQueryBuilder<CONTEXT, T> toClusteringsInternal(List<Object> clusteringComponents) {
-		compoundKeyValidator.validateClusteringKeys(idMeta, clusteringComponents);
+        idMeta.validateClusteringComponents(clusteringComponents);
 		toClusterings = clusteringComponents;
 		return this;
 	}
@@ -285,7 +296,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	}
 
 	protected SliceQuery<T> buildClusterQuery() {
-		return new SliceQuery<T>(entityClass, meta, partitionComponents, fromClusterings, toClusterings, ordering,
+		return new SliceQuery<T>(entityClass, meta, indexCondition,partitionComponents, fromClusterings, toClusterings, ordering,
 				bounding, consistencyLevel, limit, batchSize, limitHasBeenSet);
 	}
 }

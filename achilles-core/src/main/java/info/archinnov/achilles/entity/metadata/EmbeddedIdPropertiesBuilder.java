@@ -11,6 +11,7 @@ public class EmbeddedIdPropertiesBuilder {
 	private final List<Method> componentGetters = new ArrayList<Method>();
 	private final List<Method> componentSetters = new ArrayList<Method>();
 	private final List<String> componentsAsTimeUUID = new ArrayList<String>();
+	private String reversedComponentName = null;
 
 	public void addComponentClass(Class<?> clazz) {
 		componentClasses.add(clazz);
@@ -56,16 +57,24 @@ public class EmbeddedIdPropertiesBuilder {
 		this.componentsAsTimeUUID.add(name);
 	}
 
-	public PartitionKeys buildPartitionKeys() {
-		return new PartitionKeys(componentClasses, componentNames, componentGetters, componentSetters);
+	public String getReversedComponentName() {
+		return reversedComponentName;
 	}
 
-	public ClusteringKeys buildClusteringKeys() {
-		return new ClusteringKeys(componentClasses, componentNames, componentGetters, componentSetters);
+	public void setReversedComponentName(String reversedComponentName) {
+		this.reversedComponentName = reversedComponentName;
 	}
 
-	public EmbeddedIdProperties buildEmbeddedIdProperties(PartitionKeys partitionKeys, ClusteringKeys clusteringKeys) {
-		return new EmbeddedIdProperties(partitionKeys, clusteringKeys, componentClasses, componentNames,
+	public PartitionComponents buildPartitionKeys() {
+		return new PartitionComponents(componentClasses, componentNames, componentGetters, componentSetters);
+	}
+
+	public ClusteringComponents buildClusteringKeys() {
+		return new ClusteringComponents(componentClasses, componentNames, reversedComponentName, componentGetters, componentSetters);
+	}
+
+	public EmbeddedIdProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents) {
+		return new EmbeddedIdProperties(partitionComponents, clusteringComponents, componentClasses, componentNames,
 				componentGetters, componentSetters, componentsAsTimeUUID);
 	}
 }

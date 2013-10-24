@@ -20,9 +20,7 @@ import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,13 +34,13 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ThriftCompoundKeyValidatorTest {
+public class ThriftSliceQueryValidatorTest {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
-	private ThriftCompoundKeyValidator validator;
+	private ThriftSliceQueryValidator validator;
 
 	@Mock
 	private PropertyMeta pm;
@@ -189,43 +187,4 @@ public class ThriftCompoundKeyValidatorTest {
 	}
 
 	// ////////////////////////////////////
-	@Test
-	public void should_validate_single_keys_ascending() throws Exception {
-		when(pm.isEmbeddedId()).thenReturn(false);
-
-		validator.validateBoundsForQuery(pm, 10L, 11L, ASCENDING);
-	}
-
-	@Test
-	public void should_validate_single_key_descending() throws Exception {
-		when(pm.isEmbeddedId()).thenReturn(false);
-
-		validator.validateBoundsForQuery(pm, 12L, 11L, DESCENDING);
-	}
-
-	@Test
-	public void should_validate_compound_keys() throws Exception {
-		when(pm.isEmbeddedId()).thenReturn(true);
-
-		EmbeddedKey start = new EmbeddedKey();
-		EmbeddedKey end = new EmbeddedKey();
-
-		List<Method> getters = Arrays.<Method> asList();
-		List<Object> startComps = Arrays.<Object> asList();
-		List<Object> endComps = Arrays.<Object> asList();
-
-		when(pm.getComponentGetters()).thenReturn(getters);
-		when(pm.encodeToComponents(start)).thenReturn(startComps);
-		when(pm.encodeToComponents(end)).thenReturn(endComps);
-
-		validator.validateBoundsForQuery(pm, start, end, ASCENDING);
-
-	}
-
-	@Test
-	public void should_validate_when_any_key_null() throws Exception {
-		validator.validateBoundsForQuery(pm, null, 11L, ASCENDING);
-		validator.validateBoundsForQuery(pm, 11L, null, ASCENDING);
-		validator.validateBoundsForQuery(pm, null, null, ASCENDING);
-	}
 }

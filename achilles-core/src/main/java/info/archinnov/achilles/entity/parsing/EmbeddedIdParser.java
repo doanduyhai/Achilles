@@ -33,6 +33,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -54,9 +56,11 @@ public class EmbeddedIdParser {
 		Constructor<?> defaultConstructor = getDefaultConstructor(embeddedIdClass);
 
 		Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
+		Integer reversedField = extractReversedClusteredKey(embeddedIdClass);
 		validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
-
-		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, defaultConstructor);
+		validateReversedClusteredKey(components, reversedField, embeddedIdClass.getCanonicalName());
+		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField,
+				defaultConstructor);
 
 		log.trace("Built embeddedId properties : {}", embeddedIdProperties);
 		return embeddedIdProperties;
@@ -75,7 +79,8 @@ public class EmbeddedIdParser {
 		int componentCount = candidateFields.size();
 
 		for (Field candidateField : candidateFields) {
-			int order = candidateField.getAnnotation(Order.class).value();
+			Order orderAnnotation = candidateField.getAnnotation(Order.class);
+			int order = orderAnnotation.value();
 			Class<?> componentType = candidateField.getType();
 			orderSum = validateNoDuplicateOrderAndType(embeddedIdClassName, orders, orderSum, order, componentType);
 			components.put(order, candidateField);
@@ -86,6 +91,23 @@ public class EmbeddedIdParser {
 				"There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",
 				embeddedIdClass.getCanonicalName());
 		return components;
+
+	}
+
+	private Integer extractReversedClusteredKey(Class<?> embeddedIdClass) {
+		@SuppressWarnings("unchecked")
+		Set<Field> candidateFields = getFields(embeddedIdClass, ReflectionUtils.<Field> withAnnotation(Order.class));
+		List<Integer> reversedFields = new LinkedList<Integer>();
+		for (Field candidateField : candidateFields) {
+			Order orderAnnotation = candidateField.getAnnotation(Order.class);
+			if (orderAnnotation.reversed()) {
+				reversedFields.add(orderAnnotation.value());
+			}
+		}
+		Validator.validateBeanMappingTrue(reversedFields.size() <= 1,
+				"There should be at most 1 field annotated with @Order(reversed=true) for the @EmbeddedId class '%s'",
+				embeddedIdClass.getCanonicalName());
+		return reversedFields.size() > 0 ? reversedFields.get(0) : null;
 
 	}
 
@@ -112,7 +134,6 @@ public class EmbeddedIdParser {
 	}
 
 	private void validateConsistentPartitionKeys(Map<Integer, Field> componentsOrdering, String embeddedIdClassName) {
-
 		log.debug("Validate composite partiton key component ordering for @EmbeddedId class {} ", embeddedIdClassName);
 		int orderSum = 0;
 		int orderCount = 0;
@@ -129,14 +150,41 @@ public class EmbeddedIdParser {
 				"The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
 	}
 
+	private void validateReversedClusteredKey(Map<Integer, Field> componentsOrdering, Integer reversedField,
+			String embeddedIdClassName) {
+		if (reversedField != null) {
+			log.debug("Validate reversed clustered key component ordering for @EmbeddedId class {} ",
+					embeddedIdClassName);
+			int lastPartitionKey = 0;
+			for (Integer order : componentsOrdering.keySet()) {
+				Field componentField = componentsOrdering.get(order);
+				if (filter.hasAnnotation(componentField, PartitionKey.class)) {
+					lastPartitionKey = Math.max(lastPartitionKey, order.intValue());
+				}
+			}
+			if (lastPartitionKey > 0) {
+				Validator
+						.validateBeanMappingTrue(
+								reversedField.intValue() == lastPartitionKey + 1,
+								"The reversed clustered key must be set after the last partition key for @EmbeddedId class '%s'",
+								embeddedIdClassName);
+			} else {
+				Validator.validateBeanMappingTrue(reversedField.intValue() == 2,
+						"The composite clustered key must be set at position 2 for @EmbeddedId class '%s'",
+						embeddedIdClassName);
+			}
+		}
+
+	}
+
 	private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
-			Constructor<?> constructor) {
+			Integer reversedField, Constructor<?> constructor) {
 
 		EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder = new EmbeddedIdPropertiesBuilder();
 
-		boolean hasPartitionKeyAnnotation = buildPartitionAndClusteringKeys(embeddedIdClass, components,
+		boolean hasPartitionKeyAnnotation = buildPartitionAndClusteringKeys(embeddedIdClass, components, reversedField,
 				partitionKeysBuilder, clusteringKeysBuilder, embeddedIdPropertiesBuilder);
 
 		if (!hasPartitionKeyAnnotation) {
@@ -151,8 +199,8 @@ public class EmbeddedIdParser {
 	}
 
 	private boolean buildPartitionAndClusteringKeys(Class<?> embeddedIdClass, Map<Integer, Field> components,
-			EmbeddedIdPropertiesBuilder partitionKeysBuilder, EmbeddedIdPropertiesBuilder clusteringKeysBuilder,
-			EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
+			Integer reversedField, EmbeddedIdPropertiesBuilder partitionKeysBuilder,
+			EmbeddedIdPropertiesBuilder clusteringKeysBuilder, EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
 		boolean hasPartitionKeyAnnotation = false;
 		for (Integer order : components.keySet()) {
 			Field compositeKeyField = components.get(order);
@@ -188,6 +236,9 @@ public class EmbeddedIdParser {
 				clusteringKeysBuilder.addComponentClass(componentClass);
 				clusteringKeysBuilder.addComponentGetter(componentGetter);
 				clusteringKeysBuilder.addComponentSetter(componentSetter);
+			}
+			if (reversedField != null && order.intValue() == reversedField.intValue()) {
+				clusteringKeysBuilder.setReversedComponentName(componentName);
 			}
 		}
 		return hasPartitionKeyAnnotation;

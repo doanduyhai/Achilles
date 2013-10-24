@@ -17,11 +17,12 @@
 package info.archinnov.achilles.composite;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import info.archinnov.achilles.compound.CompoundKeyValidator;
+
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
+import info.archinnov.achilles.compound.ThriftSliceQueryValidator;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
 
@@ -40,7 +41,7 @@ public class ThriftCompositeFactory {
 
 	private ComponentEqualityCalculator calculator = new ComponentEqualityCalculator();
 	private ThriftCompoundKeyMapper compoundKeyMapper = new ThriftCompoundKeyMapper();
-	private CompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
+	private ThriftSliceQueryValidator sliceQueryValidator = new ThriftSliceQueryValidator();
 
 	public <T> Composite createCompositeForClusteringComponents(ThriftPersistenceContext context) {
 
@@ -54,15 +55,20 @@ public class ThriftCompositeFactory {
 		return compoundKeyMapper.buildRowKey(context);
 	}
 
-	public Composite[] createForClusteredQuery(PropertyMeta idMeta, List<Object> clusteringFrom,
-			List<Object> clusteringTo, BoundingMode bounding, OrderingMode ordering) {
+	public <T> Composite[] createForClusteredQuery(SliceQuery<T> sliceQuery) {
 
-		compoundKeyValidator.validateComponentsForSliceQuery(idMeta, clusteringFrom, clusteringTo, ordering);
+        final PropertyMeta idMeta = sliceQuery.getIdMeta();
+        final List<Object> clusteringsFrom = sliceQuery.getClusteringsFrom();
+        final List<Object> clusteringsTo = sliceQuery.getClusteringsTo();
+        final BoundingMode bounding = sliceQuery.getBounding();
+        final OrderingMode ordering = sliceQuery.getOrdering();
+
+        sliceQueryValidator.validateComponentsForSliceQuery(sliceQuery);
 		ComponentEquality[] equalities = calculator.determineEquality(bounding, ordering);
 
-		final Composite from = compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, idMeta,
+		final Composite from = compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringsFrom, idMeta,
 				equalities[0]);
-		final Composite to = compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, idMeta, equalities[1]);
+		final Composite to = compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringsTo, idMeta, equalities[1]);
 
 		return new Composite[] { from, to };
 

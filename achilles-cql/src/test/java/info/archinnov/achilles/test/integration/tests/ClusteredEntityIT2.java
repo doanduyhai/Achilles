@@ -20,10 +20,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.test.integration.entity.ClusteredMessage;
+import info.archinnov.achilles.test.integration.entity.ClusteredMessageEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageId.Type;
-import info.archinnov.achilles.test.integration.entity.ClusteredTweet;
+import info.archinnov.achilles.test.integration.entity.ClusteredTweetEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredTweetId;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -55,11 +55,11 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
 		manager.persist(tweet);
 
-		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
+		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
 		assertThat(found.getContent()).isEqualTo("this is a tweet");
 		assertThat(found.getOriginalAuthorId()).isEqualTo(userId);
@@ -76,7 +76,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 		tweet = manager.merge(tweet);
 
 		tweet.setContent("this is a new tweet2");
@@ -85,7 +85,7 @@ public class ClusteredEntityIT2 {
 
 		manager.merge(tweet);
 
-		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
+		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
 		assertThat(found.getContent()).isEqualTo("this is a new tweet2");
 		assertThat(found.getOriginalAuthorId()).isEqualTo(originalAuthorId);
@@ -100,13 +100,13 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
 		tweet = manager.merge(tweet);
 
 		manager.remove(tweet);
 
-		ClusteredTweet found = manager.find(ClusteredTweet.class, id);
+		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
 		assertThat(found).isNull();
 	}
@@ -121,7 +121,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
-		ClusteredTweet tweet = new ClusteredTweet(id, "this is a tweet", userId, false);
+		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
 		tweet = manager.merge(tweet);
 
@@ -143,11 +143,11 @@ public class ClusteredEntityIT2 {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.TEXT);
 
-		ClusteredMessage message = new ClusteredMessage(messageId, "a message");
+		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "a message");
 
 		manager.persist(message);
 
-		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
+		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
 		ClusteredMessageId foundCompoundKey = found.getId();
 		assertThat(foundCompoundKey.getId()).isEqualTo(id);
@@ -159,7 +159,7 @@ public class ClusteredEntityIT2 {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.IMAGE);
 
-		ClusteredMessage message = new ClusteredMessage(messageId, "an image");
+		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
 
 		message = manager.merge(message);
 
@@ -167,7 +167,7 @@ public class ClusteredEntityIT2 {
 
 		manager.merge(message);
 
-		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
+		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
 		assertThat(found.getLabel()).isEqualTo("a JPEG image");
 	}
@@ -177,13 +177,13 @@ public class ClusteredEntityIT2 {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.AUDIO);
 
-		ClusteredMessage message = new ClusteredMessage(messageId, "an mp3");
+		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
 
 		message = manager.merge(message);
 
 		manager.remove(message);
 
-		ClusteredMessage found = manager.find(ClusteredMessage.class, messageId);
+		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
 		assertThat(found).isNull();
 	}
@@ -196,7 +196,7 @@ public class ClusteredEntityIT2 {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.FILE);
 
-		ClusteredMessage message = new ClusteredMessage(messageId, label);
+		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);
 
 		message = manager.merge(message);
 

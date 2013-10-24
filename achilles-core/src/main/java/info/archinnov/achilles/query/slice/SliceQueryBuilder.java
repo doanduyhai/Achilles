@@ -16,13 +16,13 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -31,10 +31,24 @@ import java.util.List;
 
 public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
-	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, CompoundKeyValidator compoundKeyValidator,
+	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
 			Class<T> entityClass, EntityMeta meta) {
-		super(sliceQueryExecutor, compoundKeyValidator, entityClass, meta);
+		super(sliceQueryExecutor, entityClass, meta);
 	}
+
+
+    /**
+     * Query by index condition and partition/clustering components<br/>
+     * <br/>
+     *
+     * @param indexCondition
+     *            Index condition
+     * @return SliceShortcutQueryBuilder
+     */
+    public SliceShortcutQueryBuilder indexCondition(IndexCondition indexCondition) {
+        super.indexConditionInternal(indexCondition);
+        return new SliceShortcutQueryBuilder();
+    }
 
 	/**
 	 * Query by partition key component(s) and clustering components<br/>
@@ -45,7 +59,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 	 * @return SliceShortcutQueryBuilder
 	 */
 	public SliceShortcutQueryBuilder partitionComponents(Object... partitionComponents) {
-		super.partitionKeyInternal(partitionComponents);
+		super.partitionComponentsInternal(partitionComponents);
 		return new SliceShortcutQueryBuilder();
 	}
 
@@ -67,7 +81,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
 		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 
-		super.partitionKeyInternal(partitionComponents);
+		super.partitionComponentsInternal(partitionComponents);
 		this.fromClusteringsInternal(clusteringComponents);
 
 		return new SliceFromEmbeddedIdBuilder();
@@ -92,7 +106,7 @@ public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends Ro
 		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
 		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 
-		super.partitionKeyInternal(partitionComponents);
+		super.partitionComponentsInternal(partitionComponents);
 		this.toClusteringsInternal(clusteringComponents);
 
 		return new SliceToEmbeddedIdBuilder();

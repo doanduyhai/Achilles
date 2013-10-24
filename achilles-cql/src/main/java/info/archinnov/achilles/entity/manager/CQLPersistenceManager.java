@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.compound.CQLCompoundKeyValidator;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
@@ -38,7 +37,6 @@ import java.util.Map;
 import com.datastax.driver.core.Session;
 
 public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceContext> {
-	private CQLCompoundKeyValidator compoundKeyValidator = new CQLCompoundKeyValidator();
 	private CQLSliceQueryExecutor sliceQueryExecutor;
 	private CQLPersistenceContextFactory contextFactory;
 	protected CQLDaoContext daoContext;
@@ -61,8 +59,7 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 		Validator.validateTrue(meta.isClusteredEntity(),
 				"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
 				meta.getClassName());
-		return new SliceQueryBuilder<CQLPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator, entityClass,
-				meta);
+		return new SliceQueryBuilder<CQLPersistenceContext, T>(sliceQueryExecutor, entityClass, meta);
 	}
 
 	/**
@@ -126,11 +123,15 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 	public <T> CQLTypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
-        Validator.validateFalse(entityMeta.isClusteredEntity(), "Index query is not supported fir clustered entity");
+		Validator.validateFalse(entityMeta.isClusteredEntity(),
+				"Index query is not supported for clustered entity. Please use slice query API with index condition");
 		Validator.validateNotNull(indexCondition, "Index condition should not be null");
-		Validator.validateNotBlank(indexCondition.getColumnName(), "Column name for index condition '%s' should be provided", indexCondition);
-		Validator.validateNotNull(indexCondition.getColumnValue(), "Column value for index condition '%s' should be provided", indexCondition);
-		Validator.validateNotNull(indexCondition.getIndexRelation(), "Index relation for index condition '%s' should be provided", indexCondition);
+		Validator.validateNotBlank(indexCondition.getColumnName(),
+				"Column name for index condition '%s' should be provided", indexCondition);
+		Validator.validateNotNull(indexCondition.getColumnValue(),
+				"Column value for index condition '%s' should be provided", indexCondition);
+		Validator.validateNotNull(indexCondition.getIndexRelation(),
+				"Index relation for index condition '%s' should be provided", indexCondition);
 
 		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ");
 		queryBuilder.append(entityMeta.getTableName()).append(" WHERE ");

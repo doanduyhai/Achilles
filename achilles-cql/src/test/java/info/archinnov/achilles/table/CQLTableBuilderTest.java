@@ -39,7 +39,8 @@ public class CQLTableBuilderTest {
 				.addMap("mapCol", Integer.class, Long.class).addMap("mapEnumKeyCol", PropertyType.class, Long.class)
 				.addMap("mapEnumValCol", Integer.class, PropertyType.class)
 				.addMap("mapObjectValCol", Integer.class, UserBean.class).addPartitionComponent("longCol")
-				.addClusteringComponent("enumCol").addComment("This is a comment for 'tableName'").generateDDLScript();
+				.addClusteringComponent("enumCol").addComment("This is a comment for 'tableName'")
+				.setReversedClusteredComponent("objectCol").generateDDLScript();
 
 		assertThat(ddlScript).isEqualTo(
 				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tenumCol text,\n"
@@ -49,7 +50,8 @@ public class CQLTableBuilderTest {
 						+ "\t\tmapCol map<int,bigint>,\n" + "\t\tmapEnumKeyCol map<text,bigint>,\n"
 						+ "\t\tmapEnumValCol map<int,text>,\n" + "\t\tmapObjectValCol map<int,text>,\n"
 						+ "\t\tPRIMARY KEY(longCol, enumCol)\n"
-						+ "\t) WITH COMMENT = 'This is a comment for \"tableName\"'");
+						+ "\t) WITH COMMENT = 'This is a comment for \"tableName\"'"
+						+ " AND CLUSTERING ORDER BY (objectCol DESC)");
 
 	}
 

@@ -16,12 +16,13 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
-import info.archinnov.achilles.compound.CQLCompoundKeyValidator;
+import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.*;
+import info.archinnov.achilles.compound.CQLSliceQueryValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -39,18 +40,26 @@ public class CQLSliceQuery<T> {
 	private List<Object> fixedComponents;
 	private Object lastStartComp;
 	private Object lastEndComp;
-	private CQLCompoundKeyValidator validator = new CQLCompoundKeyValidator();
+	private CQLSliceQueryValidator validator = new CQLSliceQueryValidator();
 	private ConsistencyLevel defaultReadLevel;
 
 	public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {
 
-		validateClusteringComponents(sliceQuery);
+		validator.validateComponentsForSliceQuery(sliceQuery);
 		this.sliceQuery = sliceQuery;
 		this.defaultReadLevel = defaultReadLevel;
 		this.fixedComponents = determineFixedComponents(sliceQuery);
 		Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
 		this.lastStartComp = lastComponents.left;
 		this.lastEndComp = lastComponents.right;
+	}
+
+	public boolean hasIndexCondition() {
+		return sliceQuery.hasIndexCondition();
+	}
+
+	public IndexCondition getIndexCondition() {
+		return sliceQuery.getIndexCondition();
 	}
 
 	public List<Object> getFixedComponents() {
@@ -79,7 +88,7 @@ public class CQLSliceQuery<T> {
 		return sliceQuery.getBounding();
 	}
 
-	public OrderingMode getAchillesOrdering() {
+	public OrderingMode getOrdering() {
 		return sliceQuery.getOrdering();
 	}
 
@@ -118,12 +127,6 @@ public class CQLSliceQuery<T> {
 		return sliceQuery.getBatchSize();
 	}
 
-	private void validateClusteringComponents(SliceQuery<T> sliceQuery) {
-		validator.validateComponentsForSliceQuery(sliceQuery.getClusteringsFrom(), sliceQuery.getClusteringsTo(),
-				sliceQuery.getOrdering());
-
-	}
-
 	private List<Object> determineFixedComponents(SliceQuery<T> sliceQuery) {
 		List<Object> fixedComponents = new ArrayList<Object>();
 
@@ -159,7 +162,10 @@ public class CQLSliceQuery<T> {
 		int startIndex = validator.getLastNonNullIndex(startComponents);
 		int endIndex = validator.getLastNonNullIndex(endComponents);
 
-		if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
+		if (startIndex < 0 && endIndex < 0) {
+			lastStartComp = null;
+			lastEndComp = null;
+		} else if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
 			lastStartComp = startComponents.get(startIndex);
 			lastEndComp = endComponents.get(endIndex);
 		} else if (startIndex < endIndex) {

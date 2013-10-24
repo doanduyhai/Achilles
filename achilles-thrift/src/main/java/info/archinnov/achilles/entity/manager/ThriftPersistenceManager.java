@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.compound.ThriftCompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -40,15 +39,8 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 	protected ThriftDaoContext daoContext;
 	protected ThriftPersistenceContextFactory contextFactory;
 	private ThriftSliceQueryExecutor sliceQueryExecutor;
-	private ThriftCompoundKeyValidator compoundKeyValidator = new ThriftCompoundKeyValidator();
 
-	/**
-	 * Create a new ThriftPersistenceManager with a configuration map
-	 * 
-	 * @param configurationMap
-	 *            Check documentation for more details on configuration
-	 *            parameters
-	 */
+
 	ThriftPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext, //
 			ConfigurationContext configContext) {
@@ -73,7 +65,7 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 		EntityMeta meta = entityMetaMap.get(entityClass);
         Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " +
                         "because it is not a clustered entity", meta.getClassName());
-		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, compoundKeyValidator,
+		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor,
 				entityClass, meta);
 	}
 
@@ -93,10 +85,6 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 
 	protected void setQueryExecutor(ThriftSliceQueryExecutor queryExecutor) {
 		this.sliceQueryExecutor = queryExecutor;
-	}
-
-	protected void setCompoundKeyValidator(ThriftCompoundKeyValidator compoundKeyValidator) {
-		this.compoundKeyValidator = compoundKeyValidator;
 	}
 
 	protected void setContextFactory(ThriftPersistenceContextFactory contextFactory) {

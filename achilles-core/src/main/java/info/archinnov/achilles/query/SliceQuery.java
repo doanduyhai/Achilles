@@ -20,13 +20,14 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections.CollectionUtils;
 
 public class SliceQuery<T> {
 	public static final int DEFAULT_LIMIT = 100;
@@ -34,6 +35,7 @@ public class SliceQuery<T> {
 
 	private Class<T> entityClass;
 	private EntityMeta meta;
+	private IndexCondition indexCondition;
 	private List<Object> partitionComponents;
 	private List<Object> clusteringsFrom = new ArrayList<Object>();
 	private List<Object> clusteringsTo = new ArrayList<Object>();
@@ -45,13 +47,16 @@ public class SliceQuery<T> {
 	private boolean limitSet;
 	private boolean noComponent;
 
-	public SliceQuery(Class<T> entityClass, EntityMeta meta, List<Object> partitionComponents,
-			List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering, BoundingMode bounding,
-			ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet) {
+	public SliceQuery(Class<T> entityClass, EntityMeta meta, IndexCondition indexCondition,
+			List<Object> partitionComponents, List<Object> clusteringsFrom, List<Object> clusteringsTo,
+			OrderingMode ordering, BoundingMode bounding, ConsistencyLevel consistencyLevel, int limit, int batchSize,
+			boolean limitSet) {
 
+		this.indexCondition = indexCondition;
 		this.limitSet = limitSet;
-		Validator.validateNotNull(partitionComponents,
-				"Partition key should be set for slice query for entity class '%s'", entityClass.getCanonicalName());
+		Validator.validateTrue(CollectionUtils.isNotEmpty(partitionComponents) || indexCondition != null,
+				"Either partition components or index condition should be set for slice query for entity class '%s'",
+				entityClass.getCanonicalName());
 
 		this.entityClass = entityClass;
 		this.meta = meta;
@@ -61,11 +66,16 @@ public class SliceQuery<T> {
 
 		PropertyMeta idMeta = meta.getIdMeta();
 
-		List<Object> componentsFrom = ImmutableList.builder().addAll(partitionComponents).addAll(clusteringsFrom)
-				.build();
+		List<Object> componentsFrom = new ArrayList<Object>();
+		componentsFrom.addAll(partitionComponents);
+		componentsFrom.addAll(clusteringsFrom);
+
 		this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
 
-		List<Object> componentsTo = ImmutableList.builder().addAll(partitionComponents).addAll(clusteringsTo).build();
+		List<Object> componentsTo = new ArrayList<Object>();
+		componentsTo.addAll(partitionComponents);
+		componentsTo.addAll(clusteringsTo);
+
 		this.clusteringsTo = idMeta.encodeToComponents(componentsTo);
 
 		this.ordering = ordering;
@@ -83,8 +93,28 @@ public class SliceQuery<T> {
 		return meta;
 	}
 
+	public PropertyMeta getIdMeta() {
+		return meta.getIdMeta();
+	}
+
+	boolean hasReversedClustering() {
+		return getIdMeta().hasReversedComponent();
+	}
+
+	public boolean hasIndexCondition() {
+		return indexCondition != null;
+	}
+
+	public IndexCondition getIndexCondition() {
+		return indexCondition;
+	}
+
 	public List<Object> getPartitionComponents() {
 		return partitionComponents;
+	}
+
+	public int partitionComponentsSize() {
+		return partitionComponents != null ? partitionComponents.size() : 0;
 	}
 
 	public List<Object> getClusteringsFrom() {
@@ -97,7 +127,7 @@ public class SliceQuery<T> {
 	}
 
 	public OrderingMode getOrdering() {
-		return ordering;
+		return hasReversedClustering() ? ordering.reverse() : ordering;
 	}
 
 	public BoundingMode getBounding() {

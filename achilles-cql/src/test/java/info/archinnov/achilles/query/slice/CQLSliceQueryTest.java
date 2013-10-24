@@ -21,7 +21,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.compound.CQLCompoundKeyValidator;
+import info.archinnov.achilles.compound.CQLSliceQueryValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
@@ -54,7 +54,7 @@ public class CQLSliceQueryTest {
 	private SliceQuery<ClusteredEntity> sliceQuery;
 
 	@Mock
-	private CQLCompoundKeyValidator validator;
+	private CQLSliceQueryValidator validator;
 
 	private List<Object> defaultStart = Arrays.<Object> asList(1, 2);
 	private List<Object> defaultEnd = Arrays.<Object> asList(1, 2);
@@ -259,7 +259,7 @@ public class CQLSliceQueryTest {
 	public void should_get_achilles_ordering() throws Exception {
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
-		assertThat(cqlSliceQuery.getAchillesOrdering()).isSameAs(ASCENDING);
+		assertThat(cqlSliceQuery.getOrdering()).isSameAs(ASCENDING);
 	}
 
 	@Test

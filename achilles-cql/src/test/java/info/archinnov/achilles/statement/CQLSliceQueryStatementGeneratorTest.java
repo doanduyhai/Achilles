@@ -59,7 +59,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 	// ///////////////////////////////////// ASCENDING
 	@Test
 	public void should_generate_where_clause_when_same_number_of_components_ascending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
@@ -88,7 +88,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 	@Test
 	public void should_generate_where_clause_when_more_components_for_start_ascending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
@@ -117,7 +117,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 	@Test
 	public void should_generate_where_clause_when_more_components_for_end_ascending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(ASCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(null);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
@@ -147,7 +147,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 	// ///////////////////////////////////// DESCENDING
 	@Test
 	public void should_generate_where_clause_when_same_number_of_components_descending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(DESCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
@@ -176,7 +176,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 	@Test
 	public void should_generate_where_clause_when_more_components_for_start_descending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(DESCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
@@ -205,7 +205,7 @@ public class CQLSliceQueryStatementGeneratorTest {
 
 	@Test
 	public void should_generate_where_clause_when_more_components_for_end_descending() throws Exception {
-		when(sliceQuery.getAchillesOrdering()).thenReturn(DESCENDING);
+		when(sliceQuery.getOrdering()).thenReturn(DESCENDING);
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(null);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);

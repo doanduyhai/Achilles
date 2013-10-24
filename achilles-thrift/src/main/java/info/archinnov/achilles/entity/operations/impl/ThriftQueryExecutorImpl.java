@@ -37,42 +37,40 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class ThriftQueryExecutorImpl {
 	private ThriftCompositeFactory compositeFactory = new ThriftCompositeFactory();
 
-	public <T> List<HColumn<Composite, Object>> findColumns(final SliceQuery<T> query, ThriftPersistenceContext context) {
-		EntityMeta meta = query.getMeta();
+	public <T> List<HColumn<Composite, Object>> findColumns(final SliceQuery<T> sliceQuery, ThriftPersistenceContext context) {
+		EntityMeta meta = sliceQuery.getMeta();
 		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
 
 		PropertyMeta idMeta = meta.getIdMeta();
 
-		final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta, query.getClusteringsFrom(),
-				query.getClusteringsTo(), query.getBounding(), query.getOrdering());
+		final Composite[] composites = compositeFactory.createForClusteredQuery(sliceQuery);
 		final Object rowKey = compositeFactory.buildRowKey(context);
 
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<HColumn<Composite, Object>>>() {
 			@Override
 			public List<HColumn<Composite, Object>> execute() {
-				return wideRowDao.findRawColumnsRange(rowKey, composites[0], composites[1], query.getLimit(), query
+				return wideRowDao.findRawColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(), sliceQuery
 						.getOrdering().isReverse());
 			}
-		}, query.getConsistencyLevel());
+		}, sliceQuery.getConsistencyLevel());
 	}
 
-	public <T> ThriftSliceIterator<Object, Object> getColumnsIterator(final SliceQuery<T> query,
+	public <T> ThriftSliceIterator<Object, Object> getColumnsIterator(final SliceQuery<T> sliceQuery,
 			ThriftPersistenceContext context) {
-		EntityMeta meta = query.getMeta();
+		EntityMeta meta = sliceQuery.getMeta();
 		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
 		PropertyMeta idMeta = meta.getIdMeta();
 		final Object rowKey = compositeFactory.buildRowKey(context);
 
-		final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta, query.getClusteringsFrom(),
-				query.getClusteringsTo(), query.getBounding(), query.getOrdering());
+		final Composite[] composites = compositeFactory.createForClusteredQuery(sliceQuery);
 
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<ThriftSliceIterator<Object, Object>>() {
 			@Override
 			public ThriftSliceIterator<Object, Object> execute() {
-				return wideRowDao.getColumnsIterator(rowKey, composites[0], composites[1], query.getOrdering()
-						.isReverse(), query.getBatchSize());
+				return wideRowDao.getColumnsIterator(rowKey, composites[0], composites[1], sliceQuery.getOrdering()
+						.isReverse(), sliceQuery.getBatchSize());
 			}
-		}, query.getConsistencyLevel());
+		}, sliceQuery.getConsistencyLevel());
 	}
 
 	public void removeColumns(List<HColumn<Composite, Object>> columns, final ConsistencyLevel consistencyLevel,
@@ -95,42 +93,40 @@ public class ThriftQueryExecutorImpl {
 
 	}
 
-	public <T> List<HCounterColumn<Composite>> findCounterColumns(final SliceQuery<T> query,
+	public <T> List<HCounterColumn<Composite>> findCounterColumns(final SliceQuery<T> sliceQuery,
 			ThriftPersistenceContext context) {
-		EntityMeta meta = query.getMeta();
+		EntityMeta meta = sliceQuery.getMeta();
 		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
 		PropertyMeta idMeta = meta.getIdMeta();
 		final Object rowKey = compositeFactory.buildRowKey(context);
 
-		final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta, query.getClusteringsFrom(),
-				query.getClusteringsTo(), query.getBounding(), query.getOrdering());
+		final Composite[] composites = compositeFactory.createForClusteredQuery(sliceQuery);
 
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<HCounterColumn<Composite>>>() {
 			@Override
 			public List<HCounterColumn<Composite>> execute() {
-				return wideRowDao.findCounterColumnsRange(rowKey, composites[0], composites[1], query.getLimit(), query
+				return wideRowDao.findCounterColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(), sliceQuery
 						.getOrdering().isReverse());
 			}
-		}, query.getConsistencyLevel());
+		}, sliceQuery.getConsistencyLevel());
 	}
 
-	public <T> ThriftCounterSliceIterator<Object> getCounterColumnsIterator(final SliceQuery<T> query,
+	public <T> ThriftCounterSliceIterator<Object> getCounterColumnsIterator(final SliceQuery<T> sliceQuery,
 			ThriftPersistenceContext context) {
-		EntityMeta meta = query.getMeta();
+		EntityMeta meta = sliceQuery.getMeta();
 		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
 		final Object rowKey = compositeFactory.buildRowKey(context);
 		PropertyMeta idMeta = meta.getIdMeta();
 
-		final Composite[] composites = compositeFactory.createForClusteredQuery(idMeta, query.getClusteringsFrom(),
-				query.getClusteringsTo(), query.getBounding(), query.getOrdering());
+		final Composite[] composites = compositeFactory.createForClusteredQuery(sliceQuery);
 
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<ThriftCounterSliceIterator<Object>>() {
 			@Override
 			public ThriftCounterSliceIterator<Object> execute() {
-				return wideRowDao.getCounterColumnsIterator(rowKey, composites[0], composites[1], query.getOrdering()
-						.isReverse(), query.getBatchSize());
+				return wideRowDao.getCounterColumnsIterator(rowKey, composites[0], composites[1], sliceQuery.getOrdering()
+						.isReverse(), sliceQuery.getBatchSize());
 			}
-		}, query.getConsistencyLevel());
+		}, sliceQuery.getConsistencyLevel());
 	}
 
 	public void removeCounterColumns(List<HCounterColumn<Composite>> counterColumns,

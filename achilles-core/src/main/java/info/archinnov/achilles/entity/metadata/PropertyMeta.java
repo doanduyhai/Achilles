@@ -125,7 +125,7 @@ public class PropertyMeta {
 
 	public List<Class<?>> getPartitionComponentClasses() {
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentClasses() : Arrays
-				.<Class<?>> asList();
+				.<Class<?>> asList(valueClass);
 	}
 
 	public List<Object> extractPartitionComponents(List<Object> components) {
@@ -146,6 +146,18 @@ public class PropertyMeta {
 
 		return partitionComponents;
 	}
+
+    public void validatePartitionComponents( List<Object> partitionComponents) {
+        if(embeddedIdProperties != null) {
+            embeddedIdProperties.validatePartitionComponents(this.entityClassName,partitionComponents);
+        }
+    }
+
+    public void validateClusteringComponents(List<Object> clusteringComponents) {
+        if(embeddedIdProperties != null) {
+            embeddedIdProperties.validateClusteringComponents(this.entityClassName,clusteringComponents);
+        }
+    }
 
 	public List<Method> getPartitionComponentSetters() {
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentSetters() : Arrays
@@ -169,6 +181,21 @@ public class PropertyMeta {
 		}
 		return component;
 	}
+
+	public String getReversedComponent() {
+		String component = null;
+		if (embeddedIdProperties != null) {
+			return embeddedIdProperties.getReversedComponent();
+		}
+		return component;
+	}
+
+    public boolean hasReversedComponent() {
+        if (embeddedIdProperties != null) {
+            return embeddedIdProperties.hasReversedComponent();
+        }
+        return false;
+    }
 
 	public PropertyMeta counterIdMeta() {
 		return counterProperties != null ? counterProperties.getIdMeta() : null;
@@ -409,16 +436,16 @@ public class PropertyMeta {
 	public void setEntityClassName(String entityClassName) {
 		this.entityClassName = entityClassName;
 	}
-	
-	public boolean isIndexed(){
-		return this.indexProperties!=null;
+
+	public boolean isIndexed() {
+		return this.indexProperties != null;
 	}
-	
+
 	public IndexProperties getIndexProperties() {
 		return indexProperties;
 	}
-	
-	public void setIndexProperties(IndexProperties indexProperties){
+
+	public void setIndexProperties(IndexProperties indexProperties) {
 		this.indexProperties = indexProperties;
 	}
 
