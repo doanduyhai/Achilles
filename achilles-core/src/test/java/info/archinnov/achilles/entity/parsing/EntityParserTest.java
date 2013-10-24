@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedColumnName;
+import info.archinnov.achilles.test.parser.entity.BeanWithIdAndColumnAnnotationsOnSameField;
 import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
 import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
@@ -236,6 +237,19 @@ public class EntityParserTest {
 		assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithSimpleCounter.class.getCanonicalName());
 		assertThat(counterProperties.getIdMeta()).isSameAs(idMeta);
 	}
+
+    @Test
+    public void should_parse_bean_with_id_and_column_annotation_on_same_field() throws Exception {
+        //Given
+        initEntityParsingContext(BeanWithIdAndColumnAnnotationsOnSameField.class);
+
+        //When
+        EntityMeta meta = parser.parseEntity(entityContext);
+
+        //Then
+        assertThat(meta).isNotNull();
+        assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("toto");
+    }
 
 	@Test
 	public void should_exception_when_entity_has_no_id() throws Exception {

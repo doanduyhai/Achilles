@@ -65,8 +65,7 @@ public class EntityParser {
 			if (filter.hasAnnotation(field, Id.class)) {
 				propertyContext.setPrimaryKey(true);
 				idMeta = parser.parse(propertyContext);
-			}
-			if (filter.hasAnnotation(field, EmbeddedId.class)) {
+			} else if (filter.hasAnnotation(field, EmbeddedId.class)) {
 				context.setClusteredEntity(true);
 				propertyContext.isEmbeddedId(true);
 				idMeta = parser.parse(propertyContext);
