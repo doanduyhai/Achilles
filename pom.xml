@@ -82,6 +82,7 @@
 	</properties>
 
 	<modules>
+        <module>achilles-documentation</module>
 		<module>achilles-model</module>
 		<module>achilles-core</module>
         <module>achilles-test</module>
@@ -93,9 +94,14 @@
 		<dependencies>
 			<dependency>
 				<groupId>info.archinnov</groupId>
+				<artifactId>achilles-documentation</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+            <dependency>
+				<groupId>info.archinnov</groupId>
 				<artifactId>achilles-model</artifactId>
 				<version>${project.version}</version>
-			</dependency>		
+			</dependency>
 			<dependency>
 				<groupId>info.archinnov</groupId>
 				<artifactId>achilles-core</artifactId>
