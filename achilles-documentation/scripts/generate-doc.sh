@@ -7,7 +7,7 @@ rm -rf $1/target/
 echo ""
 echo ""
 echo "****************************************"
-echo "*       Create target directory         *"
+echo "*      Create target directory         *"
 echo "****************************************"
 echo ""
 echo ""
@@ -25,6 +25,7 @@ echo ""
 cd target
 mkdir html
 mkdir html/assets
+mkdir pdf
 cp $1/html/achilles.css html/
 cp $1/html/assets/* html/assets/
 
@@ -34,20 +35,47 @@ git clone https://github.com/doanduyhai/Achilles.wiki.git
 cp $1/html/achilles.css Achilles.wiki/
 
 
-#transform absolute URLs into relative
+
 cd Achilles.wiki
-sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki\/([^#)]+)/\.\/\1\.html/g' *.md
-sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki/\.\/Home\.html/' _Sidebar.md
-mv _Sidebar.md index.md
+
+#rename Home to Presentation
+mv Home.md Presentation.md
+
+#add titles to each file
+for i in `ls *.md`
+do
+title=`echo $i | sed 's/\.md//'`
+echo "*** " > temp.md
+echo "# $title" >> temp.md
+echo "" >> temp.md
+cat $i >> temp.md
+mv temp.md $i
+done
 
 #add title to the index file
-echo "# Achilles Documentation" > temp.md
+mv _Sidebar.md index.md
+echo "# Achilles Documentation" >> temp.md
 echo " " >> temp.md
 echo "### Table of contents" >> temp.md
 echo " " >> temp.md
 echo "<br/>" >> temp.md
-cat index.md >> temp.md
+tail -n +3 index.md >> temp.md
 mv temp.md index.md
+
+#change initial PDF title
+echo "# Achilles" > temp.md
+tail -n +3 Presentation.md >> temp.md
+mv temp.md Presentation.md
+
+
+
+#transform absolute URLs into relative
+sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki\/([^#)]+)/\.\/\1\.html/g' *.md
+sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki/\.\/Presentation\.html/' index.md
+#replace all URL from Home.html to Presentation.html
+sed -i -r 's/Home\.html/Presentation\.html/g' *.md
+
+
 
 echo ""
 echo ""
@@ -62,6 +90,17 @@ find . -name \*.md -type f -exec pandoc -R -c achilles.css -f markdown_github+ra
 #remove .md extension
 cd $1/target/html
 rename "s/\.md\.html/\.html/" *.html
+
+
+echo ""
+echo ""
+echo "****************************************"
+echo "*    Generating PDF documentation      *"
+echo "****************************************"
+echo ""
+echo ""
+cd $1/target/html
+pandoc -f html -o $1/target/pdf/Achilles-documentation.pdf `grep -Po 'a href="\./[^.]+\.html' index.html | sed 's/a href="\.\///' | uniq`
 
 
 

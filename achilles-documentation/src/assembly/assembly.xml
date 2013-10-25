@@ -15,5 +15,12 @@
                 <include>assets/*</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <directory>target/pdf</directory>
+            <outputDirectory>pdf</outputDirectory>
+            <includes>
+                <include>*.pdf</include>
+            </includes>
+        </fileSet>
     </fileSets>
 </assembly>
