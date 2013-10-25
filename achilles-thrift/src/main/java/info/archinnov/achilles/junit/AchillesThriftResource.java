@@ -17,19 +17,27 @@
 package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
+
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
+import info.archinnov.achilles.validation.Validator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.beans.Composite;
 
 import org.apache.cassandra.utils.Pair;
 import org.apache.commons.lang.StringUtils;
+import com.google.common.collect.ImmutableMap;
 
 public class AchillesThriftResource extends AchillesTestResource {
 
@@ -54,8 +62,10 @@ public class AchillesThriftResource extends AchillesTestResource {
 		super(tables);
 		if (StringUtils.isEmpty(entityPackages))
 			throw new IllegalArgumentException("Entity packages should be provided");
+        final ImmutableMap<String, Object> config = ImmutableMap
+                .<String,Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 
-		server = new ThriftEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
+		server = new ThriftEmbeddedServer(config);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();
@@ -81,10 +91,12 @@ public class AchillesThriftResource extends AchillesTestResource {
 	 */
 	AchillesThriftResource(String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
-		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException("Entity packages should be provided");
 
-		server = new ThriftEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
+        Validator.validateNotBlank(entityPackages,"Entity packages should be provided");
+        final ImmutableMap<String, Object> config = ImmutableMap
+                .<String,Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+
+        server = new ThriftEmbeddedServer(config);
 		cluster = server.getCluster();
 		keyspace = server.getKeyspace();
 		policy = server.getConsistencyPolicy();

@@ -2,7 +2,10 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
 import static org.fest.assertions.api.Assertions.*;
+
+import info.archinnov.achilles.embedded.AchillesEmbeddedServer;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
@@ -18,9 +21,10 @@ public class EntityLessIT {
 
 	@Before
 	public void setUp() {
-		Map<String, Object> configMap = new HashMap<String, Object>();
-		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, CASSANDRA_TEST_HOST);
-		configMap.put(CONNECTION_PORT_PARAM, CASSANDRA_CQL_TEST_PORT);
+       Map<String, Object> configMap = new HashMap<String, Object>();
+
+		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, DEFAULT_CASSANDRA_HOST);
+		configMap.put(CONNECTION_PORT_PARAM, AchillesEmbeddedServer.getCqlPort());
 		configMap.put(KEYSPACE_NAME_PARAM, "system");
 		CQLPersistenceManagerFactory pmf = new CQLPersistenceManagerFactory(configMap);
 		manager = pmf.createPersistenceManager();

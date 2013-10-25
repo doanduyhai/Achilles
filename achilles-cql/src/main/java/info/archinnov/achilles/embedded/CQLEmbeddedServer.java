@@ -16,31 +16,32 @@
  */
 package info.archinnov.achilles.embedded;
 
+import static com.datastax.driver.core.ProtocolOptions.Compression.SNAPPY;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.context.CQLDaoContext.ACHILLES_DML_STATEMENT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
+
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.Compression;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.CqlResult;
-import org.apache.cassandra.thrift.TBinaryProtocol;
 import org.apache.commons.lang.StringUtils;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.policies.Policies;
 
 public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static final Object SEMAPHORE = new Object();
@@ -54,43 +55,50 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 	private static CQLPersistenceManagerFactory pmf;
 	private static CQLPersistenceManager manager;
 
-	public CQLEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
+
+	public CQLEmbeddedServer(Map<String,Object> originalParameters) {
 		synchronized (SEMAPHORE) {
 			if (!initialized) {
-				startServer(cleanCassandraDataFile);
-				CQLEmbeddedServer.entityPackages = entityPackages;
-				initialize(keyspaceName);
+                Map<String, Object> parameters = CassandraEmbeddedConfigParameters
+                        .mergeWithDefaultParameters(originalParameters);
+				startServer(parameters);
+                CQLEmbeddedServer.entityPackages = (String) parameters.get(ENTITY_PACKAGES);
+				initialize(parameters);
 			}
 		}
 	}
 
-	private void initialize(String keyspaceName) {
+	private void initialize(Map<String,Object> parameters) {
 
-		Map<String, Object> configMap = new HashMap<String, Object>();
+        Map<String,Object> achillesConfigMap = new HashMap<String, Object>();
+        String keyspaceName = (String) parameters.get(KEYSPACE_NAME);
+
+        String hostname;
+        int cqlPort;
 
 		String cassandraHost = System.getProperty(CASSANDRA_HOST);
 		if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
 			String[] split = cassandraHost.split(":");
-			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, split[0]);
-			configMap.put(CONNECTION_PORT_PARAM, Integer.parseInt(split[1]));
+            hostname = split[0];
+            cqlPort = Integer.parseInt(split[1]);
 		} else {
-			createAchillesKeyspace(keyspaceName);
-			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, CASSANDRA_TEST_HOST);
-			configMap.put(CONNECTION_PORT_PARAM, CASSANDRA_CQL_TEST_PORT);
-		}
+			hostname = DEFAULT_CASSANDRA_HOST;
+            cqlPort = (Integer)parameters.get(CASSANDRA_CQL_PORT);
+        }
 
-		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
-		configMap.put(KEYSPACE_NAME_PARAM, CASSANDRA_TEST_KEYSPACE_NAME);
-		configMap.put(FORCE_CF_CREATION_PARAM, true);
+        Cluster cluster = createCluster(hostname, cqlPort);
+        createKeyspaceIfNeeded(cluster,keyspaceName);
 
-		pmf = new CQLPersistenceManagerFactory(configMap);
+        achillesConfigMap.put(CLUSTER_PARAM, cluster);
+        achillesConfigMap.put(NATIVE_SESSION_PARAM, cluster.connect(keyspaceName));
+        achillesConfigMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+        achillesConfigMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
+        achillesConfigMap.put(FORCE_CF_CREATION_PARAM, true);
+
+		pmf = new CQLPersistenceManagerFactory(achillesConfigMap);
 		manager = pmf.createPersistenceManager();
 		session = manager.getNativeSession();
 		initialized = true;
-	}
-
-	public int getCqlPort() {
-		return CASSANDRA_CQL_TEST_PORT;
 	}
 
 	public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
@@ -101,34 +109,28 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 		return manager;
 	}
 
-	private void createAchillesKeyspace(String keyspaceName) {
+    private Cluster createCluster(String host, int cqlPort){
+        return Cluster.builder()
+               .addContactPoint(host)
+               .withPort(cqlPort)
+                .withCompression(SNAPPY)
+                .withLoadBalancingPolicy(Policies.defaultLoadBalancingPolicy())
+                .withRetryPolicy(Policies.defaultRetryPolicy())
+                .withReconnectionPolicy(Policies.defaultReconnectionPolicy())
+                .build();
+    }
 
-		TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
-		TProtocol proto = new TBinaryProtocol(tr, true, true);
-		Cassandra.Client client = new Cassandra.Client(proto);
-		try {
-			tr.open();
-
-			String checkKeyspace = "SELECT keyspace_name from system.schema_keyspaces WHERE keyspace_name='"
-					+ keyspaceName + "'";
-			CqlResult cqlResult = client.execute_cql3_query(ByteBuffer.wrap(checkKeyspace.getBytes()),
-					Compression.NONE, ConsistencyLevel.ONE);
-
-			if (cqlResult.getRowsSize() == 0) {
-				LOGGER.info("Create keyspace " + keyspaceName);
-
-				String cql = "CREATE keyspace "
-						+ keyspaceName
-						+ " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false";
-
-				client.execute_cql3_query(ByteBuffer.wrap(cql.getBytes()), Compression.NONE, ConsistencyLevel.ONE);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			tr.close();
-		}
-	}
+	private void createKeyspaceIfNeeded(Cluster cluster,String keyspaceName) {
+        System.out.println("createKeyspaceIfNeeded "+Thread.currentThread().toString());
+        final Session session = cluster.connect("system");
+        final Row row = session
+                .execute("SELECT count(1) FROM schema_keyspaces WHERE keyspace_name='"+ keyspaceName+"'")
+                .one();
+        if(row.getLong(0) != 1) {
+            session.execute("CREATE keyspace "+keyspaceName+" WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1} AND DURABLE_WRITES=false");
+        }
+        session.shutdown();
+    }
 
 	public void truncateTable(String tableName) {
 		String query = "TRUNCATE " + tableName;

@@ -10,7 +10,6 @@ package info.archinnov.achilles.embedded;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -25,14 +24,13 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import org.apache.cassandra.service.CassandraDaemon;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public enum CassandraEmbedded {
+public enum CassandraEmbeddedServerStarter {
 	CASSANDRA_EMBEDDED;
 
-	private final Logger log = LoggerFactory.getLogger(CassandraEmbedded.class);
+	private final Logger log = LoggerFactory.getLogger(CassandraEmbeddedServerStarter.class);
 
 	private ExecutorService executor;
 
@@ -87,12 +85,4 @@ public enum CassandraEmbedded {
 
 	}
 
-	public void cleanCassandraDataFiles(String cassandraHomePath) {
-		File cassandraHome = new File(cassandraHomePath);
-
-		if (cassandraHome.exists() && cassandraHome.isDirectory()) {
-			log.info("Cleaning up embedded Cassandra home directory '{}'", cassandraHome.getAbsolutePath());
-			FileUtils.deleteQuietly(cassandraHome);
-		}
-	}
 }

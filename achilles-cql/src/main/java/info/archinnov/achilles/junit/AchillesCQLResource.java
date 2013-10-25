@@ -16,99 +16,107 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.CASSANDRA_TEST_KEYSPACE_NAME;
-import info.archinnov.achilles.embedded.CQLEmbeddedServer;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
-
-import org.apache.commons.lang.StringUtils;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 
 import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.embedded.CQLEmbeddedServer;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.validation.Validator;
 
 public class AchillesCQLResource extends AchillesTestResource {
 
-	private final CQLPersistenceManagerFactory pmf;
-	private final CQLPersistenceManager manager;
-	private final CQLEmbeddedServer server;
-	private final Session session;
+    private final CQLPersistenceManagerFactory pmf;
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param entityPackages
-	 *            packages to scan for entity discovery, comma separated
-	 * @param tables
-	 *            list of tables to truncate before and after tests
-	 */
-	AchillesCQLResource(String entityPackages, String... tables) {
-		super(tables);
-		server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
-		pmf = server.getPersistenceManagerFactory();
-		manager = server.getPersistenceManager();
-		session = manager.getNativeSession();
-	}
+    private final CQLPersistenceManager manager;
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param entityPackages
-	 *            packages to scan for entity discovery, comma separated
-	 * 
-	 * @param cleanUpSteps
-	 *            when to truncate tables for clean up. Possible values are :
-	 *            Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
-	 *            value) <br/>
-	 * <br/>
-	 * 
-	 * @param tables
-	 *            list of tables to truncate before, after or before and after
-	 *            tests, depending on the 'cleanUpSteps' parameters
-	 */
-	AchillesCQLResource(String entityPackages, Steps cleanUpSteps, String... tables) {
-		super(cleanUpSteps, tables);
-		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException("Entity packages should be provided");
+    private final CQLEmbeddedServer server;
 
-		server = new CQLEmbeddedServer(true, entityPackages, CASSANDRA_TEST_KEYSPACE_NAME);
-		pmf = server.getPersistenceManagerFactory();
-		manager = server.getPersistenceManager();
-		session = manager.getNativeSession();
-	}
+    private final Session session;
 
-	/**
-	 * Return a singleton CQLPersistenceManagerFactory
-	 * 
-	 * @return CQLPersistenceManagerFactory singleton
-	 */
-	public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
-		return pmf;
-	}
+    /**
+     * Initialize a new embedded Cassandra server
+     *
+     * @param entityPackages packages to scan for entity discovery, comma separated
+     * @param tables         list of tables to truncate before and after tests
+     */
+    AchillesCQLResource(String entityPackages, String... tables) {
+        super(tables);
 
-	/**
-	 * Return a singleton CQLPersistenceManager
-	 * 
-	 * @return CQLPersistenceManager singleton
-	 */
-	public CQLPersistenceManager getPersistenceManager() {
-		return manager;
-	}
+        final ImmutableMap<String, Object> config = ImmutableMap
+                .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME,
+                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 
-	/**
-	 * Return a native CQL3 Session
-	 * 
-	 * @return native CQL3 Session
-	 */
-	public Session getNativeSession() {
-		return session;
-	}
+        server = new CQLEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory();
+        manager = server.getPersistenceManager();
+        session = manager.getNativeSession();
+    }
 
-	@Override
-	protected void truncateTables() {
-		if (tables != null) {
-			for (String table : tables) {
-				server.truncateTable(table);
-			}
-		}
-	}
+    /**
+     * Initialize a new embedded Cassandra server
+     *
+     * @param entityPackages packages to scan for entity discovery, comma separated
+     * @param cleanUpSteps   when to truncate tables for clean up. Possible values are :
+     *                       Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
+     *                       value) <br/>
+     *                       <br/>
+     * @param tables         list of tables to truncate before, after or before and after
+     *                       tests, depending on the 'cleanUpSteps' parameters
+     */
+    AchillesCQLResource(String entityPackages, Steps cleanUpSteps, String... tables) {
+        super(cleanUpSteps, tables);
+
+        Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
+        final ImmutableMap<String, Object> config = ImmutableMap
+                .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME,
+                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+
+        server = new CQLEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory();
+        manager = server.getPersistenceManager();
+        session = manager.getNativeSession();
+    }
+
+    /**
+     * Return a singleton CQLPersistenceManagerFactory
+     *
+     * @return CQLPersistenceManagerFactory singleton
+     */
+    public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
+        return pmf;
+    }
+
+    /**
+     * Return a singleton CQLPersistenceManager
+     *
+     * @return CQLPersistenceManager singleton
+     */
+    public CQLPersistenceManager getPersistenceManager() {
+        return manager;
+    }
+
+    /**
+     * Return a native CQL3 Session
+     *
+     * @return native CQL3 Session
+     */
+    public Session getNativeSession() {
+        return session;
+    }
+
+    @Override
+    protected void truncateTables() {
+        if (tables != null) {
+            for (String table : tables) {
+                server.truncateTable(table);
+            }
+        }
+    }
 
 }

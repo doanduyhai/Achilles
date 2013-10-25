@@ -139,8 +139,6 @@ public class EntityIntrospector {
 		Entity annotation = entity.getAnnotation(Entity.class);
 		if (annotation != null) {
 			if (StringUtils.isNotBlank(annotation.table())) {
-				System.out.println(String.format(" Table name on entity class '%s' : '%s' ", entity.getCanonicalName(),
-						annotation.table()));
 				columnFamilyName = annotation.table();
 			}
 		}

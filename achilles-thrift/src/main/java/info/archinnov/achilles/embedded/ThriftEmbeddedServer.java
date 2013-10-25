@@ -18,13 +18,20 @@ package info.archinnov.achilles.embedded;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
+
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
+import info.archinnov.achilles.validation.Validator;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -58,44 +65,57 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 	private static ThriftPersistenceManagerFactory pmf;
 	private static ThriftPersistenceManager manager;
 
-	public ThriftEmbeddedServer(boolean cleanCassandraDataFile, String entityPackages, String keyspaceName) {
-		if (StringUtils.isEmpty(entityPackages))
-			throw new IllegalArgumentException("Entity packages should be provided");
-
+	public ThriftEmbeddedServer(Map<String,Object> originalParameters) {
+        Map<String, Object> parameters = CassandraEmbeddedConfigParameters
+                .mergeWithDefaultParameters(originalParameters);
 		synchronized (SEMAPHORE) {
 			if (!initialized) {
-				startServer(cleanCassandraDataFile);
-				ThriftEmbeddedServer.entityPackages = entityPackages;
-				initialize(keyspaceName);
+                ThriftEmbeddedServer.entityPackages = (String) parameters.get(ENTITY_PACKAGES);
+                Validator.validateNotBlank(entityPackages,"Entity packages should be provided");
+                startServer(parameters);
+				initialize(parameters);
 			}
 		}
 	}
 
-	private void initialize(String keyspaceName) {
-		String cassandraHost = System.getProperty(CASSANDRA_HOST);
+	private void initialize(Map<String,Object> parameters) {
+
+
+        Map<String,Object> achillesConfigMap = new HashMap<String, Object>();
+        String keyspaceName = (String) parameters.get(KEYSPACE_NAME);
+        String hostname;
+        int thriftPort;
+
+        String cassandraHost = System.getProperty(CASSANDRA_HOST);
 		if (StringUtils.isNotBlank(cassandraHost) && cassandraHost.contains(":")) {
 			CassandraHostConfigurator hostConfigurator = new CassandraHostConfigurator(cassandraHost);
 			cluster = HFactory.getOrCreateCluster("achilles", hostConfigurator);
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		} else {
-			createAchillesKeyspace(keyspaceName);
-			cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
-					+ CASSANDRA_THRIFT_TEST_PORT);
+
+            hostname = DEFAULT_CASSANDRA_HOST;
+            thriftPort = (Integer)parameters.get(CASSANDRA_THRIFT_PORT);
+			createKeyspaceIfNeeded(hostname,thriftPort,keyspaceName);
+			cluster = HFactory.getOrCreateCluster("Achilles-cluster", hostname + ":"
+					+ thriftPort);
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
 		}
 
-		Map<String, Object> configMap = ImmutableMap.of(ENTITY_PACKAGES_PARAM, entityPackages, CLUSTER_PARAM, cluster,
-				KEYSPACE_PARAM, getKeyspace(), FORCE_CF_CREATION_PARAM, true);
 
-		pmf = new ThriftPersistenceManagerFactory(configMap);
+        achillesConfigMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+        achillesConfigMap.put(CLUSTER_PARAM, cluster);
+        achillesConfigMap.put(KEYSPACE_PARAM, getKeyspace());
+        achillesConfigMap.put(FORCE_CF_CREATION_PARAM, true);
+
+		pmf = new ThriftPersistenceManagerFactory(achillesConfigMap);
 		manager = pmf.createPersistenceManager();
 		policy = pmf.getConsistencyPolicy();
 		initialized = true;
 	}
 
-	private void createAchillesKeyspace(String keyspaceName) {
+	private void createKeyspaceIfNeeded(String hostname,int thriftPort,String keyspaceName) {
 
-		TTransport tr = new TFramedTransport(new TSocket("localhost", CASSANDRA_THRIFT_TEST_PORT));
+		TTransport tr = new TFramedTransport(new TSocket(hostname, thriftPort));
 		TProtocol proto = new TBinaryProtocol(tr, true, true);
 		Cassandra.Client client = new Cassandra.Client(proto);
 		try {

@@ -2,6 +2,10 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ThriftConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.AchillesEmbeddedServer.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
+
+import info.archinnov.achilles.embedded.AchillesEmbeddedServer;
+import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 
@@ -18,8 +22,8 @@ public class EntityLessIT {
 
 	@Test(expected = AchillesException.class)
 	public void should_exception_when_no_entity_package_provided() throws Exception {
-		Cluster cluster = HFactory.getOrCreateCluster("Achilles-cluster", CASSANDRA_TEST_HOST + ":"
-				+ CASSANDRA_THRIFT_TEST_PORT);
+		Cluster cluster = HFactory.getOrCreateCluster("Achilles-cluster", DEFAULT_CASSANDRA_HOST + ":"
+				+ AchillesEmbeddedServer.getThriftPort());
 		Keyspace keyspace = HFactory.createKeyspace("system", cluster);
 
 		Map<String, Object> configMap = new HashMap<String, Object>();
