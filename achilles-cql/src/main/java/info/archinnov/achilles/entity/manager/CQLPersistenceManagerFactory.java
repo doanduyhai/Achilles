@@ -100,7 +100,7 @@ public class CQLPersistenceManagerFactory extends PersistenceManagerFactory {
 	@Override
 	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
-		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments ");
+		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments {}",configurationMap);
 
 		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
 				.initDefaultReadConsistencyLevel(configurationMap);

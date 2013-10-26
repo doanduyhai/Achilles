@@ -21,6 +21,7 @@ import static info.archinnov.achilles.configuration.ThriftConfigurationParameter
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 
 import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
@@ -82,7 +83,9 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
 
         Map<String,Object> achillesConfigMap = new HashMap<String, Object>();
-        String keyspaceName = (String) parameters.get(KEYSPACE_NAME);
+        String keyspaceName = extractAndValidateKeyspaceName(parameters);
+        Boolean keyspaceDurableWrite = (Boolean) parameters.get(KEYSPACE_DURABLE_WRITE);
+
         String hostname;
         int thriftPort;
 
@@ -95,7 +98,7 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 
             hostname = DEFAULT_CASSANDRA_HOST;
             thriftPort = (Integer)parameters.get(CASSANDRA_THRIFT_PORT);
-			createKeyspaceIfNeeded(hostname,thriftPort,keyspaceName);
+			createKeyspaceIfNeeded(hostname,thriftPort,keyspaceName,keyspaceDurableWrite);
 			cluster = HFactory.getOrCreateCluster("Achilles-cluster", hostname + ":"
 					+ thriftPort);
 			keyspace = HFactory.createKeyspace(keyspaceName, cluster);
@@ -113,7 +116,8 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 		initialized = true;
 	}
 
-	private void createKeyspaceIfNeeded(String hostname,int thriftPort,String keyspaceName) {
+	private void createKeyspaceIfNeeded(String hostname, int thriftPort, String keyspaceName, Boolean
+            keyspaceDurableWrite) {
 
 		TTransport tr = new TFramedTransport(new TSocket(hostname, thriftPort));
 		TProtocol proto = new TBinaryProtocol(tr, true, true);
@@ -134,6 +138,9 @@ public class ThriftEmbeddedServer extends AchillesEmbeddedServer {
 			ksDef.strategy_options = ImmutableMap.of("replication_factor", "1");
 			ksDef.strategy_class = "org.apache.cassandra.locator.SimpleStrategy";
 			ksDef.setCf_defs(new ArrayList<CfDef>());
+            if(!keyspaceDurableWrite) {
+                ksDef.durable_writes = false;
+            }
 
 			client.system_add_keyspace(ksDef);
 		} catch (Exception e) {

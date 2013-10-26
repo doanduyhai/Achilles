@@ -19,6 +19,7 @@ package info.archinnov.achilles.test.integration;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 
 import com.datastax.driver.core.Session;
@@ -50,7 +51,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         super(tables);
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES,
-                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,KEYSPACE_DURABLE_WRITE,false);
 
         server = new CQLEmbeddedServer(config);
         pmf = server.getPersistenceManagerFactory();
@@ -72,7 +73,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         super(cleanUpSteps, tables);
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES,
-                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,KEYSPACE_DURABLE_WRITE,false);
 
         server = new CQLEmbeddedServer(config);
         pmf = server.getPersistenceManagerFactory();

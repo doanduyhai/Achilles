@@ -19,6 +19,7 @@ package info.archinnov.achilles.test.integration;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 
 import org.apache.cassandra.utils.Pair;
@@ -27,7 +28,6 @@ import info.archinnov.achilles.consistency.ThriftConsistencyLevelPolicy;
 import info.archinnov.achilles.dao.ThriftCounterDao;
 import info.archinnov.achilles.dao.ThriftGenericEntityDao;
 import info.archinnov.achilles.dao.ThriftGenericWideRowDao;
-import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.embedded.ThriftEmbeddedServer;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManager;
 import info.archinnov.achilles.entity.manager.ThriftPersistenceManagerFactory;
@@ -61,7 +61,7 @@ public class AchillesInternalThriftResource extends AchillesTestResource {
         super(tables);
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES,
-                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, KEYSPACE_DURABLE_WRITE, false);
 
         server = new ThriftEmbeddedServer(config);
         cluster = server.getCluster();
@@ -85,7 +85,7 @@ public class AchillesInternalThriftResource extends AchillesTestResource {
         super(cleanUpSteps, tables);
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES,
-                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, KEYSPACE_DURABLE_WRITE, false);
 
         server = new ThriftEmbeddedServer(config);
         cluster = server.getCluster();

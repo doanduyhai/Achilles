@@ -19,12 +19,12 @@ package info.archinnov.achilles.junit;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.embedded.CQLEmbeddedServer;
-import info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 import info.archinnov.achilles.validation.Validator;
@@ -50,7 +50,7 @@ public class AchillesCQLResource extends AchillesTestResource {
 
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME,
-                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, KEYSPACE_DURABLE_WRITE, false);
 
         server = new CQLEmbeddedServer(config);
         pmf = server.getPersistenceManagerFactory();
@@ -75,7 +75,7 @@ public class AchillesCQLResource extends AchillesTestResource {
         Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
         final ImmutableMap<String, Object> config = ImmutableMap
                 .<String, Object>of(CLEAN_CASSANDRA_DATA_FILES, true, ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME,
-                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+                                    DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, KEYSPACE_DURABLE_WRITE, false);
 
         server = new CQLEmbeddedServer(config);
         pmf = server.getPersistenceManagerFactory();

@@ -34,6 +34,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String KEYSPACE_NAME = "keyspaceName";
 
+    public static final String KEYSPACE_DURABLE_WRITE = "keyspaceDurableWrite";
+
     public static final String ENTITY_PACKAGES = "entityPackages";
 
     public static final String DEFAULT_CASSANDRA_HOST = "localhost";
@@ -56,6 +58,8 @@ public class CassandraEmbeddedConfigParameters {
 
     static final String DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME = "achilles_embedded";
 
+    static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = true;
+
     /**
      * Default values
      */
@@ -70,6 +74,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
         defaultParams.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
+        defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
         defaultParams.putAll(parameters);
 
         return defaultParams;
