@@ -267,6 +267,7 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 				readLevel);
 		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> find(entityClass);
@@ -312,6 +313,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
+
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> getReference(entityClass);

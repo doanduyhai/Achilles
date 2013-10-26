@@ -261,9 +261,12 @@ public class PersistenceManagerTest {
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
+        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey);
-		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
+
+
+        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
 
 		Options options = optionsCaptor.getValue();
@@ -280,6 +283,7 @@ public class PersistenceManagerTest {
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
+        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey, EACH_QUORUM);
 
@@ -298,9 +302,10 @@ public class PersistenceManagerTest {
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey);
 		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
 				any(ConsistencyLevel.class));
-
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
+        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey);
 
@@ -319,9 +324,9 @@ public class PersistenceManagerTest {
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
 				any(ConsistencyLevel.class));
-
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
+        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 
