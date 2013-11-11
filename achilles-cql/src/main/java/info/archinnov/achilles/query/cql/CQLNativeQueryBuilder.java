@@ -65,4 +65,12 @@ public class CQLNativeQueryBuilder {
 		else
 			return result.get(0);
 	}
+
+	/**
+	 * Execute statement without returning result. Useful for
+	 * INSERT/UPDATE/DELETE and DDL statements
+	 */
+	public void execute() {
+		daoContext.execute(new SimpleStatement(queryString));
+	}
 }
