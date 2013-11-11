@@ -52,7 +52,7 @@ public class CQLStatementGenerator {
 
 		Select select = generateSelectEntity(meta);
 		select = select.limit(limit);
-		if (sliceQuery.getCQLOrdering() != null && !sliceQuery.hasIndexCondition()) {
+		if (sliceQuery.getCQLOrdering() != null) {
 			select.orderBy(sliceQuery.getCQLOrdering());
 		}
 

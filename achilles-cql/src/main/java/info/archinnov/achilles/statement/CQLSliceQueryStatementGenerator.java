@@ -17,9 +17,8 @@
 package info.archinnov.achilles.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
+import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.List;
@@ -41,11 +40,6 @@ public class CQLSliceQueryStatementGenerator {
 
 		Object lastStartComp = sliceQuery.getLastStartComponent();
 		Object lastEndComp = sliceQuery.getLastEndComponent();
-
-		if (sliceQuery.hasIndexCondition()) {
-			IndexCondition indexCondition = sliceQuery.getIndexCondition();
-			where.and(eq(indexCondition.getColumnName(), indexCondition.getColumnValue()));
-		}
 
 		for (int i = 0; i < fixedComponents.size(); i++) {
 			where.and(eq(componentNames.get(i), fixedComponents.get(i)));

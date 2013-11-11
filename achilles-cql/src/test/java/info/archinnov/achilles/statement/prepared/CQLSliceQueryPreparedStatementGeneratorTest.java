@@ -61,6 +61,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
+		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
 		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
@@ -89,6 +90,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
+		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
 		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
@@ -118,6 +120,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(2);
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
+		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
 		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
@@ -146,6 +149,7 @@ public class CQLSliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 		when(sliceQuery.getLastStartComponent()).thenReturn(1);
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
+		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
 		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());

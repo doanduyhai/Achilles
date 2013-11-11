@@ -16,13 +16,12 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.*;
+import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
 import info.archinnov.achilles.compound.CQLSliceQueryValidator;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -52,14 +51,6 @@ public class CQLSliceQuery<T> {
 		Pair<Object, Object> lastComponents = determineLastComponents(sliceQuery);
 		this.lastStartComp = lastComponents.left;
 		this.lastEndComp = lastComponents.right;
-	}
-
-	public boolean hasIndexCondition() {
-		return sliceQuery.hasIndexCondition();
-	}
-
-	public IndexCondition getIndexCondition() {
-		return sliceQuery.getIndexCondition();
 	}
 
 	public List<Object> getFixedComponents() {
@@ -104,15 +95,15 @@ public class CQLSliceQuery<T> {
 	}
 
 	public List<String> getComponentNames() {
-		return sliceQuery.getMeta().getIdMeta().getComponentNames();
+		return sliceQuery.getIdMeta().getComponentNames();
 	}
 
 	public String getVaryingComponentName() {
-		return sliceQuery.getMeta().getIdMeta().getCQLComponentNames().get(fixedComponents.size());
+		return sliceQuery.getIdMeta().getVaryingComponentNameForQuery(fixedComponents.size());
 	}
 
 	public Class<?> getVaryingComponentClass() {
-		return sliceQuery.getMeta().getIdMeta().getComponentClasses().get(fixedComponents.size());
+		return sliceQuery.getIdMeta().getVaryingComponentClassForQuery(fixedComponents.size());
 	}
 
 	public EntityMeta getMeta() {
@@ -162,10 +153,7 @@ public class CQLSliceQuery<T> {
 		int startIndex = validator.getLastNonNullIndex(startComponents);
 		int endIndex = validator.getLastNonNullIndex(endComponents);
 
-		if (startIndex < 0 && endIndex < 0) {
-			lastStartComp = null;
-			lastEndComp = null;
-		} else if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
+		if (startIndex == endIndex && !startComponents.get(startIndex).equals(endComponents.get(endIndex))) {
 			lastStartComp = startComponents.get(startIndex);
 			lastEndComp = endComponents.get(endIndex);
 		} else if (startIndex < endIndex) {

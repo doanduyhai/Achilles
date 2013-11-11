@@ -20,7 +20,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -35,7 +34,6 @@ public class SliceQuery<T> {
 
 	private Class<T> entityClass;
 	private EntityMeta meta;
-	private IndexCondition indexCondition;
 	private List<Object> partitionComponents;
 	private List<Object> clusteringsFrom = new ArrayList<Object>();
 	private List<Object> clusteringsTo = new ArrayList<Object>();
@@ -47,15 +45,13 @@ public class SliceQuery<T> {
 	private boolean limitSet;
 	private boolean noComponent;
 
-	public SliceQuery(Class<T> entityClass, EntityMeta meta, IndexCondition indexCondition,
-			List<Object> partitionComponents, List<Object> clusteringsFrom, List<Object> clusteringsTo,
-			OrderingMode ordering, BoundingMode bounding, ConsistencyLevel consistencyLevel, int limit, int batchSize,
-			boolean limitSet) {
+	public SliceQuery(Class<T> entityClass, EntityMeta meta, List<Object> partitionComponents,
+			List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering, BoundingMode bounding,
+			ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet) {
 
-		this.indexCondition = indexCondition;
 		this.limitSet = limitSet;
-		Validator.validateTrue(CollectionUtils.isNotEmpty(partitionComponents) || indexCondition != null,
-				"Either partition components or index condition should be set for slice query for entity class '%s'",
+		Validator.validateTrue(CollectionUtils.isNotEmpty(partitionComponents),
+				"Partition components should be set for slice query for entity class '%s'",
 				entityClass.getCanonicalName());
 
 		this.entityClass = entityClass;
@@ -101,14 +97,6 @@ public class SliceQuery<T> {
 		return getIdMeta().hasReversedComponent();
 	}
 
-	public boolean hasIndexCondition() {
-		return indexCondition != null;
-	}
-
-	public IndexCondition getIndexCondition() {
-		return indexCondition;
-	}
-
 	public List<Object> getPartitionComponents() {
 		return partitionComponents;
 	}
@@ -118,7 +106,6 @@ public class SliceQuery<T> {
 	}
 
 	public List<Object> getClusteringsFrom() {
-
 		return clusteringsFrom;
 	}
 

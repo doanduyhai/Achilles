@@ -38,75 +38,89 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 		this.timeUUIDComponents = timeUUIDComponents;
 	}
 
-    void validatePartitionComponents(String className, List<Object> partitionComponents) {
-        this.partitionComponents.validatePartitionComponents(className, partitionComponents);
-    }
+	void validatePartitionComponents(String className, List<Object> partitionComponents) {
+		this.partitionComponents.validatePartitionComponents(className, partitionComponents);
+	}
 
-    void validateClusteringComponents(String className, List<Object> clusteringComponents) {
-        this.clusteringComponents.validateClusteringComponents(className, clusteringComponents);
-    }
+	void validateClusteringComponents(String className, List<Object> clusteringComponents) {
+		this.clusteringComponents.validateClusteringComponents(className, clusteringComponents);
+	}
 
-    boolean isCompositePartitionKey() {
+	String getVaryingComponentNameForQuery(int fixedComponentsSize) {
+		if (fixedComponentsSize > 0)
+			return getComponentNames().get(fixedComponentsSize);
+		else
+			return getClusteringComponentNames().get(0);
+	}
+
+	Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
+		if (fixedComponentsSize > 0)
+			return getComponentClasses().get(fixedComponentsSize);
+		else
+			return getClusteringComponentClasses().get(0);
+	}
+
+	public boolean isCompositePartitionKey() {
 		return partitionComponents.isComposite();
 	}
 
-	boolean isClustered() {
+	public boolean isClustered() {
 		return clusteringComponents.isClustered();
 	}
 
-	String getOrderingComponent() {
+	public String getOrderingComponent() {
 		return clusteringComponents.getOrderingComponent();
 	}
 
-	String getReversedComponent() {
+	public String getReversedComponent() {
 		return clusteringComponents.getReversedComponent();
 	}
 
-    boolean hasReversedComponent() {
-        return clusteringComponents.hasReversedComponent();
-    }
+	public boolean hasReversedComponent() {
+		return clusteringComponents.hasReversedComponent();
+	}
 
-	List<String> getClusteringComponentNames() {
+	public List<String> getClusteringComponentNames() {
 		return clusteringComponents.getComponentNames();
 	}
 
-	List<Class<?>> getClusteringComponentClasses() {
+	public List<Class<?>> getClusteringComponentClasses() {
 		return clusteringComponents.getComponentClasses();
 	}
 
-	List<String> getPartitionComponentNames() {
+	public List<String> getPartitionComponentNames() {
 		return partitionComponents.getComponentNames();
 	}
 
-	List<Class<?>> getPartitionComponentClasses() {
+	public List<Class<?>> getPartitionComponentClasses() {
 		return partitionComponents.getComponentClasses();
 	}
 
-	List<Method> getPartitionComponentSetters() {
+	public List<Method> getPartitionComponentSetters() {
 		return partitionComponents.getComponentSetters();
 	}
 
 	@Override
-	List<Class<?>> getComponentClasses() {
+	public List<Class<?>> getComponentClasses() {
 		return componentClasses;
 	}
 
 	@Override
-	List<Method> getComponentGetters() {
+	public List<Method> getComponentGetters() {
 		return componentGetters;
 	}
 
 	@Override
-	List<Method> getComponentSetters() {
+	public List<Method> getComponentSetters() {
 		return componentSetters;
 	}
 
 	@Override
-	List<String> getComponentNames() {
+	public List<String> getComponentNames() {
 		return componentNames;
 	}
 
-	List<String> getTimeUUIDComponents() {
+	public List<String> getTimeUUIDComponents() {
 		return timeUUIDComponents;
 	}
 

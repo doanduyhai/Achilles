@@ -16,21 +16,26 @@
  */
 package info.archinnov.achilles.composite;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
-import static info.archinnov.achilles.type.BoundingMode.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
+import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.compound.ThriftCompoundKeyMapper;
+import info.archinnov.achilles.compound.ThriftSliceQueryValidator;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.TweetCompoundKey;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +50,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftCompositeFactoryTest {
@@ -62,7 +69,7 @@ public class ThriftCompositeFactoryTest {
 	private ThriftCompoundKeyMapper compoundKeyMapper;
 
 	@Mock
-	private CompoundKeyValidator compoundKeyValidator;
+	private ThriftSliceQueryValidator sliceQueryValidator;
 
 	@Mock
 	private PropertyMeta embeddedIdMeta;
@@ -207,27 +214,40 @@ public class ThriftCompositeFactoryTest {
 	@Test
 	public void should_create_for_clustered_query() throws Exception {
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("name")
-				.compClasses(Long.class, String.class).build();
-
-		List<Object> clusteringFrom = Arrays.<Object> asList(11L, "z");
-		List<Object> clusteringTo = Arrays.<Object> asList(11L, "a");
+		EntityMeta meta = new EntityMeta();
+		PropertyMeta idMeta = mock(PropertyMeta.class);
+		meta.setIdMeta(idMeta);
+		List<Object> clusteringsFrom = Arrays.<Object> asList("z");
+		List<Object> clusteringsTo = Arrays.<Object> asList("a");
 		Composite from = new Composite(), to = new Composite();
+		when(idMeta.encodeToComponents(anyListOf(Object.class))).thenAnswer(new Answer<List<Object>>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public List<Object> answer(InvocationOnMock invocation) throws Throwable {
+				Object[] args = invocation.getArguments();
+				return (List<Object>) args[0];
+			}
+		});
+		SliceQuery<Object> sliceQuery = new SliceQuery<Object>(Object.class, meta, Arrays.<Object> asList(11L),
+				clusteringsFrom, clusteringsTo, OrderingMode.DESCENDING, BoundingMode.EXCLUSIVE_BOUNDS, null, 100, 100,
+				false);
 
 		when(calculator.determineEquality(EXCLUSIVE_BOUNDS, DESCENDING)).thenReturn(
 				new ComponentEquality[] { LESS_THAN_EQUAL, GREATER_THAN_EQUAL });
 
-		when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringFrom, pm, LESS_THAN_EQUAL)).thenReturn(from);
+		when(
+				compoundKeyMapper.fromComponentsToCompositeForQuery(Arrays.<Object> asList(11L, "z"), idMeta,
+						LESS_THAN_EQUAL)).thenReturn(from);
+		when(
+				compoundKeyMapper.fromComponentsToCompositeForQuery(Arrays.<Object> asList(11L, "a"), idMeta,
+						GREATER_THAN_EQUAL)).thenReturn(to);
 
-		when(compoundKeyMapper.fromComponentsToCompositeForQuery(clusteringTo, pm, GREATER_THAN_EQUAL)).thenReturn(to);
-
-		Composite[] composites = factory.createForClusteredQuery(pm, clusteringFrom, clusteringTo, EXCLUSIVE_BOUNDS,
-				DESCENDING);
+		Composite[] composites = factory.createForClusteredQuery(sliceQuery);
 
 		assertThat(composites[0]).isSameAs(from);
 		assertThat(composites[1]).isSameAs(to);
 
-		verify(compoundKeyValidator).validateComponentsForSliceQuery(pm, clusteringFrom, clusteringTo, DESCENDING);
+		verify(sliceQueryValidator).validateComponentsForSliceQuery(sliceQuery);
 
 	}
 }

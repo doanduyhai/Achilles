@@ -16,13 +16,12 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.type.BoundingMode.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -72,9 +71,6 @@ public class RootSliceQueryBuilderTest {
 	private PropertyMeta idMeta;
 
 	@Mock
-	private CompoundKeyValidator compoundKeyValidator;
-
-	@Mock
 	private List<ClusteredEntity> result;
 
 	@Mock
@@ -84,9 +80,9 @@ public class RootSliceQueryBuilderTest {
 	public void setUp() {
 		Whitebox.setInternalState(builder, "sliceQueryExecutor", sliceQueryExecutor);
 		Whitebox.setInternalState(builder, "entityClass", (Object) entityClass);
-		Whitebox.setInternalState(builder, "compoundKeyValidator", compoundKeyValidator);
 		Whitebox.setInternalState(builder, "meta", meta);
 		Whitebox.setInternalState(builder, "idMeta", idMeta);
+		Whitebox.setInternalState(builder, "partitionComponents", new ArrayList<Object>());
 		Whitebox.setInternalState(builder, "fromClusterings", new ArrayList<Object>());
 		Whitebox.setInternalState(builder, "toClusterings", new ArrayList<Object>());
 
@@ -97,12 +93,31 @@ public class RootSliceQueryBuilderTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void should_set_partition_keys() throws Exception {
+	public void should_set_partition_components() throws Exception {
 		builder.partitionComponentsInternal(11L);
 
-		verify(compoundKeyValidator).validatePartitionComponents(idMeta, Arrays.<Object>asList(11L));
+		verify(idMeta).validatePartitionComponents(Arrays.<Object> asList(11L));
 
 		assertThat((List<Object>) Whitebox.getInternalState(builder, "partitionComponents")).containsExactly(11L);
+	}
+
+	@Test
+	public void should_exception_when_partition_components_do_not_match() throws Exception {
+		Whitebox.setInternalState(builder, "partitionComponents", Arrays.<Object> asList(10L, "type"));
+
+		exception.expect(AchillesException.class);
+		exception.expectMessage("Partition components '[11, type]' do not match previously set values '[10, type]'");
+		builder.partitionComponentsInternal(11L, "type");
+	}
+
+	@Test
+	public void should_exception_when_partition_components_not_same_size_as_previously() throws Exception {
+		Whitebox.setInternalState(builder, "partitionComponents", Arrays.<Object> asList(10L, "type"));
+
+		exception.expect(AchillesException.class);
+		exception
+				.expectMessage("Partition components '[11, type, 11]' do not match previously set values '[10, type]'");
+		builder.partitionComponentsInternal(11L, "type", 11);
 	}
 
 	@Test
@@ -111,7 +126,7 @@ public class RootSliceQueryBuilderTest {
 		when(idMeta.encodeToComponents(anyListOf(Object.class))).thenReturn(Arrays.<Object> asList(10L, 11L, "a", 12));
 		builder.partitionComponentsInternal(10L).fromClusteringsInternal(11L, "a", 12);
 
-		verify(compoundKeyValidator).validateClusteringKeys(idMeta, Arrays.<Object> asList(11L, "a", 12));
+		verify(idMeta).validateClusteringComponents(Arrays.<Object> asList(11L, "a", 12));
 		assertThat(builder.buildClusterQuery().getClusteringsFrom()).containsExactly(10L, 11L, "a", 12);
 
 	}
@@ -121,7 +136,7 @@ public class RootSliceQueryBuilderTest {
 		when(idMeta.encodeToComponents(anyListOf(Object.class))).thenReturn(Arrays.<Object> asList(10L, 11L, "a", 12));
 		builder.partitionComponentsInternal(10L).toClusteringsInternal(11L, "a", 12);
 
-		verify(compoundKeyValidator).validateClusteringKeys(idMeta, Arrays.<Object> asList(11L, "a", 12));
+		verify(idMeta).validateClusteringComponents(Arrays.<Object> asList(11L, "a", 12));
 
 		assertThat(builder.buildClusterQuery().getClusteringsTo()).containsExactly(10L, 11L, "a", 12);
 	}
@@ -219,7 +234,8 @@ public class RootSliceQueryBuilderTest {
 		when(sliceQueryExecutor.get(anySliceQuery())).thenReturn(Arrays.asList(entity));
 
 		Object[] clusteringComponents = new Object[] { 1, "name" };
-		ClusteredEntity actual = builder.partitionComponentsInternal(partitionKey).getFirstOccurence(clusteringComponents);
+		ClusteredEntity actual = builder.partitionComponentsInternal(partitionKey).getFirstOccurence(
+				clusteringComponents);
 
 		assertThat(actual).isSameAs(entity);
 
@@ -291,7 +307,8 @@ public class RootSliceQueryBuilderTest {
 
 		Object[] clusteringComponents = new Object[] { 1, "name" };
 
-		ClusteredEntity actual = builder.partitionComponentsInternal(partitionKey).getLastOccurence(clusteringComponents);
+		ClusteredEntity actual = builder.partitionComponentsInternal(partitionKey).getLastOccurence(
+				clusteringComponents);
 
 		assertThat(actual).isSameAs(entity);
 

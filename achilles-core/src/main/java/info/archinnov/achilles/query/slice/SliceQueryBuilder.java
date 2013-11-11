@@ -22,7 +22,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
@@ -31,24 +30,9 @@ import java.util.List;
 
 public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
 
-	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor,
-			Class<T> entityClass, EntityMeta meta) {
+	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, Class<T> entityClass, EntityMeta meta) {
 		super(sliceQueryExecutor, entityClass, meta);
 	}
-
-
-    /**
-     * Query by index condition and partition/clustering components<br/>
-     * <br/>
-     *
-     * @param indexCondition
-     *            Index condition
-     * @return SliceShortcutQueryBuilder
-     */
-    public SliceShortcutQueryBuilder indexCondition(IndexCondition indexCondition) {
-        super.indexConditionInternal(indexCondition);
-        return new SliceShortcutQueryBuilder();
-    }
 
 	/**
 	 * Query by partition key component(s) and clustering components<br/>

@@ -104,6 +104,22 @@ public class PropertyMeta {
 		return components;
 	}
 
+	public String getVaryingComponentNameForQuery(int fixedComponentsSize) {
+		String componentName = null;
+		if (embeddedIdProperties != null)
+			componentName = embeddedIdProperties.getVaryingComponentNameForQuery(fixedComponentsSize);
+
+		return componentName;
+	}
+
+	public Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
+		Class<?> componentClass = null;
+		if (embeddedIdProperties != null)
+			componentClass = embeddedIdProperties.getVaryingComponentClassForQuery(fixedComponentsSize);
+
+		return componentClass;
+	}
+
 	public List<String> getCQLComponentNames() {
 		return FluentIterable.from(getComponentNames()).transform(toLowerCase).toImmutableList();
 	}
@@ -147,17 +163,17 @@ public class PropertyMeta {
 		return partitionComponents;
 	}
 
-    public void validatePartitionComponents( List<Object> partitionComponents) {
-        if(embeddedIdProperties != null) {
-            embeddedIdProperties.validatePartitionComponents(this.entityClassName,partitionComponents);
-        }
-    }
+	public void validatePartitionComponents(List<Object> partitionComponents) {
+		if (embeddedIdProperties != null) {
+			embeddedIdProperties.validatePartitionComponents(this.entityClassName, partitionComponents);
+		}
+	}
 
-    public void validateClusteringComponents(List<Object> clusteringComponents) {
-        if(embeddedIdProperties != null) {
-            embeddedIdProperties.validateClusteringComponents(this.entityClassName,clusteringComponents);
-        }
-    }
+	public void validateClusteringComponents(List<Object> clusteringComponents) {
+		if (embeddedIdProperties != null) {
+			embeddedIdProperties.validateClusteringComponents(this.entityClassName, clusteringComponents);
+		}
+	}
 
 	public List<Method> getPartitionComponentSetters() {
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentSetters() : Arrays
@@ -190,12 +206,12 @@ public class PropertyMeta {
 		return component;
 	}
 
-    public boolean hasReversedComponent() {
-        if (embeddedIdProperties != null) {
-            return embeddedIdProperties.hasReversedComponent();
-        }
-        return false;
-    }
+	public boolean hasReversedComponent() {
+		if (embeddedIdProperties != null) {
+			return embeddedIdProperties.hasReversedComponent();
+		}
+		return false;
+	}
 
 	public PropertyMeta counterIdMeta() {
 		return counterProperties != null ? counterProperties.getIdMeta() : null;

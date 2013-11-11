@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.compound;
 
-import static info.archinnov.achilles.type.OrderingMode.*;
+import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
@@ -34,9 +34,12 @@ public class CQLSliceQueryValidator extends CompoundKeyValidator {
 		final List<Object> clusteringsFrom = sliceQuery.getClusteringsFrom();
 		final List<Object> clusteringsTo = sliceQuery.getClusteringsTo();
 		final OrderingMode validationOrdering = sliceQuery.getOrdering();
+		final int partitionComponentsSize = sliceQuery.partitionComponentsSize();
 
-		final String startDescription = StringUtils.join(clusteringsFrom, ",");
-		final String endDescription = StringUtils.join(clusteringsTo, ",");
+		final String startDescription = StringUtils.join(
+				clusteringsFrom.subList(partitionComponentsSize, clusteringsFrom.size()), ",");
+		final String endDescription = StringUtils.join(
+				clusteringsTo.subList(partitionComponentsSize, clusteringsTo.size()), ",");
 
 		log.trace("Check components {} / {}", startDescription, endDescription);
 
@@ -48,13 +51,13 @@ public class CQLSliceQueryValidator extends CompoundKeyValidator {
 				"There should be no more than 1 component difference between clustering keys: [[%s]," + "[%s]",
 				startDescription, endDescription);
 
-		for (int i = 0; i <= Math.max(startIndex, endIndex) - 1; i++) {
+		for (int i = partitionComponentsSize; i <= Math.max(startIndex, endIndex) - 1; i++) {
 			Object startComp = clusteringsFrom.get(i);
 			Object endComp = clusteringsTo.get(i);
 
 			int comparisonResult = comparator.compare(startComp, endComp);
 
-			Validator.validateTrue(comparisonResult == 0, (i + 1)
+			Validator.validateTrue(comparisonResult == 0, (i + 1 - partitionComponentsSize)
 					+ "th component for clustering keys should be equal: [[%s],[%s]", startDescription, endDescription);
 		}
 

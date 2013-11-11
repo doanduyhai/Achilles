@@ -211,7 +211,7 @@ public class CQLSliceQueryTest {
 	@Test
 	public void should_get_components_name() throws Exception {
 
-		when(sliceQuery.getMeta().getIdMeta().getComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
+		when(sliceQuery.getIdMeta().getComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
 
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
@@ -224,21 +224,21 @@ public class CQLSliceQueryTest {
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L, 2, "a"));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L, 2));
 
-		when(sliceQuery.getMeta().getIdMeta().getCQLComponentNames()).thenReturn(Arrays.asList("id", "count", "name"));
+		when(sliceQuery.getIdMeta().getVaryingComponentNameForQuery(2)).thenReturn("name");
 
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
 		assertThat(cqlSliceQuery.getVaryingComponentName()).isEqualTo("name");
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_get_varying_component_class() throws Exception {
 		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
 		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L, 2));
 		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L, 3));
 
-		when(sliceQuery.getMeta().getIdMeta().getComponentClasses()).thenReturn(
-				Arrays.<Class<?>> asList(Long.class, Integer.class, String.class));
+		when(sliceQuery.getIdMeta().getVaryingComponentClassForQuery(1)).thenReturn((Class) Integer.class);
 
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 

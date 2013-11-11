@@ -71,8 +71,8 @@ public class SliceQueryBuilderTest {
 
 		meta.setIdMeta(idMeta);
 
-		builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(sliceQueryExecutor, compoundKeyValidator,
-				ClusteredEntity.class, meta);
+		builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(sliceQueryExecutor, ClusteredEntity.class,
+				meta);
 		Whitebox.setInternalState(builder, "meta", meta);
 	}
 

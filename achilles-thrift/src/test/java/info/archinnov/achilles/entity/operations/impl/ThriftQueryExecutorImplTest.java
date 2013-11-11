@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.composite.ThriftCompositeFactory;
 import info.archinnov.achilles.context.ThriftConsistencyContext;
@@ -149,8 +149,7 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
-				.thenReturn(composites);
+		when(compositeFactory.createForClusteredQuery(query)).thenReturn(composites);
 
 		List<HCounterColumn<Composite>> hCounterColumns = new ArrayList<HCounterColumn<Composite>>();
 
@@ -172,8 +171,7 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
-				.thenReturn(composites);
+		when(compositeFactory.createForClusteredQuery(query)).thenReturn(composites);
 
 		List<HColumn<Composite, Object>> hColumns = new ArrayList<HColumn<Composite, Object>>();
 
@@ -195,8 +193,7 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
-				.thenReturn(composites);
+		when(compositeFactory.createForClusteredQuery(query)).thenReturn(composites);
 
 		@SuppressWarnings("unchecked")
 		ThriftSliceIterator<Long, Object> iterator = mock(ThriftSliceIterator.class);
@@ -219,8 +216,7 @@ public class ThriftQueryExecutorImplTest {
 		Composite comp2 = new Composite();
 		Composite[] composites = new Composite[] { comp1, comp2 };
 
-		when(compositeFactory.createForClusteredQuery(idMeta, clusteringsFrom, clusteringsTo, bounding, ordering))
-				.thenReturn(composites);
+		when(compositeFactory.createForClusteredQuery(query)).thenReturn(composites);
 
 		@SuppressWarnings("unchecked")
 		ThriftCounterSliceIterator<Long> iterator = mock(ThriftCounterSliceIterator.class);

@@ -124,7 +124,7 @@ public class CQLPersistenceManager extends PersistenceManager<CQLPersistenceCont
 		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
 		Validator.validateFalse(entityMeta.isClusteredEntity(),
-				"Index query is not supported for clustered entity. Please use slice query API with index condition");
+				"Index query is not supported for clustered entity. Please use typed query/native query");
 		Validator.validateNotNull(indexCondition, "Index condition should not be null");
 		Validator.validateNotBlank(indexCondition.getColumnName(),
 				"Column name for index condition '%s' should be provided", indexCondition);

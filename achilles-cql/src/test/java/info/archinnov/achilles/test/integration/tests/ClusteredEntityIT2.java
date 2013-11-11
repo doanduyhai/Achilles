@@ -39,9 +39,12 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 
 public class ClusteredEntityIT2 {
+
+	private static final String CLUSTERED_TWEET_TABLE = ClusteredTweetEntity.class.getSimpleName();
+	private static final String CLUSTERED_MESSAGE_TABLE = ClusteredMessageEntity.class.getSimpleName();
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ClusteredTweet",
-			"ClusteredMessage");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+			CLUSTERED_TWEET_TABLE, CLUSTERED_MESSAGE_TABLE);
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
 
@@ -125,9 +128,9 @@ public class ClusteredEntityIT2 {
 
 		tweet = manager.merge(tweet);
 
-		session.execute("update clusteredtweet set content='New tweet',original_author_id=" + originalAuthorId
-				+ ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId + " and creation_date="
-				+ creationDate.getTime());
+		session.execute("update " + CLUSTERED_TWEET_TABLE + " set content='New tweet',original_author_id="
+				+ originalAuthorId + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId
+				+ " and creation_date=" + creationDate.getTime());
 
 		Thread.sleep(100);
 
@@ -200,7 +203,8 @@ public class ClusteredEntityIT2 {
 
 		message = manager.merge(message);
 
-		String updateQuery = "update ClusteredMessage set label='" + newLabel + "' where id=" + id + " and type='FILE'";
+		String updateQuery = "update " + CLUSTERED_MESSAGE_TABLE + " set label='" + newLabel + "' where id=" + id
+				+ " and type='FILE'";
 
 		session.execute(new SimpleStatement(updateQuery));
 

@@ -18,7 +18,7 @@ package info.archinnov.achilles.compound;
 
 import static info.archinnov.achilles.serializer.ThriftSerializerUtils.*;
 import static me.prettyprint.hector.api.beans.AbstractComposite.ComponentEquality.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -194,7 +194,7 @@ public class ThriftCompoundKeyMapperTest {
 		when(compoundKeyMeta.getClusteringComponentClasses()).thenReturn(
 				Arrays.<Class<?>> asList(String.class, Integer.class));
 
-		when(validator.validateNoHoleAndReturnLastNonNullIndex(Mockito.<List<Object>> any())).thenReturn(1);
+		when(validator.getLastNonNullIndex(Mockito.<List<Object>> any())).thenReturn(1);
 		Composite comp = mapper.fromComponentsToCompositeForQuery(components, compoundKeyMeta, LESS_THAN_EQUAL);
 
 		assertThat(comp.getComponents()).hasSize(2);

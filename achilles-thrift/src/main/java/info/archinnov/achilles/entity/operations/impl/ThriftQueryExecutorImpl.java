@@ -37,11 +37,9 @@ import me.prettyprint.hector.api.mutation.Mutator;
 public class ThriftQueryExecutorImpl {
 	private ThriftCompositeFactory compositeFactory = new ThriftCompositeFactory();
 
-	public <T> List<HColumn<Composite, Object>> findColumns(final SliceQuery<T> sliceQuery, ThriftPersistenceContext context) {
-		EntityMeta meta = sliceQuery.getMeta();
+	public <T> List<HColumn<Composite, Object>> findColumns(final SliceQuery<T> sliceQuery,
+			ThriftPersistenceContext context) {
 		final ThriftGenericWideRowDao wideRowDao = context.getWideRowDao();
-
-		PropertyMeta idMeta = meta.getIdMeta();
 
 		final Composite[] composites = compositeFactory.createForClusteredQuery(sliceQuery);
 		final Object rowKey = compositeFactory.buildRowKey(context);
@@ -49,8 +47,8 @@ public class ThriftQueryExecutorImpl {
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<HColumn<Composite, Object>>>() {
 			@Override
 			public List<HColumn<Composite, Object>> execute() {
-				return wideRowDao.findRawColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(), sliceQuery
-						.getOrdering().isReverse());
+				return wideRowDao.findRawColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(),
+						sliceQuery.getOrdering().isReverse());
 			}
 		}, sliceQuery.getConsistencyLevel());
 	}
@@ -105,8 +103,8 @@ public class ThriftQueryExecutorImpl {
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<List<HCounterColumn<Composite>>>() {
 			@Override
 			public List<HCounterColumn<Composite>> execute() {
-				return wideRowDao.findCounterColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(), sliceQuery
-						.getOrdering().isReverse());
+				return wideRowDao.findCounterColumnsRange(rowKey, composites[0], composites[1], sliceQuery.getLimit(),
+						sliceQuery.getOrdering().isReverse());
 			}
 		}, sliceQuery.getConsistencyLevel());
 	}
@@ -123,8 +121,8 @@ public class ThriftQueryExecutorImpl {
 		return context.executeWithReadConsistencyLevel(new SafeExecutionContext<ThriftCounterSliceIterator<Object>>() {
 			@Override
 			public ThriftCounterSliceIterator<Object> execute() {
-				return wideRowDao.getCounterColumnsIterator(rowKey, composites[0], composites[1], sliceQuery.getOrdering()
-						.isReverse(), sliceQuery.getBatchSize());
+				return wideRowDao.getCounterColumnsIterator(rowKey, composites[0], composites[1], sliceQuery
+						.getOrdering().isReverse(), sliceQuery.getBatchSize());
 			}
 		}, sliceQuery.getConsistencyLevel());
 	}

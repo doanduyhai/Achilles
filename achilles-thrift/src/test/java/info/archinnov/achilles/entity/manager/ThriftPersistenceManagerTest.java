@@ -16,9 +16,8 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.ThriftDaoContext;
 import info.archinnov.achilles.context.ThriftPersistenceContext;
@@ -31,7 +30,6 @@ import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Map;
@@ -45,8 +43,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
-import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ThriftPersistenceManagerTest {
@@ -82,11 +78,6 @@ public class ThriftPersistenceManagerTest {
 
 	private ThriftSliceQueryExecutor queryExecutor;
 
-	private ThriftSliceQueryValidator compoundKeyValidator;
-
-	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
-	private Optional<Integer> noTtl = Optional.<Integer> absent();
-
 	private Long primaryKey = 1165446L;
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
 
@@ -94,7 +85,6 @@ public class ThriftPersistenceManagerTest {
 	public void setUp() throws Exception {
 		manager.setContextFactory(contextFactory);
 		manager.setQueryExecutor(queryExecutor);
-		manager.setCompoundKeyValidator(compoundKeyValidator);
 		manager.setProxifier(proxifier);
 		manager.setEntityMetaMap(entityMetaMap);
 		manager.setConfigContext(configContext);

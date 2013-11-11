@@ -34,7 +34,7 @@ public class CQLSliceQueryPreparedStatementGenerator {
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
-		String varyingComponentName = componentNames.get(fixedComponents.size());
+		String varyingComponentName = sliceQuery.getVaryingComponentName();
 		OrderingMode ordering = sliceQuery.getOrdering();
 
 		for (int i = 0; i < fixedComponents.size(); i++) {
