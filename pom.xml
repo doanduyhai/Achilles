@@ -285,11 +285,6 @@
 
 			<!-- TEST -->
 			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.easytesting</groupId>
 				<artifactId>fest-assert-core</artifactId>
 				<version>${fest.assert.version}</version>
