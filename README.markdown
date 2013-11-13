@@ -27,7 +27,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-cql</artifactId>
-		<version>2.0.8</version>
+		<version>2.0.9</version>
 	</dependency>  
  
 > **Warning!!! The Thrift version is experimental and will be dropped in the next major release. Please migrate to CQL3**
@@ -37,7 +37,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-thrift</artifactId>
-		<version>2.0.8</version>
+		<version>2.0.9</version>
 	</dependency> 
 
  
@@ -45,7 +45,7 @@
  For now, **Achilles** depends on the following libraries:
  
  1. cassandra 1.2.8
- 2. cassandra-driver-core 1.0.2 for the **CQL** version
+ 2. cassandra-driver-core 1.0.4 for the **CQL** version
  3. hector-core 1.1-4 for the **Thrift** version
  4. CGLIB nodep 2.2.2 for proxy building
  5. Jackson asl, mapper & xc 1.9.3 
@@ -67,6 +67,10 @@
 
  All the documentation and tutorial is available in the **[Wiki]**
 
+# Mailing list 
+
+ For any question, bug encourered, you can use the **[mailing list]** 
+
 # License
 Copyright 2012 DuyHai DOAN
 
@@ -82,3 +86,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
 [Datastax Java Driver]: https://github.com/datastax/java-driver
+[mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
