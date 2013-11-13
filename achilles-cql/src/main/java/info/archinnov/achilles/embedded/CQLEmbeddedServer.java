@@ -133,8 +133,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 
 			CQLPersistenceManagerFactory factory = new CQLPersistenceManagerFactory(achillesConfigMap);
 			CQLPersistenceManager manager = factory.createPersistenceManager();
-			System.out.println("FACTORIES_MAP.put(" + keyspaceName + ", factory) : " + factory);
-			System.out.println("MANAGERS_MAP.put(" + keyspaceName + ", manager) : " + manager);
+
 			FACTORIES_MAP.put(keyspaceName, factory);
 			MANAGERS_MAP.put(keyspaceName, manager);
 			SESSIONS_MAP.put(keyspaceName, manager.getNativeSession());

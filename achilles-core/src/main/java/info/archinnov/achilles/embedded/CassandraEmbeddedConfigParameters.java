@@ -63,7 +63,7 @@ public class CassandraEmbeddedConfigParameters {
 
 	static final String DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME = "achilles_embedded";
 
-	static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = false;
+	static final Boolean DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE = true;
 
 	/**
 	 * Default values

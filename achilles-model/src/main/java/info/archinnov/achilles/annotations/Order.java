@@ -40,5 +40,12 @@ public @interface Order {
 	 * </p>
 	 */
 	int value();
+
+    /**
+     * <p>
+     * Store data in reversed order on disk in SSTables
+     * </p>
+     *
+     */
 	boolean reversed() default false;
 }
