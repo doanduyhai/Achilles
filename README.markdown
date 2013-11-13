@@ -69,7 +69,7 @@
 
 # Mailing list 
 
- For any question, bug encourered, you can use the **[mailing list]** 
+ For any question, bug encountered, you can use the **[mailing list]** 
 
 # License
 Copyright 2012 DuyHai DOAN
