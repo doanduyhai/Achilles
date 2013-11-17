@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>info.archinnov</groupId>
+        <artifactId>achilles</artifactId>
+        <version>2.0.10-SNAPSHOT</version>
+    </parent>
+    <artifactId>achilles-junit</artifactId>
+    <name>Achilles JUnit</name>
+    <description>Achilles JUnit Module</description>
+    <dependencies>
+        <dependency>
+            <groupId>info.archinnov</groupId>
+            <artifactId>achilles-cql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>info.archinnov</groupId>
+            <artifactId>achilles-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
+</project>

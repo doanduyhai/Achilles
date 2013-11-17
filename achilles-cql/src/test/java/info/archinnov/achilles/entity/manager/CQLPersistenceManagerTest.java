@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.compound.CompoundKeyValidator;
+
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -28,7 +28,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;

@@ -25,7 +25,7 @@ import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 

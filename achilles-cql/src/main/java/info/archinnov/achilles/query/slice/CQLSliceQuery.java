@@ -28,7 +28,7 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cassandra.utils.Pair;
+import info.archinnov.achilles.type.Pair;
 
 import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;

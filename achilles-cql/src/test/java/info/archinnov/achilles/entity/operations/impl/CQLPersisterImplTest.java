@@ -36,7 +36,7 @@ import info.archinnov.achilles.type.CounterBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cassandra.utils.Pair;
+import info.archinnov.achilles.type.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

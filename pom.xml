@@ -84,10 +84,10 @@
 	<modules>
 		<module>achilles-documentation</module>
 		<module>achilles-model</module>
-		<module>achilles-core</module>
-		<module>achilles-test</module>
-		<module>achilles-thrift</module>
+        <module>achilles-embedded</module>
+		<module>achilles-junit</module>
 		<module>achilles-cql</module>
+		<module>achilles-integration-test</module>
 	</modules>
 
 	<dependencyManagement>
@@ -102,19 +102,25 @@
 				<artifactId>achilles-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<dependency>
+		    <dependency>
+		        <groupId>info.archinnov</groupId>
+		        <artifactId>achilles-cql</artifactId>
+		        <version>${project.version}</version>
+		    </dependency>
+		    <dependency>
+		        <groupId>info.archinnov</groupId>
+		        <artifactId>achilles-embedded</artifactId>
+		        <version>${project.version}</version>
+		    </dependency>
+		    <dependency>
 				<groupId>info.archinnov</groupId>
-				<artifactId>achilles-core</artifactId>
+				<artifactId>achilles-junit</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-			<dependency>
+
+		    <dependency>
 				<groupId>info.archinnov</groupId>
-				<artifactId>achilles-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>info.archinnov</groupId>
-				<artifactId>achilles-thrift</artifactId>
+				<artifactId>achilles-integration-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -146,11 +152,11 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<dependency>
-				<groupId>org.apache.cassandra</groupId>
-				<artifactId>cassandra-thrift</artifactId>
-				<version>${cassandra.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.apache.cassandra</groupId>
+                <artifactId>cassandra-thrift</artifactId>
+                <version>${cassandra.version}</version>
+            </dependency>
 
 			<!-- Datastax Java driver -->
 			<dependency>

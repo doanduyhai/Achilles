@@ -8,6 +8,7 @@
     <artifactId>achilles-model</artifactId>
     <name>Achilles Model</name>
     <description>Achilles Model Module</description>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>

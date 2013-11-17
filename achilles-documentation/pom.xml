@@ -7,7 +7,7 @@
     </parent>
     <artifactId>achilles-documentation</artifactId>
     <name>Achilles Documentation</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <description>Achilles Documentation Module</description>
     <profiles>
         <profile>

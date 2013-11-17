@@ -20,7 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
+import info.archinnov.achilles.test.mapping.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.type.Counter;
 
 import org.junit.Test;
