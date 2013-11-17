@@ -23,19 +23,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
-public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, T> {
+public abstract class RootSliceQueryBuilder<T> {
 
-	protected SliceQueryExecutor<CONTEXT> sliceQueryExecutor;
+	protected CQLSliceQueryExecutor sliceQueryExecutor;
 	protected Class<T> entityClass;
 	protected EntityMeta meta;
 
@@ -51,14 +50,14 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 	private boolean limitHasBeenSet = false;
 	private boolean orderingHasBeenSet = false;
 
-	RootSliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, Class<T> entityClass, EntityMeta meta) {
-		this.sliceQueryExecutor = sliceQueryExecutor;
-		this.entityClass = entityClass;
+	RootSliceQueryBuilder(CQLSliceQueryExecutor sliceQueryExecutor,Class<T> entityClass, EntityMeta meta) {
+        this.sliceQueryExecutor = sliceQueryExecutor;
+        this.entityClass = entityClass;
 		this.meta = meta;
 		this.idMeta = meta.getIdMeta();
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> partitionComponentsInternal(List<Object> partitionComponents) {
+	protected RootSliceQueryBuilder<T> partitionComponentsInternal(List<Object> partitionComponents) {
 		idMeta.validatePartitionComponents(partitionComponents);
 		if (this.partitionComponents.size() > 0) {
 			Validator.validateTrue(this.partitionComponents.size() == partitionComponents.size(),
@@ -74,34 +73,34 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> partitionComponentsInternal(Object... partitionComponents) {
+	protected RootSliceQueryBuilder<T> partitionComponentsInternal(Object... partitionComponents) {
 		this.partitionComponentsInternal(Arrays.asList(partitionComponents));
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> fromClusteringsInternal(List<Object> clusteringComponents) {
+	protected RootSliceQueryBuilder<T> fromClusteringsInternal(List<Object> clusteringComponents) {
 		idMeta.validateClusteringComponents(clusteringComponents);
 		fromClusterings = clusteringComponents;
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> fromClusteringsInternal(Object... clusteringComponents) {
+	protected RootSliceQueryBuilder<T> fromClusteringsInternal(Object... clusteringComponents) {
 		this.fromClusteringsInternal(Arrays.asList(clusteringComponents));
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> toClusteringsInternal(List<Object> clusteringComponents) {
+	protected RootSliceQueryBuilder<T> toClusteringsInternal(List<Object> clusteringComponents) {
 		idMeta.validateClusteringComponents(clusteringComponents);
 		toClusterings = clusteringComponents;
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> toClusteringsInternal(Object... clusteringComponents) {
+	protected RootSliceQueryBuilder<T> toClusteringsInternal(Object... clusteringComponents) {
 		this.toClusteringsInternal(Arrays.asList(clusteringComponents));
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> ordering(OrderingMode ordering) {
+	protected RootSliceQueryBuilder<T> ordering(OrderingMode ordering) {
 		Validator.validateNotNull(ordering, "Ordering mode for slice query for entity '%s' should not be null",
 				meta.getClassName());
 		this.ordering = ordering;
@@ -109,7 +108,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> bounding(BoundingMode boundingMode) {
+	protected RootSliceQueryBuilder< T> bounding(BoundingMode boundingMode) {
 		Validator.validateNotNull(boundingMode, "Bounding mode for slice query for entity '%s' should not be null",
 				meta.getClassName());
 		bounding = boundingMode;
@@ -117,7 +116,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> consistencyLevelInternal(ConsistencyLevel consistencyLevel) {
+	protected RootSliceQueryBuilder<T> consistencyLevelInternal(ConsistencyLevel consistencyLevel) {
 		Validator.validateNotNull(consistencyLevel,
 				"ConsistencyLevel for slice query for entity '%s' should not be null", meta.getClassName());
 		this.consistencyLevel = consistencyLevel;
@@ -125,7 +124,7 @@ public abstract class RootSliceQueryBuilder<CONTEXT extends PersistenceContext, 
 		return this;
 	}
 
-	protected RootSliceQueryBuilder<CONTEXT, T> limit(int limit) {
+	protected RootSliceQueryBuilder<T> limit(int limit) {
 		this.limit = limit;
 		limitHasBeenSet = true;
 		return this;

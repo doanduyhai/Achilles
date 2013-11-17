@@ -37,11 +37,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -57,10 +57,10 @@ public class EntrySetWrapperTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private EntityProxifier<PersistenceContext> proxifier;
+	private CQLEntityProxifier proxifier;
 
 	@Mock
-	private PersistenceContext context;
+	private CQLPersistenceContext context;
 
 	private EntityMeta entityMeta;
 
@@ -71,7 +71,6 @@ public class EntrySetWrapperTest {
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder
-		//
 				.completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).accessors().build();
 
 		entityMeta = new EntityMeta();

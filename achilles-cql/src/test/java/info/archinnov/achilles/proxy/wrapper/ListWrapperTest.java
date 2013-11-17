@@ -32,9 +32,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,7 +48,7 @@ public class ListWrapperTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private EntityProxifier<PersistenceContext> proxifier;
+	private CQLEntityProxifier proxifier;
 
 	@Before
 	public void setUp() throws Exception {

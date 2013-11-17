@@ -29,11 +29,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -41,10 +40,10 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 @RunWith(MockitoJUnitRunner.class)
 public class SliceQueryBuilderTest {
 
-	private SliceQueryBuilder<PersistenceContext, ClusteredEntity> builder;
+	private SliceQueryBuilder<ClusteredEntity> builder;
 
 	@Mock
-	private SliceQueryExecutor<PersistenceContext> sliceQueryExecutor;
+	private CQLSliceQueryExecutor sliceQueryExecutor;
 
 	@Mock
 	private CQLSliceQueryValidator validator;
@@ -69,7 +68,7 @@ public class SliceQueryBuilderTest {
 
 		meta.setIdMeta(idMeta);
 
-		builder = new SliceQueryBuilder<PersistenceContext, ClusteredEntity>(sliceQueryExecutor, ClusteredEntity.class,
+		builder = new SliceQueryBuilder<ClusteredEntity>(sliceQueryExecutor, ClusteredEntity.class,
 				meta);
 		Whitebox.setInternalState(builder, "meta", meta);
 	}
@@ -77,7 +76,7 @@ public class SliceQueryBuilderTest {
 	@Test
 	public void should_set_partition_key_and_create_builder() throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
-		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceShortcutQueryBuilder shortCutBuilder = builder
+		SliceQueryBuilder<ClusteredEntity>.SliceShortcutQueryBuilder shortCutBuilder = builder
 				.partitionComponents(partitionKey);
 
 		assertThat(shortCutBuilder).isNotNull();
@@ -92,7 +91,7 @@ public class SliceQueryBuilderTest {
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
 		when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(components);
 
-		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceFromEmbeddedIdBuilder embeddedIdBuilder = builder
+		SliceQueryBuilder<ClusteredEntity>.SliceFromEmbeddedIdBuilder embeddedIdBuilder = builder
 				.fromEmbeddedId(embeddedKey);
 
 		assertThat(embeddedIdBuilder).isNotNull();
@@ -107,7 +106,7 @@ public class SliceQueryBuilderTest {
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
 		when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(components);
 
-		SliceQueryBuilder<PersistenceContext, ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
+		SliceQueryBuilder<ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
 				.toEmbeddedId(embeddedKey);
 
 		assertThat(embeddedIdBuilder).isNotNull();

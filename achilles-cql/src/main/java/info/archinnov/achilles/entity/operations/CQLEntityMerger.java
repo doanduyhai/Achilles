@@ -16,14 +16,53 @@
  */
 package info.archinnov.achilles.entity.operations;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.CQLMergerImpl;
+import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.validation.Validator;
 
-public class CQLEntityMerger extends EntityMerger<CQLPersistenceContext> {
-	public CQLEntityMerger() {
-		super.merger = new CQLMergerImpl();
-		super.persister = new CQLEntityPersister();
-		super.proxifier = new CQLEntityProxifier();
-	}
+public class CQLEntityMerger {
 
+    private static final Logger log = LoggerFactory.getLogger(CQLEntityMerger.class);
+
+    private CQLMergerImpl merger = new CQLMergerImpl();
+    private CQLEntityPersister persister = new CQLEntityPersister();
+    private CQLEntityProxifier proxifier = new CQLEntityProxifier();
+
+    public <T> T merge(CQLPersistenceContext context, T entity) {
+        log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
+                  context.getPrimaryKey());
+
+        EntityMeta entityMeta = context.getEntityMeta();
+
+        Validator.validateNotNull(entity, "Proxy object should not be null for merge");
+        Validator.validateNotNull(entityMeta, "entityMeta should not be null for merge");
+
+        T proxy;
+        if (proxifier.isProxy(entity)) {
+            log.debug("Checking for dirty fields before merging");
+
+            T realObject = proxifier.getRealObject(entity);
+            context.setEntity(realObject);
+
+            CQLEntityInterceptor<T> interceptor = proxifier.getInterceptor(entity);
+            Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
+            merger.merge(context, dirtyMap);
+            interceptor.setContext(context);
+            interceptor.setTarget(realObject);
+            proxy = entity;
+        } else {
+            log.debug("Persisting transient entity");
+
+            persister.persist(context);
+            proxy = proxifier.buildProxy(entity, context);
+        }
+        return proxy;
+    }
 }

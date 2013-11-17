@@ -44,7 +44,7 @@ public class EntryIteratorWrapper extends AbstractWrapper implements Iterator<En
 			log.trace("Build wrapper for next entry of property {} of entity class {}", propertyMeta.getPropertyName(),
 					propertyMeta.getEntityClassName());
 			result = MapEntryWrapperBuilder.builder(context, entry).dirtyMap(dirtyMap).setter(setter)
-					.propertyMeta(propertyMeta).proxifier(proxifier).build();
+					.propertyMeta(propertyMeta).build();
 		}
 		return result;
 	}

@@ -62,7 +62,7 @@ public class CQLBatchingPersistenceManagerTest {
 	private CQLBatchingFlushContext flushContext;
 
 	@Mock
-	private PersistenceManagerFactory pmf;
+	private CQLPersistenceManagerFactory pmf;
 
 	@Captor
 	private ArgumentCaptor<ConsistencyLevel> consistencyCaptor;

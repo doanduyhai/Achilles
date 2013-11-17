@@ -8,11 +8,16 @@
     <artifactId>achilles-integration-test</artifactId>
     <name>Achilles Integration Test</name>
     <description>Achilles Integration Test Module</description>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>info.archinnov</groupId>
             <artifactId>achilles-junit</artifactId>
+            <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+		</dependency>        
     </dependencies>
 </project>

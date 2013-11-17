@@ -26,10 +26,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class CQLMergerImpl implements Merger<CQLPersistenceContext> {
+public class CQLMergerImpl {
 	private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
-	@Override
 	public void merge(CQLPersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
 		if (dirtyMap.size() > 0) {
 			List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());

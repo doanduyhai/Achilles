@@ -17,24 +17,22 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.CQLEntityInitializer;
 import info.archinnov.achilles.entity.operations.CQLEntityLoader;
 import info.archinnov.achilles.entity.operations.CQLEntityMerger;
 import info.archinnov.achilles.entity.operations.CQLEntityPersister;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
-import info.archinnov.achilles.entity.operations.EntityInitializer;
-import info.archinnov.achilles.entity.operations.EntityRefresher;
-import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.entity.operations.CQLEntityRefresher;
+import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;
 
@@ -45,10 +43,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -58,7 +55,7 @@ import com.datastax.driver.core.Statement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersistenceContextTest {
-	@InjectMocks
+
 	private CQLPersistenceContext context;
 
 	@Mock
@@ -83,16 +80,18 @@ public class CQLPersistenceContextTest {
 	private CQLEntityProxifier proxifier;
 
 	@Mock
-	private EntityInitializer initializer;
+	private CQLEntityInitializer initializer;
 
 	@Mock
-	private EntityRefresher<CQLPersistenceContext> refresher;
+	private CQLEntityRefresher refresher;
 
 	@Mock
 	private ReflectionInvoker invoker;
 
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private EntityMeta meta;
 
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta idMeta;
 
 	private Long primaryKey = RandomUtils.nextLong();
@@ -101,31 +100,74 @@ public class CQLPersistenceContextTest {
 
 	@Before
 	public void setUp() throws Exception {
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
-				.invoker(invoker).build();
+		// idMeta = PropertyMetaTestBuilder.completeBean(Void.class,
+		// Long.class).field("id").type(ID).accessors()
+		// .invoker(invoker).build();
+		//
+		// meta = new EntityMeta();
+		// meta.setIdMeta(idMeta);
+		// meta.setEntityClass(CompleteBean.class);
 
-		meta = new EntityMeta();
-		meta.setIdMeta(idMeta);
-		meta.setEntityClass(CompleteBean.class);
+		when(meta.getIdMeta()).thenReturn(idMeta);
+		when((Class) meta.getEntityClass()).thenReturn(CompleteBean.class);
 
-		Whitebox.setInternalState(context, "entityMeta", meta);
-		Whitebox.setInternalState(context, "primaryKey", entity.getId());
-		Whitebox.setInternalState(context, CQLEntityLoader.class, loader);
-		Whitebox.setInternalState(context, CQLEntityMerger.class, merger);
-		Whitebox.setInternalState(context, CQLEntityPersister.class, persister);
-		Whitebox.setInternalState(context, EntityRefresher.class, refresher);
-		Whitebox.setInternalState(context, CQLEntityProxifier.class, proxifier);
-		Whitebox.setInternalState(context, "initializer", initializer);
-		Whitebox.setInternalState(context, "options", OptionsBuilder.noOptions());
-		Whitebox.setInternalState(context, CQLAbstractFlushContext.class, flushContext);
+		context = new CQLPersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class,
+				primaryKey, OptionsBuilder.noOptions());
+
+		context.setInitializer(initializer);
+		context.setPersister(persister);
+		context.setProxifier(proxifier);
+		context.setRefresher(refresher);
+		context.setLoader(loader);
+		context.setMerger(merger);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
+	}
+
+	@Test
+	public void should_return_is_clustered_true() throws Exception {
+		when(meta.isClusteredEntity()).thenReturn(true);
+		assertThat(context.isClusteredEntity()).isTrue();
+	}
+
+	@Test
+	public void should_return_column_family_name() throws Exception {
+		when(meta.getTableName()).thenReturn("table");
+		assertThat(context.getTableName()).isEqualTo("table");
+	}
+
+	@Test
+	public void should_return_true_for_is_batch_mode() throws Exception {
+		when(flushContext.type()).thenReturn(CQLAbstractFlushContext.FlushType.BATCH);
+		assertThat(context.isBatchMode()).isTrue();
+	}
+
+	@Test
+	public void should_return_false_for_is_batch_mode() throws Exception {
+		when(flushContext.type()).thenReturn(CQLAbstractFlushContext.FlushType.IMMEDIATE);
+		assertThat(context.isBatchMode()).isFalse();
+	}
+
+	@Test
+	public void should_call_flush() throws Exception {
+		context.flush();
+
+		verify(flushContext).flush();
+	}
+
+	@Test
+	public void should_call_end_batch() throws Exception {
+		context.endBatch();
+
+		verify(flushContext).endBatch();
 	}
 
 	@Test
 	public void should_duplicate_for_new_entity() throws Exception {
 		CompleteBean entity = new CompleteBean();
 		entity.setId(primaryKey);
+		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+
 		CQLPersistenceContext duplicateContext = context.duplicate(entity);
 
 		assertThat(duplicateContext.getEntity()).isSameAs(entity);
@@ -397,7 +439,7 @@ public class CQLPersistenceContextTest {
 	@Test
 	public void should_initialize() throws Exception {
 		@SuppressWarnings("unchecked")
-		EntityInterceptor<CQLPersistenceContext, CompleteBean> interceptor = mock(EntityInterceptor.class);
+		CQLEntityInterceptor<CompleteBean> interceptor = mock(CQLEntityInterceptor.class);
 
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 

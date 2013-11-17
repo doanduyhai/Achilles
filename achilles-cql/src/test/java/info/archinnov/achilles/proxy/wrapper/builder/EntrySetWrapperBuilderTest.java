@@ -28,9 +28,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.EntrySetWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -45,10 +44,7 @@ public class EntrySetWrapperBuilderTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private EntityProxifier<PersistenceContext> proxifier;
-
-	@Mock
-	private PersistenceContext context;
+	private CQLPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {
@@ -64,13 +60,12 @@ public class EntrySetWrapperBuilderTest {
 		target.put(3, "75014");
 
 		EntrySetWrapper wrapper = EntrySetWrapperBuilder.builder(context, target.entrySet()).dirtyMap(dirtyMap)
-				.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.setter(setter).propertyMeta(propertyMeta).build();
 
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "target")).isSameAs(target.entrySet());
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
 		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}

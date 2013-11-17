@@ -28,9 +28,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.KeySetWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -45,10 +45,10 @@ public class ValueCollectionWrapperBuilderTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private EntityProxifier<PersistenceContext> proxifier;
+	private CQLEntityProxifier proxifier;
 
 	@Mock
-	private PersistenceContext context;
+	private CQLPersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {
@@ -63,15 +63,13 @@ public class ValueCollectionWrapperBuilderTest {
 		targetMap.put(3, "75014");
 
 		KeySetWrapper wrapper = KeySetWrapperBuilder
-				//
 				.builder(context, targetMap.keySet()).dirtyMap(dirtyMap).setter(setter)
-				.propertyMeta((PropertyMeta) propertyMeta).proxifier(proxifier).build();
+				.propertyMeta((PropertyMeta) propertyMeta).build();
 
 		assertThat(wrapper.getTarget()).isSameAs(targetMap.keySet());
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "proxifier")).isSameAs(proxifier);
 		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}

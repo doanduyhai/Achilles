@@ -84,8 +84,7 @@ public class CollectionWrapper extends AbstractWrapper implements Collection<Obj
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 		return IteratorWrapperBuilder.builder(context, this.target.iterator())
-		//
-				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
+				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
 	}
 
 	@Override

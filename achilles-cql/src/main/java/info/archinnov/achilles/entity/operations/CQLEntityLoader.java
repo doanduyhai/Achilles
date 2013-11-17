@@ -23,10 +23,9 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.impl.CQLLoaderImpl;
 import info.archinnov.achilles.validation.Validator;
 
-public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
+public class CQLEntityLoader {
 	private CQLLoaderImpl loaderImpl = new CQLLoaderImpl();
 
-	@Override
 	public <T> T load(CQLPersistenceContext context, Class<T> entityClass) {
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
@@ -48,7 +47,6 @@ public class CQLEntityLoader implements EntityLoader<CQLPersistenceContext> {
 		return entity;
 	}
 
-	@Override
 	public <V> void loadPropertyIntoObject(CQLPersistenceContext context, Object realObject, PropertyMeta pm) {
 		PropertyType type = pm.type();
 		if (!type.isCounter()) {

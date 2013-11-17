@@ -17,17 +17,17 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.Set;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.SetWrapper;
 
 public class SetWrapperBuilder extends AbstractWrapperBuilder<SetWrapperBuilder> {
 	private Set<Object> target;
 
-	public static SetWrapperBuilder builder(PersistenceContext context, Set<Object> target) {
+	public static SetWrapperBuilder builder(CQLPersistenceContext context, Set<Object> target) {
 		return new SetWrapperBuilder(context, target);
 	}
 
-	public SetWrapperBuilder(PersistenceContext context, Set<Object> target) {
+	public SetWrapperBuilder(CQLPersistenceContext context, Set<Object> target) {
 		super.context = context;
 		this.target = target;
 	}

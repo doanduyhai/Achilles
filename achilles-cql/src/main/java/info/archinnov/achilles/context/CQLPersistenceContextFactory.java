@@ -30,7 +30,7 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 
-public class CQLPersistenceContextFactory implements PersistenceContextFactory {
+public class CQLPersistenceContextFactory  {
 
 	public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
@@ -47,7 +47,6 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	@Override
 	public CQLPersistenceContext newContext(Object entity, Options options) {
 		Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
 		Class<?> entityClass = proxifier.deriveBaseClass(entity);
@@ -57,12 +56,10 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 		return new CQLPersistenceContext(meta, configContext, daoContext, flushContext, entity, options);
 	}
 
-	@Override
 	public CQLPersistenceContext newContext(Object entity) {
 		return newContext(entity, OptionsBuilder.noOptions());
 	}
 
-	@Override
 	public CQLPersistenceContext newContext(Class<?> entityClass, Object primaryKey, Options options) {
 		Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
 		Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
@@ -73,7 +70,6 @@ public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 				options);
 	}
 
-	@Override
 	public CQLPersistenceContext newContextForSliceQuery(Class<?> entityClass, List<Object> partitionComponents,
 			ConsistencyLevel cl) {
 		EntityMeta meta = entityMetaMap.get(entityClass);

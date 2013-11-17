@@ -30,12 +30,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.FluentIterable;
 
-public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext> {
+public class CQLEntityPersister  {
 	private static final Logger log = LoggerFactory.getLogger(CQLEntityPersister.class);
 
 	private CQLPersisterImpl persisterImpl = new CQLPersisterImpl();
 
-	@Override
 	public void persist(CQLPersistenceContext context) {
 		EntityMeta entityMeta = context.getEntityMeta();
 
@@ -59,7 +58,6 @@ public class CQLEntityPersister implements EntityPersister<CQLPersistenceContext
 		persisterImpl.persistCounters(context, counterMetas);
 	}
 
-	@Override
 	public void remove(CQLPersistenceContext context) {
 		persisterImpl.remove(context);
 	}

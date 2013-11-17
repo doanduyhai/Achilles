@@ -64,7 +64,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getEntityClassName());
 
 			EntrySetWrapper wrapperSet = EntrySetWrapperBuilder.builder(context, targetEntrySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
+					.setter(setter).propertyMeta(propertyMeta).build();
 			targetEntrySet = wrapperSet;
 		}
 		return targetEntrySet;
@@ -90,7 +90,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getEntityClassName());
 
 			KeySetWrapper keySetWrapper = KeySetWrapperBuilder.builder(context, keySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta(propertyMeta).proxifier(proxifier).build();
+					.setter(setter).propertyMeta(propertyMeta).build();
 			keySet = keySetWrapper;
 		}
 		return keySet;
@@ -145,9 +145,8 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
 			ValueCollectionWrapper collectionWrapper = ValueCollectionWrapperBuilder
-					//
 					.builder(context, values).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-					.proxifier(proxifier).build();
+					.build();
 			values = collectionWrapper;
 		}
 		return values;

@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,7 +23,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;
 
@@ -37,6 +35,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
@@ -61,22 +60,21 @@ public class CQLPersistenceContextFactoryTest {
 	@Mock
 	private CQLImmediateFlushContext flushContext;
 
-	private Map<Class<?>, EntityMeta> entityMetaMap;
-
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private EntityMeta meta;
 
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta idMeta;
+
+	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Before
 	public void setUp() throws Exception {
-		meta = new EntityMeta();
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors()
-				.invoker(invoker).build();
-		meta.setIdMeta(idMeta);
-		meta.setEntityClass(CompleteBean.class);
 		entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		entityMetaMap.put(CompleteBean.class, meta);
 
+		when(meta.getIdMeta()).thenReturn(idMeta);
+		when((Class) meta.getEntityClass()).thenReturn(CompleteBean.class);
 		pmf = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		Whitebox.setInternalState(pmf, ReflectionInvoker.class, invoker);
 	}
@@ -87,12 +85,11 @@ public class CQLPersistenceContextFactoryTest {
 		CompleteBean entity = new CompleteBean(primaryKey);
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
 
 		CQLPersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
-		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
 		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
@@ -106,7 +103,7 @@ public class CQLPersistenceContextFactoryTest {
 		CompleteBean entity = new CompleteBean(primaryKey);
 
 		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
 
 		CQLPersistenceContext actual = pmf.newContext(entity);
 

@@ -1,8 +1,8 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CONNECTION_PORT_PARAM;
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_PORT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -10,9 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.AchillesEmbeddedServer;
-import info.archinnov.achilles.embedded.CQLEmbeddedServerBuilder;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
@@ -20,10 +18,6 @@ public class EntityLessIT {
 
 	private CQLPersistenceManager manager;
 
-//    private Session session = CQLEmbeddedServerBuilder
-//                            .noEntityPackages()
-//                            .withKeyspaceName("test_keyspace")
-//                            .buildNativeSessionOnly();
 
 	@Before
 	public void setUp() {

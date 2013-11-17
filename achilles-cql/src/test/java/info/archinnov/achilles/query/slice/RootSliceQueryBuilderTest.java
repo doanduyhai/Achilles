@@ -42,10 +42,9 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -56,12 +55,12 @@ public class RootSliceQueryBuilderTest {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Mock(answer = Answers.CALLS_REAL_METHODS)
-	private RootSliceQueryBuilder<PersistenceContext, ClusteredEntity> builder;
+	private RootSliceQueryBuilder<ClusteredEntity> builder;
 
 	private Class<ClusteredEntity> entityClass = ClusteredEntity.class;
 
 	@Mock
-	private SliceQueryExecutor<PersistenceContext> sliceQueryExecutor;
+	private CQLSliceQueryExecutor sliceQueryExecutor;
 
 	@Mock
 	private ConfigurationContext configContext;

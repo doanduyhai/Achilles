@@ -17,18 +17,18 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.Map;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.MapEntryWrapper;
 
 public class MapEntryWrapperBuilder extends AbstractWrapperBuilder<MapEntryWrapperBuilder> {
 	private final Map.Entry<Object, Object> target;
 
-	public MapEntryWrapperBuilder(PersistenceContext context, Map.Entry<Object, Object> target) {
+	public MapEntryWrapperBuilder(CQLPersistenceContext context, Map.Entry<Object, Object> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static MapEntryWrapperBuilder builder(PersistenceContext context, Map.Entry<Object, Object> target) {
+	public static MapEntryWrapperBuilder builder(CQLPersistenceContext context, Map.Entry<Object, Object> target) {
 		return new MapEntryWrapperBuilder(context, target);
 	}
 

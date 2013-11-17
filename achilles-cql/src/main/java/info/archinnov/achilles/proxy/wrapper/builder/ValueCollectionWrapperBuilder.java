@@ -17,18 +17,18 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.Collection;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.ValueCollectionWrapper;
 
 public class ValueCollectionWrapperBuilder extends AbstractWrapperBuilder<ValueCollectionWrapperBuilder> {
 	private Collection<Object> target;
 
-	public ValueCollectionWrapperBuilder(PersistenceContext context, Collection<Object> target) {
+	public ValueCollectionWrapperBuilder(CQLPersistenceContext context, Collection<Object> target) {
 		super.context = context;
 		this.target = target;
 	}
 
-	public static ValueCollectionWrapperBuilder builder(PersistenceContext context, Collection<Object> target) {
+	public static ValueCollectionWrapperBuilder builder(CQLPersistenceContext context, Collection<Object> target) {
 		return new ValueCollectionWrapperBuilder(context, target);
 	}
 

@@ -75,9 +75,8 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 				propertyMeta.getEntityClassName());
 
 		return ListIteratorWrapperBuilder
-				//
 				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.proxifier(proxifier).build();
+				.build();
 	}
 
 	@Override
@@ -88,9 +87,8 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
 
 		return ListIteratorWrapperBuilder
-				//
 				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.proxifier(proxifier).build();
+				.build();
 	}
 
 	@Override
@@ -121,9 +119,8 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), from, to);
 
 		return ListWrapperBuilder
-				//
 				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.proxifier(proxifier).build();
+				.build();
 	}
 
 	@Override

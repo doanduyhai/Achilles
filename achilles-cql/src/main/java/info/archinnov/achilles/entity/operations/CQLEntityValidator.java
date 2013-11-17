@@ -20,19 +20,14 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
-public class EntityValidator<CONTEXT extends PersistenceContext> {
-	private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
+public class CQLEntityValidator {
+	private static final Logger log = LoggerFactory.getLogger(CQLEntityValidator.class);
 
-	private EntityProxifier<CONTEXT> proxifier;
-
-	public EntityValidator(EntityProxifier<CONTEXT> proxifier) {
-		this.proxifier = proxifier;
-	}
+	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 
 	public void validateEntity(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
 		Validator.validateNotNull(entity, "Entity should not be null");

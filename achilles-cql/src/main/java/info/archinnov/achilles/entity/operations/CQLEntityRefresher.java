@@ -20,32 +20,25 @@ import java.lang.reflect.Method;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.proxy.EntityInterceptor;
+import info.archinnov.achilles.proxy.CQLEntityInterceptor;
 
-public class EntityRefresher<CONTEXT extends PersistenceContext> {
-	private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
+public class CQLEntityRefresher {
+	private static final Logger log = LoggerFactory.getLogger(CQLEntityRefresher.class);
 
-	private EntityProxifier<CONTEXT> proxifier;
-	private EntityLoader<CONTEXT> loader;
+	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
+	private CQLEntityLoader loader = new CQLEntityLoader();
 
-	public EntityRefresher() {
-	}
 
-	public EntityRefresher(EntityLoader<CONTEXT> loader, EntityProxifier<CONTEXT> proxifier) {
-		this.loader = loader;
-		this.proxifier = proxifier;
-	}
-
-	public <T> void refresh(CONTEXT context) throws AchillesStaleObjectStateException {
+	public <T> void refresh(CQLPersistenceContext context) throws AchillesStaleObjectStateException {
 		Object primaryKey = context.getPrimaryKey();
 		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
 				primaryKey);
 
 		Object entity = context.getEntity();
 
-		EntityInterceptor<CONTEXT, Object> interceptor = proxifier.getInterceptor(entity);
+		CQLEntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
 
 		interceptor.getDirtyMap().clear();
 		Set<Method> alreadyLoaded = interceptor.getAlreadyLoaded();

@@ -16,10 +16,12 @@
  */
 package info.archinnov.achilles.test.builders;
 
-import java.util.UUID;
-import org.apache.commons.lang.math.RandomUtils;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
+
+import java.util.UUID;
+
+import org.apache.commons.lang.math.RandomUtils;
 
 public class TweetTestBuilder {
 

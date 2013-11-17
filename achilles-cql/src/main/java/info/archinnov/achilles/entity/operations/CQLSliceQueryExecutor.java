@@ -28,6 +28,7 @@ import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,24 +36,26 @@ import java.util.List;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
-public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceContext> {
+public class CQLSliceQueryExecutor {
 
 	private CQLStatementGenerator generator = new CQLStatementGenerator();
 	private CQLEntityMapper mapper = new CQLEntityMapper();
-	private CQLDaoContext daoContext;
+	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
 	private CQLPersistenceContextFactory contextFactory;
+	private CQLDaoContext daoContext;
+	private ConsistencyLevel defaultReadLevel;
 
 	public CQLSliceQueryExecutor(CQLPersistenceContextFactory contextFactory, ConfigurationContext configContext,
 			CQLDaoContext daoContext) {
-		super(new CQLEntityProxifier());
 		this.contextFactory = contextFactory;
 		this.daoContext = daoContext;
-		defaultReadLevel = configContext.getDefaultReadConsistencyLevel();
+		this.defaultReadLevel = configContext.getDefaultReadConsistencyLevel();
 	}
 
-	@Override
 	public <T> List<T> get(SliceQuery<T> sliceQuery) {
 
 		EntityMeta meta = sliceQuery.getMeta();
@@ -72,7 +75,6 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
 		return Lists.transform(clusteredEntities, getProxyTransformer(sliceQuery, meta.getEagerGetters()));
 	}
 
-	@Override
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
 
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
@@ -83,7 +85,6 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
 		return new CQLSliceQueryIterator<T>(cqlSliceQuery, context, iterator, ps);
 	}
 
-	@Override
 	public <T> void remove(SliceQuery<T> sliceQuery) {
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
 		cqlSliceQuery.validateSliceQueryForRemove();
@@ -91,7 +92,6 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
 		daoContext.execute(query);
 	}
 
-	@Override
 	protected <T> CQLPersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery) {
 
 		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
@@ -100,9 +100,13 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
 				cl);
 	}
 
-	@Override
-	protected <T> CQLPersistenceContext buildNewContext(SliceQuery<T> sliceQuery, T clusteredEntity) {
-		return contextFactory.newContext(clusteredEntity);
+	private <T> Function<T, T> getProxyTransformer(final SliceQuery<T> sliceQuery, final List<Method> getters) {
+		return new Function<T, T>() {
+			@Override
+			public T apply(T clusteredEntity) {
+				CQLPersistenceContext context = contextFactory.newContext(clusteredEntity);
+				return proxifier.buildProxy(clusteredEntity, context, Sets.newHashSet(getters));
+			}
+		};
 	}
-
 }

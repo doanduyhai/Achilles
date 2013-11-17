@@ -16,11 +16,11 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
+import static info.archinnov.achilles.type.OrderingMode.*;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
@@ -30,7 +30,6 @@ import info.archinnov.achilles.entity.CQLEntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.iterator.CQLSliceQueryIterator;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.CQLStatementGenerator;
@@ -47,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -59,6 +59,7 @@ import com.datastax.driver.core.Row;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLSliceQueryExecutorTest {
 
+	@InjectMocks
 	private CQLSliceQueryExecutor executor;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -66,9 +67,6 @@ public class CQLSliceQueryExecutorTest {
 
 	@Mock
 	private CQLStatementGenerator generator;
-
-	@Mock
-	private ReflectionInvoker invoker;
 
 	@Mock
 	private CQLEntityMapper mapper;
@@ -91,11 +89,13 @@ public class CQLSliceQueryExecutorTest {
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta idMeta;
 
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
+	private EntityMeta meta;
+
 	private SliceQuery<ClusteredEntity> sliceQuery;
 
+	@Mock
 	private ClusteredEntity entity;
-
-	private EntityMeta meta;
 
 	private Long partitionKey = RandomUtils.nextLong();
 
@@ -108,16 +108,8 @@ public class CQLSliceQueryExecutorTest {
 	@Before
 	public void setUp() {
 		when(configContext.getDefaultReadConsistencyLevel()).thenReturn(EACH_QUORUM);
-
-		executor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
-		executor.proxifier = proxifier;
-		Whitebox.setInternalState(executor, CQLStatementGenerator.class, generator);
-		Whitebox.setInternalState(executor, CQLEntityMapper.class, mapper);
-
-		meta = new EntityMeta();
-		meta.setEagerGetters(new ArrayList<Method>());
-		meta.setIdMeta(idMeta);
-		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
+		when(meta.getEagerGetters()).thenReturn(new ArrayList<Method>());
+		when(meta.getIdMeta()).thenReturn(idMeta);
 
 		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
 		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
@@ -125,6 +117,10 @@ public class CQLSliceQueryExecutorTest {
 		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
 				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
 
+		Whitebox.setInternalState(executor, CQLStatementGenerator.class, generator);
+		Whitebox.setInternalState(executor, CQLPersistenceContextFactory.class, contextFactory);
+		Whitebox.setInternalState(executor, CQLEntityProxifier.class, proxifier);
+		Whitebox.setInternalState(executor, CQLEntityMapper.class, mapper);
 	}
 
 	@Test
@@ -137,11 +133,13 @@ public class CQLSliceQueryExecutorTest {
 		List<Row> rows = Arrays.asList(row);
 		when(daoContext.execute(query).all()).thenReturn(rows);
 
-		when(invoker.instanciate(ClusteredEntity.class)).thenReturn(entity);
+		when(meta.instanciate()).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxy(eq(entity), eq(context), anySetOf(Method.class))).thenReturn(entity);
 
-		assertThat(executor.get(sliceQuery)).containsOnly(entity);
+		List<ClusteredEntity> actual = executor.get(sliceQuery);
+
+		assertThat(actual).containsOnly(entity);
 		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
 	}
 

@@ -18,18 +18,17 @@ package info.archinnov.achilles.query.slice;
 
 import java.util.Iterator;
 import java.util.List;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
-public class SliceQueryBuilder<CONTEXT extends PersistenceContext, T> extends RootSliceQueryBuilder<CONTEXT, T> {
+public class SliceQueryBuilder<T> extends RootSliceQueryBuilder<T> {
 
-	public SliceQueryBuilder(SliceQueryExecutor<CONTEXT> sliceQueryExecutor, Class<T> entityClass, EntityMeta meta) {
+	public SliceQueryBuilder(CQLSliceQueryExecutor sliceQueryExecutor, Class<T> entityClass, EntityMeta meta) {
 		super(sliceQueryExecutor, entityClass, meta);
 	}
 

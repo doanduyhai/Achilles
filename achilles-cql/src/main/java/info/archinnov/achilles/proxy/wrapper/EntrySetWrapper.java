@@ -71,9 +71,8 @@ public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object
 		log.trace("Build iterator wrapper for entry set of property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 		return EntryIteratorWrapperBuilder
-				//
 				.builder(context, this.target.iterator()).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.proxifier(proxifier).build();
+				.build();
 	}
 
 	@Override
