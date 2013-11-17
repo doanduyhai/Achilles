@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
@@ -40,10 +39,11 @@ public abstract class PersistenceManagerFactory {
 	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
 
-	private EntityParser entityParser = new EntityParser();
-	private EntityExplorer entityExplorer = new EntityExplorer();
+    protected ArgumentExtractor argumentExtractor = new ArgumentExtractor();
+    private EntityParser entityParser = new EntityParser();
+    private EntityExplorer entityExplorer = new EntityExplorer();
 
-	protected PersistenceManagerFactory(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
+	protected PersistenceManagerFactory(Map<String, Object> configurationMap) {
 		Validator.validateNotNull(configurationMap,
 				"Configuration map for PersistenceManagerFactory should not be null");
 		Validator.validateNotEmpty(configurationMap,
@@ -82,16 +82,16 @@ public abstract class PersistenceManagerFactory {
 		return hasSimpleCounter;
 	}
 
-	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
-			ArgumentExtractor argumentExtractor);
 
 	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setForceColumnFamilyCreation(argumentExtractor.initForceCFCreation(configurationMap));
-		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap, argumentExtractor));
 		configContext.setObjectMapperFactory(argumentExtractor.initObjectMapperFactory(configurationMap));
-
+        configContext.setDefaultReadConsistencyLevel(argumentExtractor
+                                                             .initDefaultReadConsistencyLevel(configurationMap));
+        configContext.setDefaultWriteConsistencyLevel(argumentExtractor
+                                                              .initDefaultWriteConsistencyLevel(configurationMap));
 		return configContext;
 	}
 

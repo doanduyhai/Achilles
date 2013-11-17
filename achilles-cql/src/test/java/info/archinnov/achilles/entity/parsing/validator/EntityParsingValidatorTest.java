@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
@@ -61,106 +60,6 @@ public class EntityParsingValidatorTest {
 						+ "' should have at least one field with javax.persistence.Column/javax.persistence.Id/javax.persistence.EmbeddedId annotations");
 
 		validator.validatePropertyMetas(context, idMeta);
-	}
-
-	@Test
-	public void should_skip_wide_row_validation_when_not_wide_row_with_thrift_impl() throws Exception {
-		EntityParsingContext context = new EntityParsingContext(null, CompleteBean.class);
-		context.setClusteredEntity(false);
-		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
-
-		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_skip_wide_row_validation_when_not_wide_row_with_cql_impl() throws Exception {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
-
-		context.setClusteredEntity(false);
-		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
-
-		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_skip_wide_row_validation_for_wide_row_but_with_cql_impl() throws Exception {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setImpl(Impl.CQL);
-		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
-
-		context.setClusteredEntity(true);
-		context.setPropertyMetas(new HashMap<String, PropertyMeta>());
-
-		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_exception_when_more_than_two_property_metas_for_wide_row() throws Exception {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
-		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-		propertyMetas.put("name", null);
-		propertyMetas.put("age", null);
-		propertyMetas.put("id", null);
-		context.setPropertyMetas(propertyMetas);
-		context.setClusteredEntity(true);
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
-				+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
-
-		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_exception_when_no_embedded_id_found_for_wide_row() throws Exception {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
-		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder //
-				.valueClass(Long.class).type(PropertyType.ID).build();
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-				.valueClass(String.class).type(PropertyType.SIMPLE).build();
-		propertyMetas.put("id", idMeta);
-		propertyMetas.put("name", propertyMeta);
-		context.setPropertyMetas(propertyMetas);
-		context.setClusteredEntity(true);
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
-				+ "' should have an @EmbeddedId");
-
-		validator.validateClusteredEntities(context);
-	}
-
-	@Test
-	public void should_exception_when_incorrect_clustered_value_type_for_wide_row() throws Exception {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setImpl(Impl.THRIFT);
-		EntityParsingContext context = new EntityParsingContext(configContext, CompleteBean.class);
-		HashMap<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder //
-				.valueClass(Long.class).type(PropertyType.EMBEDDED_ID).build();
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder //
-				.valueClass(String.class).type(PropertyType.LIST).build();
-		propertyMetas.put("id", idMeta);
-		propertyMetas.put("name", propertyMeta);
-		context.setPropertyMetas(propertyMetas);
-		context.setClusteredEntity(true);
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception.expectMessage("The clustered entity '" + CompleteBean.class.getCanonicalName()
-				+ "' should have a single @Column property of type simple/counter");
-
-		validator.validateClusteredEntities(context);
 	}
 
 	@Test

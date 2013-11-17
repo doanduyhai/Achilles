@@ -107,7 +107,7 @@ public class CQLSliceQueryExecutorTest {
 
 	@Before
 	public void setUp() {
-		when(configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel()).thenReturn(EACH_QUORUM);
+		when(configContext.getDefaultReadConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		executor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
 		executor.proxifier = proxifier;

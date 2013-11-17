@@ -8,6 +8,7 @@
     <artifactId>achilles-integration-test</artifactId>
     <name>Achilles Integration Test</name>
     <description>Achilles Integration Test Module</description>
+    <packaging>pom</packaging>
     <dependencies>
         <dependency>
             <groupId>info.archinnov</groupId>

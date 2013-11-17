@@ -319,7 +319,7 @@ public class PropertyParser {
 
 		log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper.findConsistencyLevels(
-				context.getCurrentField(), context.getConfigurableCLPolicy());
+				context.getCurrentField(), context.getDefaultConsistencyLevels());
 
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 

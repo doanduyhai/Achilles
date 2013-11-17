@@ -22,7 +22,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -37,13 +36,9 @@ import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 
 public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
-	protected static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
-	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional.<ConsistencyLevel> absent();
-
 	private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap;
-	protected AchillesConsistencyLevelPolicy consistencyPolicy;
 	protected ConfigurationContext configContext;
 
 	protected EntityProxifier<CONTEXT> proxifier;
@@ -54,7 +49,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 			ConfigurationContext configContext) {
 		this.entityMetaMap = entityMetaMap;
 		this.configContext = configContext;
-		this.consistencyPolicy = configContext.getConsistencyPolicy();
 	}
 
 	/**
@@ -476,10 +470,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 		return entityMetaMap;
 	}
 
-	protected AchillesConsistencyLevelPolicy getConsistencyPolicy() {
-		return consistencyPolicy;
-	}
-
 	protected ConfigurationContext getConfigContext() {
 		return configContext;
 	}
@@ -500,9 +490,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	protected void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy) {
-		this.consistencyPolicy = consistencyPolicy;
-	}
 
 	protected void setConfigContext(ConfigurationContext configContext) {
 		this.configContext = configContext;

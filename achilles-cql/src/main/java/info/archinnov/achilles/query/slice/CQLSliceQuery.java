@@ -17,7 +17,7 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
-import info.archinnov.achilles.compound.CQLSliceQueryValidator;
+
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;

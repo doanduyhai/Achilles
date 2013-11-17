@@ -49,7 +49,7 @@ public class CQLSliceQueryExecutor extends SliceQueryExecutor<CQLPersistenceCont
 		super(new CQLEntityProxifier());
 		this.contextFactory = contextFactory;
 		this.daoContext = daoContext;
-		defaultReadLevel = configContext.getConsistencyPolicy().getDefaultGlobalReadConsistencyLevel();
+		defaultReadLevel = configContext.getDefaultReadConsistencyLevel();
 	}
 
 	@Override

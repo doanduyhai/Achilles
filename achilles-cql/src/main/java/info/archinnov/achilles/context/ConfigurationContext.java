@@ -16,17 +16,15 @@
  */
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class ConfigurationContext {
 	private boolean forceColumnFamilyCreation;
 
-	private AchillesConsistencyLevelPolicy consistencyPolicy;
-
 	private ObjectMapperFactory objectMapperFactory;
-
-	private Impl impl;
+    private ConsistencyLevel defaultReadConsistencyLevel;
+    private ConsistencyLevel defaultWriteConsistencyLevel;
 
 	public boolean isForceColumnFamilyCreation() {
 		return forceColumnFamilyCreation;
@@ -34,14 +32,6 @@ public class ConfigurationContext {
 
 	public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
 		this.forceColumnFamilyCreation = forceColumnFamilyCreation;
-	}
-
-	public AchillesConsistencyLevelPolicy getConsistencyPolicy() {
-		return consistencyPolicy;
-	}
-
-	public void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy) {
-		this.consistencyPolicy = consistencyPolicy;
 	}
 
 	public ObjectMapperFactory getObjectMapperFactory() {
@@ -52,15 +42,19 @@ public class ConfigurationContext {
 		this.objectMapperFactory = objectMapperFactory;
 	}
 
-	public Impl getImpl() {
-		return impl;
-	}
+    public ConsistencyLevel getDefaultReadConsistencyLevel() {
+        return defaultReadConsistencyLevel;
+    }
 
-	public void setImpl(Impl impl) {
-		this.impl = impl;
-	}
+    public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+        this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
+    }
 
-	public static enum Impl {
-		THRIFT, CQL;
-	}
+    public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+        return defaultWriteConsistencyLevel;
+    }
+
+    public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+        this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
+    }
 }

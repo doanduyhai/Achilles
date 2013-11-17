@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.integration.spring;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;

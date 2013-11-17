@@ -32,7 +32,6 @@ import com.google.common.base.Optional;
 
 public class CQLPersistenceContextFactory implements PersistenceContextFactory {
 
-	public static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional.<ConsistencyLevel> absent();
 	public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
 	private CQLDaoContext daoContext;

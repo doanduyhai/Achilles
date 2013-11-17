@@ -52,10 +52,9 @@ public class EntityParser {
 
 		String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass,
-				context.getConfigurableCLPolicy());
+				context.getDefaultConsistencyLevels());
 
 		context.setCurrentConsistencyLevels(consistencyLevels);
-		context.setCurrentColumnFamilyName(columnFamilyName);
 
 		PropertyMeta idMeta = null;
 		List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
@@ -82,16 +81,10 @@ public class EntityParser {
 		// Deferred counter property meta completion
 		completeCounterPropertyMeta(context, idMeta);
 
-		// Finish validation of property metas
-		// validator.validatePropertyMetas(context, idMeta);
-		validator.validateClusteredEntities(context);
-
 		EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
 				.className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
 				.propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
 				.build();
-
-		saveConsistencyLevel(context, columnFamilyName, consistencyLevels);
 
 		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),
 				entityMeta);
@@ -123,14 +116,4 @@ public class EntityParser {
 			counterMeta.getCounterProperties().setIdMeta(idMeta);
 		}
 	}
-
-	private void saveConsistencyLevel(EntityParsingContext context, String columnFamilyName,
-			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
-		log.debug("Set default read/write consistency levels {} / {} for column family {}",
-				consistencyLevels.left.name(), consistencyLevels.right.name(), columnFamilyName);
-
-		context.getConfigurableCLPolicy().setConsistencyLevelForRead(consistencyLevels.left, columnFamilyName);
-		context.getConfigurableCLPolicy().setConsistencyLevelForWrite(consistencyLevels.right, columnFamilyName);
-	}
-
 }

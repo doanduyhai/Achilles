@@ -19,7 +19,6 @@ package info.archinnov.achilles.entity.manager;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
@@ -72,9 +71,6 @@ public class CQLPersistenceManagerTest {
 	private CQLPersistenceContextFactory contextFactory;
 
 	@Mock
-	private AchillesConsistencyLevelPolicy policy;
-
-	@Mock
 	private CQLTypedQueryValidator typedQueryValidator;
 
 	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
@@ -84,9 +80,6 @@ public class CQLPersistenceManagerTest {
 	private PropertyMeta idMeta;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-
-	private Optional<ConsistencyLevel> noConsistency = Optional.<ConsistencyLevel> absent();
-	private Optional<Integer> noTtl = Optional.<Integer> absent();
 
 	@Before
 	public void setUp() throws Exception {
@@ -99,8 +92,7 @@ public class CQLPersistenceManagerTest {
 		meta.setEntityClass(CompleteBean.class);
 		meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
 
-		when(configContext.getConsistencyPolicy()).thenReturn(policy);
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
 
 		manager = new CQLPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 		Whitebox.setInternalState(manager, CQLEntityProxifier.class, proxifier);

@@ -55,39 +55,6 @@ public class EntityParsingValidator {
 
 	}
 
-	public void validateClusteredEntities(EntityParsingContext context) {
-		Map<String, PropertyMeta> propertyMetas = context.getPropertyMetas();
-
-		if (context.isClusteredEntity() && context.isThriftImpl()) {
-			log.debug("Validate that there is at least one property meta for the clustered entity {}", context
-					.getCurrentEntityClass().getCanonicalName());
-
-			Validator.validateBeanMappingFalse(propertyMetas != null && propertyMetas.size() > 2,
-					"The clustered entity '" + context.getCurrentEntityClass().getCanonicalName()
-							+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
-
-			Iterator<Entry<String, PropertyMeta>> metaIter = propertyMetas.entrySet().iterator();
-			PropertyType type1 = metaIter.next().getValue().type();
-
-			log.debug("Validate that the clustered entity {} has an @EmbeddedId", context.getCurrentEntityClass()
-					.getCanonicalName());
-
-			Validator.validateBeanMappingTrue(type1 == PropertyType.EMBEDDED_ID,
-					"The clustered entity '%s' should have an @EmbeddedId property", context.getCurrentEntityClass()
-							.getCanonicalName());
-
-			log.debug("Validate that the clustered entity {} has a valid clustered value type", context
-					.getCurrentEntityClass().getCanonicalName());
-
-			if (metaIter.hasNext()) {
-				PropertyType type2 = metaIter.next().getValue().type();
-				Validator.validateBeanMappingTrue(type2.isValidClusteredValueType(),
-						"The clustered entity '%s' should have a single @Column property of type simple/counter",
-						context.getCurrentEntityClass().getCanonicalName());
-			}
-		}
-	}
-
 	public void validateAtLeastOneEntity(List<Class<?>> entities, List<String> entityPackages) {
 		log.debug("Validate that at least one entity is found in the packages {}",
 				StringUtils.join(entityPackages, ","));

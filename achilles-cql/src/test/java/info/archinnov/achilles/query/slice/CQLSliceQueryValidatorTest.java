@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.compound;
+package info.archinnov.achilles.query.slice;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
+import info.archinnov.achilles.query.slice.CQLSliceQueryValidator;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
 
@@ -67,6 +69,21 @@ public class CQLSliceQueryValidatorTest {
 			}
 		});
 	}
+
+    @Test
+    public void should_return_last_non_null_index_when_all_components_not_null() throws Exception {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, "name", 12.0))).isEqualTo(2);
+    }
+
+    @Test
+    public void should_return_last_non_null_index_when_some_components_are_null() throws Exception {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, null))).isEqualTo(0);
+    }
+
+    @Test
+    public void should_return_last_non_null_index_when_hole_in_component() throws Exception {
+        assertThat(validator.getLastNonNullIndex(Arrays.<Object> asList(11L, null, 12))).isEqualTo(0);
+    }
 
 	@Test
 	public void should_exception_when_components_not_in_correct_order_for_ascending() throws Exception {

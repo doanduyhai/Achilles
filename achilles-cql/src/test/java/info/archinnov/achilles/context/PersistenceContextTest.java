@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.FlushContext.FlushType;
+import info.archinnov.achilles.context.CQLAbstractFlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,12 +39,12 @@ public class PersistenceContextTest {
 	private EntityMeta entityMeta;
 
 	@Mock
-	private FlushContext<?> flushContext;
+	private CQLAbstractFlushContext<?> flushContext;
 
 	@Before
 	public void setUp() {
 		doCallRealMethod().when(context).setEntityMeta(any(EntityMeta.class));
-		doCallRealMethod().when(context).setFlushContext(any(FlushContext.class));
+		doCallRealMethod().when(context).setFlushContext(any(CQLAbstractFlushContext.class));
 
 		context.setEntityMeta(entityMeta);
 		context.setFlushContext(flushContext);

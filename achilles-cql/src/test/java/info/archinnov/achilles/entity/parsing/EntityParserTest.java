@@ -20,8 +20,6 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
 import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -33,9 +31,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -69,9 +65,6 @@ public class EntityParserTest {
 	private EntityParser parser;
 
 	@Mock
-	private AchillesConsistencyLevelPolicy policy;
-
-	@Mock
 	private TableCreator thriftTableCreator;
 
 	@Mock
@@ -92,11 +85,9 @@ public class EntityParserTest {
 
 	@Before
 	public void setUp() {
-		configContext.setConsistencyPolicy(policy);
+		configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
+		configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
 		configContext.setObjectMapperFactory(objectMapperFactory);
-
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -177,9 +168,6 @@ public class EntityParserTest {
 		assertThat(meta.getEagerMetas()).containsOnly(id, name, age, followers, preferences, creator);
 		assertThat(meta.getEagerGetters()).containsOnly(id.getGetter(), name.getGetter(), age.getGetter(),
 				followers.getGetter(), preferences.getGetter(), creator.getGetter());
-
-		verify(policy).setConsistencyLevelForRead(ConsistencyLevel.ONE, meta.getTableName());
-		verify(policy).setConsistencyLevelForWrite(ConsistencyLevel.ALL, meta.getTableName());
 	}
 
 	@Test
@@ -286,32 +274,6 @@ public class EntityParserTest {
 		assertThat(meta.getPropertyMetas()).hasSize(2);
 		assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
 		assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
-	}
-
-	@Test
-	public void should_exception_when_clustered_entity_more_than_one_mapped_column() throws Exception {
-		initEntityParsingContext(ClusteredEntityWithTwoProperties.class);
-		configContext.setImpl(Impl.THRIFT);
-		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx.expectMessage("The clustered entity '" + ClusteredEntityWithTwoProperties.class.getCanonicalName()
-				+ "' should not have more than two properties annotated with @EmbeddedId/@Id/@Column");
-
-		parser.parseEntity(entityContext);
-
-	}
-
-	@Test
-	public void should_exception_when_clustered_entity_has_unsupported_property_type() throws Exception {
-		initEntityParsingContext(ClusteredEntityWithNotSupportedPropertyType.class);
-		configContext.setImpl(Impl.THRIFT);
-
-		expectedEx.expect(AchillesBeanMappingException.class);
-		expectedEx.expectMessage("The clustered entity '"
-				+ ClusteredEntityWithNotSupportedPropertyType.class.getCanonicalName()
-				+ "' should have a single @Column property of type simple/counter");
-
-		parser.parseEntity(entityContext);
-
 	}
 
 	private <T> void initEntityParsingContext(Class<T> entityClass) {

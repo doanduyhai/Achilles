@@ -18,7 +18,7 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.context.FlushContext.FlushType;
+import info.archinnov.achilles.context.CQLAbstractFlushContext.FlushType;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 
 import org.junit.Before;

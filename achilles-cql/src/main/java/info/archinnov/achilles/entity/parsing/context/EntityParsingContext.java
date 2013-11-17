@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Map;
 import info.archinnov.achilles.type.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -40,7 +38,6 @@ public class EntityParsingContext {
 	private ObjectMapper currentObjectMapper;
 	private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
 	private boolean clusteredEntity = false;
-	private String currentColumnFamilyName;
 
 	public EntityParsingContext(//
 			ConfigurationContext configContext, //
@@ -49,17 +46,8 @@ public class EntityParsingContext {
 		this.currentEntityClass = currentEntityClass;
 	}
 
-	public EntityParsingContext( //
-			ConfigurationContext configContext) {
-		this.configContext = configContext;
-	}
-
 	public PropertyParsingContext newPropertyContext(Field currentField) {
 		return new PropertyParsingContext(this, currentField);
-	}
-
-	public boolean isThriftImpl() {
-		return configContext.getImpl() == Impl.THRIFT;
 	}
 
 	public Class<?> getCurrentEntityClass() {
@@ -110,19 +98,12 @@ public class EntityParsingContext {
 		return currentConsistencyLevels;
 	}
 
-	public String getCurrentColumnFamilyName() {
-		return currentColumnFamilyName;
-	}
-
-	public void setCurrentColumnFamilyName(String currentColumnFamilyName) {
-		this.currentColumnFamilyName = currentColumnFamilyName;
-	}
 
 	public ObjectMapperFactory getObjectMapperFactory() {
 		return configContext.getObjectMapperFactory();
 	}
 
-	public AchillesConsistencyLevelPolicy getConfigurableCLPolicy() {
-		return configContext.getConsistencyPolicy();
-	}
+    public Pair<ConsistencyLevel,ConsistencyLevel> getDefaultConsistencyLevels() {
+        return Pair.create(configContext.getDefaultReadConsistencyLevel(),configContext.getDefaultWriteConsistencyLevel());
+    }
 }

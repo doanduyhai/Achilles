@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -151,14 +150,14 @@ public class PropertyHelper {
 	}
 
 	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
-			AchillesConsistencyLevelPolicy policy) {
+        Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
 		log.debug("Find consistency configuration for field {} of class {}", field.getName(), field.getDeclaringClass()
 				.getCanonicalName());
 
 		Consistency clevel = field.getAnnotation(Consistency.class);
 
-		ConsistencyLevel defaultGlobalRead = entityIntrospector.getDefaultGlobalReadConsistency(policy);
-		ConsistencyLevel defaultGlobalWrite = entityIntrospector.getDefaultGlobalWriteConsistency(policy);
+		ConsistencyLevel defaultGlobalRead = defaultConsistencyLevels.left;
+		ConsistencyLevel defaultGlobalWrite = defaultConsistencyLevels.right;
 
 		if (clevel != null) {
 			defaultGlobalRead = clevel.read();

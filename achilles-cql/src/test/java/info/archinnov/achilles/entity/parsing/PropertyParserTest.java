@@ -42,7 +42,6 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -65,16 +64,11 @@ public class PropertyParserTest {
 	private EntityParsingContext entityContext;
 	private ConfigurationContext configContext;
 
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
-
 	@Before
 	public void setUp() {
 		configContext = new ConfigurationContext();
-		configContext.setConsistencyPolicy(policy);
-
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ALL);
+		configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
+		configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
 	}
 
 	@Test

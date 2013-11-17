@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.compound.CompoundKeyValidator;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -48,7 +47,7 @@ public class SliceQueryBuilderTest {
 	private SliceQueryExecutor<PersistenceContext> sliceQueryExecutor;
 
 	@Mock
-	private CompoundKeyValidator compoundKeyValidator;
+	private CQLSliceQueryValidator validator;
 
 	@Mock
 	private DataTranscoder transcoder;

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import info.archinnov.achilles.type.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -71,13 +70,9 @@ public class PropertyParsingContext {
 		return context.getCurrentConsistencyLevels();
 	}
 
-	public AchillesConsistencyLevelPolicy getConfigurableCLPolicy() {
-		return context.getConfigurableCLPolicy();
-	}
-
-	public String getCurrentColumnFamilyName() {
-		return context.getCurrentColumnFamilyName();
-	}
+    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
+        return context.getDefaultConsistencyLevels();
+    }
 
 	public boolean isCustomConsistencyLevels() {
 		return isCustomConsistencyLevels;
@@ -110,7 +105,4 @@ public class PropertyParsingContext {
 		this.embeddedId = embeddedId;
 	}
 
-	public boolean isClusteredEntity() {
-		return context.isClusteredEntity();
-	}
 }

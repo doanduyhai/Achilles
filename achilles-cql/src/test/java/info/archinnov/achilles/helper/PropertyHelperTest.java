@@ -32,7 +32,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 
@@ -46,9 +45,6 @@ public class PropertyHelperTest {
 
 	@Mock
 	private ReflectionInvoker invoker;
-
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
 	private List<Method> componentGetters;

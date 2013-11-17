@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.helper;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
@@ -38,7 +39,6 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.TimeUUID;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -69,9 +69,6 @@ public class EntityIntrospectorTest {
 	private Map<Method, PropertyMeta> setterMetas;
 
 	private final EntityIntrospector introspector = new EntityIntrospector();
-
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
 
 	@Test
 	public void should_derive_getter() throws Exception {
@@ -347,7 +344,8 @@ public class EntityIntrospectorTest {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, policy);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, Pair
+                .create(ALL, ALL));
 
 		assertThat(levels.left).isEqualTo(ANY);
 		assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
@@ -358,32 +356,11 @@ public class EntityIntrospectorTest {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, policy);
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, Pair
+                .create(ONE, ONE));
 
 		assertThat(levels.left).isEqualTo(ONE);
 		assertThat(levels.right).isEqualTo(ONE);
-	}
-
-	@Test
-	public void should_get_defaul_global_read_consistency_from_config() throws Exception {
-		when(policy.getDefaultGlobalReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
-		assertThat(introspector.getDefaultGlobalReadConsistency(policy)).isEqualTo(LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_get_defaul_global_read_consistency() throws Exception {
-		assertThat(introspector.getDefaultGlobalReadConsistency(policy)).isEqualTo(ONE);
-	}
-
-	@Test
-	public void should_get_defaul_global_write_consistency_from_config() throws Exception {
-		when(policy.getDefaultGlobalWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
-		assertThat(introspector.getDefaultGlobalWriteConsistency(policy)).isEqualTo(LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_get_defaul_global_write_consistency() throws Exception {
-		assertThat(introspector.getDefaultGlobalWriteConsistency(policy)).isEqualTo(ONE);
 	}
 
 	class Bean {

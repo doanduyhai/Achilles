@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -55,9 +54,6 @@ public class CollectionWrapperTest {
 
 	@Mock
 	private EntityProxifier<PersistenceContext> proxifier;
-
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
 
 	@Mock
 	private PersistenceContext context;

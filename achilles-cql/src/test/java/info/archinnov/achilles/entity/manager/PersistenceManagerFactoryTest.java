@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
@@ -143,11 +142,9 @@ public class PersistenceManagerFactoryTest {
 
 	@Test
 	public void should_parse_configuration() throws Exception {
-		AchillesConsistencyLevelPolicy policy = mock(AchillesConsistencyLevelPolicy.class);
 		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
 		Map<String, Object> configurationMap = new HashMap<String, Object>();
 		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
-		when(pmf.initConsistencyLevelPolicy(configurationMap, extractor)).thenReturn(policy);
 		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
 
 		doCallRealMethod().when(pmf).parseConfiguration(configurationMap, extractor);
@@ -156,7 +153,6 @@ public class PersistenceManagerFactoryTest {
 
 		assertThat(builtContext).isNotNull();
 		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
-		assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
 		assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
 	}
 

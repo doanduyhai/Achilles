@@ -19,7 +19,7 @@ package info.archinnov.achilles.context;
 import java.util.List;
 import java.util.Set;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.context.FlushContext.FlushType;
+import info.archinnov.achilles.context.CQLAbstractFlushContext.FlushType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -39,12 +39,12 @@ public abstract class PersistenceContext {
 	protected Object entity;
 	protected Object primaryKey;
 	protected Object partitionKey;
-	protected FlushContext<?> flushContext;
+	protected CQLAbstractFlushContext<?> flushContext;
 
 	protected Options options = OptionsBuilder.noOptions();
 	protected boolean loadEagerFields = true;
 
-	private PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, FlushContext<?> flushContext,
+	private PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, CQLAbstractFlushContext<?> flushContext,
 			Class<?> entityClass, Options options) {
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
@@ -55,7 +55,7 @@ public abstract class PersistenceContext {
 	}
 
 	protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Object entity,
-			FlushContext<?> flushContext, Options options) {
+                                 CQLAbstractFlushContext<?> flushContext, Options options) {
 		this(entityMeta, configContext, flushContext, entityMeta.getEntityClass(), options);
 		Validator.validateNotNull(entity, "The entity should not be null for persistence context creation");
 		this.entity = entity;
@@ -66,7 +66,7 @@ public abstract class PersistenceContext {
 	}
 
 	protected PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, Class<?> entityClass,
-			Object primaryKey, FlushContext<?> flushContext, Options options) {
+			Object primaryKey, CQLAbstractFlushContext<?> flushContext, Options options) {
 		this(entityMeta, configContext, flushContext, entityClass, options);
 
 		this.primaryKey = primaryKey;
@@ -183,7 +183,7 @@ public abstract class PersistenceContext {
 		this.entityMeta = entityMeta;
 	}
 
-	public void setFlushContext(FlushContext<?> flushContext) {
+	public void setFlushContext(CQLAbstractFlushContext<?> flushContext) {
 		this.flushContext = flushContext;
 	}
 

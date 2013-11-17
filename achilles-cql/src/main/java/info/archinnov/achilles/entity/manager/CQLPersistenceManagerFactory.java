@@ -16,18 +16,13 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import info.archinnov.achilles.configuration.ArgumentExtractor;
-import info.archinnov.achilles.configuration.CQLArgumentExtractor;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.consistency.CQLConsistencyLevelPolicy;
+
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLDaoContextBuilder;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
-import info.archinnov.achilles.context.ConfigurationContext.Impl;
 import info.archinnov.achilles.table.CQLTableCreator;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
@@ -53,12 +48,9 @@ public class CQLPersistenceManagerFactory extends PersistenceManagerFactory {
 	 *            parameters
 	 */
 	public CQLPersistenceManagerFactory(Map<String, Object> configurationMap) {
-		super(configurationMap, new CQLArgumentExtractor());
-		configContext.setImpl(Impl.CQL);
-
-		CQLArgumentExtractor extractor = new CQLArgumentExtractor();
-		cluster = extractor.initCluster(configurationMap);
-		session = extractor.initSession(cluster, configurationMap);
+		super(configurationMap);
+		cluster = argumentExtractor.initCluster(configurationMap);
+		session = argumentExtractor.initSession(cluster, configurationMap);
 
 		boolean hasSimpleCounter = false;
 		if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
@@ -95,22 +87,6 @@ public class CQLPersistenceManagerFactory extends PersistenceManagerFactory {
 	 */
 	public CQLBatchingPersistenceManager createBatchingPersistenceManager() {
 		return new CQLBatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
-	}
-
-	@Override
-	protected AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
-			ArgumentExtractor argumentExtractor) {
-		log.info("Initializing new Achilles Configurable Consistency Level Policy from arguments {}",configurationMap);
-
-		ConsistencyLevel defaultReadConsistencyLevel = argumentExtractor
-				.initDefaultReadConsistencyLevel(configurationMap);
-		ConsistencyLevel defaultWriteConsistencyLevel = argumentExtractor
-				.initDefaultWriteConsistencyLevel(configurationMap);
-		Map<String, ConsistencyLevel> readConsistencyMap = argumentExtractor.initReadConsistencyMap(configurationMap);
-		Map<String, ConsistencyLevel> writeConsistencyMap = argumentExtractor.initWriteConsistencyMap(configurationMap);
-
-		return new CQLConsistencyLevelPolicy(defaultReadConsistencyLevel, defaultWriteConsistencyLevel,
-				readConsistencyMap, writeConsistencyMap);
 	}
 
 	private void registerShutdownHook(final Cluster cluster) {

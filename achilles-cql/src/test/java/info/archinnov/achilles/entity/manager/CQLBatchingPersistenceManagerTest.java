@@ -19,7 +19,7 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.CQLConsistencyLevelPolicy;
+
 import info.archinnov.achilles.context.CQLBatchingFlushContext;
 import info.archinnov.achilles.context.CQLDaoContext;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
@@ -57,8 +57,6 @@ public class CQLBatchingPersistenceManagerTest {
 	@Mock
 	private ConfigurationContext configContext;
 
-	@Mock
-	private CQLConsistencyLevelPolicy consistencyPolicy;
 
 	@Mock
 	private CQLBatchingFlushContext flushContext;
@@ -71,7 +69,6 @@ public class CQLBatchingPersistenceManagerTest {
 
 	@Before
 	public void setUp() {
-		when(configContext.getConsistencyPolicy()).thenReturn(consistencyPolicy);
 		manager = new CQLBatchingPersistenceManager(null, contextFactory, daoContext, configContext);
 		Whitebox.setInternalState(manager, CQLBatchingFlushContext.class, flushContext);
 	}

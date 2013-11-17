@@ -30,7 +30,6 @@ import com.google.common.collect.Lists;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.table.TableNameNormalizer;
@@ -152,11 +151,11 @@ public class EntityIntrospector {
 	}
 
 	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity,
-			AchillesConsistencyLevelPolicy policy) {
+            Pair<ConsistencyLevel,ConsistencyLevel> defaultConsistencyLevels) {
 		log.debug("Find consistency levels for entity class {}", entity.getCanonicalName());
 
-		ConsistencyLevel defaultGlobalRead = getDefaultGlobalReadConsistency(policy);
-		ConsistencyLevel defaultGlobalWrite = getDefaultGlobalWriteConsistency(policy);
+		ConsistencyLevel defaultGlobalRead = defaultConsistencyLevels.left;
+		ConsistencyLevel defaultGlobalWrite = defaultConsistencyLevels.right;
 
 		Consistency clevel = entity.getAnnotation(Consistency.class);
 
@@ -222,15 +221,5 @@ public class EntityIntrospector {
 			i = i.getSuperclass();
 		}
 		return null;
-	}
-
-	public ConsistencyLevel getDefaultGlobalReadConsistency(AchillesConsistencyLevelPolicy policy) {
-		return policy.getDefaultGlobalReadConsistencyLevel() != null ? policy.getDefaultGlobalReadConsistencyLevel()
-				: ConfigurationParameters.DEFAULT_LEVEL;
-	}
-
-	public ConsistencyLevel getDefaultGlobalWriteConsistency(AchillesConsistencyLevelPolicy policy) {
-		return policy.getDefaultGlobalWriteConsistencyLevel() != null ? policy.getDefaultGlobalWriteConsistencyLevel()
-				: ConfigurationParameters.DEFAULT_LEVEL;
 	}
 }

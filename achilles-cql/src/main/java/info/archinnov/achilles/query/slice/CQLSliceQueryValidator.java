@@ -14,21 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.compound;
+package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CQLSliceQueryValidator extends CompoundKeyValidator {
+public class CQLSliceQueryValidator {
 	private static final Logger log = LoggerFactory.getLogger(CQLSliceQueryValidator.class);
+
+    protected ComponentComparator comparator = new ComponentComparator();
+
+    public int getLastNonNullIndex(List<Object> components) {
+        for (int i = 0; i < components.size(); i++) {
+            if (components.get(i) == null) {
+                return i - 1;
+            }
+        }
+        return components.size() - 1;
+    }
 
 	public <T> void validateComponentsForSliceQuery(SliceQuery<T> sliceQuery) {
 		final List<Object> clusteringsFrom = sliceQuery.getClusteringsFrom();
@@ -79,4 +91,27 @@ public class CQLSliceQueryValidator extends CompoundKeyValidator {
 		}
 
 	}
+
+    protected static class ComponentComparator implements Comparator<Object> {
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public int compare(Object o1, Object o2) {
+            if (o1.getClass().isEnum() && o2.getClass().isEnum()) {
+                String name1 = ((Enum<?>) o1).name();
+                String name2 = ((Enum<?>) o2).name();
+
+                return name1.compareTo(name2);
+            } else if (Comparable.class.isAssignableFrom(o1.getClass())
+                    && Comparable.class.isAssignableFrom(o2.getClass())) {
+                Comparable<Object> comp1 = (Comparable<Object>) o1;
+                Comparable<Object> comp2 = (Comparable<Object>) o2;
+
+                return comp1.compareTo(comp2);
+            } else {
+                throw new IllegalArgumentException("Type '" + o1.getClass().getCanonicalName() + "' or type '"
+                                                           + o2.getClass().getCanonicalName() + "' should implements Comparable");
+            }
+        }
+    }
 }

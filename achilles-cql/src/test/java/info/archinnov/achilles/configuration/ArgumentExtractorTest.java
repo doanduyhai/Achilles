@@ -16,18 +16,34 @@
  */
 package info.archinnov.achilles.configuration;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_PORT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,7 +63,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolOptions;
+import com.datastax.driver.core.SSLOptions;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -57,14 +80,19 @@ public class ArgumentExtractorTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	@Mock
-	private ArgumentExtractor extractor;
+	private ArgumentExtractor extractor = new ArgumentExtractor();
 
 	@Mock
 	private ObjectMapper mapper;
 
 	@Mock
 	private ObjectMapperFactory factory;
+
+    @Mock
+    private Cluster cluster;
+
+    @Mock
+    private Session session;
 
 	private Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -77,7 +105,6 @@ public class ArgumentExtractorTest {
 	public void should_init_entity_packages() throws Exception {
 		configMap.put(ENTITY_PACKAGES_PARAM, "my.package.entity,another.package.entity,third.package");
 
-		doCallRealMethod().when(extractor).initEntityPackages(configMap);
 		List<String> actual = extractor.initEntityPackages(configMap);
 
 		assertThat(actual).containsExactly("my.package.entity", "another.package.entity", "third.package");
@@ -85,7 +112,6 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_empty_entity_packages() throws Exception {
-		doCallRealMethod().when(extractor).initEntityPackages(configMap);
 		List<String> actual = extractor.initEntityPackages(configMap);
 
 		assertThat(actual).isEmpty();
@@ -93,7 +119,6 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_forceCFCreation_to_default_value() throws Exception {
-		doCallRealMethod().when(extractor).initForceCFCreation(configMap);
 		boolean actual = extractor.initForceCFCreation(configMap);
 
 		assertThat(actual).isFalse();
@@ -103,7 +128,6 @@ public class ArgumentExtractorTest {
 	public void should_init_forceCFCreation() throws Exception {
 		configMap.put(FORCE_CF_CREATION_PARAM, true);
 
-		doCallRealMethod().when(extractor).initForceCFCreation(configMap);
 		boolean actual = extractor.initForceCFCreation(configMap);
 
 		assertThat(actual).isTrue();
@@ -111,7 +135,6 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_default_object_factory_mapper() throws Exception {
-		doCallRealMethod().when(extractor).initObjectMapperFactory(configMap);
 		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
 		assertThat(actual).isNotNull();
@@ -139,7 +162,6 @@ public class ArgumentExtractorTest {
 	public void should_init_object_mapper_factory_from_mapper() throws Exception {
 		configMap.put(OBJECT_MAPPER_PARAM, mapper);
 
-		doCallRealMethod().when(extractor).initObjectMapperFactory(configMap);
 		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
 		assertThat(actual).isNotNull();
@@ -150,7 +172,6 @@ public class ArgumentExtractorTest {
 	public void should_init_object_mapper_factory() throws Exception {
 		configMap.put(OBJECT_MAPPER_FACTORY_PARAM, factory);
 
-		doCallRealMethod().when(extractor).initObjectMapperFactory(configMap);
 		ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
 		assertThat(actual).isSameAs(factory);
@@ -160,7 +181,6 @@ public class ArgumentExtractorTest {
 	public void should_init_default_read_consistency_level() throws Exception {
 		configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, "ONE");
 
-		doCallRealMethod().when(extractor).initDefaultReadConsistencyLevel(configMap);
 		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
 	}
 
@@ -171,7 +191,6 @@ public class ArgumentExtractorTest {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("'wrong_value' is not a valid Consistency Level");
 
-		doCallRealMethod().when(extractor).initDefaultReadConsistencyLevel(configMap);
 		extractor.initDefaultReadConsistencyLevel(configMap);
 	}
 
@@ -179,13 +198,11 @@ public class ArgumentExtractorTest {
 	public void should_init_default_write_consistency_level() throws Exception {
 		configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, "LOCAL_QUORUM");
 
-		doCallRealMethod().when(extractor).initDefaultWriteConsistencyLevel(configMap);
 		assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
 	}
 
 	@Test
 	public void should_return_default_one_level_when_no_parameter() throws Exception {
-		doCallRealMethod().when(extractor).initDefaultReadConsistencyLevel(configMap);
 		assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
 	}
 
@@ -193,7 +210,6 @@ public class ArgumentExtractorTest {
 	public void should_init_read_consistency_level_map() throws Exception {
 		configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
 
-		doCallRealMethod().when(extractor).initReadConsistencyMap(configMap);
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
 
 		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.ONE);
@@ -204,7 +220,6 @@ public class ArgumentExtractorTest {
 	public void should_init_write_consistency_level_map() throws Exception {
 		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
 
-		doCallRealMethod().when(extractor).initWriteConsistencyMap(configMap);
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.THREE);
@@ -213,8 +228,6 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_return_empty_consistency_map_when_no_parameter() throws Exception {
-		doCallRealMethod().when(extractor).initWriteConsistencyMap(configMap);
-
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
@@ -224,10 +237,99 @@ public class ArgumentExtractorTest {
 	public void should_return_empty_consistency_map_when_empty_map_parameter() throws Exception {
 		configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, new HashMap<String, String>());
 
-		doCallRealMethod().when(extractor).initWriteConsistencyMap(configMap);
-
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
 	}
+
+    @Test(expected = Exception.class)
+    public void should_init_cluster_with_all_params() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+        params.put(CONNECTION_PORT_PARAM, 9111);
+        params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
+        params.put(RETRY_POLICY, Policies.defaultRetryPolicy());
+        params.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
+        params.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
+        params.put(USERNAME, "user");
+        params.put(PASSWORD, "pass");
+        params.put(DISABLE_JMX, true);
+        params.put(DISABLE_METRICS, true);
+        params.put(SSL_ENABLED, true);
+        params.put(SSL_OPTIONS, new SSLOptions());
+
+        extractor.initCluster(params);
+    }
+
+    @Test
+    public void should_get_cluster_directly_from_parameter() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CLUSTER_PARAM, cluster);
+
+        Cluster actual = extractor.initCluster(params);
+        assertThat(actual).isSameAs(cluster);
+    }
+
+    @Test(expected = NoHostAvailableException.class)
+    public void should_init_cluster_with_minimum_params() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+        params.put(CONNECTION_PORT_PARAM, 9111);
+
+        extractor.initCluster(params);
+    }
+
+    @Test
+    public void should_exception_when_no_hostname_property() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
+
+        extractor.initCluster(params);
+    }
+
+    @Test
+    public void should_exception_when_no_port_property() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
+
+        extractor.initCluster(params);
+    }
+
+    @Test
+    public void should_init_session() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(KEYSPACE_NAME_PARAM, "achilles");
+
+        when(cluster.connect("achilles")).thenReturn(session);
+
+        Session actual = extractor.initSession(cluster, params);
+
+        assertThat(actual).isSameAs(session);
+    }
+
+    @Test
+    public void should_exception_when_no_keyspace_name_param() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
+
+        extractor.initSession(cluster, params);
+    }
+
+    @Test
+    public void should_get_native_session_from_parameter() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(KEYSPACE_NAME_PARAM, "achilles");
+        params.put(NATIVE_SESSION_PARAM, session);
+
+        Session actual = extractor.initSession(cluster, params);
+
+        assertThat(actual).isSameAs(session);
+    }
 }

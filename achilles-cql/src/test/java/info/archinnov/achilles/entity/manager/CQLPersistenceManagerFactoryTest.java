@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.manager;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+
 import info.archinnov.achilles.context.ConfigurationContext;
 
 import org.junit.Test;
@@ -36,12 +36,8 @@ public class CQLPersistenceManagerFactoryTest {
 	@Mock
 	private ConfigurationContext configContext;
 
-	@Mock
-	private AchillesConsistencyLevelPolicy policy;
-
 	@Test
 	public void should_create_entity_manager() throws Exception {
-		when(configContext.getConsistencyPolicy()).thenReturn(policy);
 		pmf.setConfigContext(configContext);
 		CQLPersistenceManager manager = pmf.createPersistenceManager();
 		assertThat(manager).isNotNull();
