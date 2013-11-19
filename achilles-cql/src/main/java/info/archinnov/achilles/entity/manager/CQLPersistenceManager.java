@@ -21,7 +21,6 @@ import info.archinnov.achilles.context.CQLPersistenceContext;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.CQLEntityInitializer;
 import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.entity.operations.CQLEntityValidator;
 import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
@@ -42,434 +41,436 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Session;
 
 public class CQLPersistenceManager {
-    private static final Logger log = LoggerFactory.getLogger(CQLPersistenceManager.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLPersistenceManager.class);
 
-    protected Map<Class<?>, EntityMeta> entityMetaMap;
-    protected ConfigurationContext configContext;
+	protected Map<Class<?>, EntityMeta> entityMetaMap;
+	protected ConfigurationContext configContext;
+	protected CQLPersistenceContextFactory contextFactory;
 
-    protected CQLEntityProxifier proxifier = new CQLEntityProxifier();
-    private CQLEntityValidator entityValidator = new CQLEntityValidator();
-    private CQLTypedQueryValidator typedQueryValidator = new CQLTypedQueryValidator();
+	protected CQLEntityProxifier proxifier = new CQLEntityProxifier();
+	private CQLEntityValidator entityValidator = new CQLEntityValidator();
+	private CQLTypedQueryValidator typedQueryValidator = new CQLTypedQueryValidator();
 
-    private CQLSliceQueryExecutor sliceQueryExecutor;
-    private CQLPersistenceContextFactory contextFactory;
+	private CQLSliceQueryExecutor sliceQueryExecutor;
 
 	protected CQLDaoContext daoContext;
 
 	protected CQLPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			CQLPersistenceContextFactory contextFactory, CQLDaoContext daoContext, ConfigurationContext configContext) {
-        this.entityMetaMap = entityMetaMap;
-        this.configContext = configContext;
+		this.entityMetaMap = entityMetaMap;
+		this.configContext = configContext;
 		this.daoContext = daoContext;
 		this.contextFactory = contextFactory;
 		this.sliceQueryExecutor = new CQLSliceQueryExecutor(contextFactory, configContext, daoContext);
 	}
 
+	/**
+	 * Persist an entity.
+	 * 
+	 * @param entity
+	 *            Entity to be persisted
+	 */
+	public void persist(Object entity) {
+		log.debug("Persisting entity '{}'", entity);
 
+		persist(entity, OptionsBuilder.noOptions());
+	}
 
-    /**
-     * Persist an entity.
-     *
-     * @param entity
-     *            Entity to be persisted
-     */
-    public void persist(Object entity) {
-        log.debug("Persisting entity '{}'", entity);
+	/**
+	 * Persist an entity with the given options.
+	 * 
+	 * @param entity
+	 *            Entity to be persisted
+	 * @param options
+	 *            options for consistency level, ttl and timestamp
+	 */
+	public void persist(final Object entity, Options options) {
+		if (log.isDebugEnabled())
+			log.debug("Persisting entity '{}' with options {} ", entity, options);
 
-        persist(entity, OptionsBuilder.noOptions());
-    }
+		entityValidator.validateEntity(entity, entityMetaMap);
 
-    /**
-     * Persist an entity with the given options.
-     *
-     * @param entity
-     *            Entity to be persisted
-     * @param options
-     *            options for consistency level, ttl and timestamp
-     */
-    public void persist(final Object entity, Options options) {
-        if (log.isDebugEnabled())
-            log.debug("Persisting entity '{}' with options {} ", entity, options);
+		if (options.getTtl().isPresent()) {
+			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+		}
+		if (proxifier.isProxy(entity)) {
+			throw new IllegalStateException(
+					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+		}
 
-        entityValidator.validateEntity(entity, entityMetaMap);
+		CQLPersistenceContext context = contextFactory.newContext(entity, options);
+		context.persist();
+	}
 
-        if (options.getTtl().isPresent()) {
-            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
-        }
-        if (proxifier.isProxy(entity)) {
-            throw new IllegalStateException(
-                    "Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
-        }
+	/**
+	 * Merge an entity.
+	 * 
+	 * Calling merge on a transient entity will persist it and returns a managed
+	 * 
+	 * instance.
+	 * 
+	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * 
+	 * in parameter if the latter is in managed state. It was designed on
+	 * purpose
+	 * 
+	 * so you do not loose the reference of the passed entity. For transient
+	 * 
+	 * entity, the return value is a new proxy object
+	 * 
+	 * </strong>
+	 * 
+	 * @param entity
+	 *            Entity to be merged
+	 * @return Merged entity or a new proxified entity
+	 */
+	public <T> T merge(T entity) {
+		if (log.isDebugEnabled())
+			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
 
-        CQLPersistenceContext context = initPersistenceContext(entity, options);
-        context.persist();
-    }
+		return merge(entity, OptionsBuilder.noOptions());
+	}
 
-    /**
-     * Merge an entity.
-     *
-     * Calling merge on a transient entity will persist it and returns a managed
-     *
-     * instance.
-     *
-     * <strong>Unlike the JPA specs, Achilles returns the same entity passed
-     *
-     * in parameter if the latter is in managed state. It was designed on
-     * purpose
-     *
-     * so you do not loose the reference of the passed entity. For transient
-     *
-     * entity, the return value is a new proxy object
-     *
-     * </strong>
-     *
-     * @param entity
-     *            Entity to be merged
-     * @return Merged entity or a new proxified entity
-     */
-    public <T> T merge(T entity) {
-        if (log.isDebugEnabled())
-            log.debug("Merging entity '{}'", proxifier.unwrap(entity));
+	/**
+	 * Merge an entity with the given options
+	 * 
+	 * Calling merge on a transient entity will persist it and returns a managed
+	 * instance.
+	 * 
+	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * 
+	 * in parameter if the latter is in managed state. It was designed on
+	 * purpose
+	 * 
+	 * so you do not loose the reference of the passed entity. For transient
+	 * 
+	 * entity, the return value is a new proxy object
+	 * 
+	 * </strong>
+	 * 
+	 * @param entity
+	 *            Entity to be merged
+	 * @param options
+	 *            options for consistency level, ttl and timestamp
+	 * @return Merged entity or a new proxified entity
+	 */
+	public <T> T merge(final T entity, Options options) {
+		if (log.isDebugEnabled()) {
+			log.debug("Merging entity '{}' with options {} ", proxifier.unwrap(entity), options);
+		}
+		entityValidator.validateEntity(entity, entityMetaMap);
+		if (options.getTtl().isPresent()) {
+			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
+		}
+		CQLPersistenceContext context = contextFactory.newContext(entity, options);
+		return context.<T> merge(entity);
 
-        return merge(entity, OptionsBuilder.noOptions());
-    }
+	}
 
-    /**
-     * Merge an entity with the given options
-     *
-     * Calling merge on a transient entity will persist it and returns a managed
-     * instance.
-     *
-     * <strong>Unlike the JPA specs, Achilles returns the same entity passed
-     *
-     * in parameter if the latter is in managed state. It was designed on
-     * purpose
-     *
-     * so you do not loose the reference of the passed entity. For transient
-     *
-     * entity, the return value is a new proxy object
-     *
-     * </strong>
-     *
-     * @param entity
-     *            Entity to be merged
-     * @param options
-     *            options for consistency level, ttl and timestamp
-     * @return Merged entity or a new proxified entity
-     */
-    public <T> T merge(final T entity, Options options) {
-        if (log.isDebugEnabled()) {
-            log.debug("Merging entity '{}' with options {} ", proxifier.unwrap(entity), options);
-        }
-        entityValidator.validateEntity(entity, entityMetaMap);
-        if (options.getTtl().isPresent()) {
-            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
-        }
-        CQLPersistenceContext context = initPersistenceContext(entity, options);
-        return context.<T> merge(entity);
+	/**
+	 * Remove an entity.
+	 * 
+	 * @param entity
+	 *            Entity to be removed
+	 */
+	public void remove(Object entity) {
+		if (log.isDebugEnabled())
+			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
 
-    }
+		remove(entity, null);
+	}
 
-    /**
-     * Remove an entity.
-     *
-     * @param entity
-     *            Entity to be removed
-     */
-    public void remove(Object entity) {
-        if (log.isDebugEnabled())
-            log.debug("Removing entity '{}'", proxifier.unwrap(entity));
+	/**
+	 * Remove an entity by its id.
+	 * 
+	 * @param entityClass
+	 *            Entity class
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 */
+	public void removeById(Class<?> entityClass, Object primaryKey) {
 
-        remove(entity, null);
-    }
+		Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
+		Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
+		if (log.isDebugEnabled()) {
+			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+		}
+		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey, OptionsBuilder.noOptions());
+		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+		context.remove();
+	}
 
-    /**
-     * Remove an entity by its id.
-     *
-     * @param entityClass
-     *            Entity class
-     *
-     * @param primaryKey
-     *            Primary key
-     */
-    public void removeById(Class<?> entityClass, Object primaryKey) {
+	/**
+	 * Remove an entity with the given Consistency Level for write.
+	 * 
+	 * @param entity
+	 *            Entity to be removed
+	 * @param writeLevel
+	 *            Consistency Level for write
+	 */
+	public void remove(final Object entity, ConsistencyLevel writeLevel) {
+		if (log.isDebugEnabled())
+			log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
 
-        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        }
-        CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.noOptions());
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.remove();
-    }
+		entityValidator.validateEntity(entity, entityMetaMap);
+		proxifier.ensureProxy(entity);
+		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.withConsistency(writeLevel));
+		context.remove();
+	}
 
-    /**
-     * Remove an entity with the given Consistency Level for write.
-     *
-     * @param entity
-     *            Entity to be removed
-     * @param writeLevel
-     *            Consistency Level for write
-     */
-    public void remove(final Object entity, ConsistencyLevel writeLevel) {
-        if (log.isDebugEnabled())
-            log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
+	/**
+	 * Remove an entity by its id with the given Consistency Level for write.
+	 * 
+	 * @param entityClass
+	 *            Entity class
+	 * 
+	 * @param primaryKey
+	 *            Primary key
+	 */
+	public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
+		Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
+		Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
+		if (log.isDebugEnabled())
+			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 
-        entityValidator.validateEntity(entity, entityMetaMap);
-        proxifier.ensureProxy(entity);
-        CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.withConsistency(writeLevel));
-        context.remove();
-    }
+		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(writeLevel));
+		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+		context.remove();
+	}
 
-    /**
-     * Remove an entity by its id with the given Consistency Level for write.
-     *
-     * @param entityClass
-     *            Entity class
-     *
-     * @param primaryKey
-     *            Primary key
-     */
-    public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled())
-            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+	/**
+	 * Find an entity.
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to load
+	 */
+	public <T> T find(Class<T> entityClass, Object primaryKey) {
+		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
+		return find(entityClass, primaryKey, null);
+	}
 
-        CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(writeLevel));
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.remove();
-    }
+	/**
+	 * Find an entity with the given Consistency Level for read
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to load
+	 * @param readLevel
+	 *            Consistency Level for read
+	 */
+	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+		log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
+				readLevel);
+		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
+		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(readLevel));
+		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+		return context.<T> find(entityClass);
+	}
 
-    /**
-     * Find an entity.
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to load
-     */
-    public <T> T find(Class<T> entityClass, Object primaryKey) {
-        log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-        return find(entityClass, primaryKey, null);
-    }
+	/**
+	 * Find an entity. Works exactly as find(Class<T> entityClass, Object
+	 * primaryKey) except that the database will not be hit. This method never
+	 * returns null
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to initialize
+	 */
+	public <T> T getReference(Class<T> entityClass, Object primaryKey) {
+		if (log.isDebugEnabled())
+			log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
 
-    /**
-     * Find an entity with the given Consistency Level for read
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to load
-     * @param readLevel
-     *            Consistency Level for read
-     */
-    public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
-                  readLevel);
-        Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
-        CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        return context.<T> find(entityClass);
-    }
+		return getReference(entityClass, primaryKey, null);
+	}
 
-    /**
-     * Find an entity. Works exactly as find(Class<T> entityClass, Object
-     * primaryKey) except that the database will not be hit. This method never
-     * returns null
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     */
-    public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-        if (log.isDebugEnabled())
-            log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
+	/**
+	 * Find an entity with the given Consistency Level for read. Works exactly
+	 * as find(Class<T> entityClass, Object primaryKey) except that the database
+	 * will not be hit. This method never returns null
+	 * 
+	 * @param entityClass
+	 *            Entity type
+	 * @param primaryKey
+	 *            Primary key (Cassandra row key) of the entity to initialize
+	 * @param readLevel
+	 *            Consistency Level for read
+	 */
+	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+		if (log.isDebugEnabled())
+			log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
+					entityClass, primaryKey, readLevel);
 
-        return getReference(entityClass, primaryKey, null);
-    }
+		Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
+		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
-    /**
-     * Find an entity with the given Consistency Level for read. Works exactly
-     * as find(Class<T> entityClass, Object primaryKey) except that the database
-     * will not be hit. This method never returns null
-     *
-     * @param entityClass
-     *            Entity type
-     * @param primaryKey
-     *            Primary key (Cassandra row key) of the entity to initialize
-     * @param readLevel
-     *            Consistency Level for read
-     */
-    public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        if (log.isDebugEnabled())
-            log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
-                      entityClass, primaryKey, readLevel);
+		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(readLevel));
+		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
+		return context.<T> getReference(entityClass);
+	}
 
-        Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
+	/**
+	 * Refresh an entity.
+	 * 
+	 * @param entity
+	 *            Entity to be refreshed
+	 */
+	public void refresh(Object entity) throws AchillesStaleObjectStateException {
+		if (log.isDebugEnabled())
+			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
 
-        CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        return context.<T> getReference(entityClass);
-    }
+		refresh(entity, null);
+	}
 
-    /**
-     * Refresh an entity.
-     *
-     * will be also refreshed from Cassandra.
-     *
-     * @param entity
-     *            Entity to be refreshed
-     */
-    public void refresh(Object entity) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled())
-            log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
+	/**
+	 * Refresh an entity with the given Consistency Level for read.
+	 * 
+	 * @param entity
+	 *            Entity to be refreshed
+	 * @param readLevel
+	 *            Consistency Level for read
+	 */
+	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
+		if (log.isDebugEnabled())
+			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
 
-        refresh(entity, null);
-    }
+		entityValidator.validateEntity(entity, entityMetaMap);
+		proxifier.ensureProxy(entity);
+		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.withConsistency(readLevel));
+		context.refresh();
+	}
 
-    /**
-     * Refresh an entity with the given Consistency Level for read.
-     *
-     * @param entity
-     *            Entity to be refreshed
-     * @param readLevel
-     *            Consistency Level for read
-     */
-    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled())
-            log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
+	/**
+	 * Initialize all lazy fields of a 'managed' entity, except WideMap/Counter
+	 * fields.
+	 * 
+	 * Raise an <strong>IllegalStateException</strong> if the entity is not
+	 * 'managed'
+	 * 
+	 */
+	public <T> T initialize(final T entity) {
+		log.debug("Force lazy fields initialization for entity {}", entity);
+		proxifier.ensureProxy(entity);
+		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.noOptions());
+		return context.initialize(entity);
+	}
 
-        entityValidator.validateEntity(entity, entityMetaMap);
-        proxifier.ensureProxy(entity);
-        CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.withConsistency(readLevel));
-        context.refresh();
-    }
+	/**
+	 * Initialize all lazy fields of a set of 'managed' entities, except
+	 * WideMap/Counter fields.
+	 * 
+	 * Raise an IllegalStateException if an entity is not 'managed'
+	 * 
+	 */
+	public <T> Set<T> initialize(final Set<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
+		for (T entity : entities) {
+			initialize(entity);
+		}
+		return entities;
+	}
 
-    /**
-     * Initialize all lazy fields of a 'managed' entity, except WideMap/Counter
-     * fields.
-     *
-     * Raise an <strong>IllegalStateException</strong> if the entity is not
-     * 'managed'
-     *
-     */
-    public <T> T initialize(final T entity) {
-        log.debug("Force lazy fields initialization for entity {}", entity);
-        proxifier.ensureProxy(entity);
-        CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.noOptions());
-        return context.initialize(entity);
-    }
+	/**
+	 * Initialize all lazy fields of a list of 'managed' entities, except
+	 * WideMap/Counter fields.
+	 * 
+	 * Raise an IllegalStateException if an entity is not 'managed'
+	 * 
+	 */
+	public <T> List<T> initialize(final List<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
+		for (T entity : entities) {
+			initialize(entity);
+		}
+		return entities;
+	}
 
-    /**
-     * Initialize all lazy fields of a set of 'managed' entities, except
-     * WideMap/Counter fields.
-     *
-     * Raise an IllegalStateException if an entity is not 'managed'
-     *
-     */
-    public <T> Set<T> initialize(final Set<T> entities) {
-        log.debug("Force lazy fields initialization for entity set {}", entities);
-        for (T entity : entities) {
-            initialize(entity);
-        }
-        return entities;
-    }
+	/**
+	 * Shorthand for manager.unwrap(manager.initialize(T entity))
+	 * 
+	 */
+	public <T> T initAndUnwrap(T entity) {
+		return unwrap(initialize(entity));
+	}
 
-    /**
-     * Initialize all lazy fields of a list of 'managed' entities, except
-     * WideMap/Counter fields.
-     *
-     * Raise an IllegalStateException if an entity is not 'managed'
-     *
-     */
-    public <T> List<T> initialize(final List<T> entities) {
-        log.debug("Force lazy fields initialization for entity set {}", entities);
-        for (T entity : entities) {
-            initialize(entity);
-        }
-        return entities;
-    }
+	/**
+	 * Shorthand for manager.unwrap(manager.initialize(Set<T> entities))
+	 * 
+	 */
+	public <T> Set<T> initAndUnwrap(Set<T> entities) {
+		return unwrap(initialize(entities));
+	}
 
-    /**
-     * Shorthand for manager.unwrap(manager.initialize(T entity))
-     *
-     */
-    public <T> T initAndUnwrap(T entity) {
-        return unwrap(initialize(entity));
-    }
+	/**
+	 * Shorthand for manager.unwrap(manager.initialize(List<T> entities))
+	 * 
+	 */
+	public <T> List<T> initAndUnwrap(List<T> entities) {
+		return unwrap(initialize(entities));
+	}
 
-    /**
-     * Shorthand for manager.unwrap(manager.initialize(Set<T> entities))
-     *
-     */
-    public <T> Set<T> initAndUnwrap(Set<T> entities) {
-        return unwrap(initialize(entities));
-    }
+	/**
+	 * Unwrap a 'managed' entity to prepare it for serialization
+	 * 
+	 * If the argument is not a proxy objet, return itself <br/>
+	 * Else, return the target object behind the proxy
+	 * 
+	 * @param proxy
+	 * @return real object
+	 */
+	public <T> T unwrap(T proxy) {
+		log.debug("Unproxying entity {}", proxy);
 
-    /**
-     * Shorthand for manager.unwrap(manager.initialize(List<T> entities))
-     *
-     */
-    public <T> List<T> initAndUnwrap(List<T> entities) {
-        return unwrap(initialize(entities));
-    }
+		T realObject = proxifier.unwrap(proxy);
 
-    /**
-     * Unwrap a 'managed' entity to prepare it for serialization
-     *
-     * If the argument is not a proxy objet, return itself <br/>
-     * Else, return the target object behind the proxy
-     *
-     * @param proxy
-     * @return real object
-     */
-    public <T> T unwrap(T proxy) {
-        log.debug("Unproxying entity {}", proxy);
+		return realObject;
+	}
 
-        T realObject = proxifier.unwrap(proxy);
+	/**
+	 * Unwrap a list of 'managed' entities to prepare them for serialization
+	 * 
+	 * See {@link #unwrap}
+	 * 
+	 * @param proxies
+	 *            list of proxified entity
+	 * @return real object list
+	 */
+	public <T> List<T> unwrap(List<T> proxies) {
+		log.debug("Unproxying list of entities {}", proxies);
 
-        return realObject;
-    }
+		return proxifier.unwrap(proxies);
+	}
 
-    /**
-     * Unwrap a list of 'managed' entities to prepare them for serialization
-     *
-     * See {@link #unwrap}
-     *
-     * @param proxies
-     *            list of proxified entity
-     * @return real object list
-     */
-    public <T> List<T> unwrap(List<T> proxies) {
-        log.debug("Unproxying list of entities {}", proxies);
+	/**
+	 * Unwrap a set of 'managed' entities to prepare them for serialization
+	 * 
+	 * See {@link #unwrap}
+	 * 
+	 * @param proxies
+	 *            set of proxified entities
+	 * @return real object set
+	 */
+	public <T> Set<T> unwrap(Set<T> proxies) {
+		log.debug("Unproxying set of entities {}", proxies);
 
-        return proxifier.unwrap(proxies);
-    }
-
-    /**
-     * Unwrap a set of 'managed' entities to prepare them for serialization
-     *
-     * See {@link #unwrap}
-     *
-     * @param proxies
-     *            set of proxified entities
-     * @return real object set
-     */
-    public <T> Set<T> unwrap(Set<T> proxies) {
-        log.debug("Unproxying set of entities {}", proxies);
-
-        return proxifier.unwrap(proxies);
-    }
+		return proxifier.unwrap(proxies);
+	}
 
 	public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
@@ -583,33 +584,29 @@ public class CQLPersistenceManager {
 		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true);
 	}
 
-	protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
-		return contextFactory.newContext(entity, options);
-	}
-
-	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
-		return contextFactory.newContext(entityClass, primaryKey, options);
-	}
+	// protected CQLPersistenceContext initPersistenceContext(Class<?>
+	// entityClass, Object primaryKey, Options options) {
+	// return contextFactory.newContext(entityClass, primaryKey, options);
+	// }
 
 	public Session getNativeSession() {
 		return daoContext.getSession();
 	}
 
+	protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
+		return entityMetaMap;
+	}
 
-    protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
-        return entityMetaMap;
-    }
+	protected ConfigurationContext getConfigContext() {
+		return configContext;
+	}
 
-    protected ConfigurationContext getConfigContext() {
-        return configContext;
-    }
+	protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap) {
+		this.entityMetaMap = entityMetaMap;
+	}
 
-    protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap) {
-        this.entityMetaMap = entityMetaMap;
-    }
-
-    protected void setConfigContext(ConfigurationContext configContext) {
-        this.configContext = configContext;
-    }
+	protected void setConfigContext(ConfigurationContext configContext) {
+		this.configContext = configContext;
+	}
 
 }

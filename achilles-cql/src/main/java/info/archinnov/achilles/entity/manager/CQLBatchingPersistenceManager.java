@@ -150,7 +150,6 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		}
 	}
 
-	@Override
 	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
@@ -160,7 +159,6 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 				options);
 	}
 
-	@Override
 	protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
 

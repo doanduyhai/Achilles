@@ -37,8 +37,8 @@ public class IndexCondition {
 	}
 
 	public String generateWhereClause() {
-		return new StringBuilder().append(columnName.toLowerCase()).append(indexRelation).append("'")
-				.append(columnValue).append("'").toString();
+		return new StringBuilder().append(columnName.toLowerCase()).append(indexRelation).append(columnValue)
+				.toString();
 	}
 
 	@Override
