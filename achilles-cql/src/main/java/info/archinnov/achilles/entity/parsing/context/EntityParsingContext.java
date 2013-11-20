@@ -62,7 +62,7 @@ public class EntityParsingContext {
 		this.propertyMetas = propertyMetas;
 	}
 
-	public Boolean getHasSimpleCounter() {
+	public Boolean hasSimpleCounter() {
 		return hasCounter;
 	}
 

@@ -16,40 +16,21 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_PORT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -63,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.SSLOptions;
@@ -70,9 +52,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArgumentExtractorTest {
@@ -88,11 +67,11 @@ public class ArgumentExtractorTest {
 	@Mock
 	private ObjectMapperFactory factory;
 
-    @Mock
-    private Cluster cluster;
+	@Mock
+	private Cluster cluster;
 
-    @Mock
-    private Session session;
+	@Mock
+	private Session session;
 
 	private Map<String, Object> configMap = new HashMap<String, Object>();
 
@@ -242,94 +221,116 @@ public class ArgumentExtractorTest {
 		assertThat(consistencyMap).isEmpty();
 	}
 
-    @Test(expected = Exception.class)
-    public void should_init_cluster_with_all_params() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-        params.put(CONNECTION_PORT_PARAM, 9111);
-        params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
-        params.put(RETRY_POLICY, Policies.defaultRetryPolicy());
-        params.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
-        params.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
-        params.put(USERNAME, "user");
-        params.put(PASSWORD, "pass");
-        params.put(DISABLE_JMX, true);
-        params.put(DISABLE_METRICS, true);
-        params.put(SSL_ENABLED, true);
-        params.put(SSL_OPTIONS, new SSLOptions());
+	@Test(expected = Exception.class)
+	public void should_init_cluster_with_all_params() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+		params.put(CONNECTION_PORT_PARAM, 9111);
+		params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
+		params.put(RETRY_POLICY, Policies.defaultRetryPolicy());
+		params.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
+		params.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
+		params.put(USERNAME, "user");
+		params.put(PASSWORD, "pass");
+		params.put(DISABLE_JMX, true);
+		params.put(DISABLE_METRICS, true);
+		params.put(SSL_ENABLED, true);
+		params.put(SSL_OPTIONS, new SSLOptions());
 
-        extractor.initCluster(params);
-    }
+		extractor.initCluster(params);
+	}
 
-    @Test
-    public void should_get_cluster_directly_from_parameter() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(CLUSTER_PARAM, cluster);
+	@Test
+	public void should_get_cluster_directly_from_parameter() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(CLUSTER_PARAM, cluster);
 
-        Cluster actual = extractor.initCluster(params);
-        assertThat(actual).isSameAs(cluster);
-    }
+		Cluster actual = extractor.initCluster(params);
+		assertThat(actual).isSameAs(cluster);
+	}
 
-    @Test(expected = NoHostAvailableException.class)
-    public void should_init_cluster_with_minimum_params() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-        params.put(CONNECTION_PORT_PARAM, 9111);
+	@Test(expected = NoHostAvailableException.class)
+	public void should_init_cluster_with_minimum_params() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+		params.put(CONNECTION_PORT_PARAM, 9111);
 
-        extractor.initCluster(params);
-    }
+		extractor.initCluster(params);
+	}
 
-    @Test
-    public void should_exception_when_no_hostname_property() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
+	@Test
+	public void should_exception_when_no_hostname_property() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
+		exception.expect(AchillesException.class);
+		exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
 
-        extractor.initCluster(params);
-    }
+		extractor.initCluster(params);
+	}
 
-    @Test
-    public void should_exception_when_no_port_property() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
+	@Test
+	public void should_exception_when_no_port_property() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
+		exception.expect(AchillesException.class);
+		exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
 
-        extractor.initCluster(params);
-    }
+		extractor.initCluster(params);
+	}
 
-    @Test
-    public void should_init_session() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(KEYSPACE_NAME_PARAM, "achilles");
+	@Test
+	public void should_init_session() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(KEYSPACE_NAME_PARAM, "achilles");
 
-        when(cluster.connect("achilles")).thenReturn(session);
+		when(cluster.connect("achilles")).thenReturn(session);
 
-        Session actual = extractor.initSession(cluster, params);
+		Session actual = extractor.initSession(cluster, params);
 
-        assertThat(actual).isSameAs(session);
-    }
+		assertThat(actual).isSameAs(session);
+	}
 
-    @Test
-    public void should_exception_when_no_keyspace_name_param() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
+	@Test
+	public void should_exception_when_no_keyspace_name_param() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
+		exception.expect(AchillesException.class);
+		exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
 
-        extractor.initSession(cluster, params);
-    }
+		extractor.initSession(cluster, params);
+	}
 
-    @Test
-    public void should_get_native_session_from_parameter() throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(KEYSPACE_NAME_PARAM, "achilles");
-        params.put(NATIVE_SESSION_PARAM, session);
+	@Test
+	public void should_get_native_session_from_parameter() throws Exception {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put(KEYSPACE_NAME_PARAM, "achilles");
+		params.put(NATIVE_SESSION_PARAM, session);
 
-        Session actual = extractor.initSession(cluster, params);
+		Session actual = extractor.initSession(cluster, params);
 
-        assertThat(actual).isSameAs(session);
-    }
+		assertThat(actual).isSameAs(session);
+	}
+
+	@Test
+	public void should_init_config_context() throws Exception {
+		// Given
+		Map<String, Object> params = new HashMap<String, Object>();
+		extractor = spy(extractor);
+
+		// When
+		doReturn(true).when(extractor).initForceCFCreation(params);
+		doReturn(factory).when(extractor).initObjectMapperFactory(params);
+		doReturn(ANY).when(extractor).initDefaultReadConsistencyLevel(params);
+		doReturn(ALL).when(extractor).initDefaultWriteConsistencyLevel(params);
+
+		ConfigurationContext configContext = extractor.initConfigContext(params);
+
+		// Then
+		assertThat(configContext.isForceColumnFamilyCreation()).isTrue();
+		assertThat(configContext.getObjectMapperFactory()).isSameAs(factory);
+		assertThat(configContext.getDefaultReadConsistencyLevel()).isEqualTo(ANY);
+		assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
+
+	}
 }

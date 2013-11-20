@@ -18,9 +18,10 @@ package info.archinnov.achilles.table;
 
 import static com.datastax.driver.core.DataType.Name.COUNTER;
 import static info.archinnov.achilles.cql.CQLTypeMapper.toCQLType;
-import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.table.CQLTableCreator.ACHILLES_DDL_SCRIPT;
 import static info.archinnov.achilles.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import info.archinnov.achilles.entity.metadata.IndexProperties;
+import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import info.archinnov.achilles.type.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +150,7 @@ public class CQLTableBuilder {
 		this.comment = comment.replaceAll("'", "\"");
 		return this;
 	}
-	
+
 	public CQLTableBuilder setReversedClusteredComponent(String reversedComponent) {
 		this.reversedComponent = reversedComponent;
 		return this;
@@ -230,7 +230,7 @@ public class CQLTableBuilder {
 
 		// Add comments
 		ddl.append(" WITH COMMENT = '").append(comment).append("'");
-		if(reversedComponent!=null){
+		if (reversedComponent != null) {
 			ddl.append(" AND CLUSTERING ORDER BY (").append(reversedComponent).append(" DESC)");
 		}
 		return ddl.toString();
@@ -245,12 +245,14 @@ public class CQLTableBuilder {
 		if (hasIndices()) {
 			for (IndexProperties indexProperties : indexedColumns) {
 				String indexName = indexProperties.getName();
-				indexName = indexName!=null && indexName.trim().length()>0 ? indexName : tableName + "_"+indexProperties.getPropertyName();
+				indexName = indexName != null && indexName.trim().length() > 0 ? indexName : tableName + "_"
+						+ indexProperties.getPropertyName();
 				StringBuilder ddl = new StringBuilder();
 				ddl.append("\n");
 				ddl.append("CREATE INDEX ").append(indexName);
 				ddl.append("\n");
-				ddl.append("ON ").append(tableName).append(" (").append(indexProperties.getPropertyName()).append(");\n");
+				ddl.append("ON ").append(tableName).append(" (").append(indexProperties.getPropertyName())
+						.append(");\n");
 				indicesScripts.add(ddl.toString());
 			}
 		}

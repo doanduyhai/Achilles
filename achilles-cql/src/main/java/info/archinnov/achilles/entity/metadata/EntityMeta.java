@@ -16,27 +16,30 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class EntityMeta {
 
-	public static final Predicate<EntityMeta> clusteredCounterFilter = new Predicate<EntityMeta>() {
+	public static final Predicate<EntityMeta> CLUSTERED_COUNTER_FILTER = new Predicate<EntityMeta>() {
 		@Override
 		public boolean apply(EntityMeta meta) {
 			return meta.isClusteredCounter();
 		}
 	};
 
-	public static final Predicate<EntityMeta> excludeClusteredCounterFilter = new Predicate<EntityMeta>() {
+	public static final Predicate<EntityMeta> EXCLUDE_CLUSTERED_COUNTER_FILTER = new Predicate<EntityMeta>() {
 		@Override
 		public boolean apply(EntityMeta meta) {
 			return !meta.isClusteredCounter();

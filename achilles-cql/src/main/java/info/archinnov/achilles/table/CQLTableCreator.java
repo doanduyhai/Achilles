@@ -16,11 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.InternalTimeUUID;
@@ -36,84 +32,27 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
-public class CQLTableCreator extends TableCreator {
+public class CQLTableCreator {
 	private static final Logger log = LoggerFactory.getLogger(CQLTableCreator.class);
 
-	private Session session;
-	private String keyspaceName;
-	private Cluster cluster;
-	private Map<String, TableMetadata> tableMetas;
+	public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
+	static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
-	private CQLTableValidator validator;
-
-	public CQLTableCreator(Cluster cluster, Session session, String keyspaceName) {
-		this.cluster = cluster;
-		this.session = session;
-		this.keyspaceName = keyspaceName;
-		this.tableMetas = fetchTableMetaData();
-		validator = new CQLTableValidator(cluster, keyspaceName);
-	}
-
-	@Override
-	protected void validateOrCreateTableForEntity(EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
-		String tableName = entityMeta.getTableName().toLowerCase();
-		if (tableMetas.containsKey(tableName)) {
-			validator.validateForEntity(entityMeta, tableMetas.get(tableName));
-		} else {
-			if (forceColumnFamilyCreation) {
-				log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
-				createTableForEntity(entityMeta);
-			} else {
-				throw new AchillesInvalidTableException("The required table '" + tableName
-						+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
-			}
-		}
-
-	}
-
-	@Override
-	protected void validateOrCreateTableForCounter(boolean forceColumnFamilyCreation) {
-		if (tableMetas.containsKey(CQL_COUNTER_TABLE)) {
-			validator.validateAchillesCounter();
-		} else {
-			if (forceColumnFamilyCreation) {
-				CQLTableBuilder builder = CQLTableBuilder.createTable(CQL_COUNTER_TABLE);
-				builder.addColumn(CQL_COUNTER_FQCN, String.class);
-				builder.addColumn(CQL_COUNTER_PRIMARY_KEY, String.class);
-				builder.addColumn(CQL_COUNTER_PROPERTY_NAME, String.class);
-				builder.addColumn(CQL_COUNTER_VALUE, Counter.class);
-				builder.addPartitionComponent(CQL_COUNTER_FQCN);
-				builder.addPartitionComponent(CQL_COUNTER_PRIMARY_KEY);
-				builder.addClusteringComponent(CQL_COUNTER_PROPERTY_NAME);
-
-				builder.addComment("Create default Achilles counter table '" + CQL_COUNTER_TABLE + "'");
-
-				session.execute(builder.generateDDLScript());
-			} else {
-				throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
-						+ "' does not exist");
-			}
-		}
-
-	}
-
-	private void createTableForEntity(EntityMeta entityMeta) {
+	private void createTableForEntity(Session session, EntityMeta entityMeta) {
 		log.debug("Creating table for entityMeta {}", entityMeta.getClassName());
-		String tableName = entityMeta.getTableName();
-
 		if (entityMeta.isClusteredCounter()) {
-			createTableForClusteredCounter(entityMeta);
+			createTableForClusteredCounter(session, entityMeta);
 		} else {
-			createTable(entityMeta, tableName);
+			createTable(session, entityMeta);
 		}
 	}
 
-	private void createTable(EntityMeta entityMeta, String tableName) {
+	private void createTable(Session session, EntityMeta entityMeta) {
+		String tableName = entityMeta.getTableName();
 		CQLTableBuilder builder = CQLTableBuilder.createTable(tableName);
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
 			String propertyName = pm.getPropertyName();
@@ -155,7 +94,7 @@ public class CQLTableCreator extends TableCreator {
 
 	}
 
-	private void createTableForClusteredCounter(EntityMeta meta) {
+	private void createTableForClusteredCounter(Session session, EntityMeta meta) {
 		PropertyMeta pm = meta.getFirstMeta();
 
 		log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
@@ -171,9 +110,8 @@ public class CQLTableCreator extends TableCreator {
 
 	}
 
-	private Map<String, TableMetadata> fetchTableMetaData() {
+	public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
 		Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
-		KeyspaceMetadata keyspaceMeta = cluster.getMetadata().getKeyspace(keyspaceName);
 
 		Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
 				keyspaceName);
@@ -220,5 +158,37 @@ public class CQLTableCreator extends TableCreator {
 			else
 				builder.addClusteringComponent(componentName);
 		}
+	}
+
+	public void createTableForEntity(Session session, EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
+		String tableName = entityMeta.getTableName().toLowerCase();
+		if (forceColumnFamilyCreation) {
+			log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
+			createTableForEntity(session, entityMeta);
+		} else {
+			throw new AchillesInvalidTableException("The required table '" + tableName
+					+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
+		}
+	}
+
+	public void validateOrCreateTableForCounter(Session session, boolean forceColumnFamilyCreation) {
+		if (forceColumnFamilyCreation) {
+			CQLTableBuilder builder = CQLTableBuilder.createTable(CQL_COUNTER_TABLE);
+			builder.addColumn(CQL_COUNTER_FQCN, String.class);
+			builder.addColumn(CQL_COUNTER_PRIMARY_KEY, String.class);
+			builder.addColumn(CQL_COUNTER_PROPERTY_NAME, String.class);
+			builder.addColumn(CQL_COUNTER_VALUE, Counter.class);
+			builder.addPartitionComponent(CQL_COUNTER_FQCN);
+			builder.addPartitionComponent(CQL_COUNTER_PRIMARY_KEY);
+			builder.addClusteringComponent(CQL_COUNTER_PROPERTY_NAME);
+
+			builder.addComment("Create default Achilles counter table '" + CQL_COUNTER_TABLE + "'");
+
+			session.execute(builder.generateDDLScript());
+		} else {
+			throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
+					+ "' does not exist");
+		}
+
 	}
 }

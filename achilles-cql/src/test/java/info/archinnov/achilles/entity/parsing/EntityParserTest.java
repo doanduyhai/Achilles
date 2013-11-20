@@ -215,7 +215,7 @@ public class EntityParserTest {
 		EntityMeta meta = parser.parseEntity(entityContext);
 
 		assertThat(meta).isNotNull();
-		assertThat(entityContext.getHasSimpleCounter()).isTrue();
+		assertThat(entityContext.hasSimpleCounter()).isTrue();
 		PropertyMeta idMeta = meta.getIdMeta();
 		assertThat(idMeta).isNotNull();
 		PropertyMeta counterMeta = meta.getPropertyMetas().get("counter");

@@ -311,7 +311,7 @@ public class CQLTableCreatorTest {
 
 	@Test
 	public void should_create_achilles_counter_table() throws Exception {
-		creator.validateOrCreateTableForCounter(true);
+		creator.createTableForCounter(true);
 
 		verify(session).execute(stringCaptor.capture());
 
@@ -328,7 +328,7 @@ public class CQLTableCreatorTest {
 		TableMetadata tableMetadata = mock(TableMetadata.class);
 		tableMetas.put(CQL_COUNTER_TABLE, tableMetadata);
 
-		creator.validateOrCreateTableForCounter(false);
+		creator.createTableForCounter(false);
 
 		verify(validator).validateAchillesCounter();
 		verifyZeroInteractions(session);
@@ -340,6 +340,6 @@ public class CQLTableCreatorTest {
 		exception.expect(AchillesInvalidTableException.class);
 		exception.expectMessage("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
 
-		creator.validateOrCreateTableForCounter(false);
+		creator.createTableForCounter(false);
 	}
 }

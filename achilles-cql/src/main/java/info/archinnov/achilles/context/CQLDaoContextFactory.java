@@ -30,59 +30,22 @@ import com.datastax.driver.core.Session;
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-public class CQLDaoContextBuilder {
+public class CQLDaoContextFactory {
 	private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
 	private CQLPreparedStatementGenerator queryGenerator = new CQLPreparedStatementGenerator();
-	private Session session;
 
-	private Function<EntityMeta, PreparedStatement> insertPSTransformer = new Function<EntityMeta, PreparedStatement>() {
-		@Override
-		public PreparedStatement apply(EntityMeta meta) {
-			return queryGenerator.prepareInsertPS(session, meta);
-		}
-	};
-
-	private Function<EntityMeta, PreparedStatement> selectEagerPSTransformer = new Function<EntityMeta, PreparedStatement>() {
-		@Override
-		public PreparedStatement apply(EntityMeta meta) {
-			return queryGenerator.prepareSelectEagerPS(session, meta);
-		}
-	};
-
-	private Function<EntityMeta, Map<String, PreparedStatement>> removePSTransformer = new Function<EntityMeta, Map<String, PreparedStatement>>() {
-		@Override
-		public Map<String, PreparedStatement> apply(EntityMeta meta) {
-			return queryGenerator.prepareRemovePSs(session, meta);
-		}
-
-	};
-
-	private Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> clusteredCounterTransformer = new Function<EntityMeta, Map<CQLQueryType, PreparedStatement>>() {
-		@Override
-		public Map<CQLQueryType, PreparedStatement> apply(EntityMeta meta) {
-			return queryGenerator.prepareClusteredCounterQueryMap(session, meta);
-		}
-	};
-
-	public static CQLDaoContextBuilder builder(Session session) {
-		return new CQLDaoContextBuilder(session);
-	}
-
-	public CQLDaoContextBuilder(Session session) {
-		this.session = session;
-	}
-
-	public CQLDaoContext build(Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
+	public CQLDaoContext build(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
 		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
-				Maps.filterValues(entityMetaMap, excludeClusteredCounterFilter), insertPSTransformer));
+				Maps.filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
 
 		Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap<Class<?>, PreparedStatement>(
-				Maps.transformValues(entityMetaMap, selectEagerPSTransformer));
+				Maps.transformValues(entityMetaMap, getSelectEagerPSTransformer(session)));
 
 		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<Class<?>, Map<String, PreparedStatement>>(
-				Maps.transformValues(entityMetaMap, removePSTransformer));
+				Maps.transformValues(entityMetaMap, getRemovePSTransformer(session)));
 
 		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder.newBuilder()
 				.maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE).build();
@@ -91,14 +54,50 @@ public class CQLDaoContextBuilder {
 		if (hasSimpleCounter) {
 			counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
 		} else {
-			counterQueryMap = new HashMap<CQLQueryType, PreparedStatement>();
+			counterQueryMap = ImmutableMap.<CQLQueryType, PreparedStatement> of();
 		}
 
 		Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap<Class<?>, Map<CQLQueryType, PreparedStatement>>(
-				Maps.transformValues(Maps.filterValues(entityMetaMap, clusteredCounterFilter),
-						clusteredCounterTransformer));
+				Maps.transformValues(Maps.filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
+						getClusteredCounterTransformer(session)));
 
 		return new CQLDaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap, counterQueryMap,
 				clusteredCounterQueriesMap, session);
+	}
+
+	Function<EntityMeta, PreparedStatement> getInsertPSTransformer(final Session session) {
+		return new Function<EntityMeta, PreparedStatement>() {
+			@Override
+			public PreparedStatement apply(EntityMeta meta) {
+				return queryGenerator.prepareInsertPS(session, meta);
+			}
+		};
+	}
+
+	Function<EntityMeta, PreparedStatement> getSelectEagerPSTransformer(final Session session) {
+		return new Function<EntityMeta, PreparedStatement>() {
+			@Override
+			public PreparedStatement apply(EntityMeta meta) {
+				return queryGenerator.prepareSelectEagerPS(session, meta);
+			}
+		};
+	}
+
+	Function<EntityMeta, Map<String, PreparedStatement>> getRemovePSTransformer(final Session session) {
+		return new Function<EntityMeta, Map<String, PreparedStatement>>() {
+			@Override
+			public Map<String, PreparedStatement> apply(EntityMeta meta) {
+				return queryGenerator.prepareRemovePSs(session, meta);
+			}
+		};
+	}
+
+	Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> getClusteredCounterTransformer(final Session session) {
+		return new Function<EntityMeta, Map<CQLQueryType, PreparedStatement>>() {
+			@Override
+			public Map<CQLQueryType, PreparedStatement> apply(EntityMeta meta) {
+				return queryGenerator.prepareClusteredCounterQueryMap(session, meta);
+			}
+		};
 	}
 }

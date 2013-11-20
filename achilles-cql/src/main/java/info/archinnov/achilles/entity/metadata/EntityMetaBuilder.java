@@ -16,10 +16,11 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.eagerType;
-import static info.archinnov.achilles.entity.metadata.PropertyType.excludeIdType;
-import static info.archinnov.achilles.table.TableCreator.*;
-import static info.archinnov.achilles.table.TableCreator.TABLE_PATTERN;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.table.CQLTableCreator.TABLE_PATTERN;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,13 +28,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.validation.Validator;
 
 public class EntityMetaBuilder {
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);

@@ -16,13 +16,14 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.table.CQLTableCreator.ACHILLES_DDL_SCRIPT;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.exception.AchillesInvalidTableException;
 
 public class TableNameNormalizer {
 

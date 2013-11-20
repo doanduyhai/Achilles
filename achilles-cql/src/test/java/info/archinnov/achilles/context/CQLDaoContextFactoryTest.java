@@ -44,9 +44,9 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLDaoContextBuilderTest {
+public class CQLDaoContextFactoryTest {
 	@InjectMocks
-	private CQLDaoContextBuilder builder;
+	private CQLDaoContextFactory builder;
 
 	@Mock
 	private Session session;

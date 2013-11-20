@@ -19,18 +19,14 @@ package info.archinnov.achilles.entity.manager;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.context.CQLDaoContextBuilder;
 import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.SchemaContext;
+import info.archinnov.achilles.entity.discovery.AchillesBootstraper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.parsing.EntityExplorer;
-import info.archinnov.achilles.entity.parsing.EntityParser;
-import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.table.CQLTableCreator;
+import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.validation.Validator;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +46,7 @@ public class CQLPersistenceManagerFactory {
 	private List<String> entityPackages;
 
 	protected ArgumentExtractor argumentExtractor = new ArgumentExtractor();
-	private EntityParser entityParser = new EntityParser();
-	private EntityExplorer entityExplorer = new EntityExplorer();
+	private AchillesBootstraper boostraper = new AchillesBootstraper();
 
 	private Cluster cluster;
 	private Session session;
@@ -72,20 +67,24 @@ public class CQLPersistenceManagerFactory {
 				"Configuration map for PersistenceManagerFactory should not be empty");
 
 		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
-		configContext = parseConfiguration(configurationMap);
-
+		configContext = argumentExtractor.initConfigContext(configurationMap);
 		cluster = argumentExtractor.initCluster(configurationMap);
 		session = argumentExtractor.initSession(cluster, configurationMap);
 
+		List<Class<?>> candidateClasses = boostraper.discoverEntities(entityPackages);
+
 		boolean hasSimpleCounter = false;
 		if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
-			hasSimpleCounter = bootstrap();
+			Pair<Map<Class<?>, EntityMeta>, Boolean> pair = boostraper.buildMetaDatas(configContext, candidateClasses);
+			entityMetaMap = pair.left;
+			hasSimpleCounter = pair.right;
 		}
 
-		new CQLTableCreator(cluster, session, (String) configurationMap.get(KEYSPACE_NAME_PARAM))
-				.validateOrCreateTables(entityMetaMap, configContext, hasSimpleCounter);
+		SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
+				(String) configurationMap.get(KEYSPACE_NAME_PARAM), cluster, entityMetaMap, hasSimpleCounter);
+		boostraper.validateOrCreateTables(schemaContext);
 
-		daoContext = CQLDaoContextBuilder.builder(session).build(entityMetaMap, hasSimpleCounter);
+		daoContext = boostraper.buildDaoContext(session, entityMetaMap, hasSimpleCounter);
 		contextFactory = new CQLPersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		registerShutdownHook(cluster);
 	}
@@ -114,67 +113,7 @@ public class CQLPersistenceManagerFactory {
 		return new CQLBatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
-	protected boolean bootstrap() {
-		log.info("Bootstraping Achilles PersistenceManagerFactory ");
-
-		boolean hasSimpleCounter = false;
-		try {
-			hasSimpleCounter = discoverEntities();
-		} catch (Exception e) {
-			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
-		}
-
-		return hasSimpleCounter;
-	}
-
-	protected boolean discoverEntities() throws ClassNotFoundException, IOException {
-		log.info("Start discovery of entities, searching in packages '{}'", StringUtils.join(entityPackages, ","));
-
-		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
-		boolean hasSimpleCounter = false;
-		for (Class<?> entityClass : entities) {
-			EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
-
-			EntityMeta entityMeta = entityParser.parseEntity(context);
-			entityMetaMap.put(entityClass, entityMeta);
-			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
-		}
-
-		return hasSimpleCounter;
-	}
-
-	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap) {
-		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setForceColumnFamilyCreation(argumentExtractor.initForceCFCreation(configurationMap));
-		configContext.setObjectMapperFactory(argumentExtractor.initObjectMapperFactory(configurationMap));
-		configContext.setDefaultReadConsistencyLevel(argumentExtractor
-				.initDefaultReadConsistencyLevel(configurationMap));
-		configContext.setDefaultWriteConsistencyLevel(argumentExtractor
-				.initDefaultWriteConsistencyLevel(configurationMap));
-		return configContext;
-	}
-
-	protected void setEntityPackages(List<String> entityPackages) {
-		this.entityPackages = entityPackages;
-	}
-
-	protected void setEntityParser(EntityParser achillesEntityParser) {
-		this.entityParser = achillesEntityParser;
-	}
-
-	protected void setEntityExplorer(EntityExplorer achillesEntityExplorer) {
-		this.entityExplorer = achillesEntityExplorer;
-	}
-
-	protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap) {
-		this.entityMetaMap = entityMetaMap;
-	}
-
-	protected void setConfigContext(ConfigurationContext configContext) {
-		this.configContext = configContext;
-	}
-
-	private void registerShutdownHook(final Cluster cluster) {
+	void registerShutdownHook(final Cluster cluster) {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

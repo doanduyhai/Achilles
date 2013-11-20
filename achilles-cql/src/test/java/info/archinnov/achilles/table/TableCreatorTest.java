@@ -69,7 +69,7 @@ public class TableCreatorTest {
 		HashMap<Class<?>, EntityMeta> metaMap = new HashMap<Class<?>, EntityMeta>();
 		doCallRealMethod().when(creator).validateOrCreateTables(metaMap, configContext, true);
 		creator.validateOrCreateTables(metaMap, configContext, true);
-		verify(creator).validateOrCreateTableForCounter(true);
+		verify(creator).createTableForCounter(true);
 	}
 
 	private void prepareData(PropertyMeta... extraPropertyMetas) throws Exception {
