@@ -16,21 +16,8 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.Map;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -39,7 +26,6 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.table.TableCreator;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
@@ -49,11 +35,20 @@ import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
 import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
-import info.archinnov.achilles.test.parser.entity.ClusteredEntityWithNotSupportedPropertyType;
-import info.archinnov.achilles.test.parser.entity.ClusteredEntityWithTwoProperties;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+
+import java.util.Map;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest {
@@ -61,23 +56,18 @@ public class EntityParserTest {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	@InjectMocks
-	private EntityParser parser;
+	private EntityParser parser = new EntityParser();
 
-	@Mock
-	private TableCreator thriftTableCreator;
+	private ConfigurationContext configContext = new ConfigurationContext();
 
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
-
-	private ConfigurationContext configContext = new ConfigurationContext();
 
 	private ObjectMapperFactory objectMapperFactory = new ObjectMapperFactory() {
 		@Override
 		public <T> ObjectMapper getMapper(Class<T> type) {
 			return objectMapper;
 		}
-
 	};
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -228,18 +218,18 @@ public class EntityParserTest {
 		assertThat(counterProperties.getIdMeta()).isSameAs(idMeta);
 	}
 
-    @Test
-    public void should_parse_bean_with_id_and_column_annotation_on_same_field() throws Exception {
-        //Given
-        initEntityParsingContext(BeanWithIdAndColumnAnnotationsOnSameField.class);
+	@Test
+	public void should_parse_bean_with_id_and_column_annotation_on_same_field() throws Exception {
+		// Given
+		initEntityParsingContext(BeanWithIdAndColumnAnnotationsOnSameField.class);
 
-        //When
-        EntityMeta meta = parser.parseEntity(entityContext);
+		// When
+		EntityMeta meta = parser.parseEntity(entityContext);
 
-        //Then
-        assertThat(meta).isNotNull();
-        assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("toto");
-    }
+		// Then
+		assertThat(meta).isNotNull();
+		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("toto");
+	}
 
 	@Test
 	public void should_exception_when_entity_has_no_id() throws Exception {

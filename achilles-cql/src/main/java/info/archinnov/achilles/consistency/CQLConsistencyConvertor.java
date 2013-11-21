@@ -38,11 +38,10 @@ public class CQLConsistencyConvertor {
 	public static com.datastax.driver.core.ConsistencyLevel getCQLLevel(ConsistencyLevel achillesLevel) {
 		com.datastax.driver.core.ConsistencyLevel cqlLevel = fromAchillesToCQL.get(achillesLevel);
 		if (cqlLevel == null) {
-			throw new IllegalArgumentException("No matching Hector Consistency Level for Achilles level '"
-					+ achillesLevel.name() + "'");
+			throw new IllegalArgumentException("No matching Consistency Level for Achilles level '"
+					+ (achillesLevel != null ? achillesLevel.name() : "null") + "'");
 		}
 
 		return cqlLevel;
 	}
-
 }

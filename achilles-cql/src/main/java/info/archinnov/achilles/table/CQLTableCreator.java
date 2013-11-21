@@ -42,6 +42,49 @@ public class CQLTableCreator {
 	public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
 	static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
+	public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
+		Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
+
+		Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
+				keyspaceName);
+
+		for (TableMetadata tableMeta : keyspaceMeta.getTables()) {
+			tableMetas.put(tableMeta.getName(), tableMeta);
+		}
+		return tableMetas;
+	}
+
+	public void createTableForEntity(Session session, EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
+		String tableName = entityMeta.getTableName().toLowerCase();
+		if (forceColumnFamilyCreation) {
+			log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
+			createTableForEntity(session, entityMeta);
+		} else {
+			throw new AchillesInvalidTableException("The required table '" + tableName
+					+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
+		}
+	}
+
+	public void createTableForCounter(Session session, boolean forceColumnFamilyCreation) {
+		if (forceColumnFamilyCreation) {
+			CQLTableBuilder builder = CQLTableBuilder.createTable(CQL_COUNTER_TABLE);
+			builder.addColumn(CQL_COUNTER_FQCN, String.class);
+			builder.addColumn(CQL_COUNTER_PRIMARY_KEY, String.class);
+			builder.addColumn(CQL_COUNTER_PROPERTY_NAME, String.class);
+			builder.addColumn(CQL_COUNTER_VALUE, Counter.class);
+			builder.addPartitionComponent(CQL_COUNTER_FQCN);
+			builder.addPartitionComponent(CQL_COUNTER_PRIMARY_KEY);
+			builder.addClusteringComponent(CQL_COUNTER_PROPERTY_NAME);
+
+			builder.addComment("Create default Achilles counter table '" + CQL_COUNTER_TABLE + "'");
+
+			session.execute(builder.generateDDLScript());
+		} else {
+			throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
+					+ "' does not exist");
+		}
+	}
+
 	private void createTableForEntity(Session session, EntityMeta entityMeta) {
 		log.debug("Creating table for entityMeta {}", entityMeta.getClassName());
 		if (entityMeta.isClusteredCounter()) {
@@ -110,18 +153,6 @@ public class CQLTableCreator {
 
 	}
 
-	public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
-		Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
-
-		Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
-				keyspaceName);
-
-		for (TableMetadata tableMeta : keyspaceMeta.getTables()) {
-			tableMetas.put(tableMeta.getName(), tableMeta);
-		}
-		return tableMetas;
-	}
-
 	private void buildPrimaryKey(PropertyMeta pm, CQLTableBuilder builder) {
 		if (pm.isEmbeddedId()) {
 			addPrimaryKeyComponents(pm, builder, true);
@@ -158,37 +189,5 @@ public class CQLTableCreator {
 			else
 				builder.addClusteringComponent(componentName);
 		}
-	}
-
-	public void createTableForEntity(Session session, EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
-		String tableName = entityMeta.getTableName().toLowerCase();
-		if (forceColumnFamilyCreation) {
-			log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
-			createTableForEntity(session, entityMeta);
-		} else {
-			throw new AchillesInvalidTableException("The required table '" + tableName
-					+ "' does not exist for entity '" + entityMeta.getClassName() + "'");
-		}
-	}
-
-	public void validateOrCreateTableForCounter(Session session, boolean forceColumnFamilyCreation) {
-		if (forceColumnFamilyCreation) {
-			CQLTableBuilder builder = CQLTableBuilder.createTable(CQL_COUNTER_TABLE);
-			builder.addColumn(CQL_COUNTER_FQCN, String.class);
-			builder.addColumn(CQL_COUNTER_PRIMARY_KEY, String.class);
-			builder.addColumn(CQL_COUNTER_PROPERTY_NAME, String.class);
-			builder.addColumn(CQL_COUNTER_VALUE, Counter.class);
-			builder.addPartitionComponent(CQL_COUNTER_FQCN);
-			builder.addPartitionComponent(CQL_COUNTER_PRIMARY_KEY);
-			builder.addClusteringComponent(CQL_COUNTER_PROPERTY_NAME);
-
-			builder.addComment("Create default Achilles counter table '" + CQL_COUNTER_TABLE + "'");
-
-			session.execute(builder.generateDDLScript());
-		} else {
-			throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE
-					+ "' does not exist");
-		}
-
 	}
 }

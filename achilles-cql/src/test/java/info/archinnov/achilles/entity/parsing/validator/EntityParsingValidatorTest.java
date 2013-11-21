@@ -16,21 +16,12 @@
  */
 package info.archinnov.achilles.entity.parsing.validator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 public class EntityParsingValidatorTest {
 	@Rule
@@ -44,34 +35,5 @@ public class EntityParsingValidatorTest {
 		exception.expectMessage("The entity '" + CompleteBean.class.getCanonicalName()
 				+ "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
 		validator.validateHasIdMeta(CompleteBean.class, null);
-	}
-
-	@Test
-	public void should_exception_when_value_less_property_meta_map() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).build();
-
-		EntityParsingContext context = new EntityParsingContext(null, CompleteBean.class);
-		context.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("id", idMeta));
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("The entity '"
-						+ CompleteBean.class.getCanonicalName()
-						+ "' should have at least one field with javax.persistence.Column/javax.persistence.Id/javax.persistence.EmbeddedId annotations");
-
-		validator.validatePropertyMetas(context, idMeta);
-	}
-
-	@Test
-	public void should_exception_when_no_entity_found_after_parsing() throws Exception {
-		List<Class<?>> entities = new ArrayList<Class<?>>();
-		List<String> entityPackages = Arrays.asList("com.package1", "com.package2");
-
-		exception.expect(AchillesBeanMappingException.class);
-		exception
-				.expectMessage("No entity with javax.persistence.Entity/javax.persistence.Table annotations found in the packages 'com.package1,com.package2'");
-
-		validator.validateAtLeastOneEntity(entities, entityPackages);
-
 	}
 }

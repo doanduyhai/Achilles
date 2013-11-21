@@ -16,23 +16,10 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.counter.AchillesCounter.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.ClusteringComponents;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -50,7 +37,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,7 +52,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.internal.verification.Times;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -90,34 +76,42 @@ public class CQLTableCreatorTest {
 	private KeyspaceMetadata keyspaceMeta;
 
 	@Mock
-	private CQLTableValidator validator;
+	private TableMetadata tableMeta;
 
 	@Captor
 	private ArgumentCaptor<String> stringCaptor;
 
 	private String keyspaceName = "achilles";
 
-	private Map<String, TableMetadata> tableMetas;
-
 	private EntityMeta meta;
 
 	@Before
 	public void setUp() {
-		tableMetas = new LinkedHashMap<String, TableMetadata>();
 		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
 		when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
+		creator = new CQLTableCreator();
+	}
 
-		creator = new CQLTableCreator(cluster, session, keyspaceName);
-		Whitebox.setInternalState(creator, Map.class, tableMetas);
-		Whitebox.setInternalState(creator, CQLTableValidator.class, validator);
+	@Test
+	public void should_fetch_table_metas() throws Exception {
+		// Given
+		List<TableMetadata> tableMetas = Arrays.asList(tableMeta);
+
+		// When
+		when(keyspaceMeta.getTables()).thenReturn(tableMetas);
+		when(tableMeta.getName()).thenReturn("table");
+
+		Map<String, TableMetadata> actual = creator.fetchTableMetaData(keyspaceMeta, "keyspace");
+
+		// Then
+		assertThat(actual.get("table")).isSameAs(tableMeta);
 	}
 
 	@Test
 	public void should_create_complete_table() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
-		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol")
-				.build();
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		PropertyMeta longListColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(LIST).field("longListCol")
 				.build();
@@ -134,7 +128,7 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session).execute(stringCaptor.capture());
 
@@ -144,19 +138,20 @@ public class CQLTableCreatorTest {
 						+ "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id)\n"
 						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
 	}
-	
+
 	@Test
 	public void should_create_complete_table_with_clustering_order() throws Exception {
 		PropertyMeta idMeta = new PropertyMeta();
 		idMeta.setType(PropertyType.EMBEDDED_ID);
-		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class), Arrays.asList("id"),
-				new ArrayList<Method>(), new ArrayList<Method>());
+		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class),
+				Arrays.asList("id"), new ArrayList<Method>(), new ArrayList<Method>());
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class),
 				Arrays.asList("name"), "name", null, null);
-		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"),
-				new ArrayList<Method>(), new ArrayList<Method>(), new ArrayList<String>());
+		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
+				new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"), new ArrayList<Method>(),
+				new ArrayList<Method>(), new ArrayList<String>());
 		idMeta.setEmbeddedIdProperties(props);
-		
+
 		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
@@ -165,9 +160,8 @@ public class CQLTableCreatorTest {
 		Method setter = Bean.class.getDeclaredMethod("setName", String.class);
 		simpleMeta.setSetter(setter);
 		propertyMetas.put("name", simpleMeta);
-		
-		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol")
-				.build();
+
+		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
 		meta.setAllMetasExceptIdMeta(Arrays.asList(longColPM));
@@ -175,16 +169,13 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session).execute(stringCaptor.capture());
 
 		assertThat(stringCaptor.getValue()).isEqualTo(
-				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n"
-						+ "\t\tid bigint,\n"
-						+ "\t\tname text,\n"
-						+ "\t\tPRIMARY KEY(id, name)\n"
-						+ "\t) WITH COMMENT = 'Create table for entity \"entityName\"'"
+				"\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tid bigint,\n" + "\t\tname text,\n"
+						+ "\t\tPRIMARY KEY(id, name)\n" + "\t) WITH COMMENT = 'Create table for entity \"entityName\"'"
 						+ " AND CLUSTERING ORDER BY (name DESC)");
 	}
 
@@ -201,15 +192,15 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session, new Times(2)).execute(stringCaptor.capture());
 
 		assertThat(stringCaptor.getValue()).isEqualTo(
 				"\nCREATE INDEX tableName_longCol\n" + "ON tableName (longCol);\n");
-		
+
 	}
-	
+
 	@Test
 	public void should_create_indices_scripts_with_custom_name() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
@@ -223,12 +214,11 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session, new Times(2)).execute(stringCaptor.capture());
 
-		assertThat(stringCaptor.getValue()).isEqualTo(
-				"\nCREATE INDEX monIndex\n" + "ON tableName (longCol);\n");
+		assertThat(stringCaptor.getValue()).isEqualTo("\nCREATE INDEX monIndex\n" + "ON tableName (longCol);\n");
 	}
 
 	@Test
@@ -245,7 +235,7 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session).execute(stringCaptor.capture());
 
@@ -271,7 +261,7 @@ public class CQLTableCreatorTest {
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
 
-		creator.validateOrCreateTableForEntity(meta, true);
+		creator.createTableForEntity(session, meta, true);
 
 		verify(session).execute(stringCaptor.capture());
 
@@ -283,21 +273,6 @@ public class CQLTableCreatorTest {
 	}
 
 	@Test
-	public void should_validate_table_when_already_exists() throws Exception {
-		TableMetadata tableMetadata = mock(TableMetadata.class);
-		tableMetas.put("tablename", tableMetadata);
-
-		meta = new EntityMeta();
-		meta.setTableName("tableName");
-		meta.setClassName("entityName");
-
-		creator.validateOrCreateTableForEntity(meta, true);
-
-		verify(validator).validateForEntity(meta, tableMetadata);
-		verifyZeroInteractions(session);
-	}
-
-	@Test
 	public void should_exception_when_table_does_not_exist() throws Exception {
 		meta = new EntityMeta();
 		meta.setTableName("tableName");
@@ -306,12 +281,12 @@ public class CQLTableCreatorTest {
 		exception.expect(AchillesInvalidTableException.class);
 		exception.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
 
-		creator.validateOrCreateTableForEntity(meta, false);
+		creator.createTableForEntity(session, meta, false);
 	}
 
 	@Test
 	public void should_create_achilles_counter_table() throws Exception {
-		creator.createTableForCounter(true);
+		creator.createTableForCounter(session, true);
 
 		verify(session).execute(stringCaptor.capture());
 
@@ -324,22 +299,11 @@ public class CQLTableCreatorTest {
 	}
 
 	@Test
-	public void should_validate_achilles_counter_table_when_already_exist() throws Exception {
-		TableMetadata tableMetadata = mock(TableMetadata.class);
-		tableMetas.put(CQL_COUNTER_TABLE, tableMetadata);
-
-		creator.createTableForCounter(false);
-
-		verify(validator).validateAchillesCounter();
-		verifyZeroInteractions(session);
-	}
-
-	@Test
 	public void should_exception_when_achilles_counter_table_does_not_exist() throws Exception {
 
 		exception.expect(AchillesInvalidTableException.class);
 		exception.expectMessage("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
 
-		creator.createTableForCounter(false);
+		creator.createTableForCounter(session, false);
 	}
 }

@@ -41,17 +41,20 @@ import com.datastax.driver.core.Session;
 public class CQLPersistenceManagerFactory {
 	private static final Logger log = LoggerFactory.getLogger(CQLPersistenceManagerFactory.class);
 
-	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-	private ConfigurationContext configContext;
-	private List<String> entityPackages;
+	Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+	ConfigurationContext configContext;
+	CQLDaoContext daoContext;
+	CQLPersistenceContextFactory contextFactory;
+	Map<String, Object> configurationMap;
 
-	protected ArgumentExtractor argumentExtractor = new ArgumentExtractor();
+	private ArgumentExtractor argumentExtractor = new ArgumentExtractor();
 	private AchillesBootstraper boostraper = new AchillesBootstraper();
 
-	private Cluster cluster;
-	private Session session;
-	private CQLDaoContext daoContext;
-	private CQLPersistenceContextFactory contextFactory;
+	/**
+	 * Constructor for test
+	 */
+	CQLPersistenceManagerFactory() {
+	}
 
 	/**
 	 * Create a new CQLPersistenceManagerFactory with a configuration map
@@ -65,11 +68,15 @@ public class CQLPersistenceManagerFactory {
 				"Configuration map for PersistenceManagerFactory should not be null");
 		Validator.validateNotEmpty(configurationMap,
 				"Configuration map for PersistenceManagerFactory should not be empty");
+		this.configurationMap = configurationMap;
+		bootstrap();
+	}
 
-		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
+	void bootstrap() {
+		List<String> entityPackages = argumentExtractor.initEntityPackages(configurationMap);
 		configContext = argumentExtractor.initConfigContext(configurationMap);
-		cluster = argumentExtractor.initCluster(configurationMap);
-		session = argumentExtractor.initSession(cluster, configurationMap);
+		Cluster cluster = argumentExtractor.initCluster(configurationMap);
+		Session session = argumentExtractor.initSession(cluster, configurationMap);
 
 		List<Class<?>> candidateClasses = boostraper.discoverEntities(entityPackages);
 

@@ -37,9 +37,9 @@ public class SchemaContext {
 
 	private static final Logger log = LoggerFactory.getLogger(EntityExplorer.class);
 	private boolean forceColumnFamilyCreation;
+	private Cluster cluster;
 	private Session session;
 	private String keyspaceName;
-	private Cluster cluster;
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 	private boolean hasCounter;
 	private CQLTableCreator tableCreator = new CQLTableCreator();
@@ -84,6 +84,6 @@ public class SchemaContext {
 	}
 
 	public void createTableForCounter() {
-		tableCreator.validateOrCreateTableForCounter(session, forceColumnFamilyCreation);
+		tableCreator.createTableForCounter(session, forceColumnFamilyCreation);
 	}
 }

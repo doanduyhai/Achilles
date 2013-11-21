@@ -85,19 +85,17 @@ public class CQLTableValidator {
 				CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
 				CQL_COUNTER_FQCN, fqcnColumn.getType(), text());
-
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), fqcnColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_FQCN, CQL_COUNTER_TABLE);
 
 		ColumnMetadata pkColumn = tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY);
 		Validator.validateTableTrue(pkColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE);
+		Validator.validateTableTrue(pkColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
+				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text());
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), pkColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_PRIMARY_KEY,
 				CQL_COUNTER_TABLE);
-
-		Validator.validateTableTrue(pkColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
-				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text());
 
 		ColumnMetadata propertyNameColumn = tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME);
 		Validator.validateTableTrue(propertyNameColumn != null, "Cannot find column '%s' from table '%s'",
@@ -111,9 +109,9 @@ public class CQLTableValidator {
 
 		ColumnMetadata counterValueColumn = tableMetaData.getColumn(CQL_COUNTER_VALUE);
 		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
-				counterValueColumn, CQL_COUNTER_TABLE);
+				CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(counterValueColumn.getType() == counter(),
-				"Column '%s' of type '%s' should be of type '%s'", counterValueColumn, counterValueColumn.getType(),
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE, counterValueColumn.getType(),
 				counter());
 
 	}

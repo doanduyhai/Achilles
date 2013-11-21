@@ -16,13 +16,15 @@
  */
 package info.archinnov.achilles.table;
 
-import static com.datastax.driver.core.ColumnMetadata.IndexMetadata;
+import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.IndexProperties;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
@@ -30,7 +32,9 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
@@ -39,6 +43,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.ColumnMetadata.IndexMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -46,6 +51,9 @@ import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLTableValidatorTest {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	private CQLTableValidator validator;
 
@@ -55,8 +63,8 @@ public class CQLTableValidatorTest {
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private TableMetadata tableMetaData;
 
-    @Mock
-    private CQLColumnMetaDataComparator columnMetaDataComparator;
+	@Mock
+	private CQLColumnMetaDataComparator columnMetaDataComparator;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private ColumnMetadata columnMetadata;
@@ -70,11 +78,11 @@ public class CQLTableValidatorTest {
 
 	@Before
 	public void setUp() {
-		validator = new CQLTableValidator(cluster, keyspaceName);
-        Whitebox.setInternalState(validator,"columnMetaDataComparator",columnMetaDataComparator);
+		validator = new CQLTableValidator();
+		Whitebox.setInternalState(validator, "columnMetaDataComparator", columnMetaDataComparator);
 		entityMeta = new EntityMeta();
-        when(columnMetadata.getIndex()).thenReturn(null);
-        when(columnMetadataForField.getIndex()).thenReturn(null);
+		when(columnMetadata.getIndex()).thenReturn(null);
+		when(columnMetadataForField.getIndex()).thenReturn(null);
 	}
 
 	@Test
@@ -102,31 +110,30 @@ public class CQLTableValidatorTest {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("userId", "name")
 				.compClasses(Long.class, String.class).type(EMBEDDED_ID).build();
 
-
 		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
-        ColumnMetadata userColumn = mock(ColumnMetadata.class);
-        ColumnMetadata nameColumn = mock(ColumnMetadata.class);
+		ColumnMetadata userColumn = mock(ColumnMetadata.class);
+		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
 
 		when(tableMetaData.getName()).thenReturn("table");
 		ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("userid")).thenReturn(userIdMetadata);
 		when(userIdMetadata.getType()).thenReturn(DataType.bigint());
 		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(userColumn));
-        when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
+		when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
 
-        ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
-        when(tableMetaData.getColumn("name")).thenReturn(nameMetadata);
-        when(nameMetadata.getType()).thenReturn(DataType.text());
-        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
-        when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
+		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn("name")).thenReturn(nameMetadata);
+		when(nameMetadata.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+		when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
-        when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
-        when(columnMetadataForField.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
+		when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
@@ -142,22 +149,21 @@ public class CQLTableValidatorTest {
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
 
-        ColumnMetadata userColumn = mock(ColumnMetadata.class);
-        ColumnMetadata nameColumn = mock(ColumnMetadata.class);
+		ColumnMetadata userColumn = mock(ColumnMetadata.class);
+		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
 
-        when(tableMetaData.getName()).thenReturn("table");
+		when(tableMetaData.getName()).thenReturn("table");
 		ColumnMetadata userIdMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("userid")).thenReturn(userIdMetadata);
 		when(userIdMetadata.getType()).thenReturn(DataType.bigint());
-        when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(userColumn));
-        when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(userColumn));
+		when(columnMetaDataComparator.isEqual(userIdMetadata, userColumn)).thenReturn(true);
 
-
-        ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
+		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("date")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.timeuuid());
-        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
-        when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+		when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
 		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
@@ -216,7 +222,7 @@ public class CQLTableValidatorTest {
 
 	}
 
-@Test
+	@Test
 	public void should_validate_list_field_for_entity() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
 
@@ -291,33 +297,391 @@ public class CQLTableValidatorTest {
 		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
 		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
 
-        ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
-        ColumnMetadata pkColumn = mock(ColumnMetadata.class);
-        ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
-        when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn,pkColumn));
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
 
-        ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
-        when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
-        when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
 
 		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
-        when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
 
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
-        when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
-        when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
+		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
 
 		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_VALUE)).thenReturn(counterColumnMeta);
-
-		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
-		when(pkColumnMeta.getType()).thenReturn(DataType.text());
-		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
 		when(counterColumnMeta.getType()).thenReturn(DataType.counter());
 
-		validator.validateAchillesCounter();
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
 
+	@Test
+	public void should_exception_when_counter_table_not_found() throws Exception {
+		// Given
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage("Cannot find table '" + CQL_COUNTER_TABLE + "' from keyspace '" + keyspaceName + "'");
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_no_counter_fqcn_column() throws Exception {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Cannot find column '%s' from table '%s'", CQL_COUNTER_FQCN,
+				CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_fqcn_column_bad_type() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_FQCN,
+				fqcnColumn.getType(), text()));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_not_matching_counter_fqcn_column() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+
+		// Then
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage(String.format("Column '%s' of table '%s' should be a partition key component",
+				CQL_COUNTER_FQCN, CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_no_counter_pk_column() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Cannot find column '%s' from table '%s'", CQL_COUNTER_PRIMARY_KEY,
+				CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_pk_column_bad_type() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'",
+				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text()));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_pk_column_not_matching() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+
+		// Then
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage(String.format("Column '%s' of table '%s' should be a partition key component",
+				CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_no_counter_property_column() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Cannot find column '%s' from table '%s'", CQL_COUNTER_PROPERTY_NAME,
+				CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_property_column_bad_type() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+
+		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
+		when(propertyColumnMeta.getType()).thenReturn(DataType.cfloat());
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'",
+				CQL_COUNTER_PROPERTY_NAME, propertyColumnMeta.getType(), text()));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_property_column_not_matching() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+
+		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
+		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+
+		// Then
+		exception.expect(AchillesBeanMappingException.class);
+		exception.expectMessage(String.format("Column '%s' of table '%s' should be a clustering key component",
+				CQL_COUNTER_PROPERTY_NAME, CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_no_counter_value_column() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+
+		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
+		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Cannot find column '%s' from table '%s'", CQL_COUNTER_VALUE,
+				CQL_COUNTER_TABLE));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
+	}
+
+	@Test
+	public void should_exception_when_counter_value_column_bad_type() {
+		// Given
+		tableMetaData = mock(TableMetadata.class);
+		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+
+		// When
+		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+		when(keyspaceMeta.getTable(CQL_COUNTER_TABLE)).thenReturn(tableMetaData);
+
+		ColumnMetadata fqcnColumn = mock(ColumnMetadata.class);
+		ColumnMetadata pkColumn = mock(ColumnMetadata.class);
+		ColumnMetadata propertyColumn = mock(ColumnMetadata.class);
+		when(tableMetaData.getPartitionKey()).thenReturn(Arrays.asList(fqcnColumn, pkColumn));
+
+		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(fqcnColumnMeta, fqcnColumn)).thenReturn(true);
+
+		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.text());
+		when(columnMetaDataComparator.isEqual(pkColumnMeta, pkColumn)).thenReturn(true);
+
+		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
+		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
+		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
+
+		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);
+		when(tableMetaData.getColumn(CQL_COUNTER_VALUE)).thenReturn(counterColumnMeta);
+		when(counterColumnMeta.getType()).thenReturn(DataType.cfloat());
+
+		// Then
+		exception.expect(AchillesInvalidTableException.class);
+		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,
+				counterColumnMeta.getType(), counter()));
+
+		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
 	}
 }

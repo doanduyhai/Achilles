@@ -16,32 +16,36 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
+import info.archinnov.achilles.context.CQLDaoContext;
+import info.archinnov.achilles.context.CQLPersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.SchemaContext;
+import info.archinnov.achilles.entity.discovery.AchillesBootstraper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.parsing.EntityExplorer;
-import info.archinnov.achilles.entity.parsing.EntityParser;
-import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.table.TableCreator;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersistenceManagerFactoryTest {
@@ -52,109 +56,113 @@ public class CQLPersistenceManagerFactoryTest {
 	private CQLPersistenceManagerFactory pmf;
 
 	@Mock
-	private TableCreator tableCreator;
-
-	@Mock
-	private EntityExplorer entityExplorer;
-
-	@Mock
-	private EntityParser entityParser;
-
-	@Mock
-	private ArgumentExtractor extractor;
-
-	@Mock
 	private ConfigurationContext configContext;
 
-	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+	@Mock
+	private ArgumentExtractor argumentExtractor;
 
-	private List<String> entityPackages = new ArrayList<String>();
+	@Mock
+	private AchillesBootstraper boostraper;
 
-	private CQLPersistenceManagerFactory build(Map<String, Object> configMap) {
-		CQLPersistenceManagerFactory pmf = new CQLPersistenceManagerFactory(configMap);
-		pmf.setEntityMetaMap(entityMetaMap);
-		pmf.setEntityPackages(entityPackages);
-		pmf.setEntityParser(entityParser);
-		pmf.setEntityExplorer(entityExplorer);
-		pmf.setConfigContext(configContext);
-		Whitebox.setInternalState(pmf, ArgumentExtractor.class, extractor);
-		return pmf;
+	@Mock
+	private Cluster cluster;
+
+	@Mock
+	private Session session;
+
+	@Mock
+	private CQLDaoContext daoContext;
+
+	@Mock
+	private Map<String, Object> configMap;
+
+	@Captor
+	private ArgumentCaptor<SchemaContext> contextCaptor;
+
+	@Before
+	public void setUp() {
+		pmf = new CQLPersistenceManagerFactory();
+		Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
+		Whitebox.setInternalState(pmf, AchillesBootstraper.class, boostraper);
+		pmf.configurationMap = configMap;
 	}
 
 	@Test
-	public void should_bootstrap() throws Exception {
-		pmf = build(new HashMap<String, Object>());
-		when(pmf.discoverEntities()).thenReturn(true);
-		boolean hasSimpleCounter = pmf.bootstrap();
-		assertThat(hasSimpleCounter).isTrue();
-	}
+	public void should_bootstrap_persistence_manager_factory() throws Exception {
+		// Given
+		List<String> entityPackages = Arrays.asList();
+		List<Class<?>> candidateClasses = Arrays.asList();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		Pair<Map<Class<?>, EntityMeta>, Boolean> pair = Pair.create(entityMetaMap, true);
 
-	@Test
-	public void should_exception_during_boostrap() throws Exception {
+		// When
+		when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
+		when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
+		when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
+		when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
+		when(boostraper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
+		when(configMap.get(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
+		when(configMap.get(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
+		when(boostraper.buildMetaDatas(configContext, candidateClasses)).thenReturn(pair);
+		when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
+		when(boostraper.buildDaoContext(session, entityMetaMap, true)).thenReturn(daoContext);
 
-		pmf = build(new HashMap<String, Object>());
-		pmf = spy(pmf);
-
-		doThrow(new RuntimeException("test")).when(pmf).discoverEntities();
-
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Exception during entity parsing : test");
 		pmf.bootstrap();
 
+		// Then
+		assertThat(pmf.entityMetaMap).isSameAs(entityMetaMap);
+		assertThat(pmf.configContext).isSameAs(configContext);
+		assertThat(pmf.daoContext).isSameAs(daoContext);
+		CQLPersistenceContextFactory contextFactory = Whitebox
+				.getInternalState(pmf, CQLPersistenceContextFactory.class);
+		assertThat(Whitebox.getInternalState(contextFactory, CQLDaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
+		assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
+
+		verify(boostraper).validateOrCreateTables(contextCaptor.capture());
+		SchemaContext schemaContext = contextCaptor.getValue();
+
+		assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
+		assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
+		assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
+		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
+		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
 	}
 
 	@Test
-	public void should_discover_entities() throws Exception {
-		List<Class<?>> entities = new ArrayList<Class<?>>();
-		entities.add(Long.class);
+	public void should_create_persistence_manager() throws Exception {
+		// Given
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		CQLPersistenceContextFactory contextFactory = mock(CQLPersistenceContextFactory.class);
 
-		EntityMeta entityMeta = new EntityMeta();
-
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		when(entityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
-
-		pmf.discoverEntities();
-
-		assertThat(entityMetaMap).containsKey(Long.class);
-		assertThat(entityMetaMap).containsValue(entityMeta);
-	}
-
-	@Test
-	public void should_discover_package_without_entities() throws Exception {
-		List<Class<?>> entities = new ArrayList<Class<?>>();
-
-		EntityMeta entityMeta = new EntityMeta();
-
-		when(entityExplorer.discoverEntities(entityPackages)).thenReturn(entities);
-		when(entityParser.parseEntity(any(EntityParsingContext.class))).thenReturn(entityMeta);
-
-		pmf.discoverEntities();
-
-		assertThat(entityMetaMap).isEmpty();
-
-		verify(entityParser, never()).parseEntity(any(EntityParsingContext.class));
-	}
-
-	@Test
-	public void should_parse_configuration() throws Exception {
-		ObjectMapperFactory mapperFactory = mock(ObjectMapperFactory.class);
-		Map<String, Object> configurationMap = new HashMap<String, Object>();
-		when(extractor.initForceCFCreation(configurationMap)).thenReturn(true);
-		when(extractor.initObjectMapperFactory(configurationMap)).thenReturn(mapperFactory);
-		when(extractor.initDefaultReadConsistencyLevel(configurationMap)).thenReturn(ConsistencyLevel.ANY);
-		when(extractor.initDefaultWriteConsistencyLevel(configurationMap)).thenReturn(ConsistencyLevel.ALL);
-
-		ConfigurationContext builtContext = pmf.parseConfiguration(configurationMap);
-
-		assertThat(builtContext).isNotNull();
-		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
-		assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
-	}
-
-	@Test
-	public void should_create_entity_manager() throws Exception {
+		// When
+		pmf.entityMetaMap = entityMetaMap;
+		pmf.configContext = configContext;
+		pmf.daoContext = daoContext;
+		pmf.contextFactory = contextFactory;
 
 		CQLPersistenceManager manager = pmf.createPersistenceManager();
+
+		// Then
+		assertThat(manager).isNotNull();
+	}
+
+	@Test
+	public void should_create_batching_persistence_manager() throws Exception {
+		// Given
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		CQLPersistenceContextFactory contextFactory = mock(CQLPersistenceContextFactory.class);
+
+		// When
+		pmf.entityMetaMap = entityMetaMap;
+		pmf.configContext = configContext;
+		pmf.daoContext = daoContext;
+		pmf.contextFactory = contextFactory;
+
+		CQLPersistenceManager manager = pmf.createBatchingPersistenceManager();
+
+		// Then
 		assertThat(manager).isNotNull();
 	}
 }
