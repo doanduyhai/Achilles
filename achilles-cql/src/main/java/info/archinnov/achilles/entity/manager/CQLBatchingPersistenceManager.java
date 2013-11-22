@@ -90,7 +90,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		if (options.getConsistencyLevel().isPresent()) {
 			flushContext.cleanUp();
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			super.persist(entity, options);
 		}
@@ -101,7 +101,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		if (options.getConsistencyLevel().isPresent()) {
 			flushContext.cleanUp();
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			return super.merge(entity, options);
 		}
@@ -112,7 +112,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		if (writeLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			super.remove(entity, null);
 		}
@@ -123,7 +123,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			return super.find(entityClass, primaryKey, null);
 		}
@@ -134,7 +134,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 		if (readLevel != null) {
 			flushContext.cleanUp();
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			return super.getReference(entityClass, primaryKey, null);
 		}
@@ -144,12 +144,13 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
 		if (readLevel != null) {
 			throw new AchillesException(
-					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
 			super.refresh(entity, null);
 		}
 	}
 
+    @Override
 	protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
@@ -159,6 +160,7 @@ public class CQLBatchingPersistenceManager extends CQLPersistenceManager {
 				options);
 	}
 
+    @Override
 	protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
 

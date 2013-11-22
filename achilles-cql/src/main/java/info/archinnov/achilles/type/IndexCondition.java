@@ -36,11 +36,6 @@ public class IndexCondition {
 		return columnValue;
 	}
 
-	public String generateWhereClause() {
-		return new StringBuilder().append(columnName.toLowerCase()).append(indexRelation).append(columnValue)
-				.toString();
-	}
-
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(IndexCondition.class).add("columnName", columnValue)

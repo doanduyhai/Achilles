@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 
 public class CQLPersistenceManager {
 	private static final Logger log = LoggerFactory.getLogger(CQLPersistenceManager.class);
@@ -102,7 +104,7 @@ public class CQLPersistenceManager {
 					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 
-		CQLPersistenceContext context = contextFactory.newContext(entity, options);
+		CQLPersistenceContext context = initPersistenceContext(entity, options);
 		context.persist();
 	}
 
@@ -166,7 +168,7 @@ public class CQLPersistenceManager {
 		if (options.getTtl().isPresent()) {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
-		CQLPersistenceContext context = contextFactory.newContext(entity, options);
+		CQLPersistenceContext context = initPersistenceContext(entity, options);
 		return context.<T> merge(entity);
 
 	}
@@ -200,7 +202,7 @@ public class CQLPersistenceManager {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 		}
-		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey, OptionsBuilder.noOptions());
+		CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.noOptions());
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -219,7 +221,7 @@ public class CQLPersistenceManager {
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.withConsistency(writeLevel));
+		CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.withConsistency(writeLevel));
 		context.remove();
 	}
 
@@ -238,8 +240,8 @@ public class CQLPersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 
-		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
-				OptionsBuilder.withConsistency(writeLevel));
+		CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey,
+                                                                  OptionsBuilder.withConsistency(writeLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -274,8 +276,8 @@ public class CQLPersistenceManager {
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
-				OptionsBuilder.withConsistency(readLevel));
+		CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey,
+                                                                  OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> find(entityClass);
 	}
@@ -319,8 +321,8 @@ public class CQLPersistenceManager {
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
-		CQLPersistenceContext context = contextFactory.newContext(entityClass, primaryKey,
-				OptionsBuilder.withConsistency(readLevel));
+		CQLPersistenceContext context = initPersistenceContext(entityClass, primaryKey,
+                                                                  OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> getReference(entityClass);
 	}
@@ -352,7 +354,7 @@ public class CQLPersistenceManager {
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.withConsistency(readLevel));
+		CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.withConsistency(readLevel));
 		context.refresh();
 	}
 
@@ -367,7 +369,7 @@ public class CQLPersistenceManager {
 	public <T> T initialize(final T entity) {
 		log.debug("Force lazy fields initialization for entity {}", entity);
 		proxifier.ensureProxy(entity);
-		CQLPersistenceContext context = contextFactory.newContext(entity, OptionsBuilder.noOptions());
+		CQLPersistenceContext context = initPersistenceContext(entity, OptionsBuilder.noOptions());
 		return context.initialize(entity);
 	}
 
@@ -551,10 +553,10 @@ public class CQLPersistenceManager {
 		Validator.validateNotNull(indexCondition.getIndexRelation(),
 				"Index relation for index condition '%s' should be provided", indexCondition);
 
-		StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ");
-		queryBuilder.append(entityMeta.getTableName()).append(" WHERE ");
-		queryBuilder.append(indexCondition.generateWhereClause());
-		return typedQuery(entityClass, queryBuilder.toString(), false);
+        final Select.Where query = QueryBuilder.select().from(entityMeta.getTableName())
+                                               .where(QueryBuilder.eq(indexCondition.getColumnName(), indexCondition
+                                                       .getColumnValue()));
+		return typedQuery(entityClass, query.getQueryString(), false);
 	}
 
 	/**
@@ -584,10 +586,13 @@ public class CQLPersistenceManager {
 		return new CQLTypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true);
 	}
 
-	// protected CQLPersistenceContext initPersistenceContext(Class<?>
-	// entityClass, Object primaryKey, Options options) {
-	// return contextFactory.newContext(entityClass, primaryKey, options);
-	// }
+    protected CQLPersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+        return contextFactory.newContext(entityClass, primaryKey, options);
+    }
+
+    protected CQLPersistenceContext initPersistenceContext(Object entity, Options options) {
+        return contextFactory.newContext(entity, options);
+    }
 
 	public Session getNativeSession() {
 		return daoContext.getSession();

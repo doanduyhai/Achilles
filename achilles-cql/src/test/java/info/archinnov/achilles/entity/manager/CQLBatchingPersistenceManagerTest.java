@@ -116,7 +116,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_persist_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
@@ -125,7 +125,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_merge_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.merge(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
@@ -134,7 +134,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_remove_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.remove(new CompleteBean(), ONE);
 	}
@@ -143,7 +143,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_find_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.find(CompleteBean.class, 11L, ONE);
 	}
@@ -152,7 +152,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_getReference_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.getReference(CompleteBean.class, 11L, ONE);
 	}
@@ -161,7 +161,7 @@ public class CQLBatchingPersistenceManagerTest {
 	public void should_exception_when_refresh_with_consistency() throws Exception {
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(readLevel,writeLevel)'");
+				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
 		manager.refresh(new CompleteBean(), ONE);
 	}

@@ -600,7 +600,7 @@ public class CQLPersistenceManagerTest {
 		manager.indexedQuery(CompleteBean.class, new IndexCondition("column", "value"));
 
 		// Then
-		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=value",
+		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column='value';",
 				meta);
 	}
 }
