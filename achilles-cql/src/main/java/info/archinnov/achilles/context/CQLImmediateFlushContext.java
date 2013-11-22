@@ -24,7 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CQLImmediateFlushContext extends CQLAbstractFlushContext<CQLImmediateFlushContext> {
+public class CQLImmediateFlushContext extends CQLAbstractFlushContext {
 	private static final Logger log = LoggerFactory.getLogger(CQLImmediateFlushContext.class);
 
 	public CQLImmediateFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel) {
@@ -50,7 +50,7 @@ public class CQLImmediateFlushContext extends CQLAbstractFlushContext<CQLImmedia
 
 	@Override
 	public void flush() {
-		log.debug("Flush immediatly all pending statements");
+		log.debug("Flush immediately all pending statements");
 		doFlush();
 	}
 

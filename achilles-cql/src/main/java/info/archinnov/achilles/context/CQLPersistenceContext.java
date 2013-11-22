@@ -44,7 +44,7 @@ import com.google.common.base.Optional;
 
 public class CQLPersistenceContext {
 
-	private CQLAbstractFlushContext<?> flushContext;
+	private CQLAbstractFlushContext flushContext;
 	private CQLEntityInitializer initializer = new CQLEntityInitializer();
 	private CQLEntityPersister persister = new CQLEntityPersister();
 	private CQLEntityProxifier proxifier = new CQLEntityProxifier();
@@ -65,7 +65,7 @@ public class CQLPersistenceContext {
 	private CQLDaoContext daoContext;
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, CQLDaoContext daoContext,
-			CQLAbstractFlushContext<?> flushContext, Class<?> entityClass, Object primaryKey, Options options) {
+			CQLAbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
 		Validator.validateNotNull(entityClass, "The entity class should not be null for persistence context creation");
 		Validator.validateNotNull(primaryKey,
 				"The primary key for the entity class '%s' should not be null for persistence context creation",
@@ -80,7 +80,7 @@ public class CQLPersistenceContext {
 	}
 
 	public CQLPersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, CQLDaoContext daoContext,
-			CQLAbstractFlushContext<?> flushContext, Object entity, Options options) {
+			CQLAbstractFlushContext flushContext, Object entity, Options options) {
 		Validator.validateNotNull(entity,
 				"The entity of type '%s' should not be null for persistence context creation",
 				entityMeta.getClassName());

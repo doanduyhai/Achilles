@@ -24,7 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CQLBatchingFlushContext extends CQLAbstractFlushContext<CQLBatchingFlushContext> {
+public class CQLBatchingFlushContext extends CQLAbstractFlushContext {
 	private static final Logger log = LoggerFactory.getLogger(CQLBatchingFlushContext.class);
 
 	public CQLBatchingFlushContext(CQLDaoContext daoContext, ConsistencyLevel consistencyLevel) {

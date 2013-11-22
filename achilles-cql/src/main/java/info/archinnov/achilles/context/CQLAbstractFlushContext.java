@@ -28,7 +28,7 @@ import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 
-public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<T>> {
+public abstract class CQLAbstractFlushContext {
 	protected CQLDaoContext daoContext;
 
 	protected List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
@@ -93,10 +93,6 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 		return daoContext.execute(query, boundValues);
 	}
 
-	public List<BoundStatementWrapper> getBoundStatementWrappers() {
-		return boundStatementWrappers;
-	}
-
 	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
 		this.consistencyLevel = consistencyLevel;
 	}
@@ -114,7 +110,7 @@ public abstract class CQLAbstractFlushContext<T extends CQLAbstractFlushContext<
 
     public abstract FlushType type();
 
-    public abstract <T extends CQLAbstractFlushContext<T>> CQLAbstractFlushContext<T> duplicate() ;
+    public abstract CQLAbstractFlushContext duplicate() ;
 
     public static enum FlushType {
         BATCH,IMMEDIATE;

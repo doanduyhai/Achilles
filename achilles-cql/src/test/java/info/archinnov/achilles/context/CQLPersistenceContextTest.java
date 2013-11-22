@@ -62,7 +62,7 @@ public class CQLPersistenceContextTest {
 	private CQLDaoContext daoContext;
 
 	@Mock
-	private CQLAbstractFlushContext<?> flushContext;
+	private CQLAbstractFlushContext flushContext;
 
 	@Mock
 	private ConfigurationContext configurationContext;
