@@ -30,12 +30,12 @@ public interface ConfigurationParameters {
 	String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
 	String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
 
-	String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
+	String FORCE_TABLE_CREATION_PARAM = "achilles.ddl.force.table.creation";
 
     String CLUSTER_PARAM = "achilles.cassandra.cluster";
     String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
     String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
-    String CONNECTION_PORT_PARAM = "achilles.cassandra.connection.port";
+    String CONNECTION_CQL_PORT_PARAM = "achilles.cassandra.connection.cql.port";
     String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
     String COMPRESSION_TYPE = "achilles.cassandra.compression.type";
     String RETRY_POLICY = "achilles.cassandra.retry.policy";

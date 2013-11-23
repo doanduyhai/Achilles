@@ -1,12 +1,9 @@
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_PORT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
+import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,13 +18,13 @@ public class EntityLessIT {
 
 	@Before
 	public void setUp() {
-       Map<String, Object> configMap = new HashMap<String, Object>();
-
-		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, DEFAULT_CASSANDRA_HOST);
-		configMap.put(CONNECTION_PORT_PARAM, CassandraEmbeddedServer.getCqlPort());
-		configMap.put(KEYSPACE_NAME_PARAM, "system");
-		PersistenceManagerFactory pmf = new PersistenceManagerFactory(configMap);
-		manager = pmf.createPersistenceManager();
+        PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder
+                         .builder()
+                         .withConnectionContactPoints(DEFAULT_CASSANDRA_HOST)
+                         .withCQLPort(CassandraEmbeddedServer.getCqlPort())
+                         .withKeyspaceName("system")
+                         .build();
+		manager = factory.createPersistenceManager();
 	}
 
 	@Test

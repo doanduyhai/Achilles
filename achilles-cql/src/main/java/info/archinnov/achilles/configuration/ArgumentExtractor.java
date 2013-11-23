@@ -65,7 +65,7 @@ public class ArgumentExtractor {
 	}
 
 	boolean initForceCFCreation(Map<String, Object> configurationMap) {
-		Boolean forceColumnFamilyCreation = (Boolean) configurationMap.get(FORCE_CF_CREATION_PARAM);
+		Boolean forceColumnFamilyCreation = (Boolean) configurationMap.get(FORCE_TABLE_CREATION_PARAM);
 		if (forceColumnFamilyCreation != null) {
 			return forceColumnFamilyCreation;
 		} else {
@@ -126,7 +126,7 @@ public class ArgumentExtractor {
 		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
 		if (cluster == null) {
 			String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
-			Integer port = (Integer) configurationMap.get(CONNECTION_PORT_PARAM);
+			Integer port = (Integer) configurationMap.get(CONNECTION_CQL_PORT_PARAM);
 
 			ProtocolOptions.Compression compression = ProtocolOptions.Compression.SNAPPY;
 			if (configurationMap.containsKey(COMPRESSION_TYPE)) {
@@ -177,7 +177,7 @@ public class ArgumentExtractor {
 
 			Validator
 					.validateNotBlank(contactPoints, "%s property should be provided", CONNECTION_CONTACT_POINTS_PARAM);
-			Validator.validateNotNull(port, "%s property should be provided", CONNECTION_PORT_PARAM);
+			Validator.validateNotNull(port, "%s property should be provided", CONNECTION_CQL_PORT_PARAM);
 			if (sslEnabled) {
 				Validator
 						.validateNotNull(sslOptions, "%s property should be provided when SSL is enabled", SSL_OPTIONS);

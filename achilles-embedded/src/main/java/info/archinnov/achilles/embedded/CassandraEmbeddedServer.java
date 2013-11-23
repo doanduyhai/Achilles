@@ -17,11 +17,6 @@
 package info.archinnov.achilles.embedded;
 
 import static com.datastax.driver.core.ProtocolOptions.Compression.SNAPPY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
 import static info.archinnov.achilles.context.DaoContext.ACHILLES_DML_STATEMENT;
 import static info.archinnov.achilles.embedded.CassandraConfig.cqlRandomPort;
 import static info.archinnov.achilles.embedded.CassandraConfig.storageRandomPort;
@@ -44,6 +39,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedServerStarter.CASSANDRA_EMBEDDED;
+import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 
 import java.io.File;
 import java.util.HashMap;
@@ -190,8 +186,6 @@ public class CassandraEmbeddedServer {
 
     private void initialize(Map<String, Object> parameters) {
 
-        Map<String, Object> achillesConfigMap = new HashMap<String, Object>();
-
         String keyspaceName = extractAndValidateKeyspaceName(parameters);
         Boolean keyspaceDurableWrite = (Boolean) parameters.get(KEYSPACE_DURABLE_WRITE);
         Boolean nativeSessionOnly = (Boolean) parameters.get(BUILD_NATIVE_SESSION_ONLY);
@@ -215,13 +209,14 @@ public class CassandraEmbeddedServer {
         if (nativeSessionOnly) {
             SESSIONS_MAP.put(keyspaceName, cluster.connect(keyspaceName));
         } else {
-            achillesConfigMap.put(CLUSTER_PARAM, cluster);
-            achillesConfigMap.put(NATIVE_SESSION_PARAM, cluster.connect(keyspaceName));
-            achillesConfigMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
-            achillesConfigMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
-            achillesConfigMap.put(FORCE_CF_CREATION_PARAM, true);
+            PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.builder()
+                            .withCluster(cluster)
+                            .withNativeSession(cluster.connect(keyspaceName))
+                            .withEntityPackages(entityPackages)
+                            .withKeyspaceName(keyspaceName)
+                            .forceTableCreation(true)
+                            .build();
 
-            PersistenceManagerFactory factory = new PersistenceManagerFactory(achillesConfigMap);
             PersistenceManager manager = factory.createPersistenceManager();
 
             FACTORIES_MAP.put(keyspaceName, factory);

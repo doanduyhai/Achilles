@@ -105,7 +105,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_forceCFCreation() throws Exception {
-		configMap.put(FORCE_CF_CREATION_PARAM, true);
+		configMap.put(FORCE_TABLE_CREATION_PARAM, true);
 
 		boolean actual = extractor.initForceCFCreation(configMap);
 
@@ -225,7 +225,7 @@ public class ArgumentExtractorTest {
 	public void should_init_cluster_with_all_params() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-		params.put(CONNECTION_PORT_PARAM, 9111);
+		params.put(CONNECTION_CQL_PORT_PARAM, 9111);
 		params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
 		params.put(RETRY_POLICY, Policies.defaultRetryPolicy());
 		params.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
@@ -253,7 +253,7 @@ public class ArgumentExtractorTest {
 	public void should_init_cluster_with_minimum_params() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-		params.put(CONNECTION_PORT_PARAM, 9111);
+		params.put(CONNECTION_CQL_PORT_PARAM, 9111);
 
 		extractor.initCluster(params);
 	}
@@ -274,7 +274,7 @@ public class ArgumentExtractorTest {
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage(CONNECTION_PORT_PARAM + " property should be provided");
+		exception.expectMessage(CONNECTION_CQL_PORT_PARAM + " property should be provided");
 
 		extractor.initCluster(params);
 	}

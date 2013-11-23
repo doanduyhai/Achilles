@@ -17,6 +17,7 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
@@ -81,7 +82,7 @@ public class PersistenceManagerFactoryTest {
 
 	@Before
 	public void setUp() {
-		pmf = new PersistenceManagerFactory();
+		pmf = new PersistenceManagerFactory(configMap);
 		Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
 		Whitebox.setInternalState(pmf, AchillesBootstraper.class, boostraper);
 		pmf.configurationMap = configMap;

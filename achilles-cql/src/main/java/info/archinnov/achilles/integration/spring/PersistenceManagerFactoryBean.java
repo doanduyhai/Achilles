@@ -17,6 +17,7 @@
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
@@ -89,9 +90,9 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
 		fillConsistencyLevels(configMap);
 
-		configMap.put(FORCE_CF_CREATION_PARAM, forceColumnFamilyCreation);
+		configMap.put(FORCE_TABLE_CREATION_PARAM, forceColumnFamilyCreation);
 
-		PersistenceManagerFactory pmf = new PersistenceManagerFactory(configMap);
+		PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.build(configMap);
 		manager = pmf.createPersistenceManager();
 	}
 
@@ -112,7 +113,7 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 			configMap.put(NATIVE_SESSION_PARAM, session);
 		} else {
 			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
-			configMap.put(CONNECTION_PORT_PARAM, port);
+			configMap.put(CONNECTION_CQL_PORT_PARAM, port);
 			configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 		}
 	}

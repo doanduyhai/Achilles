@@ -17,6 +17,7 @@
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 import static org.apache.commons.lang.StringUtils.*;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
@@ -104,7 +105,7 @@ public class PersistenceManagerJavaConfigSample {
 	@PostConstruct
 	public void initialize() {
 		Map<String, Object> configMap = extractConfigParams();
-		pmf = new PersistenceManagerFactory(configMap);
+		pmf = PersistenceManagerFactoryBuilder.build(configMap);
 	}
 
 	@Bean
@@ -117,7 +118,7 @@ public class PersistenceManagerJavaConfigSample {
 		configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 
 		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
-		configMap.put(CONNECTION_PORT_PARAM, port);
+		configMap.put(CONNECTION_CQL_PORT_PARAM, port);
 		configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 
 		// Default compression set to Snappy
@@ -154,7 +155,7 @@ public class PersistenceManagerJavaConfigSample {
 			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, extractConsistencyMap(consistencyLevelWriteMap));
 		}
 
-		configMap.put(FORCE_CF_CREATION_PARAM, Boolean.parseBoolean(forceColumnFamilyCreation));
+		configMap.put(FORCE_TABLE_CREATION_PARAM, Boolean.parseBoolean(forceColumnFamilyCreation));
 
 		return configMap;
 	}
