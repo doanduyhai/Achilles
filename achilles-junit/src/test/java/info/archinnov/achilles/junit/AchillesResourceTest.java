@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.junit;
 
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -31,7 +32,7 @@ import info.archinnov.achilles.test.integration.entity.User;
 public class AchillesResourceTest {
 
 	@Rule
-	public AchillesResource resource = new AchillesResource("info.archinnov.achilles.test.integration.entity",
+	public AchillesResource resource = new AchillesResource(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,"info.archinnov.achilles.test.integration.entity",
 			Steps.AFTER_TEST, "User");
 
 	private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
@@ -54,7 +55,7 @@ public class AchillesResourceTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesResource resource = new AchillesResource("info.archinnov.achilles.junit.test.entity");
+		AchillesResource resource = new AchillesResource(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,"info.archinnov.achilles.junit.test.entity");
 
 		assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
 		assertThat(resource.getPersistenceManager()).isSameAs(manager);

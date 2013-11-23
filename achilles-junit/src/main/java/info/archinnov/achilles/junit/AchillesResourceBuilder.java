@@ -23,6 +23,7 @@ public class AchillesResourceBuilder {
 
 	private Steps cleanupSteps = Steps.BOTH;
 	private String[] tablesToCleanUp;
+    private String keyspaceName;
 	private String entityPackages;
 
 	private AchillesResourceBuilder() {
@@ -43,11 +44,28 @@ public class AchillesResourceBuilder {
 	}
 
 	/**
-	 * Start building an AchillesResource with no entity packages
+	 * Start building an AchillesResource with no entity packages and default 'achilles_test' keyspace
 	 */
 	public static AchillesResource noEntityPackages() {
-		return new AchillesResource(null);
+		return new AchillesResource(null,null);
 	}
+
+    /**
+	 * Start building an AchillesResource with no entity packages and the provided keyspace name
+	 */
+	public static AchillesResource noEntityPackages(String keyspaceName) {
+		return new AchillesResource(keyspaceName,null);
+	}
+
+    /**
+     * Use provided keyspace instead of the default 'achilles_test' keyspace
+     * @param keyspaceName
+     *          keyspace name to be used
+     */
+    public AchillesResourceBuilder keyspaceName(String keyspaceName) {
+        this.keyspaceName = keyspaceName;
+        return this;
+    }
 
 	/**
 	 * Tables to be truncated during unit tests
@@ -85,6 +103,6 @@ public class AchillesResourceBuilder {
 	}
 
 	public AchillesResource build() {
-		return new AchillesResource(entityPackages, cleanupSteps, tablesToCleanUp);
+		return new AchillesResource(keyspaceName,entityPackages, cleanupSteps, tablesToCleanUp);
 	}
 }

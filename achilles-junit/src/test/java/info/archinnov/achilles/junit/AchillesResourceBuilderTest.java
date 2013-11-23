@@ -19,6 +19,7 @@ package info.archinnov.achilles.junit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.util.Map;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,10 +56,26 @@ public class AchillesResourceBuilderTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesResource resource = new AchillesResource("info.archinnov.achilles.junit.test.entity");
+		AchillesResource resource = new AchillesResource(null,"info.archinnov.achilles.junit.test.entity");
 
 		assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
 		assertThat(resource.getPersistenceManager()).isSameAs(manager);
 		assertThat(resource.getNativeSession()).isSameAs(session);
 	}
+
+    @Test
+    public void should_create_resource_with_a_distinct_keyspace() throws Exception {
+        //Given
+        AchillesResource resource = AchillesResourceBuilder.noEntityPackages("test_keyspace");
+        final PersistenceManager manager = resource.getPersistenceManager();
+
+        //When
+        final Map<String,Object> map = manager
+                .nativeQuery("SELECT count(1) FROM system.schema_keyspaces WHERE keyspace_name='test_keyspace'")
+                .first();
+
+        //Then
+        assertThat(map.get("count")).isEqualTo(1L);
+
+    }
 }

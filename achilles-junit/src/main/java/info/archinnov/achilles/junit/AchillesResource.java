@@ -18,6 +18,9 @@ package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
@@ -35,54 +38,49 @@ public class AchillesResource extends AchillesTestResource {
 
 	private final Session session;
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param entityPackages
-	 *            packages to scan for entity discovery, comma separated
-	 * @param tables
-	 *            list of tables to truncate before and after tests
-	 */
-	AchillesResource(String entityPackages, String... tables) {
+
+	AchillesResource(String keyspaceName,String entityPackages, String... tables) {
 		super(tables);
 
-		final ImmutableMap<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
-				ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
-				KEYSPACE_DURABLE_WRITE, false);
+        String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 
-		server = new CassandraEmbeddedServer(config);
+        Map<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
+				 KEYSPACE_NAME, keyspaceToUse,KEYSPACE_DURABLE_WRITE, false);
+
+        config = addEntityPackagesIfNeeded(entityPackages, config);
+
+        server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 	}
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param entityPackages
-	 *            packages to scan for entity discovery, comma separated
-	 * @param cleanUpSteps
-	 *            when to truncate tables for clean up. Possible values are :
-	 *            Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
-	 *            value) <br/>
-	 * <br/>
-	 * @param tables
-	 *            list of tables to truncate before, after or before and after
-	 *            tests, depending on the 'cleanUpSteps' parameters
-	 */
-	AchillesResource(String entityPackages, Steps cleanUpSteps, String... tables) {
+    AchillesResource(String keyspaceName,String entityPackages, Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
 
-		Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
-		final ImmutableMap<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
-				ENTITY_PACKAGES, entityPackages, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
-				KEYSPACE_DURABLE_WRITE, false);
+        String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+
+        Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
+		Map<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
+				KEYSPACE_NAME, keyspaceToUse, KEYSPACE_DURABLE_WRITE, false);
+
+        config = addEntityPackagesIfNeeded(entityPackages, config);
 
 		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 	}
+
+    private Map<String, Object> addEntityPackagesIfNeeded(String entityPackages, Map<String, Object> config) {
+        if(StringUtils.isNotBlank(entityPackages)) {
+            final Map<String, Object> newConfig = new HashMap<String, Object>();
+            newConfig.putAll(config);
+            newConfig.put(ENTITY_PACKAGES,entityPackages);
+            config = newConfig;
+        }
+        return config;
+    }
 
 	/**
 	 * Return a singleton PersistenceManagerFactory
