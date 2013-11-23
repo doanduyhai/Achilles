@@ -65,10 +65,8 @@ public class PropertyMetaBuilder {
 	public PropertyMeta build(Class<?> keyClass, Class<?> valueClass) {
 		log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
-		PropertyMeta meta = null;
-		boolean isCompound = embeddedIdProperties == null ? false : true;
-		meta = new PropertyMeta();
-		meta.setType(type);
+        PropertyMeta meta = new PropertyMeta();
+        meta.setType(type);
 		meta.setPropertyName(propertyName);
 		meta.setEntityClassName(entityClassName);
 		meta.setKeyClass(keyClass);
@@ -79,7 +77,7 @@ public class PropertyMetaBuilder {
 
 		meta.setCounterProperties(counterProperties);
 		meta.setConsistencyLevels(consistencyLevels);
-		meta.setTranscoder(determineTranscoder(isCompound));
+		meta.setTranscoder(determineTranscoder());
 		meta.setTimeUUID(timeUUID);
 
 		return meta;
@@ -115,7 +113,7 @@ public class PropertyMetaBuilder {
 		return this;
 	}
 
-	private DataTranscoder determineTranscoder(boolean isCompound) {
+	private DataTranscoder determineTranscoder() {
 		switch (type) {
 		case EMBEDDED_ID:
 			return new CompoundTranscoder(objectMapper);

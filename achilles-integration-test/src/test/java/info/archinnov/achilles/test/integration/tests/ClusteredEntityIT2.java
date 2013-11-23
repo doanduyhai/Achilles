@@ -26,7 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredMessageEntity;
@@ -44,7 +44,7 @@ public class ClusteredEntityIT2 {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
 			CLUSTERED_TWEET_TABLE, CLUSTERED_MESSAGE_TABLE);
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 

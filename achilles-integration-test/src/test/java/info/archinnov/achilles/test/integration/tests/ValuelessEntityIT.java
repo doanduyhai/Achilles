@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessEntity;
@@ -32,7 +32,7 @@ public class ValuelessEntityIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ValuelessEntity");
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_persist_and_find() throws Exception {

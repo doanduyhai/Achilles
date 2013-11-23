@@ -20,8 +20,8 @@ package info.archinnov.achilles.context;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.table.CQLTableCreator;
-import info.archinnov.achilles.table.CQLTableValidator;
+import info.archinnov.achilles.table.TableCreator;
+import info.archinnov.achilles.table.TableValidator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,18 +57,18 @@ public class SchemaContextTest {
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
-	private CQLTableCreator tableCreator;
+	private TableCreator tableCreator;
 
 	@Mock
-	private CQLTableValidator tableValidator;
+	private TableValidator tableValidator;
 
 	private String keyspaceName = "keyspace";
 
 	@Before
 	public void setUp() {
 		context = new SchemaContext(true, session, keyspaceName, cluster, entityMetaMap, true);
-		Whitebox.setInternalState(context, CQLTableCreator.class, tableCreator);
-		Whitebox.setInternalState(context, CQLTableValidator.class, tableValidator);
+		Whitebox.setInternalState(context, TableCreator.class, tableCreator);
+		Whitebox.setInternalState(context, TableValidator.class, tableValidator);
 	}
 
 	@Test

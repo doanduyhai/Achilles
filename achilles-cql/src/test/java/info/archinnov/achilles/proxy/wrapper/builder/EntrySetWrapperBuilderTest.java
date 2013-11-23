@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.wrapper.EntrySetWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -44,7 +44,7 @@ public class EntrySetWrapperBuilderTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {

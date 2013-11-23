@@ -17,17 +17,17 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.ListIterator;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.ListIteratorWrapper;
 
 public class ListIteratorWrapperBuilder extends AbstractWrapperBuilder<ListIteratorWrapperBuilder> {
 	private ListIterator<Object> target;
 
-	public static ListIteratorWrapperBuilder builder(CQLPersistenceContext context, ListIterator<Object> target) {
+	public static ListIteratorWrapperBuilder builder(PersistenceContext context, ListIterator<Object> target) {
 		return new ListIteratorWrapperBuilder(context, target);
 	}
 
-	public ListIteratorWrapperBuilder(CQLPersistenceContext context, ListIterator<Object> target) {
+	public ListIteratorWrapperBuilder(PersistenceContext context, ListIterator<Object> target) {
 		super.context = context;
 		this.target = target;
 	}

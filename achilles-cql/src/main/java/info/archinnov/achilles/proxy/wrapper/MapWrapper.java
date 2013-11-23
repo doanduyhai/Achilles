@@ -122,13 +122,13 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Object remove(Object key) {
-		Object unproxy = proxifier.unwrap(key);
-		if (this.target.containsKey(unproxy)) {
+		Object unwrap = proxifier.unwrap(key);
+		if (this.target.containsKey(unwrap)) {
 			log.trace("Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), key);
 			this.markDirty();
 		}
-		return this.target.remove(unproxy);
+		return this.target.remove(unwrap);
 	}
 
 	@Override

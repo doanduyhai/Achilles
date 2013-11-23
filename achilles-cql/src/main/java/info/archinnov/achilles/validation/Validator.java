@@ -35,12 +35,6 @@ public class Validator {
 		}
 	}
 
-	public static void validateNull(Object arg, String message, Object... args) {
-		if (arg != null) {
-			throw new AchillesException(format(message, args));
-		}
-	}
-
 	public static void validateNotNull(Object arg, String message, Object... args) {
 		if (arg == null) {
 			throw new AchillesException(format(message, args));
@@ -50,18 +44,6 @@ public class Validator {
 	public static void validateNotEmpty(Collection<?> arg, String message, Object... args) {
 		if (arg == null || arg.isEmpty()) {
 			throw new AchillesException(format(message, args));
-		}
-	}
-
-	public static <T> void validateContains(Collection<T> collection, T element, String message, Object... args) {
-		if (!collection.contains(element)) {
-			throw new AchillesException(format(message, args));
-		}
-	}
-
-	public static void validateBeanMappingNotEmpty(Collection<?> arg, String message, Object... args) {
-		if (arg == null || arg.isEmpty()) {
-			throw new AchillesBeanMappingException(format(message, args));
 		}
 	}
 

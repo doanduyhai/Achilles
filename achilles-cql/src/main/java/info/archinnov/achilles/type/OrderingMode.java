@@ -17,14 +17,12 @@
 package info.archinnov.achilles.type;
 
 public enum OrderingMode {
-	DESCENDING(true, "DESC"), ASCENDING(false, "ASC");
+	DESCENDING(true), ASCENDING(false);
 
 	private boolean reverse;
-	private String string;
 
-	private OrderingMode(boolean reverse, String string) {
+	private OrderingMode(boolean reverse) {
 		this.reverse = reverse;
-		this.string = string;
 	}
 
     public OrderingMode reverse() {
@@ -36,9 +34,5 @@ public enum OrderingMode {
 
 	public boolean isReverse() {
 		return reverse;
-	}
-
-	public String asString() {
-		return string;
 	}
 }

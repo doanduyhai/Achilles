@@ -278,9 +278,9 @@ public class PropertyParser {
 	}
 
 	private void inferPropertyName(PropertyParsingContext context) {
-		log.trace("Infering property name for property {}", context.getCurrentPropertyName());
+		log.trace("Inferring property name for property {}", context.getCurrentPropertyName());
 
-		String propertyName = null;
+		String propertyName;
 		Field field = context.getCurrentField();
 		Column column = field.getAnnotation(Column.class);
 		if (column != null) {
@@ -307,7 +307,7 @@ public class PropertyParser {
 
 	private EmbeddedIdProperties extractEmbeddedIdProperties(Class<?> keyClass) {
 		log.trace("Parsing compound key class", keyClass.getCanonicalName());
-		EmbeddedIdProperties embeddedIdProperties = null;
+		EmbeddedIdProperties embeddedIdProperties;
 
 		embeddedIdProperties = compoundKeyParser.parseEmbeddedId(keyClass);
 

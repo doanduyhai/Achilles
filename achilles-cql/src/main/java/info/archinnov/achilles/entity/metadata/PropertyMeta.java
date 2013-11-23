@@ -422,10 +422,6 @@ public class PropertyMeta {
 		this.embeddedIdProperties = embeddedIdProperties;
 	}
 
-	public Class<?> getIdClass() {
-		return idClass;
-	}
-
 	public void setIdClass(Class<?> idClass) {
 		this.idClass = idClass;
 	}

@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -46,7 +46,7 @@ public class ConsistencyLevelIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			EntityWithLocalQuorumConsistency.TABLE_NAME, EntityWithWriteOneAndReadLocalQuorumConsistency.TABLE_NAME);
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 

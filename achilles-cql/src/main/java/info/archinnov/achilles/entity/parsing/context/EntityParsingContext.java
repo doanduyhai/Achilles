@@ -78,10 +78,6 @@ public class EntityParsingContext {
 		this.currentObjectMapper = currentObjectMapper;
 	}
 
-	public boolean isClusteredEntity() {
-		return clusteredEntity;
-	}
-
 	public void setClusteredEntity(boolean wideRow) {
 		this.clusteredEntity = wideRow;
 	}

@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -45,7 +45,7 @@ public class ListWrapperBuilderTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {

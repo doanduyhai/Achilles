@@ -16,18 +16,18 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 
 public class CQLCounterWrapper implements Counter {
 
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 	private PropertyMeta counterMeta;
 	private boolean clusteredCounter;
 
-	public CQLCounterWrapper(CQLPersistenceContext context, PropertyMeta counterMeta) {
+	public CQLCounterWrapper(PersistenceContext context, PropertyMeta counterMeta) {
 		this.context = context;
 		this.counterMeta = counterMeta;
 		this.clusteredCounter = context.getEntityMeta().isClusteredCounter();
@@ -54,7 +54,7 @@ public class CQLCounterWrapper implements Counter {
 	public void incr() {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, 1L, writeLevel);
+			context.incrementClusteredCounter(1L, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, 1L, writeLevel);
 	}
@@ -62,7 +62,7 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void incr(ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, 1L, writeLevel);
+			context.incrementClusteredCounter(1L, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, 1L, writeLevel);
 	}
@@ -71,7 +71,7 @@ public class CQLCounterWrapper implements Counter {
 	public void incr(Long increment) {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, increment, writeLevel);
+			context.incrementClusteredCounter(increment, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, increment, writeLevel);
 	}
@@ -79,7 +79,7 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void incr(Long increment, ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.incrementClusteredCounter(counterMeta, increment, writeLevel);
+			context.incrementClusteredCounter(increment, writeLevel);
 		else
 			context.incrementSimpleCounter(counterMeta, increment, writeLevel);
 	}
@@ -88,7 +88,7 @@ public class CQLCounterWrapper implements Counter {
 	public void decr() {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, 1L, writeLevel);
+			context.decrementClusteredCounter(1L, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, 1L, writeLevel);
 	}
@@ -96,7 +96,7 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void decr(ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, 1L, writeLevel);
+			context.decrementClusteredCounter(1L, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, 1L, writeLevel);
 	}
@@ -105,7 +105,7 @@ public class CQLCounterWrapper implements Counter {
 	public void decr(Long decrement) {
 		ConsistencyLevel writeLevel = getWriteRuntimeConsistencyIfPossible();
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, decrement, writeLevel);
+			context.decrementClusteredCounter(decrement, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, decrement, writeLevel);
 	}
@@ -113,7 +113,7 @@ public class CQLCounterWrapper implements Counter {
 	@Override
 	public void decr(Long decrement, ConsistencyLevel writeLevel) {
 		if (clusteredCounter)
-			context.decrementClusteredCounter(counterMeta, decrement, writeLevel);
+			context.decrementClusteredCounter(decrement, writeLevel);
 		else
 			context.decrementSimpleCounter(counterMeta, decrement, writeLevel);
 	}

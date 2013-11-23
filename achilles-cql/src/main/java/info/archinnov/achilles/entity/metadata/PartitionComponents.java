@@ -42,20 +42,4 @@ public class PartitionComponents extends AbstractComponentProperties {
 	boolean isComposite() {
 		return this.componentClasses.size() > 1;
 	}
-
-	Class<?> getPartitionKeyClass() {
-		return componentClasses.get(0);
-	}
-
-	String getPartitionKeyName() {
-		return componentNames.get(0);
-	}
-
-	Method getPartitionKeyGetter() {
-		return componentGetters.get(0);
-	}
-
-	Method getPartitionKeySetter() {
-		return componentSetters.get(0);
-	}
 }

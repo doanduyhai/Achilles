@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -34,7 +34,7 @@ import info.archinnov.achilles.validation.Validator;
 
 public abstract class RootSliceQueryBuilder<T> {
 
-	protected CQLSliceQueryExecutor sliceQueryExecutor;
+	protected SliceQueryExecutor sliceQueryExecutor;
 	protected Class<T> entityClass;
 	protected EntityMeta meta;
 
@@ -50,7 +50,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	private boolean limitHasBeenSet = false;
 	private boolean orderingHasBeenSet = false;
 
-	RootSliceQueryBuilder(CQLSliceQueryExecutor sliceQueryExecutor,Class<T> entityClass, EntityMeta meta) {
+	RootSliceQueryBuilder(SliceQueryExecutor sliceQueryExecutor,Class<T> entityClass, EntityMeta meta) {
         this.sliceQueryExecutor = sliceQueryExecutor;
         this.entityClass = entityClass;
 		this.meta = meta;

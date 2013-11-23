@@ -19,7 +19,7 @@ package info.archinnov.achilles.context;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLAbstractFlushContext.FlushType;
+import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 
 import java.util.ArrayList;
@@ -40,10 +40,10 @@ import com.datastax.driver.core.Statement;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLImmediateFlushContextTest {
 
-	private CQLImmediateFlushContext context;
+	private ImmediateFlushContext context;
 
 	@Mock
-	private CQLDaoContext daoContext;
+	private DaoContext daoContext;
 
 	@Mock
 	private BoundStatementWrapper bsWrapper;
@@ -59,7 +59,7 @@ public class CQLImmediateFlushContextTest {
 
 	@Before
 	public void setUp() {
-		context = new CQLImmediateFlushContext(daoContext, null);
+		context = new ImmediateFlushContext(daoContext, null);
 		when(bsWrapper.getBs()).thenReturn(bs);
 	}
 
@@ -147,8 +147,8 @@ public class CQLImmediateFlushContextTest {
 
 	@Test
 	public void should_duplicate() throws Exception {
-		context = new CQLImmediateFlushContext(daoContext, LOCAL_QUORUM);
-		CQLImmediateFlushContext actual = context.duplicate();
+		context = new ImmediateFlushContext(daoContext, LOCAL_QUORUM);
+		ImmediateFlushContext actual = context.duplicate();
 
 		assertThat(actual.consistencyLevel).isEqualTo(LOCAL_QUORUM);
 	}

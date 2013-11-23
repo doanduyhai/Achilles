@@ -36,10 +36,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,10 +53,10 @@ public class MapWrapperTest {
 	private PropertyMeta propertyMeta;
 
 	@Mock
-	private CQLEntityProxifier proxifier;
+	private EntityProxifier proxifier;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {

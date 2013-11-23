@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
+import static info.archinnov.achilles.consistency.ConsistencyConvertor.getCQLLevel;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
@@ -39,7 +39,7 @@ public class CQLSliceQuery<T> {
 	private List<Object> fixedComponents;
 	private Object lastStartComp;
 	private Object lastEndComp;
-	private CQLSliceQueryValidator validator = new CQLSliceQueryValidator();
+	private SliceQueryValidator validator = new SliceQueryValidator();
 	private ConsistencyLevel defaultReadLevel;
 
 	public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {

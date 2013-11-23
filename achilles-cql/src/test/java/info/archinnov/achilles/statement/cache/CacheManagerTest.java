@@ -18,11 +18,11 @@ package info.archinnov.achilles.statement.cache;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.prepared.PreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -47,7 +47,7 @@ public class CacheManagerTest {
 	private CacheManager manager;
 
 	@Mock
-	private CQLPreparedStatementGenerator generator;
+	private PreparedStatementGenerator generator;
 
 	@Mock
 	private Session session;
@@ -56,7 +56,7 @@ public class CacheManagerTest {
 	private Cache<StatementCacheKey, PreparedStatement> cache;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private PreparedStatement ps;

@@ -31,10 +31,10 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.context.CQLBatchingFlushContext;
-import info.archinnov.achilles.entity.manager.CQLBatchingPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
@@ -52,9 +52,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, TABLE_NAME);
 
-	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
+	private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
@@ -68,7 +68,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 		manager.persist(entity);
 
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		logAsserter.prepareLogLevel();
 
@@ -93,7 +93,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setName("name sdfsdf");
 		manager.persist(entity);
 
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 
 		batchEm.startBatch(EACH_QUORUM);
 
@@ -126,7 +126,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(THREE);
 		entity = batchEm.merge(entity);
 
@@ -161,7 +161,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
 
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 		entity = batchEm.merge(entity);
 
@@ -178,7 +178,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 	@Test
 	public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
 
 		expectedEx.expect(InvalidQueryException.class);
@@ -187,8 +187,8 @@ public class ConsistencyLevelPriorityOrderingIT {
 		batchEm.sliceQuery(ClusteredEntity.class).partitionComponents(11L).consistencyLevel(EACH_QUORUM).get(10);
 	}
 
-	private void assertThatBatchContextHasBeenReset(CQLBatchingPersistenceManager batchEm) {
-		CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
+	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
+		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
 		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
 				"boundStatementWrappers");

@@ -18,7 +18,7 @@ package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.context.CQLAbstractFlushContext.FlushType;
+import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 
 import org.junit.Before;
@@ -32,10 +32,10 @@ import com.datastax.driver.core.Query;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLBatchingFlushContextTest {
 
-	private CQLBatchingFlushContext context;
+	private BatchingFlushContext context;
 
 	@Mock
-	private CQLDaoContext daoContext;
+	private DaoContext daoContext;
 
 	@Mock
 	private BoundStatementWrapper bsWrapper;
@@ -45,7 +45,7 @@ public class CQLBatchingFlushContextTest {
 
 	@Before
 	public void setUp() {
-		context = new CQLBatchingFlushContext(daoContext, EACH_QUORUM);
+		context = new BatchingFlushContext(daoContext, EACH_QUORUM);
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class CQLBatchingFlushContextTest {
 	public void should_duplicate_without_ttl() throws Exception {
 		context.boundStatementWrappers.add(bsWrapper);
 
-		CQLBatchingFlushContext duplicate = context.duplicate();
+		BatchingFlushContext duplicate = context.duplicate();
 
 		assertThat(duplicate.boundStatementWrappers).containsOnly(bsWrapper);
 		assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);

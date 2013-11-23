@@ -24,7 +24,7 @@ import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -37,7 +37,7 @@ public class CounterIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource("CompleteBean",
 			AchillesCounter.CQL_COUNTER_TABLE);
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 

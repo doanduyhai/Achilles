@@ -18,9 +18,8 @@ package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
 import info.archinnov.achilles.proxy.wrapper.AbstractWrapper;
 
 @SuppressWarnings("unchecked")
@@ -28,7 +27,7 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>
 	private Map<Method, PropertyMeta> dirtyMap;
 	private Method setter;
 	private PropertyMeta propertyMeta;
-	protected CQLPersistenceContext context;
+	protected PersistenceContext context;
 
 	public T dirtyMap(Map<Method, PropertyMeta> dirtyMap) {
 		this.dirtyMap = dirtyMap;
@@ -45,7 +44,7 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>
 		return (T) this;
 	}
 
-	public T context(CQLPersistenceContext context) {
+	public T context(PersistenceContext context) {
 		this.context = context;
 		return (T) this;
 	}

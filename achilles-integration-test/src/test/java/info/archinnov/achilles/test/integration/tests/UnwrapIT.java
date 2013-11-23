@@ -20,7 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -35,7 +35,7 @@ public class UnwrapIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"Tweet");
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_unproxy_object() throws Exception {

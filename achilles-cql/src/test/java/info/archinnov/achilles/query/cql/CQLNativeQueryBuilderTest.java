@@ -19,8 +19,8 @@ package info.archinnov.achilles.query.cql;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.entity.operations.CQLNativeQueryMapper;
+import info.archinnov.achilles.context.DaoContext;
+import info.archinnov.achilles.entity.operations.NativeQueryMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,12 +47,12 @@ public class CQLNativeQueryBuilderTest {
 	private CQLNativeQueryBuilder query;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private CQLDaoContext daoContext;
+	private DaoContext daoContext;
 
 	private String queryString = "query";
 
 	@Mock
-	private CQLNativeQueryMapper mapper;
+	private NativeQueryMapper mapper;
 
 	@Mock
 	private Row row;
@@ -60,7 +60,7 @@ public class CQLNativeQueryBuilderTest {
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(query, String.class, queryString);
-		Whitebox.setInternalState(query, CQLNativeQueryMapper.class, mapper);
+		Whitebox.setInternalState(query, NativeQueryMapper.class, mapper);
 	}
 
 	@Test

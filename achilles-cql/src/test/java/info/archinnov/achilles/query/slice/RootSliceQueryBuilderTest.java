@@ -44,7 +44,7 @@ import org.powermock.reflect.Whitebox;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -60,7 +60,7 @@ public class RootSliceQueryBuilderTest {
 	private Class<ClusteredEntity> entityClass = ClusteredEntity.class;
 
 	@Mock
-	private CQLSliceQueryExecutor sliceQueryExecutor;
+	private SliceQueryExecutor sliceQueryExecutor;
 
 	@Mock
 	private ConfigurationContext configContext;

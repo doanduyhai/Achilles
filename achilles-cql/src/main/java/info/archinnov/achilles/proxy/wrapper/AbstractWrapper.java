@@ -18,16 +18,16 @@ package info.archinnov.achilles.proxy.wrapper;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.CQLEntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
 
 public abstract class AbstractWrapper {
 	protected Map<Method, PropertyMeta> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta propertyMeta;
-	protected CQLEntityProxifier proxifier = new CQLEntityProxifier();
-	protected CQLPersistenceContext context;
+	protected EntityProxifier proxifier = new EntityProxifier();
+	protected PersistenceContext context;
 
 	public Map<Method, PropertyMeta> getDirtyMap() {
 		return dirtyMap;
@@ -51,11 +51,11 @@ public abstract class AbstractWrapper {
 		}
 	}
 
-	public void setContext(CQLPersistenceContext context) {
+	public void setContext(PersistenceContext context) {
 		this.context = context;
 	}
 
-    void setProxifier(CQLEntityProxifier proxifier) {
+    void setProxifier(EntityProxifier proxifier) {
         this.proxifier = proxifier;
     }
 }

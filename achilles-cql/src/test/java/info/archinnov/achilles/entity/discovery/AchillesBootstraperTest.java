@@ -20,8 +20,8 @@ package info.archinnov.achilles.entity.discovery;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.context.CQLDaoContextFactory;
+import info.archinnov.achilles.context.DaoContext;
+import info.archinnov.achilles.context.DaoContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.SchemaContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -59,7 +59,7 @@ public class AchillesBootstraperTest {
 	private EntityParser parser;
 
 	@Mock
-	private CQLDaoContextFactory factory;
+	private DaoContextFactory factory;
 
 	@Mock
 	private ConfigurationContext configContext;
@@ -83,7 +83,7 @@ public class AchillesBootstraperTest {
 	public void setUp() {
 
 		Whitebox.setInternalState(bootstraper, EntityParser.class, parser);
-		Whitebox.setInternalState(bootstraper, CQLDaoContextFactory.class, factory);
+		Whitebox.setInternalState(bootstraper, DaoContextFactory.class, factory);
 	}
 
 	@Test
@@ -196,12 +196,12 @@ public class AchillesBootstraperTest {
 	public void should_build_dao_context() throws Exception {
 		// Given
 		Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta> of();
-		CQLDaoContext daoContext = mock(CQLDaoContext.class);
+		DaoContext daoContext = mock(DaoContext.class);
 
 		// When
 		when(factory.build(session, entityMetaMap, true)).thenReturn(daoContext);
 
-		CQLDaoContext actual = bootstraper.buildDaoContext(session, entityMetaMap, true);
+		DaoContext actual = bootstraper.buildDaoContext(session, entityMetaMap, true);
 
 		// Then
 		assertThat(actual).isSameAs(daoContext);

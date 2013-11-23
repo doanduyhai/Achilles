@@ -19,8 +19,8 @@ package info.archinnov.achilles.entity.discovery;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.context.CQLDaoContextFactory;
+import info.archinnov.achilles.context.DaoContext;
+import info.archinnov.achilles.context.DaoContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.SchemaContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -48,7 +48,7 @@ public class AchillesBootstraper {
 	private static final Logger log = LoggerFactory.getLogger(AchillesBootstraper.class);
 
 	private EntityParser entityParser = new EntityParser();
-	private CQLDaoContextFactory daoContextFactory = new CQLDaoContextFactory();
+	private DaoContextFactory daoContextFactory = new DaoContextFactory();
 
 	public List<Class<?>> discoverEntities(List<String> packageNames) {
 		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
@@ -96,7 +96,7 @@ public class AchillesBootstraper {
 		}
 	}
 
-	public CQLDaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap,
+	public DaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap,
 			boolean hasSimpleCounter) {
 		return daoContextFactory.build(session, entityMetaMap, hasSimpleCounter);
 	}

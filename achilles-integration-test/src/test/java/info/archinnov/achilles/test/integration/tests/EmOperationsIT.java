@@ -27,10 +27,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -46,7 +46,7 @@ public class EmOperationsIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 	private Session session = manager.getNativeSession();
 
 	@Test
@@ -147,7 +147,7 @@ public class EmOperationsIT {
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
 		Factory factory = (Factory) found;
-		CQLEntityInterceptor<CompleteBean> interceptor = (CQLEntityInterceptor<CompleteBean>) factory.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor = (EntityInterceptor<CompleteBean>) factory.getCallback(0);
 
 		Method getLabel = CompleteBean.class.getDeclaredMethod("getLabel");
 		String label = (String) getLabel.invoke(interceptor.getTarget());
@@ -171,7 +171,7 @@ public class EmOperationsIT {
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
 		Factory factory = (Factory) found;
-		CQLEntityInterceptor<CompleteBean> interceptor = (CQLEntityInterceptor<CompleteBean>) factory.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor = (EntityInterceptor<CompleteBean>) factory.getCallback(0);
 
 		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
 		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
@@ -311,13 +311,17 @@ public class EmOperationsIT {
 		assertThat(rows).isEmpty();
 	}
 
-	@Test(expected = IllegalStateException.class)
-	public void should_exception_when_removing_transient_entity() throws Exception {
+	@Test
+	public void should_remove_transient_entity() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
+        manager.persist(entity);
+
 		manager.remove(entity);
+
+        assertThat(manager.find(CompleteBean.class,entity.getId())).isNull();
 	}
 
 	@Test

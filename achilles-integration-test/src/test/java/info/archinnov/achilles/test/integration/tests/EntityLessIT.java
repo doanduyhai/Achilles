@@ -10,13 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import info.archinnov.achilles.embedded.AchillesEmbeddedServer;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 
 public class EntityLessIT {
 
-	private CQLPersistenceManager manager;
+	private PersistenceManager manager;
 
 
 	@Before
@@ -24,9 +24,9 @@ public class EntityLessIT {
        Map<String, Object> configMap = new HashMap<String, Object>();
 
 		configMap.put(CONNECTION_CONTACT_POINTS_PARAM, DEFAULT_CASSANDRA_HOST);
-		configMap.put(CONNECTION_PORT_PARAM, AchillesEmbeddedServer.getCqlPort());
+		configMap.put(CONNECTION_PORT_PARAM, CassandraEmbeddedServer.getCqlPort());
 		configMap.put(KEYSPACE_NAME_PARAM, "system");
-		CQLPersistenceManagerFactory pmf = new CQLPersistenceManagerFactory(configMap);
+		PersistenceManagerFactory pmf = new PersistenceManagerFactory(configMap);
 		manager = pmf.createPersistenceManager();
 	}
 

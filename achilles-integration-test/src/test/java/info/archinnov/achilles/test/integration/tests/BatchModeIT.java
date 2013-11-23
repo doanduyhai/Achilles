@@ -31,10 +31,10 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.context.CQLBatchingFlushContext;
-import info.archinnov.achilles.entity.manager.CQLBatchingPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.context.BatchingFlushContext;
+import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
@@ -57,9 +57,9 @@ public class BatchModeIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"Tweet", "User");
 
-	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
+	private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private Session session = resource.getNativeSession();
 
@@ -77,7 +77,7 @@ public class BatchModeIT {
 	@Test
 	public void should_batch_counters() throws Exception {
 		// Start batch
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -120,7 +120,7 @@ public class BatchModeIT {
 		Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
 		// Start batch
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.merge(bean);
@@ -160,7 +160,7 @@ public class BatchModeIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
 		// Start batch
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		try {
@@ -200,7 +200,7 @@ public class BatchModeIT {
 		manager.persist(tweet1);
 
 		// Start batch
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(QUORUM);
@@ -228,7 +228,7 @@ public class BatchModeIT {
 		manager.persist(tweet1);
 
 		// Start batch
-		CQLBatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
 		batchEm.startBatch(EACH_QUORUM);
@@ -247,8 +247,8 @@ public class BatchModeIT {
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 	}
 
-	private void assertThatBatchContextHasBeenReset(CQLBatchingPersistenceManager batchEm) {
-		CQLBatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, CQLBatchingFlushContext.class);
+	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
+		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
 		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
 				"boundStatementWrappers");

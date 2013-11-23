@@ -17,17 +17,17 @@
 package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.Collection;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.CollectionWrapper;
 
 public class CollectionWrapperBuilder extends AbstractWrapperBuilder<CollectionWrapperBuilder> {
 	private Collection<Object> target;
 
-	public static CollectionWrapperBuilder builder(CQLPersistenceContext context, Collection<Object> target) {
+	public static CollectionWrapperBuilder builder(PersistenceContext context, Collection<Object> target) {
 		return new CollectionWrapperBuilder(context, target);
 	}
 
-	public CollectionWrapperBuilder(CQLPersistenceContext context, Collection<Object> target) {
+	public CollectionWrapperBuilder(PersistenceContext context, Collection<Object> target) {
 		super.context = context;
 		this.target = target;
 	}

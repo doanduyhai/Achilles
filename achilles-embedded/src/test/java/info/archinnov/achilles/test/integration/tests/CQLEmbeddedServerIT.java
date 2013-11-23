@@ -25,9 +25,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.embedded.CQLEmbeddedServerBuilder;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEmbeddedServerIT {
@@ -35,12 +35,12 @@ public class CQLEmbeddedServerIT {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private Session session = CQLEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
+	private Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
 			.buildNativeSessionOnly();
 
 	@Test
 	public void should_return_same_native_session() throws Exception {
-		Session session = CQLEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
+		Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
 				.buildNativeSessionOnly();
 
 		assertThat(session).isSameAs(this.session);
@@ -48,10 +48,10 @@ public class CQLEmbeddedServerIT {
 
 	@Test
 	public void should_return_same_manager_for_same_keyspace() throws Exception {
-		CQLPersistenceManager manager1 = CQLEmbeddedServerBuilder.noEntityPackages()
+		PersistenceManager manager1 = CassandraEmbeddedServerBuilder.noEntityPackages()
 				.withKeyspaceName("second_keyspace").buildPersistenceManager();
 
-		CQLPersistenceManager manager2 = CQLEmbeddedServerBuilder.noEntityPackages()
+		PersistenceManager manager2 = CassandraEmbeddedServerBuilder.noEntityPackages()
 				.withKeyspaceName("second_keyspace").buildPersistenceManager();
 
 		assertThat(manager1).isSameAs(manager2);
@@ -59,10 +59,10 @@ public class CQLEmbeddedServerIT {
 
 	@Test
 	public void should_return_same_factory_for_same_keyspace() throws Exception {
-		CQLPersistenceManagerFactory factory1 = CQLEmbeddedServerBuilder.noEntityPackages()
+		PersistenceManagerFactory factory1 = CassandraEmbeddedServerBuilder.noEntityPackages()
 				.withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
 
-		CQLPersistenceManagerFactory factory2 = CQLEmbeddedServerBuilder.noEntityPackages()
+		PersistenceManagerFactory factory2 = CassandraEmbeddedServerBuilder.noEntityPackages()
 				.withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
 
 		assertThat(factory1).isSameAs(factory2);
@@ -74,7 +74,7 @@ public class CQLEmbeddedServerIT {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("An embedded Cassandra server is already listening to CQL port");
 
-		CQLEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withCQLPort(9500)
+		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withCQLPort(9500)
 				.buildNativeSessionOnly();
 	}
 
@@ -83,7 +83,7 @@ public class CQLEmbeddedServerIT {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("An embedded Cassandra server is already listening to Thrift port");
 
-		CQLEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withThriftPort(9500)
+		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withThriftPort(9500)
 				.buildNativeSessionOnly();
 	}
 }

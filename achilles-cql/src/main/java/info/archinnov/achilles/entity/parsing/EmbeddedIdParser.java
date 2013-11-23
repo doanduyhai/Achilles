@@ -54,14 +54,14 @@ public class EmbeddedIdParser {
 	public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass) {
 		log.debug("Parse multikey class {} ", embeddedIdClass.getCanonicalName());
 
-		Constructor<?> defaultConstructor = getDefaultConstructor(embeddedIdClass);
+		checkForDefaultConstructor(embeddedIdClass);
 
 		Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
 		Integer reversedField = extractReversedClusteredKey(embeddedIdClass);
 		validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
 		validateReversedClusteredKey(components, reversedField, embeddedIdClass.getCanonicalName());
-		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField,
-				defaultConstructor);
+		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField
+        );
 
 		log.trace("Built embeddedId properties : {}", embeddedIdProperties);
 		return embeddedIdProperties;
@@ -179,7 +179,7 @@ public class EmbeddedIdParser {
 	}
 
 	private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
-			Integer reversedField, Constructor<?> constructor) {
+                                                     Integer reversedField) {
 
 		EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
@@ -245,7 +245,7 @@ public class EmbeddedIdParser {
 		return hasPartitionKeyAnnotation;
 	}
 
-	private Constructor<?> getDefaultConstructor(Class<?> embeddedIdClass) {
+	private void checkForDefaultConstructor(Class<?> embeddedIdClass) {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		Set<Constructor> defaultConstructors = getAllConstructors(embeddedIdClass, withParametersCount(0));
 
@@ -253,6 +253,5 @@ public class EmbeddedIdParser {
 				"The @EmbeddedId class '%s' should have a public default constructor",
 				embeddedIdClass.getCanonicalName());
 
-		return defaultConstructors.iterator().next();
 	}
 }

@@ -29,9 +29,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
@@ -50,7 +50,7 @@ public class QueryIT {
 			CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
 			AchillesCounter.CQL_COUNTER_TABLE);
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_return_rows_for_native_query() throws Exception {
@@ -160,7 +160,7 @@ public class QueryIT {
 		CompleteBean found2 = actual.get(1);
 
 		Factory factory1 = (Factory) found1;
-		CQLEntityInterceptor<CompleteBean> interceptor1 = (CQLEntityInterceptor<CompleteBean>) factory1.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 		assertThat(interceptor1.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
@@ -169,7 +169,7 @@ public class QueryIT {
 		assertThat(target1.getWelcomeTweet()).isNull();
 
 		Factory factory2 = (Factory) found1;
-		CQLEntityInterceptor<CompleteBean> interceptor2 = (CQLEntityInterceptor<CompleteBean>) factory2.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
 		assertThat(interceptor2.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
@@ -256,7 +256,7 @@ public class QueryIT {
 		CompleteBean found2 = actual.get(1);
 
 		Factory factory1 = (Factory) found1;
-		CQLEntityInterceptor<CompleteBean> interceptor1 = (CQLEntityInterceptor<CompleteBean>) factory1.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 		assertThat(interceptor1.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
@@ -268,7 +268,7 @@ public class QueryIT {
 		assertThat(target1.getWelcomeTweet()).isNull();
 
 		Factory factory2 = (Factory) found1;
-		CQLEntityInterceptor<CompleteBean> interceptor2 = (CQLEntityInterceptor<CompleteBean>) factory2.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
 		assertThat(interceptor2.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
@@ -462,7 +462,7 @@ public class QueryIT {
 		CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
 
 		Factory factory1 = (Factory) actual;
-		CQLEntityInterceptor<CompleteBean> interceptor1 = (CQLEntityInterceptor<CompleteBean>) factory1.getCallback(0);
+		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 		assertThat(interceptor1.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();

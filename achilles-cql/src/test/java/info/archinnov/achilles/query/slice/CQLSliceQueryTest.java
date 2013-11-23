@@ -54,7 +54,7 @@ public class CQLSliceQueryTest {
 	private SliceQuery<ClusteredEntity> sliceQuery;
 
 	@Mock
-	private CQLSliceQueryValidator validator;
+	private SliceQueryValidator validator;
 
 	private List<Object> defaultStart = Arrays.<Object> asList(1, 2);
 	private List<Object> defaultEnd = Arrays.<Object> asList(1, 2);

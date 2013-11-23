@@ -32,7 +32,7 @@ import org.powermock.reflect.Whitebox;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.entity.operations.CQLSliceQueryExecutor;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -43,10 +43,10 @@ public class SliceQueryBuilderTest {
 	private SliceQueryBuilder<ClusteredEntity> builder;
 
 	@Mock
-	private CQLSliceQueryExecutor sliceQueryExecutor;
+	private SliceQueryExecutor sliceQueryExecutor;
 
 	@Mock
-	private CQLSliceQueryValidator validator;
+	private SliceQueryValidator validator;
 
 	@Mock
 	private DataTranscoder transcoder;

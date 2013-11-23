@@ -21,9 +21,9 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.proxy.CQLEntityInterceptor;
+import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -33,7 +33,7 @@ public class LazyLoadingIT {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	private CompleteBean bean;
 
@@ -50,7 +50,7 @@ public class LazyLoadingIT {
 		bean = manager.find(CompleteBean.class, bean.getId());
 
 		Factory proxy = (Factory) bean;
-		CQLEntityInterceptor<?> interceptor = (CQLEntityInterceptor<?>) proxy.getCallback(0);
+		EntityInterceptor<?> interceptor = (EntityInterceptor<?>) proxy.getCallback(0);
 		CompleteBean trueBean = (CompleteBean) interceptor.getTarget();
 
 		assertThat(trueBean.getLabel()).isNull();

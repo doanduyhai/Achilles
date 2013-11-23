@@ -24,20 +24,20 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.embedded.CQLEmbeddedServer;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource;
 
 public class AchillesInternalCQLResource extends AchillesTestResource {
 
 	private static final String ACHILLES_ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 
-	private final CQLPersistenceManagerFactory pmf;
+	private final PersistenceManagerFactory pmf;
 
-	private final CQLPersistenceManager manager;
+	private final PersistenceManager manager;
 
-	private final CQLEmbeddedServer server;
+	private final CassandraEmbeddedServer server;
 
 	private final Session session;
 
@@ -53,7 +53,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 				ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
 				KEYSPACE_DURABLE_WRITE, false);
 
-		server = new CQLEmbeddedServer(config);
+		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -77,27 +77,27 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 				ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
 				KEYSPACE_DURABLE_WRITE, false);
 
-		server = new CQLEmbeddedServer(config);
+		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 	}
 
 	/**
-	 * Return a singleton CQLPersistenceManagerFactory
+	 * Return a singleton PersistenceManagerFactory
 	 * 
-	 * @return CQLPersistenceManagerFactory singleton
+	 * @return PersistenceManagerFactory singleton
 	 */
-	public CQLPersistenceManagerFactory getPersistenceManagerFactory() {
+	public PersistenceManagerFactory getPersistenceManagerFactory() {
 		return pmf;
 	}
 
 	/**
-	 * Return a singleton CQLPersistenceManager
+	 * Return a singleton PersistenceManager
 	 * 
-	 * @return CQLPersistenceManager singleton
+	 * @return PersistenceManager singleton
 	 */
-	public CQLPersistenceManager getPersistenceManager() {
+	public PersistenceManager getPersistenceManager() {
 		return manager;
 	}
 

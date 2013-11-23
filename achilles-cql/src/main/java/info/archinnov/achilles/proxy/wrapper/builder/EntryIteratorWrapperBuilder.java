@@ -18,17 +18,17 @@ package info.archinnov.achilles.proxy.wrapper.builder;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.proxy.wrapper.EntryIteratorWrapper;
 
 public class EntryIteratorWrapperBuilder extends AbstractWrapperBuilder<EntryIteratorWrapperBuilder> {
 	private Iterator<Entry<Object, Object>> target;
 
-	public static EntryIteratorWrapperBuilder builder(CQLPersistenceContext context, Iterator<Entry<Object, Object>> target) {
+	public static EntryIteratorWrapperBuilder builder(PersistenceContext context, Iterator<Entry<Object, Object>> target) {
 		return new EntryIteratorWrapperBuilder(context, target);
 	}
 
-	public EntryIteratorWrapperBuilder(CQLPersistenceContext context, Iterator<Entry<Object, Object>> target) {
+	public EntryIteratorWrapperBuilder(PersistenceContext context, Iterator<Entry<Object, Object>> target) {
 		super.context = context;
 		this.target = target;
 	}

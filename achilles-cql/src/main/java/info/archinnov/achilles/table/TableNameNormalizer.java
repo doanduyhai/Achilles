@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.table.CQLTableCreator.ACHILLES_DDL_SCRIPT;
+import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 
 import java.util.regex.Matcher;

@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.apache.cassandra.utils.UUIDGen;
 import org.junit.Rule;
 import org.junit.Test;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -36,7 +36,7 @@ public class InitializeIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
 			"Tweet");
 
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
 	public void should_initialize_lazy_properties() throws Exception {

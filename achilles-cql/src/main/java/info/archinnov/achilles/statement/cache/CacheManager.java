@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.statement.cache;
 
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.prepared.PreparedStatementGenerator;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +33,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 
 public class CacheManager {
-	private CQLPreparedStatementGenerator generator = new CQLPreparedStatementGenerator();
+	private PreparedStatementGenerator generator = new PreparedStatementGenerator();
 
 	private Function<PropertyMeta, String> propertyExtractor = new Function<PropertyMeta, String>() {
 		@Override
@@ -43,7 +43,7 @@ public class CacheManager {
 	};
 
 	public PreparedStatement getCacheForFieldSelect(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, CQLPersistenceContext context, PropertyMeta pm) {
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context, PropertyMeta pm) {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
@@ -58,7 +58,7 @@ public class CacheManager {
 	}
 
 	public PreparedStatement getCacheForFieldsUpdate(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, CQLPersistenceContext context,
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context,
 			List<PropertyMeta> pms) {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();

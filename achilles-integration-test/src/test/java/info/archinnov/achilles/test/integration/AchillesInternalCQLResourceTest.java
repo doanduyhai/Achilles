@@ -23,8 +23,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
-import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
+import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.entity.User;
 
@@ -32,8 +32,8 @@ public class AchillesInternalCQLResourceTest {
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "User");
 
-	private CQLPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
-	private CQLPersistenceManager manager = resource.getPersistenceManager();
+	private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
+	private PersistenceManager manager = resource.getPersistenceManager();
 	private Session session = resource.getNativeSession();
 
 	@Test

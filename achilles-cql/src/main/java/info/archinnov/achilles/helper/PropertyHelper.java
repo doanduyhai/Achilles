@@ -38,7 +38,6 @@ public class PropertyHelper {
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
 
 	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
-	protected EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	static {
 		// Bytes
@@ -149,7 +148,7 @@ public class PropertyHelper {
 		return allowedTypes.contains(valueClass);
 	}
 
-	public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
+	public Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
         Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
 		log.debug("Find consistency configuration for field {} of class {}", field.getName(), field.getDeclaringClass()
 				.getCanonicalName());

@@ -19,8 +19,8 @@ package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityExplorer;
-import info.archinnov.achilles.table.CQLTableCreator;
-import info.archinnov.achilles.table.CQLTableValidator;
+import info.archinnov.achilles.table.TableCreator;
+import info.archinnov.achilles.table.TableValidator;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,8 +42,8 @@ public class SchemaContext {
 	private String keyspaceName;
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 	private boolean hasCounter;
-	private CQLTableCreator tableCreator = new CQLTableCreator();
-	private CQLTableValidator tableValidator = new CQLTableValidator();
+	private TableCreator tableCreator = new TableCreator();
+	private TableValidator tableValidator = new TableValidator();
 
 	public SchemaContext(boolean forceColumnFamilyCreation, Session session, String keyspaceName, Cluster cluster,
 			Map<Class<?>, EntityMeta> entityMetaMap, boolean hasCounter) {

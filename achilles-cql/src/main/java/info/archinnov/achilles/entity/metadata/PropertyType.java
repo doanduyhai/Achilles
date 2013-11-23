@@ -23,27 +23,18 @@ import info.archinnov.achilles.entity.metadata.util.PropertyTypeFilter;
 
 public enum PropertyType {
 
-	ID(5), //
-	EMBEDDED_ID(10), //
-	SIMPLE(10), //
-	LIST(10), //
-	SET(10), //
-	MAP(10), //
-	LAZY_SIMPLE(30), //
-	COUNTER(30), //
-	LAZY_LIST(30), //
-	LAZY_SET(30), //
-	LAZY_MAP(30);
+	ID, //
+	EMBEDDED_ID, //
+	SIMPLE, //
+	LIST, //
+	SET, //
+	MAP, //
+	LAZY_SIMPLE, //
+	COUNTER, //
+	LAZY_LIST, //
+	LAZY_SET, //
+	LAZY_MAP;
 
-	private final int flag;
-
-	PropertyType(int flag) {
-		this.flag = flag;
-	}
-
-	public byte[] flag() {
-		return new byte[] { (byte) flag };
-	}
 
 	public boolean isLazy() {
 		return (this == COUNTER //
@@ -79,8 +70,4 @@ public enum PropertyType {
 	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
 
 	public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
-
-	public static Set<PropertyType> multiValuesNonProxyTypes = Sets.newHashSet(LIST, LAZY_LIST, SET, LAZY_SET, MAP,
-			LAZY_MAP);
-
 }
