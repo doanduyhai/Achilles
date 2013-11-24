@@ -16,9 +16,6 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.type.ConsistencyLevel;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +26,12 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventInterceptor;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class EntityMeta {
 
@@ -63,9 +66,38 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
+	private List<EventInterceptor<?>> eventsInterceptor;
+
+	public EntityMeta() {
+		eventsInterceptor = new ArrayList<EventInterceptor<?>>();
+	}
 
 	public Object getPrimaryKey(Object entity) {
 		return idMeta.getPrimaryKey(entity);
+	}
+
+	public void addInterceptor(EventInterceptor<?> interceptor) {
+		eventsInterceptor.add(interceptor);
+	}
+
+	public List<EventInterceptor<?>> getEventsInterceptor() {
+		return eventsInterceptor;
+	}
+
+	public List<EventInterceptor<?>> getEventsInterceptor(final Event event) {
+		return FluentIterable.from(eventsInterceptor)
+				.filter(getFilterForEvent(event)).toImmutableList();
+
+	}
+
+	private Predicate<? super EventInterceptor<?>> getFilterForEvent(
+			final Event event) {
+		return new Predicate<EventInterceptor<?>>() {
+			public boolean apply(EventInterceptor<?> p) {
+				return p != null && p.events() != null
+						&& p.events().contains(event);
+			}
+		};
 	}
 
 	public void setPrimaryKey(Object entity, Object primaryKey) {
@@ -76,8 +108,10 @@ public class EntityMeta {
 		return idMeta.getPartitionKey(compoundKey);
 	}
 
-	public Object instanciateEmbeddedIdWithPartitionKey(List<Object> partitionComponents) {
-		return idMeta.instanciateEmbeddedIdWithPartitionKey(partitionComponents);
+	public Object instanciateEmbeddedIdWithPartitionKey(
+			List<Object> partitionComponents) {
+		return idMeta
+				.instanciateEmbeddedIdWithPartitionKey(partitionComponents);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -170,7 +204,8 @@ public class EntityMeta {
 		return this.consistencyLevels;
 	}
 
-	public void setConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
+	public void setConsistencyLevels(
+			Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels) {
 		this.consistencyLevels = consistencyLevels;
 	}
 
@@ -233,9 +268,13 @@ public class EntityMeta {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass()).add("className", className)
+		return Objects
+				.toStringHelper(this.getClass())
+				.add("className", className)
 				.add("tableName/columnFamilyName", tableName)
-				.add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ",")).add("idMeta", idMeta)
-				.add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+				.add("propertyMetas",
+						StringUtils.join(propertyMetas.keySet(), ","))
+				.add("idMeta", idMeta).add("clusteredEntity", clusteredEntity)
+				.add("consistencyLevels", consistencyLevels).toString();
 	}
 }

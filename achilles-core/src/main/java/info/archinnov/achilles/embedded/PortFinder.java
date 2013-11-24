@@ -38,8 +38,8 @@ public class PortFinder {
 			}
 			tested = randomBetween(start, end);
 		}
-		throw new IllegalStateException("no available port found between " + start + " and " + end + " after "
-				+ MAX_TRIES + "tries");
+		throw new IllegalStateException("no available port found between "
+				+ start + " and " + end + " after " + MAX_TRIES + "tries");
 	}
 
 	/**

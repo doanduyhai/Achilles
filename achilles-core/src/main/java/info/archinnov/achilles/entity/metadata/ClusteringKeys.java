@@ -5,9 +5,11 @@ import java.util.List;
 
 public class ClusteringKeys extends AbstractComponentProperties {
 
-	public ClusteringKeys(List<Class<?>> componentClasses, List<String> componentNames, List<Method> componentGetters,
+	public ClusteringKeys(List<Class<?>> componentClasses,
+			List<String> componentNames, List<Method> componentGetters,
 			List<Method> componentSetters) {
-		super(componentClasses, componentNames, componentGetters, componentSetters);
+		super(componentClasses, componentNames, componentGetters,
+				componentSetters);
 	}
 
 	String getOrderingComponent() {

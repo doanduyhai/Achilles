@@ -29,6 +29,7 @@ public interface ConfigurationParameters {
 	String CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM = "achilles.consistency.write.default";
 	String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
 	String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
+	String EVENT_INTERCEPTORS = "achilles.interceptors";
 
 	String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
 

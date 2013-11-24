@@ -16,20 +16,6 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
-import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.EntityInitializer;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
-import info.archinnov.achilles.entity.operations.EntityValidator;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.query.slice.SliceQueryBuilder;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.validation.Validator;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,11 +25,30 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 
-public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
-	protected static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
-	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional.<ConsistencyLevel> absent();
+import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
+import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
+import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.interceptor.EntityLifeCycleListener;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.query.slice.SliceQueryBuilder;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.validation.Validator;
 
-	private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
+public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
+	protected static final Optional<Integer> NO_TTL = Optional
+			.<Integer> absent();
+	protected static final Optional<ConsistencyLevel> NO_CONSISTENCY_LEVEL = Optional
+			.<ConsistencyLevel> absent();
+
+	private static final Logger log = LoggerFactory
+			.getLogger(PersistenceManager.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap;
 	protected AchillesConsistencyLevelPolicy consistencyPolicy;
@@ -52,6 +57,7 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	protected EntityProxifier<CONTEXT> proxifier;
 	protected EntityValidator<CONTEXT> entityValidator;
 	protected EntityInitializer initializer = new EntityInitializer();
+	protected EntityLifeCycleListener<CONTEXT> entityLifeCycleListener;
 
 	PersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ConfigurationContext configContext) {
@@ -68,8 +74,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void persist(Object entity) {
 		log.debug("Persisting entity '{}'", entity);
-
+		entityLifeCycleListener.intercept(entity, Event.PRE_PERSIST);
 		persist(entity, OptionsBuilder.noOptions());
+		entityLifeCycleListener.intercept(entity, Event.POST_PERSIST);
 	}
 
 	/**
@@ -82,7 +89,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void persist(final Object entity, Options options) {
 		if (log.isDebugEnabled())
-			log.debug("Persisting entity '{}' with options {} ", entity, options);
+			log.debug("Persisting entity '{}' with options {} ", entity,
+					options);
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 
@@ -123,8 +131,10 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public <T> T merge(T entity) {
 		if (log.isDebugEnabled())
 			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
-
-		return merge(entity, OptionsBuilder.noOptions());
+		entityLifeCycleListener.intercept(entity, Event.PRE_UPDATE);
+		T entityMerged = merge(entity, OptionsBuilder.noOptions());
+		entityLifeCycleListener.intercept(entity, Event.POST_UPDATE);
+		return entityMerged;
 	}
 
 	/**
@@ -152,7 +162,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public <T> T merge(final T entity, Options options) {
 		if (log.isDebugEnabled()) {
-			log.debug("Merging entity '{}' with options {} ", proxifier.unwrap(entity), options);
+			log.debug("Merging entity '{}' with options {} ",
+					proxifier.unwrap(entity), options);
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		if (options.getTtl().isPresent()) {
@@ -172,8 +183,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
-
+		entityLifeCycleListener.intercept(entity, Event.PRE_REMOVE);
 		remove(entity, null);
+		entityLifeCycleListener.intercept(entity, Event.POST_REMOVE);
 	}
 
 	/**
@@ -187,12 +199,16 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void removeById(Class<?> entityClass, Object primaryKey) {
 
-		Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-		Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
+		Validator.validateNotNull(entityClass,
+				"The entity class should not be null for removal by id");
+		Validator.validateNotNull(primaryKey,
+				"The primary key should not be null for removal by id");
 		if (log.isDebugEnabled()) {
-			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+			log.debug("Removing entity of type '{}' by its id '{}'",
+					entityClass, primaryKey);
 		}
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.noOptions());
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey,
+				OptionsBuilder.noOptions());
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -207,11 +223,13 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void remove(final Object entity, ConsistencyLevel writeLevel) {
 		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
+			log.debug("Removing entity '{}' with write consistency level {}",
+					proxifier.unwrap(entity), writeLevel);
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity, OptionsBuilder.withConsistency(writeLevel));
+		CONTEXT context = initPersistenceContext(entity,
+				OptionsBuilder.withConsistency(writeLevel));
 		context.remove();
 	}
 
@@ -224,13 +242,18 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * @param primaryKey
 	 *            Primary key
 	 */
-	public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
-		Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-		Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
+	public void removeById(Class<?> entityClass, Object primaryKey,
+			ConsistencyLevel writeLevel) {
+		Validator.validateNotNull(entityClass,
+				"The entity class should not be null for removal by id");
+		Validator.validateNotNull(primaryKey,
+				"The primary key should not be null for removal by id");
 		if (log.isDebugEnabled())
-			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+			log.debug("Removing entity of type '{}' by its id '{}'",
+					entityClass, primaryKey);
 
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(writeLevel));
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(writeLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -246,7 +269,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Found entity or null if no entity is found
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
-		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
+		log.debug("Find entity class '{}' with primary key {}", entityClass,
+				primaryKey);
 		return find(entityClass, primaryKey, null);
 	}
 
@@ -262,12 +286,17 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * @param entity
 	 *            Found entity or null if no entity is found
 	 */
-	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-		log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
-				readLevel);
-		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
-		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
+	public <T> T find(final Class<T> entityClass, final Object primaryKey,
+			ConsistencyLevel readLevel) {
+		log.debug(
+				"Find entity class '{}' with primary key {} and read consistency level {}",
+				entityClass, primaryKey, readLevel);
+		Validator.validateNotNull(entityClass,
+				"Entity class should not be null for find by id");
+		Validator.validateNotNull(primaryKey,
+				"Entity primaryKey should not be null for find by id");
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> find(entityClass);
 	}
@@ -286,7 +315,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public <T> T getReference(Class<T> entityClass, Object primaryKey) {
 		if (log.isDebugEnabled())
-			log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
+			log.debug(
+					"Get reference for entity class '{}' with primary key {}",
+					entityClass, primaryKey);
 
 		return getReference(entityClass, primaryKey, null);
 	}
@@ -305,14 +336,19 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * @param entity
 	 *            Proxified empty entity
 	 */
-	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+	public <T> T getReference(final Class<T> entityClass,
+			final Object primaryKey, ConsistencyLevel readLevel) {
 		if (log.isDebugEnabled())
-			log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
+			log.debug(
+					"Get reference for entity class '{}' with primary key {} and read consistency level {}",
 					entityClass, primaryKey, readLevel);
 
-		Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
-		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
+		Validator.validateNotNull(entityClass,
+				"Entity class should not be null for get reference");
+		Validator.validateNotNull(primaryKey,
+				"Entity primaryKey should not be null for get reference");
+		CONTEXT context = initPersistenceContext(entityClass, primaryKey,
+				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> getReference(entityClass);
 	}
@@ -328,8 +364,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public void refresh(Object entity) throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
 			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
-
+		entityLifeCycleListener.intercept(entity, Event.PRE_LOAD);
 		refresh(entity, null);
+		entityLifeCycleListener.intercept(entity, Event.PRE_LOAD);
 	}
 
 	/**
@@ -340,13 +377,16 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * @param readLevel
 	 *            Consistency Level for read
 	 */
-	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
+	public void refresh(final Object entity, ConsistencyLevel readLevel)
+			throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
-			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
+			log.debug("Refreshing entity '{}' with read consistency level {}",
+					proxifier.unwrap(entity), readLevel);
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity, OptionsBuilder.withConsistency(readLevel));
+		CONTEXT context = initPersistenceContext(entity,
+				OptionsBuilder.withConsistency(readLevel));
 		context.refresh();
 	}
 
@@ -361,7 +401,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public <T> T initialize(final T entity) {
 		log.debug("Force lazy fields initialization for entity {}", entity);
 		proxifier.ensureProxy(entity);
-		CONTEXT context = initPersistenceContext(entity, OptionsBuilder.noOptions());
+		CONTEXT context = initPersistenceContext(entity,
+				OptionsBuilder.noOptions());
 		return context.initialize(entity);
 	}
 
@@ -373,7 +414,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 */
 	public <T> Set<T> initialize(final Set<T> entities) {
-		log.debug("Force lazy fields initialization for entity set {}", entities);
+		log.debug("Force lazy fields initialization for entity set {}",
+				entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -388,7 +430,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 * 
 	 */
 	public <T> List<T> initialize(final List<T> entities) {
-		log.debug("Force lazy fields initialization for entity set {}", entities);
+		log.debug("Force lazy fields initialization for entity set {}",
+				entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -474,11 +517,14 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Entity class
 	 * @return SliceQueryBuilder<T>
 	 */
-	public abstract <T> SliceQueryBuilder<CONTEXT, T> sliceQuery(Class<T> entityClass);
+	public abstract <T> SliceQueryBuilder<CONTEXT, T> sliceQuery(
+			Class<T> entityClass);
 
-	protected abstract CONTEXT initPersistenceContext(Object entity, Options options);
+	protected abstract CONTEXT initPersistenceContext(Object entity,
+			Options options);
 
-	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options);
+	protected abstract CONTEXT initPersistenceContext(Class<?> entityClass,
+			Object primaryKey, Options options);
 
 	protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
 		return entityMetaMap;
@@ -508,12 +554,18 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 		this.entityMetaMap = entityMetaMap;
 	}
 
-	protected void setConsistencyPolicy(AchillesConsistencyLevelPolicy consistencyPolicy) {
+	protected void setConsistencyPolicy(
+			AchillesConsistencyLevelPolicy consistencyPolicy) {
 		this.consistencyPolicy = consistencyPolicy;
 	}
 
 	protected void setConfigContext(ConfigurationContext configContext) {
 		this.configContext = configContext;
+	}
+
+	protected void setEntityLifeCycleListener(
+			EntityLifeCycleListener<CONTEXT> entityLifeCycleListener) {
+		this.entityLifeCycleListener = entityLifeCycleListener;
 	}
 
 }

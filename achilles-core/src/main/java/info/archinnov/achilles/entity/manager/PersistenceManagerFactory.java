@@ -16,6 +16,17 @@
  */
 package info.archinnov.achilles.entity.manager;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.reflections.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -24,35 +35,34 @@ import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class PersistenceManagerFactory {
-	private static final Logger log = LoggerFactory.getLogger(PersistenceManagerFactory.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(PersistenceManagerFactory.class);
 
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
+	protected List<EventInterceptor<?>> eventInterceptors;
 
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
 
-	protected PersistenceManagerFactory(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
-		Validator.validateNotNull(configurationMap,
-				"Configuration map for PersistenceManagerFactory should not be null");
-		Validator.validateNotEmpty(configurationMap,
-				"Configuration map for PersistenceManagerFactory should not be empty");
+	protected PersistenceManagerFactory(Map<String, Object> configurationMap,
+			ArgumentExtractor argumentExtractor) {
+		Validator
+				.validateNotNull(configurationMap,
+						"Configuration map for PersistenceManagerFactory should not be null");
+		Validator
+				.validateNotEmpty(configurationMap,
+						"Configuration map for PersistenceManagerFactory should not be empty");
 
 		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
 		configContext = parseConfiguration(configurationMap, argumentExtractor);
+		eventInterceptors = argumentExtractor
+				.initEventInterceptor(configurationMap);
 	}
 
 	protected boolean bootstrap() {
@@ -61,38 +71,94 @@ public abstract class PersistenceManagerFactory {
 		boolean hasSimpleCounter = false;
 		try {
 			hasSimpleCounter = discoverEntities();
+			addEventInterceptorsToEntityMetas();
 		} catch (Exception e) {
-			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
+			throw new AchillesException("Exception during entity parsing : "
+					+ e.getMessage(), e);
 		}
 
 		return hasSimpleCounter;
 	}
 
-	protected boolean discoverEntities() throws ClassNotFoundException, IOException {
-		log.info("Start discovery of entities, searching in packages '{}'", StringUtils.join(entityPackages, ","));
+	private void addEventInterceptorsToEntityMetas() {
+		for (EventInterceptor<?> eventInterceptor : eventInterceptors) {
+			String entityClassName = getOnEventMethodReturnType(eventInterceptor);
+			Class<?> entity = ReflectionUtils.forName(entityClassName,
+					getClass().getClassLoader());
+			EntityMeta entityMeta = entityMetaMap.get(entity);
 
-		List<Class<?>> entities = entityExplorer.discoverEntities(entityPackages);
+			Validator.validateBeanMappingTrue(entityMeta != null,
+					"The entity %s not found", entityClassName);
+
+			entityMeta.addInterceptor(eventInterceptor);
+
+		}
+
+	}
+
+	private void validateEntityInEntityMap(String embeddedIdClassName,
+			int orderSum, int componentCount) {
+		int check = (componentCount * (componentCount + 1)) / 2;
+
+		log.debug("Validate component ordering for @EmbeddedId class {} ",
+				embeddedIdClassName);
+
+		Validator.validateBeanMappingTrue(orderSum == check,
+				"The component ordering is wrong for @EmbeddedId class '%s'",
+				embeddedIdClassName);
+	}
+
+	private String getOnEventMethodReturnType(EventInterceptor eventInterceptor) {
+		for (Method method : eventInterceptor.getClass().getDeclaredMethods()) {
+			if (isMethodOnEvent(method)) {
+				return method.getGenericReturnType().toString();
+			}
+		}
+
+		return null;
+	}
+
+	private boolean isMethodOnEvent(Method method) {
+		return "onEvent".equals(method.getName())
+				&& method.getGenericParameterTypes() != null
+				&& method.getGenericParameterTypes().length == 1;
+	}
+
+	protected boolean discoverEntities() throws ClassNotFoundException,
+			IOException {
+		log.info("Start discovery of entities, searching in packages '{}'",
+				StringUtils.join(entityPackages, ","));
+
+		List<Class<?>> entities = entityExplorer
+				.discoverEntities(entityPackages);
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
-			EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
+			EntityParsingContext context = new EntityParsingContext(
+					configContext, entityClass);
 
 			EntityMeta entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
-			hasSimpleCounter = context.getHasSimpleCounter() || hasSimpleCounter;
+			hasSimpleCounter = context.getHasSimpleCounter()
+					|| hasSimpleCounter;
 		}
 
 		return hasSimpleCounter;
 	}
 
-	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
+	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(
+			Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor);
 
-	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
+	protected ConfigurationContext parseConfiguration(
+			Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor) {
 		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setForceColumnFamilyCreation(argumentExtractor.initForceCFCreation(configurationMap));
-		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap, argumentExtractor));
-		configContext.setObjectMapperFactory(argumentExtractor.initObjectMapperFactory(configurationMap));
+		configContext.setForceColumnFamilyCreation(argumentExtractor
+				.initForceCFCreation(configurationMap));
+		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(
+				configurationMap, argumentExtractor));
+		configContext.setObjectMapperFactory(argumentExtractor
+				.initObjectMapperFactory(configurationMap));
 
 		return configContext;
 	}
