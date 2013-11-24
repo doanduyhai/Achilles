@@ -16,16 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.UnavailableException;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -36,6 +28,15 @@ import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndRead
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.datastax.driver.core.exceptions.DriverInternalError;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.UnavailableException;
 
 public class ConsistencyLevelIT {
 
@@ -72,9 +73,9 @@ public class ConsistencyLevelIT {
 
 		manager.persist(bean);
 
-		expectedEx.expect(InvalidQueryException.class);
+		expectedEx.expect(DriverInternalError.class);
 		expectedEx
-				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+				.expectMessage("An unexpected error occured server side on localhost/127.0.0.1: java.lang.ClassCastException: org.apache.cassandra.locator.SimpleStrategy cannot be cast to org.apache.cassandra.locator.NetworkTopologyStrategy");
 
 		manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 	}
@@ -87,7 +88,7 @@ public class ConsistencyLevelIT {
 		try {
 			manager.persist(bean);
 			manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
-		} catch (InvalidQueryException e) {
+		} catch (DriverInternalError e) {
 			// Should recover from exception
 		}
 		CompleteBean newBean = new CompleteBean();

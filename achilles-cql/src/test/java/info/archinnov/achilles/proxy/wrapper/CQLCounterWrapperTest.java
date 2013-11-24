@@ -16,12 +16,12 @@
  */
 package info.archinnov.achilles.proxy.wrapper;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;

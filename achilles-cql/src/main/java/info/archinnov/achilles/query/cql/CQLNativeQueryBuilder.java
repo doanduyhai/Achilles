@@ -18,6 +18,7 @@ package info.archinnov.achilles.query.cql;
 
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.entity.operations.NativeQueryMapper;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class CQLNativeQueryBuilder {
 	 */
 	public List<Map<String, Object>> get() {
         log.debug("Get results for native query {}",queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString,null,null)).all();
 		return mapper.mapRows(rows);
 	}
 
@@ -63,7 +64,7 @@ public class CQLNativeQueryBuilder {
 	 */
 	public Map<String, Object> first() {
         log.debug("Get first result for native query {}",queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString,null,null)).all();
 		List<Map<String, Object>> result = mapper.mapRows(rows);
 		if (result.isEmpty())
 			return null;
@@ -77,6 +78,6 @@ public class CQLNativeQueryBuilder {
 	 */
 	public void execute() {
         log.debug("Execute native query {}",queryString);
-		daoContext.execute(new SimpleStatement(queryString));
+		daoContext.execute(new SimpleStatementWrapper(queryString,null,null));
 	}
 }

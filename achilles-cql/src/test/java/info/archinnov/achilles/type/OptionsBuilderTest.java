@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static com.datastax.driver.core.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Test;

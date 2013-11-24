@@ -8,15 +8,7 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+
 import org.apache.cassandra.config.Config;
 import org.apache.cassandra.config.Config.CommitLogSync;
 import org.apache.cassandra.config.Config.DiskFailurePolicy;
@@ -40,20 +33,19 @@ public class CassandraConfig {
 
 	private final Logger log = LoggerFactory.getLogger(CassandraConfig.class);
 	private final File configFile;
-    private Map<String,Object> parameters;
+	private Map<String, Object> parameters;
 	private Config config = new Config();
 
 	public CassandraConfig(Map<String, Object> parameters) {
-        this.parameters = parameters;
-        config.cluster_name = (String) parameters.get(CLUSTER_NAME);
-        this.configFile = new File((String)parameters.get(CONFIG_YAML_FILE));
+		this.parameters = parameters;
+		config.cluster_name = (String) parameters.get(CLUSTER_NAME);
+		this.configFile = new File((String) parameters.get(CONFIG_YAML_FILE));
 
-        config.rpc_port = (Integer) parameters.get(CASSANDRA_THRIFT_PORT);
-        config.native_transport_port = (Integer) parameters.get(CASSANDRA_CQL_PORT);
-        config.storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_PORT);
-        config.ssl_storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_SSL_PORT);
+		config.rpc_port = (Integer) parameters.get(CASSANDRA_THRIFT_PORT);
+		config.native_transport_port = (Integer) parameters.get(CASSANDRA_CQL_PORT);
+		config.storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_PORT);
+		config.ssl_storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_SSL_PORT);
 
-        // config.initial_token = "";
 		config.hinted_handoff_enabled = true;
 		config.max_hint_window_in_ms = 10800000; // 3 hours
 		config.hinted_handoff_throttle_in_kb = 1024;
@@ -63,16 +55,12 @@ public class CassandraConfig {
 		config.permissions_validity_in_ms = 2000;
 		config.partitioner = org.apache.cassandra.dht.Murmur3Partitioner.class.getName();
 		config.disk_failure_policy = DiskFailurePolicy.stop;
-		// config.key_cache_size_in_mb ="";
 		config.key_cache_save_period = 14400;
 		config.row_cache_size_in_mb = 0;
 		config.row_cache_save_period = 0;
-		config.row_cache_provider = "SerializingCacheProvider";
 		config.commitlog_sync = CommitLogSync.periodic;
 		config.commitlog_sync_period_in_ms = 10000;
 		config.commitlog_segment_size_in_mb = 32;
-		config.reduce_cache_sizes_at = 0.85;
-		config.reduce_cache_capacity_to = 0.6;
 		config.concurrent_reads = 32;
 		config.concurrent_writes = 32;
 		config.memtable_flush_queue_size = 4;
@@ -116,16 +104,19 @@ public class CassandraConfig {
 		// Tuning for perf
 		config.memtable_total_space_in_mb = 64;
 		config.commitlog_total_space_in_mb = 32;
-		config.flush_largest_memtables_at = 0.99;
 	}
 
 	private void updateWithHomePath() {
-		config.data_file_directories = new String[] {(String) parameters.get(DATA_FILE_FOLDER)};
-        config.commitlog_directory = (String) parameters.get(COMMIT_LOG_FOLDER);
-//        config.server_encryption_options.keystore = absolutePath + "/keystore";
-//        config.server_encryption_options.truststore = absolutePath + "/truststore";
-//		config.client_encryption_options.keystore = absolutePath + "/keystore";
-//        config.client_encryption_options.truststore = absolutePath + "/trustore";
+		config.data_file_directories = new String[] { (String) parameters.get(DATA_FILE_FOLDER) };
+		config.commitlog_directory = (String) parameters.get(COMMIT_LOG_FOLDER);
+		// config.server_encryption_options.keystore = absolutePath +
+		// "/keystore";
+		// config.server_encryption_options.truststore = absolutePath +
+		// "/truststore";
+		// config.client_encryption_options.keystore = absolutePath +
+		// "/keystore";
+		// config.client_encryption_options.truststore = absolutePath +
+		// "/trustore";
 		config.saved_caches_directory = (String) parameters.get(SAVED_CACHES_FOLDER);
 	}
 
@@ -200,11 +191,11 @@ public class CassandraConfig {
 		return config.rpc_port;
 	}
 
-    public int getStoragePort() {
+	public int getStoragePort() {
 		return config.storage_port;
 	}
 
-    public int getStorageSSLPort() {
+	public int getStorageSSLPort() {
 		return config.ssl_storage_port;
 	}
 

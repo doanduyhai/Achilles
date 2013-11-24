@@ -8,12 +8,13 @@
 
 package info.archinnov.achilles.embedded;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.MBeanInfo;
@@ -21,6 +22,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +41,10 @@ public enum CassandraEmbeddedServerStarter {
 			return;
 		}
 
-        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
-        log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
-        log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
-        log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
+		log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
+		log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
+		log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
+		log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
 
 		log.info("Starting Cassandra...");
 		config.write();

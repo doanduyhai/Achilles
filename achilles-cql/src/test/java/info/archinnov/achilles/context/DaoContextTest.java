@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
@@ -26,12 +26,12 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.statement.StatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.statement.prepared.PreparedStatementBinder;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.Arrays;
@@ -54,11 +54,11 @@ import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
@@ -619,7 +619,7 @@ public class DaoContextTest {
 
 	@Test
 	public void should_prepare_statement() throws Exception {
-		Statement statement = new SimpleStatement("query");
+        RegularStatement statement = new SimpleStatement("query");
 		when(session.prepare("query")).thenReturn(ps);
 
 		assertThat(daoContext.prepare(statement)).isSameAs(ps);

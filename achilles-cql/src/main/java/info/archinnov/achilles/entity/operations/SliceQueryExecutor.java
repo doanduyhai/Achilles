@@ -26,6 +26,7 @@ import info.archinnov.achilles.iterator.SliceQueryIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.StatementGenerator;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.lang.reflect.Method;
@@ -36,7 +37,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -67,8 +67,8 @@ public class SliceQueryExecutor {
 		List<T> clusteredEntities = new ArrayList<T>();
 
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
-		Query query = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit());
-		List<Row> rows = daoContext.execute(query).all();
+        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit());
+		List<Row> rows = daoContext.execute(statementWrapper).all();
 
 		for (Row row : rows) {
 			T clusteredEntity = meta.instanciate();
@@ -82,8 +82,8 @@ public class SliceQueryExecutor {
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
         log.debug("Get iterator for slice query");
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
-		Query query = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getBatchSize());
-		Iterator<Row> iterator = daoContext.execute(query).iterator();
+        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getBatchSize());
+		Iterator<Row> iterator = daoContext.execute(statementWrapper).iterator();
 		PreparedStatement ps = generator.generateIteratorSliceQuery(cqlSliceQuery, daoContext);
 		PersistenceContext context = buildContextForQuery(sliceQuery);
 		return new SliceQueryIterator<T>(cqlSliceQuery, context, iterator, ps);
@@ -93,8 +93,8 @@ public class SliceQueryExecutor {
         log.debug("Slice remove");
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
 		cqlSliceQuery.validateSliceQueryForRemove();
-		Query query = generator.generateRemoveSliceQuery(cqlSliceQuery);
-		daoContext.execute(query);
+        final RegularStatementWrapper statementWrapper = generator.generateRemoveSliceQuery(cqlSliceQuery);
+        daoContext.execute(statementWrapper);
 	}
 
 	protected <T> PersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery) {

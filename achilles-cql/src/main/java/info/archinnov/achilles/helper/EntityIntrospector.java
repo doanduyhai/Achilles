@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.entity.parsing.PropertyFilter;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.table.TableNameNormalizer;

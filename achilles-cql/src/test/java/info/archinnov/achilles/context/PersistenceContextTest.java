@@ -17,7 +17,7 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -31,7 +31,7 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.OptionsBuilder;

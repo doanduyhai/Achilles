@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -64,7 +65,7 @@ public class SliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>? AND c<=2;");
 
@@ -93,7 +94,7 @@ public class SliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>?;");
 
@@ -123,7 +124,7 @@ public class SliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<? AND c>=1;");
 
@@ -152,7 +153,7 @@ public class SliceQueryPreparedStatementGeneratorTest {
 		when(sliceQuery.getVaryingComponentName()).thenReturn("c");
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForIteratorSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<?;");
 

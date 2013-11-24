@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;

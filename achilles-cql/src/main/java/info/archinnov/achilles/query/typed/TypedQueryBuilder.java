@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static info.archinnov.achilles.consistency.ConsistencyConvertor.getCQLLevel;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
@@ -23,6 +24,7 @@ import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,17 +40,17 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
 
 public class TypedQueryBuilder<T> {
-    private static final Logger log  = LoggerFactory.getLogger(TypedQueryBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(TypedQueryBuilder.class);
 
-    private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
+	private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
 	private static final String SELECT_STAR = "select * ";
 	private static final String WHITE_SPACES = "\\s+";
 
-	private Class<T> entityClass;
 	private DaoContext daoContext;
 	private String normalizedQuery;
 	private Map<String, PropertyMeta> propertiesMap;
@@ -57,22 +59,23 @@ public class TypedQueryBuilder<T> {
 	private boolean managed;
 	private List<String> selectedColumns;
 	private Set<Method> alreadyLoaded;
+	private Object[] boundValues;
 
 	private EntityMapper mapper = new EntityMapper();
 	private EntityProxifier proxifier = new EntityProxifier();
 
 	public TypedQueryBuilder(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
-                             PersistenceContextFactory contextFactory, boolean managed, boolean toLowerCase) {
-		this.entityClass = entityClass;
+			PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery, Object[] boundValues) {
 		this.daoContext = daoContext;
-		this.normalizedQuery = toLowerCase ? queryString.toLowerCase() : queryString;
+		this.boundValues = boundValues;
+		this.normalizedQuery = shouldNormalizeQuery ? queryString.toLowerCase() : queryString;
 		this.meta = meta;
 		this.contextFactory = contextFactory;
 		this.managed = managed;
 		this.propertiesMap = transformPropertiesMap(meta);
 		determineAlreadyLoadedSet();
 	}
-	
+
 	/**
 	 * Executes the query and returns entities
 	 * 
@@ -86,9 +89,11 @@ public class TypedQueryBuilder<T> {
 	 * 
 	 */
 	public List<T> get() {
-        log.debug("Get results for typed query {}",normalizedQuery);
+		log.debug("Get results for typed query {}", normalizedQuery);
+		final ConsistencyLevel consistencyLevel = getCQLLevel(meta.getReadConsistencyLevel());
 		List<T> result = new ArrayList<T>();
-		List<Row> rows = daoContext.execute(new SimpleStatement(normalizedQuery)).all();
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues, consistencyLevel))
+				.all();
 		for (Row row : rows) {
 			T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
 			if (entity != null) {
@@ -111,9 +116,10 @@ public class TypedQueryBuilder<T> {
 	 * 
 	 */
 	public T getFirst() {
-        log.debug("Get first result for typed query {}",normalizedQuery);
+		log.debug("Get first result for typed query {}", normalizedQuery);
 		T entity = null;
-		Row row = daoContext.execute(new SimpleStatement(normalizedQuery)).one();
+		final ConsistencyLevel consistencyLevel = getCQLLevel(meta.getReadConsistencyLevel());
+		Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues, consistencyLevel)).one();
 		if (row != null) {
 			entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
 			if (entity != null && managed) {

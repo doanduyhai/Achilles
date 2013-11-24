@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.AchillesColumnMetadata;
+import com.datastax.driver.core.ColumnMetadataBuilder;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.TableMetadata;
@@ -36,8 +36,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_compare_simple_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.text(), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.text(), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.text());
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.text());
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isTrue();
@@ -46,8 +46,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_compare_list_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.list(DataType.text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.list(DataType.text()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.list(DataType.text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.list(DataType.text()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isTrue();
@@ -56,8 +56,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_compare_set_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.set(DataType.text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.set(DataType.text()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.set(DataType.text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.set(DataType.text()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isTrue();
@@ -66,10 +66,10 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_compare_map_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.map(DataType.text(), DataType
-                .text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.map(DataType.text(), DataType
-                .text()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.map(DataType.text(), DataType
+                .text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.map(DataType.text(), DataType
+                .text()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isTrue();
@@ -78,8 +78,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_fail_if_not_same_column_name() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value1", DataType.set(DataType.text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value2", DataType.set(DataType.text()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value1", DataType.set(DataType.text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value2", DataType.set(DataType.text()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isFalse();
@@ -91,8 +91,8 @@ public class ColumnMetaDataComparatorTest {
         TableMetadata tableMeta2 = mock(TableMetadata.class);
         when(tableMeta2.getName()).thenReturn("table2");
 
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.set(DataType.text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta2, "value", DataType.set(DataType.text()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.set(DataType.text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta2, "value", DataType.set(DataType.text()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isFalse();
@@ -101,8 +101,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_fail_if_not_same_column_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.text(), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.bigint(), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.text());
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.bigint());
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isFalse();
@@ -111,8 +111,8 @@ public class ColumnMetaDataComparatorTest {
     @Test
     public void should_fail_if_not_same_list_parameter_type() throws Exception {
         //Given
-        sourceColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.list(DataType.text()), null);
-        targetColumnMetadata = new AchillesColumnMetadata(tableMeta, "value", DataType.list(DataType.bigint()), null);
+        sourceColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.list(DataType.text()));
+        targetColumnMetadata = ColumnMetadataBuilder.create(tableMeta, "value", DataType.list(DataType.bigint()));
 
         //Then
         assertThat(comparator.isEqual(sourceColumnMetadata, targetColumnMetadata)).isFalse();

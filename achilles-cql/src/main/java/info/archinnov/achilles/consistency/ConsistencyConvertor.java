@@ -38,6 +38,8 @@ public class ConsistencyConvertor {
 		fromAchillesToCQL.put(ConsistencyLevel.LOCAL_QUORUM, com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
 		fromAchillesToCQL.put(ConsistencyLevel.EACH_QUORUM, com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		fromAchillesToCQL.put(ConsistencyLevel.ALL, com.datastax.driver.core.ConsistencyLevel.ALL);
+		fromAchillesToCQL.put(ConsistencyLevel.SERIAL, com.datastax.driver.core.ConsistencyLevel.SERIAL);
+		fromAchillesToCQL.put(ConsistencyLevel.LOCAL_SERIAL, com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
 	}
 
 	public static com.datastax.driver.core.ConsistencyLevel getCQLLevel(ConsistencyLevel achillesLevel) {

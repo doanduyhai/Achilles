@@ -17,8 +17,8 @@
 package info.archinnov.achilles.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static info.archinnov.achilles.consistency.ConsistencyConvertor.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
-
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -26,34 +26,36 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.statement.StatementGenerator;
 import info.archinnov.achilles.statement.cache.CacheManager;
 import info.archinnov.achilles.statement.cache.StatementCacheKey;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
 import info.archinnov.achilles.statement.prepared.PreparedStatementBinder;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
-import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 
 public class DaoContext {
-    private static final Logger log  = LoggerFactory.getLogger(DaoContext.class);
+	private static final Logger log = LoggerFactory.getLogger(DaoContext.class);
 
-    public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
 
 	private static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
@@ -70,11 +72,10 @@ public class DaoContext {
 	private StatementGenerator statementGenerator = new StatementGenerator();
 
 	public DaoContext(Map<Class<?>, PreparedStatement> insertPSs,
-                      Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-                      Map<Class<?>, PreparedStatement> selectEagerPSs, Map<Class<?>, Map<String,
-            PreparedStatement>> removePSs,
-                      Map<CQLQueryType, PreparedStatement> counterQueryMap,
-                      Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap, Session session) {
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
+			Map<Class<?>, PreparedStatement> selectEagerPSs, Map<Class<?>, Map<String, PreparedStatement>> removePSs,
+			Map<CQLQueryType, PreparedStatement> counterQueryMap,
+			Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap, Session session) {
 		this.insertPSs = insertPSs;
 		this.dynamicPSCache = dynamicPSCache;
 		this.selectEagerPSs = selectEagerPSs;
@@ -85,7 +86,7 @@ public class DaoContext {
 	}
 
 	public void pushInsertStatement(PersistenceContext context) {
-        log.debug("Push insert statement for PersistenceContext '{}'", context);
+		log.debug("Push insert statement for PersistenceContext '{}'", context);
 
 		EntityMeta entityMeta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
@@ -93,51 +94,67 @@ public class DaoContext {
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
 		if (ttlO.isPresent() || timestampO.isPresent()) {
-			Insert insert = statementGenerator.generateInsert(context.getEntity(), entityMeta);
+			final Pair<Insert, Object[]> pair = statementGenerator.generateInsert(context.getEntity(), entityMeta);
+			Insert insert = pair.left;
+			Object[] boundValues = pair.right;
 			Insert.Options options = null;
 
-			if (ttlO.isPresent() && timestampO.isPresent())
+			if (ttlO.isPresent() && timestampO.isPresent()) {
 				options = insert.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
-			else if (ttlO.isPresent())
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+				boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			} else if (ttlO.isPresent()) {
 				options = insert.using(ttl(ttlO.get()));
-			else if (timestampO.isPresent())
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+			} else if (timestampO.isPresent()) {
 				options = insert.using(timestamp(timestampO.get()));
-
-			context.pushStatement(options, writeLevel);
+				boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			}
+			context.pushStatement(new RegularStatementWrapper(options, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = insertPSs.get(entityClass);
-			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity());
-			context.pushBoundStatement(bsWrapper, writeLevel);
+			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity(), writeLevel);
+			context.pushStatement(bsWrapper);
 		}
 	}
 
 	public void pushUpdateStatement(PersistenceContext context, List<PropertyMeta> pms) {
-        log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context,pms);
+		log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context, pms);
 		EntityMeta entityMeta = context.getEntityMeta();
 		Optional<Integer> ttlO = context.getTtt();
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
 		if (ttlO.isPresent() || timestampO.isPresent()) {
-			Assignments update = statementGenerator.generateUpdateFields(context.getEntity(), entityMeta, pms);
+			final Pair<Update.Where, Object[]> pair = statementGenerator.generateUpdateFields(context.getEntity(),
+					entityMeta, pms);
+
+			final Update.Where where = pair.left;
+			Object[] boundValues = pair.right;
 			Update.Options options = null;
 
-			if (ttlO.isPresent() && timestampO.isPresent())
-				options = update.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
-			else if (ttlO.isPresent())
-				options = update.using(ttl(ttlO.get()));
-			else if (timestampO.isPresent())
-				options = update.using(timestamp(timestampO.get()));
+			if (ttlO.isPresent() && timestampO.isPresent()) {
+				options = where.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+				boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			} else if (ttlO.isPresent()) {
+				options = where.using(ttl(ttlO.get()));
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+			} else if (timestampO.isPresent()) {
+				options = where.using(timestamp(timestampO.get()));
+				boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			}
 
-			context.pushStatement(options, writeLevel);
+			context.pushStatement(new RegularStatementWrapper(options, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms);
-			BoundStatementWrapper bsWrapper = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity());
-			context.pushBoundStatement(bsWrapper, writeLevel);
+			BoundStatementWrapper bsWrapper = binder
+					.bindForUpdate(ps, entityMeta, pms, context.getEntity(), writeLevel);
+			context.pushStatement(bsWrapper);
 		}
 	}
 
 	public Row loadProperty(PersistenceContext context, PropertyMeta pm) {
-        log.debug("Load property '{}' for PersistenceContext '{}'", pm,context);
+		log.debug("Load property '{}' for PersistenceContext '{}'", pm, context);
 		PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm);
 		ConsistencyLevel readLevel = getReadConsistencyLevel(context, pm);
 		List<Row> rows = executeReadWithConsistency(context, ps, readLevel);
@@ -145,16 +162,16 @@ public class DaoContext {
 	}
 
 	public void bindForRemoval(PersistenceContext context, String tableName) {
-        log.debug("Push delete statement for PersistenceContext '{}'", context);
+		log.debug("Push delete statement for PersistenceContext '{}'", context);
 		EntityMeta entityMeta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
 		Map<String, PreparedStatement> psMap = removePSs.get(entityClass);
 
 		if (psMap.containsKey(tableName)) {
-			BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(psMap.get(tableName),
-					entityMeta, context.getPrimaryKey());
 			ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-			context.pushBoundStatement(bsWrapper, writeLevel);
+			BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(psMap.get(tableName),
+					entityMeta, context.getPrimaryKey(), writeLevel);
+			context.pushStatement(bsWrapper);
 		} else {
 			throw new AchillesException("Cannot find prepared statement for deletion for table '" + tableName + "'");
 		}
@@ -163,106 +180,110 @@ public class DaoContext {
 	// Simple counter
 	public void bindForSimpleCounterIncrement(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long increment) {
-        log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context,increment);
+		log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context,
+				increment);
 		PreparedStatement ps = counterQueryMap.get(INCR);
-		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
-				context.getPrimaryKey(), increment);
-
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-		context.pushBoundStatement(bsWrapper, writeLevel);
+		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
+				context.getPrimaryKey(), increment, writeLevel);
+		context.pushStatement(bsWrapper);
 	}
 
 	public void incrementSimpleCounter(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long increment, ConsistencyLevel consistencyLevel) {
-        log.debug("Increment immediately simple counter for PersistenceContext '{}' and value '{}'", context,increment);
+		log.debug("Increment immediately simple counter for PersistenceContext '{}' and value '{}'", context, increment);
 		PreparedStatement ps = counterQueryMap.get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
-				context.getPrimaryKey(), increment);
-		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
+				context.getPrimaryKey(), increment, consistencyLevel);
+		context.executeImmediate(bsWrapper);
 	}
 
 	public void decrementSimpleCounter(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long decrement, ConsistencyLevel consistencyLevel) {
-        log.debug("Decrement immediately simple counter for PersistenceContext '{}' and value '{}'", context,decrement);
+		log.debug("Decrement immediately simple counter for PersistenceContext '{}' and value '{}'", context, decrement);
 		PreparedStatement ps = counterQueryMap.get(DECR);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
-				context.getPrimaryKey(), decrement);
-		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
+				context.getPrimaryKey(), decrement, consistencyLevel);
+		context.executeImmediate(bsWrapper);
 	}
 
-	public Row getSimpleCounter(PersistenceContext context, PropertyMeta counterMeta,
-			ConsistencyLevel consistencyLevel) {
-        log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'",counterMeta,context,consistencyLevel);
+	public Row getSimpleCounter(PersistenceContext context, PropertyMeta counterMeta, ConsistencyLevel consistencyLevel) {
+		log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'",
+				counterMeta, context, consistencyLevel);
 		PreparedStatement ps = counterQueryMap.get(SELECT);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(ps, context.getEntityMeta(), counterMeta,
-				context.getPrimaryKey());
-		ResultSet resultSet = context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
-
+				context.getPrimaryKey(), consistencyLevel);
+		ResultSet resultSet = context.executeImmediate(bsWrapper);
 		return returnFirstRowOrNull(resultSet.all());
 	}
 
 	public void bindForSimpleCounterDelete(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Object primaryKey) {
-        log.debug("Push simple counter deletion statement for counterMeta '{}' and PersistenceContext '{}'", counterMeta,context);
+		log.debug("Push simple counter deletion statement for counterMeta '{}' and PersistenceContext '{}'",
+				counterMeta, context);
 		PreparedStatement ps = counterQueryMap.get(DELETE);
-		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
-
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-		context.pushBoundStatement(bsWrapper, writeLevel);
+		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey,
+				writeLevel);
+		context.pushStatement(bsWrapper);
 	}
 
 	// Clustered counter
 	public void pushClusteredCounterIncrementStatement(PersistenceContext context, EntityMeta meta,
 			PropertyMeta counterMeta, Long increment) {
-        log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta,context,increment);
+		log.debug(
+				"Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'",
+				counterMeta, context, increment);
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-                                                                                           context.getPrimaryKey(), increment);
-		context.pushBoundStatement(bsWrapper, writeLevel);
+				context.getPrimaryKey(), increment, writeLevel);
+		context.pushStatement(bsWrapper);
 	}
 
-	public void incrementClusteredCounter(PersistenceContext context, EntityMeta meta,
-                                          Long increment, ConsistencyLevel consistencyLevel) {
-        log.debug("Increment immediately clustered counter for PersistenceContext '{}' and value '{}'", context,increment);
-        PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
+	public void incrementClusteredCounter(PersistenceContext context, EntityMeta meta, Long increment,
+			ConsistencyLevel consistencyLevel) {
+		log.debug("Increment immediately clustered counter for PersistenceContext '{}' and value '{}'", context,
+				increment);
+		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-                                                                                           context.getPrimaryKey(), increment);
-		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
+				context.getPrimaryKey(), increment, consistencyLevel);
+		context.executeImmediate(bsWrapper);
 	}
 
-	public void decrementClusteredCounter(PersistenceContext context, EntityMeta meta,
-                                          Long decrement, ConsistencyLevel consistencyLevel) {
-        log.debug("Decrement immediately clustered counter for PersistenceContext '{}' and value '{}'", context,decrement);
-        PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
+	public void decrementClusteredCounter(PersistenceContext context, EntityMeta meta, Long decrement,
+			ConsistencyLevel consistencyLevel) {
+		log.debug("Decrement immediately clustered counter for PersistenceContext '{}' and value '{}'", context,
+				decrement);
+		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-                                                                                           context.getPrimaryKey(), decrement);
-		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
+				context.getPrimaryKey(), decrement, consistencyLevel);
+		context.executeImmediate(bsWrapper);
 	}
 
-	public Row getClusteredCounter(PersistenceContext context,
-                                   ConsistencyLevel consistencyLevel) {
-        log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,consistencyLevel);
+	public Row getClusteredCounter(PersistenceContext context, ConsistencyLevel consistencyLevel) {
+		log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
+				consistencyLevel);
 		EntityMeta entityMeta = context.getEntityMeta();
 		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT);
-		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta,
-                                                                               context.getPrimaryKey());
-		ResultSet resultSet = context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
+		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
+				consistencyLevel);
+		ResultSet resultSet = context.executeImmediate(bsWrapper);
 
 		return returnFirstRowOrNull(resultSet.all());
 	}
 
 	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Object primaryKey) {
-        log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
+		log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
-		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, primaryKey);
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
-		context.pushBoundStatement(bsWrapper, writeLevel);
+		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, primaryKey, writeLevel);
+		context.pushStatement(bsWrapper);
 	}
 
 	public Row eagerLoadEntity(PersistenceContext context) {
-        log.debug("Load entity for PersistenceContext '{}'", context);
+		log.debug("Load entity for PersistenceContext '{}'", context);
 		EntityMeta meta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
 		PreparedStatement ps = selectEagerPSs.get(entityClass);
@@ -276,9 +297,8 @@ public class DaoContext {
 			ConsistencyLevel readLevel) {
 		EntityMeta entityMeta = context.getEntityMeta();
 		BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta,
-				context.getPrimaryKey());
-
-		return context.executeImmediateWithConsistency(bsWrapper, readLevel).all();
+				context.getPrimaryKey(), readLevel);
+		return context.executeImmediate(bsWrapper).all();
 	}
 
 	private Row returnFirstRowOrNull(List<Row> rows) {
@@ -289,84 +309,52 @@ public class DaoContext {
 		}
 	}
 
-	public ResultSet execute(Query query, Object... boundValues) {
-		logDMLStatement(query, boundValues);
-		return session.execute(query);
+	public ResultSet execute(AbstractStatementWrapper statementWrapper) {
+		return statementWrapper.execute(session);
 	}
 
-	public PreparedStatement prepare(Statement statement) {
+	public PreparedStatement prepare(RegularStatement statement) {
 		return session.prepare(statement.getQueryString());
 	}
 
 	public ResultSet bindAndExecute(PreparedStatement ps, Object... params) {
 		BoundStatement bs = ps.bind(params);
+		return new BoundStatementWrapper(bs, params, ps.getConsistencyLevel()).execute(session);
+	}
 
-		logDMLStatement(bs);
-		return session.execute(bs);
-
+	public void executeBatch(BatchStatement batch) {
+		session.execute(batch);
 	}
 
 	public Session getSession() {
 		return session;
 	}
 
-	private void logDMLStatement(Query query, Object... boundValues) {
-		if (dmlLogger.isDebugEnabled()) {
-			String queryType;
-			String queryString;
-			String consistencyLevel;
-			if (BoundStatement.class.isInstance(query)) {
-				PreparedStatement ps = BoundStatement.class.cast(query).preparedStatement();
-				queryType = "Prepared statement";
-				queryString = ps.getQueryString();
-				consistencyLevel = query.getConsistencyLevel() == null ? "DEFAULT" : query.getConsistencyLevel().name();
-
-			} else if (Statement.class.isInstance(query)) {
-				Statement statement = Statement.class.cast(query);
-				queryType = "Simple query";
-				queryString = statement.getQueryString();
-				consistencyLevel = statement.getConsistencyLevel() == null ? "DEFAULT" : statement
-						.getConsistencyLevel().name();
-			} else {
-				queryType = "Unknown query";
-				queryString = "???";
-				consistencyLevel = "UNKNWON";
-			}
-
-			dmlLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
-			if (boundValues != null && boundValues.length > 0) {
-				dmlLogger.debug("\t bound values: {}", Arrays.asList(boundValues));
-			}
-
-		}
-	}
-
 	private ConsistencyLevel getReadConsistencyLevel(PersistenceContext context, EntityMeta entityMeta) {
 		ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: entityMeta.getReadConsistencyLevel();
-        log.trace("Read consistency level : "+readLevel);
+		log.trace("Read consistency level : " + readLevel);
 		return readLevel;
 	}
 
 	private ConsistencyLevel getWriteConsistencyLevel(PersistenceContext context, EntityMeta entityMeta) {
 		ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: entityMeta.getWriteConsistencyLevel();
-        log.trace("Write consistency level : "+writeLevel);
+		log.trace("Write consistency level : " + writeLevel);
 		return writeLevel;
 	}
 
 	private ConsistencyLevel getReadConsistencyLevel(PersistenceContext context, PropertyMeta pm) {
 		ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: pm.getReadConsistencyLevel();
-        log.trace("Read consistency level : "+consistency);
+		log.trace("Read consistency level : " + consistency);
 		return consistency;
 	}
 
 	private ConsistencyLevel getWriteConsistencyLevel(PersistenceContext context, PropertyMeta counterMeta) {
 		ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: counterMeta.getWriteConsistencyLevel();
-        log.trace("Write consistency level : "+consistency);
+		log.trace("Write consistency level : " + consistency);
 		return consistency;
 	}
-
 }

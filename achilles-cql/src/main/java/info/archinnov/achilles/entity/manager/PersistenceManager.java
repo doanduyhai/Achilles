@@ -16,10 +16,11 @@
  */
 package info.archinnov.achilles.entity.manager;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
-import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
@@ -62,7 +63,7 @@ public class PersistenceManager {
 	protected DaoContext daoContext;
 
 	protected PersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
-                                 PersistenceContextFactory contextFactory, DaoContext daoContext, ConfigurationContext configContext) {
+			PersistenceContextFactory contextFactory, DaoContext daoContext, ConfigurationContext configContext) {
 		this.entityMetaMap = entityMetaMap;
 		this.configContext = configContext;
 		this.daoContext = daoContext;
@@ -219,8 +220,8 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
 
-        Object realObject = proxifier.getRealObject(entity);
-        entityValidator.validateEntity(realObject, entityMetaMap);
+		Object realObject = proxifier.getRealObject(entity);
+		entityValidator.validateEntity(realObject, entityMetaMap);
 		PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(writeLevel));
 		context.remove();
 	}
@@ -241,7 +242,7 @@ public class PersistenceManager {
 			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                                                               OptionsBuilder.withConsistency(writeLevel));
+				OptionsBuilder.withConsistency(writeLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -277,7 +278,7 @@ public class PersistenceManager {
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                                                               OptionsBuilder.withConsistency(readLevel));
+				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> find(entityClass);
 	}
@@ -322,7 +323,7 @@ public class PersistenceManager {
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                                                               OptionsBuilder.withConsistency(readLevel));
+				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.getReference(entityClass);
 	}
@@ -367,9 +368,9 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> T initialize(final T entity) {
-        if (log.isDebugEnabled()) {
-            log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
-        }
+		if (log.isDebugEnabled()) {
+			log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
+		}
 		proxifier.ensureProxy(entity);
 		PersistenceContext context = initPersistenceContext(entity, OptionsBuilder.noOptions());
 		return context.initialize(entity);
@@ -471,7 +472,7 @@ public class PersistenceManager {
 	}
 
 	public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
-        log.debug("Execute slice query for entity class {}",entityClass);
+		log.debug("Execute slice query for entity class {}", entityClass);
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		Validator.validateTrue(meta.isClusteredEntity(),
 				"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
@@ -489,7 +490,7 @@ public class PersistenceManager {
 	 * @return CQLNativeQueryBuilder
 	 */
 	public CQLNativeQueryBuilder nativeQuery(String queryString) {
-        log.debug("Execute native query {}",queryString);
+		log.debug("Execute native query {}", queryString);
 		Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
 		return new CQLNativeQueryBuilder(daoContext, queryString);
 	}
@@ -506,15 +507,19 @@ public class PersistenceManager {
 	 *            native CQL query string, including limit, ttl and consistency
 	 *            options
 	 * 
+	 * @param boundValues
+	 *            values to be bind to the parameterized query, if any
+	 * 
 	 * @return TypedQueryBuilder<T>
 	 */
-	public <T> TypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString) {
-		return typedQuery(entityClass, queryString, true);
+	public <T> TypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
+		return typedQueryInternal(entityClass, queryString, true, boundValues);
 	}
 
-	private <T> TypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString, boolean normalizeQuery) {
-        log.debug("Execute typed query for entity class {}",entityClass);
-        Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
+	private <T> TypedQueryBuilder<T> typedQueryInternal(Class<T> entityClass, String queryString,
+			boolean normalizeQuery, Object... boundValues) {
+		log.debug("Execute typed query for entity class {}", entityClass);
+		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
 		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
@@ -523,7 +528,7 @@ public class PersistenceManager {
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
 		return new TypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, true,
-				normalizeQuery);
+				normalizeQuery, boundValues);
 	}
 
 	/**
@@ -540,9 +545,9 @@ public class PersistenceManager {
 	 * @return TypedQueryBuilder<T>
 	 */
 	public <T> TypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
-        log.debug("Execute indexed query for entity class {}",entityClass);
+		log.debug("Execute indexed query for entity class {}", entityClass);
 
-        EntityMeta entityMeta = entityMetaMap.get(entityClass);
+		EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
 		Validator.validateFalse(entityMeta.isClusteredEntity(),
 				"Index query is not supported for clustered entity. Please use typed query/native query");
@@ -554,10 +559,9 @@ public class PersistenceManager {
 		Validator.validateNotNull(indexCondition.getIndexRelation(),
 				"Index relation for index condition '%s' should be provided", indexCondition);
 
-        final Select.Where query = QueryBuilder.select().from(entityMeta.getTableName())
-                                               .where(QueryBuilder.eq(indexCondition.getColumnName(), indexCondition
-                                                       .getColumnValue()));
-		return typedQuery(entityClass, query.getQueryString(), false);
+		final Select.Where query = QueryBuilder.select().from(entityMeta.getTableName())
+				.where(QueryBuilder.eq(indexCondition.getColumnName(), bindMarker()));
+		return typedQueryInternal(entityClass, query.getQueryString(), false, indexCondition.getColumnValue());
 	}
 
 	/**
@@ -573,10 +577,13 @@ public class PersistenceManager {
 	 *            native CQL query string, including limit, ttl and consistency
 	 *            options
 	 * 
+	 * @param boundValues
+	 *            values to be bind to the parameterized query, if any
+	 * 
 	 * @return TypedQueryBuilder<T>
 	 */
-	public <T> TypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass, String queryString) {
-        log.debug("Execute raw typed query for entity class {}",entityClass);
+	public <T> TypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
+		log.debug("Execute raw typed query for entity class {}", entityClass);
 		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
 		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
@@ -585,16 +592,17 @@ public class PersistenceManager {
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-		return new TypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true);
+		return new TypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
+				boundValues);
 	}
 
-    protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
-        return contextFactory.newContext(entityClass, primaryKey, options);
-    }
+	protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+		return contextFactory.newContext(entityClass, primaryKey, options);
+	}
 
-    protected PersistenceContext initPersistenceContext(Object entity, Options options) {
-        return contextFactory.newContext(entity, options);
-    }
+	protected PersistenceContext initPersistenceContext(Object entity, Options options) {
+		return contextFactory.newContext(entity, options);
+	}
 
 	public Session getNativeSession() {
 		return daoContext.getSession();

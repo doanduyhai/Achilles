@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -36,7 +36,7 @@ import info.archinnov.achilles.query.typed.TypedQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;

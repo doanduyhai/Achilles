@@ -19,7 +19,7 @@ package info.archinnov.achilles.context;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.RegularStatement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLBatchingFlushContextTest {
@@ -41,7 +41,7 @@ public class CQLBatchingFlushContextTest {
 	private BoundStatementWrapper bsWrapper;
 
 	@Mock
-	private Query query;
+	private RegularStatement query;
 
 	@Before
 	public void setUp() {

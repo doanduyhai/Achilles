@@ -25,8 +25,8 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static com.datastax.driver.core.ConsistencyLevel.ALL;
+import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;

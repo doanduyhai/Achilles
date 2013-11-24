@@ -24,17 +24,20 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.prepared.SliceQueryPreparedStatementGenerator;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -46,61 +49,62 @@ import com.google.common.collect.FluentIterable;
 
 public class StatementGenerator {
 
-    private static final Logger log  = LoggerFactory.getLogger(StatementGenerator.class);
+	private static final Logger log = LoggerFactory.getLogger(StatementGenerator.class);
 
-    private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
+	private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
 	private SliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new SliceQueryPreparedStatementGenerator();
 
-	public <T> Query generateSelectSliceQuery(CQLSliceQuery<T> sliceQuery, int limit) {
+	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit) {
 
-        log.trace("Generate SELECT statement for slice query");
+		log.trace("Generate SELECT statement for slice query");
 		EntityMeta meta = sliceQuery.getMeta();
 
-		Select select = generateSelectEntity(meta);
+		Select select = generateSelectEntityInternal(meta);
 		select = select.limit(limit);
 		if (sliceQuery.getCQLOrdering() != null) {
 			select.orderBy(sliceQuery.getCQLOrdering());
 		}
-
-		Statement where = sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
-
-		return where.setConsistencyLevel(sliceQuery.getConsistencyLevel());
+		return sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
 	}
 
-	public <T> PreparedStatement generateIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, DaoContext daoContext) {
+	public PreparedStatement generateIteratorSliceQuery(CQLSliceQuery<?> sliceQuery, DaoContext daoContext) {
 
-        log.trace("Generate iterator for slice query");
+		log.trace("Generate iterator for slice query");
 
 		EntityMeta meta = sliceQuery.getMeta();
 
-		Select select = generateSelectEntity(meta);
+		Select select = generateSelectEntityInternal(meta);
 		select = select.limit(sliceQuery.getLimit());
 		if (sliceQuery.getCQLOrdering() != null) {
 			select.orderBy(sliceQuery.getCQLOrdering());
 		}
 
-		Statement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery, select);
+		RegularStatement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery,
+				select);
 
 		PreparedStatement preparedStatement = daoContext.prepare(where);
 		preparedStatement.setConsistencyLevel(sliceQuery.getConsistencyLevel());
 		return preparedStatement;
 	}
 
-	public <T> Query generateRemoveSliceQuery(CQLSliceQuery<T> sliceQuery) {
+	public RegularStatementWrapper generateRemoveSliceQuery(CQLSliceQuery<?> sliceQuery) {
 
-        log.trace("Generate DELETE statement for slice query");
+		log.trace("Generate DELETE statement for slice query");
 
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Delete delete = QueryBuilder.delete().from(meta.getTableName());
-		Statement where = sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
-
-		return where.setConsistencyLevel(sliceQuery.getConsistencyLevel());
+        return sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
 	}
 
-	public Select generateSelectEntity(EntityMeta entityMeta) {
+    public RegularStatement generateSelectEntity(EntityMeta entityMeta) {
+        final Select select = generateSelectEntityInternal(entityMeta);
+        return select;
+    }
 
-        log.trace("Generate SELECT statement for entity class {}",entityMeta.getClassName());
+	protected Select generateSelectEntityInternal(EntityMeta entityMeta) {
+
+		log.trace("Generate SELECT statement for entity class {}", entityMeta.getClassName());
 
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
@@ -117,86 +121,100 @@ public class StatementGenerator {
 		return select.from(entityMeta.getTableName());
 	}
 
-	public Insert generateInsert(Object entity, EntityMeta entityMeta) {
-        log.trace("Generate INSERT statement for entity class {}",entityMeta.getClassName());
+    public Pair<Insert, Object[]> generateInsert(Object entity, EntityMeta entityMeta) {
+        PropertyMeta idMeta = entityMeta.getIdMeta();
+        Insert insert = insertInto(entityMeta.getTableName());
+        final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
 
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		Insert insert = insertInto(entityMeta.getTableName());
-		generateInsertPrimaryKey(entity, idMeta, insert);
+        List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
+                                                         .filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
-				.filter(PropertyType.excludeCounterType).toImmutableList();
+        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
+        fieldMetas.remove(idMeta);
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
-		fieldMetas.remove(idMeta);
+        final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
+        for (int i=0; i<fieldMetas.size();i++) {
+            PropertyMeta pm = fieldMetas.get(i);
+            Object value = pm.getValueFromField(entity);
+            value = encodeValueForCassandra(pm, value);
+            insert.value(pm.getPropertyName(), value);
+            boundValuesForColumns[i] = value;
+        }
+        final Object[] boundValues = ArrayUtils.addAll(boundValuesForPK, boundValuesForColumns);
+        return Pair.create(insert,boundValues);
+    }
 
-		for (PropertyMeta pm : fieldMetas) {
-			Object value = pm.getValueFromField(entity);
-			value = encodeValueForCassandra(pm, value);
-			insert.value(pm.getPropertyName(), value);
-		}
-		return insert;
-	}
-
-	public Update.Assignments generateUpdateFields(Object entity, EntityMeta entityMeta, List<PropertyMeta> pms) {
-        log.trace("Generate UPDATE statement for entity class {} and properties {}",entityMeta.getClassName(),pms);
+	public Pair<Update.Where, Object[]> generateUpdateFields(Object entity, EntityMeta entityMeta, List<PropertyMeta>
+            pms) {
+		log.trace("Generate UPDATE statement for entity class {} and properties {}", entityMeta.getClassName(), pms);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 
-		int i = 0;
+        Object[] boundValuesForColumns = new Object[pms.size()];
 		Assignments assignments = null;
-		for (PropertyMeta pm : pms) {
-			Object value = pm.getValueFromField(entity);
+		for (int i=0; i<pms.size(); i++) {
+            PropertyMeta pm = pms.get(i);
+            Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			if (i == 0) {
 				assignments = update.with(set(pm.getPropertyName(), value));
 			} else {
 				assignments.and(set(pm.getPropertyName(), value));
 			}
-			i++;
+            boundValuesForColumns[i] = value;
 		}
-		return generateWhereClauseForUpdate(entity, idMeta, assignments);
-	}
+        final Pair<Update.Where, Object[]> pair = generateWhereClauseForUpdate(entity, idMeta, assignments);
 
-	private Update.Assignments generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta, Assignments update) {
-		Object primaryKey = idMeta.getPrimaryKey(entity);
-		if (idMeta.isEmbeddedId()) {
-			Update.Where where = null;
-			int index = 0;
+        final Object[] boundValues = ArrayUtils.addAll(boundValuesForColumns, pair.right);
+        return Pair.create(pair.left,boundValues);
+    }
 
+	private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,
+                                                                      Assignments update) {
+        Update.Where where = null;
+        Object[] boundValues;
+        Object primaryKey = idMeta.getPrimaryKey(entity);
+        if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
+            boundValues = new Object[encodedComponents.size()];
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
-				if (index == 0) {
+				if (i == 0) {
 					where = update.where(eq(componentName, componentValue));
 				} else {
 					where.and(eq(componentName, componentValue));
 				}
-				index++;
+                boundValues[i] = componentValue;
 			}
 		} else {
 			Object id = idMeta.encode(primaryKey);
-			update.where(eq(idMeta.getPropertyName(), id));
+            where = update.where(eq(idMeta.getPropertyName(), id));
+            boundValues = new Object[]{id};
 		}
-		return update;
+		return Pair.create(where,boundValues);
 	}
 
-	private void generateInsertPrimaryKey(Object entity, PropertyMeta idMeta, Insert insert) {
+	private Object[] generateInsertPrimaryKey(Object entity, PropertyMeta idMeta, Insert insert) {
 		Object primaryKey = idMeta.getPrimaryKey(entity);
+        Object[] boundValues;
 		if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
+            boundValues = new Object[encodedComponents.size()];
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
 				insert.value(componentName, componentValue);
+                boundValues[i] = componentValue;
 			}
 		} else {
 			Object id = idMeta.encode(primaryKey);
 			insert.value(idMeta.getPropertyName(), id);
+            boundValues = new Object[]{id};
 		}
+        return boundValues;
 	}
 
 	private Object encodeValueForCassandra(PropertyMeta pm, Object value) {

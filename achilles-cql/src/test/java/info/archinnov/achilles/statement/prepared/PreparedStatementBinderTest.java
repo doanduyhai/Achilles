@@ -24,6 +24,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;

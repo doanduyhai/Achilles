@@ -17,7 +17,7 @@
 package info.archinnov.achilles.statement;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.DaoContext;
@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -49,10 +50,9 @@ import org.mockito.stubbing.Answer;
 
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
@@ -79,7 +79,7 @@ public class StatementGeneratorTest {
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	@Captor
-	private ArgumentCaptor<Statement> statementCaptor;
+	private ArgumentCaptor<RegularStatement> statementCaptor;
 
 	@Test
 	public void should_create_select_statement_for_entity_simple_id() throws Exception {
@@ -115,38 +115,33 @@ public class StatementGeneratorTest {
 					}
 				});
 
-		Query query = generator.generateSelectSliceQuery(sliceQuery, 98);
+		RegularStatement query = generator.generateSelectSliceQuery(sliceQuery, 98);
 
-		assertThat(query.toString()).isEqualTo(
-				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 98;");
+		assertThat(query.getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? ORDER BY comp1 DESC LIMIT 98;");
+		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
 	}
-	
+
 	@Test
 	public void should_generate_slice_select_query_without_ordering() throws Exception {
 		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
 		when(sliceQuery.getMeta()).thenReturn(meta);
-		when(sliceQuery.getCQLOrdering())
-				.thenReturn(null);
-		when(sliceQuery.getConsistencyLevel()).thenReturn(
-				ConsistencyLevel.EACH_QUORUM);
-		when(
-				sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(
-						eq(sliceQuery), any(Select.class))).thenAnswer(
+		when(sliceQuery.getCQLOrdering()).thenReturn(null);
+		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), any(Select.class))).thenAnswer(
 				new Answer<Statement>() {
 
 					@Override
-					public Statement answer(InvocationOnMock invocation)
-							throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation
-								.getArguments()[1]);
+					public Statement answer(InvocationOnMock invocation) throws Throwable {
+						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
 					}
 				});
 
-		Query query = generator.generateSelectSliceQuery(sliceQuery, 98);
+		RegularStatement query = generator.generateSelectSliceQuery(sliceQuery, 98);
 
-		assertThat(query.toString())
-				.isEqualTo(
-						"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' LIMIT 98;");
+		assertThat(query.getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? LIMIT 98;");
+		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
 	}
 
 	@Test
@@ -172,9 +167,11 @@ public class StatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(statementCaptor.getValue().getQueryString()).isEqualTo(
-				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake='fake' ORDER BY comp1 DESC LIMIT 99;");
+		RegularStatement query = statementCaptor.getValue();
+		assertThat(query.getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? ORDER BY comp1 DESC LIMIT 99;");
 
+		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
 		verify(ps).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
 	}
 
@@ -192,77 +189,10 @@ public class StatementGeneratorTest {
 					}
 				});
 
-		Query query = generator.generateRemoveSliceQuery(sliceQuery);
+		RegularStatement query = generator.generateRemoveSliceQuery(sliceQuery);
 
-		assertThat(query.toString()).isEqualTo("DELETE  FROM table WHERE fake='fake';");
-	}
-
-	@Test
-	public void should_generate_insert_for_simple_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).invoker(invoker).build();
-
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
-				.type(SIMPLE).invoker(invoker).build();
-
-		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(SET).invoker(invoker).build();
-
-		PropertyMeta preferencesMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
-				.field("preferences").accessors().type(MAP).invoker(invoker).build();
-
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
-		meta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta, followersMeta, preferencesMeta));
-		meta.setIdMeta(idMeta);
-
-		Long id = RandomUtils.nextLong();
-		Long age = RandomUtils.nextLong();
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFollowers("john", "helen")
-				.addPreference(1, "FR").addPreference(2, "Paris").buid();
-
-		Insert insert = generator.generateInsert(entity, meta);
-
-		assertThat(insert.getQueryString()).isEqualTo(
-				"INSERT INTO table(id,age,followers,preferences) VALUES (" + id + "," + age
-						+ ",{'helen','john'},{1:'FR',2:'Paris'});");
-
-	}
-
-	@Test
-	public void should_generate_insert_for_clustered_id() throws Exception {
-		Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
-		Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("id", "name")
-				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).field("id")
-				.type(EMBEDDED_ID).invoker(invoker).build();
-		idMeta.setGetter(idGetter);
-
-		PropertyMeta valueMeta = PropertyMetaTestBuilder.valueClass(String.class).field("value").type(SIMPLE)
-				.invoker(invoker).build();
-		valueMeta.setGetter(valueGetter);
-
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
-		meta.setAllMetasExceptIdMeta(Arrays.asList(valueMeta));
-		meta.setIdMeta(idMeta);
-
-		Long userId = RandomUtils.nextLong();
-		ClusteredEntity entity = new ClusteredEntity();
-		EmbeddedKey embeddedKey = new EmbeddedKey();
-		embeddedKey.setUserId(userId);
-		embeddedKey.setName("name");
-		entity.setId(embeddedKey);
-		entity.setValue("value");
-
-		Insert insert = generator.generateInsert(entity, meta);
-
-		assertThat(insert.getQueryString()).isEqualTo(
-				"INSERT INTO table(id,name,value) VALUES (" + userId + ",'name','value');");
-
+		assertThat(query.getQueryString()).isEqualTo("DELETE  FROM table WHERE fake=?;");
+		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
 	}
 
 	@Test

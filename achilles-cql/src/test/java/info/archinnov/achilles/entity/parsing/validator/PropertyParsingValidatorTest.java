@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.parsing.validator;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static com.datastax.driver.core.ConsistencyLevel.ALL;
+import static com.datastax.driver.core.ConsistencyLevel.ANY;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -41,7 +41,7 @@ import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.CorrectEmbeddedKey;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParsingValidatorTest {

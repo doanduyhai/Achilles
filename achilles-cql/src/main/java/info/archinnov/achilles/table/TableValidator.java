@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -36,12 +37,12 @@ import com.datastax.driver.core.TableMetadata;
 
 public class TableValidator {
 
-    private static final Logger log  = LoggerFactory.getLogger(TableValidator.class);
+	private static final Logger log = LoggerFactory.getLogger(TableValidator.class);
 
-    private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
+	private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
 
 	public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
-        log.debug("Validate existing table {} for {}",tableMetadata.getName(),entityMeta);
+		log.debug("Validate existing table {} for {}", tableMetadata.getName(), entityMeta);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		if (entityMeta.isClusteredCounter()) {
 
@@ -81,7 +82,9 @@ public class TableValidator {
 	}
 
 	public void validateAchillesCounter(KeyspaceMetadata keyspaceMetaData, String keyspaceName) {
-        log.debug("Validate existing Achilles Counter table");
+		log.debug("Validate existing Achilles Counter table");
+		Name textTypeName = text().getName();
+		Name counterTypeName = counter().getName();
 
 		TableMetadata tableMetaData = keyspaceMetaData.getTable(CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(tableMetaData != null, "Cannot find table '%s' from keyspace '%s'",
@@ -90,16 +93,18 @@ public class TableValidator {
 		ColumnMetadata fqcnColumn = tableMetaData.getColumn(CQL_COUNTER_FQCN);
 		Validator.validateTableTrue(fqcnColumn != null, "Cannot find column '%s' from table '%s'", CQL_COUNTER_FQCN,
 				CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(fqcnColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
-				CQL_COUNTER_FQCN, fqcnColumn.getType(), text());
+		Validator.validateTableTrue(fqcnColumn.getType().getName() == textTypeName,
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_FQCN, fqcnColumn.getType().getName(),
+				textTypeName);
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), fqcnColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_FQCN, CQL_COUNTER_TABLE);
 
 		ColumnMetadata pkColumn = tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY);
 		Validator.validateTableTrue(pkColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PRIMARY_KEY, CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(pkColumn.getType() == text(), "Column '%s' of type '%s' should be of type '%s'",
-				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text());
+		Validator.validateTableTrue(pkColumn.getType().getName() == textTypeName,
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PRIMARY_KEY, pkColumn.getType()
+						.getName(), textTypeName);
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), pkColumn),
 				"Column '%s' of table '%s' should be a partition key component", CQL_COUNTER_PRIMARY_KEY,
 				CQL_COUNTER_TABLE);
@@ -107,25 +112,35 @@ public class TableValidator {
 		ColumnMetadata propertyNameColumn = tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME);
 		Validator.validateTableTrue(propertyNameColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_PROPERTY_NAME, CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(propertyNameColumn.getType() == text(),
-				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PROPERTY_NAME,
-				propertyNameColumn.getType(), text());
-		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringKey(), propertyNameColumn),
+		Validator.validateTableTrue(propertyNameColumn.getType().getName() == textTypeName,
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_PROPERTY_NAME, propertyNameColumn
+						.getType().getName(), textTypeName);
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringColumns(), propertyNameColumn),
 				"Column '%s' of table '%s' should be a clustering key component", CQL_COUNTER_PROPERTY_NAME,
 				CQL_COUNTER_TABLE);
 
-		ColumnMetadata counterValueColumn = tableMetaData.getColumn(CQL_COUNTER_VALUE);
-		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
-				CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
-		Validator.validateTableTrue(counterValueColumn.getType() == counter(),
-				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE, counterValueColumn.getType(),
-				counter());
+		/*
+		 * Disabled until https://datastax-oss.atlassian.net/browse/JAVA-219 is
+		 * fixed
+		 */
+
+		// ColumnMetadata counterValueColumn =
+		// tableMetaData.getColumn(CQL_COUNTER_VALUE);
+		// Validator.validateTableTrue(counterValueColumn != null,
+		// "Cannot find column '%s' from table '%s'",
+		// CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
+		// Validator.validateTableTrue(counterValueColumn.getType().getName() ==
+		// counterTypeName,
+		// "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,
+		// counterValueColumn.getType()
+		// .getName(), counterTypeName);
 
 	}
 
 	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
 
-        log.debug("Validate existing column {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+		log.debug("Validate existing column {} from table {} against type {}", columnName, tableMetaData.getName(),
+				columnJavaType);
 
 		String tableName = tableMetaData.getName();
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
@@ -147,7 +162,8 @@ public class TableValidator {
 
 	private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 
-        log.debug("Validate existing partition key component {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+		log.debug("Validate existing partition key component {} from table {} against type {}", columnName,
+				tableMetaData.getName(), columnJavaType);
 
 		validateColumn(tableMetaData, columnName, columnJavaType, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
@@ -158,17 +174,18 @@ public class TableValidator {
 
 	private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 
-        log.debug("Validate existing clustering column {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+		log.debug("Validate existing clustering column {} from table {} against type {}", columnName,
+				tableMetaData.getName(), columnJavaType);
 
 		validateColumn(tableMetaData, columnName, columnJavaType, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
-		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringKey(), columnMetadata),
+		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringColumns(), columnMetadata),
 				"Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());
 	}
 
 	private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm) {
 
-        log.debug("Validate existing collection/map column {} from table {}");
+		log.debug("Validate existing collection/map column {} from table {}");
 
 		String columnName = pm.getPropertyName().toLowerCase();
 		String tableName = tableMetadata.getName();
@@ -223,9 +240,10 @@ public class TableValidator {
 
 	private void validatePrimaryKeyComponents(TableMetadata tableMetadata, PropertyMeta idMeta, boolean partitionKey) {
 
-        log.debug("Validate existing primary key component from table {} against Achilles meta data {}",tableMetadata.getName(),idMeta);
+		log.debug("Validate existing primary key component from table {} against Achilles meta data {}",
+				tableMetadata.getName(), idMeta);
 
-        List<String> componentNames;
+		List<String> componentNames;
 		List<Class<?>> componentClasses;
 		if (partitionKey) {
 			componentNames = idMeta.getPartitionComponentNames();

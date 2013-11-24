@@ -37,7 +37,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.helper.EntityIntrospector;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
 

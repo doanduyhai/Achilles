@@ -16,28 +16,15 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.google.common.base.Optional;
 import info.archinnov.achilles.context.BatchingFlushContext;
 import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -47,6 +34,28 @@ import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.cassandra.utils.UUIDGen;
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.powermock.reflect.Whitebox;
+
+import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.google.common.base.Optional;
 
 public class BatchModeIT {
 
@@ -61,8 +70,6 @@ public class BatchModeIT {
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 
-	private Session session = resource.getNativeSession();
-
 	private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
 	private User user;
@@ -72,6 +79,63 @@ public class BatchModeIT {
 	@Before
 	public void setUp() {
 		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
+	}
+
+	@Test
+	@Ignore
+	public void should_batch_manually_indenpendent_table() throws Exception {
+		Session session = manager.getNativeSession();
+		Long id = RandomUtils.nextLong();
+		session.execute("CREATE TABLE IF NOT EXISTS test(id bigint, name text,label text, PRIMARY KEY(id))");
+		PreparedStatement insertPS = session.prepare("INSERT INTO test(id,name,label) VALUES (?,?,?)");
+		PreparedStatement updatePS = session.prepare("UPDATE test SET label=? WHERE id=?");
+
+		BoundStatement insertBS = insertPS.bind(id, "myName", null);
+		BoundStatement updateBS1 = updatePS.bind("myLabel", id);
+
+		BatchStatement batch = new BatchStatement();
+		batch.add(insertBS);
+		batch.add(updateBS1);
+		session.execute(batch);
+
+		Statement statement = new SimpleStatement("SELECT * from test where id=" + id);
+		Row row = session.execute(statement).one();
+		assertThat(row.getString("label")).isEqualTo("myLabel");
+	}
+
+	@Test
+	@Ignore
+	public void should_insert_or_update_with_null_timestamp_or_ttl() throws Exception {
+		Session session = manager.getNativeSession();
+		Long id = RandomUtils.nextLong();
+		session.execute("CREATE TABLE IF NOT EXISTS test_ps(id bigint, name text, PRIMARY KEY(id))");
+		PreparedStatement insertPS = session
+				.prepare("INSERT INTO test_ps(id,name) VALUES (?,?) USING TIMESTAMP ? AND TTL ?");
+		PreparedStatement updatePS = session
+				.prepare("UPDATE test_ps USING TIMESTAMP ? AND TTL ? SET name = ? WHERE id = ? ");
+
+		long timestamp1 = UUIDGen.getTimeUUID().timestamp();
+		long timestamp2 = UUIDGen.getTimeUUID().timestamp();
+
+		assertThat(timestamp2).isGreaterThan(timestamp1);
+
+		BoundStatement insertBS = insertPS.bind(id, null, timestamp1, 0);
+		BoundStatement updateBS = updatePS.bind(timestamp2, 0, "myName", id);
+
+		QueryBuilder.insertInto("test_ps").value("id", id).using(QueryBuilder.timestamp(timestamp1))
+				.and(QueryBuilder.ttl(10));
+
+		QueryBuilder.update("test_ps").with(QueryBuilder.set("name", "myName")).where(QueryBuilder.eq("id", id))
+				.using(QueryBuilder.timestamp(timestamp1)).and(QueryBuilder.ttl(10));
+
+		BatchStatement batch = new BatchStatement();
+		batch.add(insertBS);
+		batch.add(updateBS);
+		session.execute(batch);
+
+		Statement statement = new SimpleStatement("SELECT * from test_ps where id=" + id);
+		Row row = session.execute(statement).one();
+		assertThat(row.getString("name")).isEqualTo("myName");
 	}
 
 	@Test
@@ -92,24 +156,27 @@ public class BatchModeIT {
 		entity.getVersion().incr(10L);
 		batchEm.merge(entity);
 
-		Row result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
+		Map<String, Object> result = manager.nativeQuery("SELECT label from CompleteBean where id=" + entity.getId())
+				.first();
 		assertThat(result).isNull();
 
-		result = session.execute(
+		result = manager.nativeQuery(
 				"SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").one();
-		assertThat(result.getLong("counter_value")).isEqualTo(10L);
+						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").first();
+		assertThat(result.get("counter_value")).isEqualTo(10L);
 
 		// Flush
 		batchEm.endBatch();
 
-		result = session.execute("SELECT label from CompleteBean where id=" + entity.getId()).one();
-		assertThat(result.getString("label")).isEqualTo("label");
+		Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
+		statement.setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
+		Row row = manager.getNativeSession().execute(statement).one();
+		assertThat(row.getString("label")).isEqualTo("label");
 
-		result = session.execute(
+		result = manager.nativeQuery(
 				"SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
-						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").one();
-		assertThat(result.getLong("counter_value")).isEqualTo(10L);
+						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").first();
+		assertThat(result.get("counter_value")).isEqualTo(10L);
 		assertThatBatchContextHasBeenReset(batchEm);
 	}
 
@@ -250,10 +317,9 @@ public class BatchModeIT {
 	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
 		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
-		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
-				"boundStatementWrappers");
+		List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");
 
 		assertThat(consistencyLevel).isNull();
-		assertThat(boundStatementWrappers).isEmpty();
+		assertThat(statementWrappers).isEmpty();
 	}
 }

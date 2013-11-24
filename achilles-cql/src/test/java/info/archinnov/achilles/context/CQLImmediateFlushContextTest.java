@@ -20,7 +20,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
 
@@ -55,7 +55,7 @@ public class CQLImmediateFlushContextTest {
 	private Statement statement;
 
 	@Mock
-	private Query query;
+	private RegularStatement query;
 
 	@Before
 	public void setUp() {

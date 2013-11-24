@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Test;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
 public class CounterPropertiesTest {

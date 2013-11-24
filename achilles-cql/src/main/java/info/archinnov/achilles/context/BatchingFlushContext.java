@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.List;
@@ -31,9 +31,9 @@ public class BatchingFlushContext extends AbstractFlushContext {
 		super(daoContext, consistencyLevel);
 	}
 
-	private BatchingFlushContext(DaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
-                                 ConsistencyLevel consistencyLevel) {
-		super(daoContext, boundStatementWrappers, consistencyLevel);
+	private BatchingFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
+			ConsistencyLevel consistencyLevel) {
+		super(daoContext, statementWrappers, consistencyLevel);
 	}
 
 	@Override
@@ -50,7 +50,24 @@ public class BatchingFlushContext extends AbstractFlushContext {
 	@Override
 	public void endBatch() {
 		log.debug("Ending current batch");
-		doFlush();
+		/*
+		 * Deactivate prepared statement batches until
+		 * https://issues.apache.org/jira/browse/CASSANDRA-6426 is solved
+		 */
+
+		// BatchStatement batch = new BatchStatement();
+		// writeDMLStartBatch();
+		// for (AbstractStatementWrapper statementWrapper : statementWrappers) {
+		// batch.add(statementWrapper.getStatement());
+		// statementWrapper.logDMLStatement(true, "\t");
+		// }
+		// writeDMLEndBatch(consistencyLevel);
+		// batch.setConsistencyLevel(ConsistencyConvertor.getCQLLevel(consistencyLevel));
+		// daoContext.executeBatch(batch);
+		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
+			daoContext.execute(statementWrapper);
+		}
+		cleanUp();
 	}
 
 	@Override
@@ -60,7 +77,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
 
 	@Override
 	public BatchingFlushContext duplicate() {
-		return new BatchingFlushContext(daoContext, boundStatementWrappers, consistencyLevel);
+		return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel);
 	}
 
 }

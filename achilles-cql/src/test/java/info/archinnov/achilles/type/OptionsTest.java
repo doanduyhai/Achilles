@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
+import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.junit.Test;

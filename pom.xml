@@ -52,8 +52,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cassandra.version>1.2.8</cassandra.version>
-		<datastax.driver.core.version>1.0.4</datastax.driver.core.version>
+		<cassandra.version>2.0.3</cassandra.version>
+		<datastax.driver.core.version>2.0.0-rc1</datastax.driver.core.version>
 		<spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
 		<jackson.version>1.9.2</jackson.version>
@@ -175,6 +175,10 @@
 						<groupId>org.apache.cassandra</groupId>
 						<artifactId>cassandra-all</artifactId>
 					</exclusion>
+                    <exclusion>
+                        <groupId>commons-lang</groupId>
+                        <artifactId>commons-lang</artifactId>
+                    </exclusion>
 				</exclusions>
 			</dependency>
 

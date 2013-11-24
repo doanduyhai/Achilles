@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,6 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class PropertyHelper {
 	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);

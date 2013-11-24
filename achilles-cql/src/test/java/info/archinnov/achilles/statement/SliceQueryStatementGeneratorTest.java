@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -65,7 +66,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1 AND c<=2;");
 
@@ -94,7 +95,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
@@ -123,7 +124,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
@@ -153,7 +154,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2 AND c>=1;");
 
@@ -182,7 +183,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c<=2;");
 
@@ -211,7 +212,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
-		Statement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
+        RegularStatement statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery, buildFakeSelect());
 		assertThat(statement.getQueryString()).isEqualTo(
 				"SELECT test FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author' AND c>=1;");
 
@@ -236,7 +237,7 @@ public class SliceQueryStatementGeneratorTest {
 	public void should_generate_where_clause() throws Exception {
 		when(sliceQuery.getFixedComponents()).thenReturn(Arrays.<Object> asList(11L, uuid1, "author"));
 
-		Statement statement = generator.generateWhereClauseForDeleteSliceQuery(sliceQuery, buildFakeDelete());
+        RegularStatement statement = generator.generateWhereClauseForDeleteSliceQuery(sliceQuery, buildFakeDelete());
 
 		assertThat(statement.getQueryString()).isEqualTo(
 				"DELETE  FROM table WHERE id=11 AND a=" + uuid1 + " AND b='author';");

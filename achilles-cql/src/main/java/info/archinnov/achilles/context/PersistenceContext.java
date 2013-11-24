@@ -28,7 +28,9 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.proxy.EntityInterceptor;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -42,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
@@ -190,19 +191,21 @@ public class PersistenceContext {
 		return daoContext.bindAndExecute(ps, params);
 	}
 
-	public void pushBoundStatement(BoundStatementWrapper bsWrapper, ConsistencyLevel writeLevel) {
-		flushContext.pushBoundStatement(bsWrapper, writeLevel);
-	}
+    public void pushStatement(BoundStatementWrapper statementWrapper) {
+        flushContext.pushStatement(statementWrapper);
+    }
 
-	public void pushStatement(Statement statement, ConsistencyLevel writeLevel) {
-		flushContext.pushStatement(statement, writeLevel);
-	}
+    public void pushStatement(RegularStatementWrapper statementWrapper) {
+        flushContext.pushStatement(statementWrapper);
+    }
 
-	public ResultSet executeImmediateWithConsistency(BoundStatementWrapper bsWrapper,
-			ConsistencyLevel readConsistencyLevel) {
-		return flushContext.executeImmediateWithConsistency(bsWrapper.getBs(), readConsistencyLevel,
-				bsWrapper.getValues());
-	}
+    public void pushStatement(SimpleStatementWrapper statementWrapper) {
+        flushContext.pushStatement(statementWrapper);
+    }
+
+    public ResultSet executeImmediate(BoundStatementWrapper bsWrapper) {
+        return flushContext.executeImmediate(bsWrapper);
+    }
 
 	public void persist() {
 		persister.persist(this);

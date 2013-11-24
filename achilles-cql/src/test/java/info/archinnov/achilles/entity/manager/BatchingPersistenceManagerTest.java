@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -27,7 +27,7 @@ import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 

@@ -23,13 +23,14 @@ import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.List;
 
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class SliceQueryPreparedStatementGenerator {
 
-	public <T> Statement generateWhereClauseForIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
+	public <T> RegularStatement generateWhereClauseForIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
 
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();

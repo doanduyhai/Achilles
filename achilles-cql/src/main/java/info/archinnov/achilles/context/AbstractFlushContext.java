@@ -16,23 +16,21 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.consistency.ConsistencyConvertor.getCQLLevel;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Statement;
 
 public abstract class AbstractFlushContext {
 	protected DaoContext daoContext;
 
-	protected List<BoundStatementWrapper> boundStatementWrappers = new ArrayList<BoundStatementWrapper>();
-	protected List<Statement> statements = new ArrayList<Statement>();
+	protected List<AbstractStatementWrapper> statementWrappers = new ArrayList<AbstractStatementWrapper>();
 
 	protected ConsistencyLevel consistencyLevel;
 
@@ -41,56 +39,32 @@ public abstract class AbstractFlushContext {
 		this.consistencyLevel = consistencyLevel;
 	}
 
-	protected AbstractFlushContext(DaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
-                                   ConsistencyLevel consistencyLevel) {
-		this.boundStatementWrappers = boundStatementWrappers;
+	protected AbstractFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
+			ConsistencyLevel consistencyLevel) {
+		this.statementWrappers = statementWrappers;
 		this.daoContext = daoContext;
 		this.consistencyLevel = consistencyLevel;
 	}
 
 	public void cleanUp() {
-		boundStatementWrappers.clear();
-		statements.clear();
+		statementWrappers.clear();
 		consistencyLevel = null;
 	}
 
-	protected void doFlush() {
-		for (BoundStatementWrapper wrapper : boundStatementWrappers) {
-
-			daoContext.execute(wrapper.getBs(), wrapper.getValues());
-		}
-		for (Statement statement : statements) {
-			daoContext.execute(statement);
-		}
-
-		cleanUp();
-
+	public void pushStatement(BoundStatementWrapper statementWrapper) {
+		statementWrappers.add(statementWrapper);
 	}
 
-	public void pushBoundStatement(BoundStatementWrapper bsWrapper, ConsistencyLevel writeConsistencyLevel) {
-		BoundStatement boundStatement = bsWrapper.getBs();
-		if (consistencyLevel != null) {
-			boundStatement.setConsistencyLevel(getCQLLevel(consistencyLevel));
-		} else {
-			boundStatement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
-		}
-		boundStatementWrappers.add(bsWrapper);
+	public void pushStatement(RegularStatementWrapper statementWrapper) {
+		statementWrappers.add(statementWrapper);
 	}
 
-	public void pushStatement(Statement statement, ConsistencyLevel writeConsistencyLevel) {
-
-		if (consistencyLevel != null) {
-			statement.setConsistencyLevel(getCQLLevel(consistencyLevel));
-		} else {
-			statement.setConsistencyLevel(getCQLLevel(writeConsistencyLevel));
-		}
-		statements.add(statement);
+	public void pushStatement(SimpleStatementWrapper statementWrapper) {
+		statementWrappers.add(statementWrapper);
 	}
 
-	public ResultSet executeImmediateWithConsistency(Query query, ConsistencyLevel readConsistencyLevel,
-			Object... boundValues) {
-		query.setConsistencyLevel(getCQLLevel(readConsistencyLevel));
-		return daoContext.execute(query, boundValues);
+	public ResultSet executeImmediate(BoundStatementWrapper statementWrapper) {
+		return daoContext.execute(statementWrapper);
 	}
 
 	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
@@ -101,23 +75,22 @@ public abstract class AbstractFlushContext {
 		return consistencyLevel;
 	}
 
+	public abstract void startBatch();
 
-    public abstract void startBatch();
+	public abstract void flush();
 
-    public abstract void flush();
+	public abstract void endBatch();
 
-    public abstract void endBatch();
+	public abstract FlushType type();
 
-    public abstract FlushType type();
+	public abstract AbstractFlushContext duplicate();
 
-    public abstract AbstractFlushContext duplicate() ;
+	public static enum FlushType {
+		BATCH, IMMEDIATE;
+	}
 
-    public static enum FlushType {
-        BATCH,IMMEDIATE;
-    }
-
-    @Override
-    public String toString() {
-        return type().toString();
-    }
+	@Override
+	public String toString() {
+		return type().toString();
+	}
 }

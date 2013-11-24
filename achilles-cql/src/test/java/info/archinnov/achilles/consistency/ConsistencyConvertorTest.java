@@ -17,7 +17,7 @@
 package info.archinnov.achilles.consistency;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 import org.junit.Test;
 

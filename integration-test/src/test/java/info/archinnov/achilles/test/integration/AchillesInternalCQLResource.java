@@ -16,18 +16,14 @@
  */
 package info.archinnov.achilles.test.integration;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
-
-import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource;
+
+import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableMap;
 
 public class AchillesInternalCQLResource extends AchillesTestResource {
 

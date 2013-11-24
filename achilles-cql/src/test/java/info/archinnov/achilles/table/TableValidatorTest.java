@@ -129,7 +129,7 @@ public class TableValidatorTest {
 		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("name")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(nameColumn));
 		when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
 		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
@@ -162,7 +162,7 @@ public class TableValidatorTest {
 		ColumnMetadata nameMetadata = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn("date")).thenReturn(nameMetadata);
 		when(nameMetadata.getType()).thenReturn(DataType.timeuuid());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(nameColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(nameColumn));
 		when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
 		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
@@ -315,7 +315,7 @@ public class TableValidatorTest {
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
 		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(propertyColumn));
 		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
 
 		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);
@@ -593,7 +593,7 @@ public class TableValidatorTest {
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
 		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(propertyColumn));
 
 		// Then
 		exception.expect(AchillesBeanMappingException.class);
@@ -631,7 +631,7 @@ public class TableValidatorTest {
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
 		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(propertyColumn));
 		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
 
 		// Then
@@ -670,7 +670,7 @@ public class TableValidatorTest {
 		ColumnMetadata propertyColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PROPERTY_NAME)).thenReturn(propertyColumnMeta);
 		when(propertyColumnMeta.getType()).thenReturn(DataType.text());
-		when(tableMetaData.getClusteringKey()).thenReturn(Arrays.asList(propertyColumn));
+		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(propertyColumn));
 		when(columnMetaDataComparator.isEqual(propertyColumnMeta, propertyColumn)).thenReturn(true);
 
 		ColumnMetadata counterColumnMeta = mock(ColumnMetadata.class);

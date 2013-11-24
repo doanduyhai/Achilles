@@ -17,7 +17,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import static info.archinnov.achilles.type.BoundingMode.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static com.datastax.driver.core.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Matchers.*;
@@ -53,7 +53,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -126,7 +126,7 @@ public class SliceQueryExecutorTest {
 	@Test
 	public void should_get_clustered_entities() throws Exception {
 
-		Query query = mock(Query.class);
+        RegularStatement query = mock(RegularStatement.class);
 		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(query);
 
 		Row row = mock(Row.class);
@@ -145,7 +145,7 @@ public class SliceQueryExecutorTest {
 
 	@Test
 	public void should_create_iterator_for_clustered_entities() throws Exception {
-		Query query = mock(Query.class);
+        RegularStatement query = mock(RegularStatement.class);
 		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(query);
 		when(daoContext.execute(query).iterator()).thenReturn(iterator);
 
@@ -167,7 +167,7 @@ public class SliceQueryExecutorTest {
 				Arrays.<Object> asList(), Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit,
 				batchSize, false);
 
-		Query query = mock(Query.class);
+        RegularStatement query = mock(RegularStatement.class);
 		when(generator.generateRemoveSliceQuery(anySliceQuery())).thenReturn(query);
 
 		executor.remove(sliceQuery);

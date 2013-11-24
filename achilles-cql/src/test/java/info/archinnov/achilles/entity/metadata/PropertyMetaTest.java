@@ -22,7 +22,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
 import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
 import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
+import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,7 +53,7 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyMetaTest {

@@ -17,7 +17,7 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;

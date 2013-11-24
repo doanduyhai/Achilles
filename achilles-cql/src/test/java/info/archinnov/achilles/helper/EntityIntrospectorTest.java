@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.helper;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static com.datastax.driver.core.ConsistencyLevel.ALL;
+import static com.datastax.driver.core.ConsistencyLevel.ANY;
+import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
+import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -45,7 +45,7 @@ import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityIntrospectorTest {

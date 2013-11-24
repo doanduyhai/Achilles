@@ -17,33 +17,34 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.UnavailableException;
-import com.google.common.base.Optional;
 import info.archinnov.achilles.context.BatchingFlushContext;
 import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+
+import java.util.List;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.powermock.reflect.Whitebox;
+
+import com.datastax.driver.core.exceptions.DriverInternalError;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.UnavailableException;
+import com.google.common.base.Optional;
 
 public class ConsistencyLevelPriorityOrderingIT {
 	@Rule
@@ -80,9 +81,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		assertThatBatchContextHasBeenReset(batchEm);
 		assertThat(entity.getName()).isEqualTo("name");
 
-		expectedEx.expect(InvalidQueryException.class);
+		expectedEx.expect(DriverInternalError.class);
 		expectedEx
-				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+				.expectMessage("An unexpected error occured server side on localhost/127.0.0.1: java.lang.ClassCastException: org.apache.cassandra.locator.SimpleStrategy cannot be cast to org.apache.cassandra.locator.NetworkTopologyStrategy");
 		manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 	}
 
@@ -190,11 +191,10 @@ public class ConsistencyLevelPriorityOrderingIT {
 	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
 		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
-		List<BoundStatementWrapper> boundStatementWrappers = Whitebox.getInternalState(flushContext,
-				"boundStatementWrappers");
+		List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");
 
 		assertThat(consistencyLevel).isNull();
-		assertThat(boundStatementWrappers).isEmpty();
+		assertThat(statementWrappers).isEmpty();
 	}
 
 }

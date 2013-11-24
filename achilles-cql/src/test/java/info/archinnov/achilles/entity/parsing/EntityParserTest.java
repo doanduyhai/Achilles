@@ -37,7 +37,7 @@ import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
+import com.datastax.driver.core.ConsistencyLevel;
 
 import java.util.Map;
 

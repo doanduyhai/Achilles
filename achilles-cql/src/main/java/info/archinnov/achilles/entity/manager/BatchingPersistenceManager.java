@@ -17,10 +17,10 @@
 package info.archinnov.achilles.entity.manager;
 
 import info.archinnov.achilles.context.BatchingFlushContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
-import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
@@ -37,11 +37,13 @@ public class BatchingPersistenceManager extends PersistenceManager {
 	private static final Logger log = LoggerFactory.getLogger(BatchingPersistenceManager.class);
 
 	private BatchingFlushContext flushContext;
+	private ConsistencyLevel defaultConsistencyLevel;
 
 	BatchingPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
-                               DaoContext daoContext, ConfigurationContext configContext) {
+			DaoContext daoContext, ConfigurationContext configContext) {
 		super(entityMetaMap, contextFactory, daoContext, configContext);
-		this.flushContext = new BatchingFlushContext(daoContext, null);
+		defaultConsistencyLevel = configContext.getDefaultWriteConsistencyLevel();
+		this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel);
 	}
 
 	/**
@@ -50,6 +52,7 @@ public class BatchingPersistenceManager extends PersistenceManager {
 	public void startBatch() {
 		log.debug("Starting batch mode");
 		flushContext.startBatch();
+		flushContext.setConsistencyLevel(defaultConsistencyLevel);
 	}
 
 	/**
@@ -150,16 +153,16 @@ public class BatchingPersistenceManager extends PersistenceManager {
 		}
 	}
 
-    @Override
+	@Override
 	protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
 		log.trace("Initializing new persistence context for entity class {} and primary key {}",
 				entityClass.getCanonicalName(), primaryKey);
-        return contextFactory.newContextWithFlushContext(entityClass,primaryKey,options,flushContext);
+		return contextFactory.newContextWithFlushContext(entityClass, primaryKey, options, flushContext);
 	}
 
-    @Override
+	@Override
 	protected PersistenceContext initPersistenceContext(Object entity, Options options) {
 		log.trace("Initializing new persistence context for entity {}", entity);
-        return contextFactory.newContextWithFlushContext(entity,options,flushContext);
+		return contextFactory.newContextWithFlushContext(entity, options, flushContext);
 	}
 }

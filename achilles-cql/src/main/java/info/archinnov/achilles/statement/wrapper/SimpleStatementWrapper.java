@@ -1,0 +1,39 @@
+package info.archinnov.achilles.statement.wrapper;
+
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+
+public class SimpleStatementWrapper extends AbstractStatementWrapper {
+
+	private SimpleStatement simpleStatement;
+
+	public SimpleStatementWrapper(String query, Object[] values, ConsistencyLevel consistencyLevel) {
+		super(values);
+		this.simpleStatement = new SimpleStatement(query);
+	}
+
+	@Override
+	public ResultSet execute(Session session) {
+		logDMLStatement(false, "");
+		return session.execute(simpleStatement.getQueryString(), values);
+	}
+
+	@Override
+	public Statement getStatement() {
+		return simpleStatement;
+	}
+
+	@Override
+	public void logDMLStatement(boolean isBatch, String indentation) {
+		if (dmlLogger.isDebugEnabled()) {
+			String queryType = "Simple statement";
+			String queryString = simpleStatement.getQueryString();
+			String consistencyLevel = simpleStatement.getConsistencyLevel() == null ? "DEFAULT" : simpleStatement
+					.getConsistencyLevel().name();
+			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel);
+		}
+	}
+}

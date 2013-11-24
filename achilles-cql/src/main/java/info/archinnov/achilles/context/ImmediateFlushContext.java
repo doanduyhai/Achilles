@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.statement.prepared.BoundStatementWrapper;
+import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.List;
@@ -31,9 +31,9 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 		super(daoContext, consistencyLevel);
 	}
 
-	private ImmediateFlushContext(DaoContext daoContext, List<BoundStatementWrapper> boundStatementWrappers,
-                                  ConsistencyLevel consistencyLevel) {
-		super(daoContext, boundStatementWrappers, consistencyLevel);
+	private ImmediateFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
+			ConsistencyLevel consistencyLevel) {
+		super(daoContext, statementWrappers, consistencyLevel);
 	}
 
 	@Override
@@ -51,7 +51,10 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 	@Override
 	public void flush() {
 		log.debug("Flush immediately all pending statements");
-		doFlush();
+		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
+			daoContext.execute(statementWrapper);
+		}
+		cleanUp();
 	}
 
 	@Override
@@ -61,7 +64,7 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 
 	@Override
 	public ImmediateFlushContext duplicate() {
-        log.trace("Duplicate immediate flushing context");
-		return new ImmediateFlushContext(daoContext, boundStatementWrappers, consistencyLevel);
+		log.trace("Duplicate immediate flushing context");
+		return new ImmediateFlushContext(daoContext, statementWrappers, consistencyLevel);
 	}
 }

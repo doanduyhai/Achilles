@@ -18,7 +18,7 @@ package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
@@ -49,7 +49,6 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableMap;
 
@@ -221,7 +220,7 @@ public class ArgumentExtractorTest {
 		assertThat(consistencyMap).isEmpty();
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void should_init_cluster_with_all_params() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
@@ -237,7 +236,9 @@ public class ArgumentExtractorTest {
 		params.put(SSL_ENABLED, true);
 		params.put(SSL_OPTIONS, new SSLOptions());
 
-		extractor.initCluster(params);
+		Cluster actual = extractor.initCluster(params);
+
+		assertThat(actual).isNotNull();
 	}
 
 	@Test
@@ -249,13 +250,15 @@ public class ArgumentExtractorTest {
 		assertThat(actual).isSameAs(cluster);
 	}
 
-	@Test(expected = NoHostAvailableException.class)
+	@Test
 	public void should_init_cluster_with_minimum_params() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 		params.put(CONNECTION_CQL_PORT_PARAM, 9111);
 
-		extractor.initCluster(params);
+		Cluster actual = extractor.initCluster(params);
+
+		assertThat(actual).isNotNull();
 	}
 
 	@Test

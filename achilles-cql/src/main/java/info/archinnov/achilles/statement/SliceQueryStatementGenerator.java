@@ -17,24 +17,26 @@
 package info.archinnov.achilles.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
+import static info.archinnov.achilles.type.OrderingMode.*;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.Statement;
+
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class SliceQueryStatementGenerator {
 
-    private static final Logger log  = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
+	private static final Logger log = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
 
-    public <T> Statement generateWhereClauseForSelectSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
+	public RegularStatementWrapper generateWhereClauseForSelectSliceQuery(CQLSliceQuery<?> sliceQuery, Select select) {
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
@@ -43,10 +45,17 @@ public class SliceQueryStatementGenerator {
 
 		Object lastStartComp = sliceQuery.getLastStartComponent();
 		Object lastEndComp = sliceQuery.getLastEndComponent();
+		Object[] boundValues = new Object[fixedComponents.size()];
 
 		for (int i = 0; i < fixedComponents.size(); i++) {
 			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+			boundValues[i] = fixedComponents.get(i);
 		}
+
+		if (lastStartComp != null)
+			boundValues = ArrayUtils.add(boundValues, lastStartComp);
+		if (lastEndComp != null)
+			boundValues = ArrayUtils.add(boundValues, lastEndComp);
 
 		if (ordering == ASCENDING) {
 
@@ -106,21 +115,23 @@ public class SliceQueryStatementGenerator {
 			}
 
 		}
-        log.trace("Generated WHERE clause for slice query : {}",where.getQueryString());
-		return where;
+		log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
+		return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel());
 	}
 
-	public <T> Statement generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<T> sliceQuery, Delete delete) {
+	public RegularStatementWrapper generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<?> sliceQuery, Delete delete) {
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
 
 		com.datastax.driver.core.querybuilder.Delete.Where where = delete.where();
+		Object[] boundValues = new Object[fixedComponents.size()];
 
 		for (int i = 0; i < fixedComponents.size(); i++) {
 			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+			boundValues[i] = fixedComponents.get(i);
 		}
-        log.trace("Generated WHERE clause for slice delete query : {}",where.getQueryString());
-		return where;
+		log.trace("Generated WHERE clause for slice delete query : {}", where.getQueryString());
+		return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel());
 	}
 
 }
