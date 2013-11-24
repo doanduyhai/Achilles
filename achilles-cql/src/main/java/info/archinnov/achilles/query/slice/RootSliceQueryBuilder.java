@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
@@ -33,8 +35,9 @@ import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.validation.Validator;
 
 public abstract class RootSliceQueryBuilder<T> {
+    private static final Logger log  = LoggerFactory.getLogger(RootSliceQueryBuilder.class);
 
-	protected SliceQueryExecutor sliceQueryExecutor;
+    protected SliceQueryExecutor sliceQueryExecutor;
 	protected Class<T> entityClass;
 	protected EntityMeta meta;
 
@@ -58,6 +61,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected RootSliceQueryBuilder<T> partitionComponentsInternal(List<Object> partitionComponents) {
+        log.trace("Add partition key components {}",partitionComponents);
 		idMeta.validatePartitionComponents(partitionComponents);
 		if (this.partitionComponents.size() > 0) {
 			Validator.validateTrue(this.partitionComponents.size() == partitionComponents.size(),
@@ -79,6 +83,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected RootSliceQueryBuilder<T> fromClusteringsInternal(List<Object> clusteringComponents) {
+        log.trace("Add clustering components {}",clusteringComponents);
 		idMeta.validateClusteringComponents(clusteringComponents);
 		fromClusterings = clusteringComponents;
 		return this;
@@ -90,6 +95,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected RootSliceQueryBuilder<T> toClusteringsInternal(List<Object> clusteringComponents) {
+        log.trace("Add clustering components {}",clusteringComponents);
 		idMeta.validateClusteringComponents(clusteringComponents);
 		toClusterings = clusteringComponents;
 		return this;
@@ -143,6 +149,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected T getFirstOccurence(Object... clusteringComponents) {
+        log.trace("Get first result using clustering components {}",clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -158,6 +165,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected List<T> getFirst(int n, Object... clusteringComponents) {
+        log.trace("Get first {} results using clustering components {}",n,clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -169,6 +177,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected T getLastOccurence(Object... clusteringComponents) {
+        log.trace("Get last result using clustering components {}",clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -186,6 +195,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected List<T> getLast(int n, Object... clusteringComponents) {
+        log.trace("Get last {} results using clustering components {}",n,clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -200,11 +210,13 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected Iterator<T> iterator() {
+        log.trace("Build iterator for slice query");
 		SliceQuery<T> clusteredQuery = buildClusterQuery();
 		return sliceQueryExecutor.iterator(clusteredQuery);
 	}
 
 	protected Iterator<T> iteratorWithComponents(Object... clusteringComponents) {
+        log.trace("Build iterator for slice query with clustering components {}",clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -213,12 +225,14 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected Iterator<T> iterator(int batchSize) {
+        log.trace("Build iterator for slice query with batch size {}",batchSize);
 		this.batchSize = batchSize;
 		SliceQuery<T> clusteredQuery = buildClusterQuery();
 		return sliceQueryExecutor.iterator(clusteredQuery);
 	}
 
 	protected Iterator<T> iteratorWithComponents(int batchSize, Object... clusteringComponents) {
+        log.trace("Build iterator for slice query with clustering components {} and batch size {}",clusteringComponents,batchSize);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 		this.batchSize = batchSize;
@@ -227,11 +241,13 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected void remove() {
+        log.trace("Slice remove");
 		SliceQuery<T> clusteredQuery = buildClusterQuery();
 		sliceQueryExecutor.remove(clusteredQuery);
 	}
 
 	protected void remove(int n) {
+        log.trace("Slice remove {} entities",n);
 		Validator.validateFalse(limitHasBeenSet, "You should not set 'limit' parameter when calling remove(int n)");
 		limit = n;
 		limitHasBeenSet = true;
@@ -240,6 +256,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected void removeFirstOccurence(Object... clusteringComponents) {
+        log.trace("Slice remove first matching entity with clustering components {}",clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -251,6 +268,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected void removeFirst(int n, Object... clusteringComponents) {
+        log.trace("Slice remove first {} matching entities with clustering components {}",n,clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -263,6 +281,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected void removeLastOccurence(Object... clusteringComponents) {
+        log.trace("Slice remove last matching entity with clustering components {}",clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 
@@ -277,6 +296,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected void removeLast(int n, Object... clusteringComponents) {
+        log.trace("Slice remove last {} matching entities with clustering components {}",n,clusteringComponents);
 		fromClusteringsInternal(clusteringComponents);
 		toClusteringsInternal(clusteringComponents);
 

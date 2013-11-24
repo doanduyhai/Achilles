@@ -68,29 +68,17 @@ public class EntityMeta {
 		return idMeta.getPrimaryKey(entity);
 	}
 
-	public void setPrimaryKey(Object entity, Object primaryKey) {
-		idMeta.setValueToField(entity, primaryKey);
-	}
-
 	public Object getPartitionKey(Object compoundKey) {
 		return idMeta.getPartitionKey(compoundKey);
 	}
 
-	public Object instanciateEmbeddedIdWithPartitionKey(List<Object> partitionComponents) {
-		return idMeta.instanciateEmbeddedIdWithPartitionKey(partitionComponents);
-	}
-
 	@SuppressWarnings("unchecked")
 	public <T> T instanciate() {
-		return (T) invoker.instanciate(entityClass);
+		return (T) invoker.instantiate(entityClass);
 	}
 
 	public boolean hasEmbeddedId() {
 		return idMeta.isEmbeddedId();
-	}
-
-	public boolean hasCompositePartitionKey() {
-		return idMeta.isCompositePartitionKey();
 	}
 
 	// ////////// Getters & Setters

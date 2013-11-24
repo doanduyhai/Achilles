@@ -22,12 +22,15 @@ import info.archinnov.achilles.entity.operations.NativeQueryMapper;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 
 public class CQLNativeQueryBuilder {
+    private static final Logger log  = LoggerFactory.getLogger(CQLNativeQueryBuilder.class);
 
-	private DaoContext daoContext;
+    private DaoContext daoContext;
 	private String queryString;
 
 	private NativeQueryMapper mapper = new NativeQueryMapper();
@@ -46,6 +49,7 @@ public class CQLNativeQueryBuilder {
 	 * @return List<Map<String,Object>>
 	 */
 	public List<Map<String, Object>> get() {
+        log.debug("Get results for native query {}",queryString);
 		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
 		return mapper.mapRows(rows);
 	}
@@ -58,6 +62,7 @@ public class CQLNativeQueryBuilder {
 	 * @return Map<String,Object>
 	 */
 	public Map<String, Object> first() {
+        log.debug("Get first result for native query {}",queryString);
 		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
 		List<Map<String, Object>> result = mapper.mapRows(rows);
 		if (result.isEmpty())
@@ -71,6 +76,7 @@ public class CQLNativeQueryBuilder {
 	 * INSERT/UPDATE/DELETE and DDL statements
 	 */
 	public void execute() {
+        log.debug("Execute native query {}",queryString);
 		daoContext.execute(new SimpleStatement(queryString));
 	}
 }

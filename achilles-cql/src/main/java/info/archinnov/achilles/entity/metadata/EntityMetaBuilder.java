@@ -38,13 +38,6 @@ import com.google.common.collect.FluentIterable;
 public class EntityMetaBuilder {
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
 
-	public static final Predicate<EntityMeta> clusteredCounterFilter = new Predicate<EntityMeta>() {
-		@Override
-		public boolean apply(EntityMeta meta) {
-			return meta.isClusteredCounter();
-		}
-	};
-
 	private PropertyMeta idMeta;
 	private Class<?> entityClass;
 	private String className;

@@ -116,4 +116,8 @@ public abstract class AbstractFlushContext {
         BATCH,IMMEDIATE;
     }
 
+    @Override
+    public String toString() {
+        return type().toString();
+    }
 }

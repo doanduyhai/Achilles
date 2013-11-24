@@ -134,7 +134,7 @@ public class PersistenceContextFactoryTest {
 	public void should_create_new_context_for_slice_query() throws Exception {
 		Long primaryKey = RandomUtils.nextLong();
 		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
-		when(invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
+		when(invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
 		PersistenceContext actual = pmf
 				.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);

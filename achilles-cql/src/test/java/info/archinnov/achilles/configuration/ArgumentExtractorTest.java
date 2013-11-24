@@ -98,7 +98,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_forceCFCreation_to_default_value() throws Exception {
-		boolean actual = extractor.initForceCFCreation(configMap);
+		boolean actual = extractor.initForceTableCreation(configMap);
 
 		assertThat(actual).isFalse();
 	}
@@ -107,7 +107,7 @@ public class ArgumentExtractorTest {
 	public void should_init_forceCFCreation() throws Exception {
 		configMap.put(FORCE_TABLE_CREATION_PARAM, true);
 
-		boolean actual = extractor.initForceCFCreation(configMap);
+		boolean actual = extractor.initForceTableCreation(configMap);
 
 		assertThat(actual).isTrue();
 	}
@@ -319,7 +319,7 @@ public class ArgumentExtractorTest {
 		extractor = spy(extractor);
 
 		// When
-		doReturn(true).when(extractor).initForceCFCreation(params);
+		doReturn(true).when(extractor).initForceTableCreation(params);
 		doReturn(factory).when(extractor).initObjectMapperFactory(params);
 		doReturn(ANY).when(extractor).initDefaultReadConsistencyLevel(params);
 		doReturn(ALL).when(extractor).initDefaultWriteConsistencyLevel(params);

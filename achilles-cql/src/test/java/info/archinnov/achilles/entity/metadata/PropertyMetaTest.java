@@ -482,37 +482,6 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_instanciate_embedded_id_with_partition_key() throws Exception {
-
-		long id = RandomUtils.nextLong();
-		EmbeddedKey embeddedKey = new EmbeddedKey(id, "name");
-
-		PropertyMeta pm = new PropertyMeta();
-		pm.setType(EMBEDDED_ID);
-		pm.setInvoker(invoker);
-
-		when(invoker.instanciateEmbeddedIdWithPartitionComponents(pm, Arrays.<Object> asList(id))).thenReturn(
-				embeddedKey);
-
-		assertThat(pm.instanciateEmbeddedIdWithPartitionKey(Arrays.<Object> asList(id))).isEqualTo(embeddedKey);
-	}
-
-	@Test
-	public void should_exception_when_instanciating_embedded_id_on_non_embedded_id_field() throws Exception {
-
-		long id = RandomUtils.nextLong();
-		PropertyMeta pm = new PropertyMeta();
-		pm.setPropertyName("property");
-		pm.setType(SIMPLE);
-
-		exception.expect(IllegalStateException.class);
-		exception
-				.expectMessage("Cannot instanciate embedded id with partition key on a non embedded id field 'property'");
-
-		pm.instanciateEmbeddedIdWithPartitionKey(Arrays.<Object> asList(id));
-	}
-
-	@Test
 	public void should_get_value_from_field() throws Exception {
 
 		CompleteBean entity = new CompleteBean();

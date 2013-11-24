@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Statement;
@@ -44,10 +46,14 @@ import com.google.common.collect.FluentIterable;
 
 public class StatementGenerator {
 
-	private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
+    private static final Logger log  = LoggerFactory.getLogger(StatementGenerator.class);
+
+    private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
 	private SliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new SliceQueryPreparedStatementGenerator();
 
 	public <T> Query generateSelectSliceQuery(CQLSliceQuery<T> sliceQuery, int limit) {
+
+        log.trace("Generate SELECT statement for slice query");
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Select select = generateSelectEntity(meta);
@@ -62,6 +68,9 @@ public class StatementGenerator {
 	}
 
 	public <T> PreparedStatement generateIteratorSliceQuery(CQLSliceQuery<T> sliceQuery, DaoContext daoContext) {
+
+        log.trace("Generate iterator for slice query");
+
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Select select = generateSelectEntity(meta);
@@ -78,6 +87,9 @@ public class StatementGenerator {
 	}
 
 	public <T> Query generateRemoveSliceQuery(CQLSliceQuery<T> sliceQuery) {
+
+        log.trace("Generate DELETE statement for slice query");
+
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Delete delete = QueryBuilder.delete().from(meta.getTableName());
@@ -87,6 +99,9 @@ public class StatementGenerator {
 	}
 
 	public Select generateSelectEntity(EntityMeta entityMeta) {
+
+        log.trace("Generate SELECT statement for entity class {}",entityMeta.getClassName());
+
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Selection select = select();
@@ -103,6 +118,8 @@ public class StatementGenerator {
 	}
 
 	public Insert generateInsert(Object entity, EntityMeta entityMeta) {
+        log.trace("Generate INSERT statement for entity class {}",entityMeta.getClassName());
+
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Insert insert = insertInto(entityMeta.getTableName());
 		generateInsertPrimaryKey(entity, idMeta, insert);
@@ -122,6 +139,7 @@ public class StatementGenerator {
 	}
 
 	public Update.Assignments generateUpdateFields(Object entity, EntityMeta entityMeta, List<PropertyMeta> pms) {
+        log.trace("Generate UPDATE statement for entity class {} and properties {}",entityMeta.getClassName(),pms);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 

@@ -20,17 +20,22 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
 public class CompoundTranscoder extends AbstractTranscoder {
 
-	public CompoundTranscoder(ObjectMapper objectMapper) {
+    private static final Logger log  = LoggerFactory.getLogger(CompoundTranscoder.class);
+
+    public CompoundTranscoder(ObjectMapper objectMapper) {
 		super(objectMapper);
 	}
 
 	@Override
 	public List<Object> encodeToComponents(PropertyMeta idMeta, Object compoundKey) {
+        log.trace("Encode {} to CQL components",compoundKey);
 		List<Object> compoundComponents = new ArrayList<Object>();
 		List<Method> componentGetters = idMeta.getComponentGetters();
 		List<Class<?>> componentClasses = idMeta.getComponentClasses();
@@ -46,6 +51,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
 
 	@Override
 	public List<Object> encodeToComponents(PropertyMeta pm, List<?> components) {
+        log.trace("Encode {} to CQL components",components);
 		List<Object> encodedComponents = new ArrayList<Object>();
 		List<Class<?>> componentClasses = pm.getComponentClasses();
 		for (Object component : components) {
@@ -63,6 +69,7 @@ public class CompoundTranscoder extends AbstractTranscoder {
 
 	@Override
 	public Object decodeFromComponents(PropertyMeta idMeta, List<?> components) {
+        log.trace("Decode from CQL components",components);
 		List<Method> componentSetters = idMeta.getComponentSetters();
 
 		List<Object> decodedComponents = new ArrayList<Object>();
@@ -78,8 +85,8 @@ public class CompoundTranscoder extends AbstractTranscoder {
 	}
 
 	private Object injectValuesBySetter(PropertyMeta pm, List<?> components, List<Method> componentSetters) {
-
-		Object compoundKey = pm.instanciate();
+        log.trace("Instantiate primary compound key from CQL components {}",components);
+		Object compoundKey = pm.instantiate();
 
 		for (int i = 0; i < components.size(); i++) {
 			Object compValue = components.get(i);

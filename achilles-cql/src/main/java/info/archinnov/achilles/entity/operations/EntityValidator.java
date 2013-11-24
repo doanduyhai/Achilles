@@ -39,7 +39,7 @@ public class EntityValidator {
 	}
 
 	public void validateEntity(Object entity, EntityMeta entityMeta) {
-		log.debug("Validate entity {}", entity);
+		log.trace("Validate entity {}", entity);
 		Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
 				.getCanonicalName());
 
@@ -52,6 +52,7 @@ public class EntityValidator {
 	}
 
 	public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
+        log.trace("Validate primary key {} for entity class {}", primaryKey,idMeta.getEntityClassName());
 		if (idMeta.isEmbeddedId()) {
 			List<Object> components = idMeta.encodeToComponents(primaryKey);
 			for (Object component : components) {
@@ -62,6 +63,7 @@ public class EntityValidator {
 	}
 
 	public void validateNotClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
+        log.trace("Validate that entity {} is not a clustered counter", entity);
 		Class<?> baseClass = proxifier.deriveBaseClass(entity);
 		EntityMeta entityMeta = entityMetaMap.get(baseClass);
 		Validator.validateFalse(entityMeta.isClusteredCounter(),

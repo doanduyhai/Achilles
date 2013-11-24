@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -100,26 +101,18 @@ public class PersistenceContextTest {
 
 	@Before
 	public void setUp() throws Exception {
-		// idMeta = PropertyMetaTestBuilder.completeBean(Void.class,
-		// Long.class).field("id").type(ID).accessors()
-		// .invoker(invoker).build();
-		//
-		// meta = new EntityMeta();
-		// meta.setIdMeta(idMeta);
-		// meta.setEntityClass(CompleteBean.class);
-
 		when(meta.getIdMeta()).thenReturn(idMeta);
 		when((Class) meta.getEntityClass()).thenReturn(CompleteBean.class);
 
 		context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class,
 				primaryKey, OptionsBuilder.noOptions());
 
-		context.setInitializer(initializer);
-		context.setPersister(persister);
-		context.setProxifier(proxifier);
-		context.setRefresher(refresher);
-		context.setLoader(loader);
-		context.setMerger(merger);
+        Whitebox.setInternalState(context,"initializer",initializer);
+        Whitebox.setInternalState(context,"persister",persister);
+        Whitebox.setInternalState(context,"proxifier",proxifier);
+        Whitebox.setInternalState(context,"refresher",refresher);
+        Whitebox.setInternalState(context,"loader",loader);
+        Whitebox.setInternalState(context,"merger",merger);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}

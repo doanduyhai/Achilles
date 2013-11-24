@@ -57,10 +57,6 @@ public class EmbeddedIdPropertiesBuilder {
 		this.componentsAsTimeUUID.add(name);
 	}
 
-	public String getReversedComponentName() {
-		return reversedComponentName;
-	}
-
 	public void setReversedComponentName(String reversedComponentName) {
 		this.reversedComponentName = reversedComponentName;
 	}

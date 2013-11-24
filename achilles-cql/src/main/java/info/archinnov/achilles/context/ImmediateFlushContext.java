@@ -61,6 +61,7 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 
 	@Override
 	public ImmediateFlushContext duplicate() {
+        log.trace("Duplicate immediate flushing context");
 		return new ImmediateFlushContext(daoContext, boundStatementWrappers, consistencyLevel);
 	}
 }

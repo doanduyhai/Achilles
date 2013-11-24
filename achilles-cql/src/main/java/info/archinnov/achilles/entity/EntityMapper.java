@@ -22,21 +22,27 @@ import info.archinnov.achilles.proxy.RowMethodInvoker;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 
 public class EntityMapper  {
 
-	private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
+    private static final Logger log  = LoggerFactory.getLogger(EntityMapper.class);
+
+    private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
 
 	public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
+        log.debug("Set eager properties to entity class {} from fetched CQL row", entityMeta.getClassName());
 		for (PropertyMeta pm : entityMeta.getEagerMetas()) {
 			setPropertyToEntity(row, pm, entity);
 		}
 	}
 
 	public void setPropertyToEntity(Row row, PropertyMeta pm, Object entity) {
+        log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
 		if (row != null) {
 			if (pm.isEmbeddedId()) {
 				Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true);
@@ -53,7 +59,8 @@ public class EntityMapper  {
 
 	public <T> T mapRowToEntityWithPrimaryKey(EntityMeta meta, Row row,
                                               Map<String, PropertyMeta> propertiesMap, boolean isEntityManaged) {
-		T entity = null;
+        log.debug("Map CQL row to entity of class {}", meta.getClassName());
+        T entity = null;
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 		if (columnDefinitions != null) {
 			entity = meta.instanciate();

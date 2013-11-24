@@ -20,9 +20,14 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsistencyConvertor {
-	private final static Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> fromAchillesToCQL = new HashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
+
+    private static final Logger log  = LoggerFactory.getLogger(ConsistencyConvertor.class);
+
+    private final static Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> fromAchillesToCQL = new HashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
 
 	static {
 		fromAchillesToCQL.put(ConsistencyLevel.ANY, com.datastax.driver.core.ConsistencyLevel.ANY);
@@ -36,6 +41,7 @@ public class ConsistencyConvertor {
 	}
 
 	public static com.datastax.driver.core.ConsistencyLevel getCQLLevel(ConsistencyLevel achillesLevel) {
+        log.trace("Convert Achilles Consistency Level to CQL Consistency Level");
 		com.datastax.driver.core.ConsistencyLevel cqlLevel = fromAchillesToCQL.get(achillesLevel);
 		if (cqlLevel == null) {
 			throw new IllegalArgumentException("No matching Consistency Level for Achilles level '"

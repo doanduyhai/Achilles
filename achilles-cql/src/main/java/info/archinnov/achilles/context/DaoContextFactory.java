@@ -25,6 +25,8 @@ import info.archinnov.achilles.statement.prepared.PreparedStatementGenerator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Function;
@@ -34,10 +36,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class DaoContextFactory {
-	private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
+    private static final Logger log  = LoggerFactory.getLogger(DaoContextFactory.class);
+
+    private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
 	private PreparedStatementGenerator queryGenerator = new PreparedStatementGenerator();
 
 	public DaoContext build(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
+        log.debug("Build DaoContext");
+
 		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
 				Maps.filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
 

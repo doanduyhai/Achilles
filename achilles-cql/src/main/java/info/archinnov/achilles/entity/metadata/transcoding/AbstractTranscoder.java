@@ -23,13 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 public abstract class AbstractTranscoder implements DataTranscoder {
 
-	protected ObjectMapper objectMapper;
+    private static final Logger log  = LoggerFactory.getLogger(AbstractTranscoder.class);
+
+    protected ObjectMapper objectMapper;
 	protected ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public AbstractTranscoder(ObjectMapper objectMapper) {
@@ -114,6 +118,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 	}
 
 	Object encodeInternal(Class<?> sourceType, Object entityValue) {
+        log.trace("Encode {} to CQL type {}",entityValue,sourceType);
 		if (isSupportedType(sourceType)) {
 			return entityValue;
 		} else if (sourceType.isEnum()) {
@@ -125,6 +130,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	Object decodeInternal(Class<?> targetType, Object cassandraValue) {
+        log.trace("Decode {} from CQL type {}",cassandraValue,targetType);
 		if (isSupportedType(targetType)) {
 			return cassandraValue;
 		} else if (targetType.isEnum()) {
@@ -139,7 +145,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	@Override
 	public String forceEncodeToJSON(Object object) {
-
+        log.trace("Force encode {} to JSON",object);
 		String result = null;
 		if (object != null) {
 			if (object instanceof String) {
@@ -160,7 +166,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T forceDecodeFromJSON(String cassandraValue, Class<T> targetType) {
-
+        log.trace("Force decode {} from JSON to type {}",cassandraValue,targetType);
 		T result = null;
 
 		if (cassandraValue != null) {

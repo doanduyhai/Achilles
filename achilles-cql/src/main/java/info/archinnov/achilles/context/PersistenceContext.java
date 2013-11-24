@@ -17,6 +17,7 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
+
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -36,15 +37,20 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 public class PersistenceContext {
 
-	private AbstractFlushContext flushContext;
+    private static final Logger log  = LoggerFactory.getLogger(PersistenceContext.class);
+
+    private AbstractFlushContext flushContext;
 	private EntityInitializer initializer = new EntityInitializer();
 	private EntityPersister persister = new EntityPersister();
 	private EntityProxifier proxifier = new EntityProxifier();
@@ -68,7 +74,7 @@ public class PersistenceContext {
                               AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
 		Validator.validateNotNull(entityClass, "The entity class should not be null for persistence context creation");
 		Validator.validateNotNull(primaryKey,
-				"The primary key for the entity class '%s' should not be null for persistence context creation",
+				"The primary key for the entity class '{}' should not be null for persistence context creation",
 				entityClass.getCanonicalName());
 		this.entityMeta = entityMeta;
 		this.configContext = configContext;
@@ -82,11 +88,11 @@ public class PersistenceContext {
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
                               AbstractFlushContext flushContext, Object entity, Options options) {
 		Validator.validateNotNull(entity,
-				"The entity of type '%s' should not be null for persistence context creation",
+				"The entity of type '{}' should not be null for persistence context creation",
 				entityMeta.getClassName());
 		this.primaryKey = entityMeta.getPrimaryKey(entity);
 		Validator.validateNotNull(primaryKey,
-				"The primary key for the entity class '%s' should not be null for persistence context creation",
+				"The primary key for the entity class '{}' should not be null for persistence context creation",
 				entityMeta.getClassName());
 
 		this.entityClass = entityMeta.getEntityClass();
@@ -99,6 +105,8 @@ public class PersistenceContext {
 	}
 
 	public PersistenceContext duplicate(Object entity) {
+        log.trace("Duplicate PersistenceContext for entity '{}'", entity);
+
 		return new PersistenceContext(entityMeta, configContext, daoContext, flushContext.duplicate(), entity,
 				options.duplicateWithoutTtlAndTimestamp());
 	}
@@ -137,6 +145,8 @@ public class PersistenceContext {
 	}
 
 	public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency) {
+        log.trace("Get counter value for counterMeta '{}' with consistency level '{}'", counterMeta, consistency);
+
 		Row row = daoContext.getSimpleCounter(this, counterMeta, consistency);
 		if (row != null) {
 			return row.getLong(CQL_COUNTER_VALUE);
@@ -162,7 +172,10 @@ public class PersistenceContext {
 	}
 
 	public Long getClusteredCounter(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
-		Row row = daoContext.getClusteredCounter(this, readLevel);
+        log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
+                         readLevel);
+
+        Row row = daoContext.getClusteredCounter(this, readLevel);
 		if (row != null) {
 			return row.getLong(counterMeta.getPropertyName());
 		}
@@ -342,27 +355,12 @@ public class PersistenceContext {
 		}
 	}
 
-	void setInitializer(EntityInitializer initializer) {
-		this.initializer = initializer;
-	}
-
-	void setPersister(EntityPersister persister) {
-		this.persister = persister;
-	}
-
-	void setProxifier(EntityProxifier proxifier) {
-		this.proxifier = proxifier;
-	}
-
-	void setRefresher(EntityRefresher refresher) {
-		this.refresher = refresher;
-	}
-
-	void setLoader(EntityLoader loader) {
-		this.loader = loader;
-	}
-
-	void setMerger(EntityMerger merger) {
-		this.merger = merger;
-	}
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(PersistenceContext.class)
+                .add("entity class",this.entityClass)
+                .add("primary key",this.primaryKey)
+                .add("partition key",this.partitionKey)
+                .toString();
+    }
 }

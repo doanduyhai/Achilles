@@ -113,21 +113,22 @@ public class ReflectionInvoker {
 		}
 	}
 
-	public <T> T instanciate(Class<T> entityClass) {
+	public <T> T instantiate(Class<T> entityClass) {
+        log.trace("Instantiate entity class {}",entityClass);
 		T newInstance;
 		try {
 			newInstance = entityClass.newInstance();
 		} catch (Exception e) {
 			throw new AchillesException(
-					"Cannot instanciate entity from class '" + entityClass.getCanonicalName() + "'", e);
+					"Cannot instantiate entity from class '" + entityClass.getCanonicalName() + "'", e);
 		}
 		return newInstance;
 	}
 
-	public Object instanciateEmbeddedIdWithPartitionComponents(PropertyMeta idMeta, List<Object> partitionComponents) {
-
+	public Object instantiateEmbeddedIdWithPartitionComponents(PropertyMeta idMeta, List<Object> partitionComponents) {
+        log.trace("Instantiate entity class {} with partition key components {}",idMeta.getValueClass(),partitionComponents);
 		Class<?> valueClass = idMeta.getValueClass();
-		Object newInstance = instanciate(valueClass);
+		Object newInstance = instantiate(valueClass);
 		List<Method> setters = idMeta.getPartitionComponentSetters();
 
 		for (int i = 0; i < setters.size(); i++) {

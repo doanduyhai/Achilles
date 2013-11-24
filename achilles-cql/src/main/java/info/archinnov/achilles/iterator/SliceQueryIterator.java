@@ -25,12 +25,16 @@ import info.archinnov.achilles.query.slice.CQLSliceQuery;
 
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 
 public class SliceQueryIterator<T> implements Iterator<T> {
 
-	private PersistenceContext context;
+    private static final Logger log  = LoggerFactory.getLogger(SliceQueryIterator.class);
+
+    private PersistenceContext context;
 	private Iterator<Row> iterator;
 	private String varyingComponentName;
 	private Object lastVaryingComponentValue;
@@ -58,15 +62,17 @@ public class SliceQueryIterator<T> implements Iterator<T> {
 	@Override
 	public boolean hasNext() {
 		if (!iterator.hasNext() && count == batchSize) {
-			iterator = context.bindAndExecute(ps, lastVaryingComponentValue).iterator();
-			count = 0;
-		}
-		return iterator.hasNext();
+            iterator = context.bindAndExecute(ps, lastVaryingComponentValue).iterator();
+            count = 0;
+        }
+        final boolean hasNext = iterator.hasNext();
+        log.trace("Does iterator has more element ? {}",hasNext);
+        return hasNext;
 	}
 
 	@Override
 	public T next() {
-
+        log.trace("Fetch iterator next element");
 		Row row = iterator.next();
 		lastVaryingComponentValue = cqlInvoker.invokeOnRowForType(row, varyingComponentClass, varyingComponentName);
 		T clusteredEntity = meta.instanciate();

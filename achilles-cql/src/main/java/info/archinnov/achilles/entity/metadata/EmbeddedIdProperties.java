@@ -18,12 +18,16 @@ package info.archinnov.achilles.entity.metadata;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.base.Objects;
 import info.archinnov.achilles.validation.Validator;
 
 public class EmbeddedIdProperties extends AbstractComponentProperties {
 
-	private final PartitionComponents partitionComponents;
+    private static final Logger log  = LoggerFactory.getLogger(EmbeddedIdProperties.class);
+
+    private final PartitionComponents partitionComponents;
 	private final ClusteringComponents clusteringComponents;
 	private final List<String> timeUUIDComponents;
 
@@ -45,6 +49,7 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	String getVaryingComponentNameForQuery(int fixedComponentsSize) {
+        log.trace("Get varying component name for query");
 		if (fixedComponentsSize > 0)
 			return getComponentNames().get(fixedComponentsSize);
 		else
@@ -52,6 +57,7 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
+        log.trace("Get varying component class for query");
 		if (fixedComponentsSize > 0)
 			return getComponentClasses().get(fixedComponentsSize);
 		else
@@ -131,6 +137,7 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	List<Object> extractPartitionComponents(List<Object> components) {
+        log.trace("Extract partition key components from {}",components);
 		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
@@ -139,7 +146,8 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	List<Object> extractClusteringComponents(List<Object> components) {
-		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
+        log.trace("Extract clustering components from {}",components);
+        int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
 				"Cannot extract clustering components from components list '%s'", components);

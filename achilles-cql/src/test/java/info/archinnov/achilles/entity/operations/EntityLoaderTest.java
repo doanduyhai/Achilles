@@ -82,7 +82,7 @@ public class EntityLoaderTest {
 	public void should_load_lazy_entity() throws Exception {
 
 		when(context.isLoadEagerFields()).thenReturn(false);
-		when(invoker.instanciate(CompleteBean.class)).thenReturn(entity);
+		when(invoker.instantiate(CompleteBean.class)).thenReturn(entity);
 
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 

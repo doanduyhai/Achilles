@@ -75,22 +75,26 @@ public class PersistenceManagerFactory {
 	}
 
 	PersistenceManagerFactory bootstrap() {
-		List<String> entityPackages = argumentExtractor.initEntityPackages(configurationMap);
-		configContext = argumentExtractor.initConfigContext(configurationMap);
-		Cluster cluster = argumentExtractor.initCluster(configurationMap);
-		Session session = argumentExtractor.initSession(cluster, configurationMap);
+        final String keyspaceName = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
 
-		List<Class<?>> candidateClasses = boostraper.discoverEntities(entityPackages);
+        log.info("Bootstrapping Achilles PersistenceManagerFactory for keyspace {}",keyspaceName);
 
-		boolean hasSimpleCounter = false;
-		if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
-			Pair<Map<Class<?>, EntityMeta>, Boolean> pair = boostraper.buildMetaDatas(configContext, candidateClasses);
-			entityMetaMap = pair.left;
-			hasSimpleCounter = pair.right;
-		}
+        List<String> entityPackages = argumentExtractor.initEntityPackages(configurationMap);
+        configContext = argumentExtractor.initConfigContext(configurationMap);
+        Cluster cluster = argumentExtractor.initCluster(configurationMap);
+        Session session = argumentExtractor.initSession(cluster, configurationMap);
 
-		SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
-				(String) configurationMap.get(KEYSPACE_NAME_PARAM), cluster, entityMetaMap, hasSimpleCounter);
+        List<Class<?>> candidateClasses = boostraper.discoverEntities(entityPackages);
+
+        boolean hasSimpleCounter = false;
+        if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
+            Pair<Map<Class<?>, EntityMeta>, Boolean> pair = boostraper.buildMetaDatas(configContext, candidateClasses);
+            entityMetaMap = pair.left;
+            hasSimpleCounter = pair.right;
+        }
+
+        SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
+                                                        keyspaceName, cluster, entityMetaMap, hasSimpleCounter);
 		boostraper.validateOrCreateTables(schemaContext);
 
 		daoContext = boostraper.buildDaoContext(session, entityMetaMap, hasSimpleCounter);
@@ -107,6 +111,7 @@ public class PersistenceManagerFactory {
 	 * @return PersistenceManager
 	 */
 	public PersistenceManager createPersistenceManager() {
+        log.debug("Spawn new PersistenceManager");
 		return new PersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 
@@ -121,6 +126,7 @@ public class PersistenceManagerFactory {
 	 * @return a new state-full PersistenceManager
 	 */
 	public BatchingPersistenceManager createBatchingPersistenceManager() {
+        log.debug("Spawn new BatchingPersistenceManager");
 		return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
 	}
 

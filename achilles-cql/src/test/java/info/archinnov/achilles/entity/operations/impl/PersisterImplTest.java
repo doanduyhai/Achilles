@@ -175,7 +175,7 @@ public class PersisterImplTest {
 
 		allMetas.add(counterMeta);
 
-		persisterImpl.removeLinkedCounters(context);
+		persisterImpl.removeRelatedCounters(context);
 
 		verify(context).bindForSimpleCounterRemoval(counterMeta);
 	}

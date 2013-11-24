@@ -324,7 +324,7 @@ public class PersistenceManager {
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
                                                                OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.<T> getReference(entityClass);
+		return context.getReference(entityClass);
 	}
 
 	/**
@@ -367,7 +367,9 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> T initialize(final T entity) {
-		log.debug("Force lazy fields initialization for entity {}", entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
+        }
 		proxifier.ensureProxy(entity);
 		PersistenceContext context = initPersistenceContext(entity, OptionsBuilder.noOptions());
 		return context.initialize(entity);
@@ -381,7 +383,6 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> Set<T> initialize(final Set<T> entities) {
-		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -396,7 +397,6 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> List<T> initialize(final List<T> entities) {
-		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -437,7 +437,7 @@ public class PersistenceManager {
 	 * @return real object
 	 */
 	public <T> T unwrap(T proxy) {
-		log.debug("Unproxying entity {}", proxy);
+		log.debug("Unwrapping entity {}", proxy);
 
 		T realObject = proxifier.unwrap(proxy);
 
@@ -454,8 +454,6 @@ public class PersistenceManager {
 	 * @return real object list
 	 */
 	public <T> List<T> unwrap(List<T> proxies) {
-		log.debug("Unproxying list of entities {}", proxies);
-
 		return proxifier.unwrap(proxies);
 	}
 
@@ -469,12 +467,11 @@ public class PersistenceManager {
 	 * @return real object set
 	 */
 	public <T> Set<T> unwrap(Set<T> proxies) {
-		log.debug("Unproxying set of entities {}", proxies);
-
 		return proxifier.unwrap(proxies);
 	}
 
 	public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
+        log.debug("Execute slice query for entity class {}",entityClass);
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		Validator.validateTrue(meta.isClusteredEntity(),
 				"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
@@ -492,6 +489,7 @@ public class PersistenceManager {
 	 * @return CQLNativeQueryBuilder
 	 */
 	public CQLNativeQueryBuilder nativeQuery(String queryString) {
+        log.debug("Execute native query {}",queryString);
 		Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
 		return new CQLNativeQueryBuilder(daoContext, queryString);
 	}
@@ -515,7 +513,8 @@ public class PersistenceManager {
 	}
 
 	private <T> TypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString, boolean normalizeQuery) {
-		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
+        log.debug("Execute typed query for entity class {}",entityClass);
+        Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
 		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
@@ -541,7 +540,9 @@ public class PersistenceManager {
 	 * @return TypedQueryBuilder<T>
 	 */
 	public <T> TypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
-		EntityMeta entityMeta = entityMetaMap.get(entityClass);
+        log.debug("Execute indexed query for entity class {}",entityClass);
+
+        EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
 		Validator.validateFalse(entityMeta.isClusteredEntity(),
 				"Index query is not supported for clustered entity. Please use typed query/native query");
@@ -575,6 +576,7 @@ public class PersistenceManager {
 	 * @return TypedQueryBuilder<T>
 	 */
 	public <T> TypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass, String queryString) {
+        log.debug("Execute raw typed query for entity class {}",entityClass);
 		Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
 		Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),

@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -34,7 +36,10 @@ import com.google.common.collect.FluentIterable;
 
 public class PreparedStatementBinder {
 
-	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity) {
+    private static final Logger log  = LoggerFactory.getLogger(PreparedStatementBinder.class);
+
+    public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity) {
+        log.trace("Bind prepared statement {} for insert of entity {}",ps.getQueryString(),entity);
 		List<Object> values = new ArrayList<Object>();
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
@@ -58,6 +63,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
 			Object entity) {
+        log.trace("Bind prepared statement {} for properties {} update of entity {}",ps.getQueryString(),pms,entity);
 		List<Object> values = new ArrayList<Object>();
 		for (PropertyMeta pm : pms) {
 			Object value = pm.getValueFromField(entity);
@@ -75,6 +81,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PreparedStatement ps, EntityMeta entityMeta,
 			Object primaryKey) {
+        log.trace("Bind prepared statement {} with primary key {}",ps.getQueryString(),primaryKey);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		List<Object> values = bindPrimaryKey(primaryKey, idMeta);
 
@@ -86,6 +93,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
 			PropertyMeta pm, Object primaryKey, Long increment) {
+        log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}",ps.getQueryString(),pm,primaryKey,increment);
 		Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0,
 				increment);
 
@@ -97,6 +105,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
 			PropertyMeta pm, Object primaryKey) {
+        log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}",ps.getQueryString(),pm,primaryKey);
 		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
 		BoundStatement bs = ps.bind(boundValues);
 		return new BoundStatementWrapper(bs, boundValues);
@@ -104,6 +113,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
 			PropertyMeta pm, Object primaryKey) {
+        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}",ps.getQueryString(),pm,primaryKey);
 		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
 		BoundStatement bs = ps.bind(boundValues);
 		return new BoundStatementWrapper(bs, boundValues);
@@ -111,6 +121,8 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
                                                                            Object primaryKey, Long increment) {
+        log.trace("Bind prepared statement {} for clustered counter increment/decrement for {} using primary key {} and value {}",ps.getQueryString(),entityMeta,primaryKey,increment);
+
 		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
 		Object[] keys = ArrayUtils.add(primaryKeys.toArray(new Object[primaryKeys.size()]), 0, increment);
 
@@ -121,6 +133,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
                                                                Object primaryKey) {
+        log.trace("Bind prepared statement {} for clustered counter read for {} using primary key {}",ps.getQueryString(),entityMeta,primaryKey);
 		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
 		Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
 
@@ -131,6 +144,7 @@ public class PreparedStatementBinder {
 
 	public BoundStatementWrapper bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
                                                                Object primaryKey) {
+        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}",ps.getQueryString(),entityMeta,primaryKey);
 		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
 		Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
 		BoundStatement bs = ps.bind(boundValues);

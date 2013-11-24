@@ -16,13 +16,17 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.validation.Validator;
 
 public class TypedQueryValidator {
+    private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
 
-	public void validateTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
+    public void validateTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
+        log.debug("Validate typed query {}",queryString);
 		PropertyMeta idMeta = meta.getIdMeta();
 		String normalizedQuery = queryString.toLowerCase();
 
@@ -45,7 +49,8 @@ public class TypedQueryValidator {
 	}
 
 	public void validateRawTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
-		String tableName = meta.getTableName().toLowerCase();
+        log.debug("Validate raw typed query {}",queryString);
+        String tableName = meta.getTableName().toLowerCase();
 		String normalizedQuery = queryString.toLowerCase();
 
 		Validator.validateTrue(normalizedQuery.contains(" from " + tableName),

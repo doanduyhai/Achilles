@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions;
@@ -45,7 +47,11 @@ import com.datastax.driver.core.policies.RetryPolicy;
 
 public class ArgumentExtractor {
 
+    private static final Logger log  = LoggerFactory.getLogger(ArgumentExtractor.class);
+
 	public List<String> initEntityPackages(Map<String, Object> configurationMap) {
+        log.trace("Extract entity packages from configuration map");
+
 		List<String> entityPackages = new ArrayList<String>();
 		String entityPackagesParameter = (String) configurationMap.get(ENTITY_PACKAGES_PARAM);
 		if (StringUtils.isNotBlank(entityPackagesParameter)) {
@@ -56,15 +62,19 @@ public class ArgumentExtractor {
 	}
 
 	public ConfigurationContext initConfigContext(Map<String, Object> configurationMap) {
+        log.trace("Build ConfigurationContext from configuration map");
+
 		ConfigurationContext configContext = new ConfigurationContext();
-		configContext.setForceColumnFamilyCreation(initForceCFCreation(configurationMap));
+		configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
 		configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
 		configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
 		configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
 		return configContext;
 	}
 
-	boolean initForceCFCreation(Map<String, Object> configurationMap) {
+	boolean initForceTableCreation(Map<String, Object> configurationMap) {
+        log.trace("Extract 'force table creation' from configuration map");
+
 		Boolean forceColumnFamilyCreation = (Boolean) configurationMap.get(FORCE_TABLE_CREATION_PARAM);
 		if (forceColumnFamilyCreation != null) {
 			return forceColumnFamilyCreation;
@@ -74,6 +84,8 @@ public class ArgumentExtractor {
 	}
 
 	ObjectMapperFactory initObjectMapperFactory(Map<String, Object> configurationMap) {
+        log.trace("Extract object mapper factory from configuration map");
+
 		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap
 				.get(OBJECT_MAPPER_FACTORY_PARAM);
 		if (objectMapperFactory == null) {
@@ -98,16 +110,22 @@ public class ArgumentExtractor {
 	}
 
 	ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap) {
+        log.trace("Extract default read Consistency level from configuration map");
+
 		String defaultReadLevel = (String) configMap.get(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
 	}
 
 	ConsistencyLevel initDefaultWriteConsistencyLevel(Map<String, Object> configMap) {
+        log.trace("Extract default write Consistency level from configuration map");
+
 		String defaultWriteLevel = (String) configMap.get(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
 	}
 
 	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap) {
+        log.trace("Extract read Consistency level map from configuration map");
+
 		@SuppressWarnings("unchecked")
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap.get(CONSISTENCY_LEVEL_READ_MAP_PARAM);
 
@@ -115,6 +133,8 @@ public class ArgumentExtractor {
 	}
 
 	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap) {
+        log.trace("Extract write Consistency level map from configuration map");
+
 		@SuppressWarnings("unchecked")
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
 				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
@@ -123,6 +143,8 @@ public class ArgumentExtractor {
 	}
 
 	public Cluster initCluster(Map<String, Object> configurationMap) {
+        log.trace("Extract or init cluster from configuration map");
+
 		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
 		if (cluster == null) {
 			String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
@@ -210,6 +232,7 @@ public class ArgumentExtractor {
 	}
 
 	public Session initSession(Cluster cluster, Map<String, Object> configurationMap) {
+        log.trace("Extract or init Session from configuration map");
 
 		Session nativeSession = (Session) configurationMap.get(NATIVE_SESSION_PARAM);
 		String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
@@ -222,6 +245,8 @@ public class ArgumentExtractor {
 	}
 
 	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
+        log.trace("Extract read Consistency level map from configuration map");
+
 		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
 			for (Entry<String, String> entry : consistencyLevelMap.entrySet()) {

@@ -28,11 +28,15 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 
 public class PersistenceContextFactory {
 
-	public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
+    private static final Logger log  = LoggerFactory.getLogger(PersistenceContextFactory.class);
+
+    public static final Optional<Integer> NO_TTL = Optional.<Integer> absent();
 
 	private DaoContext daoContext;
 	private ConfigurationContext configContext;
@@ -53,6 +57,7 @@ public class PersistenceContextFactory {
 	}
 
     public PersistenceContext newContextWithFlushContext(Object entity, Options options,AbstractFlushContext flushContext) {
+        log.trace("Build new PersistenceContext for entity '{}' with options '{}' and flush context '{}'",entity,options,flushContext);
 		Validator.validateNotNull(entity, "entity should not be null for persistence context creation");
 		Class<?> entityClass = proxifier.deriveBaseClass(entity);
 		EntityMeta meta = entityMetaMap.get(entityClass);
@@ -65,11 +70,11 @@ public class PersistenceContextFactory {
 
 	public PersistenceContext newContext(Class<?> entityClass, Object primaryKey, Options options) {
 		ImmediateFlushContext flushContext = buildImmediateFlushContext(options);
-
 		return newContextWithFlushContext(entityClass,primaryKey,options,flushContext);
 	}
 
 	public PersistenceContext newContextWithFlushContext(Class<?> entityClass, Object primaryKey, Options options,AbstractFlushContext flushContext) {
+        log.trace("Build new PersistenceContext for entity class '{}' with primary key '{}', options '{}' and flush context '{}'",entityClass,primaryKey,options,flushContext);
 		Validator.validateNotNull(entityClass, "entityClass should not be null for persistence context creation");
 		Validator.validateNotNull(primaryKey, "primaryKey should not be null for persistence context creation");
 		EntityMeta meta = entityMetaMap.get(entityClass);
@@ -79,9 +84,10 @@ public class PersistenceContextFactory {
 
 	public PersistenceContext newContextForSliceQuery(Class<?> entityClass, List<Object> partitionComponents,
 			ConsistencyLevel cl) {
+        log.trace("Build new PersistenceContext for slice query on entity class '{}' with partition key components '{}' and Consistency Level '{}'",entityClass,partitionComponents,cl);
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		PropertyMeta idMeta = meta.getIdMeta();
-		Object embeddedId = invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents);
+		Object embeddedId = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents);
 
 		ImmediateFlushContext flushContext = buildImmediateFlushContext(OptionsBuilder.withConsistency(cl));
 

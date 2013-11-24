@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -43,7 +45,11 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.collect.FluentIterable;
 
 public class PreparedStatementGenerator {
-	public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta) {
+    private static final Logger log  = LoggerFactory.getLogger(PreparedStatementGenerator.class);
+
+
+    public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta) {
+        log.trace("Generate prepared statement for INSERT on {}",entityMeta);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Insert insert = insertInto(entityMeta.getTableName());
 		prepareInsertPrimaryKey(idMeta, insert);
@@ -61,7 +67,9 @@ public class PreparedStatementGenerator {
 	}
 
 	public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta, PropertyMeta pm) {
-		PropertyMeta idMeta = entityMeta.getIdMeta();
+        log.trace("Generate prepared statement for SELECT property {}",pm);
+
+        PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		if (pm.isCounter()) {
 			throw new IllegalArgumentException("Cannot prepare statement for property '" + pm.getPropertyName()
@@ -75,6 +83,9 @@ public class PreparedStatementGenerator {
 	}
 
 	public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta, List<PropertyMeta> pms) {
+
+        log.trace("Generate prepared statement for UPDATE properties {}",pms);
+
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 
@@ -93,6 +104,8 @@ public class PreparedStatementGenerator {
 	}
 
 	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta) {
+        log.trace("Generate prepared statement for SELECT of {}",entityMeta);
+
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Selection select = select();
@@ -107,6 +120,8 @@ public class PreparedStatementGenerator {
 	}
 
 	public Map<CQLQueryType, PreparedStatement> prepareSimpleCounterQueryMap(Session session) {
+
+
 		StringBuilder incr = new StringBuilder();
 		incr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
 		incr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
@@ -234,6 +249,9 @@ public class PreparedStatementGenerator {
 	}
 
 	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
+
+        log.trace("Generate prepared statement for DELETE of {}",entityMeta);
+
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();

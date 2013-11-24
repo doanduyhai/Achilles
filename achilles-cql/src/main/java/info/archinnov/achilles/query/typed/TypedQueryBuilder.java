@@ -36,12 +36,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 
 public class TypedQueryBuilder<T> {
+    private static final Logger log  = LoggerFactory.getLogger(TypedQueryBuilder.class);
 
-	private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
+    private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
 	private static final String SELECT_STAR = "select * ";
 	private static final String WHITE_SPACES = "\\s+";
 
@@ -83,6 +86,7 @@ public class TypedQueryBuilder<T> {
 	 * 
 	 */
 	public List<T> get() {
+        log.debug("Get results for typed query {}",normalizedQuery);
 		List<T> result = new ArrayList<T>();
 		List<Row> rows = daoContext.execute(new SimpleStatement(normalizedQuery)).all();
 		for (Row row : rows) {
@@ -107,6 +111,7 @@ public class TypedQueryBuilder<T> {
 	 * 
 	 */
 	public T getFirst() {
+        log.debug("Get first result for typed query {}",normalizedQuery);
 		T entity = null;
 		Row row = daoContext.execute(new SimpleStatement(normalizedQuery)).one();
 		if (row != null) {

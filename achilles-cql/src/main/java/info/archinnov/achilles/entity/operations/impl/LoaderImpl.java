@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -25,9 +27,12 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import com.datastax.driver.core.Row;
 
 public class LoaderImpl {
-	private EntityMapper mapper = new EntityMapper();
+    private static final Logger log  = LoggerFactory.getLogger(LoaderImpl.class);
+
+    private EntityMapper mapper = new EntityMapper();
 
 	public <T> T eagerLoadEntity(PersistenceContext context) {
+        log.trace("Loading entity using PersistenceContext {}",context);
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		T entity = null;

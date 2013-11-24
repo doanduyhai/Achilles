@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -24,9 +26,13 @@ import info.archinnov.achilles.entity.operations.impl.LoaderImpl;
 import info.archinnov.achilles.validation.Validator;
 
 public class EntityLoader {
-	private LoaderImpl loaderImpl = new LoaderImpl();
+
+    private static final Logger log  = LoggerFactory.getLogger(EntityLoader.class);
+
+    private LoaderImpl loaderImpl = new LoaderImpl();
 
 	public <T> T load(PersistenceContext context, Class<T> entityClass) {
+        log.debug("Loading entity of class {} using PersistenceContext {}",entityClass,context);
 		EntityMeta entityMeta = context.getEntityMeta();
 		Object primaryKey = context.getPrimaryKey();
 
@@ -48,6 +54,7 @@ public class EntityLoader {
 	}
 
 	public void loadPropertyIntoObject(PersistenceContext context, Object realObject, PropertyMeta pm) {
+        log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);
 		PropertyType type = pm.type();
 		if (!type.isCounter()) {
 			loaderImpl.loadPropertyIntoEntity(context, pm, realObject);

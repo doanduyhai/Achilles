@@ -126,7 +126,7 @@ public class SliceQueryIteratorTest {
 		when(iterator.next()).thenReturn(row);
 
 		when(cqlInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn("name1");
-		when(invoker.instanciate(ClusteredEntity.class)).thenReturn(entity);
+		when(invoker.instantiate(ClusteredEntity.class)).thenReturn(entity);
 
 		when(context.duplicate(entity)).thenReturn(context);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);

@@ -169,6 +169,7 @@ public class PropertyHelper {
 
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> getClassFromType(Type type) {
+        log.debug("Infer class from type {}",type);
 		if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType) type;
 			return (Class<T>) parameterizedType.getRawType();

@@ -120,7 +120,7 @@ public class EntityMapperTest {
 
 		entityMapper.setPropertyToEntity(null, pm, entity);
 
-		verifyZeroInteractions(cqlRowInvoker, pm);
+		verifyZeroInteractions(cqlRowInvoker);
 	}
 
 	@Test

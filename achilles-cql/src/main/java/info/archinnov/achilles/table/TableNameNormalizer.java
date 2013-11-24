@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.table;
 
-import static info.archinnov.achilles.table.TableCreator.ACHILLES_DDL_SCRIPT;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 
 import java.util.regex.Matcher;
@@ -27,7 +26,8 @@ import org.slf4j.LoggerFactory;
 
 public class TableNameNormalizer {
 
-	protected static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
+	protected static final Logger log = LoggerFactory.getLogger(TableNameNormalizer.class);
+
 	public static final Pattern CF_PATTERN = Pattern.compile("[a-zA-Z0-9_]{1,48}");
 
 	public static String normalizerAndValidateColumnFamilyName(String cfName) {

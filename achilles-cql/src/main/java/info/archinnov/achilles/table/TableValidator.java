@@ -27,6 +27,8 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
@@ -34,9 +36,12 @@ import com.datastax.driver.core.TableMetadata;
 
 public class TableValidator {
 
-	private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
+    private static final Logger log  = LoggerFactory.getLogger(TableValidator.class);
+
+    private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
 
 	public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
+        log.debug("Validate existing table {} for {}",tableMetadata.getName(),entityMeta);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		if (entityMeta.isClusteredCounter()) {
 
@@ -76,6 +81,8 @@ public class TableValidator {
 	}
 
 	public void validateAchillesCounter(KeyspaceMetadata keyspaceMetaData, String keyspaceName) {
+        log.debug("Validate existing Achilles Counter table");
+
 		TableMetadata tableMetaData = keyspaceMetaData.getTable(CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(tableMetaData != null, "Cannot find table '%s' from keyspace '%s'",
 				CQL_COUNTER_TABLE, keyspaceName);
@@ -117,6 +124,9 @@ public class TableValidator {
 	}
 
 	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
+
+        log.debug("Validate existing column {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+
 		String tableName = tableMetaData.getName();
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Name expectedType = toCQLType(columnJavaType);
@@ -136,6 +146,9 @@ public class TableValidator {
 	}
 
 	private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+
+        log.debug("Validate existing partition key component {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+
 		validateColumn(tableMetaData, columnName, columnJavaType, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 
@@ -144,6 +157,9 @@ public class TableValidator {
 	}
 
 	private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
+
+        log.debug("Validate existing clustering column {} from table {} against type {}",columnName,tableMetaData.getName(),columnJavaType);
+
 		validateColumn(tableMetaData, columnName, columnJavaType, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringKey(), columnMetadata),
@@ -151,6 +167,9 @@ public class TableValidator {
 	}
 
 	private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm) {
+
+        log.debug("Validate existing collection/map column {} from table {}");
+
 		String columnName = pm.getPropertyName().toLowerCase();
 		String tableName = tableMetadata.getName();
 		ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
@@ -203,7 +222,10 @@ public class TableValidator {
 	}
 
 	private void validatePrimaryKeyComponents(TableMetadata tableMetadata, PropertyMeta idMeta, boolean partitionKey) {
-		List<String> componentNames;
+
+        log.debug("Validate existing primary key component from table {} against Achilles meta data {}",tableMetadata.getName(),idMeta);
+
+        List<String> componentNames;
 		List<Class<?>> componentClasses;
 		if (partitionKey) {
 			componentNames = idMeta.getPartitionComponentNames();

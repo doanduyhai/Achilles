@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import info.archinnov.achilles.type.Pair;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
@@ -33,7 +35,9 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class PropertyMeta {
 
-	private static final Function<String, String> toLowerCase = new Function<String, String>() {
+    private static final Logger log  = LoggerFactory.getLogger(PropertyMeta.class);
+
+    private static final Function<String, String> toLowerCase = new Function<String, String>() {
 
 		@Override
 		public String apply(String input) {
@@ -62,6 +66,7 @@ public class PropertyMeta {
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	public List<Method> getComponentGetters() {
+        log.trace("Get component getters");
 		List<Method> compGetters = new ArrayList<Method>();
 		if (embeddedIdProperties != null) {
 			compGetters = embeddedIdProperties.getComponentGetters();
@@ -70,6 +75,7 @@ public class PropertyMeta {
 	}
 
 	public Method getPartitionKeyGetter() {
+        log.trace("Get partition key getter");
 		Method getter = null;
 		if (embeddedIdProperties != null) {
 			getter = embeddedIdProperties.getComponentGetters().get(0);
@@ -78,6 +84,7 @@ public class PropertyMeta {
 	}
 
 	public List<Method> getComponentSetters() {
+        log.trace("Get component setters");
 		List<Method> compSetters = new ArrayList<Method>();
 		if (embeddedIdProperties != null) {
 			compSetters = embeddedIdProperties.getComponentSetters();
@@ -94,6 +101,7 @@ public class PropertyMeta {
 	}
 
 	public List<String> getComponentNames() {
+        log.trace("Get component classes");
 		List<String> components = new ArrayList<String>();
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.getComponentNames();
@@ -102,6 +110,7 @@ public class PropertyMeta {
 	}
 
 	public String getVaryingComponentNameForQuery(int fixedComponentsSize) {
+        log.trace("Get varying component name for CQL query");
 		String componentName = null;
 		if (embeddedIdProperties != null)
 			componentName = embeddedIdProperties.getVaryingComponentNameForQuery(fixedComponentsSize);
@@ -110,6 +119,7 @@ public class PropertyMeta {
 	}
 
 	public Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
+        log.trace("Get varying component class for CQL query");
 		Class<?> componentClass = null;
 		if (embeddedIdProperties != null)
 			componentClass = embeddedIdProperties.getVaryingComponentClassForQuery(fixedComponentsSize);
@@ -118,76 +128,74 @@ public class PropertyMeta {
 	}
 
 	public List<String> getCQLComponentNames() {
+        log.trace("Get CQL component names");
 		return FluentIterable.from(getComponentNames()).transform(toLowerCase).toImmutableList();
 	}
 
 	public List<String> getClusteringComponentNames() {
+        log.trace("Get clustering component names");
 		return embeddedIdProperties != null ? embeddedIdProperties.getClusteringComponentNames() : Arrays
 				.<String> asList();
 	}
 
 	public List<Class<?>> getClusteringComponentClasses() {
+        log.trace("Get clustering component classes");
 		return embeddedIdProperties != null ? embeddedIdProperties.getClusteringComponentClasses() : Arrays
 				.<Class<?>> asList();
 	}
 
 	public List<String> getPartitionComponentNames() {
+        log.trace("Get partition key component names");
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentNames() : Arrays
 				.<String> asList();
 	}
 
 	public List<Class<?>> getPartitionComponentClasses() {
+        log.trace("Get partition key component classes");
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentClasses() : Arrays
 				.<Class<?>> asList(valueClass);
 	}
 
 	public List<Object> extractPartitionComponents(List<Object> components) {
+        log.trace("Extract partition key components");
 		return embeddedIdProperties != null ? embeddedIdProperties.extractPartitionComponents(components) : Arrays
 				.asList();
 	}
 
-	public List<Object> extractPartitionComponents(Object primaryKey) {
-		List<Object> partitionComponents;
-		if (isCompositePartitionKey()) {
-			partitionComponents = encodeToComponents(primaryKey);
-			partitionComponents = extractPartitionComponents(partitionComponents);
-		} else if (isEmbeddedId()) {
-			partitionComponents = Arrays.<Object> asList(getPartitionKey(primaryKey));
-		} else {
-			partitionComponents = Arrays.<Object> asList(primaryKey);
-		}
-
-		return partitionComponents;
-	}
-
 	public void validatePartitionComponents(List<Object> partitionComponents) {
+        log.trace("Validate partition key components");
 		if (embeddedIdProperties != null) {
 			embeddedIdProperties.validatePartitionComponents(this.entityClassName, partitionComponents);
 		}
 	}
 
 	public void validateClusteringComponents(List<Object> clusteringComponents) {
+        log.trace("Validate clustering components");
 		if (embeddedIdProperties != null) {
 			embeddedIdProperties.validateClusteringComponents(this.entityClassName, clusteringComponents);
 		}
 	}
 
 	public List<Method> getPartitionComponentSetters() {
+        log.trace("Get partition key component setters");
 		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentSetters() : Arrays
 				.<Method> asList();
 	}
 
 	public List<Object> extractClusteringComponents(List<Object> components) {
+        log.trace("Extract clustering components");
 		return embeddedIdProperties != null ? embeddedIdProperties.extractClusteringComponents(components) : Arrays
 				.asList();
 
 	}
 
 	public boolean isComponentTimeUUID(String componentName) {
+        log.trace("Determine whether component {} is of TimeUUID type",componentName);
 		return embeddedIdProperties != null && embeddedIdProperties.getTimeUUIDComponents().contains(componentName);
 	}
 
 	public String getOrderingComponent() {
+        log.trace("Get ordering component name");
 		String component = null;
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.getOrderingComponent();
@@ -196,6 +204,7 @@ public class PropertyMeta {
 	}
 
 	public String getReversedComponent() {
+        log.trace("Get reversed ordering component name if any");
 		String component = null;
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.getReversedComponent();
@@ -204,6 +213,7 @@ public class PropertyMeta {
 	}
 
 	public boolean hasReversedComponent() {
+        log.trace("Determine whether the entity has a reversed ordering component");
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.hasReversedComponent();
 		}
@@ -307,6 +317,7 @@ public class PropertyMeta {
 	}
 
 	public Object getPrimaryKey(Object entity) {
+        log.trace("Extract primary from entity {}",entity);
 		if (type.isId()) {
 			return invoker.getPrimaryKey(entity, this);
 		} else {
@@ -315,6 +326,7 @@ public class PropertyMeta {
 	}
 
 	public Object getPartitionKey(Object compoundKey) {
+        log.trace("Extract partition key from primary compound key {}",compoundKey);
 		if (type.isEmbeddedId()) {
 			return invoker.getPartitionKey(compoundKey, this);
 		} else {
@@ -323,18 +335,9 @@ public class PropertyMeta {
 		}
 	}
 
-	public Object instanciate() {
-		return invoker.instanciate(valueClass);
-	}
-
-	Object instanciateEmbeddedIdWithPartitionKey(List<Object> partitionComponents) {
-		if (type.isEmbeddedId()) {
-			return invoker.instanciateEmbeddedIdWithPartitionComponents(this, partitionComponents);
-		} else {
-			throw new IllegalStateException(
-					"Cannot instanciate embedded id with partition key on a non embedded id field '" + propertyName
-							+ "'");
-		}
+	public Object instantiate() {
+        log.trace("Instantiate new entity of type{}",entityClassName);
+		return invoker.instantiate(valueClass);
 	}
 
 	public Object getValueFromField(Object target) {

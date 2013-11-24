@@ -23,6 +23,8 @@ import info.archinnov.achilles.type.OrderingMode;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
@@ -30,8 +32,9 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class SliceQueryStatementGenerator {
 
-	public <T> Statement generateWhereClauseForSelectSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
+    private static final Logger log  = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
 
+    public <T> Statement generateWhereClauseForSelectSliceQuery(CQLSliceQuery<T> sliceQuery, Select select) {
 		Where where = select.where();
 		List<Object> fixedComponents = sliceQuery.getFixedComponents();
 		List<String> componentNames = sliceQuery.getComponentNames();
@@ -103,6 +106,7 @@ public class SliceQueryStatementGenerator {
 			}
 
 		}
+        log.trace("Generated WHERE clause for slice query : {}",where.getQueryString());
 		return where;
 	}
 
@@ -115,6 +119,7 @@ public class SliceQueryStatementGenerator {
 		for (int i = 0; i < fixedComponents.size(); i++) {
 			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
 		}
+        log.trace("Generated WHERE clause for slice delete query : {}",where.getQueryString());
 		return where;
 	}
 

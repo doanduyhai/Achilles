@@ -61,6 +61,7 @@ public class AchillesBootstraper {
 
 	public Pair<Map<Class<?>, EntityMeta>, Boolean> buildMetaDatas(ConfigurationContext configContext,
 			List<Class<?>> entities) {
+        log.debug("Build meta data for candidate entities");
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
@@ -73,7 +74,7 @@ public class AchillesBootstraper {
 	}
 
 	public void validateOrCreateTables(SchemaContext schemaContext) {
-
+        log.debug("Start schema validation/creation");
 		Map<String, TableMetadata> tableMetaDatas = schemaContext.fetchTableMetaData();
 
 		for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
@@ -98,6 +99,7 @@ public class AchillesBootstraper {
 
 	public DaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap,
 			boolean hasSimpleCounter) {
+        log.debug("Build DaoContext");
 		return daoContextFactory.build(session, entityMetaMap, hasSimpleCounter);
 	}
 }

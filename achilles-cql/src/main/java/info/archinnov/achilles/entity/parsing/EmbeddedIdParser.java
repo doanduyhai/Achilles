@@ -52,7 +52,7 @@ public class EmbeddedIdParser {
 	private PropertyFilter filter = new PropertyFilter();
 
 	public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass) {
-		log.debug("Parse multikey class {} ", embeddedIdClass.getCanonicalName());
+		log.debug("Parse embedded id class {} ", embeddedIdClass.getCanonicalName());
 
 		checkForDefaultConstructor(embeddedIdClass);
 
@@ -68,6 +68,7 @@ public class EmbeddedIdParser {
 	}
 
 	private Map<Integer, Field> extractComponentsOrdering(Class<?> embeddedIdClass) {
+        log.trace("Extract components ordering from embedded id class {} ", embeddedIdClass.getCanonicalName());
 
 		String embeddedIdClassName = embeddedIdClass.getCanonicalName();
 		Map<Integer, Field> components = new TreeMap<Integer, Field>();
@@ -96,7 +97,9 @@ public class EmbeddedIdParser {
 	}
 
 	private Integer extractReversedClusteredKey(Class<?> embeddedIdClass) {
-		@SuppressWarnings("unchecked")
+        log.debug("Extract reversed clustering component from embedded id class {} ", embeddedIdClass.getCanonicalName());
+
+        @SuppressWarnings("unchecked")
 		Set<Field> candidateFields = getFields(embeddedIdClass, ReflectionUtils.<Field> withAnnotation(Order.class));
 		List<Integer> reversedFields = new LinkedList<Integer>();
 		for (Field candidateField : candidateFields) {
@@ -114,6 +117,7 @@ public class EmbeddedIdParser {
 
 	private int validateNoDuplicateOrderAndType(String embeddedIdClassName, Set<Integer> orders, int orderSum,
 			int order, Class<?> componentType) {
+        log.debug("Validate type and component ordering for embedded id class {} ", embeddedIdClassName);
 		Validator.validateBeanMappingTrue(orders.add(order), "The order '%s' is duplicated in @EmbeddedId class '%s'",
 				order, embeddedIdClassName);
 
@@ -181,6 +185,7 @@ public class EmbeddedIdParser {
 	private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
                                                      Integer reversedField) {
 
+        log.debug("Build components meta data for embedded id class {}",embeddedIdClass.getCanonicalName());
 		EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder = new EmbeddedIdPropertiesBuilder();
@@ -202,7 +207,9 @@ public class EmbeddedIdParser {
 	private boolean buildPartitionAndClusteringKeys(Class<?> embeddedIdClass, Map<Integer, Field> components,
 			Integer reversedField, EmbeddedIdPropertiesBuilder partitionKeysBuilder,
 			EmbeddedIdPropertiesBuilder clusteringKeysBuilder, EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
-		boolean hasPartitionKeyAnnotation = false;
+        log.debug("Build Components meta data for embedded id class {}",embeddedIdClass.getCanonicalName());
+
+        boolean hasPartitionKeyAnnotation = false;
 		for (Integer order : components.keySet()) {
 			Field compositeKeyField = components.get(order);
 			Class<?> componentClass = compositeKeyField.getType();

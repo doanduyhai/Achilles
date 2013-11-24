@@ -27,14 +27,19 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersisterImpl {
+    private static final Logger log  = LoggerFactory.getLogger(PersisterImpl.class);
 
-	public void persist(PersistenceContext context) {
+    public void persist(PersistenceContext context) {
+        log.trace("Persisting entity using PersistenceContext {}",context);
 		context.pushInsertStatement();
 	}
 
 	public void persistClusteredCounter(PersistenceContext context) {
+        log.trace("Persisting clustered counter using PersistenceContext {}",context);
 		Object entity = context.getEntity();
 		PropertyMeta counterMeta = context.getFirstMeta();
 		Object counter = counterMeta.getValueFromField(entity);
@@ -53,6 +58,7 @@ public class PersisterImpl {
 	}
 
 	public void persistCounters(PersistenceContext context, Set<PropertyMeta> counterMetas) {
+        log.trace("Persisting counters using PersistenceContext {}",context);
 		Object entity = context.getEntity();
 		for (PropertyMeta counterMeta : counterMetas) {
 			Object counter = counterMeta.getValueFromField(entity);
@@ -68,16 +74,18 @@ public class PersisterImpl {
 	}
 
 	public void remove(PersistenceContext context) {
+        log.trace("Removing entity using PersistenceContext {}",context);
 		EntityMeta entityMeta = context.getEntityMeta();
 		if (entityMeta.isClusteredCounter()) {
 			context.bindForClusteredCounterRemoval(entityMeta.getFirstMeta());
 		} else {
 			context.bindForRemoval(entityMeta.getTableName());
-			removeLinkedCounters(context);
+			removeRelatedCounters(context);
 		}
 	}
 
-	protected void removeLinkedCounters(PersistenceContext context) {
+	protected void removeRelatedCounters(PersistenceContext context) {
+        log.trace("Removing counter values related to entity using PersistenceContext {}",context);
 		EntityMeta entityMeta = context.getEntityMeta();
 
 		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();

@@ -18,6 +18,7 @@ package info.archinnov.achilles.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -50,7 +51,9 @@ import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
 
 public class DaoContext {
-	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+    private static final Logger log  = LoggerFactory.getLogger(DaoContext.class);
+
+    public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
 
 	private static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
@@ -82,6 +85,8 @@ public class DaoContext {
 	}
 
 	public void pushInsertStatement(PersistenceContext context) {
+        log.debug("Push insert statement for PersistenceContext '{}'", context);
+
 		EntityMeta entityMeta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
 		Optional<Integer> ttlO = context.getTtt();
@@ -107,6 +112,7 @@ public class DaoContext {
 	}
 
 	public void pushUpdateStatement(PersistenceContext context, List<PropertyMeta> pms) {
+        log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context,pms);
 		EntityMeta entityMeta = context.getEntityMeta();
 		Optional<Integer> ttlO = context.getTtt();
 		Optional<Long> timestampO = context.getTimestamp();
@@ -131,6 +137,7 @@ public class DaoContext {
 	}
 
 	public Row loadProperty(PersistenceContext context, PropertyMeta pm) {
+        log.debug("Load property '{}' for PersistenceContext '{}'", pm,context);
 		PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm);
 		ConsistencyLevel readLevel = getReadConsistencyLevel(context, pm);
 		List<Row> rows = executeReadWithConsistency(context, ps, readLevel);
@@ -138,6 +145,7 @@ public class DaoContext {
 	}
 
 	public void bindForRemoval(PersistenceContext context, String tableName) {
+        log.debug("Push delete statement for PersistenceContext '{}'", context);
 		EntityMeta entityMeta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
 		Map<String, PreparedStatement> psMap = removePSs.get(entityClass);
@@ -155,6 +163,7 @@ public class DaoContext {
 	// Simple counter
 	public void bindForSimpleCounterIncrement(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long increment) {
+        log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context,increment);
 		PreparedStatement ps = counterQueryMap.get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
 				context.getPrimaryKey(), increment);
@@ -165,6 +174,7 @@ public class DaoContext {
 
 	public void incrementSimpleCounter(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long increment, ConsistencyLevel consistencyLevel) {
+        log.debug("Increment immediately simple counter for PersistenceContext '{}' and value '{}'", context,increment);
 		PreparedStatement ps = counterQueryMap.get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
 				context.getPrimaryKey(), increment);
@@ -173,6 +183,7 @@ public class DaoContext {
 
 	public void decrementSimpleCounter(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Long decrement, ConsistencyLevel consistencyLevel) {
+        log.debug("Decrement immediately simple counter for PersistenceContext '{}' and value '{}'", context,decrement);
 		PreparedStatement ps = counterQueryMap.get(DECR);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
 				context.getPrimaryKey(), decrement);
@@ -181,6 +192,7 @@ public class DaoContext {
 
 	public Row getSimpleCounter(PersistenceContext context, PropertyMeta counterMeta,
 			ConsistencyLevel consistencyLevel) {
+        log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'",counterMeta,context,consistencyLevel);
 		PreparedStatement ps = counterQueryMap.get(SELECT);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(ps, context.getEntityMeta(), counterMeta,
 				context.getPrimaryKey());
@@ -191,6 +203,7 @@ public class DaoContext {
 
 	public void bindForSimpleCounterDelete(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Object primaryKey) {
+        log.debug("Push simple counter deletion statement for counterMeta '{}' and PersistenceContext '{}'", counterMeta,context);
 		PreparedStatement ps = counterQueryMap.get(DELETE);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
 
@@ -201,6 +214,7 @@ public class DaoContext {
 	// Clustered counter
 	public void pushClusteredCounterIncrementStatement(PersistenceContext context, EntityMeta meta,
 			PropertyMeta counterMeta, Long increment) {
+        log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta,context,increment);
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
@@ -210,7 +224,8 @@ public class DaoContext {
 
 	public void incrementClusteredCounter(PersistenceContext context, EntityMeta meta,
                                           Long increment, ConsistencyLevel consistencyLevel) {
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
+        log.debug("Increment immediately clustered counter for PersistenceContext '{}' and value '{}'", context,increment);
+        PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
                                                                                            context.getPrimaryKey(), increment);
 		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
@@ -218,7 +233,8 @@ public class DaoContext {
 
 	public void decrementClusteredCounter(PersistenceContext context, EntityMeta meta,
                                           Long decrement, ConsistencyLevel consistencyLevel) {
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
+        log.debug("Decrement immediately clustered counter for PersistenceContext '{}' and value '{}'", context,decrement);
+        PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
                                                                                            context.getPrimaryKey(), decrement);
 		context.executeImmediateWithConsistency(bsWrapper, consistencyLevel);
@@ -226,6 +242,7 @@ public class DaoContext {
 
 	public Row getClusteredCounter(PersistenceContext context,
                                    ConsistencyLevel consistencyLevel) {
+        log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,consistencyLevel);
 		EntityMeta entityMeta = context.getEntityMeta();
 		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta,
@@ -237,6 +254,7 @@ public class DaoContext {
 
 	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
 			Object primaryKey) {
+        log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, primaryKey);
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
@@ -244,6 +262,7 @@ public class DaoContext {
 	}
 
 	public Row eagerLoadEntity(PersistenceContext context) {
+        log.debug("Load entity for PersistenceContext '{}'", context);
 		EntityMeta meta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
 		PreparedStatement ps = selectEagerPSs.get(entityClass);
@@ -325,24 +344,28 @@ public class DaoContext {
 	private ConsistencyLevel getReadConsistencyLevel(PersistenceContext context, EntityMeta entityMeta) {
 		ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: entityMeta.getReadConsistencyLevel();
+        log.trace("Read consistency level : "+readLevel);
 		return readLevel;
 	}
 
 	private ConsistencyLevel getWriteConsistencyLevel(PersistenceContext context, EntityMeta entityMeta) {
 		ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: entityMeta.getWriteConsistencyLevel();
+        log.trace("Write consistency level : "+writeLevel);
 		return writeLevel;
 	}
 
 	private ConsistencyLevel getReadConsistencyLevel(PersistenceContext context, PropertyMeta pm) {
 		ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: pm.getReadConsistencyLevel();
+        log.trace("Read consistency level : "+consistency);
 		return consistency;
 	}
 
 	private ConsistencyLevel getWriteConsistencyLevel(PersistenceContext context, PropertyMeta counterMeta) {
 		ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
 				: counterMeta.getWriteConsistencyLevel();
+        log.trace("Write consistency level : "+consistency);
 		return consistency;
 	}
 

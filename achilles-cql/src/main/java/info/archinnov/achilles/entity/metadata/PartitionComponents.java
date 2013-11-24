@@ -2,16 +2,22 @@ package info.archinnov.achilles.entity.metadata;
 
 import java.lang.reflect.Method;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.validation.Validator;
 
 public class PartitionComponents extends AbstractComponentProperties {
 
-	public PartitionComponents(List<Class<?>> componentClasses, List<String> componentNames,
+    private static final Logger log  = LoggerFactory.getLogger(PartitionComponents.class);
+
+    public PartitionComponents(List<Class<?>> componentClasses, List<String> componentNames,
 			List<Method> componentGetters, List<Method> componentSetters) {
 		super(componentClasses, componentNames, componentGetters, componentSetters);
 	}
 
 	void validatePartitionComponents(String className, List<Object> partitionComponents) {
+        log.trace("Validate partition components {} of entity class {}",partitionComponents,className);
+
 		Validator.validateNotNull(partitionComponents,
 				"There should be at least one partition key component provided for querying on " + "entity '%s'",
 				className);

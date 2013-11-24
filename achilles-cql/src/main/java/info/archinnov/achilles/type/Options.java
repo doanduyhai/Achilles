@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.type;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 public class Options {
@@ -43,7 +44,11 @@ public class Options {
 
 	@Override
 	public String toString() {
-		return "Options [consistency=" + consistency + ", ttl=" + ttl + ", timestamp=" + timestamp + "]";
+		return Objects.toStringHelper(Options.class)
+            .add("Consistency Level",this.consistency)
+            .add("Time to live", this.ttl)
+            .add("Timestamp",this.timestamp)
+            .toString();
 	}
 
 	public Options duplicateWithoutTtlAndTimestamp() {

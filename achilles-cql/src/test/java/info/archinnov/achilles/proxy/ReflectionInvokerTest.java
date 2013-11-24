@@ -207,7 +207,7 @@ public class ReflectionInvokerTest {
 
 	@Test
 	public void should_instanciate_entity_from_class() throws Exception {
-		EmbeddedKey actual = invoker.instanciate(EmbeddedKey.class);
+		EmbeddedKey actual = invoker.instantiate(EmbeddedKey.class);
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isNull();
 		assertThat(actual.getName()).isNull();
@@ -220,8 +220,8 @@ public class ReflectionInvokerTest {
 		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compSetters(userIdSetter).build();
 
-		Object actual = invoker.instanciateEmbeddedIdWithPartitionComponents(idMeta,
-				Arrays.<Object> asList(partitionKey));
+		Object actual = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta,
+                                                                             Arrays.<Object>asList(partitionKey));
 
 		assertThat(actual).isNotNull();
 		EmbeddedKey embeddedKey = (EmbeddedKey) actual;
@@ -233,9 +233,9 @@ public class ReflectionInvokerTest {
 	public void should_throw_exception_when_cannot_instanciate_entity_from_class() throws Exception {
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot instanciate entity from class '" + Pair.class.getCanonicalName() + "'");
+		exception.expectMessage("Cannot instantiate entity from class '" + Pair.class.getCanonicalName() + "'");
 
-		invoker.instanciate(Pair.class);
+		invoker.instantiate(Pair.class);
 	}
 
 	@Test

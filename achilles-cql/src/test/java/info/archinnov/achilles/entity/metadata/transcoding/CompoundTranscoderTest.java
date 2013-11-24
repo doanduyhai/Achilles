@@ -132,7 +132,7 @@ public class CompoundTranscoderTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
 				.compClasses(Long.class, String.class).compSetters(userIdSetter, namesetter).invoker(invoker).build();
 
-		when(invoker.instanciate(EmbeddedKey.class)).thenReturn(new EmbeddedKey());
+		when(invoker.instantiate(EmbeddedKey.class)).thenReturn(new EmbeddedKey());
 
 		Object actual = transcoder.decodeFromComponents(pm, Arrays.<Object> asList(userId, name));
 

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.DataType;
@@ -31,9 +33,12 @@ import com.datastax.driver.core.Row;
 
 public class NativeQueryMapper {
 
-	private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
+    private static final Logger log  = LoggerFactory.getLogger(NativeQueryMapper.class);
+
+    private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
 
 	public List<Map<String, Object>> mapRows(List<Row> rows) {
+        log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		if (!rows.isEmpty()) {
 			for (Row row : rows) {
@@ -44,6 +49,7 @@ public class NativeQueryMapper {
 	}
 
 	private void mapRow(List<Map<String, Object>> result, Row row) {
+        log.trace("Map CQL row to a map of <ColumnName,Value>");
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 		if (columnDefinitions != null) {
 			Map<String, Object> line = new LinkedHashMap<String, Object>();
@@ -55,6 +61,10 @@ public class NativeQueryMapper {
 	}
 
 	private void mapColumn(Row row, Map<String, Object> line, Definition column) {
+        if(log.isTraceEnabled()) {
+            log.trace("Extract data from CQL column [keyspace:{},table:{},column:{}]",column.getKeyspace(),column.getTable(),column.getName());
+        }
+
 		DataType type = column.getType();
 		Class<?> javaClass = type.asJavaClass();
 		String name = column.getName();

@@ -18,7 +18,6 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.table.TableCreator;
 import info.archinnov.achilles.table.TableValidator;
 
@@ -26,16 +25,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
 public class SchemaContext {
-
-	private static final Logger log = LoggerFactory.getLogger(EntityExplorer.class);
 	private boolean forceColumnFamilyCreation;
 	private Cluster cluster;
 	private Session session;

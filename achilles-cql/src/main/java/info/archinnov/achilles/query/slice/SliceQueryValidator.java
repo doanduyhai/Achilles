@@ -34,15 +34,19 @@ public class SliceQueryValidator {
     protected ComponentComparator comparator = new ComponentComparator();
 
     public int getLastNonNullIndex(List<Object> components) {
+
         for (int i = 0; i < components.size(); i++) {
             if (components.get(i) == null) {
                 return i - 1;
             }
         }
-        return components.size() - 1;
+        final int lastNonNullIndex = components.size() - 1;
+        log.trace("Get last non null index for components {} : {}",components,lastNonNullIndex);
+        return lastNonNullIndex;
     }
 
 	public <T> void validateComponentsForSliceQuery(SliceQuery<T> sliceQuery) {
+
 		final List<Object> clusteringsFrom = sliceQuery.getClusteringsFrom();
 		final List<Object> clusteringsTo = sliceQuery.getClusteringsTo();
 		final OrderingMode validationOrdering = sliceQuery.getOrdering();
@@ -53,7 +57,7 @@ public class SliceQueryValidator {
 		final String endDescription = StringUtils.join(
 				clusteringsTo.subList(partitionComponentsSize, clusteringsTo.size()), ",");
 
-		log.trace("Check components {} / {}", startDescription, endDescription);
+		log.trace("Check components for slice query {} / {}", startDescription, endDescription);
 
 		final int startIndex = getLastNonNullIndex(clusteringsFrom);
 		final int endIndex = getLastNonNullIndex(clusteringsTo);

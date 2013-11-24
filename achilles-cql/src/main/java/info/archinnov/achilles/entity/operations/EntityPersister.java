@@ -59,6 +59,7 @@ public class EntityPersister {
 	}
 
 	public void remove(PersistenceContext context) {
-		persisterImpl.remove(context);
+        log.debug("Deleting entity from PersistenceContext {}", context);
+        persisterImpl.remove(context);
 	}
 }

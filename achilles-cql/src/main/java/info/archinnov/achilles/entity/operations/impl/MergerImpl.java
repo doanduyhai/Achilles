@@ -25,11 +25,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MergerImpl {
-	private PropertyMetaComparator comparator = new PropertyMetaComparator();
+    private static final Logger log  = LoggerFactory.getLogger(MergerImpl.class);
+
+    private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
 	public void merge(PersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
+        log.trace("Merging entity using PersistenceContext {}",context);
 		if (dirtyMap.size() > 0) {
 			List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());
 			Collections.sort(sortedDirtyMetas, comparator);

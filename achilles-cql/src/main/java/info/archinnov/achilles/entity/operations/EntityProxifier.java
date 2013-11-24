@@ -103,7 +103,7 @@ public class EntityProxifier {
     }
 
     public <T> T unwrap(T proxy) {
-        log.debug("Unproxying object {} ", proxy);
+        log.debug("Unwrapping object {} ", proxy);
 
         if (proxy != null) {
 

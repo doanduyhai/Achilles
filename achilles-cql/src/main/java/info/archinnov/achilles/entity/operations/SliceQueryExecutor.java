@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Query;
 import com.datastax.driver.core.Row;
@@ -42,7 +44,9 @@ import com.google.common.collect.Sets;
 
 public class SliceQueryExecutor {
 
-	private StatementGenerator generator = new StatementGenerator();
+    private static final Logger log  = LoggerFactory.getLogger(SliceQueryExecutor.class);
+
+    private StatementGenerator generator = new StatementGenerator();
 	private EntityMapper mapper = new EntityMapper();
 	private EntityProxifier proxifier = new EntityProxifier();
 	private PersistenceContextFactory contextFactory;
@@ -57,7 +61,7 @@ public class SliceQueryExecutor {
 	}
 
 	public <T> List<T> get(SliceQuery<T> sliceQuery) {
-
+        log.debug("Get slice query");
 		EntityMeta meta = sliceQuery.getMeta();
 
 		List<T> clusteredEntities = new ArrayList<T>();
@@ -76,7 +80,7 @@ public class SliceQueryExecutor {
 	}
 
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
-
+        log.debug("Get iterator for slice query");
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
 		Query query = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getBatchSize());
 		Iterator<Row> iterator = daoContext.execute(query).iterator();
@@ -86,6 +90,7 @@ public class SliceQueryExecutor {
 	}
 
 	public <T> void remove(SliceQuery<T> sliceQuery) {
+        log.debug("Slice remove");
 		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
 		cqlSliceQuery.validateSliceQueryForRemove();
 		Query query = generator.generateRemoveSliceQuery(cqlSliceQuery);
@@ -93,7 +98,7 @@ public class SliceQueryExecutor {
 	}
 
 	protected <T> PersistenceContext buildContextForQuery(SliceQuery<T> sliceQuery) {
-
+        log.trace("Build PersistenceContext for slice query");
 		ConsistencyLevel cl = sliceQuery.getConsistencyLevel() == null ? defaultReadLevel : sliceQuery
 				.getConsistencyLevel();
 		return contextFactory.newContextForSliceQuery(sliceQuery.getEntityClass(), sliceQuery.getPartitionComponents(),

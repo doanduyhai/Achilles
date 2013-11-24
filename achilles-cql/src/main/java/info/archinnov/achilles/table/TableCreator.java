@@ -43,6 +43,9 @@ public class TableCreator {
 	static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
 	public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
+
+        log.debug("Fetch existing table meta data from Cassandra");
+
 		Map<String, TableMetadata> tableMetas = new HashMap<String, TableMetadata>();
 
 		Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
@@ -55,7 +58,10 @@ public class TableCreator {
 	}
 
 	public void createTableForEntity(Session session, EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
-		String tableName = entityMeta.getTableName().toLowerCase();
+
+        log.debug("Create table for entity {}",entityMeta);
+
+        String tableName = entityMeta.getTableName().toLowerCase();
 		if (forceColumnFamilyCreation) {
 			log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
 			createTableForEntity(session, entityMeta);
@@ -66,6 +72,9 @@ public class TableCreator {
 	}
 
 	public void createTableForCounter(Session session, boolean forceColumnFamilyCreation) {
+
+        log.debug("Create table for Achilles counters");
+
 		if (forceColumnFamilyCreation) {
 			TableBuilder builder = TableBuilder.createTable(CQL_COUNTER_TABLE);
 			builder.addColumn(CQL_COUNTER_FQCN, String.class);
@@ -138,6 +147,9 @@ public class TableCreator {
 	}
 
 	private void createTableForClusteredCounter(Session session, EntityMeta meta) {
+
+        log.debug("Create table for clustered countered entity {}",meta);
+
 		PropertyMeta pm = meta.getFirstMeta();
 
 		log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
