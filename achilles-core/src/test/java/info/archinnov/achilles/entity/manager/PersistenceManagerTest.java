@@ -16,10 +16,14 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -30,6 +34,7 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
+import info.archinnov.achilles.interceptor.EntityLifeCycleListener;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -91,6 +96,9 @@ public class PersistenceManagerTest {
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
+	protected EntityLifeCycleListener<PersistenceContext> entityLifeCycleListener;
+
+	@Mock
 	private EntityMeta entityMeta;
 
 	@Captor
@@ -103,8 +111,7 @@ public class PersistenceManagerTest {
 	public void setUp() throws Exception {
 
 		forceMethodCallsOnMock();
-		when(manager.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture()))
-				.thenReturn(context);
+		when(manager.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
 		when(manager.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
 	}
 
@@ -157,7 +164,6 @@ public class PersistenceManagerTest {
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(manager).merge(entity);
 		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
-
 		CompleteBean mergedEntity = manager.merge(entity);
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
@@ -175,8 +181,7 @@ public class PersistenceManagerTest {
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
 
-		CompleteBean mergedEntity = manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
-				.withTimestamp(100L));
+		CompleteBean mergedEntity = manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 
@@ -261,12 +266,11 @@ public class PersistenceManagerTest {
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey);
 
-
-        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
+		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
 
 		Options options = optionsCaptor.getValue();
@@ -283,7 +287,7 @@ public class PersistenceManagerTest {
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey, EACH_QUORUM);
 
@@ -300,12 +304,10 @@ public class PersistenceManagerTest {
 	public void should_get_reference() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey);
-		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
-				any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
-
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey);
 
@@ -322,11 +324,10 @@ public class PersistenceManagerTest {
 	public void should_get_reference_with_consistency() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
-		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
-				any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 
@@ -494,5 +495,9 @@ public class PersistenceManagerTest {
 
 		doCallRealMethod().when(manager).setEntityMetaMap(entityMetaMap);
 		manager.setEntityMetaMap(entityMetaMap);
+
+		doCallRealMethod().when(manager).setEntityLifeCycleListener(entityLifeCycleListener);
+		manager.setEntityLifeCycleListener(entityLifeCycleListener);
+
 	}
 }

@@ -16,10 +16,20 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.doCallRealMethod;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -43,6 +53,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -114,19 +125,14 @@ public class ArgumentExtractorTest {
 
 		assertThat(mapper).isNotNull();
 		assertThat(mapper.getSerializationConfig().getSerializationInclusion()).isEqualTo(Inclusion.NON_NULL);
-		assertThat(
-				mapper.getDeserializationConfig().isEnabled(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES))
-				.isFalse();
-		Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector()
-				.allIntrospectors();
+		assertThat(mapper.getDeserializationConfig().isEnabled(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES)).isFalse();
+		Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector().allIntrospectors();
 
 		assertThat(ais).hasSize(2);
 		Iterator<AnnotationIntrospector> iterator = ais.iterator();
 
-		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
-		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
+		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class, JaxbAnnotationIntrospector.class);
+		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class, JaxbAnnotationIntrospector.class);
 	}
 
 	@Test
@@ -223,5 +229,43 @@ public class ArgumentExtractorTest {
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
+	}
+
+	@Test
+	public void testInitEventInterceptor_should_return_empty_eventinterceptor_list_when_empty_list_parameter() throws Exception {
+		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
+		List<EventInterceptor<? extends Object>> eventInterceptors = extractor.initEventInterceptor(configMap);
+		assertThat(eventInterceptors).isEmpty();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testInitEventInterceptor_should_init_eventinterceptor_list() throws Exception {
+		EventInterceptor<String> eventInterceptor1 = createMockEventInterceptor();
+		EventInterceptor<String> eventInterceptor2 = createMockEventInterceptor();
+		ImmutableList<EventInterceptor<? extends Object>> eventInterceptorsExcepted = new ImmutableList.Builder<EventInterceptor<? extends Object>>()
+				.add(eventInterceptor1).add(eventInterceptor2).build();
+		configMap.put(ConfigurationParameters.EVENT_INTERCEPTORS, eventInterceptorsExcepted);
+
+		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
+		List<EventInterceptor<? extends Object>> eventInterceptorsResult = extractor.initEventInterceptor(configMap);
+
+		assertThat(eventInterceptorsResult).containsExactly(eventInterceptor1, eventInterceptor2);
+	}
+
+	private EventInterceptor<String> createMockEventInterceptor() {
+		EventInterceptor<String> eventInterceptor = new EventInterceptor<String>() {
+
+			@Override
+			public String onEvent(String entity) {
+				return null;
+			}
+
+			@Override
+			public List<Event> events() {
+				return null;
+			}
+		};
+		return eventInterceptor;
 	}
 }

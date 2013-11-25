@@ -24,14 +24,17 @@ import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,18 +44,18 @@ public abstract class PersistenceManagerFactory {
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
+	protected List<EventInterceptor<? extends Object>> eventInterceptors;
 
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
 
 	protected PersistenceManagerFactory(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
-		Validator.validateNotNull(configurationMap,
-				"Configuration map for PersistenceManagerFactory should not be null");
-		Validator.validateNotEmpty(configurationMap,
-				"Configuration map for PersistenceManagerFactory should not be empty");
+		Validator.validateNotNull(configurationMap, "Configuration map for PersistenceManagerFactory should not be null");
+		Validator.validateNotEmpty(configurationMap, "Configuration map for PersistenceManagerFactory should not be empty");
 
 		entityPackages = argumentExtractor.initEntityPackages(configurationMap);
 		configContext = parseConfiguration(configurationMap, argumentExtractor);
+		eventInterceptors = argumentExtractor.initEventInterceptor(configurationMap);
 	}
 
 	protected boolean bootstrap() {
@@ -61,11 +64,36 @@ public abstract class PersistenceManagerFactory {
 		boolean hasSimpleCounter = false;
 		try {
 			hasSimpleCounter = discoverEntities();
+			addEventInterceptorsToEntityMetas();
 		} catch (Exception e) {
 			throw new AchillesException("Exception during entity parsing : " + e.getMessage(), e);
 		}
 
 		return hasSimpleCounter;
+	}
+
+	protected void addEventInterceptorsToEntityMetas() {
+		for (EventInterceptor<? extends Object> eventInterceptor : eventInterceptors) {
+			String entityClassName = null;
+			for (Method method : eventInterceptor.getClass().getDeclaredMethods()) {
+				if (isMethodOnEvent(method)) {
+
+					entityClassName = StringUtils.removeStart(method.getGenericReturnType().toString(), "class ");
+				}
+			}
+			Class<?> entity = ReflectionUtils.forName(entityClassName, getClass().getClassLoader());
+			EntityMeta entityMeta = entityMetaMap.get(entity);
+
+			Validator.validateBeanMappingTrue(entityMeta != null, "The entity %s not found", entityClassName);
+
+			entityMeta.addInterceptor(eventInterceptor);
+
+		}
+
+	}
+
+	private boolean isMethodOnEvent(Method method) {
+		return "onEvent".equals(method.getName()) && method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length == 1;
 	}
 
 	protected boolean discoverEntities() throws ClassNotFoundException, IOException {
@@ -87,8 +115,7 @@ public abstract class PersistenceManagerFactory {
 	protected abstract AchillesConsistencyLevelPolicy initConsistencyLevelPolicy(Map<String, Object> configurationMap,
 			ArgumentExtractor argumentExtractor);
 
-	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap,
-			ArgumentExtractor argumentExtractor) {
+	protected ConfigurationContext parseConfiguration(Map<String, Object> configurationMap, ArgumentExtractor argumentExtractor) {
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setForceColumnFamilyCreation(argumentExtractor.initForceCFCreation(configurationMap));
 		configContext.setConsistencyPolicy(initConsistencyLevelPolicy(configurationMap, argumentExtractor));
@@ -117,4 +144,7 @@ public abstract class PersistenceManagerFactory {
 		this.configContext = configContext;
 	}
 
+	public void setEventInterceptors(List<EventInterceptor<? extends Object>> eventInterceptors) {
+		this.eventInterceptors = eventInterceptors;
+	}
 }

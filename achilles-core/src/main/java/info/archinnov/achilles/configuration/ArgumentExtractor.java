@@ -17,7 +17,17 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -123,5 +133,17 @@ public abstract class ArgumentExtractor {
 			}
 		}
 		return level;
+	}
+
+	public List<EventInterceptor<? extends Object>> initEventInterceptor(Map<String, Object> configurationMap) {
+
+		@SuppressWarnings("unchecked")
+		List<EventInterceptor<? extends Object>> eventInterceptors = (List<EventInterceptor<? extends Object>>) configurationMap
+				.get(EVENT_INTERCEPTORS);
+		if (eventInterceptors == null) {
+
+			eventInterceptors = new ArrayList<EventInterceptor<? extends Object>>();
+		}
+		return eventInterceptors;
 	}
 }

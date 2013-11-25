@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -29,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 
 public class EntityMeta {
 
@@ -63,9 +66,35 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
+	private List<EventInterceptor<?>> eventsInterceptor;
+
+	public EntityMeta() {
+		eventsInterceptor = new ArrayList<EventInterceptor<?>>();
+	}
 
 	public Object getPrimaryKey(Object entity) {
 		return idMeta.getPrimaryKey(entity);
+	}
+
+	public void addInterceptor(EventInterceptor<?> interceptor) {
+		eventsInterceptor.add(interceptor);
+	}
+
+	public List<EventInterceptor<?>> getEventsInterceptor() {
+		return eventsInterceptor;
+	}
+
+	public List<EventInterceptor<?>> getEventsInterceptor(final Event event) {
+		return FluentIterable.from(eventsInterceptor).filter(getFilterForEvent(event)).toImmutableList();
+
+	}
+
+	private Predicate<? super EventInterceptor<?>> getFilterForEvent(final Event event) {
+		return new Predicate<EventInterceptor<?>>() {
+			public boolean apply(EventInterceptor<?> p) {
+				return p != null && p.events() != null && p.events().contains(event);
+			}
+		};
 	}
 
 	public void setPrimaryKey(Object entity, Object primaryKey) {
@@ -233,9 +262,7 @@ public class EntityMeta {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass()).add("className", className)
-				.add("tableName/columnFamilyName", tableName)
-				.add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ",")).add("idMeta", idMeta)
-				.add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+		return Objects.toStringHelper(this.getClass()).add("className", className).add("tableName/columnFamilyName", tableName).add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ","))
+				.add("idMeta", idMeta).add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
 	}
 }

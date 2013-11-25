@@ -35,4 +35,5 @@ public class PropertyTypeFilter implements Predicate<PropertyMeta> {
 	public boolean apply(PropertyMeta pm) {
 		return types.contains(pm.type());
 	}
+
 };
