@@ -24,14 +24,19 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.EventInterceptor;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.utils.Pair;
+import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -195,6 +200,42 @@ public class EntityMetaTest {
 				List<Event> events = new ArrayList<Event>();
 				events.add(event);
 				return events;
+			}
+		};
+		return eventInterceptor;
+	}
+
+	@Test
+	public void testIntercept_should_apply_right_interceptor_on_right_event() throws Exception {
+
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+		EntityMeta entityMeta = new EntityMeta();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.EMBEDDED_ID).accessors()
+				.build();
+		idMeta.setInvoker(new ReflectionInvoker());
+		entityMeta.setIdMeta(idMeta);
+		EventInterceptor<CompleteBean> eventInterceptor = createEventInterceptor(Event.PRE_PERSIST, 30L);
+		entityMeta.addInterceptor(eventInterceptor);
+		entityMeta.addInterceptor(createEventInterceptor(Event.POST_PERSIST, 35L));
+
+		entityMeta.intercept(bean, Event.PRE_PERSIST);
+		Assertions.assertThat(bean.getAge()).isEqualTo(30L);
+		entityMeta.intercept(bean, Event.POST_PERSIST);
+		Assertions.assertThat(bean.getAge()).isEqualTo(35L);
+	}
+
+	private EventInterceptor<CompleteBean> createEventInterceptor(final Event event, final long age) {
+		EventInterceptor<CompleteBean> eventInterceptor = new EventInterceptor<CompleteBean>() {
+
+			@Override
+			public CompleteBean onEvent(CompleteBean entity) {
+				entity.setAge(age);
+				return entity;
+			}
+
+			@Override
+			public List<Event> events() {
+				return Arrays.asList(event);
 			}
 		};
 		return eventInterceptor;

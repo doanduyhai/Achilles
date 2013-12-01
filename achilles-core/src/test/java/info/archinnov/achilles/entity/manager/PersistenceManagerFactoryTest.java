@@ -38,6 +38,7 @@ import info.archinnov.achilles.table.TableCreator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +78,14 @@ public class PersistenceManagerFactoryTest {
 
 	private List<String> entityPackages = new ArrayList<String>();
 	protected List<EventInterceptor<?>> eventInterceptors = new ArrayList<EventInterceptor<?>>();
-	EventInterceptor<String> eventInterceptorMock = new EventInterceptor<String>() {
+	EventInterceptor<String> eventInterceptorMock = new EventInterceptorMock();
+
+	class EventInterceptorMock implements EventInterceptor<String>, Iterable<String> {
+
+		@Override
+		public Iterator<String> iterator() {
+			return null;
+		}
 
 		@Override
 		public String onEvent(String entity) {
@@ -89,7 +97,8 @@ public class PersistenceManagerFactoryTest {
 
 			return null;
 		}
-	};
+
+	}
 
 	@Before
 	public void setUp() {

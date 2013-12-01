@@ -64,8 +64,7 @@ public abstract class ArgumentExtractor {
 	}
 
 	public ObjectMapperFactory initObjectMapperFactory(Map<String, Object> configurationMap) {
-		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap
-				.get(OBJECT_MAPPER_FACTORY_PARAM);
+		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap.get(OBJECT_MAPPER_FACTORY_PARAM);
 		if (objectMapperFactory == null) {
 			ObjectMapper mapper = (ObjectMapper) configurationMap.get(OBJECT_MAPPER_PARAM);
 			if (mapper != null) {
@@ -106,8 +105,7 @@ public abstract class ArgumentExtractor {
 
 	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap) {
 		@SuppressWarnings("unchecked")
-		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
-				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
+		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
@@ -135,14 +133,13 @@ public abstract class ArgumentExtractor {
 		return level;
 	}
 
-	public List<EventInterceptor<? extends Object>> initEventInterceptor(Map<String, Object> configurationMap) {
+	public List<EventInterceptor<?>> initEventInterceptor(Map<String, Object> configurationMap) {
 
 		@SuppressWarnings("unchecked")
-		List<EventInterceptor<? extends Object>> eventInterceptors = (List<EventInterceptor<? extends Object>>) configurationMap
-				.get(EVENT_INTERCEPTORS);
+		List<EventInterceptor<?>> eventInterceptors = (List<EventInterceptor<?>>) configurationMap.get(EVENT_INTERCEPTORS);
 		if (eventInterceptors == null) {
 
-			eventInterceptors = new ArrayList<EventInterceptor<? extends Object>>();
+			eventInterceptors = new ArrayList<EventInterceptor<?>>();
 		}
 		return eventInterceptors;
 	}

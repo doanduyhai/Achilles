@@ -28,7 +28,8 @@ import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public abstract class PersistenceManagerFactory {
 	protected Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 	protected ConfigurationContext configContext;
 	protected List<String> entityPackages;
-	protected List<EventInterceptor<? extends Object>> eventInterceptors;
+	protected List<EventInterceptor<?>> eventInterceptors;
 
 	private EntityParser entityParser = new EntityParser();
 	private EntityExplorer entityExplorer = new EntityExplorer();
@@ -73,13 +74,15 @@ public abstract class PersistenceManagerFactory {
 	}
 
 	protected void addEventInterceptorsToEntityMetas() {
-		for (EventInterceptor<? extends Object> eventInterceptor : eventInterceptors) {
+		for (EventInterceptor<?> eventInterceptor : eventInterceptors) {
 			String entityClassName = null;
-			for (Method method : eventInterceptor.getClass().getDeclaredMethods()) {
-				if (isMethodOnEvent(method)) {
 
-					entityClassName = StringUtils.removeStart(method.getGenericReturnType().toString(), "class ");
+			for (Type type : eventInterceptor.getClass().getGenericInterfaces()) {
+
+				if (isEventInterceptorInterface(type)) {
+					entityClassName = getGenericParameter(type);
 				}
+
 			}
 			Class<?> entity = ReflectionUtils.forName(entityClassName, getClass().getClassLoader());
 			EntityMeta entityMeta = entityMetaMap.get(entity);
@@ -92,8 +95,14 @@ public abstract class PersistenceManagerFactory {
 
 	}
 
-	private boolean isMethodOnEvent(Method method) {
-		return "onEvent".equals(method.getName()) && method.getGenericParameterTypes() != null && method.getGenericParameterTypes().length == 1;
+	private String getGenericParameter(Type type) {
+		;
+		return StringUtils.removeStart(((ParameterizedType) type).getActualTypeArguments()[0].toString(), "class ");
+	}
+
+	private boolean isEventInterceptorInterface(Type type) {
+		return (type instanceof ParameterizedType)
+				&& EventInterceptor.class.getName().equals(StringUtils.removeStart(((ParameterizedType) type).getRawType().toString(), "interface "));
 	}
 
 	protected boolean discoverEntities() throws ClassNotFoundException, IOException {
@@ -144,7 +153,7 @@ public abstract class PersistenceManagerFactory {
 		this.configContext = configContext;
 	}
 
-	public void setEventInterceptors(List<EventInterceptor<? extends Object>> eventInterceptors) {
+	public void setEventInterceptors(List<EventInterceptor<?>> eventInterceptors) {
 		this.eventInterceptors = eventInterceptors;
 	}
 }

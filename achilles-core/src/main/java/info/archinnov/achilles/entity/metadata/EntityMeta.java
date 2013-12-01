@@ -20,6 +20,7 @@ import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -66,11 +67,7 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
-	private List<EventInterceptor<?>> eventsInterceptor;
-
-	public EntityMeta() {
-		eventsInterceptor = new ArrayList<EventInterceptor<?>>();
-	}
+	private List<EventInterceptor<?>> eventsInterceptor = new ArrayList<EventInterceptor<?>>();
 
 	public Object getPrimaryKey(Object entity) {
 		return idMeta.getPrimaryKey(entity);
@@ -84,7 +81,7 @@ public class EntityMeta {
 		return eventsInterceptor;
 	}
 
-	public List<EventInterceptor<?>> getEventsInterceptor(final Event event) {
+	protected List<EventInterceptor<?>> getEventsInterceptor(final Event event) {
 		return FluentIterable.from(eventsInterceptor).filter(getFilterForEvent(event)).toImmutableList();
 
 	}
@@ -262,7 +259,22 @@ public class EntityMeta {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this.getClass()).add("className", className).add("tableName/columnFamilyName", tableName).add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ","))
-				.add("idMeta", idMeta).add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+		return Objects.toStringHelper(this.getClass()).add("className", className)
+				.add("tableName/columnFamilyName", tableName)
+				.add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ",")).add("idMeta", idMeta)
+				.add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+	}
+
+	public void intercept(Object entity, Event event) {
+		List<EventInterceptor<?>> eventInterceptors = getEventsInterceptor(event);
+		if (eventInterceptors.size() > 0) {
+			for (EventInterceptor eventInterceptor : eventInterceptors) {
+				eventInterceptor.onEvent(entity);
+			}
+			Validator.validateNotNull(entity, "The entity class should not be null after interceptor, event:" + event);
+			Validator.validateNotNull(getPrimaryKey(entity),
+					"The primary key should not be null after interceptor, event:" + event);
+		}
+
 	}
 }

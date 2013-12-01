@@ -34,7 +34,6 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.entity.operations.EntityValidator;
-import info.archinnov.achilles.interceptor.EntityLifeCycleListener;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -55,7 +54,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Sets;
@@ -96,9 +97,6 @@ public class PersistenceManagerTest {
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
 	@Mock
-	protected EntityLifeCycleListener<PersistenceContext> entityLifeCycleListener;
-
-	@Mock
 	private EntityMeta entityMeta;
 
 	@Captor
@@ -111,7 +109,8 @@ public class PersistenceManagerTest {
 	public void setUp() throws Exception {
 
 		forceMethodCallsOnMock();
-		when(manager.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
+		when(manager.initPersistenceContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture()))
+				.thenReturn(context);
 		when(manager.initPersistenceContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
 	}
 
@@ -162,10 +161,11 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_merge() throws Exception {
 		when(context.merge(entity)).thenReturn(entity);
+		Mockito.doNothing().when(manager)
+				.intercept(Matchers.anyObject(), any(info.archinnov.achilles.interceptor.Event.class));
 		doCallRealMethod().when(manager).merge(entity);
 		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
 		CompleteBean mergedEntity = manager.merge(entity);
-
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 
 		assertThat(mergedEntity).isSameAs(entity);
@@ -181,7 +181,8 @@ public class PersistenceManagerTest {
 		when(context.merge(entity)).thenReturn(entity);
 		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
 
-		CompleteBean mergedEntity = manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
+		CompleteBean mergedEntity = manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
+				.withTimestamp(100L));
 
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 
@@ -264,6 +265,8 @@ public class PersistenceManagerTest {
 		doCallRealMethod().when(manager).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		when(context.find(CompleteBean.class)).thenReturn(entity);
+		Mockito.doNothing().when(manager)
+				.intercept(Matchers.anyObject(), any(info.archinnov.achilles.interceptor.Event.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
@@ -304,7 +307,8 @@ public class PersistenceManagerTest {
 	public void should_get_reference() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey);
-		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
+				any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
@@ -324,7 +328,8 @@ public class PersistenceManagerTest {
 	public void should_get_reference_with_consistency() throws Exception {
 		when(context.getReference(CompleteBean.class)).thenReturn(entity);
 		doCallRealMethod().when(manager).getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
-		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
+		doCallRealMethod().when(manager).getReference(eq(CompleteBean.class), eq(primaryKey),
+				any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
@@ -495,9 +500,6 @@ public class PersistenceManagerTest {
 
 		doCallRealMethod().when(manager).setEntityMetaMap(entityMetaMap);
 		manager.setEntityMetaMap(entityMetaMap);
-
-		doCallRealMethod().when(manager).setEntityLifeCycleListener(entityLifeCycleListener);
-		manager.setEntityLifeCycleListener(entityLifeCycleListener);
 
 	}
 }

@@ -24,7 +24,6 @@ import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.interceptor.EntityLifeCycleListener;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -54,7 +53,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	protected EntityProxifier<CONTEXT> proxifier;
 	protected EntityValidator<CONTEXT> entityValidator;
 	protected EntityInitializer initializer = new EntityInitializer();
-	protected EntityLifeCycleListener<CONTEXT> entityLifeCycleListener;
 
 	PersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ConfigurationContext configContext) {
@@ -71,9 +69,18 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void persist(Object entity) {
 		log.debug("Persisting entity '{}'", entity);
-		entityLifeCycleListener.intercept(entity, Event.PRE_PERSIST);
+		intercept(entity, Event.PRE_PERSIST);
 		persist(entity, OptionsBuilder.noOptions());
-		entityLifeCycleListener.intercept(entity, Event.POST_PERSIST);
+		intercept(entity, Event.POST_PERSIST);
+	}
+
+	protected void intercept(Object entity, Event event) {
+		if (entity != null) {
+			Class<?> baseClass = proxifier.deriveBaseClass(entity);
+			EntityMeta entityMeta = entityMetaMap.get(baseClass);
+			entityMeta.intercept(entity, event);
+		}
+
 	}
 
 	/**
@@ -94,7 +101,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
 		if (proxifier.isProxy(entity)) {
-			throw new IllegalStateException("Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+			throw new IllegalStateException(
+					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
 		}
 
 		CONTEXT context = initPersistenceContext(entity, options);
@@ -126,9 +134,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public <T> T merge(T entity) {
 		if (log.isDebugEnabled())
 			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
-		entityLifeCycleListener.intercept(entity, Event.PRE_UPDATE);
+		intercept(entity, Event.PRE_UPDATE);
 		T entityMerged = merge(entity, OptionsBuilder.noOptions());
-		entityLifeCycleListener.intercept(entity, Event.POST_UPDATE);
+		intercept(entityMerged, Event.POST_UPDATE);
 		return entityMerged;
 	}
 
@@ -177,9 +185,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
-		entityLifeCycleListener.intercept(entity, Event.PRE_REMOVE);
+		intercept(entity, Event.PRE_REMOVE);
 		remove(entity, null);
-		entityLifeCycleListener.intercept(entity, Event.POST_REMOVE);
+		intercept(entity, Event.POST_REMOVE);
 	}
 
 	/**
@@ -251,7 +259,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-		return find(entityClass, primaryKey, null);
+		T entity = find(entityClass, primaryKey, null);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
@@ -265,7 +275,8 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 *            Consistency Level for read
 	 */
 	public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-		log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+		log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
+				readLevel);
 		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
@@ -304,13 +315,16 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (log.isDebugEnabled())
-			log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+			log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
+					entityClass, primaryKey, readLevel);
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.<T> getReference(entityClass);
+		T entity = context.<T> getReference(entityClass);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
@@ -324,8 +338,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public void refresh(Object entity) throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
 			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
-		entityLifeCycleListener.intercept(entity, Event.PRE_LOAD);
+
 		refresh(entity, null);
+		intercept(entity, Event.POST_LOAD);
 	}
 
 	/**
@@ -510,10 +525,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 
 	protected void setConfigContext(ConfigurationContext configContext) {
 		this.configContext = configContext;
-	}
-
-	protected void setEntityLifeCycleListener(EntityLifeCycleListener<CONTEXT> entityLifeCycleListener) {
-		this.entityLifeCycleListener = entityLifeCycleListener;
 	}
 
 }

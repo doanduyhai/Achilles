@@ -24,7 +24,6 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.ThriftEntityProxifier;
 import info.archinnov.achilles.entity.operations.ThriftSliceQueryExecutor;
-import info.archinnov.achilles.interceptor.EntityLifeCycleListener;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.validation.Validator;
@@ -50,7 +49,6 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 		super.proxifier = new ThriftEntityProxifier();
 		super.entityValidator = new EntityValidator<ThriftPersistenceContext>(super.proxifier);
 		this.sliceQueryExecutor = new ThriftSliceQueryExecutor(contextFactory, configContext);
-		super.entityLifeCycleListener = new EntityLifeCycleListener<ThriftPersistenceContext>(proxifier, entityMetaMap);
 	}
 
 	/**
@@ -64,7 +62,8 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 	@Override
 	public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
-		Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " + "because it is not a clustered entity", meta.getClassName());
+		Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " + "because it is not a clustered entity",
+				meta.getClassName());
 		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, entityClass, meta);
 	}
 

@@ -234,7 +234,7 @@ public class ArgumentExtractorTest {
 	@Test
 	public void testInitEventInterceptor_should_return_empty_eventinterceptor_list_when_empty_list_parameter() throws Exception {
 		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
-		List<EventInterceptor<? extends Object>> eventInterceptors = extractor.initEventInterceptor(configMap);
+		List<EventInterceptor<?>> eventInterceptors = extractor.initEventInterceptor(configMap);
 		assertThat(eventInterceptors).isEmpty();
 	}
 
@@ -243,12 +243,12 @@ public class ArgumentExtractorTest {
 	public void testInitEventInterceptor_should_init_eventinterceptor_list() throws Exception {
 		EventInterceptor<String> eventInterceptor1 = createMockEventInterceptor();
 		EventInterceptor<String> eventInterceptor2 = createMockEventInterceptor();
-		ImmutableList<EventInterceptor<? extends Object>> eventInterceptorsExcepted = new ImmutableList.Builder<EventInterceptor<? extends Object>>()
-				.add(eventInterceptor1).add(eventInterceptor2).build();
+		ImmutableList<EventInterceptor<?>> eventInterceptorsExcepted = new ImmutableList.Builder<EventInterceptor<?>>().add(eventInterceptor1)
+				.add(eventInterceptor2).build();
 		configMap.put(ConfigurationParameters.EVENT_INTERCEPTORS, eventInterceptorsExcepted);
 
 		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
-		List<EventInterceptor<? extends Object>> eventInterceptorsResult = extractor.initEventInterceptor(configMap);
+		List<EventInterceptor<?>> eventInterceptorsResult = extractor.initEventInterceptor(configMap);
 
 		assertThat(eventInterceptorsResult).containsExactly(eventInterceptor1, eventInterceptor2);
 	}
