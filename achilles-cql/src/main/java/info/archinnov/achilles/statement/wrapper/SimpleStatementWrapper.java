@@ -1,6 +1,5 @@
 package info.archinnov.achilles.statement.wrapper;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
@@ -10,7 +9,7 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
 
 	private SimpleStatement simpleStatement;
 
-	public SimpleStatementWrapper(String query, Object[] values, ConsistencyLevel consistencyLevel) {
+	public SimpleStatementWrapper(String query, Object[] values) {
 		super(values);
 		this.simpleStatement = new SimpleStatement(query);
 	}
@@ -33,7 +32,7 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
 			String queryString = simpleStatement.getQueryString();
 			String consistencyLevel = simpleStatement.getConsistencyLevel() == null ? "DEFAULT" : simpleStatement
 					.getConsistencyLevel().name();
-			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel);
+			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel, values);
 		}
 	}
 }

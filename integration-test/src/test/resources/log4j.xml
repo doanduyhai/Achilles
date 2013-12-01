@@ -29,10 +29,6 @@
 	<logger name="info.archinnov.achilles">
 		<level value="WARN" />
 	</logger>
-	
-	<logger name="com.datastax.driver.core">
-		<level value="TRACE" />
-	</logger>
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->
 	<!-- ********************************************************* -->

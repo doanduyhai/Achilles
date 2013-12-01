@@ -38,23 +38,16 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
 
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.base.Optional;
 
 public class BatchModeIT {
@@ -79,63 +72,6 @@ public class BatchModeIT {
 	@Before
 	public void setUp() {
 		user = UserTestBuilder.user().id(userId).firstname("fn").lastname("ln").buid();
-	}
-
-	@Test
-	@Ignore
-	public void should_batch_manually_indenpendent_table() throws Exception {
-		Session session = manager.getNativeSession();
-		Long id = RandomUtils.nextLong();
-		session.execute("CREATE TABLE IF NOT EXISTS test(id bigint, name text,label text, PRIMARY KEY(id))");
-		PreparedStatement insertPS = session.prepare("INSERT INTO test(id,name,label) VALUES (?,?,?)");
-		PreparedStatement updatePS = session.prepare("UPDATE test SET label=? WHERE id=?");
-
-		BoundStatement insertBS = insertPS.bind(id, "myName", null);
-		BoundStatement updateBS1 = updatePS.bind("myLabel", id);
-
-		BatchStatement batch = new BatchStatement();
-		batch.add(insertBS);
-		batch.add(updateBS1);
-		session.execute(batch);
-
-		Statement statement = new SimpleStatement("SELECT * from test where id=" + id);
-		Row row = session.execute(statement).one();
-		assertThat(row.getString("label")).isEqualTo("myLabel");
-	}
-
-	@Test
-	@Ignore
-	public void should_insert_or_update_with_null_timestamp_or_ttl() throws Exception {
-		Session session = manager.getNativeSession();
-		Long id = RandomUtils.nextLong();
-		session.execute("CREATE TABLE IF NOT EXISTS test_ps(id bigint, name text, PRIMARY KEY(id))");
-		PreparedStatement insertPS = session
-				.prepare("INSERT INTO test_ps(id,name) VALUES (?,?) USING TIMESTAMP ? AND TTL ?");
-		PreparedStatement updatePS = session
-				.prepare("UPDATE test_ps USING TIMESTAMP ? AND TTL ? SET name = ? WHERE id = ? ");
-
-		long timestamp1 = UUIDGen.getTimeUUID().timestamp();
-		long timestamp2 = UUIDGen.getTimeUUID().timestamp();
-
-		assertThat(timestamp2).isGreaterThan(timestamp1);
-
-		BoundStatement insertBS = insertPS.bind(id, null, timestamp1, 0);
-		BoundStatement updateBS = updatePS.bind(timestamp2, 0, "myName", id);
-
-		QueryBuilder.insertInto("test_ps").value("id", id).using(QueryBuilder.timestamp(timestamp1))
-				.and(QueryBuilder.ttl(10));
-
-		QueryBuilder.update("test_ps").with(QueryBuilder.set("name", "myName")).where(QueryBuilder.eq("id", id))
-				.using(QueryBuilder.timestamp(timestamp1)).and(QueryBuilder.ttl(10));
-
-		BatchStatement batch = new BatchStatement();
-		batch.add(insertBS);
-		batch.add(updateBS);
-		session.execute(batch);
-
-		Statement statement = new SimpleStatement("SELECT * from test_ps where id=" + id);
-		Row row = session.execute(statement).one();
-		assertThat(row.getString("name")).isEqualTo("myName");
 	}
 
 	@Test

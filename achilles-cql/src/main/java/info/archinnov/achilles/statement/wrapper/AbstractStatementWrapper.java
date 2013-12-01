@@ -16,10 +16,11 @@ public abstract class AbstractStatementWrapper {
 	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
 	protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
-	protected Object[] values;
+	protected Object[] values = new Object[] {};
 
 	protected AbstractStatementWrapper(Object[] values) {
-		this.values = (values != null ? values : new Object[] {});
+		if (ArrayUtils.isNotEmpty(values))
+			this.values = values;
 	}
 
 	public abstract ResultSet execute(Session session);

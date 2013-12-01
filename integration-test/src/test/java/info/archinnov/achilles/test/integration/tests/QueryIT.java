@@ -18,16 +18,6 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import org.apache.cassandra.utils.UUIDGen;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -41,7 +31,19 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
 import net.sf.cglib.proxy.Factory;
+
+import org.apache.cassandra.utils.UUIDGen;
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class QueryIT {
 
@@ -91,6 +93,22 @@ public class QueryIT {
 		Map<Integer, String> preferences2 = (Map<Integer, String>) row2.get("preferences");
 		assertThat(preferences2.get(1)).isEqualTo("US");
 		assertThat(preferences2.get(2)).isEqualTo("NewYork");
+	}
+
+	@Test
+	public void should_return_rows_for_native_query_with_bound_values() throws Exception {
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+		manager.persist(entity);
+
+		String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
+
+		List<Map<String, Object>> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
+
+		assertThat(actual).hasSize(1);
+
+		Map<String, Object> row = actual.get(0);
+
+		assertThat(row.get("name")).isEqualTo("DuyHai");
 	}
 
 	@Test
@@ -319,6 +337,21 @@ public class QueryIT {
 	}
 
 	@Test
+	public void should_return_entity_for_typed_query_with_bound_values() throws Exception {
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+
+		manager.persist(entity);
+
+		String queryString = "SELECT id,name,friends FROM CompleteBean WHERE id = ?";
+		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString, entity.getId()).get();
+
+		assertThat(actual).hasSize(1);
+
+		CompleteBean found = actual.get(0);
+		assertThat(found.getName()).isEqualTo(entity.getName());
+	}
+
+	@Test
 	public void should_return_raw_entities_for_raw_typed_query_with_select_star() throws Exception {
 		Counter counter1 = CounterBuilder.incr(15L);
 		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
@@ -448,6 +481,18 @@ public class QueryIT {
 			assertThat(found2.getFriends()).containsAll(reference.getFriends());
 			assertThat(found2.getVersion()).isNull();
 		}
+	}
+
+	@Test
+	public void should_return_raw_entity_for_raw_typed_query_with_bound_values() throws Exception {
+		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+		manager.persist(entity);
+
+		String queryString = "SELECT name FROM CompleteBean LIMIT ?";
+		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
+
+		assertThat(actual).hasSize(1);
+		assertThat(actual.get(0).getName()).isEqualTo(entity.getName());
 	}
 
 	@Test

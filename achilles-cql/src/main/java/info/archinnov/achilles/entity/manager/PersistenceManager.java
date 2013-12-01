@@ -487,12 +487,15 @@ public class PersistenceManager {
 	 *            native CQL query string, including limit, ttl and consistency
 	 *            options
 	 * 
+	 * @param boundValues
+	 *            values to be bind to the parameterized query, if any
+	 * 
 	 * @return CQLNativeQueryBuilder
 	 */
-	public CQLNativeQueryBuilder nativeQuery(String queryString) {
+	public CQLNativeQueryBuilder nativeQuery(String queryString, Object... boundValues) {
 		log.debug("Execute native query {}", queryString);
 		Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
-		return new CQLNativeQueryBuilder(daoContext, queryString);
+		return new CQLNativeQueryBuilder(daoContext, queryString, boundValues);
 	}
 
 	/**

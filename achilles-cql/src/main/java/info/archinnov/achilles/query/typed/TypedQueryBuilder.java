@@ -65,7 +65,8 @@ public class TypedQueryBuilder<T> {
 	private EntityProxifier proxifier = new EntityProxifier();
 
 	public TypedQueryBuilder(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
-			PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery, Object[] boundValues) {
+			PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery,
+			Object[] boundValues) {
 		this.daoContext = daoContext;
 		this.boundValues = boundValues;
 		this.normalizedQuery = shouldNormalizeQuery ? queryString.toLowerCase() : queryString;
@@ -90,10 +91,8 @@ public class TypedQueryBuilder<T> {
 	 */
 	public List<T> get() {
 		log.debug("Get results for typed query {}", normalizedQuery);
-		final ConsistencyLevel consistencyLevel = getCQLLevel(meta.getReadConsistencyLevel());
 		List<T> result = new ArrayList<T>();
-		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues, consistencyLevel))
-				.all();
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues)).all();
 		for (Row row : rows) {
 			T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
 			if (entity != null) {
@@ -119,7 +118,7 @@ public class TypedQueryBuilder<T> {
 		log.debug("Get first result for typed query {}", normalizedQuery);
 		T entity = null;
 		final ConsistencyLevel consistencyLevel = getCQLLevel(meta.getReadConsistencyLevel());
-		Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues, consistencyLevel)).one();
+		Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues)).one();
 		if (row != null) {
 			entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
 			if (entity != null && managed) {

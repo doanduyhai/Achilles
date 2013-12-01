@@ -25,20 +25,23 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
 
 public class CQLNativeQueryBuilder {
-    private static final Logger log  = LoggerFactory.getLogger(CQLNativeQueryBuilder.class);
+	private static final Logger log = LoggerFactory.getLogger(CQLNativeQueryBuilder.class);
 
-    private DaoContext daoContext;
+	private DaoContext daoContext;
 	private String queryString;
 
 	private NativeQueryMapper mapper = new NativeQueryMapper();
 
-	public CQLNativeQueryBuilder(DaoContext daoContext, String queryString) {
+	private Object[] boundValues;
+
+	public CQLNativeQueryBuilder(DaoContext daoContext, String queryString, Object... boundValues) {
 		this.daoContext = daoContext;
 		this.queryString = queryString;
+		this.boundValues = boundValues;
 	}
 
 	/**
@@ -50,8 +53,8 @@ public class CQLNativeQueryBuilder {
 	 * @return List<Map<String,Object>>
 	 */
 	public List<Map<String, Object>> get() {
-        log.debug("Get results for native query {}",queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString,null,null)).all();
+		log.debug("Get results for native query {}", queryString);
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
 		return mapper.mapRows(rows);
 	}
 
@@ -63,8 +66,8 @@ public class CQLNativeQueryBuilder {
 	 * @return Map<String,Object>
 	 */
 	public Map<String, Object> first() {
-        log.debug("Get first result for native query {}",queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString,null,null)).all();
+		log.debug("Get first result for native query {}", queryString);
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
 		List<Map<String, Object>> result = mapper.mapRows(rows);
 		if (result.isEmpty())
 			return null;
@@ -77,7 +80,7 @@ public class CQLNativeQueryBuilder {
 	 * INSERT/UPDATE/DELETE and DDL statements
 	 */
 	public void execute() {
-        log.debug("Execute native query {}",queryString);
-		daoContext.execute(new SimpleStatementWrapper(queryString,null,null));
+		log.debug("Execute native query {}", queryString);
+		daoContext.execute(new SimpleStatementWrapper(queryString, boundValues));
 	}
 }
