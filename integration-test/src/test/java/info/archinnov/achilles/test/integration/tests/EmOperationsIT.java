@@ -17,16 +17,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -37,7 +27,20 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.CounterBuilder;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
 import net.sf.cglib.proxy.Factory;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 
 public class EmOperationsIT {
 	@Rule
@@ -133,9 +136,6 @@ public class EmOperationsIT {
 		manager.persist(entity);
 
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
-
-		assertThat(found).isNotNull();
-		assertThat(found).isInstanceOf(Factory.class);
 	}
 
 	@Test
@@ -317,11 +317,11 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        manager.persist(entity);
+		manager.persist(entity);
 
 		manager.remove(entity);
 
-        assertThat(manager.find(CompleteBean.class,entity.getId())).isNull();
+		assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 	}
 
 	@Test

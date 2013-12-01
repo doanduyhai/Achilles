@@ -23,9 +23,9 @@ import info.archinnov.achilles.type.Counter;
 
 public class CQLCounterWrapper implements Counter {
 
-	private PersistenceContext context;
-	private PropertyMeta counterMeta;
-	private boolean clusteredCounter;
+	private transient PersistenceContext context;
+	private transient PropertyMeta counterMeta;
+	private transient boolean clusteredCounter;
 
 	public CQLCounterWrapper(PersistenceContext context, PropertyMeta counterMeta) {
 		this.context = context;

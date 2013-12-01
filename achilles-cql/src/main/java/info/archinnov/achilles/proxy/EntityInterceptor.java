@@ -16,12 +16,6 @@
  */
 package info.archinnov.achilles.proxy;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
@@ -30,197 +24,214 @@ import info.archinnov.achilles.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.SetWrapperBuilder;
 import info.archinnov.achilles.type.Counter;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public class EntityInterceptor<T> implements MethodInterceptor {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    private static final Logger log = LoggerFactory.getLogger(EntityInterceptor.class);
+public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 
-    private EntityLoader loader = new EntityLoader();
+	private static final long serialVersionUID = 1L;
 
-    private T target;
-    private Object primaryKey;
-    private Method idGetter;
-    private Method idSetter;
-    private Map<Method, PropertyMeta> getterMetas;
-    private Map<Method, PropertyMeta> setterMetas;
-    private Map<Method, PropertyMeta> dirtyMap;
-    private Set<Method> alreadyLoaded;
-    private PersistenceContext context;
+	private static final transient Logger log = LoggerFactory.getLogger(EntityInterceptor.class);
 
-    public Object getTarget() {
-        return this.target;
-    }
+	private transient EntityLoader loader = new EntityLoader();
 
-    @Override
-    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        log.trace("Method {} called for entity of class {}", method.getName(), target.getClass().getCanonicalName());
+	private T target;
+	private transient Object primaryKey;
+	private transient Method idGetter;
+	private transient Method idSetter;
+	private transient Map<Method, PropertyMeta> getterMetas;
+	private transient Map<Method, PropertyMeta> setterMetas;
+	private transient Map<Method, PropertyMeta> dirtyMap;
+	private transient Set<Method> alreadyLoaded;
+	private transient PersistenceContext context;
 
-        if (idGetter.equals(method)) {
-            return primaryKey;
-        } else if (idSetter.equals(method)) {
-            throw new IllegalAccessException("Cannot change primary key value for existing entity ");
-        }
+	public Object getTarget() {
+		return this.target;
+	}
 
-        Object result;
-        if (this.getterMetas.containsKey(method)) {
-            result = interceptGetter(method, args, proxy);
-        } else if (this.setterMetas.containsKey(method)) {
-            result = interceptSetter(method, args, proxy);
-        } else {
-            result = proxy.invoke(target, args);
-        }
-        return result;
-    }
+	@Override
+	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+		log.trace("Method {} called for entity of class {}", method.getName(), target.getClass().getCanonicalName());
 
-    private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        Object result = null;
-        PropertyMeta propertyMeta = this.getterMetas.get(method);
+		if (idGetter.equals(method)) {
+			return primaryKey;
+		} else if (idSetter.equals(method)) {
+			throw new IllegalAccessException("Cannot change primary key value for existing entity ");
+		}
 
-        // Load fields into target object
-        if (!propertyMeta.isCounter() && !this.alreadyLoaded.contains(method)) {
-            log.trace("Loading property {}", propertyMeta.getPropertyName());
+		Object result;
+		if (this.getterMetas.containsKey(method)) {
+			result = interceptGetter(method, args, proxy);
+		} else if (this.setterMetas.containsKey(method)) {
+			result = interceptSetter(method, args, proxy);
+		} else {
+			result = proxy.invoke(target, args);
+		}
+		return result;
+	}
 
-            loader.loadPropertyIntoObject(context, target, propertyMeta);
-            alreadyLoaded.add(method);
-        }
+	private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
+		Object result = null;
+		PropertyMeta propertyMeta = this.getterMetas.get(method);
 
-        log.trace("Invoking getter {} on real object", method.getName());
-        Object rawValue = proxy.invoke(target, args);
+		// Load fields into target object
+		if (!propertyMeta.isCounter() && !this.alreadyLoaded.contains(method)) {
+			log.trace("Loading property {}", propertyMeta.getPropertyName());
 
-        // Build proxy when necessary
-        switch (propertyMeta.type()) {
-            case COUNTER:
-                log.trace("Build counter wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
-                          propertyMeta.getEntityClassName());
-                result = buildCounterWrapper(propertyMeta);
-                break;
-            case LIST:
-            case LAZY_LIST:
-                if (rawValue != null) {
-                    log.trace("Build list wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
-                              propertyMeta.getEntityClassName());
+			loader.loadPropertyIntoObject(context, target, propertyMeta);
+			alreadyLoaded.add(method);
+		}
 
-                    @SuppressWarnings("unchecked")
-                    List<Object> list = (List<Object>) rawValue;
-                    result = ListWrapperBuilder.builder(context, list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
-                                               .propertyMeta(this.getPropertyMetaByProperty(method)).build();
-                }
-                break;
-            case SET:
-            case LAZY_SET:
-                if (rawValue != null) {
-                    log.trace("Build set wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
-                              propertyMeta.getEntityClassName());
+		log.trace("Invoking getter {} on real object", method.getName());
+		Object rawValue = proxy.invoke(target, args);
 
-                    @SuppressWarnings("unchecked")
-                    Set<Object> set = (Set<Object>) rawValue;
-                    result = SetWrapperBuilder.builder(context, set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
-                                              .propertyMeta(this.getPropertyMetaByProperty(method)).build();
-                }
-                break;
-            case MAP:
-            case LAZY_MAP:
-                if (rawValue != null) {
-                    log.trace("Build map wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
-                              propertyMeta.getEntityClassName());
+		// Build proxy when necessary
+		switch (propertyMeta.type()) {
+		case COUNTER:
+			log.trace("Build counter wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
+					propertyMeta.getEntityClassName());
+			result = buildCounterWrapper(propertyMeta);
+			break;
+		case LIST:
+		case LAZY_LIST:
+			if (rawValue != null) {
+				log.trace("Build list wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
+						propertyMeta.getEntityClassName());
 
-                    @SuppressWarnings("unchecked")
-                    Map<Object, Object> map = (Map<Object, Object>) rawValue;
-                    result = MapWrapperBuilder
-                            //
-                            .builder(context, map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
-                            .propertyMeta(this.getPropertyMetaByProperty(method)).build();
-                }
-                break;
-            default:
-                log.trace("Return un-mapped raw value {} for property {} of entity of class {} ",
-                          propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+				@SuppressWarnings("unchecked")
+				List<Object> list = (List<Object>) rawValue;
+				result = ListWrapperBuilder.builder(context, list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
+			}
+			break;
+		case SET:
+		case LAZY_SET:
+			if (rawValue != null) {
+				log.trace("Build set wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
+						propertyMeta.getEntityClassName());
 
-                result = rawValue;
-                break;
-        }
-        return result;
-    }
+				@SuppressWarnings("unchecked")
+				Set<Object> set = (Set<Object>) rawValue;
+				result = SetWrapperBuilder.builder(context, set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
+			}
+			break;
+		case MAP:
+		case LAZY_MAP:
+			if (rawValue != null) {
+				log.trace("Build map wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
+						propertyMeta.getEntityClassName());
 
-    private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        PropertyMeta propertyMeta = this.setterMetas.get(method);
-        Object result;
+				@SuppressWarnings("unchecked")
+				Map<Object, Object> map = (Map<Object, Object>) rawValue;
+				result = MapWrapperBuilder
+						//
+						.builder(context, map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
+			}
+			break;
+		default:
+			log.trace("Return un-mapped raw value {} for property {} of entity of class {} ",
+					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-        switch (propertyMeta.type()) {
-            case COUNTER:
-                throw new UnsupportedOperationException(
-                        "Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
-            default:
-                break;
-        }
+			result = rawValue;
+			break;
+		}
+		return result;
+	}
 
-        if (propertyMeta.type().isLazy()) {
-            this.alreadyLoaded.add(propertyMeta.getGetter());
-        }
-        log.trace("Flagging property {}", propertyMeta.getPropertyName());
+	private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
+		PropertyMeta propertyMeta = this.setterMetas.get(method);
+		Object result;
 
-        dirtyMap.put(method, propertyMeta);
-        result = proxy.invoke(target, args);
-        return result;
-    }
+		switch (propertyMeta.type()) {
+		case COUNTER:
+			throw new UnsupportedOperationException(
+					"Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
+		default:
+			break;
+		}
 
-    public Map<Method, PropertyMeta> getDirtyMap() {
-        return dirtyMap;
-    }
+		if (propertyMeta.type().isLazy()) {
+			this.alreadyLoaded.add(propertyMeta.getGetter());
+		}
+		log.trace("Flagging property {}", propertyMeta.getPropertyName());
 
-    public Set<Method> getAlreadyLoaded() {
-        return alreadyLoaded;
-    }
+		dirtyMap.put(method, propertyMeta);
+		result = proxy.invoke(target, args);
+		return result;
+	}
 
-    public Object getPrimaryKey() {
-        return primaryKey;
-    }
+	public Object writeReplace() {
+		System.out.println("Write replace called");
+		return this.target;
+	}
 
-    public void setTarget(T target) {
-        this.target = target;
-    }
+	public Map<Method, PropertyMeta> getDirtyMap() {
+		return dirtyMap;
+	}
 
-    void setPrimaryKey(Object key) {
-        this.primaryKey = key;
-    }
+	public Set<Method> getAlreadyLoaded() {
+		return alreadyLoaded;
+	}
 
-    void setIdGetter(Method idGetter) {
-        this.idGetter = idGetter;
-    }
+	public Object getPrimaryKey() {
+		return primaryKey;
+	}
 
-    void setIdSetter(Method idSetter) {
-        this.idSetter = idSetter;
-    }
+	public void setTarget(T target) {
+		this.target = target;
+	}
 
-    void setGetterMetas(Map<Method, PropertyMeta> getterMetas) {
-        this.getterMetas = getterMetas;
-    }
+	void setPrimaryKey(Object key) {
+		this.primaryKey = key;
+	}
 
-    void setSetterMetas(Map<Method, PropertyMeta> setterMetas) {
-        this.setterMetas = setterMetas;
-    }
+	void setIdGetter(Method idGetter) {
+		this.idGetter = idGetter;
+	}
 
-    void setDirtyMap(Map<Method, PropertyMeta> dirtyMap) {
-        this.dirtyMap = dirtyMap;
-    }
+	void setIdSetter(Method idSetter) {
+		this.idSetter = idSetter;
+	}
 
-    void setAlreadyLoaded(Set<Method> lazyLoaded) {
-        this.alreadyLoaded = lazyLoaded;
-    }
+	void setGetterMetas(Map<Method, PropertyMeta> getterMetas) {
+		this.getterMetas = getterMetas;
+	}
 
-    public PersistenceContext getContext() {
-        return context;
-    }
+	void setSetterMetas(Map<Method, PropertyMeta> setterMetas) {
+		this.setterMetas = setterMetas;
+	}
 
-    public void setContext(PersistenceContext context) {
-        this.context = context;
-    }
+	void setDirtyMap(Map<Method, PropertyMeta> dirtyMap) {
+		this.dirtyMap = dirtyMap;
+	}
 
-    private PropertyMeta getPropertyMetaByProperty(Method method) {
-        return getterMetas.get(method);
-    }
+	void setAlreadyLoaded(Set<Method> lazyLoaded) {
+		this.alreadyLoaded = lazyLoaded;
+	}
+
+	public PersistenceContext getContext() {
+		return context;
+	}
+
+	public void setContext(PersistenceContext context) {
+		this.context = context;
+	}
+
+	private PropertyMeta getPropertyMetaByProperty(Method method) {
+		return getterMetas.get(method);
+	}
 
 	protected Counter buildCounterWrapper(PropertyMeta propertyMeta) {
 		return new CQLCounterWrapper(context, propertyMeta);

@@ -1,23 +1,24 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>info.archinnov</groupId>
-        <artifactId>achilles</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>integration-test</artifactId>
-    <name>Achilles Internal Integration Test</name>
-    <description>Achilles Internal Integration Test Module</description>
-    <packaging>jar</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>info.archinnov</groupId>
-            <artifactId>achilles-junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>integration-test</artifactId>
+	<name>Achilles Internal Integration Test</name>
+	<description>Achilles Internal Integration Test Module</description>
+	<packaging>jar</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>info.archinnov</groupId>
+			<artifactId>achilles-junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-		</dependency>        
-    </dependencies>
+		</dependency>
+	</dependencies>
 </project>
