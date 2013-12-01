@@ -24,6 +24,7 @@ import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -68,8 +69,18 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public void persist(Object entity) {
 		log.debug("Persisting entity '{}'", entity);
-
+		intercept(entity, Event.PRE_PERSIST);
 		persist(entity, OptionsBuilder.noOptions());
+		intercept(entity, Event.POST_PERSIST);
+	}
+
+	protected void intercept(Object entity, Event event) {
+		if (entity != null) {
+			Class<?> baseClass = proxifier.deriveBaseClass(entity);
+			EntityMeta entityMeta = entityMetaMap.get(baseClass);
+			entityMeta.intercept(entity, event);
+		}
+
 	}
 
 	/**
@@ -123,8 +134,10 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public <T> T merge(T entity) {
 		if (log.isDebugEnabled())
 			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
-
-		return merge(entity, OptionsBuilder.noOptions());
+		intercept(entity, Event.PRE_UPDATE);
+		T entityMerged = merge(entity, OptionsBuilder.noOptions());
+		intercept(entityMerged, Event.POST_UPDATE);
+		return entityMerged;
 	}
 
 	/**
@@ -172,8 +185,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
-
+		intercept(entity, Event.PRE_REMOVE);
 		remove(entity, null);
+		intercept(entity, Event.POST_REMOVE);
 	}
 
 	/**
@@ -245,7 +259,9 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-		return find(entityClass, primaryKey, null);
+		T entity = find(entityClass, primaryKey, null);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
@@ -263,7 +279,6 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 				readLevel);
 		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		return context.<T> find(entityClass);
@@ -305,11 +320,11 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 
 		Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles",entityClass.getCanonicalName());
-
 		CONTEXT context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.<T> getReference(entityClass);
+		T entity = context.<T> getReference(entityClass);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
@@ -325,6 +340,7 @@ public abstract class PersistenceManager<CONTEXT extends PersistenceContext> {
 			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
 
 		refresh(entity, null);
+		intercept(entity, Event.POST_LOAD);
 	}
 
 	/**

@@ -16,9 +16,13 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
@@ -27,11 +31,14 @@ import info.archinnov.achilles.entity.parsing.EntityExplorer;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.table.TableCreator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -70,17 +77,44 @@ public class PersistenceManagerFactoryTest {
 	private Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
 
 	private List<String> entityPackages = new ArrayList<String>();
+	protected List<EventInterceptor<?>> eventInterceptors = new ArrayList<EventInterceptor<?>>();
+	EventInterceptor<String> eventInterceptorMock = new EventInterceptorMock();
+
+	class EventInterceptorMock implements EventInterceptor<String>, Iterable<String> {
+
+		@Override
+		public Iterator<String> iterator() {
+			return null;
+		}
+
+		@Override
+		public String onEvent(String entity) {
+			return entity + "modified";
+		}
+
+		@Override
+		public List<Event> events() {
+
+			return null;
+		}
+
+	}
 
 	@Before
 	public void setUp() {
+
 		doCallRealMethod().when(pmf).setEntityMetaMap(Mockito.<Map<Class<?>, EntityMeta>> any());
 		doCallRealMethod().when(pmf).setEntityPackages(Mockito.<List<String>> any());
 		doCallRealMethod().when(pmf).setEntityParser(any(EntityParser.class));
 		doCallRealMethod().when(pmf).setEntityExplorer(any(EntityExplorer.class));
+		doCallRealMethod().when(pmf).setEventInterceptors(Mockito.<List<EventInterceptor<?>>> any());
 
+		entityMetaMap.clear();
 		pmf.setEntityMetaMap(entityMetaMap);
 		pmf.setEntityPackages(entityPackages);
 		pmf.setEntityParser(achillesEntityParser);
+		eventInterceptors.add(eventInterceptorMock);
+		pmf.setEventInterceptors(eventInterceptors);
 		pmf.setEntityExplorer(achillesEntityExplorer);
 	}
 
@@ -155,6 +189,16 @@ public class PersistenceManagerFactoryTest {
 		assertThat(builtContext.isForceColumnFamilyCreation()).isTrue();
 		assertThat(builtContext.getConsistencyPolicy()).isSameAs(policy);
 		assertThat(builtContext.getObjectMapperFactory()).isSameAs(mapperFactory);
+	}
+
+	@Test
+	public void testAddEventInterceptorsToEntityMetas_should_add_event_interceptor_to_entity_meta() throws Exception {
+		EntityMeta entityMeta = new EntityMeta();
+		entityMetaMap.put(String.class, entityMeta);
+
+		doCallRealMethod().when(pmf).addEventInterceptorsToEntityMetas();
+		pmf.addEventInterceptorsToEntityMetas();
+		assertThat(entityMeta.getEventsInterceptor()).hasSize(1).contains(eventInterceptorMock);
 	}
 
 }

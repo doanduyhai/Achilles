@@ -17,7 +17,17 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -54,8 +64,7 @@ public abstract class ArgumentExtractor {
 	}
 
 	public ObjectMapperFactory initObjectMapperFactory(Map<String, Object> configurationMap) {
-		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap
-				.get(OBJECT_MAPPER_FACTORY_PARAM);
+		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap.get(OBJECT_MAPPER_FACTORY_PARAM);
 		if (objectMapperFactory == null) {
 			ObjectMapper mapper = (ObjectMapper) configurationMap.get(OBJECT_MAPPER_PARAM);
 			if (mapper != null) {
@@ -96,8 +105,7 @@ public abstract class ArgumentExtractor {
 
 	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap) {
 		@SuppressWarnings("unchecked")
-		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
-				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
+		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
@@ -123,5 +131,16 @@ public abstract class ArgumentExtractor {
 			}
 		}
 		return level;
+	}
+
+	public List<EventInterceptor<?>> initEventInterceptor(Map<String, Object> configurationMap) {
+
+		@SuppressWarnings("unchecked")
+		List<EventInterceptor<?>> eventInterceptors = (List<EventInterceptor<?>>) configurationMap.get(EVENT_INTERCEPTORS);
+		if (eventInterceptors == null) {
+
+			eventInterceptors = new ArrayList<EventInterceptor<?>>();
+		}
+		return eventInterceptors;
 	}
 }

@@ -40,7 +40,6 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 	protected ThriftPersistenceContextFactory contextFactory;
 	private ThriftSliceQueryExecutor sliceQueryExecutor;
 
-
 	ThriftPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
 			ThriftPersistenceContextFactory contextFactory, ThriftDaoContext daoContext, //
 			ConfigurationContext configContext) {
@@ -63,10 +62,9 @@ public class ThriftPersistenceManager extends PersistenceManager<ThriftPersisten
 	@Override
 	public <T> SliceQueryBuilder<ThriftPersistenceContext, T> sliceQuery(Class<T> entityClass) {
 		EntityMeta meta = entityMetaMap.get(entityClass);
-        Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " +
-                        "because it is not a clustered entity", meta.getClassName());
-		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor,
-				entityClass, meta);
+		Validator.validateTrue(meta.isClusteredEntity(), "Cannot perform slice query on entity type '%s' " + "because it is not a clustered entity",
+				meta.getClassName());
+		return new SliceQueryBuilder<ThriftPersistenceContext, T>(sliceQueryExecutor, entityClass, meta);
 	}
 
 	@Override

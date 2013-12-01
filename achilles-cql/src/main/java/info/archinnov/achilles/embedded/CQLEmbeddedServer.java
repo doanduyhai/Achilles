@@ -17,10 +17,20 @@
 package info.archinnov.achilles.embedded;
 
 import static com.datastax.driver.core.ProtocolOptions.Compression.SNAPPY;
-import static info.archinnov.achilles.configuration.CQLConfigurationParameters.*;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.CLUSTER_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.CQLConfigurationParameters.NATIVE_SESSION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
 import static info.archinnov.achilles.context.CQLDaoContext.ACHILLES_DML_STATEMENT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManagerFactory;
 
@@ -130,6 +140,7 @@ public class CQLEmbeddedServer extends AchillesEmbeddedServer {
 			achillesConfigMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
 			achillesConfigMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
 			achillesConfigMap.put(FORCE_CF_CREATION_PARAM, true);
+			achillesConfigMap.put(EVENT_INTERCEPTORS, parameters.get(EVENT_INTERCEPTORS));
 
 			CQLPersistenceManagerFactory factory = new CQLPersistenceManagerFactory(achillesConfigMap);
 			CQLPersistenceManager manager = factory.createPersistenceManager();

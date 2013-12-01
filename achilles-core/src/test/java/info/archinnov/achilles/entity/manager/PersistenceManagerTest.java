@@ -16,10 +16,14 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
@@ -50,7 +54,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Sets;
@@ -155,11 +161,11 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_merge() throws Exception {
 		when(context.merge(entity)).thenReturn(entity);
+		Mockito.doNothing().when(manager)
+				.intercept(Matchers.anyObject(), any(info.archinnov.achilles.interceptor.Event.class));
 		doCallRealMethod().when(manager).merge(entity);
 		doCallRealMethod().when(manager).merge(eq(entity), optionsCaptor.capture());
-
 		CompleteBean mergedEntity = manager.merge(entity);
-
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 
 		assertThat(mergedEntity).isSameAs(entity);
@@ -259,14 +265,15 @@ public class PersistenceManagerTest {
 		doCallRealMethod().when(manager).find(eq(CompleteBean.class), eq(primaryKey), any(ConsistencyLevel.class));
 
 		when(context.find(CompleteBean.class)).thenReturn(entity);
+		Mockito.doNothing().when(manager)
+				.intercept(Matchers.anyObject(), any(info.archinnov.achilles.interceptor.Event.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey);
 
-
-        verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
+		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
 		assertThat(bean).isSameAs(entity);
 
 		Options options = optionsCaptor.getValue();
@@ -283,7 +290,7 @@ public class PersistenceManagerTest {
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.find(CompleteBean.class, primaryKey, EACH_QUORUM);
 
@@ -304,8 +311,7 @@ public class PersistenceManagerTest {
 				any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
-
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey);
 
@@ -326,7 +332,7 @@ public class PersistenceManagerTest {
 				any(ConsistencyLevel.class));
 		PropertyMeta idMeta = new PropertyMeta();
 		when(context.getIdMeta()).thenReturn(idMeta);
-        when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
+		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
 		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
 
@@ -494,5 +500,6 @@ public class PersistenceManagerTest {
 
 		doCallRealMethod().when(manager).setEntityMetaMap(entityMetaMap);
 		manager.setEntityMetaMap(entityMetaMap);
+
 	}
 }
