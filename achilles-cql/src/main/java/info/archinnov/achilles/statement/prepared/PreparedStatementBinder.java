@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.statement.prepared;
 
-import static info.archinnov.achilles.consistency.ConsistencyConvertor.*;
+import static info.archinnov.achilles.consistency.ConsistencyConverter.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;

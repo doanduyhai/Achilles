@@ -17,11 +17,10 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
-import static com.datastax.driver.core.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;

@@ -1,6 +1,6 @@
 package info.archinnov.achilles.entity.operations;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
@@ -57,7 +57,7 @@ public class EntityProxifierTest {
 
 	@Test
 	public void should_derive_base_class_from_transient() throws Exception {
-		assertThat((Class<CompleteBean>) proxifier.deriveBaseClass(new CompleteBean())).isEqualTo(CompleteBean.class);
+		assertThat(proxifier.<CompleteBean> deriveBaseClass(new CompleteBean())).isEqualTo(CompleteBean.class);
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class EntityProxifierTest {
 		when(interceptor.getTarget()).thenReturn(entity);
 
 		CompleteBean proxy = (CompleteBean) enhancer.create();
-		assertThat((Class<CompleteBean>) proxifier.deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
+		assertThat(proxifier.<CompleteBean> deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
 	}
 
 	@Test
@@ -176,7 +176,7 @@ public class EntityProxifierTest {
 	@Test
 	public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity() throws Exception {
 		CompleteBean realObject = new CompleteBean();
-		when(proxifier.isProxy(realObject)).thenReturn(false);
+
 		CompleteBean actual = proxifier.unwrap(realObject);
 
 		assertThat(actual).isSameAs(realObject);
@@ -258,19 +258,17 @@ public class EntityProxifierTest {
 
 		@Override
 		public Object newInstance(Callback callback) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public Object newInstance(Callback[] callbacks) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
+		@SuppressWarnings("rawtypes")
 		@Override
 		public Object newInstance(Class[] types, Object[] args, Callback[] callbacks) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
@@ -281,13 +279,11 @@ public class EntityProxifierTest {
 
 		@Override
 		public void setCallback(int index, Callback callback) {
-			// TODO Auto-generated method stub
 
 		}
 
 		@Override
 		public void setCallbacks(Callback[] callbacks) {
-			// TODO Auto-generated method stub
 
 		}
 

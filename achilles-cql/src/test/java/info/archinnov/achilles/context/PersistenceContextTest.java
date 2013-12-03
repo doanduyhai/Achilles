@@ -16,9 +16,9 @@
  */
 package info.archinnov.achilles.context;
 
-import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static com.datastax.driver.core.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -48,11 +48,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceContextTest {
@@ -102,17 +100,17 @@ public class PersistenceContextTest {
 	@Before
 	public void setUp() throws Exception {
 		when(meta.getIdMeta()).thenReturn(idMeta);
-		when((Class) meta.getEntityClass()).thenReturn(CompleteBean.class);
+		when(meta.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 
 		context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class,
 				primaryKey, OptionsBuilder.noOptions());
 
-        Whitebox.setInternalState(context,"initializer",initializer);
-        Whitebox.setInternalState(context,"persister",persister);
-        Whitebox.setInternalState(context,"proxifier",proxifier);
-        Whitebox.setInternalState(context,"refresher",refresher);
-        Whitebox.setInternalState(context,"loader",loader);
-        Whitebox.setInternalState(context,"merger",merger);
+		Whitebox.setInternalState(context, "initializer", initializer);
+		Whitebox.setInternalState(context, "persister", persister);
+		Whitebox.setInternalState(context, "proxifier", proxifier);
+		Whitebox.setInternalState(context, "refresher", refresher);
+		Whitebox.setInternalState(context, "loader", loader);
+		Whitebox.setInternalState(context, "merger", merger);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}
@@ -286,8 +284,6 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_increment_clustered_counter() throws Exception {
-		PropertyMeta counterMeta = new PropertyMeta();
-
 		context.incrementClusteredCounter(11L, LOCAL_QUORUM);
 
 		verify(daoContext).incrementClusteredCounter(context, meta, 11L, LOCAL_QUORUM);
@@ -295,8 +291,6 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_decrement_clustered_counter() throws Exception {
-		PropertyMeta counterMeta = new PropertyMeta();
-
 		context.decrementClusteredCounter(11L, LOCAL_QUORUM);
 
 		verify(daoContext).decrementClusteredCounter(context, meta, 11L, LOCAL_QUORUM);
@@ -334,37 +328,26 @@ public class PersistenceContextTest {
 	}
 
 	@Test
-	public void should_push_bound_statement() throws Exception {
+	public void should_push_statement_wrapper() throws Exception {
 		BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-		context.pushBoundStatement(bsWrapper, EACH_QUORUM);
+		context.pushStatement(bsWrapper);
 
-		verify(flushContext).pushBoundStatement(bsWrapper, EACH_QUORUM);
+		verify(flushContext).pushStatement(bsWrapper);
 	}
 
 	@Test
-	public void should_push_statement() throws Exception {
-		Statement statement = mock(Statement.class);
-
-		context.pushStatement(statement, EACH_QUORUM);
-
-		verify(flushContext).pushStatement(statement, EACH_QUORUM);
-	}
-
-	@Test
-	public void should_execute_immediate_with_consistency() throws Exception {
+	public void should_execute_immediate() throws Exception {
+		// Given
 		BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
-		BoundStatement bs = mock(BoundStatement.class);
-
-		Object[] boundValues = new Object[1];
-		when(bsWrapper.getBs()).thenReturn(bs);
-		when(bsWrapper.getValues()).thenReturn(boundValues);
-
 		ResultSet resultSet = mock(ResultSet.class);
-		when(flushContext.executeImmediateWithConsistency(bs, EACH_QUORUM, boundValues)).thenReturn(resultSet);
 
-		ResultSet actual = context.executeImmediateWithConsistency(bsWrapper, EACH_QUORUM);
+		// When
+		when(flushContext.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
+		ResultSet actual = context.executeImmediate(bsWrapper);
+
+		// Then
 		assertThat(actual).isSameAs(resultSet);
 	}
 
@@ -432,7 +415,7 @@ public class PersistenceContextTest {
 	@Test
 	public void should_initialize() throws Exception {
 		@SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor = mock(EntityInterceptor.class);
+		EntityInterceptor<CompleteBean> interceptor = mock(EntityInterceptor.class);
 
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 

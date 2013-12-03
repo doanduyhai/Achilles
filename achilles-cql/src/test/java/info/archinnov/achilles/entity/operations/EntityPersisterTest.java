@@ -16,12 +16,12 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.PersisterImpl;
@@ -75,14 +75,13 @@ public class EntityPersisterTest {
 	@Captor
 	private ArgumentCaptor<Set<PropertyMeta>> metaSetCaptor;
 
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		allMetas.clear();
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 		when(context.getEntity()).thenReturn(entity);
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
 	}
 

@@ -16,24 +16,8 @@
  */
 package info.archinnov.achilles.helper;
 
-import static com.datastax.driver.core.ConsistencyLevel.ALL;
-import static com.datastax.driver.core.ConsistencyLevel.ANY;
-import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import info.archinnov.achilles.type.Pair;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
@@ -45,7 +29,20 @@ import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityIntrospectorTest {
@@ -344,8 +341,8 @@ public class EntityIntrospectorTest {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, Pair
-                .create(ALL, ALL));
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,
+				Pair.create(ALL, ALL));
 
 		assertThat(levels.left).isEqualTo(ANY);
 		assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
@@ -356,8 +353,8 @@ public class EntityIntrospectorTest {
 		class Test {
 		}
 
-		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class, Pair
-                .create(ONE, ONE));
+		Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,
+				Pair.create(ONE, ONE));
 
 		assertThat(levels.left).isEqualTo(ONE);
 		assertThat(levels.right).isEqualTo(ONE);

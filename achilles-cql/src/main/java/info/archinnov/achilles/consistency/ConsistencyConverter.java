@@ -23,9 +23,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConsistencyConvertor {
+public class ConsistencyConverter {
 
-    private static final Logger log  = LoggerFactory.getLogger(ConsistencyConvertor.class);
+    private static final Logger log  = LoggerFactory.getLogger(ConsistencyConverter.class);
 
     private final static Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> fromAchillesToCQL = new HashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
 

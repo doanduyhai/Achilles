@@ -17,9 +17,6 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
-import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
-import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
@@ -51,19 +48,11 @@ public abstract class AbstractFlushContext {
 		consistencyLevel = null;
 	}
 
-	public void pushStatement(BoundStatementWrapper statementWrapper) {
+	public void pushStatement(AbstractStatementWrapper statementWrapper) {
 		statementWrappers.add(statementWrapper);
 	}
 
-	public void pushStatement(RegularStatementWrapper statementWrapper) {
-		statementWrappers.add(statementWrapper);
-	}
-
-	public void pushStatement(SimpleStatementWrapper statementWrapper) {
-		statementWrappers.add(statementWrapper);
-	}
-
-	public ResultSet executeImmediate(BoundStatementWrapper statementWrapper) {
+	public ResultSet executeImmediate(AbstractStatementWrapper statementWrapper) {
 		return daoContext.execute(statementWrapper);
 	}
 

@@ -16,9 +16,9 @@
  */
 package info.archinnov.achilles.context;
 
-import static com.datastax.driver.core.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
@@ -74,7 +74,7 @@ public class PersistenceContextFactoryTest {
 		entityMetaMap.put(CompleteBean.class, meta);
 
 		when(meta.getIdMeta()).thenReturn(idMeta);
-		when((Class) meta.getEntityClass()).thenReturn(CompleteBean.class);
+		when(meta.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		pmf = new PersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		Whitebox.setInternalState(pmf, ReflectionInvoker.class, invoker);
 	}
@@ -84,14 +84,14 @@ public class PersistenceContextFactoryTest {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean entity = new CompleteBean(primaryKey);
 
-		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(proxifier.<CompleteBean> deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
 
 		PersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(95));
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
+		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().get()).isEqualTo(95);
@@ -102,14 +102,14 @@ public class PersistenceContextFactoryTest {
 		Long primaryKey = RandomUtils.nextLong();
 		CompleteBean entity = new CompleteBean(primaryKey);
 
-		when((Class) proxifier.deriveBaseClass(entity)).thenReturn(CompleteBean.class);
+		when(proxifier.<CompleteBean> deriveBaseClass(entity)).thenReturn(CompleteBean.class);
 		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
 
 		PersistenceContext actual = pmf.newContext(entity);
 
 		assertThat(actual.getEntity()).isSameAs(entity);
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
+		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt()).isSameAs(PersistenceContextFactory.NO_TTL);
@@ -124,7 +124,7 @@ public class PersistenceContextFactoryTest {
 
 		assertThat(context.getEntity()).isNull();
 		assertThat(context.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(context.getEntityClass()).isSameAs((Class) CompleteBean.class);
+		assertThat(context.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(context.getEntityMeta()).isSameAs(meta);
 		assertThat(context.getIdMeta()).isSameAs(idMeta);
 		assertThat(context.getTtt().get()).isEqualTo(98);
@@ -136,12 +136,11 @@ public class PersistenceContextFactoryTest {
 		List<Object> partitionComponents = Arrays.<Object> asList(primaryKey);
 		when(invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
 
-		PersistenceContext actual = pmf
-				.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
+		PersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
 
 		assertThat(actual.getEntity()).isNull();
 		assertThat(actual.getPrimaryKey()).isSameAs(primaryKey);
-		assertThat(actual.getEntityClass()).isSameAs((Class) CompleteBean.class);
+		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
 		assertThat(actual.getTtt().isPresent()).isFalse();

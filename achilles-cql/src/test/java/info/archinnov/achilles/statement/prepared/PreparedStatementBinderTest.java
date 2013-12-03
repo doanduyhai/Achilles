@@ -17,7 +17,8 @@
 package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -47,6 +48,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -111,11 +113,10 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, age);
-
 	}
 
 	@Test
@@ -144,11 +145,10 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, null);
-
 	}
 
 	@Test
@@ -194,9 +194,9 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(userId, name, age, friends, followers,
 				preferences);
 	}
@@ -212,9 +212,9 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, primaryKey);
+		BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, primaryKey, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
 	}
 
@@ -245,9 +245,10 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, Arrays.asList(nameMeta, ageMeta), entity);
+		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, Arrays.asList(nameMeta, ageMeta), entity,
+				ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(name, age, primaryKey);
 	}
 
@@ -271,9 +272,9 @@ public class PreparedStatementBinderTest {
 		when(ps.bind(counter, "CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta, primaryKey,
-				counter);
+				counter, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(counter, "CompleteBean", primaryKey.toString(),
 				"counter");
 	}
@@ -295,9 +296,9 @@ public class PreparedStatementBinderTest {
 		when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
 		when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForSimpleCounterSelect(ps, meta, counterMeta, primaryKey);
+		BoundStatementWrapper actual = binder.bindForSimpleCounterSelect(ps, meta, counterMeta, primaryKey, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "counter");
 	}
 
@@ -318,9 +319,9 @@ public class PreparedStatementBinderTest {
 		when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
 		when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey);
+		BoundStatementWrapper actual = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "counter");
 
 	}
@@ -334,19 +335,16 @@ public class PreparedStatementBinderTest {
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
-				.transcoder(transcoder).invoker(invoker).build();
-
 		Long primaryKey = RandomUtils.nextLong();
 		Long counter = RandomUtils.nextLong();
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(ps.bind(counter, primaryKey)).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-                                                                                        primaryKey, counter);
+		BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(ps, meta, primaryKey, counter,
+				ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(counter, primaryKey);
 
 	}
@@ -360,17 +358,14 @@ public class PreparedStatementBinderTest {
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
-				.transcoder(transcoder).invoker(invoker).build();
-
 		Long primaryKey = RandomUtils.nextLong();
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(ps.bind(primaryKey)).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(ps, meta, primaryKey);
+		BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(ps, meta, primaryKey, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
 
 	}
@@ -384,17 +379,14 @@ public class PreparedStatementBinderTest {
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
-				.transcoder(transcoder).invoker(invoker).build();
-
 		Long primaryKey = RandomUtils.nextLong();
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(ps.bind(primaryKey)).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForClusteredCounterDelete(ps, meta, primaryKey);
+		BoundStatementWrapper actual = binder.bindForClusteredCounterDelete(ps, meta, primaryKey, ALL);
 
-		assertThat(actual.getBs()).isSameAs(bs);
+		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey);
 	}

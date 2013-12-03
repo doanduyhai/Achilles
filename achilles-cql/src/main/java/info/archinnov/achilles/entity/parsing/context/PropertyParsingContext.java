@@ -16,13 +16,15 @@
  */
 package info.archinnov.achilles.entity.parsing.context;
 
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class PropertyParsingContext {
 	private EntityParsingContext context;
@@ -46,8 +48,9 @@ public class PropertyParsingContext {
 		return context.getPropertyMetas();
 	}
 
-	public Class<?> getCurrentEntityClass() {
-		return context.getCurrentEntityClass();
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> getCurrentEntityClass() {
+		return (Class<T>) context.getCurrentEntityClass();
 	}
 
 	public Field getCurrentField() {
@@ -70,9 +73,9 @@ public class PropertyParsingContext {
 		return context.getCurrentConsistencyLevels();
 	}
 
-    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
-        return context.getDefaultConsistencyLevels();
-    }
+	public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
+		return context.getDefaultConsistencyLevels();
+	}
 
 	public boolean isCustomConsistencyLevels() {
 		return isCustomConsistencyLevels;

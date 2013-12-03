@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static com.datastax.driver.core.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
-import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -36,7 +36,7 @@ import info.archinnov.achilles.query.typed.TypedQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -211,7 +211,7 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_remove() throws Exception {
 		// When
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
 		manager.remove(entity);
 
@@ -227,9 +227,9 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_remove_with_consistency() throws Exception {
 		// When
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        manager.remove(entity, EACH_QUORUM);
+		manager.remove(entity, EACH_QUORUM);
 
 		// Then
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
@@ -257,7 +257,7 @@ public class PersistenceManagerTest {
 	public void should_remove_by_id_with_consistency() throws Exception {
 		// When
 		when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
+				context);
 
 		when(context.getIdMeta()).thenReturn(idMeta);
 
@@ -277,7 +277,7 @@ public class PersistenceManagerTest {
 	public void should_find() throws Exception {
 		// When
 		when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
+				context);
 		when(context.find(CompleteBean.class)).thenReturn(entity);
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
@@ -550,7 +550,6 @@ public class PersistenceManagerTest {
 		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "queryString", meta);
 
 		assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(CompleteBean.class);
 		assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
 		assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
 		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
@@ -571,7 +570,6 @@ public class PersistenceManagerTest {
 		verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class, "queryString", meta);
 
 		assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(builder, Class.class)).isEqualTo(CompleteBean.class);
 		assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
 		assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
 		assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
@@ -599,10 +597,11 @@ public class PersistenceManagerTest {
 		when(meta.isClusteredEntity()).thenReturn(false);
 		when(meta.getTableName()).thenReturn("table");
 
-		manager.indexedQuery(CompleteBean.class, new IndexCondition("column", "value"));
+		TypedQueryBuilder<CompleteBean> typedQueryBuilder = manager.indexedQuery(CompleteBean.class,
+				new IndexCondition("column", "value"));
 
 		// Then
-		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column='value';",
-                                                       meta);
+		assertThat(Whitebox.<Object[]> getInternalState(typedQueryBuilder, "boundValues")).contains("value");
+		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=?;", meta);
 	}
 }

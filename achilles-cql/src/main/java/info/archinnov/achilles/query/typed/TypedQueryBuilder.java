@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import static info.archinnov.achilles.consistency.ConsistencyConvertor.getCQLLevel;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
@@ -41,7 +40,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Row;
 
 public class TypedQueryBuilder<T> {
@@ -117,7 +115,6 @@ public class TypedQueryBuilder<T> {
 	public T getFirst() {
 		log.debug("Get first result for typed query {}", normalizedQuery);
 		T entity = null;
-		final ConsistencyLevel consistencyLevel = getCQLLevel(meta.getReadConsistencyLevel());
 		Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues)).one();
 		if (row != null) {
 			entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);

@@ -30,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.RegularStatement;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLBatchingFlushContextTest {
+public class BatchingFlushContextTest {
 
 	private BatchingFlushContext context;
 
@@ -50,30 +50,30 @@ public class CQLBatchingFlushContextTest {
 
 	@Test
 	public void should_start_batch() throws Exception {
-		context.boundStatementWrappers.add(bsWrapper);
+		context.statementWrappers.add(bsWrapper);
 
 		context.startBatch();
 
-		assertThat(context.boundStatementWrappers).isEmpty();
+		assertThat(context.statementWrappers).isEmpty();
 		assertThat(context.consistencyLevel).isNull();
 	}
 
 	@Test
 	public void should_do_nothing_when_flush_is_called() throws Exception {
-		context.boundStatementWrappers.add(bsWrapper);
+		context.statementWrappers.add(bsWrapper);
 
 		context.flush();
 
-		assertThat(context.boundStatementWrappers).containsExactly(bsWrapper);
+		assertThat(context.statementWrappers).containsExactly(bsWrapper);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception {
-		context.boundStatementWrappers.add(bsWrapper);
+		context.statementWrappers.add(bsWrapper);
 
 		context.endBatch();
 
-		assertThat(context.boundStatementWrappers).isEmpty();
+		assertThat(context.statementWrappers).isEmpty();
 		assertThat(context.consistencyLevel).isNull();
 	}
 
@@ -84,11 +84,11 @@ public class CQLBatchingFlushContextTest {
 
 	@Test
 	public void should_duplicate_without_ttl() throws Exception {
-		context.boundStatementWrappers.add(bsWrapper);
+		context.statementWrappers.add(bsWrapper);
 
 		BatchingFlushContext duplicate = context.duplicate();
 
-		assertThat(duplicate.boundStatementWrappers).containsOnly(bsWrapper);
+		assertThat(duplicate.statementWrappers).containsOnly(bsWrapper);
 		assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);
 	}
 }

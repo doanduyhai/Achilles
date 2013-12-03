@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -374,11 +375,12 @@ public class TableValidatorTest {
 
 		ColumnMetadata fqcnColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_FQCN)).thenReturn(fqcnColumnMeta);
+		when(fqcnColumnMeta.getType()).thenReturn(DataType.blob());
 
 		// Then
 		exception.expect(AchillesInvalidTableException.class);
 		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_FQCN,
-				fqcnColumn.getType(), text()));
+				fqcnColumnMeta.getType(), text()));
 
 		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
 	}
@@ -457,11 +459,12 @@ public class TableValidatorTest {
 
 		ColumnMetadata pkColumnMeta = mock(ColumnMetadata.class);
 		when(tableMetaData.getColumn(CQL_COUNTER_PRIMARY_KEY)).thenReturn(pkColumnMeta);
+		when(pkColumnMeta.getType()).thenReturn(DataType.blob());
 
 		// Then
 		exception.expect(AchillesInvalidTableException.class);
 		exception.expectMessage(String.format("Column '%s' of type '%s' should be of type '%s'",
-				CQL_COUNTER_PRIMARY_KEY, pkColumn.getType(), text()));
+				CQL_COUNTER_PRIMARY_KEY, pkColumnMeta.getType(), text()));
 
 		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
 	}
@@ -642,7 +645,12 @@ public class TableValidatorTest {
 		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
 	}
 
+	/*
+	 * Disabled until https://datastax-oss.atlassian.net/browse/JAVA-219 is
+	 * fixed
+	 */
 	@Test
+	@Ignore
 	public void should_exception_when_counter_value_column_bad_type() {
 		// Given
 		tableMetaData = mock(TableMetadata.class);

@@ -17,12 +17,11 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import org.junit.Test;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import com.datastax.driver.core.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 
 public class CounterPropertiesTest {
 	@Test

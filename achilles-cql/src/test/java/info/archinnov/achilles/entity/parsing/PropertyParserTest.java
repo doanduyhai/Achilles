@@ -16,25 +16,8 @@
  */
 package info.archinnov.achilles.entity.parsing;
 
-import static com.datastax.driver.core.ConsistencyLevel.ALL;
-import static com.datastax.driver.core.ConsistencyLevel.ANY;
-import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
@@ -50,8 +33,22 @@ import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.entity.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParserTest {
@@ -93,7 +90,7 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("id");
-		assertThat((Class) meta.getValueClass()).isEqualTo(Long.class);
+		assertThat(meta.<Long> getValueClass()).isEqualTo(Long.class);
 		assertThat(context.getPropertyMetas()).hasSize(1);
 
 	}
@@ -128,7 +125,7 @@ public class PropertyParserTest {
 		Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
 
 		assertThat(meta.getPropertyName()).isEqualTo("id");
-		assertThat((Class) meta.getValueClass()).isEqualTo(EmbeddedKey.class);
+		assertThat(meta.<EmbeddedKey> getValueClass()).isEqualTo(EmbeddedKey.class);
 		EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
 		assertThat(embeddedIdProperties).isNotNull();
 		assertThat(embeddedIdProperties.getComponentClasses()).contains(Long.class, String.class);
@@ -161,7 +158,7 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("name");
-		assertThat((Class) meta.getValueClass()).isEqualTo(String.class);
+		assertThat(meta.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getName");
 		assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(String.class);
@@ -240,7 +237,7 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("active"));
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat((Class<Boolean>) meta.getValueClass()).isEqualTo(boolean.class);
+		assertThat(meta.<Boolean> getValueClass()).isEqualTo(boolean.class);
 	}
 
 	@Test
@@ -358,7 +355,7 @@ public class PropertyParserTest {
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("type"));
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat((Class<PropertyType>) meta.getValueClass()).isEqualTo(PropertyType.class);
+		assertThat(meta.<PropertyType> getValueClass()).isEqualTo(PropertyType.class);
 	}
 
 	@Test
@@ -380,7 +377,7 @@ public class PropertyParserTest {
 
 		PropertyMeta meta = parser.parse(context);
 
-		assertThat((Class<UUID>) meta.getValueClass()).isEqualTo(UUID.class);
+		assertThat(meta.<UUID> getValueClass()).isEqualTo(UUID.class);
 	}
 
 	@Test
@@ -446,7 +443,7 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("friends");
-		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
+		assertThat(meta.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFriends");
 		assertThat((Class<List>) meta.getGetter().getReturnType()).isEqualTo(List.class);
@@ -477,7 +474,7 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("followers");
-		assertThat((Class<Long>) meta.getValueClass()).isEqualTo(Long.class);
+		assertThat(meta.<Long> getValueClass()).isEqualTo(Long.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getFollowers");
 		assertThat((Class<Set>) meta.getGetter().getReturnType()).isEqualTo(Set.class);
@@ -507,10 +504,10 @@ public class PropertyParserTest {
 		PropertyMeta meta = parser.parse(context);
 
 		assertThat(meta.getPropertyName()).isEqualTo("preferences");
-		assertThat((Class<String>) meta.getValueClass()).isEqualTo(String.class);
+		assertThat(meta.<String> getValueClass()).isEqualTo(String.class);
 		assertThat(meta.type()).isEqualTo(PropertyType.MAP);
 
-		assertThat((Class<Integer>) meta.getKeyClass()).isEqualTo(Integer.class);
+		assertThat(meta.<Integer> getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getPreferences");
 		assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
@@ -542,7 +539,7 @@ public class PropertyParserTest {
 		assertThat((Class) meta.getValueClass()).isEqualTo(List.class);
 		assertThat(meta.type()).isEqualTo(PropertyType.MAP);
 
-		assertThat((Class<Integer>) meta.getKeyClass()).isEqualTo(Integer.class);
+		assertThat(meta.<Integer> getKeyClass()).isEqualTo(Integer.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getMap");
 		assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);

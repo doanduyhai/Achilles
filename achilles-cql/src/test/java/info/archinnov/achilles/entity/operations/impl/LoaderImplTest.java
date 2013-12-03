@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.entity.operations.impl;
 
-import static com.datastax.driver.core.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
@@ -25,18 +25,18 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.archinnov.achilles.type.Pair;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;

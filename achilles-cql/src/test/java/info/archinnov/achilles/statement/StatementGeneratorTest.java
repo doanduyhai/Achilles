@@ -17,7 +17,7 @@
 package info.archinnov.achilles.statement;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.DaoContext;
@@ -27,15 +27,21 @@ import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.prepared.SliceQueryPreparedStatementGenerator;
+import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -48,14 +54,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+import com.datastax.driver.core.querybuilder.Update.Where;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,18 +81,27 @@ public class StatementGeneratorTest {
 	@Mock
 	private DaoContext daoContext;
 
-	private ReflectionInvoker invoker = new ReflectionInvoker();
+	@Mock
+	private RegularStatementWrapper statementWrapper;
 
 	@Captor
 	private ArgumentCaptor<RegularStatement> statementCaptor;
+
+	@Captor
+	private ArgumentCaptor<Select> selectCaptor;
+
+	@Captor
+	private ArgumentCaptor<Delete> deleteCaptor;
+
+	private ReflectionInvoker invoker = new ReflectionInvoker();
 
 	@Test
 	public void should_create_select_statement_for_entity_simple_id() throws Exception {
 		EntityMeta meta = prepareEntityMeta("id");
 
-		Select select = generator.generateSelectEntity(meta);
+		RegularStatement statement = generator.generateSelectEntity(meta);
 
-		assertThat(select.getQueryString()).isEqualTo("SELECT id,age,name,label FROM table;");
+		assertThat(statement.getQueryString()).isEqualTo("SELECT id,age,name,label FROM table;");
 	}
 
 	@Test
@@ -95,9 +109,9 @@ public class StatementGeneratorTest {
 
 		EntityMeta meta = prepareEntityMeta("id", "a", "b");
 
-		Select select = generator.generateSelectEntity(meta);
+		RegularStatement statement = generator.generateSelectEntity(meta);
 
-		assertThat(select.getQueryString()).isEqualTo("SELECT id,a,b,age,name,label FROM table;");
+		assertThat(statement.getQueryString()).isEqualTo("SELECT id,a,b,age,name,label FROM table;");
 	}
 
 	@Test
@@ -105,21 +119,15 @@ public class StatementGeneratorTest {
 		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
-		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
-		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), any(Select.class))).thenAnswer(
-				new Answer<Statement>() {
+		when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture()))
+				.thenReturn(statementWrapper);
+		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98);
 
-					@Override
-					public Statement answer(InvocationOnMock invocation) throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
-					}
-				});
+		assertThat(actual).isSameAs(statementWrapper);
 
-		RegularStatement query = generator.generateSelectSliceQuery(sliceQuery, 98);
-
-		assertThat(query.getQueryString()).isEqualTo(
-				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? ORDER BY comp1 DESC LIMIT 98;");
-		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
+		assertThat(selectCaptor.getValue().getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table ORDER BY comp1 DESC LIMIT 98;");
 	}
 
 	@Test
@@ -127,21 +135,15 @@ public class StatementGeneratorTest {
 		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getCQLOrdering()).thenReturn(null);
-		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
-		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), any(Select.class))).thenAnswer(
-				new Answer<Statement>() {
+		when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture()))
+				.thenReturn(statementWrapper);
 
-					@Override
-					public Statement answer(InvocationOnMock invocation) throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
-					}
-				});
+		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98);
 
-		RegularStatement query = generator.generateSelectSliceQuery(sliceQuery, 98);
-
-		assertThat(query.getQueryString()).isEqualTo(
-				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? LIMIT 98;");
-		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
+		assertThat(actual).isSameAs(statementWrapper);
+		assertThat(selectCaptor.getValue().getQueryString()).isEqualTo(
+				"SELECT id,comp1,comp2,age,name,label FROM table LIMIT 98;");
 	}
 
 	@Test
@@ -150,7 +152,7 @@ public class StatementGeneratorTest {
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getLimit()).thenReturn(99);
 		when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
-		when(sliceQuery.getConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
+		when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		when(sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(eq(sliceQuery), any(Select.class)))
 				.thenAnswer(new Answer<Statement>() {
 
@@ -172,7 +174,7 @@ public class StatementGeneratorTest {
 				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? ORDER BY comp1 DESC LIMIT 99;");
 
 		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
-		verify(ps).setConsistencyLevel(ConsistencyLevel.EACH_QUORUM);
+		verify(ps).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
@@ -181,18 +183,13 @@ public class StatementGeneratorTest {
 		meta.setTableName("table");
 
 		when(sliceQuery.getMeta()).thenReturn(meta);
-		when(sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(eq(sliceQuery), any(Delete.class))).thenAnswer(
-				new Answer<Statement>() {
-					@Override
-					public Statement answer(InvocationOnMock invocation) throws Throwable {
-						return buildFakeWhereForDelete((Delete) invocation.getArguments()[1]);
-					}
-				});
+		when(sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(eq(sliceQuery), deleteCaptor.capture()))
+				.thenReturn(statementWrapper);
 
-		RegularStatement query = generator.generateRemoveSliceQuery(sliceQuery);
+		RegularStatementWrapper actual = generator.generateRemoveSliceQuery(sliceQuery);
 
-		assertThat(query.getQueryString()).isEqualTo("DELETE  FROM table WHERE fake=?;");
-		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
+		assertThat(actual).isSameAs(statementWrapper);
+		assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE  FROM table;");
 	}
 
 	@Test
@@ -220,17 +217,25 @@ public class StatementGeneratorTest {
 
 		Long id = RandomUtils.nextLong();
 		Long age = RandomUtils.nextLong();
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFriends("foo", "bar")
-				.addFollowers("john", "helen").addPreference(1, "FR").addPreference(2, "Paris").buid();
 
-		Update.Assignments update = generator.generateUpdateFields(entity, meta,
+		List<String> friends = Arrays.asList("foo", "bar");
+
+		Set<String> followers = new TreeSet<String>();
+		followers.add("john");
+		followers.add("helen");
+
+		Map<Integer, String> preferences = ImmutableMap.of(1, "FR", 2, "Paris");
+
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFriends(friends)
+				.addFollowers(followers).addPreferences(preferences).buid();
+
+		Pair<Where, Object[]> pair = generator.generateUpdateFields(entity, meta,
 				Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
 
-		assertThat(update.getQueryString()).isEqualTo(
-				"UPDATE table SET age=" + age
-						+ ",friends=['foo','bar'],followers={'helen','john'},preferences={1:'FR',2:'Paris'} WHERE id="
-						+ id + ";");
+		assertThat(pair.left.getQueryString()).isEqualTo(
+				"UPDATE table SET age=" + age + ",friends=?,followers=?,preferences=? WHERE id=" + id + ";");
 
+		assertThat(pair.right).contains(age, friends, followers, preferences, id);
 	}
 
 	@Test
@@ -262,10 +267,11 @@ public class StatementGeneratorTest {
 		entity.setId(embeddedKey);
 		entity.setValue("value");
 
-		Update.Assignments update = generator.generateUpdateFields(entity, meta, Arrays.asList(valueMeta));
+		Pair<Where, Object[]> pair = generator.generateUpdateFields(entity, meta, Arrays.asList(valueMeta));
 
-		assertThat(update.getQueryString()).isEqualTo(
-				"UPDATE table SET value='value' WHERE id=" + userId + " AND name='name';");
+		assertThat(pair.left.getQueryString())
+				.isEqualTo("UPDATE table SET value=? WHERE id=" + userId + " AND name=?;");
+		assertThat(pair.right).contains("value", userId, "name");
 
 	}
 
@@ -296,11 +302,8 @@ public class StatementGeneratorTest {
 		return meta;
 	}
 
-	private Statement buildFakeWhereForSelect(Select select) {
+	private RegularStatement buildFakeWhereForSelect(Select select) {
 		return select.where().and(QueryBuilder.eq("fake", "fake"));
 	}
 
-	private Statement buildFakeWhereForDelete(Delete delete) {
-		return delete.where().and(QueryBuilder.eq("fake", "fake"));
-	}
 }

@@ -4,7 +4,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 
 public class RegularStatementWrapper extends AbstractStatementWrapper {
 
@@ -24,7 +23,7 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public Statement getStatement() {
+	public RegularStatement getStatement() {
 		return regularStatement;
 	}
 

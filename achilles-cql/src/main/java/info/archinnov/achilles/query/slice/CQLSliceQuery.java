@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.ConsistencyConvertor.getCQLLevel;
+import static info.archinnov.achilles.consistency.ConsistencyConverter.getCQLLevel;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;

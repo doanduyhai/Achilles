@@ -21,7 +21,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
 
@@ -40,7 +39,7 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public Statement getStatement() {
+	public BoundStatement getStatement() {
 		return boundStatement;
 	}
 

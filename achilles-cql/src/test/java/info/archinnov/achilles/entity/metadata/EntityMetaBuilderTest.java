@@ -17,11 +17,14 @@
 package info.archinnov.achilles.entity.metadata;
 
 import static info.archinnov.achilles.entity.metadata.EntityMetaBuilder.entityMetaBuilder;
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.Bean;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,15 +32,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.Bean;
-import com.datastax.driver.core.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaBuilderTest {
@@ -60,7 +59,7 @@ public class EntityMetaBuilderTest {
 
 		propertyMetas.put("name", simpleMeta);
 
-		when((Class) idMeta.getValueClass()).thenReturn(Long.class);
+		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
 		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 		eagerMetas.add(simpleMeta);
@@ -68,11 +67,11 @@ public class EntityMetaBuilderTest {
 		EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean")
 				.columnFamilyName("cfName").propertyMetas(propertyMetas).build();
 
-		assertThat((Class) meta.getEntityClass()).isEqualTo(CompleteBean.class);
+		assertThat(meta.<CompleteBean> getEntityClass()).isEqualTo(CompleteBean.class);
 		assertThat(meta.getClassName()).isEqualTo("Bean");
 		assertThat(meta.getTableName()).isEqualTo("cfName");
 		assertThat(meta.getIdMeta()).isSameAs(idMeta);
-		assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
+		assertThat(meta.<Long> getIdClass()).isEqualTo(Long.class);
 		assertThat(meta.getPropertyMetas()).containsKey("name");
 		assertThat(meta.getPropertyMetas()).containsValue(simpleMeta);
 
@@ -98,7 +97,7 @@ public class EntityMetaBuilderTest {
 		simpleMeta.setType(SIMPLE);
 		propertyMetas.put("name", simpleMeta);
 
-		when((Class) idMeta.getValueClass()).thenReturn(Long.class);
+		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
 		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 		eagerMetas.add(simpleMeta);
@@ -117,10 +116,9 @@ public class EntityMetaBuilderTest {
 				.accessors().build();
 		propertyMetas.put("name", nameMeta);
 
-		when((Class) idMeta.getValueClass()).thenReturn(Long.class);
+		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = Pair.create(ConsistencyLevel.ONE,
 				ConsistencyLevel.TWO);
-		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
 		EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
 				.columnFamilyName("toto").consistencyLevels(consistencyLevels).build();
@@ -139,7 +137,7 @@ public class EntityMetaBuilderTest {
 		propertyMetas.put("counter", counterMeta);
 
 		when(idMeta.type()).thenReturn(EMBEDDED_ID);
-		when((Class) idMeta.getValueClass()).thenReturn(Long.class);
+		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 		when(idMeta.isEmbeddedId()).thenReturn(true);
 		when(idMeta.getClusteringComponentClasses()).thenReturn(Arrays.<Class<?>> asList(String.class));
 		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();

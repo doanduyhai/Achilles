@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.test.builders;
 
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,8 +25,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.lang.math.RandomUtils;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 public class CompleteBeanTestBuilder {
 
@@ -94,6 +96,11 @@ public class CompleteBeanTestBuilder {
 		return this;
 	}
 
+	public CompleteBeanTestBuilder addFriends(List<String> friends) {
+		this.friends.addAll(friends);
+		return this;
+	}
+
 	public CompleteBeanTestBuilder addFollower(String follower) {
 		this.followers.add(follower);
 		return this;
@@ -104,8 +111,18 @@ public class CompleteBeanTestBuilder {
 		return this;
 	}
 
+	public CompleteBeanTestBuilder addFollowers(Set<String> followers) {
+		this.followers.addAll(followers);
+		return this;
+	}
+
 	public CompleteBeanTestBuilder addPreference(Integer key, String value) {
 		this.preferences.put(key, value);
+		return this;
+	}
+
+	public CompleteBeanTestBuilder addPreferences(Map<Integer, String> preferences) {
+		this.preferences.putAll(preferences);
 		return this;
 	}
 }

@@ -39,13 +39,14 @@ public class EntityProxifier {
 
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
-	public Class<?> deriveBaseClass(Object entity) {
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> deriveBaseClass(Object entity) {
 		log.debug("Deriving base class for entity {} ", entity);
 
-		Class<?> baseClass = entity.getClass();
+		Class<T> baseClass = (Class<T>) entity.getClass();
 		if (isProxy(entity)) {
 			EntityInterceptor<?> interceptor = getInterceptor(entity);
-			baseClass = interceptor.getTarget().getClass();
+			baseClass = (Class<T>) interceptor.getTarget().getClass();
 		}
 
 		return baseClass;

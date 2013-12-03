@@ -17,7 +17,7 @@
 package info.archinnov.achilles.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.consistency.ConsistencyConvertor.*;
+import static info.archinnov.achilles.consistency.ConsistencyConverter.getCQLLevel;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -54,10 +54,6 @@ import com.google.common.cache.Cache;
 
 public class DaoContext {
 	private static final Logger log = LoggerFactory.getLogger(DaoContext.class);
-
-	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
-
-	private static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
 	private Map<Class<?>, PreparedStatement> insertPSs;
 	private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;

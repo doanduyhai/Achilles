@@ -72,7 +72,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
 				.build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -94,7 +94,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").compNames("id", "a", "b")
 				.type(PropertyType.EMBEDDED_ID).build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -113,7 +113,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
 				.build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
 		when(generator.prepareSelectFieldPS(session, meta, pm)).thenReturn(ps);
@@ -136,7 +136,7 @@ public class CacheManagerTest {
 		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
 				.type(PropertyType.SIMPLE).build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -164,7 +164,7 @@ public class CacheManagerTest {
 
 		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
 		when(generator.prepareUpdateFields(session, meta, pms)).thenReturn(ps);

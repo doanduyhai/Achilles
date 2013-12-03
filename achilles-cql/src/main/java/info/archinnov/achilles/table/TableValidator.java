@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
-import static com.datastax.driver.core.DataType.*;
+import static com.datastax.driver.core.DataType.text;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.cql.TypeMapper.toCQLType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -84,7 +84,7 @@ public class TableValidator {
 	public void validateAchillesCounter(KeyspaceMetadata keyspaceMetaData, String keyspaceName) {
 		log.debug("Validate existing Achilles Counter table");
 		Name textTypeName = text().getName();
-		Name counterTypeName = counter().getName();
+		// Name counterTypeName = counter().getName();
 
 		TableMetadata tableMetaData = keyspaceMetaData.getTable(CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(tableMetaData != null, "Cannot find table '%s' from keyspace '%s'",
@@ -124,11 +124,9 @@ public class TableValidator {
 		 * fixed
 		 */
 
-		// ColumnMetadata counterValueColumn =
-		// tableMetaData.getColumn(CQL_COUNTER_VALUE);
-		// Validator.validateTableTrue(counterValueColumn != null,
-		// "Cannot find column '%s' from table '%s'",
-		// CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
+		ColumnMetadata counterValueColumn = tableMetaData.getColumn(CQL_COUNTER_VALUE);
+		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
+				CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
 		// Validator.validateTableTrue(counterValueColumn.getType().getName() ==
 		// counterTypeName,
 		// "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,

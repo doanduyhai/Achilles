@@ -3,7 +3,6 @@ package info.archinnov.achilles.statement.wrapper;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 
 public class SimpleStatementWrapper extends AbstractStatementWrapper {
 
@@ -21,7 +20,7 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public Statement getStatement() {
+	public SimpleStatement getStatement() {
 		return simpleStatement;
 	}
 

@@ -16,24 +16,9 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LAZY_SIMPLE;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static com.datastax.driver.core.ConsistencyLevel.ALL;
-import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.lang.reflect.Method;
-import info.archinnov.achilles.type.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
 import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
@@ -41,11 +26,16 @@ import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Method;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PropertyMetaBuilderTest {
 	Method[] accessors = new Method[2];
-
-	private ObjectMapper mapper = new ObjectMapper();
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -64,7 +54,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -85,7 +75,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(EMBEDDED_ID);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(EmbeddedKey.class);
+		assertThat(built.<EmbeddedKey> getValueClass()).isEqualTo(EmbeddedKey.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isTrue();
@@ -103,7 +93,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -118,8 +108,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		Bean bean = new Bean();
-		assertThat((Class) built.getValueClass()).isEqualTo(Bean.class);
+		assertThat(built.<Bean> getValueClass()).isEqualTo(Bean.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -135,7 +124,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -151,7 +140,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -167,7 +156,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -183,7 +172,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_SET);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -199,9 +188,9 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
+		assertThat(built.<Integer> getKeyClass()).isEqualTo(Integer.class);
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
@@ -216,10 +205,9 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		Bean bean = new Bean();
-		assertThat((Class) built.getKeyClass()).isEqualTo(Bean.class);
+		assertThat(built.<Bean> getKeyClass()).isEqualTo(Bean.class);
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
@@ -234,16 +222,12 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.type()).isEqualTo(LAZY_MAP);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
 
-		assertThat((Class) built.getKeyClass()).isEqualTo(Integer.class);
+		assertThat(built.<Integer> getKeyClass()).isEqualTo(Integer.class);
 
-		assertThat((Class) built.getValueClass()).isEqualTo(String.class);
+		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
-	}
-
-	private String writeString(Object value) throws Exception {
-		return mapper.writeValueAsString(value);
 	}
 }

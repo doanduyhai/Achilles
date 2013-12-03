@@ -18,25 +18,27 @@ package info.archinnov.achilles.proxy;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import info.archinnov.achilles.type.Pair;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 public class ReflectionInvokerTest {
 
@@ -109,8 +111,7 @@ public class ReflectionInvokerTest {
 		bean.setFriends(Arrays.asList("foo", "bar"));
 		Method getter = CompleteBean.class.getDeclaredMethod("getFriends");
 
-		@SuppressWarnings("unchecked")
-		List<String> value = (List<String>) invoker.getListValueFromField(bean, getter);
+		List<String> value = invoker.getListValueFromField(bean, getter);
 		assertThat(value).containsExactly("foo", "bar");
 	}
 
@@ -120,8 +121,7 @@ public class ReflectionInvokerTest {
 		bean.setFollowers(Sets.newHashSet("foo", "bar"));
 		Method getter = CompleteBean.class.getDeclaredMethod("getFollowers");
 
-		@SuppressWarnings("unchecked")
-		Set<String> value = (Set<String>) invoker.getSetValueFromField(bean, getter);
+		Set<String> value = invoker.getSetValueFromField(bean, getter);
 		assertThat(value).containsOnly("foo", "bar");
 	}
 
@@ -131,8 +131,7 @@ public class ReflectionInvokerTest {
 		bean.setPreferences(ImmutableMap.of(1, "FR"));
 		Method getter = CompleteBean.class.getDeclaredMethod("getPreferences");
 
-		@SuppressWarnings("unchecked")
-		Map<Integer, String> value = (Map<Integer, String>) invoker.getMapValueFromField(bean, getter);
+		Map<Integer, String> value = invoker.getMapValueFromField(bean, getter);
 		assertThat(value).containsKey(1).containsValue("FR");
 	}
 
@@ -221,7 +220,7 @@ public class ReflectionInvokerTest {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compSetters(userIdSetter).build();
 
 		Object actual = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta,
-                                                                             Arrays.<Object>asList(partitionKey));
+				Arrays.<Object> asList(partitionKey));
 
 		assertThat(actual).isNotNull();
 		EmbeddedKey embeddedKey = (EmbeddedKey) actual;
@@ -264,6 +263,7 @@ public class ReflectionInvokerTest {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private class BeanWithPrimitive {
 		private int count;
 

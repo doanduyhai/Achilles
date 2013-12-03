@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.entity;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.*;
-import static org.fest.assertions.api.Assertions.*;
+import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.proxy.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -35,20 +35,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.cql3.ColumnIdentifier;
-import org.apache.cassandra.cql3.ColumnSpecification;
-import org.apache.cassandra.db.marshal.LongType;
-import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 
+import com.datastax.driver.core.ColumnDefinitionBuilder;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.ImmutableMap;
 
@@ -146,14 +143,8 @@ public class EntityMapperTest {
 
 		Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta, "value", valueMeta);
 
-		ColumnIdentifier iden1 = new ColumnIdentifier(UTF8Type.instance.decompose("id"), UTF8Type.instance);
-		ColumnSpecification spec1 = new ColumnSpecification("keyspace", "id", iden1, LongType.instance);
-
-		ColumnIdentifier iden2 = new ColumnIdentifier(UTF8Type.instance.decompose("value"), UTF8Type.instance);
-		ColumnSpecification spec2 = new ColumnSpecification("keyspace", "value", iden2, UTF8Type.instance);
-
-		def1 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec1);
-		def2 = Whitebox.invokeMethod(Definition.class, "fromTransportSpecification", spec2);
+		def1 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "id", DataType.bigint());
+		def2 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "value", DataType.text());
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
@@ -164,8 +155,7 @@ public class EntityMapperTest {
 		when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn("value");
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row,
-				propertiesMap, true);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
 		verify(idMeta).setValueToField(entity, id);
@@ -188,8 +178,7 @@ public class EntityMapperTest {
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, true)).thenReturn(embeddedKey);
 
-		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row,
-				propertiesMap, true);
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, true);
 
 		assertThat(actual).isSameAs(entity);
 		verify(idMeta).setValueToField(entity, embeddedKey);
@@ -197,8 +186,7 @@ public class EntityMapperTest {
 
 	@Test
 	public void should_not_map_row_to_entity_with_primary_key_when_entity_null() {
-		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row,
-				null, true);
+		ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, true);
 
 		assertThat(actual).isNull();
 	}
@@ -208,8 +196,7 @@ public class EntityMapperTest {
 		when(row.getColumnDefinitions()).thenReturn(null);
 		when(entityMeta.instanciate()).thenReturn(entity);
 
-		CompleteBean actual = entityMapper
-				.mapRowToEntityWithPrimaryKey(entityMeta, row, null, true);
+		CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, true);
 		assertThat(actual).isNull();
 	}
 

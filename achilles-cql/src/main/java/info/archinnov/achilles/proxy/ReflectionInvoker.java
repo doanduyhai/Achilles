@@ -16,15 +16,17 @@
  */
 package info.archinnov.achilles.proxy;
 
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.validation.Validator;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.validation.Validator;
 
 public class ReflectionInvoker {
 	private static final Logger log = LoggerFactory.getLogger(ReflectionInvoker.class);
@@ -81,16 +83,19 @@ public class ReflectionInvoker {
 		return value;
 	}
 
-	public List<?> getListValueFromField(Object target, Method getter) {
-		return (List<?>) getValueFromField(target, getter);
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getListValueFromField(Object target, Method getter) {
+		return (List<T>) getValueFromField(target, getter);
 	}
 
-	public Set<?> getSetValueFromField(Object target, Method getter) {
-		return (Set<?>) getValueFromField(target, getter);
+	@SuppressWarnings("unchecked")
+	public <T> Set<T> getSetValueFromField(Object target, Method getter) {
+		return (Set<T>) getValueFromField(target, getter);
 	}
 
-	public Map<?, ?> getMapValueFromField(Object target, Method getter) {
-		return (Map<?, ?>) getValueFromField(target, getter);
+	@SuppressWarnings("unchecked")
+	public <K, V> Map<K, V> getMapValueFromField(Object target, Method getter) {
+		return (Map<K, V>) getValueFromField(target, getter);
 	}
 
 	public void setValueToField(Object target, Method setter, Object args) {
@@ -114,7 +119,7 @@ public class ReflectionInvoker {
 	}
 
 	public <T> T instantiate(Class<T> entityClass) {
-        log.trace("Instantiate entity class {}",entityClass);
+		log.trace("Instantiate entity class {}", entityClass);
 		T newInstance;
 		try {
 			newInstance = entityClass.newInstance();
@@ -126,7 +131,8 @@ public class ReflectionInvoker {
 	}
 
 	public Object instantiateEmbeddedIdWithPartitionComponents(PropertyMeta idMeta, List<Object> partitionComponents) {
-        log.trace("Instantiate entity class {} with partition key components {}",idMeta.getValueClass(),partitionComponents);
+		log.trace("Instantiate entity class {} with partition key components {}", idMeta.getValueClass(),
+				partitionComponents);
 		Class<?> valueClass = idMeta.getValueClass();
 		Object newInstance = instantiate(valueClass);
 		List<Method> setters = idMeta.getPartitionComponentSetters();

@@ -23,6 +23,10 @@ public abstract class AbstractStatementWrapper {
 			this.values = values;
 	}
 
+	public Object[] getValues() {
+		return values;
+	}
+
 	public abstract ResultSet execute(Session session);
 
 	public abstract Statement getStatement();

@@ -94,13 +94,13 @@ public class StatementGenerator {
 		EntityMeta meta = sliceQuery.getMeta();
 
 		Delete delete = QueryBuilder.delete().from(meta.getTableName());
-        return sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
+		return sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
 	}
 
-    public RegularStatement generateSelectEntity(EntityMeta entityMeta) {
-        final Select select = generateSelectEntityInternal(entityMeta);
-        return select;
-    }
+	public RegularStatement generateSelectEntity(EntityMeta entityMeta) {
+		final Select select = generateSelectEntityInternal(entityMeta);
+		return select;
+	}
 
 	protected Select generateSelectEntityInternal(EntityMeta entityMeta) {
 
@@ -121,63 +121,63 @@ public class StatementGenerator {
 		return select.from(entityMeta.getTableName());
 	}
 
-    public Pair<Insert, Object[]> generateInsert(Object entity, EntityMeta entityMeta) {
-        PropertyMeta idMeta = entityMeta.getIdMeta();
-        Insert insert = insertInto(entityMeta.getTableName());
-        final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
+	public Pair<Insert, Object[]> generateInsert(Object entity, EntityMeta entityMeta) {
+		PropertyMeta idMeta = entityMeta.getIdMeta();
+		Insert insert = insertInto(entityMeta.getTableName());
+		final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
 
-        List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
-                                                         .filter(PropertyType.excludeCounterType).toImmutableList();
+		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
+				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-        List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
-        fieldMetas.remove(idMeta);
+		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
+		fieldMetas.remove(idMeta);
 
-        final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
-        for (int i=0; i<fieldMetas.size();i++) {
-            PropertyMeta pm = fieldMetas.get(i);
-            Object value = pm.getValueFromField(entity);
-            value = encodeValueForCassandra(pm, value);
-            insert.value(pm.getPropertyName(), value);
-            boundValuesForColumns[i] = value;
-        }
-        final Object[] boundValues = ArrayUtils.addAll(boundValuesForPK, boundValuesForColumns);
-        return Pair.create(insert,boundValues);
-    }
+		final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
+		for (int i = 0; i < fieldMetas.size(); i++) {
+			PropertyMeta pm = fieldMetas.get(i);
+			Object value = pm.getValueFromField(entity);
+			value = encodeValueForCassandra(pm, value);
+			insert.value(pm.getPropertyName(), value);
+			boundValuesForColumns[i] = value;
+		}
+		final Object[] boundValues = ArrayUtils.addAll(boundValuesForPK, boundValuesForColumns);
+		return Pair.create(insert, boundValues);
+	}
 
-	public Pair<Update.Where, Object[]> generateUpdateFields(Object entity, EntityMeta entityMeta, List<PropertyMeta>
-            pms) {
+	public Pair<Update.Where, Object[]> generateUpdateFields(Object entity, EntityMeta entityMeta,
+			List<PropertyMeta> pms) {
 		log.trace("Generate UPDATE statement for entity class {} and properties {}", entityMeta.getClassName(), pms);
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 		Update update = update(entityMeta.getTableName());
 
-        Object[] boundValuesForColumns = new Object[pms.size()];
+		Object[] boundValuesForColumns = new Object[pms.size()];
 		Assignments assignments = null;
-		for (int i=0; i<pms.size(); i++) {
-            PropertyMeta pm = pms.get(i);
-            Object value = pm.getValueFromField(entity);
+		for (int i = 0; i < pms.size(); i++) {
+			PropertyMeta pm = pms.get(i);
+			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);
 			if (i == 0) {
 				assignments = update.with(set(pm.getPropertyName(), value));
 			} else {
 				assignments.and(set(pm.getPropertyName(), value));
 			}
-            boundValuesForColumns[i] = value;
+			boundValuesForColumns[i] = value;
 		}
-        final Pair<Update.Where, Object[]> pair = generateWhereClauseForUpdate(entity, idMeta, assignments);
+		final Pair<Update.Where, Object[]> pair = generateWhereClauseForUpdate(entity, idMeta, assignments);
 
-        final Object[] boundValues = ArrayUtils.addAll(boundValuesForColumns, pair.right);
-        return Pair.create(pair.left,boundValues);
-    }
+		final Object[] boundValues = ArrayUtils.addAll(boundValuesForColumns, pair.right);
+		return Pair.create(pair.left, boundValues);
+	}
 
 	private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,
-                                                                      Assignments update) {
-        Update.Where where = null;
-        Object[] boundValues;
-        Object primaryKey = idMeta.getPrimaryKey(entity);
-        if (idMeta.isEmbeddedId()) {
+			Assignments update) {
+		Update.Where where = null;
+		Object[] boundValues;
+		Object primaryKey = idMeta.getPrimaryKey(entity);
+		if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
-            boundValues = new Object[encodedComponents.size()];
+			boundValues = new Object[encodedComponents.size()];
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
@@ -186,35 +186,35 @@ public class StatementGenerator {
 				} else {
 					where.and(eq(componentName, componentValue));
 				}
-                boundValues[i] = componentValue;
+				boundValues[i] = componentValue;
 			}
 		} else {
 			Object id = idMeta.encode(primaryKey);
-            where = update.where(eq(idMeta.getPropertyName(), id));
-            boundValues = new Object[]{id};
+			where = update.where(eq(idMeta.getPropertyName(), id));
+			boundValues = new Object[] { id };
 		}
-		return Pair.create(where,boundValues);
+		return Pair.create(where, boundValues);
 	}
 
 	private Object[] generateInsertPrimaryKey(Object entity, PropertyMeta idMeta, Insert insert) {
 		Object primaryKey = idMeta.getPrimaryKey(entity);
-        Object[] boundValues;
+		Object[] boundValues;
 		if (idMeta.isEmbeddedId()) {
 			List<String> componentNames = idMeta.getComponentNames();
 			List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
-            boundValues = new Object[encodedComponents.size()];
+			boundValues = new Object[encodedComponents.size()];
 			for (int i = 0; i < encodedComponents.size(); i++) {
 				String componentName = componentNames.get(i);
 				Object componentValue = encodedComponents.get(i);
 				insert.value(componentName, componentValue);
-                boundValues[i] = componentValue;
+				boundValues[i] = componentValue;
 			}
 		} else {
 			Object id = idMeta.encode(primaryKey);
 			insert.value(idMeta.getPropertyName(), id);
-            boundValues = new Object[]{id};
+			boundValues = new Object[] { id };
 		}
-        return boundValues;
+		return boundValues;
 	}
 
 	private Object encodeValueForCassandra(PropertyMeta pm, Object value) {

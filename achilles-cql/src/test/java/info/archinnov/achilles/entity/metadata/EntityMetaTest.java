@@ -16,19 +16,18 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static com.datastax.driver.core.ConsistencyLevel.ALL;
-import static com.datastax.driver.core.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.junit.Test;
+
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 public class EntityMetaTest {
 	@Test

@@ -16,16 +16,18 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
-import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
-import static info.archinnov.achilles.entity.metadata.PropertyType.LIST;
-import static info.archinnov.achilles.entity.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SET;
-import static info.archinnov.achilles.entity.metadata.PropertyType.SIMPLE;
-import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
+import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import info.archinnov.achilles.type.Pair;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Rule;
@@ -45,15 +47,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import com.datastax.driver.core.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyMetaTest {
@@ -175,25 +171,25 @@ public class PropertyMetaTest {
 	public void should_get_ordering_component() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class),
-				Arrays.asList("age", "name"), null, null);
+		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
+				String.class), Arrays.asList("age", "name"), null, null);
 
-		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b", "c"),
-				null, null, null);
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
+				"c"), null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getOrderingComponent()).isEqualTo("age");
 	}
-	
+
 	@Test
 	public void should_get_reversed_component() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class),
-				Arrays.asList("age", "name"), "name", null, null);
+		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
+				String.class), Arrays.asList("age", "name"), "name", null, null);
 
-		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b", "c"),
-				null, null, null);
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
+				"c"), null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getReversedComponent()).isEqualTo("name");
@@ -505,9 +501,9 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").accessors()
 				.type(LIST).invoker(invoker).build();
 
-		when((List<String>) invoker.getListValueFromField(entity, pm.getGetter())).thenReturn(friends);
+		when(invoker.<String> getListValueFromField(entity, pm.getGetter())).thenReturn(friends);
 
-		assertThat((List<String>) pm.getListValueFromField(entity)).containsExactly("foo", "bar");
+		assertThat(pm.<String> getListValueFromField(entity)).containsExactly("foo", "bar");
 	}
 
 	@Test
@@ -520,9 +516,9 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers").accessors()
 				.type(SET).invoker(invoker).build();
 
-		when((Set<String>) invoker.getSetValueFromField(entity, pm.getGetter())).thenReturn(followers);
+		when(invoker.<String> getSetValueFromField(entity, pm.getGetter())).thenReturn(followers);
 
-		assertThat((Set<String>) pm.getSetValueFromField(entity)).containsOnly("George", "Paul");
+		assertThat(pm.<String> getSetValueFromField(entity)).containsOnly("George", "Paul");
 	}
 
 	@Test
@@ -535,9 +531,9 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
 				.accessors().type(MAP).invoker(invoker).build();
 
-		when((Map<Integer, String>) invoker.getMapValueFromField(entity, pm.getGetter())).thenReturn(preferences);
+		when(invoker.<Integer, String> getMapValueFromField(entity, pm.getGetter())).thenReturn(preferences);
 
-		Map<Integer, String> actual = (Map<Integer, String>) pm.getMapValueFromField(entity);
+		Map<Integer, String> actual = pm.<Integer, String> getMapValueFromField(entity);
 
 		assertThat(actual).containsKey(1).containsKey(2).containsValue("FR").containsValue("Paris");
 	}

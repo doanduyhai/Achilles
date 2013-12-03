@@ -82,8 +82,9 @@ public class EntityMeta {
 	}
 
 	// ////////// Getters & Setters
-	public Class<?> getEntityClass() {
-		return entityClass;
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> getEntityClass() {
+		return (Class<T>) entityClass;
 	}
 
 	public void setEntityClass(Class<?> entityClass) {
@@ -162,8 +163,9 @@ public class EntityMeta {
 		this.consistencyLevels = consistencyLevels;
 	}
 
-	public Class<?> getIdClass() {
-		return idClass;
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> getIdClass() {
+		return (Class<T>) idClass;
 	}
 
 	public void setIdClass(Class<?> idClass) {

@@ -16,18 +16,17 @@
  */
 package info.archinnov.achilles.entity.manager;
 
-import static com.datastax.driver.core.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 import info.archinnov.achilles.context.BatchingFlushContext;
+import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
-import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 
@@ -59,7 +58,6 @@ public class BatchingPersistenceManagerTest {
 	@Mock
 	private ConfigurationContext configContext;
 
-
 	@Mock
 	private BatchingFlushContext flushContext;
 
@@ -85,7 +83,7 @@ public class BatchingPersistenceManagerTest {
 	public void should_start_batch_with_consistency_level() throws Exception {
 		manager.startBatch(EACH_QUORUM);
 		verify(flushContext).startBatch();
-		verify(flushContext).setConsistencyLevel(consistencyCaptor.capture());
+		verify(flushContext, times(2)).setConsistencyLevel(consistencyCaptor.capture());
 
 		assertThat(consistencyCaptor.getValue()).isSameAs(EACH_QUORUM);
 	}
@@ -168,35 +166,36 @@ public class BatchingPersistenceManagerTest {
 		manager.refresh(new CompleteBean(), ONE);
 	}
 
-    @Test
-    public void should_init_persistence_context_with_entity() throws Exception {
-        //Given
-        Object entity = new Object();
-        Options options = OptionsBuilder.noOptions();
-        PersistenceContext context = mock(PersistenceContext.class);
+	@Test
+	public void should_init_persistence_context_with_entity() throws Exception {
+		// Given
+		Object entity = new Object();
+		Options options = OptionsBuilder.noOptions();
+		PersistenceContext context = mock(PersistenceContext.class);
 
-        //When
-        when(contextFactory.newContextWithFlushContext(entity,options,flushContext)).thenReturn(context);
+		// When
+		when(contextFactory.newContextWithFlushContext(entity, options, flushContext)).thenReturn(context);
 
-        PersistenceContext actual = manager.initPersistenceContext(entity,options);
+		PersistenceContext actual = manager.initPersistenceContext(entity, options);
 
-        //Then
-        assertThat(actual).isSameAs(context);
-    }
+		// Then
+		assertThat(actual).isSameAs(context);
+	}
 
-    @Test
-    public void should_init_persistence_context_with_primary_key() throws Exception {
-        //Given
-        Object primaryKey = new Object();
-        Options options = OptionsBuilder.noOptions();
-        PersistenceContext context = mock(PersistenceContext.class);
+	@Test
+	public void should_init_persistence_context_with_primary_key() throws Exception {
+		// Given
+		Object primaryKey = new Object();
+		Options options = OptionsBuilder.noOptions();
+		PersistenceContext context = mock(PersistenceContext.class);
 
-        //When
-        when(contextFactory.newContextWithFlushContext(Object.class,primaryKey,options,flushContext)).thenReturn(context);
+		// When
+		when(contextFactory.newContextWithFlushContext(Object.class, primaryKey, options, flushContext)).thenReturn(
+				context);
 
-        PersistenceContext actual = manager.initPersistenceContext(Object.class,primaryKey,options);
+		PersistenceContext actual = manager.initPersistenceContext(Object.class, primaryKey, options);
 
-        //Then
-        assertThat(actual).isSameAs(context);
-    }
+		// Then
+		assertThat(actual).isSameAs(context);
+	}
 }

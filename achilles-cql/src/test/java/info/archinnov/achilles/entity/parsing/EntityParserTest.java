@@ -37,7 +37,7 @@ import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
-import com.datastax.driver.core.ConsistencyLevel;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Map;
 
@@ -88,9 +88,9 @@ public class EntityParserTest {
 
 		assertThat(meta.getClassName()).isEqualTo("info.archinnov.achilles.test.parser.entity.Bean");
 		assertThat(meta.getTableName()).isEqualTo("Bean");
-		assertThat((Class<Long>) meta.getIdMeta().getValueClass()).isEqualTo(Long.class);
+		assertThat(meta.getIdMeta().<Long> getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat((Class<Long>) meta.getIdClass()).isEqualTo(Long.class);
+		assertThat(meta.<Long> getIdClass()).isEqualTo(Long.class);
 		assertThat(meta.getPropertyMetas()).hasSize(7);
 
 		PropertyMeta id = meta.getPropertyMetas().get("id");
@@ -111,45 +111,45 @@ public class EntityParserTest {
 		assertThat(creator).isNotNull();
 
 		assertThat(id.getPropertyName()).isEqualTo("id");
-		assertThat((Class<Long>) id.getValueClass()).isEqualTo(Long.class);
+		assertThat(id.<Long> getValueClass()).isEqualTo(Long.class);
 		assertThat(id.type()).isEqualTo(ID);
 		assertThat(id.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(id.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(name.getPropertyName()).isEqualTo("name");
-		assertThat((Class<String>) name.getValueClass()).isEqualTo(String.class);
+		assertThat(name.<String> getValueClass()).isEqualTo(String.class);
 		assertThat(name.type()).isEqualTo(SIMPLE);
 		assertThat(name.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(name.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(age.getPropertyName()).isEqualTo("age_in_year");
-		assertThat((Class<Long>) age.getValueClass()).isEqualTo(Long.class);
+		assertThat(age.<Long> getValueClass()).isEqualTo(Long.class);
 		assertThat(age.type()).isEqualTo(SIMPLE);
 		assertThat(age.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(age.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
-		assertThat((Class) friends.getValueClass()).isEqualTo(String.class);
+		assertThat(friends.<String> getValueClass()).isEqualTo(String.class);
 		assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
 		assertThat(friends.type().isLazy()).isTrue();
 		assertThat(friends.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(friends.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(followers.getPropertyName()).isEqualTo("followers");
-		assertThat((Class) followers.getValueClass()).isEqualTo(String.class);
+		assertThat(followers.<String> getValueClass()).isEqualTo(String.class);
 		assertThat(followers.type()).isEqualTo(PropertyType.SET);
 		assertThat(followers.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(followers.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(preferences.getPropertyName()).isEqualTo("preferences");
-		assertThat((Class) preferences.getValueClass()).isEqualTo(String.class);
+		assertThat(preferences.<String> getValueClass()).isEqualTo(String.class);
 		assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
-		assertThat((Class) preferences.getKeyClass()).isEqualTo(Integer.class);
+		assertThat(preferences.<Integer> getKeyClass()).isEqualTo(Integer.class);
 		assertThat(preferences.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(preferences.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
 		assertThat(creator.getPropertyName()).isEqualTo("creator");
-		assertThat((Class) creator.getValueClass()).isEqualTo(UserBean.class);
+		assertThat(creator.<UserBean> getValueClass()).isEqualTo(UserBean.class);
 		assertThat(creator.type()).isEqualTo(SIMPLE);
 
 		assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
@@ -168,7 +168,7 @@ public class EntityParserTest {
 
 		assertThat(meta).isNotNull();
 
-		assertThat((Class<EmbeddedKey>) meta.getIdClass()).isEqualTo(EmbeddedKey.class);
+		assertThat(meta.<EmbeddedKey> getIdClass()).isEqualTo(EmbeddedKey.class);
 		PropertyMeta idMeta = meta.getIdMeta();
 
 		assertThat(idMeta.isEmbeddedId()).isTrue();
@@ -259,7 +259,7 @@ public class EntityParserTest {
 		assertThat(meta.isClusteredEntity()).isTrue();
 
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
-		assertThat((Class<EmbeddedKey>) meta.getIdMeta().getValueClass()).isEqualTo(EmbeddedKey.class);
+		assertThat(meta.getIdMeta().<EmbeddedKey> getValueClass()).isEqualTo(EmbeddedKey.class);
 
 		assertThat(meta.getPropertyMetas()).hasSize(2);
 		assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);

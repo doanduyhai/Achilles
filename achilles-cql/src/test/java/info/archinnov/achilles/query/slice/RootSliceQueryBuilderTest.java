@@ -17,19 +17,24 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
-import static com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.query.SliceQuery;
+import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,13 +46,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.context.ConfigurationContext;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.query.SliceQuery;
-import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RootSliceQueryBuilderTest {
