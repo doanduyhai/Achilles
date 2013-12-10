@@ -17,8 +17,33 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -47,10 +72,10 @@ import com.datastax.driver.core.policies.RetryPolicy;
 
 public class ArgumentExtractor {
 
-    private static final Logger log  = LoggerFactory.getLogger(ArgumentExtractor.class);
+	private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
 
 	public List<String> initEntityPackages(Map<String, Object> configurationMap) {
-        log.trace("Extract entity packages from configuration map");
+		log.trace("Extract entity packages from configuration map");
 
 		List<String> entityPackages = new ArrayList<String>();
 		String entityPackagesParameter = (String) configurationMap.get(ENTITY_PACKAGES_PARAM);
@@ -62,7 +87,7 @@ public class ArgumentExtractor {
 	}
 
 	public ConfigurationContext initConfigContext(Map<String, Object> configurationMap) {
-        log.trace("Build ConfigurationContext from configuration map");
+		log.trace("Build ConfigurationContext from configuration map");
 
 		ConfigurationContext configContext = new ConfigurationContext();
 		configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
@@ -73,7 +98,7 @@ public class ArgumentExtractor {
 	}
 
 	boolean initForceTableCreation(Map<String, Object> configurationMap) {
-        log.trace("Extract 'force table creation' from configuration map");
+		log.trace("Extract 'force table creation' from configuration map");
 
 		Boolean forceColumnFamilyCreation = (Boolean) configurationMap.get(FORCE_TABLE_CREATION_PARAM);
 		if (forceColumnFamilyCreation != null) {
@@ -84,7 +109,7 @@ public class ArgumentExtractor {
 	}
 
 	ObjectMapperFactory initObjectMapperFactory(Map<String, Object> configurationMap) {
-        log.trace("Extract object mapper factory from configuration map");
+		log.trace("Extract object mapper factory from configuration map");
 
 		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap
 				.get(OBJECT_MAPPER_FACTORY_PARAM);
@@ -110,21 +135,21 @@ public class ArgumentExtractor {
 	}
 
 	ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap) {
-        log.trace("Extract default read Consistency level from configuration map");
+		log.trace("Extract default read Consistency level from configuration map");
 
 		String defaultReadLevel = (String) configMap.get(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
 	}
 
 	ConsistencyLevel initDefaultWriteConsistencyLevel(Map<String, Object> configMap) {
-        log.trace("Extract default write Consistency level from configuration map");
+		log.trace("Extract default write Consistency level from configuration map");
 
 		String defaultWriteLevel = (String) configMap.get(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
 	}
 
 	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap) {
-        log.trace("Extract read Consistency level map from configuration map");
+		log.trace("Extract read Consistency level map from configuration map");
 
 		@SuppressWarnings("unchecked")
 		Map<String, String> readConsistencyMap = (Map<String, String>) configMap.get(CONSISTENCY_LEVEL_READ_MAP_PARAM);
@@ -133,7 +158,7 @@ public class ArgumentExtractor {
 	}
 
 	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap) {
-        log.trace("Extract write Consistency level map from configuration map");
+		log.trace("Extract write Consistency level map from configuration map");
 
 		@SuppressWarnings("unchecked")
 		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
@@ -143,7 +168,7 @@ public class ArgumentExtractor {
 	}
 
 	public Cluster initCluster(Map<String, Object> configurationMap) {
-        log.trace("Extract or init cluster from configuration map");
+		log.trace("Extract or init cluster from configuration map");
 
 		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
 		if (cluster == null) {
@@ -232,7 +257,7 @@ public class ArgumentExtractor {
 	}
 
 	public Session initSession(Cluster cluster, Map<String, Object> configurationMap) {
-        log.trace("Extract or init Session from configuration map");
+		log.trace("Extract or init Session from configuration map");
 
 		Session nativeSession = (Session) configurationMap.get(NATIVE_SESSION_PARAM);
 		String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
@@ -245,7 +270,7 @@ public class ArgumentExtractor {
 	}
 
 	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
-        log.trace("Extract read Consistency level map from configuration map");
+		log.trace("Extract read Consistency level map from configuration map");
 
 		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
@@ -268,4 +293,17 @@ public class ArgumentExtractor {
 		}
 		return level;
 	}
+
+	public List<EventInterceptor<?>> initEventInterceptor(Map<String, Object> configurationMap) {
+
+		@SuppressWarnings("unchecked")
+		List<EventInterceptor<?>> eventInterceptors = (List<EventInterceptor<?>>) configurationMap
+				.get(EVENT_INTERCEPTORS_PARAM);
+		if (eventInterceptors == null) {
+
+			eventInterceptors = new ArrayList<EventInterceptor<?>>();
+		}
+		return eventInterceptors;
+	}
+
 }

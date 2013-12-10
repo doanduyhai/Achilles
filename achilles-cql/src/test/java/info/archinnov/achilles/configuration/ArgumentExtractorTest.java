@@ -16,12 +16,42 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventInterceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -43,6 +73,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
@@ -50,6 +81,7 @@ import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.Policies;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,6 +90,7 @@ public class ArgumentExtractorTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
+	@Spy
 	private ArgumentExtractor extractor = new ArgumentExtractor();
 
 	@Mock
@@ -242,6 +275,45 @@ public class ArgumentExtractorTest {
 	}
 
 	@Test
+	public void testInitEventInterceptor_should_return_empty_eventinterceptor_list_when_empty_list_parameter()
+			throws Exception {
+		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
+		List<EventInterceptor<?>> eventInterceptors = extractor.initEventInterceptor(configMap);
+		assertThat(eventInterceptors).isEmpty();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testInitEventInterceptor_should_init_eventinterceptor_list() throws Exception {
+		EventInterceptor<String> eventInterceptor1 = createMockEventInterceptor();
+		EventInterceptor<String> eventInterceptor2 = createMockEventInterceptor();
+		ImmutableList<EventInterceptor<?>> eventInterceptorsExcepted = new ImmutableList.Builder<EventInterceptor<?>>()
+				.add(eventInterceptor1).add(eventInterceptor2).build();
+		configMap.put(EVENT_INTERCEPTORS_PARAM, eventInterceptorsExcepted);
+
+		doCallRealMethod().when(extractor).initEventInterceptor(configMap);
+		List<EventInterceptor<?>> eventInterceptorsResult = extractor.initEventInterceptor(configMap);
+
+		assertThat(eventInterceptorsResult).containsExactly(eventInterceptor1, eventInterceptor2);
+	}
+
+	private EventInterceptor<String> createMockEventInterceptor() {
+		EventInterceptor<String> eventInterceptor = new EventInterceptor<String>() {
+
+			@Override
+			public String onEvent(String entity) {
+				return null;
+			}
+
+			@Override
+			public List<Event> events() {
+				return null;
+			}
+		};
+		return eventInterceptor;
+	}
+
+	@Test
 	public void should_get_cluster_directly_from_parameter() throws Exception {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(CLUSTER_PARAM, cluster);
@@ -319,7 +391,6 @@ public class ArgumentExtractorTest {
 	public void should_init_config_context() throws Exception {
 		// Given
 		Map<String, Object> params = new HashMap<String, Object>();
-		extractor = spy(extractor);
 
 		// When
 		doReturn(true).when(extractor).initForceTableCreation(params);

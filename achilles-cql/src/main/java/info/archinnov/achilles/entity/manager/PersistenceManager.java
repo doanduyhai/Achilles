@@ -22,10 +22,12 @@ import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
@@ -54,6 +56,7 @@ public class PersistenceManager {
 	protected ConfigurationContext configContext;
 	protected PersistenceContextFactory contextFactory;
 
+	protected EntityInitializer initializer = new EntityInitializer();
 	protected EntityProxifier proxifier = new EntityProxifier();
 	private EntityValidator entityValidator = new EntityValidator();
 	private TypedQueryValidator typedQueryValidator = new TypedQueryValidator();
@@ -80,7 +83,18 @@ public class PersistenceManager {
 	public void persist(Object entity) {
 		log.debug("Persisting entity '{}'", entity);
 
+		intercept(entity, Event.PRE_PERSIST);
 		persist(entity, OptionsBuilder.noOptions());
+		intercept(entity, Event.POST_PERSIST);
+	}
+
+	public void intercept(Object entity, Event event) {
+		if (entity != null) {
+			Class<?> baseClass = proxifier.deriveBaseClass(entity);
+			EntityMeta entityMeta = entityMetaMap.get(baseClass);
+			entityMeta.intercept(entity, event);
+		}
+
 	}
 
 	/**
@@ -135,7 +149,10 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
 
-		return merge(entity, OptionsBuilder.noOptions());
+		intercept(entity, Event.PRE_UPDATE);
+		T entityMerged = merge(entity, OptionsBuilder.noOptions());
+		intercept(entityMerged, Event.POST_UPDATE);
+		return entityMerged;
 	}
 
 	/**
@@ -184,7 +201,9 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
 
+		intercept(entity, Event.PRE_REMOVE);
 		remove(entity, null);
+		intercept(entity, Event.POST_REMOVE);
 	}
 
 	/**
@@ -257,7 +276,9 @@ public class PersistenceManager {
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-		return find(entityClass, primaryKey, null);
+		T entity = find(entityClass, primaryKey, null);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
@@ -275,6 +296,8 @@ public class PersistenceManager {
 				readLevel);
 		Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
@@ -322,14 +345,21 @@ public class PersistenceManager {
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
 				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.getReference(entityClass);
+		T entity = context.<T> getReference(entityClass);
+		intercept(entity, Event.POST_LOAD);
+		return entity;
 	}
 
 	/**
 	 * Refresh an entity.
+	 * 
+	 * will be also refreshed from Cassandra.
 	 * 
 	 * @param entity
 	 *            Entity to be refreshed
@@ -339,6 +369,7 @@ public class PersistenceManager {
 			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
 
 		refresh(entity, null);
+		intercept(entity, Event.POST_LOAD);
 	}
 
 	/**
@@ -368,6 +399,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> T initialize(final T entity) {
+		log.debug("Force lazy fields initialization for entity {}", entity);
 		if (log.isDebugEnabled()) {
 			log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
 		}
@@ -384,6 +416,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> Set<T> initialize(final Set<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -398,6 +431,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> List<T> initialize(final List<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -438,6 +472,7 @@ public class PersistenceManager {
 	 * @return real object
 	 */
 	public <T> T unwrap(T proxy) {
+		log.debug("Unproxying entity {}", proxy);
 		log.debug("Unwrapping entity {}", proxy);
 
 		T realObject = proxifier.unwrap(proxy);
@@ -455,6 +490,8 @@ public class PersistenceManager {
 	 * @return real object list
 	 */
 	public <T> List<T> unwrap(List<T> proxies) {
+		log.debug("Unproxying list of entities {}", proxies);
+
 		return proxifier.unwrap(proxies);
 	}
 
@@ -468,6 +505,8 @@ public class PersistenceManager {
 	 * @return real object set
 	 */
 	public <T> Set<T> unwrap(Set<T> proxies) {
+		log.debug("Unproxying set of entities {}", proxies);
+
 		return proxifier.unwrap(proxies);
 	}
 
@@ -481,6 +520,8 @@ public class PersistenceManager {
 	}
 
 	/**
+	 * Create a new slice query builder for entity of type T<br/>
+	 * <br/>
 	 * Return a CQL native query builder
 	 * 
 	 * @param queryString
