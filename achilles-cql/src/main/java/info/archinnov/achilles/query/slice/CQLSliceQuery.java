@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.CQLConsistencyConvertor.getCQLLevel;
-import info.archinnov.achilles.compound.CQLSliceQueryValidator;
+import static info.archinnov.achilles.consistency.ConsistencyConverter.getCQLLevel;
+
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
@@ -28,7 +28,7 @@ import info.archinnov.achilles.validation.Validator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cassandra.utils.Pair;
+import info.archinnov.achilles.type.Pair;
 
 import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -39,7 +39,7 @@ public class CQLSliceQuery<T> {
 	private List<Object> fixedComponents;
 	private Object lastStartComp;
 	private Object lastEndComp;
-	private CQLSliceQueryValidator validator = new CQLSliceQueryValidator();
+	private SliceQueryValidator validator = new SliceQueryValidator();
 	private ConsistencyLevel defaultReadLevel;
 
 	public CQLSliceQuery(SliceQuery<T> sliceQuery, ConsistencyLevel defaultReadLevel) {

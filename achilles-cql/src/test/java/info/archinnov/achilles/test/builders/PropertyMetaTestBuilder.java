@@ -16,13 +16,6 @@
  */
 package info.archinnov.achilles.test.builders;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.cassandra.utils.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import info.archinnov.achilles.entity.metadata.ClusteringComponents;
 import info.archinnov.achilles.entity.metadata.CounterProperties;
 import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
@@ -40,6 +33,15 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class PropertyMetaTestBuilder<T, K, V> {
 	private EntityIntrospector achillesEntityIntrospector = new EntityIntrospector();
@@ -47,7 +49,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private static final List<Class<?>> noClasses = Arrays.asList();
 	private static final List<String> noNames = Arrays.asList();
 	private static final List<Method> noAccessors = Arrays.asList();
-	private static final List<String> noTimeUUID = Arrays.asList();
 
 	private Class<T> clazz;
 	private String field;
@@ -70,10 +71,8 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private List<String> clusteringNames;
 	private List<Method> clusteringGetters;
 	private List<Method> clusteringSetters;
-	private String reversedName;
 
 	private boolean buildAccessors;
-	private Class<?> idClass;
 	private ObjectMapper objectMapper;
 	private PropertyMeta counterIdMeta;
 	private String fqcn;
@@ -111,7 +110,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		pm.setPropertyName(field);
 		pm.setKeyClass(keyClass);
 		pm.setValueClass(valueClass);
-		pm.setIdClass(idClass);
 		if (buildAccessors) {
 			Field declaredField = clazz.getDeclaredField(field);
 			pm.setGetter(achillesEntityIntrospector.findGetter(clazz, declaredField));
@@ -196,11 +194,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			clusteringSetters = this.clusteringSetters;
 		}
 
-		PartitionComponents partitionComponents = new PartitionComponents(partitionClasses, partitionNames, partitionGetters,
-				partitionSetters);
+		PartitionComponents partitionComponents = new PartitionComponents(partitionClasses, partitionNames,
+				partitionGetters, partitionSetters);
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames, reversedName, clusteringGetters,
-				clusteringSetters);
+		ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames,
+				clusteringGetters, clusteringSetters);
 
 		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
 				componentClasses, componentNames, componentGetters, componentSetters, compTimeUUID);
@@ -252,11 +250,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	public PropertyMetaTestBuilder<T, K, V> type(PropertyType type) {
 		this.type = type;
-		return this;
-	}
-	
-	public PropertyMetaTestBuilder<T, K, V> reversed(String reversedName) {
-		this.reversedName = reversedName;
 		return this;
 	}
 
@@ -342,11 +335,6 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	public PropertyMetaTestBuilder<T, K, V> fqcn(String fqcn) {
 		this.fqcn = fqcn;
-		return this;
-	}
-
-	public PropertyMetaTestBuilder<T, K, V> idClass(Class<?> idClass) {
-		this.idClass = idClass;
 		return this;
 	}
 

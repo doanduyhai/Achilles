@@ -19,7 +19,7 @@ package info.archinnov.achilles.proxy.wrapper;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -39,7 +39,7 @@ public class CQLCounterWrapperTest {
 	private CQLCounterWrapper wrapper;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private PropertyMeta counterMeta;
@@ -124,7 +124,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.incr();
-		verify(context).incrementClusteredCounter(counterMeta, 1L, ONE);
+		verify(context).incrementClusteredCounter(1L, ONE);
 	}
 
 	@Test
@@ -142,7 +142,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.incr(EACH_QUORUM);
-		verify(context).incrementClusteredCounter(counterMeta, 1L, EACH_QUORUM);
+		verify(context).incrementClusteredCounter(1L, EACH_QUORUM);
 	}
 
 	@Test
@@ -162,7 +162,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.incr(counterValue);
-		verify(context).incrementClusteredCounter(counterMeta, counterValue, ONE);
+		verify(context).incrementClusteredCounter(counterValue, ONE);
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.incr(counterValue, EACH_QUORUM);
-		verify(context).incrementClusteredCounter(counterMeta, counterValue, EACH_QUORUM);
+		verify(context).incrementClusteredCounter(counterValue, EACH_QUORUM);
 	}
 
 	@Test
@@ -200,7 +200,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.decr();
-		verify(context).decrementClusteredCounter(counterMeta, 1L, ONE);
+		verify(context).decrementClusteredCounter(1L, ONE);
 	}
 
 	@Test
@@ -218,7 +218,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.decr(EACH_QUORUM);
-		verify(context).decrementClusteredCounter(counterMeta, 1L, EACH_QUORUM);
+		verify(context).decrementClusteredCounter(1L, EACH_QUORUM);
 	}
 
 	@Test
@@ -238,7 +238,7 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.decr(counterValue);
-		verify(context).decrementClusteredCounter(counterMeta, counterValue, ONE);
+		verify(context).decrementClusteredCounter(counterValue, ONE);
 	}
 
 	@Test
@@ -258,6 +258,6 @@ public class CQLCounterWrapperTest {
 		wrapper = new CQLCounterWrapper(context, counterMeta);
 
 		wrapper.decr(counterValue, EACH_QUORUM);
-		verify(context).decrementClusteredCounter(counterMeta, counterValue, EACH_QUORUM);
+		verify(context).decrementClusteredCounter(counterValue, EACH_QUORUM);
 	}
 }

@@ -17,5 +17,5 @@
 package info.archinnov.achilles.type;
 
 public enum ConsistencyLevel {
-	ANY, ONE, TWO, THREE, QUORUM, EACH_QUORUM, LOCAL_QUORUM, ALL;
+	ANY, ONE, TWO, THREE, QUORUM, EACH_QUORUM, LOCAL_QUORUM, ALL,SERIAL,LOCAL_SERIAL;
 }

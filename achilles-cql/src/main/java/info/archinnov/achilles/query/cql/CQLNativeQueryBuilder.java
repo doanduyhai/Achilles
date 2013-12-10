@@ -16,25 +16,32 @@
  */
 package info.archinnov.achilles.query.cql;
 
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.entity.operations.CQLNativeQueryMapper;
+import info.archinnov.achilles.context.DaoContext;
+import info.archinnov.achilles.entity.operations.NativeQueryMapper;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
 
 public class CQLNativeQueryBuilder {
+	private static final Logger log = LoggerFactory.getLogger(CQLNativeQueryBuilder.class);
 
-	private CQLDaoContext daoContext;
+	private DaoContext daoContext;
 	private String queryString;
 
-	private CQLNativeQueryMapper mapper = new CQLNativeQueryMapper();
+	private NativeQueryMapper mapper = new NativeQueryMapper();
 
-	public CQLNativeQueryBuilder(CQLDaoContext daoContext, String queryString) {
+	private Object[] boundValues;
+
+	public CQLNativeQueryBuilder(DaoContext daoContext, String queryString, Object... boundValues) {
 		this.daoContext = daoContext;
 		this.queryString = queryString;
+		this.boundValues = boundValues;
 	}
 
 	/**
@@ -43,10 +50,11 @@ public class CQLNativeQueryBuilder {
 	 * backed by a LinkedHashMap and thus preserves the columns order as they
 	 * were declared in the native query
 	 * 
-	 * @return List<Map<String, Object>>
+	 * @return List<Map<String,Object>>
 	 */
 	public List<Map<String, Object>> get() {
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
+		log.debug("Get results for native query {}", queryString);
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
 		return mapper.mapRows(rows);
 	}
 
@@ -55,10 +63,11 @@ public class CQLNativeQueryBuilder {
 	 * value) of each row. The map is backed by a LinkedHashMap and thus
 	 * preserves the columns order as they were declared in the native query
 	 * 
-	 * @return Map<String, Object>
+	 * @return Map<String,Object>
 	 */
 	public Map<String, Object> first() {
-		List<Row> rows = daoContext.execute(new SimpleStatement(queryString)).all();
+		log.debug("Get first result for native query {}", queryString);
+		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
 		List<Map<String, Object>> result = mapper.mapRows(rows);
 		if (result.isEmpty())
 			return null;
@@ -71,6 +80,7 @@ public class CQLNativeQueryBuilder {
 	 * INSERT/UPDATE/DELETE and DDL statements
 	 */
 	public void execute() {
-		daoContext.execute(new SimpleStatement(queryString));
+		log.debug("Execute native query {}", queryString);
+		daoContext.execute(new SimpleStatementWrapper(queryString, boundValues));
 	}
 }

@@ -18,11 +18,11 @@ package info.archinnov.achilles.statement.cache;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.context.CQLPersistenceContext;
+import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.statement.prepared.CQLPreparedStatementGenerator;
+import info.archinnov.achilles.statement.prepared.PreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -47,7 +47,7 @@ public class CacheManagerTest {
 	private CacheManager manager;
 
 	@Mock
-	private CQLPreparedStatementGenerator generator;
+	private PreparedStatementGenerator generator;
 
 	@Mock
 	private Session session;
@@ -56,7 +56,7 @@ public class CacheManagerTest {
 	private Cache<StatementCacheKey, PreparedStatement> cache;
 
 	@Mock
-	private CQLPersistenceContext context;
+	private PersistenceContext context;
 
 	@Mock
 	private PreparedStatement ps;
@@ -72,7 +72,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
 				.build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -94,7 +94,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").compNames("id", "a", "b")
 				.type(PropertyType.EMBEDDED_ID).build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -113,7 +113,7 @@ public class CacheManagerTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
 				.build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
 		when(generator.prepareSelectFieldPS(session, meta, pm)).thenReturn(ps);
@@ -136,7 +136,7 @@ public class CacheManagerTest {
 		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
 				.type(PropertyType.SIMPLE).build();
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
@@ -164,7 +164,7 @@ public class CacheManagerTest {
 
 		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
-		when((Class<CompleteBean>) context.getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
 		when(generator.prepareUpdateFields(session, meta, pms)).thenReturn(ps);

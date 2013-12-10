@@ -19,8 +19,9 @@ package info.archinnov.achilles.query.cql;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.CQLDaoContext;
-import info.archinnov.achilles.entity.operations.CQLNativeQueryMapper;
+import info.archinnov.achilles.context.DaoContext;
+import info.archinnov.achilles.entity.operations.NativeQueryMapper;
+import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,12 +48,12 @@ public class CQLNativeQueryBuilderTest {
 	private CQLNativeQueryBuilder query;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private CQLDaoContext daoContext;
+	private DaoContext daoContext;
 
 	private String queryString = "query";
 
 	@Mock
-	private CQLNativeQueryMapper mapper;
+	private NativeQueryMapper mapper;
 
 	@Mock
 	private Row row;
@@ -60,13 +61,13 @@ public class CQLNativeQueryBuilderTest {
 	@Before
 	public void setUp() {
 		Whitebox.setInternalState(query, String.class, queryString);
-		Whitebox.setInternalState(query, CQLNativeQueryMapper.class, mapper);
+		Whitebox.setInternalState(query, NativeQueryMapper.class, mapper);
 	}
 
 	@Test
 	public void should_get() throws Exception {
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
+		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		when(mapper.mapRows(rows)).thenReturn(result);
@@ -80,7 +81,7 @@ public class CQLNativeQueryBuilderTest {
 	public void should_get_one() throws Exception {
 
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
+		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		Map<String, Object> line = new LinkedHashMap<String, Object>();
@@ -95,7 +96,7 @@ public class CQLNativeQueryBuilderTest {
 	public void should_return_null_when_no_row() throws Exception {
 
 		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatement.class)).all()).thenReturn(rows);
+		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
 		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
 		when(mapper.mapRows(rows)).thenReturn(result);
