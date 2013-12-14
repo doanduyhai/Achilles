@@ -39,13 +39,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CQLNativeQueryBuilderTest {
+public class NativeQueryBuilderTest {
 
 	@InjectMocks
-	private CQLNativeQueryBuilder query;
+	private NativeQueryBuilder query;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private DaoContext daoContext;

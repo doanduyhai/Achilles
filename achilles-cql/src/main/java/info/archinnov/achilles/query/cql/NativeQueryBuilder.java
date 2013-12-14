@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Row;
 
-public class CQLNativeQueryBuilder {
-	private static final Logger log = LoggerFactory.getLogger(CQLNativeQueryBuilder.class);
+public class NativeQueryBuilder {
+	private static final Logger log = LoggerFactory.getLogger(NativeQueryBuilder.class);
 
 	private DaoContext daoContext;
 	private String queryString;
@@ -38,7 +38,7 @@ public class CQLNativeQueryBuilder {
 
 	private Object[] boundValues;
 
-	public CQLNativeQueryBuilder(DaoContext daoContext, String queryString, Object... boundValues) {
+	public NativeQueryBuilder(DaoContext daoContext, String queryString, Object... boundValues) {
 		this.daoContext = daoContext;
 		this.queryString = queryString;
 		this.boundValues = boundValues;

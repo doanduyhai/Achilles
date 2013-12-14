@@ -26,7 +26,7 @@ import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
+import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
@@ -490,12 +490,12 @@ public class PersistenceManager {
 	 * @param boundValues
 	 *            values to be bind to the parameterized query, if any
 	 * 
-	 * @return CQLNativeQueryBuilder
+	 * @return NativeQueryBuilder
 	 */
-	public CQLNativeQueryBuilder nativeQuery(String queryString, Object... boundValues) {
+	public NativeQueryBuilder nativeQuery(String queryString, Object... boundValues) {
 		log.debug("Execute native query {}", queryString);
 		Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
-		return new CQLNativeQueryBuilder(daoContext, queryString, boundValues);
+		return new NativeQueryBuilder(daoContext, queryString, boundValues);
 	}
 
 	/**

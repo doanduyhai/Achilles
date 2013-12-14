@@ -30,7 +30,7 @@ import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
-import info.archinnov.achilles.query.cql.CQLNativeQueryBuilder;
+import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
@@ -526,7 +526,7 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_return_native_query_builder() throws Exception {
 		// When
-		CQLNativeQueryBuilder builder = manager.nativeQuery("queryString");
+		NativeQueryBuilder builder = manager.nativeQuery("queryString");
 
 		assertThat(builder).isNotNull();
 
