@@ -19,12 +19,14 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Session;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
@@ -71,8 +73,11 @@ public class CQLEmbeddedServerIT {
 	@Test
 	public void should_exception_when_embedded_already_started_with_another_cql_port() throws Exception {
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("An embedded Cassandra server is already listening to CQL port");
+        String cassandraHost = System.getProperty(CassandraEmbeddedServer.CASSANDRA_HOST);
+        if(StringUtils.isBlank(cassandraHost)) {
+            exception.expect(IllegalArgumentException.class);
+            exception.expectMessage("An embedded Cassandra server is already listening to CQL port");
+        }
 
 		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withCQLPort(9500)
 				.buildNativeSessionOnly();
@@ -80,8 +85,12 @@ public class CQLEmbeddedServerIT {
 
 	@Test
 	public void should_exception_when_embedded_already_started_with_another_thrift_port() throws Exception {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("An embedded Cassandra server is already listening to Thrift port");
+
+        String cassandraHost = System.getProperty(CassandraEmbeddedServer.CASSANDRA_HOST);
+        if(StringUtils.isBlank(cassandraHost)) {
+            exception.expect(IllegalArgumentException.class);
+            exception.expectMessage("An embedded Cassandra server is already listening to Thrift port");
+        }
 
 		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withThriftPort(9500)
 				.buildNativeSessionOnly();
