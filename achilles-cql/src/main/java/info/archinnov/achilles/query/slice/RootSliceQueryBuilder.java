@@ -311,7 +311,7 @@ public abstract class RootSliceQueryBuilder<T> {
 	}
 
 	protected SliceQuery<T> buildClusterQuery() {
-		return new SliceQuery<T>(entityClass, meta, partitionComponents, fromClusterings, toClusterings, ordering,
+		return new SliceQuery(entityClass, meta, partitionComponents, fromClusterings, toClusterings, ordering,
 				bounding, consistencyLevel, limit, batchSize, limitHasBeenSet);
 	}
 }

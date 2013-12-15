@@ -122,12 +122,13 @@ public class StatementGeneratorTest {
 		when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture()))
 				.thenReturn(statementWrapper);
-		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98);
+		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98,101);
 
 		assertThat(actual).isSameAs(statementWrapper);
 
 		assertThat(selectCaptor.getValue().getQueryString()).isEqualTo(
 				"SELECT id,comp1,comp2,age,name,label FROM table ORDER BY comp1 DESC LIMIT 98;");
+        assertThat(selectCaptor.getValue().getFetchSize()).isEqualTo(101);
 	}
 
 	@Test
@@ -139,42 +140,12 @@ public class StatementGeneratorTest {
 		when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture()))
 				.thenReturn(statementWrapper);
 
-		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98);
+		RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98,101);
 
 		assertThat(actual).isSameAs(statementWrapper);
 		assertThat(selectCaptor.getValue().getQueryString()).isEqualTo(
 				"SELECT id,comp1,comp2,age,name,label FROM table LIMIT 98;");
-	}
-
-	@Test
-	public void should_generate_slice_iterator_query() throws Exception {
-		EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
-		when(sliceQuery.getMeta()).thenReturn(meta);
-		when(sliceQuery.getLimit()).thenReturn(99);
-		when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
-		when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-		when(sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(eq(sliceQuery), any(Select.class)))
-				.thenAnswer(new Answer<Statement>() {
-
-					@Override
-					public Statement answer(InvocationOnMock invocation) throws Throwable {
-						return buildFakeWhereForSelect((Select) invocation.getArguments()[1]);
-					}
-				});
-		PreparedStatement ps = mock(PreparedStatement.class);
-
-		when(daoContext.prepare(statementCaptor.capture())).thenReturn(ps);
-
-		PreparedStatement actual = generator.generateIteratorSliceQuery(sliceQuery, daoContext);
-
-		assertThat(actual).isSameAs(ps);
-
-		RegularStatement query = statementCaptor.getValue();
-		assertThat(query.getQueryString()).isEqualTo(
-				"SELECT id,comp1,comp2,age,name,label FROM table WHERE fake=? ORDER BY comp1 DESC LIMIT 99;");
-
-		assertThat(query.getValues()[0]).isEqualTo(ByteBuffer.wrap("fake".getBytes()));
-		verify(ps).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+        assertThat(selectCaptor.getValue().getFetchSize()).isEqualTo(101);
 	}
 
 	@Test

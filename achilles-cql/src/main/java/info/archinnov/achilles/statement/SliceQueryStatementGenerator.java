@@ -113,9 +113,9 @@ public class SliceQueryStatementGenerator {
 					where.and(gte(varyingComponentName, lastEndComp));
 				break;
 			}
-
 		}
-		log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
+        where.setFetchSize(sliceQuery.getBatchSize());
+        log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
 		return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel());
 	}
 

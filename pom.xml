@@ -502,7 +502,7 @@
 			</build>
 		</profile>
         <profile>
-            <id>clean_data_files</id>
+            <id>keep_data_files</id>
             <properties>
                 <clean.data.files>false</clean.data.files>
             </properties>

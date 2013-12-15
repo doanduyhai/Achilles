@@ -64,10 +64,10 @@ public class SliceQueryExecutor {
         log.debug("Get slice query");
 		EntityMeta meta = sliceQuery.getMeta();
 
-		List<T> clusteredEntities = new ArrayList<T>();
+		List<T> clusteredEntities = new ArrayList();
 
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
-        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit());
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery(sliceQuery, defaultReadLevel);
+        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit(),cqlSliceQuery.getBatchSize());
 		List<Row> rows = daoContext.execute(statementWrapper).all();
 
 		for (Row row : rows) {
@@ -81,17 +81,16 @@ public class SliceQueryExecutor {
 
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
         log.debug("Get iterator for slice query");
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
-        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getBatchSize());
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery(sliceQuery, defaultReadLevel);
+        RegularStatementWrapper statementWrapper = generator.generateSelectSliceQuery(cqlSliceQuery, cqlSliceQuery.getLimit(),cqlSliceQuery.getBatchSize());
 		Iterator<Row> iterator = daoContext.execute(statementWrapper).iterator();
-		PreparedStatement ps = generator.generateIteratorSliceQuery(cqlSliceQuery, daoContext);
 		PersistenceContext context = buildContextForQuery(sliceQuery);
-		return new SliceQueryIterator<T>(cqlSliceQuery, context, iterator, ps);
+		return new SliceQueryIterator(cqlSliceQuery, context, iterator);
 	}
 
 	public <T> void remove(SliceQuery<T> sliceQuery) {
         log.debug("Slice remove");
-		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery<T>(sliceQuery, defaultReadLevel);
+		CQLSliceQuery<T> cqlSliceQuery = new CQLSliceQuery(sliceQuery, defaultReadLevel);
 		cqlSliceQuery.validateSliceQueryForRemove();
         final RegularStatementWrapper statementWrapper = generator.generateRemoveSliceQuery(cqlSliceQuery);
         daoContext.execute(statementWrapper);

@@ -54,7 +54,7 @@ public class StatementGenerator {
 	private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
 	private SliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new SliceQueryPreparedStatementGenerator();
 
-	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit) {
+	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit,int batchSize) {
 
 		log.trace("Generate SELECT statement for slice query");
 		EntityMeta meta = sliceQuery.getMeta();
@@ -64,27 +64,8 @@ public class StatementGenerator {
 		if (sliceQuery.getCQLOrdering() != null) {
 			select.orderBy(sliceQuery.getCQLOrdering());
 		}
+        select.setFetchSize(batchSize);
 		return sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
-	}
-
-	public PreparedStatement generateIteratorSliceQuery(CQLSliceQuery<?> sliceQuery, DaoContext daoContext) {
-
-		log.trace("Generate iterator for slice query");
-
-		EntityMeta meta = sliceQuery.getMeta();
-
-		Select select = generateSelectEntityInternal(meta);
-		select = select.limit(sliceQuery.getLimit());
-		if (sliceQuery.getCQLOrdering() != null) {
-			select.orderBy(sliceQuery.getCQLOrdering());
-		}
-
-		RegularStatement where = sliceQueryPreparedGenerator.generateWhereClauseForIteratorSliceQuery(sliceQuery,
-				select);
-
-		PreparedStatement preparedStatement = daoContext.prepare(where);
-		preparedStatement.setConsistencyLevel(sliceQuery.getConsistencyLevel());
-		return preparedStatement;
 	}
 
 	public RegularStatementWrapper generateRemoveSliceQuery(CQLSliceQuery<?> sliceQuery) {

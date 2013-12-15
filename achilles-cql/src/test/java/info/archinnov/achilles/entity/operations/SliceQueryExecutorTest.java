@@ -114,7 +114,7 @@ public class SliceQueryExecutorTest {
 		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
 		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
+		sliceQuery = new SliceQuery(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
 				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
 
 		Whitebox.setInternalState(executor, StatementGenerator.class, generator);
@@ -130,7 +130,7 @@ public class SliceQueryExecutorTest {
 		Row row = mock(Row.class);
 		List<Row> rows = Arrays.asList(row);
 
-		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(regularWrapper);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit),eq(batchSize))).thenReturn(regularWrapper);
 		when(daoContext.execute(regularWrapper).all()).thenReturn(rows);
 
 		when(meta.instanciate()).thenReturn(entity);
@@ -146,11 +146,9 @@ public class SliceQueryExecutorTest {
 	@Test
 	public void should_create_iterator_for_clustered_entities() throws Exception {
 		RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
-		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit))).thenReturn(regularWrapper);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit),eq(batchSize))).thenReturn(regularWrapper);
 		when(daoContext.execute(regularWrapper).iterator()).thenReturn(iterator);
 
-		PreparedStatement ps = mock(PreparedStatement.class);
-		when(generator.generateIteratorSliceQuery(anySliceQuery(), eq(daoContext))).thenReturn(ps);
 		when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
 				.thenReturn(context);
 
@@ -163,7 +161,7 @@ public class SliceQueryExecutorTest {
 
 	@Test
 	public void should_remove_clustered_entities() throws Exception {
-		sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta, partitionComponents,
+		sliceQuery = new SliceQuery(ClusteredEntity.class, meta, partitionComponents,
 				Arrays.<Object> asList(), Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit,
 				batchSize, false);
 

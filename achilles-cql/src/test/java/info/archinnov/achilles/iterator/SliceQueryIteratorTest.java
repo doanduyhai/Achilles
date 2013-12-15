@@ -66,9 +66,6 @@ public class SliceQueryIteratorTest {
 	@Mock
 	private Iterator<Row> iterator;
 
-	@Mock
-	private PreparedStatement ps;
-
 	private EntityMeta meta = new EntityMeta();
 
 	private int batchSize = 99;
@@ -81,10 +78,9 @@ public class SliceQueryIteratorTest {
 		when(sliceQuery.getVaryingComponentClass()).thenReturn((Class) String.class);
 		when(sliceQuery.getBatchSize()).thenReturn(batchSize);
 
-		sliceIterator = new SliceQueryIterator<ClusteredEntity>(sliceQuery, context, iterator, ps);
+		sliceIterator = new SliceQueryIterator(sliceQuery, context, iterator);
 
 		Whitebox.setInternalState(sliceIterator, "mapper", mapper);
-		Whitebox.setInternalState(sliceIterator, "cqlInvoker", cqlInvoker);
 		Whitebox.setInternalState(sliceIterator, "proxifier", proxifier);
 	}
 
@@ -96,22 +92,8 @@ public class SliceQueryIteratorTest {
 	}
 
 	@Test
-	public void should_reload_data_when_end_of_batch_size() throws Exception {
-		Whitebox.setInternalState(sliceIterator, "count", batchSize);
-		when(iterator.hasNext()).thenReturn(false);
-
-		when(context.bindAndExecute(ps, "name").iterator()).thenReturn(iterator);
-
-		assertThat(sliceIterator.hasNext()).isFalse();
-
-		verify(context).bindAndExecute(ps, "name");
-	}
-
-	@Test
 	public void should_return_false_for_has_next_when_no_more_data() throws Exception {
 		when(iterator.hasNext()).thenReturn(false);
-		Whitebox.setInternalState(sliceIterator, "count", batchSize - 1);
-
 		assertThat(sliceIterator.hasNext()).isFalse();
 	}
 
@@ -134,7 +116,6 @@ public class SliceQueryIteratorTest {
 		ClusteredEntity actual = sliceIterator.next();
 
 		assertThat(actual).isSameAs(entity);
-		assertThat((Integer) Whitebox.getInternalState(sliceIterator, "count")).isEqualTo(1);
 		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
 	}
 
