@@ -69,7 +69,9 @@ public class UUIDGen
      */
     public static long microsTimestamp(UUID uuid)
     {
-        return (uuid.timestamp() / 10) + START_EPOCH * 1000;
+        final long timestamp = uuid.timestamp();
+        long remainder = timestamp%1000;
+        return (timestamp / 10) + START_EPOCH * 1000 + remainder;
     }
 
     public static long increasingMicroTimestamp() {

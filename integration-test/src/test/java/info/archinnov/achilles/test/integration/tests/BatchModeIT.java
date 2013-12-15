@@ -35,9 +35,11 @@ import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.utils.UUIDGen;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -293,8 +295,7 @@ public class BatchModeIT {
         assertThat(row.getString("name")).isEqualTo("name");
     }
 
-
-	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
+    private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
 		ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");
