@@ -26,7 +26,6 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.statement.prepared.SliceQueryPreparedStatementGenerator;
 import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -36,7 +35,6 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -50,14 +48,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update.Where;
@@ -72,8 +67,6 @@ public class StatementGeneratorTest {
 	@Mock
 	private SliceQueryStatementGenerator sliceQueryGenerator;
 
-	@Mock
-	private SliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator;
 
 	@Mock
 	private CQLSliceQuery<ClusteredEntity> sliceQuery;
@@ -130,6 +123,74 @@ public class StatementGeneratorTest {
 				"SELECT id,comp1,comp2,age,name,label FROM table ORDER BY comp1 DESC LIMIT 98;");
         assertThat(selectCaptor.getValue().getFetchSize()).isEqualTo(101);
 	}
+
+    @Test
+    public void should_generate_insert_for_simple_id() throws Exception {
+        //Given
+        Long primaryKey = RandomUtils.nextLong();
+        final String myName = "myName";
+        CompleteBean entity = new CompleteBean();
+        EntityMeta meta = mock(EntityMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class);
+        PropertyMeta nameMeta = mock(PropertyMeta.class);
+
+        //When
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getTableName()).thenReturn("table");
+
+        when(idMeta.isEmbeddedId()).thenReturn(false);
+        when(idMeta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(idMeta.encode(primaryKey)).thenReturn(primaryKey);
+        when(idMeta.getPropertyName()).thenReturn("id");
+
+        when(meta.getAllMetasExceptIdMeta()).thenReturn(Arrays.asList(nameMeta));
+
+        when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
+        when(nameMeta.getValueFromField(entity)).thenReturn(myName);
+        when(nameMeta.encode(myName)).thenReturn(myName);
+        when(nameMeta.getPropertyName()).thenReturn("name");
+
+        final Pair<Insert, Object[]> pair = generator.generateInsert(entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("INSERT INTO table(id,name) VALUES (" + primaryKey + ",?);");
+        assertThat(Arrays.asList(pair.right)).containsExactly(primaryKey, myName);
+    }
+
+    @Test
+    public void should_generate_insert_for_composite_partition_key() throws Exception {
+        //Given
+        Object primaryKey = new Object();
+        Long id = RandomUtils.nextLong();
+        String type = "type";
+        final String myName = "myName";
+        CompleteBean entity = new CompleteBean();
+        EntityMeta meta = mock(EntityMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class);
+        PropertyMeta nameMeta = mock(PropertyMeta.class);
+
+        //When
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getTableName()).thenReturn("table");
+
+        when(idMeta.isEmbeddedId()).thenReturn(true);
+        when(idMeta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id","type"));
+        when(idMeta.encodeToComponents(primaryKey)).thenReturn(Arrays.<Object>asList(id,type));
+
+        when(meta.getAllMetasExceptIdMeta()).thenReturn(Arrays.asList(nameMeta));
+
+        when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
+        when(nameMeta.getValueFromField(entity)).thenReturn(myName);
+        when(nameMeta.encode(myName)).thenReturn(myName);
+        when(nameMeta.getPropertyName()).thenReturn("name");
+
+        final Pair<Insert, Object[]> pair = generator.generateInsert(entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("INSERT INTO table(id,type,name) VALUES ("+id+",?,?);");
+        assertThat(Arrays.asList(pair.right)).containsExactly(id,type,myName);
+    }
 
 	@Test
 	public void should_generate_slice_select_query_without_ordering() throws Exception {
@@ -191,7 +252,7 @@ public class StatementGeneratorTest {
 
 		List<String> friends = Arrays.asList("foo", "bar");
 
-		Set<String> followers = new TreeSet<String>();
+		Set<String> followers = new TreeSet<>();
 		followers.add("john");
 		followers.add("helen");
 
@@ -272,9 +333,4 @@ public class StatementGeneratorTest {
 
 		return meta;
 	}
-
-	private RegularStatement buildFakeWhereForSelect(Select select) {
-		return select.where().and(QueryBuilder.eq("fake", "fake"));
-	}
-
 }

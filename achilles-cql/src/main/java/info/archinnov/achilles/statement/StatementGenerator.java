@@ -17,13 +17,11 @@
 package info.archinnov.achilles.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.statement.prepared.SliceQueryPreparedStatementGenerator;
 import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.Pair;
 
@@ -36,7 +34,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -52,7 +49,6 @@ public class StatementGenerator {
 	private static final Logger log = LoggerFactory.getLogger(StatementGenerator.class);
 
 	private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
-	private SliceQueryPreparedStatementGenerator sliceQueryPreparedGenerator = new SliceQueryPreparedStatementGenerator();
 
 	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit,int batchSize) {
 
@@ -111,7 +107,7 @@ public class StatementGenerator {
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
 		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
-		fieldMetas.remove(idMeta);
+		//fieldMetas.remove(idMeta);
 
 		final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
 		for (int i = 0; i < fieldMetas.size(); i++) {
