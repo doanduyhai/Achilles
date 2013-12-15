@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.Arrays;
@@ -74,7 +75,9 @@ import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DaoContextTest {
-	@Rule
+    private final Optional<Integer> ttlO = Optional.fromNullable(null);
+
+    @Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
@@ -138,7 +141,7 @@ public class DaoContextTest {
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-	@Before
+    @Before
 	public void setUp() {
 		Whitebox.setInternalState(daoContext, PreparedStatementBinder.class, binder);
 		Whitebox.setInternalState(daoContext, CacheManager.class, cacheManager);
@@ -174,41 +177,13 @@ public class DaoContextTest {
 		when(context.getTtt()).thenReturn(Optional.<Integer> absent());
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
 		when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
-		when(binder.bindForInsert(ps, entityMeta, entity, ALL)).thenReturn(bsWrapper);
+		when(binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO)).thenReturn(bsWrapper);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
 
 		daoContext.pushInsertStatement(context);
 
 		// Then
 		verify(context).pushStatement(bsWrapper);
-	}
-
-	@Test
-	public void should_push_insert_with_ttl() throws Exception {
-		// Given
-		Integer ttl = 115;
-		Options using = insertInto("test").using(ttl(ttl));
-		Object[] boundValues = new Object[] {};
-		Pair<Insert, Object[]> pair = Pair.create(insert, boundValues);
-		entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
-
-		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
-		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
-		when(context.getEntity()).thenReturn(entity);
-		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
-		when(statementGenerator.generateInsert(entity, entityMeta)).thenReturn(pair);
-		when(insert.using(usingCaptor.capture())).thenReturn(using);
-		// doNothing().when(insertOptions).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
-
-		daoContext.pushInsertStatement(context);
-
-		// Then
-		verify(context).pushStatement(statementWrapperCaptor.capture());
-
-		assertThat(statementWrapperCaptor.getValue().getValues()).contains(ttl);
-		assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
-		assertThat(using.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ALL);
 	}
 
 	@Test
@@ -221,7 +196,7 @@ public class DaoContextTest {
 		entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
 
 		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
+		when(context.getTtt()).thenReturn(Optional.<Integer>fromNullable(null));
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
@@ -278,41 +253,12 @@ public class DaoContextTest {
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
 		when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms)).thenReturn(ps);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
-		when(binder.bindForUpdate(ps, entityMeta, pms, entity, EACH_QUORUM)).thenReturn(bsWrapper);
+		when(binder.bindForUpdate(ps, entityMeta, pms, entity, EACH_QUORUM,ttlO)).thenReturn(bsWrapper);
 
 		daoContext.pushUpdateStatement(context, pms);
 
 		// Then
 		verify(context).pushStatement(bsWrapper);
-	}
-
-	@Test
-	public void should_push_update_with_ttl() throws Exception {
-		// Given
-		Integer ttl = 115;
-		Update.Options options = update("test").using(ttl(ttl));
-		Object[] boundValues = new Object[] {};
-		Pair<Where, Object[]> pair = Pair.create(update, boundValues);
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("age").build();
-		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
-
-		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(ttl));
-		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
-		when(context.getEntity()).thenReturn(entity);
-		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
-		when(statementGenerator.generateUpdateFields(entity, entityMeta, pms)).thenReturn(pair);
-		when(update.using(usingCaptor.capture())).thenReturn(options);
-
-		daoContext.pushUpdateStatement(context, pms);
-
-		// Then
-		verify(context).pushStatement(statementWrapperCaptor.capture());
-		assertThat(statementWrapperCaptor.getValue().getValues()).contains(ttl);
-
-		assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
-		assertThat(options.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
@@ -327,7 +273,7 @@ public class DaoContextTest {
 		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
 		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
+		when(context.getTtt()).thenReturn(Optional.<Integer>fromNullable(null));
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
@@ -369,10 +315,10 @@ public class DaoContextTest {
 		// Then
 		verify(context).pushStatement(statementWrapperCaptor.capture());
 		assertThat(statementWrapperCaptor.getValue().getValues()).contains(ttl, timestamp);
-		assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
+		assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(timestamp));
 
 		List<Using> usings = Whitebox.getInternalState(options, "usings");
-		assertThat(Whitebox.getInternalState(usings.get(0), "value")).isEqualTo(new Long(timestamp));
+		assertThat(Whitebox.getInternalState(usings.get(1), "value")).isEqualTo(new Long(ttl));
 	}
 
 	@Test

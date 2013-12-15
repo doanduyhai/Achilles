@@ -50,12 +50,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementBinderTest {
-	@InjectMocks
+    private final Optional<Integer> ttlO = Optional.fromNullable(null);
+
+    @InjectMocks
 	private PreparedStatementBinder binder;
 
 	@Mock
@@ -113,10 +116,10 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL,ttlO);
 
 		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, age);
+		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, age,0);
 	}
 
 	@Test
@@ -145,10 +148,10 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, null);
+		assertThat(Arrays.asList(actual.getValues())).containsExactly(primaryKey, name, null,0);
 	}
 
 	@Test
@@ -194,11 +197,11 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL,ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(userId, name, age, friends, followers,
-				preferences);
+				preferences,0);
 	}
 
 	@Test
@@ -246,10 +249,10 @@ public class PreparedStatementBinderTest {
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, Arrays.asList(nameMeta, ageMeta), entity,
-				ALL);
+				ALL, ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly(name, age, primaryKey);
+		assertThat(Arrays.asList(actual.getValues())).containsExactly(0,name, age, primaryKey);
 	}
 
 	@Test

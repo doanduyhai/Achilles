@@ -43,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
 
@@ -65,6 +66,9 @@ public class PreparedStatementGeneratorTest {
 	@Captor
 	ArgumentCaptor<String> queryCaptor;
 
+    @Captor
+	ArgumentCaptor<RegularStatement> regularStatementCaptor;
+
 	@Test
 	public void should_prepare_insert_ps() throws Exception {
 
@@ -86,7 +90,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?);");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?) USING TTL ?;");
 	}
 
 	@Test
@@ -109,7 +113,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,a,b,name) VALUES (?,?,?,?);");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,a,b,name) VALUES (?,?,?,?) USING TTL ?;");
 	}
 
 	@Test
@@ -175,7 +179,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table SET name=?,age=? WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL ? SET name=?,age=? WHERE id=?;");
 	}
 
 	@Test
@@ -200,7 +204,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table SET name=?,age=? WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL ? SET name=?,age=? WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
@@ -390,7 +394,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement selectPs = mock(PreparedStatement.class);
 		PreparedStatement deletePs = mock(PreparedStatement.class);
 
-		when(session.prepare(queryCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
+		when(session.prepare(regularStatementCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
 
 		Map<CQLQueryType, PreparedStatement> actual = generator.prepareClusteredCounterQueryMap(session, meta);
 
@@ -399,12 +403,12 @@ public class PreparedStatementGeneratorTest {
 		assertThat(actual.get(SELECT)).isSameAs(selectPs);
 		assertThat(actual.get(DELETE)).isSameAs(deletePs);
 
-		List<String> queries = queryCaptor.getAllValues();
+		List<RegularStatement> regularStatements = regularStatementCaptor.getAllValues();
 
-		assertThat(queries).hasSize(4);
-		assertThat(queries.get(0)).isEqualTo("UPDATE counterTable SET counter=counter+? WHERE id=?;");
-		assertThat(queries.get(1)).isEqualTo("UPDATE counterTable SET counter=counter-? WHERE id=?;");
-		assertThat(queries.get(2)).isEqualTo("SELECT counter FROM counterTable WHERE id=?;");
-		assertThat(queries.get(3)).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
+		assertThat(regularStatements).hasSize(4);
+		assertThat(regularStatements.get(0).getQueryString()).isEqualTo("UPDATE counterTable SET counter=counter+? WHERE id=?;");
+		assertThat(regularStatements.get(1).getQueryString()).isEqualTo("UPDATE counterTable SET counter=counter-? WHERE id=?;");
+		assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT counter FROM counterTable WHERE id=?;");
+		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
 	}
 }

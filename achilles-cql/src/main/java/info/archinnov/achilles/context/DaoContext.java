@@ -89,27 +89,21 @@ public class DaoContext {
 		Optional<Integer> ttlO = context.getTtt();
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-		if (ttlO.isPresent() || timestampO.isPresent()) {
+		if (timestampO.isPresent()) {
 			final Pair<Insert, Object[]> pair = statementGenerator.generateInsert(context.getEntity(), entityMeta);
 			Insert insert = pair.left;
 			Object[] boundValues = pair.right;
-			Insert.Options options = null;
+			Insert.Options insertOptions = insert.using(timestamp(timestampO.get()));
+            boundValues = ArrayUtils.add(boundValues, timestampO.get());
 
-			if (ttlO.isPresent() && timestampO.isPresent()) {
-				options = insert.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
-				boundValues = ArrayUtils.add(boundValues, ttlO.get());
-				boundValues = ArrayUtils.add(boundValues, timestampO.get());
-			} else if (ttlO.isPresent()) {
-				options = insert.using(ttl(ttlO.get()));
-				boundValues = ArrayUtils.add(boundValues, ttlO.get());
-			} else if (timestampO.isPresent()) {
-				options = insert.using(timestamp(timestampO.get()));
-				boundValues = ArrayUtils.add(boundValues, timestampO.get());
-			}
-			context.pushStatement(new RegularStatementWrapper(options, boundValues, getCQLLevel(writeLevel)));
+            if (ttlO.isPresent()) {
+                insertOptions = insertOptions.and(ttl(ttlO.get()));
+                boundValues = ArrayUtils.add(boundValues, ttlO.get());
+            }
+			context.pushStatement(new RegularStatementWrapper(insertOptions, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = insertPSs.get(entityClass);
-			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity(), writeLevel);
+			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity(), writeLevel,ttlO);
 			context.pushStatement(bsWrapper);
 		}
 	}
@@ -120,31 +114,24 @@ public class DaoContext {
 		Optional<Integer> ttlO = context.getTtt();
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, entityMeta);
-		if (ttlO.isPresent() || timestampO.isPresent()) {
+		if (timestampO.isPresent()) {
 			final Pair<Update.Where, Object[]> pair = statementGenerator.generateUpdateFields(context.getEntity(),
 					entityMeta, pms);
 
 			final Update.Where where = pair.left;
 			Object[] boundValues = pair.right;
-			Update.Options options = null;
+			Update.Options updateOptions = where.using(timestamp(timestampO.get()));
+            boundValues = ArrayUtils.add(boundValues, timestampO.get());
 
-			if (ttlO.isPresent() && timestampO.isPresent()) {
-				options = where.using(ttl(ttlO.get())).and(timestamp(timestampO.get()));
-				boundValues = ArrayUtils.add(boundValues, ttlO.get());
-				boundValues = ArrayUtils.add(boundValues, timestampO.get());
-			} else if (ttlO.isPresent()) {
-				options = where.using(ttl(ttlO.get()));
-				boundValues = ArrayUtils.add(boundValues, ttlO.get());
-			} else if (timestampO.isPresent()) {
-				options = where.using(timestamp(timestampO.get()));
-				boundValues = ArrayUtils.add(boundValues, timestampO.get());
-			}
-
-			context.pushStatement(new RegularStatementWrapper(options, boundValues, getCQLLevel(writeLevel)));
+            if (ttlO.isPresent()) {
+                updateOptions = updateOptions.and(ttl(ttlO.get()));
+                boundValues = ArrayUtils.add(boundValues, ttlO.get());
+            }
+			context.pushStatement(new RegularStatementWrapper(updateOptions, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms);
 			BoundStatementWrapper bsWrapper = binder
-					.bindForUpdate(ps, entityMeta, pms, context.getEntity(), writeLevel);
+					.bindForUpdate(ps, entityMeta, pms, context.getEntity(), writeLevel,ttlO);
 			context.pushStatement(bsWrapper);
 		}
 	}

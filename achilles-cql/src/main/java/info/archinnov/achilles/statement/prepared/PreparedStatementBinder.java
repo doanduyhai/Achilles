@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
+import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 public class PreparedStatementBinder {
@@ -42,7 +43,7 @@ public class PreparedStatementBinder {
 	private static final Logger log = LoggerFactory.getLogger(PreparedStatementBinder.class);
 
 	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity,
-			ConsistencyLevel consistencyLevel) {
+			ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for insert of entity {}", ps.getQueryString(), entity);
 		List<Object> values = new ArrayList<Object>();
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
@@ -59,14 +60,18 @@ public class PreparedStatementBinder {
 			values.add(value);
 		}
 
-		BoundStatement bs = ps.bind(values.toArray());
+        // TTL or default value 0
+        values.add(ttlO.or(0));
+        BoundStatement bs = ps.bind(values.toArray());
 		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
 	}
 
 	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
-			Object entity, ConsistencyLevel consistencyLevel) {
+			Object entity, ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
 		List<Object> values = new ArrayList<Object>();
+        // TTL or default value 0
+        values.add(ttlO.or(0));
 		for (PropertyMeta pm : pms) {
 			Object value = pm.getValueFromField(entity);
 			value = encodeValueForCassandra(pm, value);

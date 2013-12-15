@@ -63,6 +63,8 @@ public class PreparedStatementGenerator {
 		for (PropertyMeta pm : fieldMetas) {
 			insert.value(pm.getPropertyName(), bindMarker());
 		}
+
+        insert.using(ttl(bindMarker()));
 		return session.prepare(insert.getQueryString());
 	}
 
@@ -98,7 +100,7 @@ public class PreparedStatementGenerator {
 				assignments.and(set(pm.getPropertyName(), bindMarker()));
 			}
 		}
-		RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments);
+		RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments,true);
 		return session.prepare(statement.getQueryString());
 	}
 
@@ -164,25 +166,21 @@ public class PreparedStatementGenerator {
 		String tableName = meta.getTableName();
 		String counterName = counterMeta.getPropertyName();
 
-		RegularStatement incrStatement = prepareWhereClauseForUpdate(idMeta,
-				update(tableName).with(incr(counterName, 100L)));
-		String incr = incrStatement.getQueryString().replaceAll("100", "?");
+		RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
+                .with(incr(counterName, bindMarker())),false);
 
-		RegularStatement decrStatement = prepareWhereClauseForUpdate(idMeta,
-				update(tableName).with(decr(counterName, 100L)));
-		String decr = decrStatement.getQueryString().replaceAll("100", "?");
+		RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
+                .with(decr(counterName, bindMarker())), false);
 
 		RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
-		String select = selectStatement.getQueryString();
 
 		RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
-		String delete = deleteStatement.getQueryString();
 
-		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap<AchillesCounter.CQLQueryType, PreparedStatement>();
-		clusteredCounterPSMap.put(INCR, session.prepare(incr.toString()));
-		clusteredCounterPSMap.put(DECR, session.prepare(decr.toString()));
-		clusteredCounterPSMap.put(SELECT, session.prepare(select.toString()));
-		clusteredCounterPSMap.put(DELETE, session.prepare(delete.toString()));
+		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap<>();
+		clusteredCounterPSMap.put(INCR, session.prepare(incrementStatement));
+		clusteredCounterPSMap.put(DECR, session.prepare(decrementStatement));
+		clusteredCounterPSMap.put(SELECT, session.prepare(selectStatement));
+		clusteredCounterPSMap.put(DELETE, session.prepare(deleteStatement));
 
 		return clusteredCounterPSMap;
 	}
@@ -228,10 +226,9 @@ public class PreparedStatementGenerator {
 		return statement;
 	}
 
-	private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update) {
-		RegularStatement statement;
-		if (idMeta.isEmbeddedId()) {
-			Update.Where where = null;
+	private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update,boolean prepareTTL) {
+        Update.Where where = null;
+        if (idMeta.isEmbeddedId()) {
 			int i = 0;
 			for (String clusteredId : idMeta.getComponentNames()) {
 				if (i == 0) {
@@ -241,11 +238,16 @@ public class PreparedStatementGenerator {
 				}
 				i++;
 			}
-			statement = where;
 		} else {
-			statement = update.where(eq(idMeta.getPropertyName(), bindMarker()));
+            where = update.where(eq(idMeta.getPropertyName(), bindMarker()));
+			//statement = update.where(eq(idMeta.getPropertyName(), bindMarker())).using(ttl(bindMarker()));
 		}
-		return statement;
+
+        if(prepareTTL) {
+            return where.using(ttl(bindMarker()));
+        } else {
+            return where;
+        }
 	}
 
 	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
