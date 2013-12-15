@@ -44,4 +44,17 @@ public class OptionsTest {
 		assertThat(newOptions.getTimestamp().get()).isEqualTo(100L);
 		assertThat(newOptions.getTtl().get()).isEqualTo(10);
 	}
+
+    @Test
+    public void should_duplicate_with_new_timestamp() throws Exception {
+        //Given
+        Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
+
+        //When
+        final Options newOptions = options.duplicateWithNewTimestamp(101L);
+
+        //Then
+        assertThat(newOptions.getTimestamp().get()).isEqualTo(101L);
+        assertThat(newOptions.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
+    }
 }

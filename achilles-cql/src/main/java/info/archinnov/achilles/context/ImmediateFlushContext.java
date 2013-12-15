@@ -37,13 +37,13 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 	}
 
 	@Override
-	public void startBatch() {
+	public void startBatch(ConsistencyLevel defaultConsistencyLevel) {
 		throw new UnsupportedOperationException(
 				"Cannot start a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}
 
 	@Override
-	public void endBatch() {
+	public void endBatch(ConsistencyLevel defaultConsistencyLevel) {
 		throw new UnsupportedOperationException(
 				"Cannot end a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}

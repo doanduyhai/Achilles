@@ -53,7 +53,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cassandra.version>2.0.3</cassandra.version>
-		<datastax.driver.core.version>2.0.0-rc1</datastax.driver.core.version>
+		<datastax.driver.core.version>2.0.0-rc2</datastax.driver.core.version>
 		<spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
 		<jackson.version>1.9.2</jackson.version>
@@ -78,6 +78,8 @@
 		<maven-jar-plugin>2.4</maven-jar-plugin>
 		<maven-site-plugin>3.3</maven-site-plugin>
 		<maven-scm-plugin>1.8.1</maven-scm-plugin>
+
+        <clean.data.files>true</clean.data.files>
 	</properties>
 
 	<modules>
@@ -366,6 +368,9 @@
 					<includes>
 						<include>**/info/archinnov/**/*.java</include>
 					</includes>
+                    <systemPropertyVariables>
+                        <clean.data.files>${clean.data.files}</clean.data.files>
+                    </systemPropertyVariables>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -496,6 +501,12 @@
 				</plugins>
 			</build>
 		</profile>
+        <profile>
+            <id>clean_data_files</id>
+            <properties>
+                <clean.data.files>false</clean.data.files>
+            </properties>
+        </profile>
 	</profiles>
 	<scm>
 		<url>https://github.com/doanduyhai/achilles</url>

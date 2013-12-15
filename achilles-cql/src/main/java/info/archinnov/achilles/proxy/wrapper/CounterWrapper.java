@@ -21,13 +21,13 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 
-public class CQLCounterWrapper implements Counter {
+public class CounterWrapper implements Counter {
 
 	private transient PersistenceContext context;
 	private transient PropertyMeta counterMeta;
 	private transient boolean clusteredCounter;
 
-	public CQLCounterWrapper(PersistenceContext context, PropertyMeta counterMeta) {
+	public CounterWrapper(PersistenceContext context, PropertyMeta counterMeta) {
 		this.context = context;
 		this.counterMeta = counterMeta;
 		this.clusteredCounter = context.getEntityMeta().isClusteredCounter();

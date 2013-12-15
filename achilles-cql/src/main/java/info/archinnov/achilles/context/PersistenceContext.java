@@ -276,7 +276,7 @@ public class PersistenceContext {
 	}
 
 	public void endBatch() {
-		flushContext.endBatch();
+		flushContext.endBatch(configContext.getDefaultWriteConsistencyLevel());
 	}
 
 	public EntityMeta getEntityMeta() {

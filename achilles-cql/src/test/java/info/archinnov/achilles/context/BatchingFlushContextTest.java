@@ -20,6 +20,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -52,10 +53,10 @@ public class BatchingFlushContextTest {
 	public void should_start_batch() throws Exception {
 		context.statementWrappers.add(bsWrapper);
 
-		context.startBatch();
+        context.startBatch(ConsistencyLevel.TWO);
 
 		assertThat(context.statementWrappers).isEmpty();
-		assertThat(context.consistencyLevel).isNull();
+		assertThat(context.consistencyLevel).isEqualTo(ConsistencyLevel.TWO);
 	}
 
 	@Test
@@ -71,10 +72,10 @@ public class BatchingFlushContextTest {
 	public void should_end_batch() throws Exception {
 		context.statementWrappers.add(bsWrapper);
 
-		context.endBatch();
+		context.endBatch(ConsistencyLevel.TWO);
 
 		assertThat(context.statementWrappers).isEmpty();
-		assertThat(context.consistencyLevel).isNull();
+		assertThat(context.consistencyLevel).isEqualTo(ConsistencyLevel.TWO);
 	}
 
 	@Test

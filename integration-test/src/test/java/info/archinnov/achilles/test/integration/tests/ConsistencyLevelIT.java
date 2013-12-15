@@ -178,14 +178,14 @@ public class ConsistencyLevelIT {
 		entity = manager.merge(entity);
 
 		try {
-			manager.remove(entity, ConsistencyLevel.EACH_QUORUM);
+			manager.remove(entity, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
 							"consistency level EACH_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
 		}
 		logAsserter.prepareLogLevel();
-		manager.remove(entity, ConsistencyLevel.ALL);
+		manager.remove(entity, OptionsBuilder.withConsistency(ConsistencyLevel.ALL));
 		assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}

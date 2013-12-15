@@ -229,7 +229,7 @@ public class PersistenceManagerTest {
 		// When
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		manager.remove(entity, EACH_QUORUM);
+		manager.remove(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 
 		// Then
 		verify(entityValidator).validateEntity(entity, entityMetaMap);

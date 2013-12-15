@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,11 +106,11 @@ public class ImmediateFlushContextTest {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_calling_start_batch() throws Exception {
-		context.startBatch();
+		context.startBatch(ConsistencyLevel.ONE);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_calling_end_batch() throws Exception {
-		context.endBatch();
+		context.endBatch(ConsistencyLevel.ONE);
 	}
 }

@@ -23,7 +23,7 @@ import org.junit.rules.ExternalResource;
 public abstract class AchillesTestResource extends ExternalResource {
 
 	protected final String[] tables;
-	private Steps steps = BOTH;
+    private Steps steps = BOTH;
 
 	public AchillesTestResource(String... tables) {
 		this.tables = tables;

@@ -69,47 +69,45 @@ public class BatchingPersistenceManagerTest {
 
 	@Before
 	public void setUp() {
-		manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+        manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext);
 		Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
 	}
 
 	@Test
 	public void should_start_batch() throws Exception {
 		manager.startBatch();
-		verify(flushContext).startBatch();
+		verify(flushContext).startBatch(ConsistencyLevel.ONE);
 	}
 
 	@Test
 	public void should_start_batch_with_consistency_level() throws Exception {
 		manager.startBatch(EACH_QUORUM);
-		verify(flushContext).startBatch();
-		verify(flushContext, times(2)).setConsistencyLevel(consistencyCaptor.capture());
-
-		assertThat(consistencyCaptor.getValue()).isSameAs(EACH_QUORUM);
+		verify(flushContext).startBatch(ConsistencyLevel.EACH_QUORUM);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception {
 		manager.endBatch();
-		verify(flushContext).endBatch();
-		verify(flushContext).cleanUp();
+		verify(flushContext).endBatch(ConsistencyLevel.ONE);
+		verify(flushContext).cleanUp(ConsistencyLevel.ONE);
 	}
 
 	@Test
 	public void should_clean_flush_context_when_exception() throws Exception {
-		doThrow(new RuntimeException()).when(flushContext).endBatch();
+		doThrow(new RuntimeException()).when(flushContext).endBatch(ConsistencyLevel.ONE);
 		try {
 			manager.endBatch();
 		} catch (RuntimeException ex) {
-			verify(flushContext).endBatch();
-			verify(flushContext).cleanUp();
+			verify(flushContext).endBatch(ConsistencyLevel.ONE);
+			verify(flushContext).cleanUp(ConsistencyLevel.ONE);
 		}
 	}
 
 	@Test
 	public void should_clean_batch() throws Exception {
 		manager.cleanBatch();
-		verify(flushContext).cleanUp();
+		verify(flushContext).cleanUp(ConsistencyLevel.ONE);
 	}
 
 	@Test
@@ -136,7 +134,7 @@ public class BatchingPersistenceManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.remove(new CompleteBean(), ONE);
+		manager.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
 
 	@Test

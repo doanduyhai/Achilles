@@ -64,11 +64,11 @@ public abstract class AbstractFlushContext {
 		return consistencyLevel;
 	}
 
-	public abstract void startBatch();
+	public abstract void startBatch(ConsistencyLevel defaultConsistencyLevel);
 
 	public abstract void flush();
 
-	public abstract void endBatch();
+	public abstract void endBatch(ConsistencyLevel defaultConsistencyLevel);
 
 	public abstract FlushType type();
 

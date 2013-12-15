@@ -58,4 +58,8 @@ public class Options {
 	public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
 		return OptionsBuilder.withConsistency(consistencyLevel).withTtl(ttl).withTimestamp(timestamp);
 	}
+
+    public Options duplicateWithNewTimestamp(Long timestamp) {
+        return OptionsBuilder.withConsistency(consistency).withTtl(ttl).withTimestamp(timestamp);
+    }
 }

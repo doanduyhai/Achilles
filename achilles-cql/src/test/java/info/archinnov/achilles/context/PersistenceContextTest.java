@@ -34,6 +34,7 @@ import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Arrays;
@@ -101,6 +102,7 @@ public class PersistenceContextTest {
 	public void setUp() throws Exception {
 		when(meta.getIdMeta()).thenReturn(idMeta);
 		when(meta.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
+        when(configurationContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
 
 		context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class,
 				primaryKey, OptionsBuilder.noOptions());
@@ -150,7 +152,7 @@ public class PersistenceContextTest {
 	public void should_call_end_batch() throws Exception {
 		context.endBatch();
 
-		verify(flushContext).endBatch();
+		verify(flushContext).endBatch(ConsistencyLevel.ONE);
 	}
 
 	@Test

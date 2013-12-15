@@ -19,7 +19,7 @@ package info.archinnov.achilles.proxy;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.proxy.wrapper.CQLCounterWrapper;
+import info.archinnov.achilles.proxy.wrapper.CounterWrapper;
 import info.archinnov.achilles.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.proxy.wrapper.builder.SetWrapperBuilder;
@@ -234,7 +234,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 	}
 
 	protected Counter buildCounterWrapper(PropertyMeta propertyMeta) {
-		return new CQLCounterWrapper(context, propertyMeta);
+		return new CounterWrapper(context, propertyMeta);
 	}
 
 }

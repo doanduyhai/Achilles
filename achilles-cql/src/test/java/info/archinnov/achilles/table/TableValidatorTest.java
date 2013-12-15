@@ -645,12 +645,7 @@ public class TableValidatorTest {
 		validator.validateAchillesCounter(keyspaceMeta, keyspaceName);
 	}
 
-	/*
-	 * Disabled until https://datastax-oss.atlassian.net/browse/JAVA-219 is
-	 * fixed
-	 */
 	@Test
-	@Ignore
 	public void should_exception_when_counter_value_column_bad_type() {
 		// Given
 		tableMetaData = mock(TableMetadata.class);

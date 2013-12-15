@@ -190,10 +190,10 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
-		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
+		ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");
 
-		assertThat(consistencyLevel).isNull();
+		assertThat(consistencyLevel).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(statementWrappers).isEmpty();
 	}
 

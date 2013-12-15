@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -167,7 +168,7 @@ public class BatchModeIT {
 		batchEm.startBatch();
 
 		try {
-			batchEm.persist(tweet);
+			batchEm.persist(tweet, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
 		} catch (AchillesException e) {
 			batchEm.cleanBatch();
 			assertThatBatchContextHasBeenReset(batchEm);
@@ -252,10 +253,10 @@ public class BatchModeIT {
 
 	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
-		Optional<ConsistencyLevel> consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
+		ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
 		List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");
 
-		assertThat(consistencyLevel).isNull();
+		assertThat(consistencyLevel).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(statementWrappers).isEmpty();
 	}
 }

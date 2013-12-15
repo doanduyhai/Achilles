@@ -184,7 +184,7 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
 
-		remove(entity, null);
+		remove(entity, OptionsBuilder.noOptions());
 	}
 
 	/**
@@ -213,16 +213,16 @@ public class PersistenceManager {
 	 * 
 	 * @param entity
 	 *            Entity to be removed
-	 * @param writeLevel
-	 *            Consistency Level for write
+     * @param options
+     *            options for consistency level and timestamp
 	 */
-	public void remove(final Object entity, ConsistencyLevel writeLevel) {
+	public void remove(final Object entity, Options options) {
 		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}' with write consistency level {}", proxifier.unwrap(entity), writeLevel);
+			log.debug("Removing entity '{}' with options {}", proxifier.unwrap(entity), options);
 
 		Object realObject = proxifier.getRealObject(entity);
 		entityValidator.validateEntity(realObject, entityMetaMap);
-		PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(writeLevel));
+		PersistenceContext context = initPersistenceContext(realObject, options);
 		context.remove();
 	}
 

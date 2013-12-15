@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.table;
 
+import static com.datastax.driver.core.DataType.counter;
 import static com.datastax.driver.core.DataType.text;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.cql.TypeMapper.toCQLType;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
@@ -84,7 +86,7 @@ public class TableValidator {
 	public void validateAchillesCounter(KeyspaceMetadata keyspaceMetaData, String keyspaceName) {
 		log.debug("Validate existing Achilles Counter table");
 		Name textTypeName = text().getName();
-		// Name counterTypeName = counter().getName();
+		Name counterTypeName = counter().getName();
 
 		TableMetadata tableMetaData = keyspaceMetaData.getTable(CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(tableMetaData != null, "Cannot find table '%s' from keyspace '%s'",
@@ -119,20 +121,12 @@ public class TableValidator {
 				"Column '%s' of table '%s' should be a clustering key component", CQL_COUNTER_PROPERTY_NAME,
 				CQL_COUNTER_TABLE);
 
-		/*
-		 * Disabled until https://datastax-oss.atlassian.net/browse/JAVA-219 is
-		 * fixed
-		 */
-
 		ColumnMetadata counterValueColumn = tableMetaData.getColumn(CQL_COUNTER_VALUE);
 		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
-		// Validator.validateTableTrue(counterValueColumn.getType().getName() ==
-		// counterTypeName,
-		// "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,
-		// counterValueColumn.getType()
-		// .getName(), counterTypeName);
-
+		Validator.validateTableTrue(counterValueColumn.getType().getName() == counterTypeName,
+		        "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,counterValueColumn.getType()
+		                .getName(), counterTypeName);
 	}
 
 	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
