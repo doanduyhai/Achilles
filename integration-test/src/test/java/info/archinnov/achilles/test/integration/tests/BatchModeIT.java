@@ -106,7 +106,6 @@ public class BatchModeIT {
 		batchEm.endBatch();
 
 		Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
-		statement.setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
 		Row row = manager.getNativeSession().execute(statement).one();
 		assertThat(row.getString("label")).isEqualTo("label");
 
@@ -250,6 +249,50 @@ public class BatchModeIT {
 		batchEm.endBatch();
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 	}
+
+    @Test
+    public void should_order_batch_operations_on_the_same_column_with_insert_and_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
+        final BatchingPersistenceManager batchPM = pmf.createBatchingPersistenceManager();
+
+        //When
+        batchPM.startBatch();
+
+        entity = batchPM.merge(entity);
+        entity.setLabel("label");
+        batchPM.merge(entity);
+
+        batchPM.endBatch();
+
+        //Then
+        Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
+        Row row = manager.getNativeSession().execute(statement).one();
+        assertThat(row.getString("label")).isEqualTo("label");
+    }
+
+
+    @Test
+    public void should_order_batch_operations_on_the_same_column() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
+        final BatchingPersistenceManager batchPM = pmf.createBatchingPersistenceManager();
+
+        //When
+        batchPM.startBatch();
+
+        entity = batchPM.merge(entity);
+        entity.setName("name");
+        batchPM.merge(entity);
+
+        batchPM.endBatch();
+
+        //Then
+        Statement statement = new SimpleStatement("SELECT name from CompleteBean where id=" + entity.getId());
+        Row row = manager.getNativeSession().execute(statement).one();
+        assertThat(row.getString("name")).isEqualTo("name");
+    }
+
 
 	private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
 		BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
