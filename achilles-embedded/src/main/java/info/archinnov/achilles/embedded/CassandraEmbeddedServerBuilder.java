@@ -12,16 +12,22 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
-
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.lang.StringUtils;
-import com.datastax.driver.core.Session;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.interceptor.Interceptor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.datastax.driver.core.Session;
 
 public class CassandraEmbeddedServerBuilder {
 
@@ -54,6 +60,7 @@ public class CassandraEmbeddedServerBuilder {
 	private boolean durableWrite = true;
 
 	private boolean buildNativeSessionOnly = false;
+	private List<Interceptor<?>> eventsInterceptor = new ArrayList<Interceptor<?>>();
 
 	private CassandraEmbeddedServerBuilder() {
 	}
@@ -89,6 +96,11 @@ public class CassandraEmbeddedServerBuilder {
 	 */
 	public CassandraEmbeddedServerBuilder withDataFolder(String dataFolder) {
 		this.dataFileFolder = dataFolder;
+		return this;
+	}
+
+	public CassandraEmbeddedServerBuilder withEventInterceptors(List<? extends Interceptor<?>> eventInterceptors) {
+		this.eventsInterceptor.addAll(eventInterceptors);
 		return this;
 	}
 
@@ -316,6 +328,9 @@ public class CassandraEmbeddedServerBuilder {
 
 		if (storageSSLPort > 0)
 			config.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
+		if (eventsInterceptor.size() > 0) {
+			config.put(EVENT_INTERCEPTORS, eventsInterceptor);
+		}
 
 		config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
 		config.put(BUILD_NATIVE_SESSION_ONLY, buildNativeSessionOnly);

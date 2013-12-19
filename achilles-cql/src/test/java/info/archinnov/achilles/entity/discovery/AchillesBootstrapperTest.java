@@ -27,6 +27,8 @@ import info.archinnov.achilles.context.SchemaContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.test.more.entity.Entity3;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.test.sample.entity.Entity1;
@@ -51,9 +53,9 @@ import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AchillesBootstraperTest {
+public class AchillesBootstrapperTest {
 
-	private AchillesBootstraper bootstraper = new AchillesBootstraper();
+	private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
 
 	@Mock
 	private EntityParser parser;
@@ -82,13 +84,13 @@ public class AchillesBootstraperTest {
 	@Before
 	public void setUp() {
 
-		Whitebox.setInternalState(bootstraper, EntityParser.class, parser);
-		Whitebox.setInternalState(bootstraper, DaoContextFactory.class, factory);
+		Whitebox.setInternalState(bootstrapper, EntityParser.class, parser);
+		Whitebox.setInternalState(bootstrapper, DaoContextFactory.class, factory);
 	}
 
 	@Test
 	public void should_find_entities_from_multiple_packages() throws Exception {
-		List<Class<?>> entities = bootstraper.discoverEntities(Arrays.asList(
+		List<Class<?>> entities = bootstrapper.discoverEntities(Arrays.asList(
 				"info.archinnov.achilles.test.sample.entity", "info.archinnov.achilles.test.more.entity"));
 
 		assertThat(entities).hasSize(3);
@@ -99,7 +101,7 @@ public class AchillesBootstraperTest {
 
 	@Test
 	public void should_find_entity_from_one_package() throws Exception {
-		List<Class<?>> entities = bootstraper.discoverEntities(Arrays
+		List<Class<?>> entities = bootstrapper.discoverEntities(Arrays
 				.asList("info.archinnov.achilles.test.more.entity"));
 		assertThat(entities).hasSize(1);
 		assertThat(entities).contains(Entity3.class);
@@ -113,7 +115,7 @@ public class AchillesBootstraperTest {
 		// When
 		when(parser.parseEntity(contextCaptor.capture())).thenReturn(meta);
 
-		Pair<Map<Class<?>, EntityMeta>, Boolean> pair = bootstraper.buildMetaDatas(configContext, entities);
+		Pair<Map<Class<?>, EntityMeta>, Boolean> pair = bootstrapper.buildMetaDatas(configContext, entities);
 
 		assertThat(pair.left.get(UserBean.class)).isSameAs(meta);
 		assertThat(pair.right).isFalse();
@@ -131,7 +133,7 @@ public class AchillesBootstraperTest {
 		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
 		when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
-		bootstraper.validateOrCreateTables(schemaContext);
+		bootstrapper.validateOrCreateTables(schemaContext);
 
 		// Then
 		verify(schemaContext).validateForEntity(meta, tableMeta);
@@ -149,7 +151,7 @@ public class AchillesBootstraperTest {
 		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
 		when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
-		bootstraper.validateOrCreateTables(schemaContext);
+		bootstrapper.validateOrCreateTables(schemaContext);
 
 		// Then
 		verify(schemaContext).createTableForEntity(meta);
@@ -168,7 +170,7 @@ public class AchillesBootstraperTest {
 		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
 		when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
-		bootstraper.validateOrCreateTables(schemaContext);
+		bootstrapper.validateOrCreateTables(schemaContext);
 
 		// Then
 		verify(schemaContext).validateAchillesCounter();
@@ -186,7 +188,7 @@ public class AchillesBootstraperTest {
 		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
 		when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
-		bootstraper.validateOrCreateTables(schemaContext);
+		bootstrapper.validateOrCreateTables(schemaContext);
 
 		// Then
 		verify(schemaContext).createTableForCounter();
@@ -201,10 +203,61 @@ public class AchillesBootstraperTest {
 		// When
 		when(factory.build(session, entityMetaMap, true)).thenReturn(daoContext);
 
-		DaoContext actual = bootstraper.buildDaoContext(session, entityMetaMap, true);
+		DaoContext actual = bootstrapper.buildDaoContext(session, entityMetaMap, true);
 
 		// Then
 		assertThat(actual).isSameAs(daoContext);
-
 	}
+
+    @Test
+    public void should_add_event_interceptors_to_entity_metas() throws Exception {
+        //Given
+        final EntityMeta metaString = new EntityMeta();
+        final EntityMeta metaLong = new EntityMeta();
+        final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(stringInterceptor1,stringInterceptor2,longInterceptor);
+        final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(String.class, metaString,Long.class,metaLong);
+
+        //When
+        bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+
+        //Then
+        assertThat(metaString.getInterceptors()).contains(stringInterceptor1,stringInterceptor2);
+        assertThat(metaLong.getInterceptors()).contains(longInterceptor);
+    }
+
+    private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {
+        @Override
+        public String onEvent(String entity) {
+            return null;
+        }
+
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
+
+    private Interceptor<String> stringInterceptor2 = new Interceptor<String>() {
+        @Override
+        public String onEvent(String entity) {
+            return null;
+        }
+
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
+
+    private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
+        @Override
+        public Long onEvent(Long entity) {
+            return null;
+        }
+
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
 }

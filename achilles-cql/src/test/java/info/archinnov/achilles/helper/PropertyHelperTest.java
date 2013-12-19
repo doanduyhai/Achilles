@@ -33,6 +33,8 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -141,4 +143,20 @@ public class PropertyHelperTest {
 		assertThat(PropertyHelper.isSupportedType(Long.class)).isTrue();
 	}
 
+    @Test
+    public void should_infer_entity_class_from_interceptor() throws Exception {
+        assertThat(helper.inferEntityClassFromInterceptor(longInterceptor)).isEqualTo((Class)Long.class);
+    }
+
+    private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
+        @Override
+        public Long onEvent(Long entity) {
+            return null;
+        }
+
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
 }

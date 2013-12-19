@@ -20,6 +20,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.AbstractFlushContext.FlushType;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -93,7 +95,6 @@ public class ImmediateFlushContextTest {
 		context.flush();
 
 		verify(daoContext).execute(bsWrapper);
-		assertThat(statementWrappers).isEmpty();
 	}
 
 	@Test
@@ -106,11 +107,26 @@ public class ImmediateFlushContextTest {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_calling_start_batch() throws Exception {
-		context.startBatch(ConsistencyLevel.ONE);
+		context.startBatch();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_calling_end_batch() throws Exception {
-		context.endBatch(ConsistencyLevel.ONE);
+		context.endBatch();
 	}
+
+
+    @Test
+    public void should_trigger_interceptor() throws Exception {
+        //Given
+        EntityMeta meta = mock(EntityMeta.class);
+        Object entity = new Object();
+
+        //When
+        context.triggerInterceptor(meta,entity, Event.POST_PERSIST);
+
+        //Then
+        verify(meta).intercept(entity,Event.POST_PERSIST);
+
+    }
 }

@@ -76,38 +76,57 @@ public class BatchingPersistenceManagerTest {
 
 	@Test
 	public void should_start_batch() throws Exception {
-		manager.startBatch();
-		verify(flushContext).startBatch(ConsistencyLevel.ONE);
+        //Given
+        BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
+        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
+
+		//When
+        manager.startBatch();
+
+        //Then
+        assertThat(manager.flushContext).isSameAs(newFlushContext);
+
 	}
 
 	@Test
 	public void should_start_batch_with_consistency_level() throws Exception {
-		manager.startBatch(EACH_QUORUM);
-		verify(flushContext).startBatch(ConsistencyLevel.EACH_QUORUM);
+        //Given
+        BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
+        when(flushContext.duplicateWithNoData(EACH_QUORUM)).thenReturn(newFlushContext);
+
+        //When
+        manager.startBatch(EACH_QUORUM);
+
+		//Then
+        assertThat(manager.flushContext).isSameAs(newFlushContext);
 	}
 
 	@Test
 	public void should_end_batch() throws Exception {
-		manager.endBatch();
-		verify(flushContext).endBatch(ConsistencyLevel.ONE);
-		verify(flushContext).cleanUp(ConsistencyLevel.ONE);
+        //Given
+        BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
+        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
+
+        //When
+        manager.endBatch();
+
+        //Then
+		verify(flushContext).endBatch();
+		assertThat(manager.flushContext).isSameAs(newFlushContext);
 	}
 
-	@Test
-	public void should_clean_flush_context_when_exception() throws Exception {
-		doThrow(new RuntimeException()).when(flushContext).endBatch(ConsistencyLevel.ONE);
-		try {
-			manager.endBatch();
-		} catch (RuntimeException ex) {
-			verify(flushContext).endBatch(ConsistencyLevel.ONE);
-			verify(flushContext).cleanUp(ConsistencyLevel.ONE);
-		}
-	}
 
 	@Test
 	public void should_clean_batch() throws Exception {
-		manager.cleanBatch();
-		verify(flushContext).cleanUp(ConsistencyLevel.ONE);
+        //Given
+        BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
+        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
+
+        //When
+        manager.cleanBatch();
+
+        //Then
+        assertThat(manager.flushContext).isSameAs(newFlushContext);
 	}
 
 	@Test

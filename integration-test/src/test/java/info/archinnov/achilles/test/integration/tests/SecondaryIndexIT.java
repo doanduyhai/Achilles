@@ -21,8 +21,7 @@ import info.archinnov.achilles.type.IndexCondition;
 public class SecondaryIndexIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			CompleteBean.class.getSimpleName(), EntityWithSecondaryIndex.class.getSimpleName());
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, CompleteBean.class.getSimpleName(), EntityWithSecondaryIndex.class.getSimpleName());
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -32,13 +31,11 @@ public class SecondaryIndexIT {
 	@Test
 	public void should_return_entities_for_indexed_query() throws Exception {
 		Counter counter1 = CounterBuilder.incr(15L);
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
 
 		Counter counter2 = CounterBuilder.incr(17L);
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L).addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
 				.addPreference(2, "NewYork").version(counter2).buid();
 
 		manager.persist(entity1);
@@ -59,8 +56,7 @@ public class SecondaryIndexIT {
 		IndexCondition condition = new IndexCondition("name", "John DOO");
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Index query is not supported for clustered entity. Please use typed query/native query");
+		exception.expectMessage("Index query is not supported for clustered entity");
 
 		manager.indexedQuery(ClusteredEntity.class, condition).get();
 	}

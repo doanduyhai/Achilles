@@ -26,7 +26,10 @@ import info.archinnov.achilles.context.SchemaContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.parsing.EntityParser;
 import info.archinnov.achilles.entity.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.helper.PropertyHelper;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,25 +47,26 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
-public class AchillesBootstraper {
-	private static final Logger log = LoggerFactory.getLogger(AchillesBootstraper.class);
+public class AchillesBootstrapper {
+	private static final Logger log = LoggerFactory.getLogger(AchillesBootstrapper.class);
 
 	private EntityParser entityParser = new EntityParser();
 	private DaoContextFactory daoContextFactory = new DaoContextFactory();
+    private PropertyHelper propertyHelper = new PropertyHelper();
 
 	public List<Class<?>> discoverEntities(List<String> packageNames) {
 		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
 
-		Set<Class<?>> candidateClasses = new HashSet<Class<?>>();
+		Set<Class<?>> candidateClasses = new HashSet<>();
 		Reflections reflections = new Reflections(packageNames);
 		candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
-		return new ArrayList<Class<?>>(candidateClasses);
+		return new ArrayList<>(candidateClasses);
 	}
 
 	public Pair<Map<Class<?>, EntityMeta>, Boolean> buildMetaDatas(ConfigurationContext configContext,
 			List<Class<?>> entities) {
         log.debug("Build meta data for candidate entities");
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
 			EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
@@ -102,4 +106,14 @@ public class AchillesBootstraper {
         log.debug("Build DaoContext");
 		return daoContextFactory.build(session, entityMetaMap, hasSimpleCounter);
 	}
+
+    public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>,
+            EntityMeta> entityMetaMap) {
+        for (Interceptor<?> interceptor : interceptors) {
+            Class<?> entityClass = propertyHelper.inferEntityClassFromInterceptor(interceptor);
+            EntityMeta entityMeta = entityMetaMap.get(entityClass);
+            Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found", entityClass.getCanonicalName());
+            entityMeta.addInterceptor(interceptor);
+        }
+    }
 }

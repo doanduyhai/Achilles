@@ -3,6 +3,7 @@ package info.archinnov.achilles.embedded;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import com.google.common.collect.ImmutableSet;
 
 public class CassandraEmbeddedConfigParameters {
@@ -33,6 +34,8 @@ public class CassandraEmbeddedConfigParameters {
 	public static final String CLUSTER_NAME = "clusterName";
 
 	public static final String KEYSPACE_NAME = "keyspaceName";
+
+	public static final String EVENT_INTERCEPTORS = "eventInterceptors";
 
 	public static final String KEYSPACE_DURABLE_WRITE = "keyspaceDurableWrite";
 

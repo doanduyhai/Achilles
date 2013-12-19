@@ -17,19 +17,26 @@
 package info.archinnov.achilles.context;
 
 import info.archinnov.achilles.consistency.ConsistencyConverter;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.EventHolder;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
 
 public class BatchingFlushContext extends AbstractFlushContext {
+
 	private static final Logger log = LoggerFactory.getLogger(BatchingFlushContext.class);
+    protected List<EventHolder> eventHolders = new ArrayList<>();
+
 	public BatchingFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel) {
 		super(daoContext, consistencyLevel);
 	}
@@ -40,9 +47,8 @@ public class BatchingFlushContext extends AbstractFlushContext {
 	}
 
 	@Override
-	public void startBatch(ConsistencyLevel defaultConsistencyLevel) {
+	public void startBatch() {
 		log.debug("Starting a new batch");
-		this.cleanUp(defaultConsistencyLevel);
     }
 
 	@Override
@@ -51,8 +57,14 @@ public class BatchingFlushContext extends AbstractFlushContext {
 	}
 
 	@Override
-	public void endBatch(ConsistencyLevel defaultConsistencyLevel) {
+	public void endBatch() {
 		log.debug("Ending current batch");
+
+
+        for(EventHolder eventHolder:eventHolders) {
+            eventHolder.triggerInterception();
+        }
+
 		/*
 		 * Deactivate prepared statement batches until
 		 * https://issues.apache.org/jira/browse/CASSANDRA-6426 is solved
@@ -67,16 +79,8 @@ public class BatchingFlushContext extends AbstractFlushContext {
         AbstractStatementWrapper.writeDMLEndBatch(consistencyLevel);
         batch.setConsistencyLevel(ConsistencyConverter.getCQLLevel(consistencyLevel));
 		daoContext.executeBatch(batch);
-//		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
-//			daoContext.execute(statementWrapper);
-//		}
-		this.cleanUp(defaultConsistencyLevel);
 	}
 
-    public void cleanUp(ConsistencyLevel defaultConsistencyLevel) {
-        super.cleanUp();
-        super.consistencyLevel = defaultConsistencyLevel;
-    }
 
 	@Override
 	public FlushType type() {
@@ -87,4 +91,17 @@ public class BatchingFlushContext extends AbstractFlushContext {
 	public BatchingFlushContext duplicate() {
 		return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel);
 	}
+
+    @Override
+    public void triggerInterceptor(EntityMeta meta, Object entity, Event event) {
+        if(event == Event.POST_LOAD) {
+            meta.intercept(entity,Event.POST_LOAD);
+        } else {
+            this.eventHolders.add(new EventHolder(meta,entity,event));
+        }
+    }
+
+    public BatchingFlushContext duplicateWithNoData(ConsistencyLevel defaultConsistencyLevel) {
+        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel);
+    }
 }

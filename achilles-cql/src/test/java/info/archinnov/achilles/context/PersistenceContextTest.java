@@ -17,6 +17,13 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
+import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
+import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
@@ -29,6 +36,7 @@ import info.archinnov.achilles.entity.operations.EntityMerger;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
@@ -45,7 +53,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.InOrder;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
@@ -152,7 +162,7 @@ public class PersistenceContextTest {
 	public void should_call_end_batch() throws Exception {
 		context.endBatch();
 
-		verify(flushContext).endBatch(ConsistencyLevel.ONE);
+		verify(flushContext).endBatch();
 	}
 
 	@Test
@@ -355,37 +365,70 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_persist() throws Exception {
+        //Given
+        Object entity = new Object();
+        context.entity = entity;
+
+        //When
 		context.persist();
-		verify(persister).persist(context);
-		verify(flushContext).flush();
+
+        //Then
+        InOrder inOrder = Mockito.inOrder(flushContext,persister);
+
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_PERSIST);
+        inOrder.verify(persister).persist(context);
+        inOrder.verify(flushContext).flush();
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_PERSIST);
 	}
 
 	@Test
 	public void should_merge() throws Exception {
+        //Given
 		when(merger.merge(context, entity)).thenReturn(entity);
 
+        //When
 		CompleteBean merged = context.merge(entity);
 
-		assertThat(merged).isSameAs(entity);
-		verify(flushContext).flush();
-	}
+        //Then
+        assertThat(merged).isSameAs(entity);
+        InOrder inOrder = Mockito.inOrder(flushContext,persister);
+
+        inOrder.verify(flushContext).triggerInterceptor(meta,entity, PRE_UPDATE);
+        inOrder.verify(flushContext).flush();
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
+    }
 
 	@Test
 	public void should_remove() throws Exception {
+        //Given
+        Object entity = new Object();
+        context.entity = entity;
+
+        //When
 		context.remove();
-		verify(persister).remove(context);
-		verify(flushContext).flush();
-	}
+
+        //Then
+        InOrder inOrder = Mockito.inOrder(flushContext,persister);
+
+        inOrder.verify(flushContext).triggerInterceptor(meta,entity, PRE_REMOVE);
+        inOrder.verify(persister).remove(context);
+        inOrder.verify(flushContext).flush();
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_REMOVE);
+    }
 
 	@Test
 	public void should_find() throws Exception {
+        //Given
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
 
+        //When
 		CompleteBean found = context.find(CompleteBean.class);
 
+        //Then
 		assertThat(found).isSameAs(entity);
-	}
+        verify(flushContext).triggerInterceptor(meta, entity, POST_LOAD);
+    }
 
 	@Test
 	public void should_return_null_when_not_found() throws Exception {

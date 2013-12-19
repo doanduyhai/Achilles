@@ -17,15 +17,18 @@
 package info.archinnov.achilles.entity.manager;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
@@ -79,9 +82,9 @@ public class PersistenceManager {
 	 */
 	public void persist(Object entity) {
 		log.debug("Persisting entity '{}'", entity);
-
-		persist(entity, OptionsBuilder.noOptions());
+		persist(entity, noOptions());
 	}
+
 
 	/**
 	 * Persist an entity with the given options.
@@ -135,7 +138,7 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
 
-		return merge(entity, OptionsBuilder.noOptions());
+		return merge(entity, noOptions());
 	}
 
 	/**
@@ -170,7 +173,7 @@ public class PersistenceManager {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
 		PersistenceContext context = initPersistenceContext(entity, options);
-		return context.<T> merge(entity);
+		return context.merge(entity);
 
 	}
 
@@ -183,8 +186,7 @@ public class PersistenceManager {
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
 			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
-
-		remove(entity, OptionsBuilder.noOptions());
+		remove(entity, noOptions());
 	}
 
 	/**
@@ -203,7 +205,7 @@ public class PersistenceManager {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 		}
-		PersistenceContext context = initPersistenceContext(entityClass, primaryKey, OptionsBuilder.noOptions());
+		PersistenceContext context = initPersistenceContext(entityClass, primaryKey, noOptions());
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
 		context.remove();
 	}
@@ -257,7 +259,8 @@ public class PersistenceManager {
 	 */
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-		return find(entityClass, primaryKey, null);
+		T entity = find(entityClass, primaryKey, null);
+		return entity;
 	}
 
 	/**
@@ -277,10 +280,12 @@ public class PersistenceManager {
 		Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
 				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.<T> find(entityClass);
+		return context.find(entityClass);
 	}
 
 	/**
@@ -322,10 +327,14 @@ public class PersistenceManager {
 		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
 				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
+		Validator.validateTrue(entityMetaMap.containsKey(entityClass),
+				"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
 				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		return context.getReference(entityClass);
+		T entity = context.getReference(entityClass);
+		return entity;
 	}
 
 	/**
@@ -368,11 +377,12 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> T initialize(final T entity) {
+		log.debug("Force lazy fields initialization for entity {}", entity);
 		if (log.isDebugEnabled()) {
 			log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
 		}
 		proxifier.ensureProxy(entity);
-		PersistenceContext context = initPersistenceContext(entity, OptionsBuilder.noOptions());
+		PersistenceContext context = initPersistenceContext(entity, noOptions());
 		return context.initialize(entity);
 	}
 
@@ -384,6 +394,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> Set<T> initialize(final Set<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -398,6 +409,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> List<T> initialize(final List<T> entities) {
+		log.debug("Force lazy fields initialization for entity set {}", entities);
 		for (T entity : entities) {
 			initialize(entity);
 		}
@@ -468,6 +480,8 @@ public class PersistenceManager {
 	 * @return real object set
 	 */
 	public <T> Set<T> unwrap(Set<T> proxies) {
+		log.debug("Unwrapping set of entities {}", proxies);
+
 		return proxifier.unwrap(proxies);
 	}
 
@@ -477,7 +491,7 @@ public class PersistenceManager {
 		Validator.validateTrue(meta.isClusteredEntity(),
 				"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
 				meta.getClassName());
-		return new SliceQueryBuilder<T>(sliceQueryExecutor, entityClass, meta);
+		return new SliceQueryBuilder(sliceQueryExecutor, entityClass, meta);
 	}
 
 	/**
@@ -530,7 +544,7 @@ public class PersistenceManager {
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-		return new TypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, true,
+		return new TypedQueryBuilder(entityClass, daoContext, queryString, meta, contextFactory, true,
 				normalizeQuery, boundValues);
 	}
 
@@ -595,7 +609,7 @@ public class PersistenceManager {
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-		return new TypedQueryBuilder<T>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
+		return new TypedQueryBuilder(entityClass, daoContext, queryString, meta, contextFactory, false, true,
 				boundValues);
 	}
 
@@ -626,5 +640,4 @@ public class PersistenceManager {
 	protected void setConfigContext(ConfigurationContext configContext) {
 		this.configContext = configContext;
 	}
-
 }

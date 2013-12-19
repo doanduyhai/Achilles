@@ -14,24 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.entity.metadata.util;
+package info.archinnov.achilles.interceptor;
 
-import java.util.Set;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
-
-public class PropertyTypeFilter implements Predicate<PropertyMeta> {
-	private final Set<PropertyType> types;
-
-	public PropertyTypeFilter(PropertyType... types) {
-		this.types = Sets.newHashSet(types);
-	}
-
-	@Override
-	public boolean apply(PropertyMeta pm) {
-		return types.contains(pm.type());
-	}
-
-};
+public enum Event {
+	PRE_PERSIST, POST_PERSIST, PRE_UPDATE, POST_UPDATE, PRE_REMOVE, POST_REMOVE, POST_LOAD;
+}

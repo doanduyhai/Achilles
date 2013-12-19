@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -37,13 +39,13 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 	}
 
 	@Override
-	public void startBatch(ConsistencyLevel defaultConsistencyLevel) {
+	public void startBatch() {
 		throw new UnsupportedOperationException(
 				"Cannot start a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}
 
 	@Override
-	public void endBatch(ConsistencyLevel defaultConsistencyLevel) {
+	public void endBatch() {
 		throw new UnsupportedOperationException(
 				"Cannot end a batch with a normal PersistenceManager. Please create a BatchingPersistenceManager instead");
 	}
@@ -54,7 +56,6 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
 			daoContext.execute(statementWrapper);
 		}
-		cleanUp();
 	}
 
 	@Override
@@ -67,4 +68,9 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 		log.trace("Duplicate immediate flushing context");
 		return new ImmediateFlushContext(daoContext, statementWrappers, consistencyLevel);
 	}
+
+    @Override
+    public void triggerInterceptor(EntityMeta meta, Object entity, Event event) {
+        meta.intercept(entity,event);
+    }
 }

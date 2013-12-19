@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.context;
 
+import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -43,11 +45,6 @@ public abstract class AbstractFlushContext {
 		this.consistencyLevel = consistencyLevel;
 	}
 
-	public void cleanUp() {
-		statementWrappers.clear();
-		consistencyLevel = null;
-	}
-
 	public void pushStatement(AbstractStatementWrapper statementWrapper) {
 		statementWrappers.add(statementWrapper);
 	}
@@ -64,15 +61,17 @@ public abstract class AbstractFlushContext {
 		return consistencyLevel;
 	}
 
-	public abstract void startBatch(ConsistencyLevel defaultConsistencyLevel);
+	public abstract void startBatch();
 
 	public abstract void flush();
 
-	public abstract void endBatch(ConsistencyLevel defaultConsistencyLevel);
+	public abstract void endBatch();
 
 	public abstract FlushType type();
 
 	public abstract AbstractFlushContext duplicate();
+
+    public abstract void triggerInterceptor(EntityMeta meta,Object entity, Event event);
 
 	public static enum FlushType {
 		BATCH, IMMEDIATE;

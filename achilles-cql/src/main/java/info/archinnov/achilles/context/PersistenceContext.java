@@ -17,6 +17,13 @@
 package info.archinnov.achilles.context;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
+import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
+import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -26,6 +33,7 @@ import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -49,25 +57,25 @@ public class PersistenceContext {
 
 	private static final Logger log = LoggerFactory.getLogger(PersistenceContext.class);
 
-	private AbstractFlushContext flushContext;
-	private EntityInitializer initializer = new EntityInitializer();
-	private EntityPersister persister = new EntityPersister();
-	private EntityProxifier proxifier = new EntityProxifier();
-	private EntityRefresher refresher = new EntityRefresher();
-	private EntityLoader loader = new EntityLoader();
-	private EntityMerger merger = new EntityMerger();
+	protected AbstractFlushContext flushContext;
+    protected EntityInitializer initializer = new EntityInitializer();
+    protected EntityPersister persister = new EntityPersister();
+    protected EntityProxifier proxifier = new EntityProxifier();
+    protected EntityRefresher refresher = new EntityRefresher();
+    protected EntityLoader loader = new EntityLoader();
+    protected EntityMerger merger = new EntityMerger();
 
-	private ConfigurationContext configContext;
-	private Class<?> entityClass;
-	private EntityMeta entityMeta;
-	private Object entity;
-	private Object primaryKey;
-	private Object partitionKey;
+    protected ConfigurationContext configContext;
+    protected Class<?> entityClass;
+    protected EntityMeta entityMeta;
+    protected Object entity;
+    protected Object primaryKey;
+    protected Object partitionKey;
 
-	private Options options = OptionsBuilder.noOptions();
-	private boolean loadEagerFields = true;
+    protected Options options = OptionsBuilder.noOptions();
+    protected boolean loadEagerFields = true;
 
-	private DaoContext daoContext;
+    protected DaoContext daoContext;
 
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
 			AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
@@ -198,19 +206,25 @@ public class PersistenceContext {
 	}
 
 	public void persist() {
-		persister.persist(this);
-		flush();
-	}
+        flushContext.triggerInterceptor(entityMeta, entity, PRE_PERSIST);
+        persister.persist(this);
+        flush();
+        flushContext.triggerInterceptor(entityMeta, entity, POST_PERSIST);
+    }
 
 	public <T> T merge(T entity) {
+        flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
 		T merged = merger.merge(this, entity);
 		flush();
+        flushContext.triggerInterceptor(entityMeta, merged, POST_UPDATE);
 		return merged;
 	}
 
 	public void remove() {
+        flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
 		persister.remove(this);
 		flush();
+        flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
 	}
 
 	public <T> T find(Class<T> entityClass) {
@@ -219,6 +233,7 @@ public class PersistenceContext {
 		if (entity != null) {
 			entity = proxifier.buildProxy(entity, this);
 		}
+        flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
 		return entity;
 	}
 
@@ -276,7 +291,7 @@ public class PersistenceContext {
 	}
 
 	public void endBatch() {
-		flushContext.endBatch(configContext.getDefaultWriteConsistencyLevel());
+		flushContext.endBatch();
 	}
 
 	public EntityMeta getEntityMeta() {

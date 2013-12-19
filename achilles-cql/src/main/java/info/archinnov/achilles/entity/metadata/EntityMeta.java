@@ -16,8 +16,11 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.proxy.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.validation.Validator;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
@@ -29,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 
 public class EntityMeta {
 
@@ -63,10 +67,45 @@ public class EntityMeta {
 	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptIdMeta;
 	private boolean clusteredCounter = false;
+	private List<Interceptor<?>> interceptors = new ArrayList<>();
 
 	public Object getPrimaryKey(Object entity) {
 		return idMeta.getPrimaryKey(entity);
 	}
+
+	public void addInterceptor(Interceptor<?> interceptor) {
+		interceptors.add(interceptor);
+	}
+
+	public List<Interceptor<?>> getInterceptors() {
+		return interceptors;
+	}
+
+
+    public void intercept(Object entity, Event event) {
+        List<Interceptor<?>> interceptors = getInterceptorsForEvent(event);
+        if (interceptors.size() > 0) {
+            for (Interceptor interceptor : interceptors) {
+                interceptor.onEvent(entity);
+            }
+            Validator.validateNotNull(entity, "The entity class should not be null after intercepting the event '%s'",event);
+            Validator.validateNotNull(getPrimaryKey(entity),"The primary key should not be null after intercepting the event '%s'",event);
+        }
+    }
+
+	protected List<Interceptor<?>> getInterceptorsForEvent(final Event event) {
+		return FluentIterable.from(interceptors).filter(getFilterForEvent(event)).toImmutableList();
+
+	}
+
+	private Predicate<? super Interceptor<?>> getFilterForEvent(final Event event) {
+		return new Predicate<Interceptor<?>>() {
+			public boolean apply(Interceptor<?> p) {
+				return p != null && p.events() != null && p.events().contains(event);
+			}
+		};
+	}
+
 
 	public Object getPartitionKey(Object compoundKey) {
 		return idMeta.getPartitionKey(compoundKey);
@@ -80,6 +119,8 @@ public class EntityMeta {
 	public boolean hasEmbeddedId() {
 		return idMeta.isEmbeddedId();
 	}
+
+
 
 	// ////////// Getters & Setters
 	@SuppressWarnings("unchecked")

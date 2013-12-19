@@ -17,7 +17,6 @@
 package info.archinnov.achilles.entity.manager;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
@@ -25,8 +24,9 @@ import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.context.SchemaContext;
-import info.archinnov.achilles.entity.discovery.AchillesBootstraper;
+import info.archinnov.achilles.entity.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.Arrays;
@@ -63,7 +63,7 @@ public class PersistenceManagerFactoryTest {
 	private ArgumentExtractor argumentExtractor;
 
 	@Mock
-	private AchillesBootstraper boostraper;
+	private AchillesBootstrapper boostrapper;
 
 	@Mock
 	private Cluster cluster;
@@ -84,7 +84,7 @@ public class PersistenceManagerFactoryTest {
 	public void setUp() {
 		pmf = new PersistenceManagerFactory(configMap);
 		Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
-		Whitebox.setInternalState(pmf, AchillesBootstraper.class, boostraper);
+		Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
 		pmf.configurationMap = configMap;
 	}
 
@@ -93,7 +93,8 @@ public class PersistenceManagerFactoryTest {
 		// Given
 		List<String> entityPackages = Arrays.asList();
 		List<Class<?>> candidateClasses = Arrays.asList();
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		List<Interceptor<?>> interceptors = Arrays.asList();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
 		Pair<Map<Class<?>, EntityMeta>, Boolean> pair = Pair.create(entityMetaMap, true);
 
 		// When
@@ -101,12 +102,14 @@ public class PersistenceManagerFactoryTest {
 		when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
 		when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
 		when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
-		when(boostraper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
+		when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
+
+		when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
 		when(configMap.get(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
 		when(configMap.get(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
-		when(boostraper.buildMetaDatas(configContext, candidateClasses)).thenReturn(pair);
+		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(pair);
 		when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
-		when(boostraper.buildDaoContext(session, entityMetaMap, true)).thenReturn(daoContext);
+		when(boostrapper.buildDaoContext(session, entityMetaMap, true)).thenReturn(daoContext);
 
 		pmf.bootstrap();
 
@@ -120,7 +123,9 @@ public class PersistenceManagerFactoryTest {
 		assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
 		assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
 
-		verify(boostraper).validateOrCreateTables(contextCaptor.capture());
+		verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
+        verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+
 		SchemaContext schemaContext = contextCaptor.getValue();
 
 		assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);

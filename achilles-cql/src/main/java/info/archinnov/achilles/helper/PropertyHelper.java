@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 import org.slf4j.Logger;
@@ -179,4 +180,15 @@ public class PropertyHelper {
 			throw new IllegalArgumentException("Cannot determine java class of type '" + type + "'");
 		}
 	}
+
+    public Class<?> inferEntityClassFromInterceptor(Interceptor<?> interceptor) {
+        for (Type type : interceptor.getClass().getGenericInterfaces()) {
+            if(type instanceof ParameterizedType) {
+                final ParameterizedType parameterizedType = (ParameterizedType) type;
+                Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                return getClassFromType(actualTypeArguments[0]);
+            }
+        }
+        return null;
+    }
 }

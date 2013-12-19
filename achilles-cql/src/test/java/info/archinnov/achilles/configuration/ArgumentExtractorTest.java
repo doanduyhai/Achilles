@@ -16,12 +16,41 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -43,6 +72,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.datastax.driver.core.Cluster;
@@ -50,6 +80,7 @@ import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.Policies;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,6 +89,7 @@ public class ArgumentExtractorTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
+	@Spy
 	private ArgumentExtractor extractor = new ArgumentExtractor();
 
 	@Mock
@@ -72,7 +104,13 @@ public class ArgumentExtractorTest {
 	@Mock
 	private Session session;
 
-	private Map<String, Object> configMap = new HashMap<String, Object>();
+    @Mock
+    private Interceptor<String> interceptor1;
+
+    @Mock
+    private Interceptor<String> interceptor2;
+
+	private Map<String, Object> configMap = new HashMap<>();
 
 	@Before
 	public void setUp() {
@@ -133,7 +171,7 @@ public class ArgumentExtractorTest {
 		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
 				JaxbAnnotationIntrospector.class);
 		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
+                                                    JaxbAnnotationIntrospector.class);
 	}
 
 	@Test
@@ -222,7 +260,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_cluster_with_all_params() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 		params.put(CONNECTION_CQL_PORT_PARAM, 9111);
 		params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
@@ -242,8 +280,27 @@ public class ArgumentExtractorTest {
 	}
 
 	@Test
+	public void should_return_empty_event_interceptor_list_when_empty_list_parameter()
+			throws Exception {
+		List<Interceptor<?>> interceptors = extractor.initInterceptors(configMap);
+		assertThat(interceptors).isEmpty();
+	}
+
+	@Test
+	public void should_init_event_interceptor_list() throws Exception {
+		ImmutableList<Interceptor<?>> interceptorsExcepted = new ImmutableList.Builder<Interceptor<?>>()
+				.add(interceptor1).add(interceptor2).build();
+		configMap.put(EVENT_INTERCEPTORS_PARAM, interceptorsExcepted);
+
+		doCallRealMethod().when(extractor).initInterceptors(configMap);
+		List<Interceptor<?>> interceptorsResult = extractor.initInterceptors(configMap);
+
+		assertThat(interceptorsResult).containsExactly(interceptor1, interceptor2);
+	}
+
+	@Test
 	public void should_get_cluster_directly_from_parameter() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(CLUSTER_PARAM, cluster);
 
 		Cluster actual = extractor.initCluster(params);
@@ -252,7 +309,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_cluster_with_minimum_params() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 		params.put(CONNECTION_CQL_PORT_PARAM, 9111);
 
@@ -263,7 +320,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_exception_when_no_hostname_property() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
@@ -273,7 +330,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_exception_when_no_port_property() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
 
 		exception.expect(AchillesException.class);
@@ -284,7 +341,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_init_session() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(KEYSPACE_NAME_PARAM, "achilles");
 
 		when(cluster.connect("achilles")).thenReturn(session);
@@ -296,7 +353,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_exception_when_no_keyspace_name_param() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
@@ -306,7 +363,7 @@ public class ArgumentExtractorTest {
 
 	@Test
 	public void should_get_native_session_from_parameter() throws Exception {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(KEYSPACE_NAME_PARAM, "achilles");
 		params.put(NATIVE_SESSION_PARAM, session);
 
@@ -318,8 +375,7 @@ public class ArgumentExtractorTest {
 	@Test
 	public void should_init_config_context() throws Exception {
 		// Given
-		Map<String, Object> params = new HashMap<String, Object>();
-		extractor = spy(extractor);
+		Map<String, Object> params = new HashMap<>();
 
 		// When
 		doReturn(true).when(extractor).initForceTableCreation(params);
