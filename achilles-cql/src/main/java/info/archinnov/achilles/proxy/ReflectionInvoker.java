@@ -20,16 +20,23 @@ import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.validation.Validator;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.objenesis.ObjenesisStd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ReflectionInvoker {
 	private static final Logger log = LoggerFactory.getLogger(ReflectionInvoker.class);
+
+    /*
+     * make property useCache of Objenesis configurable
+     */
+    private ObjenesisStd objenesisStd = new ObjenesisStd();
 
 	public Object getPrimaryKey(Object entity, PropertyMeta idMeta) {
 		Method getter = idMeta.getGetter();
@@ -144,4 +151,25 @@ public class ReflectionInvoker {
 		}
 		return newInstance;
 	}
+
+    /*
+     * Warning !!!
+     * Instance init code block and constructor logic
+     * will not be executed when creating instance
+     * with Objenesis
+     */
+    public <T> T instantiateImmutable(Class<T> entityClass) {
+        return objenesisStd.newInstance(entityClass);
+    }
+
+    public void setValueToFinalField(Field field, Object instance, Object value) {
+        if(instance != null) {
+            field.setAccessible(true);
+            try {
+                field.set(instance,value);
+            } catch (IllegalAccessException e) {
+                throw new AchillesException("Cannot set value to field {} for instance {}");
+            }
+        }
+    }
 }

@@ -26,6 +26,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -250,6 +251,30 @@ public class ReflectionInvokerTest {
 
 	}
 
+    @Test
+    public void should_instantiate_class_without_public_constructor() throws Exception {
+        //When
+        BeanWithoutPublicConstructor instance = invoker.instantiateImmutable(BeanWithoutPublicConstructor.class);
+
+        //Then
+        assertThat(instance).isInstanceOf(BeanWithoutPublicConstructor.class);
+    }
+
+    @Test
+    public void should_set_field_when_no_setter_available() throws Exception {
+        //Given
+        BeanWithNoSetterForField instance = new BeanWithNoSetterForField("name");
+        Field nameField = BeanWithNoSetterForField.class.getDeclaredField("name");
+
+        //When
+        invoker.setValueToFinalField(nameField,instance,"new_name");
+
+        //Then
+        assertThat(instance.getName()).isEqualTo("new_name");
+    }
+
+
+
 	private class Bean {
 
 		private String complicatedAttributeName;
@@ -275,4 +300,22 @@ public class ReflectionInvokerTest {
 			this.count = count;
 		}
 	}
+
+    public class BeanWithoutPublicConstructor {
+        public BeanWithoutPublicConstructor(String name) {
+
+        }
+    }
+
+    public class BeanWithNoSetterForField
+    {
+        private final String name;
+        public BeanWithNoSetterForField(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 }

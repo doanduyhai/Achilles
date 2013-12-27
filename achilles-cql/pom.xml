@@ -74,6 +74,12 @@
             <artifactId>cglib-nodep</artifactId>
         </dependency>
 
+        <!-- Objenesis -->
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
