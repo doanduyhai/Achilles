@@ -56,6 +56,7 @@
 		<datastax.driver.core.version>2.0.0-rc2</datastax.driver.core.version>
 		<spring.version>3.2.0.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
+		<objenesis.version>2.1</objenesis.version>
 		<jackson.version>1.9.2</jackson.version>
 		<commons.lang.version>2.6</commons.lang.version>
 		<commons.io.version>2.4</commons.io.version>
@@ -235,6 +236,13 @@
 				<artifactId>cglib-nodep</artifactId>
 				<version>${cglib.version}</version>
 			</dependency>
+
+            <!-- Obgenesis-->
+            <dependency>
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>${objenesis.version}</version>
+            </dependency>
 
 			<!-- Jackson Serializer -->
 			<dependency>

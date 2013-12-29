@@ -26,6 +26,7 @@ import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
+import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.interceptor.Event;
@@ -224,5 +225,29 @@ public class EventInterceptorIT {
         entity = manager.find(CompleteBean.class,entity.getId());
 
         assertThat(entity.getLabel()).isEqualTo("postLoad");
+    }
+
+    @Test
+    public void should_apply_interceptors_before_flush_for_batch() throws Exception {
+        //Given
+        final BatchingPersistenceManager batchingPM = pmf.createBatchingPersistenceManager();
+        batchingPM.startBatch();
+
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+
+        //When
+        batchingPM.persist(entity);
+
+        //Then
+        assertThat(entity.getName()).isEqualTo("DuyHai");
+        assertThat(entity.getLabel()).isEqualTo("label");
+
+        //When
+        batchingPM.endBatch();
+
+        //Then
+        assertThat(entity.getName()).isEqualTo("prePersist");
+        assertThat(entity.getLabel()).isEqualTo("postPersist");
+
     }
 }
