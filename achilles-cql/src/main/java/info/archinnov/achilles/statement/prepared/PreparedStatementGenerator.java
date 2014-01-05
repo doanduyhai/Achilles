@@ -151,7 +151,7 @@ public class PreparedStatementGenerator {
 		delete.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
 		delete.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
 
-		Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap<AchillesCounter.CQLQueryType, PreparedStatement>();
+		Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap();
 		counterPSMap.put(INCR, session.prepare(incr.toString()));
 		counterPSMap.put(DECR, session.prepare(decr.toString()));
 		counterPSMap.put(SELECT, session.prepare(select.toString()));
@@ -176,11 +176,11 @@ public class PreparedStatementGenerator {
 
 		RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
 
-		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap<>();
+		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap();
 		clusteredCounterPSMap.put(INCR, session.prepare(incrementStatement));
 		clusteredCounterPSMap.put(DECR, session.prepare(decrementStatement));
 		clusteredCounterPSMap.put(SELECT, session.prepare(selectStatement));
-		clusteredCounterPSMap.put(DELETE, session.prepare(deleteStatement));
+        clusteredCounterPSMap.put(DELETE, session.prepare(deleteStatement));
 
 		return clusteredCounterPSMap;
 	}
@@ -256,7 +256,7 @@ public class PreparedStatementGenerator {
 
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
-		Map<String, PreparedStatement> removePSs = new HashMap<String, PreparedStatement>();
+		Map<String, PreparedStatement> removePSs = new HashMap();
 
 		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
 		RegularStatement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
@@ -282,6 +282,6 @@ public class PreparedStatementGenerator {
 		} else {
 			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
 		}
-		return mainStatement;
+        return mainStatement;
 	}
 }

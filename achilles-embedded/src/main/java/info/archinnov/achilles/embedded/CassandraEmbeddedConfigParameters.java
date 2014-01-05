@@ -56,6 +56,8 @@ public class CassandraEmbeddedConfigParameters {
 
 	static final String DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER = "target/cassandra_embedded/saved_caches";
 
+    static final String DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER = "/cassandra_triggers";
+
 	static final Set<String> DEFAULT_ACHILLES_TEST_FOLDERS = ImmutableSet.of(DEFAULT_ACHILLES_TEST_DATA_FOLDER,
 			DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
 
@@ -72,7 +74,7 @@ public class CassandraEmbeddedConfigParameters {
 	 */
 
 	static Map<String, Object> mergeWithDefaultParameters(Map<String, Object> parameters) {
-		Map<String, Object> defaultParams = new HashMap<String, Object>();
+		Map<String, Object> defaultParams = new HashMap();
 		defaultParams.put(CLEAN_CASSANDRA_DATA_FILES, true);
 		defaultParams.put(CLEAN_CASSANDRA_CONFIG_FILE, true);
 		defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);

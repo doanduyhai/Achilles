@@ -16,6 +16,9 @@
  */
 package info.archinnov.achilles.context;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.google.common.collect.Maps.filterValues;
+import static com.google.common.collect.Maps.transformValues;
 import static info.archinnov.achilles.entity.metadata.EntityMeta.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
@@ -23,6 +26,7 @@ import info.archinnov.achilles.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.statement.prepared.PreparedStatementGenerator;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -44,28 +48,27 @@ public class DaoContextFactory {
 	public DaoContext build(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
         log.debug("Build DaoContext");
 
-		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<Class<?>, PreparedStatement>(Maps.transformValues(
-				Maps.filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
+		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap(transformValues(
+                filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
 
-		Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap<Class<?>, PreparedStatement>(
-				Maps.transformValues(entityMetaMap, getSelectEagerPSTransformer(session)));
+		Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap(transformValues(entityMetaMap,getSelectEagerPSTransformer(session)));
 
-		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<Class<?>, Map<String, PreparedStatement>>(
-				Maps.transformValues(entityMetaMap, getRemovePSTransformer(session)));
+		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap(transformValues(filterValues(entityMetaMap,
+                EXCLUDE_CLUSTERED_COUNTER_FILTER), getRemovePSTransformer(session)));
 
-		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = CacheBuilder.newBuilder()
+		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = newBuilder()
 				.maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE).build();
 
 		Map<CQLQueryType, PreparedStatement> counterQueryMap;
 		if (hasSimpleCounter) {
 			counterQueryMap = queryGenerator.prepareSimpleCounterQueryMap(session);
 		} else {
-			counterQueryMap = ImmutableMap.<CQLQueryType, PreparedStatement> of();
+			counterQueryMap = ImmutableMap.of();
 		}
 
-		Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap<Class<?>, Map<CQLQueryType, PreparedStatement>>(
-				Maps.transformValues(Maps.filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
-						getClusteredCounterTransformer(session)));
+		Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap(
+				transformValues(filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
+                                getClusteredCounterTransformer(session)));
 
 		return new DaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap, counterQueryMap,
 				clusteredCounterQueriesMap, session);
@@ -100,6 +103,8 @@ public class DaoContextFactory {
 
 	Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> getClusteredCounterTransformer(final Session session) {
 		return new Function<EntityMeta, Map<CQLQueryType, PreparedStatement>>() {
+
+
 			@Override
 			public Map<CQLQueryType, PreparedStatement> apply(EntityMeta meta) {
 				return queryGenerator.prepareClusteredCounterQueryMap(session, meta);

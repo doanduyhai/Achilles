@@ -8,8 +8,10 @@
 
 package info.archinnov.achilles.embedded;
 
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER;
 import static java.util.concurrent.TimeUnit.*;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -41,13 +43,19 @@ public enum CassandraEmbeddedServerStarter {
 			return;
 		}
 
-		log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
-		log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
-		log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
-		log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
+        final String triggersDir = createTriggersFolder();
 
-		log.info("Starting Cassandra...");
-		config.write();
+        log.info(" Random embedded Cassandra RPC port/Thrift port = {}", config.getRPCPort());
+        log.info(" Random embedded Cassandra Native port/CQL3 port = {}", config.getCqlPort());
+        log.info(" Random embedded Cassandra Storage port = {}", config.getStoragePort());
+        log.info(" Random embedded Cassandra Storage SSL port = {}", config.getStorageSSLPort());
+        log.info(" Embedded Cassandra triggers directory = {}", triggersDir);
+
+        log.info("Starting Cassandra...");
+        config.write();
+
+
+        System.setProperty("cassandra.triggers_dir", triggersDir);
 		System.setProperty("cassandra.config", "file:" + config.getConfigFile().getAbsolutePath());
 		System.setProperty("cassandra-foreground", "true");
 
@@ -70,7 +78,15 @@ public enum CassandraEmbeddedServerStarter {
 		}
 	}
 
-	private boolean isAlreadyRunning() {
+    private String createTriggersFolder() {
+        final File triggersDir = new File(System.getProperty("java.io.tmpdir") + DEFAULT_ACHILLES_TEST_TRIGGERS_FOLDER);
+        if(!triggersDir.exists()) {
+            triggersDir.mkdir();
+        }
+        return triggersDir.getAbsolutePath();
+    }
+
+    private boolean isAlreadyRunning() {
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		try {
 			MBeanInfo mBeanInfo = mbs.getMBeanInfo(new ObjectName("org.apache.cassandra.db:type=StorageService"));

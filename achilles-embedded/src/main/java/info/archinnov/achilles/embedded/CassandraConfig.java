@@ -109,32 +109,8 @@ public class CassandraConfig {
 	private void updateWithHomePath() {
 		config.data_file_directories = new String[] { (String) parameters.get(DATA_FILE_FOLDER) };
 		config.commitlog_directory = (String) parameters.get(COMMIT_LOG_FOLDER);
-		// config.server_encryption_options.keystore = absolutePath +
-		// "/keystore";
-		// config.server_encryption_options.truststore = absolutePath +
-		// "/truststore";
-		// config.client_encryption_options.keystore = absolutePath +
-		// "/keystore";
-		// config.client_encryption_options.truststore = absolutePath +
-		// "/trustore";
 		config.saved_caches_directory = (String) parameters.get(SAVED_CACHES_FOLDER);
-	}
 
-	public void load() {
-		FileInputStream stream = null;
-		try {
-			stream = new FileInputStream(configFile);
-			config = (Config) getYaml().load(stream);
-		} catch (IOException e) {
-			throw new IllegalStateException("Cannot write Cassandra configuration file : " + configFile, e);
-		} finally {
-			if (stream != null)
-				try {
-					stream.close();
-				} catch (IOException e) {
-					throw new IllegalStateException("Cannot write Cassandra configuration file : " + configFile, e);
-				}
-		}
 	}
 
 	public void write() {

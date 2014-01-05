@@ -81,15 +81,13 @@ public class CassandraEmbeddedServer {
 
 	private static boolean embeddedServerStarted = false;
 
-	private static final Map<String, Boolean> KEYSPACE_BOOTSTRAP_MAP = new HashMap<String, Boolean>();
+	private static final Map<String, Boolean> KEYSPACE_BOOTSTRAP_MAP = new HashMap();
 
-	private static final Map<String, Session> SESSIONS_MAP = new HashMap<String, Session>();
+	private static final Map<String, Session> SESSIONS_MAP = new HashMap();
 
-	private static final Map<String, PersistenceManagerFactory> FACTORIES_MAP = new HashMap<String, PersistenceManagerFactory>();
+	private static final Map<String, PersistenceManagerFactory> FACTORIES_MAP = new HashMap();
 
-	private static final Map<String, PersistenceManager> MANAGERS_MAP = new HashMap<String, PersistenceManager>();
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
+	private static final Map<String, PersistenceManager> MANAGERS_MAP = new HashMap();
 
 	private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 

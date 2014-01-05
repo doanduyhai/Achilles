@@ -29,7 +29,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import net.sf.cglib.proxy.Factory;
 
-public class UnwrapIT {
+public class RemoveProxyIT {
 
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
@@ -38,7 +38,7 @@ public class UnwrapIT {
 	private PersistenceManager manager = resource.getPersistenceManager();
 
 	@Test
-	public void should_unproxy_object() throws Exception {
+	public void should_remove_proxy_from_entity() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);

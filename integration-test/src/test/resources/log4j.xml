@@ -27,7 +27,7 @@
 	
 	
 	<logger name="info.archinnov.achilles">
-		<level value="WARN" />
+		<level value="INFO" />
 	</logger>
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->

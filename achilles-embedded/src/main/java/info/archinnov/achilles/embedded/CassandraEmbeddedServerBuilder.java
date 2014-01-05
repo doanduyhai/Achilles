@@ -292,7 +292,7 @@ public class CassandraEmbeddedServerBuilder {
 	}
 
 	private Map<String, Object> buildConfigMap() {
-		Map<String, Object> config = new HashMap<String, Object>();
+		Map<String, Object> config = new HashMap();
 		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
 		config.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
 
