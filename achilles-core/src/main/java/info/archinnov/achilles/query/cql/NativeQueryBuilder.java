@@ -16,9 +16,9 @@
  */
 package info.archinnov.achilles.query.cql;
 
-import info.archinnov.achilles.context.DaoContext;
-import info.archinnov.achilles.entity.operations.NativeQueryMapper;
-import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.internal.context.DaoContext;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.List;
 import java.util.Map;

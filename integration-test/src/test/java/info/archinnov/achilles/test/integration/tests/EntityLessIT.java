@@ -4,9 +4,9 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static org.fest.assertions.api.Assertions.*;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
 
 import java.util.Map;
 

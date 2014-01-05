@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 
-import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.List;

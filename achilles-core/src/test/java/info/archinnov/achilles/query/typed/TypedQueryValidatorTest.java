@@ -16,9 +16,9 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;

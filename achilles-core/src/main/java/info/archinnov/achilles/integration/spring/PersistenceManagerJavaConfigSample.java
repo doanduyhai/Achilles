@@ -17,10 +17,10 @@
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.entity.manager.PersistenceManagerFactory.*;
+import static info.archinnov.achilles.persistence.PersistenceManagerFactory.*;
 import static org.apache.commons.lang.StringUtils.*;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.HashMap;

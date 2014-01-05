@@ -17,15 +17,13 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.proxy.EntityInterceptor;
-import info.archinnov.achilles.test.builders.TweetTestBuilder;
+import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.CounterBuilder;
 
 import java.lang.reflect.Method;

@@ -21,7 +21,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;

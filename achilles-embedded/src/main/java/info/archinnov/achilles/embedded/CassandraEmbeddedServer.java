@@ -39,12 +39,12 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedServerStarter.CASSANDRA_EMBEDDED;
-import static info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
+import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 import java.io.File;
 import java.util.HashMap;

@@ -18,13 +18,13 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.context.BatchingFlushContext;
-import info.archinnov.achilles.entity.manager.BatchingPersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.internal.context.BatchingFlushContext;
+import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;

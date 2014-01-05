@@ -19,8 +19,8 @@ package info.archinnov.achilles.test.integration;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import org.apache.commons.lang.StringUtils;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.junit.AchillesTestResource;
 
 import com.datastax.driver.core.Session;

@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;

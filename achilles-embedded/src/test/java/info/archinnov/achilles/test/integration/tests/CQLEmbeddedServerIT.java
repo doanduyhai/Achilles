@@ -28,8 +28,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEmbeddedServerIT {

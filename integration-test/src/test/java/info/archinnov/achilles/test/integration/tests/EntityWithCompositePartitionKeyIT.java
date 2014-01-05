@@ -8,7 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.entity.manager.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey;

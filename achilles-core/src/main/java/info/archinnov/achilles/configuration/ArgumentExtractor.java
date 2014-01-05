@@ -42,12 +42,12 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.RETR
 import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
-import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;

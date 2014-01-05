@@ -19,9 +19,9 @@ package info.archinnov.achilles.query.cql;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.DaoContext;
-import info.archinnov.achilles.entity.operations.NativeQueryMapper;
-import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.internal.context.DaoContext;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

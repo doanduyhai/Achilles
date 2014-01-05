@@ -25,14 +25,14 @@ import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 public abstract class RootSliceQueryBuilder<T> {
     private static final Logger log  = LoggerFactory.getLogger(RootSliceQueryBuilder.class);

@@ -16,20 +16,20 @@
  */
 package info.archinnov.achilles.test.builders;
 
-import info.archinnov.achilles.entity.metadata.ClusteringComponents;
-import info.archinnov.achilles.entity.metadata.CounterProperties;
-import info.archinnov.achilles.entity.metadata.EmbeddedIdProperties;
-import info.archinnov.achilles.entity.metadata.PartitionComponents;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.entity.metadata.transcoding.CompoundTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
-import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
-import info.archinnov.achilles.helper.EntityIntrospector;
-import info.archinnov.achilles.reflection.ReflectionInvoker;
+import info.archinnov.achilles.internal.persistence.metadata.ClusteringComponents;
+import info.archinnov.achilles.internal.persistence.metadata.CounterProperties;
+import info.archinnov.achilles.internal.persistence.metadata.EmbeddedIdProperties;
+import info.archinnov.achilles.internal.persistence.metadata.PartitionComponents;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.CompoundTranscoder;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.ListTranscoder;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.MapTranscoder;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.SetTranscoder;
+import info.archinnov.achilles.internal.persistence.metadata.transcoding.SimpleTranscoder;
+import info.archinnov.achilles.internal.helper.EntityIntrospector;
+import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;

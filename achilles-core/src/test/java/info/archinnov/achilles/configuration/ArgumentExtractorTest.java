@@ -48,7 +48,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;

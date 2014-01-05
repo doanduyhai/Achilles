@@ -19,12 +19,12 @@ package info.archinnov.achilles.query;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 public class SliceQuery<T> {
 	public static final int DEFAULT_LIMIT = 100;

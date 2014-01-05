@@ -5,7 +5,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CassandraEmbeddedServerBuilderTest {

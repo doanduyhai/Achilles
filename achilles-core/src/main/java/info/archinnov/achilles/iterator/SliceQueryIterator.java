@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.iterator;
 
-import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.EntityMapper;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 

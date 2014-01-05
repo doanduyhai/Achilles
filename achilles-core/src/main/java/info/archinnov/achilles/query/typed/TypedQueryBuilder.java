@@ -16,15 +16,15 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import info.archinnov.achilles.context.DaoContext;
-import info.archinnov.achilles.context.PersistenceContext;
-import info.archinnov.achilles.context.PersistenceContextFactory;
-import info.archinnov.achilles.entity.EntityMapper;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.internal.context.DaoContext;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.PersistenceContextFactory;
+import info.archinnov.achilles.internal.persistence.EntityMapper;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

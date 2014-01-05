@@ -18,9 +18,9 @@ package info.archinnov.achilles.query.typed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.validation.Validator;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.validation.Validator;
 
 public class TypedQueryValidator {
     private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
