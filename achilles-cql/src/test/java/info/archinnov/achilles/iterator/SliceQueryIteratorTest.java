@@ -22,8 +22,8 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.RowMethodInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
@@ -37,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -111,7 +110,7 @@ public class SliceQueryIteratorTest {
 		when(invoker.instantiate(ClusteredEntity.class)).thenReturn(entity);
 
 		when(context.duplicate(entity)).thenReturn(context);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithEagerFieldsLoaded(entity, context)).thenReturn(entity);
 
 		ClusteredEntity actual = sliceIterator.next();
 

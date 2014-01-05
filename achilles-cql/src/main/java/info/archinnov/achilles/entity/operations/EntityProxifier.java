@@ -17,6 +17,7 @@
 package info.archinnov.achilles.entity.operations;
 
 import info.archinnov.achilles.context.PersistenceContext;
+import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.proxy.EntityInterceptorBuilder;
 
@@ -52,11 +53,24 @@ public class EntityProxifier {
 		return baseClass;
 	}
 
+    public <T> T buildProxyWithEagerFieldsLoaded(T entity, PersistenceContext context) {
+        return buildProxy(entity, context, context.getEagerGetters());
+    }
+
+    public <T> T buildProxyWithAllFieldsLoaded(T entity, PersistenceContext context) {
+        return buildProxy(entity, context, context.getAllGetters());
+    }
+
+    public <T> T buildProxyWithNoFieldLoaded(T entity, PersistenceContext context) {
+        return buildProxy(entity, context, new HashSet<Method>());
+    }
+
+    /*
 	public <T> T buildProxy(T entity, PersistenceContext context) {
 		return buildProxy(entity, context, new HashSet<Method>());
 	}
+	*/
 
-	@SuppressWarnings("unchecked")
 	public <T> T buildProxy(T entity, PersistenceContext context, Set<Method> alreadyLoaded) {
 
 		if (entity == null) {
@@ -107,7 +121,7 @@ public class EntityProxifier {
 		}
 	}
 
-	public <T> T unwrap(T proxy) {
+	public <T> T removeProxy(T proxy) {
 		log.debug("Unwrapping object {} ", proxy);
 
 		if (proxy != null) {
@@ -122,7 +136,7 @@ public class EntityProxifier {
 		}
 	}
 
-	public <K, V> Map.Entry<K, V> unwrap(Map.Entry<K, V> entry) {
+	public <K, V> Map.Entry<K, V> removeProxy(Map.Entry<K, V> entry) {
 		V value = entry.getValue();
 		if (isProxy(value)) {
 			value = getRealObject(value);
@@ -131,34 +145,34 @@ public class EntityProxifier {
 		return entry;
 	}
 
-	public <T> Collection<T> unwrap(Collection<T> proxies) {
-		Collection<T> result = new ArrayList<T>();
+	public <T> Collection<T> removeProxy(Collection<T> proxies) {
+		Collection<T> result = new ArrayList();
 		for (T proxy : proxies) {
-			result.add(unwrap(proxy));
+			result.add(removeProxy(proxy));
 		}
 		return result;
 	}
 
-	public <T> List<T> unwrap(List<T> proxies) {
-		List<T> result = new ArrayList<T>();
+	public <T> List<T> removeProxy(List<T> proxies) {
+		List<T> result = new ArrayList();
 		for (T proxy : proxies) {
-			result.add(this.unwrap(proxy));
+			result.add(this.removeProxy(proxy));
 		}
 
 		return result;
 	}
 
-	public <T> Set<T> unwrap(Set<T> proxies) {
-		Set<T> result = new HashSet<T>();
+	public <T> Set<T> removeProxy(Set<T> proxies) {
+		Set<T> result = new HashSet();
 		for (T proxy : proxies) {
-			result.add(this.unwrap(proxy));
+			result.add(this.removeProxy(proxy));
 		}
 
 		return result;
 	}
 
 	public <T> EntityInterceptor<T> buildInterceptor(PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
-		return new EntityInterceptorBuilder<T>(context, entity).alreadyLoaded(alreadyLoaded).build();
+		return new EntityInterceptorBuilder(context, entity).alreadyLoaded(alreadyLoaded).build();
 	}
 
 }

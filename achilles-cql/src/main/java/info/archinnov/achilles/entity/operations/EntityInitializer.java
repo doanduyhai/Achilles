@@ -49,7 +49,7 @@ public class EntityInitializer {
 		Set<PropertyMeta> toBeLoadedMetas = Sets.difference(allLazyMetas, alreadyLoadedMetas);
 
 		for (PropertyMeta propertyMeta : toBeLoadedMetas) {
-			Object value = propertyMeta.getValueFromField(entity);
+			Object value = propertyMeta.invokeGetter(entity);
 			if (propertyMeta.isCounter()) {
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
@@ -59,7 +59,7 @@ public class EntityInitializer {
 
 		for (PropertyMeta propertyMeta : alreadyLoadedMetas) {
 			if (propertyMeta.isCounter()) {
-				Object value = propertyMeta.getValueFromField(entity);
+				Object value = propertyMeta.invokeGetter(entity);
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
 				propertyMeta.setValueToField(realObject, CounterBuilder.incr(counter.get()));

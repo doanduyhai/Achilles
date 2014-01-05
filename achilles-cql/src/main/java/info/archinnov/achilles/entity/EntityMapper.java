@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity;
 
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
+import info.archinnov.achilles.reflection.RowMethodInvoker;
 
 import java.util.Map;
 

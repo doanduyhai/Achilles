@@ -76,7 +76,7 @@ public class CollectionWrapperTest {
 	public void should_mark_dirty_on_element_add() throws Exception {
 		ArrayList<Object> target = new ArrayList<Object>();
 		ListWrapper wrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("a")).thenReturn("a");
+		when(proxifier.removeProxy("a")).thenReturn("a");
 		wrapper.add("a");
 
 		assertThat(target).hasSize(1);
@@ -89,7 +89,7 @@ public class CollectionWrapperTest {
 	public void should_not_mark_dirty_on_element_add() throws Exception {
 		ArrayList<Object> target = new ArrayList<Object>();
 		ListWrapper wrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("a")).thenReturn("a");
+		when(proxifier.removeProxy("a")).thenReturn("a");
 		when(dirtyMap.containsKey(setter)).thenReturn(true);
 		wrapper.add("a");
 
@@ -105,11 +105,11 @@ public class CollectionWrapperTest {
 
 		wrapper.setProxifier(proxifier);
 
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
 
 		wrapper.addAll(list);
 
-		verify(proxifier).unwrap(list);
+		verify(proxifier).removeProxy(list);
 
 		assertThat(target).hasSize(2);
 		assertThat(target.get(0)).isEqualTo("a");
@@ -158,7 +158,7 @@ public class CollectionWrapperTest {
 	@Test
 	public void should_return_true_on_contains() throws Exception {
 		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a", "b"));
-		when(proxifier.unwrap("a")).thenReturn("a");
+		when(proxifier.removeProxy("a")).thenReturn("a");
 		assertThat(wrapper.contains("a")).isTrue();
 	}
 
@@ -167,7 +167,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(Arrays.<Object> asList("a", "b", "c", "d"));
 
 		List<Object> check = Arrays.<Object> asList("a", "c");
-		when(proxifier.unwrap(check)).thenReturn(check);
+		when(proxifier.removeProxy(check)).thenReturn(check);
 		assertThat(wrapper.containsAll(check)).isTrue();
 	}
 
@@ -183,7 +183,7 @@ public class CollectionWrapperTest {
 		target.add("a");
 		target.add("b");
 		ListWrapper wrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("a")).thenReturn("a");
+		when(proxifier.removeProxy("a")).thenReturn("a");
 		wrapper.remove("a");
 
 		assertThat(target).hasSize(1);
@@ -219,7 +219,7 @@ public class CollectionWrapperTest {
 		wrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -257,7 +257,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 
@@ -278,7 +278,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "b", "c");
-		when(proxifier.unwrap(Mockito.<Collection<String>> any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 

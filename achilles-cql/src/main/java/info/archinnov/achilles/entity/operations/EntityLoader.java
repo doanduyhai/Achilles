@@ -41,17 +41,27 @@ public class EntityLoader {
 		Validator
 				.validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
-		T entity;
-
-		if (context.isLoadEagerFields()) {
-			entity = loaderImpl.eagerLoadEntity(context);
-		} else {
-			entity = entityMeta.instanciate();
-		}
+		T entity= loaderImpl.eagerLoadEntity(context);
 		entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 
 		return entity;
 	}
+
+    public <T> T createEmptyEntity(PersistenceContext context, Class<T> entityClass) {
+        log.debug("Loading entity of class {} using PersistenceContext {}",entityClass,context);
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
+
+        Validator.validateNotNull(entityClass, "Entity class should not be null");
+        Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
+        Validator
+                .validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
+
+        T entity = entityMeta.instanciate();
+        entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+
+        return entity;
+    }
 
 	public void loadPropertyIntoObject(PersistenceContext context, Object realObject, PropertyMeta pm) {
         log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);

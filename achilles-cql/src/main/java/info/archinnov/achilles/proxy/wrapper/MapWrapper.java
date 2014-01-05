@@ -53,7 +53,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public boolean containsValue(Object value) {
-		return this.target.containsValue(proxifier.unwrap(value));
+		return this.target.containsValue(proxifier.removeProxy(value));
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 		log.trace("Mark map property {} of entity class {} dirty upon new value {} addition for key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), value, key);
 
-		Object result = this.target.put(key, proxifier.unwrap(value));
+		Object result = this.target.put(key, proxifier.removeProxy(value));
 		this.markDirty();
 		return result;
 	}
@@ -110,7 +110,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public void putAll(Map<?, ?> m) {
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		for (Entry<?, ?> entry : m.entrySet()) {
-			map.put(entry.getKey(), proxifier.unwrap(entry.getValue()));
+			map.put(entry.getKey(), proxifier.removeProxy(entry.getValue()));
 		}
 
 		log.trace("Mark map property {} of entity class {} dirty upon new key/value pairs addition",
@@ -122,7 +122,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Object remove(Object key) {
-		Object unwrap = proxifier.unwrap(key);
+		Object unwrap = proxifier.removeProxy(key);
 		if (this.target.containsKey(unwrap)) {
 			log.trace("Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), key);

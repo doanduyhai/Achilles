@@ -196,6 +196,7 @@ public class EmbeddedIdParser {
 		if (!hasPartitionKeyAnnotation) {
 			partitionKeysBuilder.addComponentName(clusteringKeysBuilder.removeFirstComponentName());
 			partitionKeysBuilder.addComponentClass(clusteringKeysBuilder.removeFirstComponentClass());
+			partitionKeysBuilder.addComponentField(clusteringKeysBuilder.removeFirstComponentField());
 			partitionKeysBuilder.addComponentGetter(clusteringKeysBuilder.removeFirstComponentGetter());
 			partitionKeysBuilder.addComponentSetter(clusteringKeysBuilder.removeFirstComponentSetter());
 		}
@@ -226,7 +227,8 @@ public class EmbeddedIdParser {
 
 			embeddedIdPropertiesBuilder.addComponentName(componentName);
 			embeddedIdPropertiesBuilder.addComponentClass(componentClass);
-			embeddedIdPropertiesBuilder.addComponentGetter(componentGetter);
+            embeddedIdPropertiesBuilder.addComponentField(compositeKeyField);
+            embeddedIdPropertiesBuilder.addComponentGetter(componentGetter);
 			embeddedIdPropertiesBuilder.addComponentSetter(componentSetter);
 
 			if (filter.hasAnnotation(compositeKeyField, TimeUUID.class)) {
@@ -236,12 +238,14 @@ public class EmbeddedIdParser {
 			if (filter.hasAnnotation(compositeKeyField, PartitionKey.class)) {
 				partitionKeysBuilder.addComponentName(componentName);
 				partitionKeysBuilder.addComponentClass(componentClass);
+				partitionKeysBuilder.addComponentField(compositeKeyField);
 				partitionKeysBuilder.addComponentGetter(componentGetter);
 				partitionKeysBuilder.addComponentSetter(componentSetter);
 				hasPartitionKeyAnnotation = true;
 			} else {
 				clusteringKeysBuilder.addComponentName(componentName);
 				clusteringKeysBuilder.addComponentClass(componentClass);
+				clusteringKeysBuilder.addComponentField(compositeKeyField);
 				clusteringKeysBuilder.addComponentGetter(componentGetter);
 				clusteringKeysBuilder.addComponentSetter(componentSetter);
 			}

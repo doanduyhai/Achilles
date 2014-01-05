@@ -22,8 +22,8 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
+import info.archinnov.achilles.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -130,7 +130,7 @@ public class EntityMapperTest {
 
 		entityMapper.setPropertyToEntity(row, pm, entity);
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), embeddedKey);
+		verify(invoker).setValueToField(entity, pm.getField(), embeddedKey);
 	}
 
 	@Test

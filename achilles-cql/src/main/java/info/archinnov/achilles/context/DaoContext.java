@@ -169,7 +169,7 @@ public class DaoContext {
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta,
 				context.getPrimaryKey(), increment, writeLevel);
-		context.pushStatement(bsWrapper);
+		context.pushCounterStatement(bsWrapper);
 	}
 
 	public void incrementSimpleCounter(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
@@ -208,7 +208,7 @@ public class DaoContext {
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
 		BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey,
 				writeLevel);
-		context.pushStatement(bsWrapper);
+		context.pushCounterStatement(bsWrapper);
 	}
 
 	// Clustered counter
@@ -221,7 +221,7 @@ public class DaoContext {
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
 				context.getPrimaryKey(), increment, writeLevel);
-		context.pushStatement(bsWrapper);
+		context.pushCounterStatement(bsWrapper);
 	}
 
 	public void incrementClusteredCounter(PersistenceContext context, EntityMeta meta, Long increment,
@@ -262,7 +262,7 @@ public class DaoContext {
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
 		ConsistencyLevel writeLevel = getWriteConsistencyLevel(context, counterMeta);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, primaryKey, writeLevel);
-		context.pushStatement(bsWrapper);
+		context.pushCounterStatement(bsWrapper);
 	}
 
 	public Row eagerLoadEntity(PersistenceContext context) {

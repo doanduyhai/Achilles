@@ -35,7 +35,7 @@ import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyHelperTest {

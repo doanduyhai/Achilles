@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.proxy;
+package info.archinnov.achilles.reflection;
 
 import static info.archinnov.achilles.cql.TypeMapper.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;

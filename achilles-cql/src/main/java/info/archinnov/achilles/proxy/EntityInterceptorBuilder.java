@@ -33,11 +33,11 @@ public class EntityInterceptorBuilder<T> {
 	private static final Logger log = LoggerFactory.getLogger(EntityInterceptorBuilder.class);
 
 	private T target;
-	private Set<Method> alreadyLoaded = new HashSet<Method>();
+	private Set<Method> alreadyLoaded = new HashSet();
 	private PersistenceContext context;
 
 	public static <T> EntityInterceptorBuilder<T> builder(PersistenceContext context, T entity) {
-		return new EntityInterceptorBuilder<T>(context, entity);
+		return new EntityInterceptorBuilder(context, entity);
 	}
 
 	public EntityInterceptorBuilder(PersistenceContext context, T entity) {
@@ -68,14 +68,9 @@ public class EntityInterceptorBuilder<T> {
 		interceptor.setSetterMetas(entityMeta.getSetterMetas());
 		interceptor.setIdGetter(entityMeta.getIdMeta().getGetter());
 		interceptor.setIdSetter(entityMeta.getIdMeta().getSetter());
-
-		if (context.isLoadEagerFields() && alreadyLoaded.isEmpty()) {
-			alreadyLoaded.addAll(entityMeta.getEagerGetters());
-		}
-		interceptor.setAlreadyLoaded(alreadyLoaded);
 		interceptor.setDirtyMap(new HashMap<Method, PropertyMeta>());
 		interceptor.setPrimaryKey(context.getPrimaryKey());
-
+        interceptor.setAlreadyLoaded(alreadyLoaded);
 		return interceptor;
 	}
 

@@ -26,7 +26,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -198,7 +198,8 @@ public class EntityMetaTest {
 
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		EntityMeta entityMeta = new EntityMeta();
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.EMBEDDED_ID).accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType
+                                                                                                                    .EMBEDDED_ID).accessors()
 				.build();
 		idMeta.setInvoker(new ReflectionInvoker());
 		entityMeta.setIdMeta(idMeta);

@@ -434,7 +434,7 @@ public class DaoContextTest {
 		daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -452,7 +452,7 @@ public class DaoContextTest {
 		daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -525,7 +525,7 @@ public class DaoContextTest {
 		daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -542,7 +542,7 @@ public class DaoContextTest {
 		daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	// Clustered counter
@@ -562,7 +562,7 @@ public class DaoContextTest {
 		daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -581,7 +581,7 @@ public class DaoContextTest {
 		daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -650,7 +650,7 @@ public class DaoContextTest {
 		daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test
@@ -667,7 +667,7 @@ public class DaoContextTest {
 		daoContext.bindForClusteredCounterDelete(context, entityMeta, counterMeta, 11L);
 
 		// Then
-		verify(context).pushStatement(bsWrapper);
+		verify(context).pushCounterStatement(bsWrapper);
 	}
 
 	@Test

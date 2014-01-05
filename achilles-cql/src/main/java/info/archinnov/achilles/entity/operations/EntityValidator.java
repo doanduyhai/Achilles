@@ -43,10 +43,11 @@ public class EntityValidator {
 		Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
 				.getCanonicalName());
 
-		Object id = entityMeta.getPrimaryKey(entity);
+        Object rawEntity = proxifier.getRealObject(entity);
+		Object id = entityMeta.getPrimaryKey(rawEntity);
 		if (id == null) {
 			throw new IllegalArgumentException("Cannot get primary key for entity "
-					+ entity.getClass().getCanonicalName());
+					+ rawEntity.getClass().getCanonicalName());
 		}
 		validatePrimaryKey(entityMeta.getIdMeta(), id);
 	}

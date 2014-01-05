@@ -24,7 +24,7 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityPersister;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -68,7 +68,7 @@ public class PersisterImplTest {
 	@Mock
 	private EntityMeta entityMeta;
 
-	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
+	private List<PropertyMeta> allMetas = new ArrayList();
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
@@ -97,7 +97,7 @@ public class PersisterImplTest {
 		Counter counter = CounterBuilder.incr();
 
 		when(context.getFirstMeta()).thenReturn(counterMeta);
-		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(counter);
+		when(invoker.getValueFromField(entity, counterMeta.getField())).thenReturn(counter);
 
 		persisterImpl.persistClusteredCounter(context);
 
@@ -110,7 +110,7 @@ public class PersisterImplTest {
 				.accessors().invoker(invoker).build();
 
 		when(context.getFirstMeta()).thenReturn(counterMeta);
-		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+		when(invoker.getValueFromField(entity, counterMeta.getField())).thenReturn(null);
 
 		exception.expect(IllegalStateException.class);
 		exception.expectMessage("Cannot insert clustered counter entity '" + entity
@@ -124,7 +124,7 @@ public class PersisterImplTest {
 		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(12L));
+		when(invoker.getValueFromField(entity, counterMeta.getField())).thenReturn(CounterBuilder.incr(12L));
 
 		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 
@@ -136,7 +136,7 @@ public class PersisterImplTest {
 		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("count")
 				.accessors().invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, counterMeta.getGetter())).thenReturn(null);
+		when(invoker.getValueFromField(entity, counterMeta.getField())).thenReturn(null);
 
 		persisterImpl.persistCounters(context, Sets.newHashSet(counterMeta));
 

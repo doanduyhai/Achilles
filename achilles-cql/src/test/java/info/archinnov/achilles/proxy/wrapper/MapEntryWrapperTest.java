@@ -72,7 +72,7 @@ public class MapEntryWrapperTest {
 		mapEntryWrapper.setDirtyMap(dirtyMap);
 		mapEntryWrapper.setSetter(setter);
 		mapEntryWrapper.setPropertyMeta(propertyMeta);
-		when(proxifier.unwrap("TEST")).thenReturn("TEST");
+		when(proxifier.removeProxy("TEST")).thenReturn("TEST");
 		mapEntryWrapper.setValue("TEST");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -91,7 +91,7 @@ public class MapEntryWrapperTest {
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unwrap("csdf")).thenReturn("csdf");
+		when(proxifier.removeProxy("csdf")).thenReturn("csdf");
 
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
@@ -109,8 +109,8 @@ public class MapEntryWrapperTest {
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unwrap("csdf")).thenReturn("csdf");
-		when(proxifier.unwrap("df")).thenReturn("df");
+		when(proxifier.removeProxy("csdf")).thenReturn("csdf");
+		when(proxifier.removeProxy("df")).thenReturn("df");
 
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
@@ -128,7 +128,7 @@ public class MapEntryWrapperTest {
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unwrap((Object) null)).thenReturn(null);
+		when(proxifier.removeProxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 
@@ -145,7 +145,7 @@ public class MapEntryWrapperTest {
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unwrap((Object) null)).thenReturn(null);
+		when(proxifier.removeProxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isTrue();
 	}
 
@@ -162,7 +162,7 @@ public class MapEntryWrapperTest {
 		wrapper2.setProxifier(proxifier);
 		wrapper2.setPropertyMeta(propertyMeta);
 
-		when(proxifier.unwrap((Object) null)).thenReturn(null);
+		when(proxifier.removeProxy((Object) null)).thenReturn(null);
 		assertThat(wrapper1.equals(wrapper2)).isFalse();
 	}
 

@@ -43,14 +43,14 @@ public class MapEntryWrapper extends AbstractWrapper implements Entry<Object, Ob
 	public Object setValue(Object value) {
 		log.trace("Mark map entry property {} of entity class {} dirty upon element set",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		Object result = this.target.setValue(proxifier.unwrap(value));
+		Object result = this.target.setValue(proxifier.removeProxy(value));
 		this.markDirty();
 		return result;
 	}
 
 	public boolean equals(Entry<Object, Object> entry) {
 		Object key = entry.getKey();
-		Object value = proxifier.unwrap(entry.getValue());
+		Object value = proxifier.removeProxy(entry.getValue());
 
 		boolean keyEquals = this.target.getKey().equals(key);
 

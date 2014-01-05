@@ -61,9 +61,9 @@ public class ValuelessClusteredEntityIT {
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ValuelessClusteredEntity found = manager.getReference(ValuelessClusteredEntity.class, compoundKey);
+		ValuelessClusteredEntity found = manager.getProxy(ValuelessClusteredEntity.class, compoundKey);
 
 		assertThat(found).isNotNull();
 	}
@@ -89,7 +89,7 @@ public class ValuelessClusteredEntityIT {
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.merge(entity, OptionsBuilder.withTtl(1));
+		manager.update(entity, OptionsBuilder.withTtl(1));
 
 		Thread.sleep(1000);
 

@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.metadata;
 
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.validation.Validator;
 import info.archinnov.achilles.type.Pair;

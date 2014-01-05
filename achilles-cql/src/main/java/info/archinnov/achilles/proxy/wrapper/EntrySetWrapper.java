@@ -53,12 +53,12 @@ public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object
 
 	@Override
 	public boolean contains(Object arg0) {
-		return this.target.contains(proxifier.unwrap(arg0));
+		return this.target.contains(proxifier.removeProxy(arg0));
 	}
 
 	@Override
 	public boolean containsAll(Collection<?> arg0) {
-		return this.target.containsAll(proxifier.unwrap(arg0));
+		return this.target.containsAll(proxifier.removeProxy(arg0));
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object
 	@Override
 	public boolean remove(Object arg0) {
 		boolean result = false;
-		result = this.target.remove(proxifier.unwrap(arg0));
+		result = this.target.remove(proxifier.removeProxy(arg0));
 		if (result) {
 			log.trace("Mark dirty for property {} of entity class {} upon entry removal",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -90,7 +90,7 @@ public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object
 	@Override
 	public boolean removeAll(Collection<?> arg0) {
 		boolean result = false;
-		result = this.target.removeAll(proxifier.unwrap(arg0));
+		result = this.target.removeAll(proxifier.removeProxy(arg0));
 		if (result) {
 			log.trace("Mark dirty for property {} of entity class {} upon all entries removal",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -102,7 +102,7 @@ public class EntrySetWrapper extends AbstractWrapper implements Set<Entry<Object
 	@Override
 	public boolean retainAll(Collection<?> arg0) {
 		boolean result = false;
-		result = this.target.retainAll(proxifier.unwrap(arg0));
+		result = this.target.retainAll(proxifier.removeProxy(arg0));
 		if (result) {
 			log.trace("Mark dirty for property {} of entity class {} upon entries retaining",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());

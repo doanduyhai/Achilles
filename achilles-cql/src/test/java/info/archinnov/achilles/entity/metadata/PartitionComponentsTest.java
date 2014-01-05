@@ -36,7 +36,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_validate_partition_components() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
-				null);
+				null,null);
 
 		partitionComponents.validatePartitionComponents("classname", Arrays.<Object> asList(11L, "type"));
 	}
@@ -44,7 +44,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_exception_when_no_partition_component_provided() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
-				null);
+                                                      null,null);
 
 		exception.expect(AchillesException.class);
 		exception
@@ -56,7 +56,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_exception_when_empty_list_of_partition_component_provided() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
-				null);
+                                                      null,null);
 
 		exception.expect(AchillesException.class);
 		exception
@@ -68,7 +68,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_exception_when_null_partition_component_provided() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
-				null);
+                                                      null,null);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("The '2th' partition component should not be null");
@@ -79,7 +79,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_exception_when_partition_component_count_doest_not_match() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
-				null);
+                                                      null,null);
 
 		exception.expect(AchillesException.class);
 		exception
@@ -91,7 +91,7 @@ public class PartitionComponentsTest {
 	@Test
 	public void should_exception_when_incorrect_type_of_partition_component_provided() throws Exception {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, Long.class), null, null,
-				null);
+                                                      null,null);
 
 		exception.expect(AchillesException.class);
 		exception

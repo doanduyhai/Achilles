@@ -29,7 +29,7 @@ import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.helper.EntityIntrospector;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class PropertyMetaTestBuilder<T, K, V> {
@@ -48,6 +49,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	private static final List<Class<?>> noClasses = Arrays.asList();
 	private static final List<String> noNames = Arrays.asList();
+	private static final List<Field> noFields = Arrays.asList();
 	private static final List<Method> noAccessors = Arrays.asList();
 
 	private Class<T> clazz;
@@ -59,16 +61,19 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
 	private List<Class<?>> componentClasses;
 	private List<String> componentNames;
+	private List<Field> componentFields;
 	private List<Method> componentGetters;
 	private List<Method> componentSetters;
 
 	private List<Class<?>> partitionClasses;
 	private List<String> partitionNames;
+	private List<Field> partitionFields;
 	private List<Method> partitionGetters;
 	private List<Method> partitionSetters;
 
 	private List<Class<?>> clusteringClasses;
 	private List<String> clusteringNames;
+	private List<Field> clusteringFields;
 	private List<Method> clusteringGetters;
 	private List<Method> clusteringSetters;
 
@@ -82,19 +87,19 @@ public class PropertyMetaTestBuilder<T, K, V> {
 	private List<String> compTimeUUID;
 
 	public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz, Class<K> keyClass, Class<V> valueClass) {
-		return new PropertyMetaTestBuilder<T, K, V>(clazz, keyClass, valueClass);
+		return new PropertyMetaTestBuilder(clazz, keyClass, valueClass);
 	}
 
 	public static <K, V> PropertyMetaTestBuilder<CompleteBean, K, V> completeBean(Class<K> keyClass, Class<V> valueClass) {
-		return new PropertyMetaTestBuilder<CompleteBean, K, V>(CompleteBean.class, keyClass, valueClass);
+		return new PropertyMetaTestBuilder(CompleteBean.class, keyClass, valueClass);
 	}
 
 	public static <K, V> PropertyMetaTestBuilder<Void, K, V> keyValueClass(Class<K> keyClass, Class<V> valueClass) {
-		return new PropertyMetaTestBuilder<Void, K, V>(Void.class, keyClass, valueClass);
+		return new PropertyMetaTestBuilder(Void.class, keyClass, valueClass);
 	}
 
 	public static <V> PropertyMetaTestBuilder<Void, Void, V> valueClass(Class<V> valueClass) {
-		return new PropertyMetaTestBuilder<Void, Void, V>(Void.class, Void.class, valueClass);
+		return new PropertyMetaTestBuilder(Void.class, Void.class, valueClass);
 	}
 
 	public PropertyMetaTestBuilder(Class<T> clazz, Class<K> keyClass, Class<V> valueClass) {
@@ -110,6 +115,10 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		pm.setPropertyName(field);
 		pm.setKeyClass(keyClass);
 		pm.setValueClass(valueClass);
+        if(StringUtils.isNotBlank(field) && clazz == CompleteBean.class) {
+            pm.setField(clazz.getDeclaredField(field));
+        }
+
 		if (buildAccessors) {
 			Field declaredField = clazz.getDeclaredField(field);
 			pm.setGetter(achillesEntityIntrospector.findGetter(clazz, declaredField));
@@ -120,7 +129,8 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		}
 
 		if (componentClasses != null || componentNames != null || //
-				componentGetters != null || componentSetters != null || //
+                componentFields != null ||
+                componentGetters != null || componentSetters != null || //
 				partitionClasses != null || partitionNames != null || //
 				partitionGetters != null || partitionSetters != null || //
 				clusteringClasses != null || clusteringNames != null || //
@@ -170,6 +180,18 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			clusteringNames = this.clusteringNames;
 		}
 
+        List<Field> partitionFields,clusteringFields;
+        if (componentFields != null) {
+            partitionFields = Arrays.asList(componentFields.get(0));
+            if (componentFields.size() > 1)
+                clusteringFields = componentFields.subList(1, componentFields.size());
+            else
+                clusteringFields = noFields;
+        } else {
+            partitionFields = this.partitionFields;
+            clusteringFields = this.clusteringFields;
+        }
+
 		List<Method> partitionGetters, clusteringGetters;
 		if (componentGetters != null) {
 			partitionGetters = Arrays.asList(componentGetters.get(0));
@@ -195,13 +217,13 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		}
 
 		PartitionComponents partitionComponents = new PartitionComponents(partitionClasses, partitionNames,
-				partitionGetters, partitionSetters);
+				partitionFields,partitionGetters, partitionSetters);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames,
-				clusteringGetters, clusteringSetters);
+				clusteringFields,clusteringGetters, clusteringSetters);
 
 		EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
-				componentClasses, componentNames, componentGetters, componentSetters, compTimeUUID);
+				componentClasses, componentNames, componentFields,componentGetters, componentSetters, compTimeUUID);
 
 		pm.setEmbeddedIdProperties(embeddedIdProperties);
 	}
@@ -267,6 +289,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
 		this.componentNames = Arrays.asList(componentNames);
 		return this;
 	}
+
+    public PropertyMetaTestBuilder<T, K, V> compFields(Field ... componentFields) {
+        this.componentFields = Arrays.asList(componentFields);
+        return this;
+    }
 
 	public PropertyMetaTestBuilder<T, K, V> compGetters(Method... componentGetters) {
 		this.componentGetters = Arrays.asList(componentGetters);

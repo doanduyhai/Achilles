@@ -53,7 +53,7 @@ public class InitializeIT {
 
 		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
 
-		CompleteBean rawEntity = manager.initAndUnwrap(foundEntity);
+		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 
 		assertThat(rawEntity.getName()).isEqualTo("name");
 		assertThat(rawEntity.getLabel()).isEqualTo("label");
@@ -68,13 +68,13 @@ public class InitializeIT {
 	public void should_initialize_counter_value() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.getVersion().incr(2L);
 
 		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
 
-		CompleteBean rawEntity = manager.initAndUnwrap(foundEntity);
+		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 
 		assertThat(rawEntity.getVersion()).isInstanceOf(CounterImpl.class);
 		assertThat(rawEntity.getVersion().get()).isEqualTo(2L);

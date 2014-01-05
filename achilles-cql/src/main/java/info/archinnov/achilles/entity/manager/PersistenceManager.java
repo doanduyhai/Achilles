@@ -23,12 +23,10 @@ import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
-import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityValidator;
 import info.archinnov.achilles.entity.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
@@ -105,7 +103,7 @@ public class PersistenceManager {
 		}
 		if (proxifier.isProxy(entity)) {
 			throw new IllegalStateException(
-					"Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+					"Then entity is already in 'managed' state. Please use the update() method instead of persist()");
 		}
 
 		PersistenceContext context = initPersistenceContext(entity, options);
@@ -115,11 +113,11 @@ public class PersistenceManager {
 	/**
 	 * Merge an entity.
 	 * 
-	 * Calling merge on a transient entity will persist it and returns a managed
+	 * Calling update on a transient entity will persist it and returns a managed
 	 * 
 	 * instance.
 	 * 
-	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * <strong>Achilles returns the same entity passed
 	 * 
 	 * in parameter if the latter is in managed state. It was designed on
 	 * purpose
@@ -132,22 +130,22 @@ public class PersistenceManager {
 	 * 
 	 * @param entity
 	 *            Entity to be merged
-	 * @return Merged entity or a new proxified entity
+	 * @return Updated entity or a new proxified entity
 	 */
-	public <T> T merge(T entity) {
+	public <T> T update(T entity) {
 		if (log.isDebugEnabled())
-			log.debug("Merging entity '{}'", proxifier.unwrap(entity));
+			log.debug("Updating entity '{}'", proxifier.removeProxy(entity));
 
-		return merge(entity, noOptions());
+		return update(entity, noOptions());
 	}
 
 	/**
-	 * Merge an entity with the given options
+	 * Update an entity with the given options
 	 * 
-	 * Calling merge on a transient entity will persist it and returns a managed
+	 * Calling update on a transient entity will persist it and returns a managed
 	 * instance.
 	 * 
-	 * <strong>Unlike the JPA specs, Achilles returns the same entity passed
+	 * <strong>Achilles returns the same entity passed
 	 * 
 	 * in parameter if the latter is in managed state. It was designed on
 	 * purpose
@@ -162,18 +160,19 @@ public class PersistenceManager {
 	 *            Entity to be merged
 	 * @param options
 	 *            options for consistency level, ttl and timestamp
-	 * @return Merged entity or a new proxified entity
+	 * @return Updated entity or a new proxified entity
 	 */
-	public <T> T merge(final T entity, Options options) {
+	public <T> T update(final T entity, Options options) {
 		if (log.isDebugEnabled()) {
-			log.debug("Merging entity '{}' with options {} ", proxifier.unwrap(entity), options);
+			log.debug("Updating entity '{}' with options {} ", proxifier.removeProxy(entity), options);
 		}
 		entityValidator.validateEntity(entity, entityMetaMap);
 		if (options.getTtl().isPresent()) {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
-		PersistenceContext context = initPersistenceContext(entity, options);
-		return context.merge(entity);
+        T realObject = proxifier.getRealObject(entity);
+		PersistenceContext context = initPersistenceContext(realObject, options);
+		return context.update(entity);
 
 	}
 
@@ -185,7 +184,7 @@ public class PersistenceManager {
 	 */
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}'", proxifier.unwrap(entity));
+			log.debug("Removing entity '{}'", proxifier.removeProxy(entity));
 		remove(entity, noOptions());
 	}
 
@@ -220,7 +219,7 @@ public class PersistenceManager {
 	 */
 	public void remove(final Object entity, Options options) {
 		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}' with options {}", proxifier.unwrap(entity), options);
+			log.debug("Removing entity '{}' with options {}", proxifier.removeProxy(entity), options);
 
 		Object realObject = proxifier.getRealObject(entity);
 		entityValidator.validateEntity(realObject, entityMetaMap);
@@ -289,26 +288,26 @@ public class PersistenceManager {
 	}
 
 	/**
-	 * Find an entity. Works exactly as find(Class<T> entityClass, Object
-	 * primaryKey) except that the database will not be hit. This method never
-	 * returns null
+	 * Create a proxy for the entity. An new empty entity will be created, populated with
+     * the provided primary key and then proxified. This method never returns null
+     * Use this method to perform direct update without read-before-write
 	 * 
 	 * @param entityClass
 	 *            Entity type
 	 * @param primaryKey
 	 *            Primary key (Cassandra row key) of the entity to initialize
 	 */
-	public <T> T getReference(Class<T> entityClass, Object primaryKey) {
+	public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
 		if (log.isDebugEnabled())
 			log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
 
-		return getReference(entityClass, primaryKey, null);
+		return getProxy(entityClass, primaryKey, null);
 	}
 
 	/**
-	 * Find an entity with the given Consistency Level for read. Works exactly
-	 * as find(Class<T> entityClass, Object primaryKey) except that the database
-	 * will not be hit. This method never returns null
+     * Create a proxy for the entity. An new empty entity will be created, populated with
+     * the provided primary key and then proxified. This method never returns null
+     * Use this method to perform direct update without read-before-write
 	 * 
 	 * @param entityClass
 	 *            Entity type
@@ -317,7 +316,7 @@ public class PersistenceManager {
 	 * @param readLevel
 	 *            Consistency Level for read
 	 */
-	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+	public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (log.isDebugEnabled())
 			log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
 					entityClass, primaryKey, readLevel);
@@ -333,7 +332,7 @@ public class PersistenceManager {
 		PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
 				OptionsBuilder.withConsistency(readLevel));
 		entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-		T entity = context.getReference(entityClass);
+		T entity = context.getProxy(entityClass);
 		return entity;
 	}
 
@@ -345,7 +344,7 @@ public class PersistenceManager {
 	 */
 	public void refresh(Object entity) throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
-			log.debug("Refreshing entity '{}'", proxifier.unwrap(entity));
+			log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
 
 		refresh(entity, null);
 	}
@@ -360,12 +359,13 @@ public class PersistenceManager {
 	 */
 	public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
-			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.unwrap(entity), readLevel);
+			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
 
 		entityValidator.validateEntity(entity, entityMetaMap);
 		proxifier.ensureProxy(entity);
-		PersistenceContext context = initPersistenceContext(entity, OptionsBuilder.withConsistency(readLevel));
-		context.refresh();
+        Object realObject = proxifier.getRealObject(entity);
+		PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(readLevel));
+		context.refresh(entity);
 	}
 
 	/**
@@ -379,10 +379,11 @@ public class PersistenceManager {
 	public <T> T initialize(final T entity) {
 		log.debug("Force lazy fields initialization for entity {}", entity);
 		if (log.isDebugEnabled()) {
-			log.debug("Force lazy fields initialization for entity {}", proxifier.unwrap(entity));
+			log.debug("Force lazy fields initialization for entity {}", proxifier.removeProxy(entity));
 		}
 		proxifier.ensureProxy(entity);
-		PersistenceContext context = initPersistenceContext(entity, noOptions());
+        T realObject = proxifier.getRealObject(entity);
+		PersistenceContext context = initPersistenceContext(realObject, noOptions());
 		return context.initialize(entity);
 	}
 
@@ -417,31 +418,31 @@ public class PersistenceManager {
 	}
 
 	/**
-	 * Shorthand for manager.unwrap(manager.initialize(T entity))
+	 * Shorthand for manager.removeProxy(manager.initialize(T entity))
 	 * 
 	 */
-	public <T> T initAndUnwrap(T entity) {
-		return unwrap(initialize(entity));
+	public <T> T initAndRemoveProxy(T entity) {
+		return removeProxy(initialize(entity));
 	}
 
 	/**
-	 * Shorthand for manager.unwrap(manager.initialize(Set<T> entities))
+	 * Shorthand for manager.removeProxy(manager.initialize(Set<T> entities))
 	 * 
 	 */
-	public <T> Set<T> initAndUnwrap(Set<T> entities) {
+	public <T> Set<T> initAndRemoveProxy(Set<T> entities) {
 		return unwrap(initialize(entities));
 	}
 
 	/**
-	 * Shorthand for manager.unwrap(manager.initialize(List<T> entities))
+	 * Shorthand for manager.removeProxy(manager.initialize(List<T> entities))
 	 * 
 	 */
-	public <T> List<T> initAndUnwrap(List<T> entities) {
-		return unwrap(initialize(entities));
+	public <T> List<T> initAndRemoveProxy(List<T> entities) {
+		return removeProxy(initialize(entities));
 	}
 
 	/**
-	 * Unwrap a 'managed' entity to prepare it for serialization
+	 * Remove the proxy of a 'managed' entity and return the underlying "raw" entity
 	 * 
 	 * If the argument is not a proxy objet, return itself <br/>
 	 * Else, return the target object behind the proxy
@@ -449,40 +450,42 @@ public class PersistenceManager {
 	 * @param proxy
 	 * @return real object
 	 */
-	public <T> T unwrap(T proxy) {
-		log.debug("Unwrapping entity {}", proxy);
+	public <T> T removeProxy(T proxy) {
+		log.debug("Removing proxy for entity {}", proxy);
 
-		T realObject = proxifier.unwrap(proxy);
+		T realObject = proxifier.removeProxy(proxy);
 
 		return realObject;
 	}
 
 	/**
-	 * Unwrap a list of 'managed' entities to prepare them for serialization
+	 * Remove the proxy of a list of 'managed' entities and return the underlying "raw" entities
 	 * 
-	 * See {@link #unwrap}
+	 * See {@link #removeProxy}
 	 * 
 	 * @param proxies
 	 *            list of proxified entity
 	 * @return real object list
 	 */
-	public <T> List<T> unwrap(List<T> proxies) {
-		return proxifier.unwrap(proxies);
+	public <T> List<T> removeProxy(List<T> proxies) {
+        log.debug("Removing proxy for a list of entities {}", proxies);
+
+        return proxifier.removeProxy(proxies);
 	}
 
 	/**
-	 * Unwrap a set of 'managed' entities to prepare them for serialization
+	 * Remove the proxy of a set of 'managed' entities return the underlying "raw" entities
 	 * 
-	 * See {@link #unwrap}
+	 * See {@link #removeProxy}
 	 * 
 	 * @param proxies
 	 *            set of proxified entities
 	 * @return real object set
 	 */
 	public <T> Set<T> unwrap(Set<T> proxies) {
-		log.debug("Unwrapping set of entities {}", proxies);
+		log.debug("Removing proxy for a set of entities {}", proxies);
 
-		return proxifier.unwrap(proxies);
+		return proxifier.removeProxy(proxies);
 	}
 
 	public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {

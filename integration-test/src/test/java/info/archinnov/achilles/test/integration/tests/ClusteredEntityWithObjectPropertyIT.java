@@ -68,9 +68,9 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ClusteredEntityWithObjectValue found = manager.getReference(ClusteredEntityWithObjectValue.class, compoundKey);
+		ClusteredEntityWithObjectValue found = manager.getProxy(ClusteredEntityWithObjectValue.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo(holder);
@@ -84,10 +84,10 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.setValue(newHolder);
-		manager.merge(entity);
+		manager.update(entity);
 
 		entity = manager.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
@@ -100,7 +100,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -118,7 +118,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='" + mapper.writeValueAsString(newHolder) + "' where id="
 				+ partitionKey + " and name='name'");

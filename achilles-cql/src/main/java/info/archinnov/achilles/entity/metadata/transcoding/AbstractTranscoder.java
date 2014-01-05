@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.entity.metadata.transcoding;
 
-import static info.archinnov.achilles.helper.PropertyHelper.*;
 import static info.archinnov.achilles.helper.PropertyHelper.isSupportedType;
 
 import java.util.List;
@@ -27,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 
 public abstract class AbstractTranscoder implements DataTranscoder {
 

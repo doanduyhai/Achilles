@@ -16,14 +16,11 @@
  */
 package info.archinnov.achilles.context;
 
-import info.archinnov.achilles.consistency.ConsistencyConverter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.EventHolder;
-import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,15 +67,8 @@ public class BatchingFlushContext extends AbstractFlushContext {
 		 * https://issues.apache.org/jira/browse/CASSANDRA-6426 is solved
 		 */
 
-		BatchStatement batch = new BatchStatement();
-        AbstractStatementWrapper.writeDMLStartBatch();
-		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
-            batch.add(statementWrapper.getStatement());
-            statementWrapper.logDMLStatement(true, "\t");
-		}
-        AbstractStatementWrapper.writeDMLEndBatch(consistencyLevel);
-        batch.setConsistencyLevel(ConsistencyConverter.getCQLLevel(consistencyLevel));
-		daoContext.executeBatch(batch);
+        executeBatch(BatchStatement.Type.LOGGED, statementWrappers);
+        executeBatch(BatchStatement.Type.COUNTER, counterStatementWrappers);
 	}
 
 

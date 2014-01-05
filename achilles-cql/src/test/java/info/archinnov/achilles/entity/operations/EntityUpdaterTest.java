@@ -28,10 +28,10 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityMergerTest {
+public class EntityUpdaterTest {
 
 	@InjectMocks
-	private EntityMerger entityMerger;
+	private EntityUpdater entityUpdater;
 
 	@Mock
 	private MergerImpl merger;
@@ -81,7 +81,7 @@ public class EntityMergerTest {
 
 		dirtyMap.put(pm.getSetter(), pm);
 
-		CompleteBean actual = entityMerger.merge(context, entity);
+		CompleteBean actual = entityUpdater.update(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(context).setEntity(entity);
@@ -96,9 +96,9 @@ public class EntityMergerTest {
 	public void should_persist_transient_entity() throws Exception {
 		when(proxifier.isProxy(entity)).thenReturn(false);
 		when(context.isClusteredEntity()).thenReturn(false);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoaded(entity, context)).thenReturn(entity);
 
-		CompleteBean actual = entityMerger.merge(context, entity);
+		CompleteBean actual = entityUpdater.update(context, entity);
 
 		assertThat(actual).isSameAs(entity);
 		verify(persister).persist(context);

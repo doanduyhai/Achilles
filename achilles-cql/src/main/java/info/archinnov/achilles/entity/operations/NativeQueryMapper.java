@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.entity.operations;
 
-import info.archinnov.achilles.proxy.RowMethodInvoker;
+import info.archinnov.achilles.reflection.RowMethodInvoker;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

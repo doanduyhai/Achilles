@@ -26,7 +26,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.utils.UUIDGen;
 
 import java.util.Map;
@@ -99,13 +98,13 @@ public class BatchingPersistenceManager extends PersistenceManager {
 	}
 
 	@Override
-	public <T> T merge(final T entity, Options options) {
+	public <T> T update(final T entity, Options options) {
 		if (options.getConsistencyLevel().isPresent()) {
             flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
-            return super.merge(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
+            return super.update(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
 		}
 	}
 
@@ -132,13 +131,13 @@ public class BatchingPersistenceManager extends PersistenceManager {
 	}
 
 	@Override
-	public <T> T getReference(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+	public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
 		if (readLevel != null) {
 			flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
-			return super.getReference(entityClass, primaryKey, null);
+			return super.getProxy(entityClass, primaryKey, null);
 		}
 	}
 

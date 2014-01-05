@@ -35,13 +35,13 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 	public void add(int index, Object arg1) {
 		log.trace("Mark list property {} of entity class {} dirty upon element addition at index {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
-		((List<Object>) super.target).add(index, proxifier.unwrap(arg1));
+		((List<Object>) super.target).add(index, proxifier.removeProxy(arg1));
 		super.markDirty();
 	}
 
 	@Override
 	public boolean addAll(int arg0, Collection<? extends Object> arg1) {
-		boolean result = ((List<Object>) super.target).addAll(arg0, proxifier.unwrap(arg1));
+		boolean result = ((List<Object>) super.target).addAll(arg0, proxifier.removeProxy(arg1));
 		if (result) {
 			log.trace("Mark list property {} of entity class {} dirty upon elements addition",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
@@ -106,7 +106,7 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 		log.trace("Mark list property {} of entity class {} dirty upon element set at index {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		Object result = ((List<Object>) super.target).set(index, proxifier.unwrap(arg1));
+		Object result = ((List<Object>) super.target).set(index, proxifier.removeProxy(arg1));
 		super.markDirty();
 		return result;
 	}

@@ -51,9 +51,9 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ValuelessEntity found = manager.getReference(ValuelessEntity.class, id);
+		ValuelessEntity found = manager.getProxy(ValuelessEntity.class, id);
 
 		assertThat(found).isNotNull();
 	}
@@ -75,7 +75,7 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.merge(entity, OptionsBuilder.withTtl(1));
+		manager.update(entity, OptionsBuilder.withTtl(1));
 
 		Thread.sleep(1000);
 

@@ -144,7 +144,7 @@ public class BatchingPersistenceManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.merge(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+		manager.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
 	}
 
 	@Test
@@ -171,7 +171,7 @@ public class BatchingPersistenceManagerTest {
 		exception
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.getReference(CompleteBean.class, 11L, ONE);
+		manager.getProxy(CompleteBean.class, 11L, ONE);
 	}
 
 	@Test

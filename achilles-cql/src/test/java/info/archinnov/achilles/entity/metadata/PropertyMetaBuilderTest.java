@@ -24,10 +24,12 @@ import info.archinnov.achilles.entity.metadata.transcoding.ListTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,7 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class PropertyMetaBuilderTest {
-	Method[] accessors = new Method[2];
+	private Method[] accessors = new Method[2];
+    private Field field;
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -43,13 +46,14 @@ public class PropertyMetaBuilderTest {
 	public void setUp() throws Exception {
 		accessors[0] = Bean.class.getDeclaredMethod("getId");
 		accessors[1] = Bean.class.getDeclaredMethod("setId", Long.class);
+        field = CompleteBean.class.getDeclaredField("id");
 	}
 
 	@Test
 	public void should_build_simple() throws Exception {
 
 		PropertyMeta built = PropertyMetaBuilder.factory().type(SIMPLE).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).consistencyLevels(Pair.create(ONE, ALL)).build(Void.class, String.class);
+                .field(field).objectMapper(objectMapper).consistencyLevels(Pair.create(ONE, ALL)).build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(SIMPLE);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -57,6 +61,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.type().isLazy()).isFalse();
+		assertThat(built.getField()).isEqualTo(field);
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
@@ -66,7 +71,7 @@ public class PropertyMetaBuilderTest {
 	@Test
 	public void should_build_compound_id() throws Exception {
 
-		EmbeddedIdProperties props = new EmbeddedIdProperties(null, null, null, null, null, null, null);
+		EmbeddedIdProperties props = new EmbeddedIdProperties(null, null, null, null, null, null,null, null);
 
 		PropertyMeta built = PropertyMetaBuilder.factory().type(EMBEDDED_ID).propertyName("prop").accessors(accessors)
 				.objectMapper(objectMapper).consistencyLevels(Pair.create(ONE, ALL)).embeddedIdProperties(props)

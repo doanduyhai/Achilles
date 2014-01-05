@@ -32,7 +32,6 @@ import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +42,6 @@ import org.junit.rules.ExpectedException;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableList;
 
 public class EventInterceptorIT {
 	@Rule
@@ -185,7 +183,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        entity = manager.merge(entity);
+        entity = manager.update(entity);
 
         Row row = session.execute("select name,label from CompleteBean where id = "+ entity.getId()).one();
 

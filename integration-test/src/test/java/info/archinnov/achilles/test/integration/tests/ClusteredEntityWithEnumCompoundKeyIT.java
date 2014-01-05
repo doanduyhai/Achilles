@@ -51,8 +51,8 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		manager.persist(entity);
 
-		ClusteredEntityWithEnumCompoundKey found = manager.getReference(ClusteredEntityWithEnumCompoundKey.class,
-				compoundKey);
+		ClusteredEntityWithEnumCompoundKey found = manager.getProxy(ClusteredEntityWithEnumCompoundKey.class,
+                                                                    compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -64,7 +64,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		manager.merge(entity);
+		manager.update(entity);
 
 		ClusteredEntityWithEnumCompoundKey found = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
@@ -79,10 +79,10 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.setValue("new_clustered_value");
-		manager.merge(entity);
+		manager.update(entity);
 
 		entity = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
@@ -95,7 +95,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -111,7 +111,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and type = 'FILE'");

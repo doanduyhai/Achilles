@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.proxy;
+package info.archinnov.achilles.reflection;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.reflection.RowMethodInvoker;
 
 import java.util.ArrayList;
 import java.util.Arrays;

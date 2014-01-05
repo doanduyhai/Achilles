@@ -37,7 +37,6 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
-import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 public class ClusteredEntityIT {
@@ -90,9 +89,9 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ClusteredEntity found = manager.getReference(ClusteredEntity.class, compoundKey);
+		ClusteredEntity found = manager.getProxy(ClusteredEntity.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -102,7 +101,7 @@ public class ClusteredEntityIT {
 	public void should_merge_with_ttl() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
-		entity = manager.merge(entity, OptionsBuilder.withTtl(1));
+		entity = manager.update(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -117,10 +116,10 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.setValue("new_clustered_value");
-		manager.merge(entity);
+		manager.update(entity);
 
 		entity = manager.find(ClusteredEntity.class, compoundKey);
 
@@ -133,7 +132,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -147,7 +146,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.removeById(ClusteredEntity.class, entity.getId());
 
@@ -165,7 +164,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("update " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and count=" + count + " and name='" + name + "'");
@@ -231,16 +230,16 @@ public class ClusteredEntityIT {
 		ClusteredEntity clusteredEntity = manager.sliceQuery(ClusteredEntity.class).partitionComponents(partitionKey)
 				.getFirstOccurence();
 
-		// Check for merge
+		// Check for update
 		clusteredEntity.setValue("dirty");
-		manager.merge(clusteredEntity);
+		manager.update(clusteredEntity);
 
 		ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId());
 		assertThat(check.getValue()).isEqualTo("dirty");
 
 		// Check for refresh
 		check.setValue("dirty_again");
-		manager.merge(check);
+		manager.update(check);
 
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
@@ -421,16 +420,16 @@ public class ClusteredEntityIT {
 		iter.hasNext();
 		ClusteredEntity clusteredEntity = iter.next();
 
-		// Check for merge
+		// Check for update
 		clusteredEntity.setValue("dirty");
-		manager.merge(clusteredEntity);
+		manager.update(clusteredEntity);
 
 		ClusteredEntity check = manager.find(ClusteredEntity.class, clusteredEntity.getId());
 		assertThat(check.getValue()).isEqualTo("dirty");
 
 		// Check for refresh
 		check.setValue("dirty_again");
-		manager.merge(check);
+		manager.update(check);
 
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");

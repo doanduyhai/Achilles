@@ -45,14 +45,14 @@ public class PreparedStatementBinder {
 	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity,
 			ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for insert of entity {}", ps.getQueryString(), entity);
-		List<Object> values = new ArrayList<Object>();
+		List<Object> values = new ArrayList();
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
 		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
 				.filter(PropertyType.excludeCounterType).toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList(nonProxyMetas);
 
 		for (PropertyMeta pm : fieldMetas) {
 			Object value = pm.getValueFromField(entity);
@@ -103,7 +103,6 @@ public class PreparedStatementBinder {
 
 		BoundStatement bs = ps.bind(boundValues);
 		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-
 	}
 
 	public BoundStatementWrapper bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,

@@ -85,7 +85,7 @@ public class MapWrapperTest {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
-		when(proxifier.unwrap("FR")).thenReturn("FR");
+		when(proxifier.removeProxy("FR")).thenReturn("FR");
 		assertThat(wrapper.containsValue("FR")).isTrue();
 	}
 
@@ -141,7 +141,7 @@ public class MapWrapperTest {
 		Set<Entry<Object, Object>> entrySet = wrapper.entrySet();
 
 		Entry<Integer, String> entry = target.entrySet().iterator().next();
-		when(proxifier.unwrap((Object) entry)).thenReturn(entry);
+		when(proxifier.removeProxy((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -178,7 +178,7 @@ public class MapWrapperTest {
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		Set<Object> keySet = wrapper.keySet();
-		when(proxifier.unwrap(1)).thenReturn(1);
+		when(proxifier.removeProxy(1)).thenReturn(1);
 		keySet.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -224,7 +224,7 @@ public class MapWrapperTest {
 	public void should_mark_dirty_on_remove_existing() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
-		when(proxifier.unwrap(1)).thenReturn(1);
+		when(proxifier.removeProxy(1)).thenReturn(1);
 		wrapper.remove(1);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -246,7 +246,7 @@ public class MapWrapperTest {
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		Collection<Object> collectionWrapper = wrapper.values();
-		when(proxifier.unwrap("FR")).thenReturn("FR");
+		when(proxifier.removeProxy("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
 		verify(dirtyMap).put(setter, propertyMeta);

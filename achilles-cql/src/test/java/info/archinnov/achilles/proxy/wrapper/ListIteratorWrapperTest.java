@@ -75,7 +75,7 @@ public class ListIteratorWrapperTest {
 
 	@Test
 	public void should_mark_dirty_on_set() throws Exception {
-		when(proxifier.unwrap(1)).thenReturn(1);
+		when(proxifier.removeProxy(1)).thenReturn(1);
 		wrapper.next();
 		wrapper.set(1);
 

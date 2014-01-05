@@ -20,6 +20,7 @@ import static info.archinnov.achilles.entity.metadata.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
@@ -58,14 +59,14 @@ public class CompoundTranscoderTest {
 		String name = "name";
 		EmbeddedKey compound = new EmbeddedKey(userId, name);
 
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
+		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+        Field nameField = EmbeddedKey.class.getDeclaredField("name");
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
-				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
+				.compClasses(Long.class, String.class).compFields(userIdField, nameField).build();
 
-		when(invoker.getValueFromField(compound, userIdGetter)).thenReturn(userId);
-		when(invoker.getValueFromField(compound, nameGetter)).thenReturn(name);
+		when(invoker.getValueFromField(compound, userIdField)).thenReturn(userId);
+		when(invoker.getValueFromField(compound, nameField)).thenReturn(name);
 
 		List<Object> actual = transcoder.encodeToComponents(pm, compound);
 
@@ -127,10 +128,10 @@ public class CompoundTranscoderTest {
 		Long userId = RandomUtils.nextLong();
 		String name = "name";
 
-		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
-		Method namesetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
+		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+        Field nameField = EmbeddedKey.class.getDeclaredField("name");
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
-				.compClasses(Long.class, String.class).compSetters(userIdSetter, namesetter).invoker(invoker).build();
+				.compClasses(Long.class, String.class).compFields(userIdField, nameField).invoker(invoker).build();
 
 		when(invoker.instantiate(EmbeddedKey.class)).thenReturn(new EmbeddedKey());
 

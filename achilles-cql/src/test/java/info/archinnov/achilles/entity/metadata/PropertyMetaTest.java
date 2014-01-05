@@ -22,13 +22,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.entity.metadata.transcoding.SimpleTranscoder;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -172,10 +173,10 @@ public class PropertyMetaTest {
 		PropertyMeta meta = new PropertyMeta();
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
-				String.class), Arrays.asList("age", "name"), null, null);
+				String.class), Arrays.asList("age", "name"), null,null, null);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
-				"c"), null, null, null);
+				"c"), null, null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getOrderingComponent()).isEqualTo("age");
@@ -186,10 +187,10 @@ public class PropertyMetaTest {
 		PropertyMeta meta = new PropertyMeta();
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
-				String.class), Arrays.asList("age", "name"), "name", null, null);
+				String.class), Arrays.asList("age", "name"), "name", null, null,null);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
-				"c"), null, null, null);
+				"c"), null, null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
 		assertThat(meta.getReversedComponent()).isEqualTo("name");
@@ -223,21 +224,21 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_get_partition_key_getter() throws Exception {
-		Method idGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
+	public void should_get_partition_key_field() throws Exception {
+		Field idField = EmbeddedKey.class.getDeclaredField("userId");
+		Field nameField = EmbeddedKey.class.getDeclaredField("name");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(idGetter, nameGetter)
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(idField, nameField)
 				.build();
 
-		assertThat(idMeta.getPartitionKeyGetter()).isEqualTo(idGetter);
+		assertThat(idMeta.getPartitionKeyField()).isEqualTo(idField);
 	}
 
 	@Test
-	public void should_return_null_when_no_partition_key_getter() throws Exception {
+	public void should_return_null_when_no_partition_key_field() throws Exception {
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).build();
 
-		assertThat(idMeta.getPartitionKeyGetter()).isNull();
+		assertThat(idMeta.getPartitionKeyField()).isNull();
 	}
 
 	@Test
@@ -486,7 +487,7 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
 				.type(SIMPLE).invoker(invoker).build();
 
-		when(invoker.getValueFromField(entity, pm.getGetter())).thenReturn("name");
+		when(invoker.getValueFromField(entity, pm.getField())).thenReturn("name");
 
 		assertThat(pm.getValueFromField(entity)).isEqualTo("name");
 	}
@@ -501,7 +502,7 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").accessors()
 				.type(LIST).invoker(invoker).build();
 
-		when(invoker.<String> getListValueFromField(entity, pm.getGetter())).thenReturn(friends);
+		when(invoker.<String> getListValueFromField(entity, pm.getField())).thenReturn(friends);
 
 		assertThat(pm.<String> getListValueFromField(entity)).containsExactly("foo", "bar");
 	}
@@ -516,7 +517,7 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers").accessors()
 				.type(SET).invoker(invoker).build();
 
-		when(invoker.<String> getSetValueFromField(entity, pm.getGetter())).thenReturn(followers);
+		when(invoker.<String> getSetValueFromField(entity, pm.getField())).thenReturn(followers);
 
 		assertThat(pm.<String> getSetValueFromField(entity)).containsOnly("George", "Paul");
 	}
@@ -531,9 +532,9 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
 				.accessors().type(MAP).invoker(invoker).build();
 
-		when(invoker.<Integer, String> getMapValueFromField(entity, pm.getGetter())).thenReturn(preferences);
+		when(invoker.<Integer, String> getMapValueFromField(entity, pm.getField())).thenReturn(preferences);
 
-		Map<Integer, String> actual = pm.<Integer, String> getMapValueFromField(entity);
+		Map<Integer, String> actual = pm.getMapValueFromField(entity);
 
 		assertThat(actual).containsKey(1).containsKey(2).containsValue("FR").containsValue("Paris");
 	}
@@ -548,7 +549,7 @@ public class PropertyMetaTest {
 
 		pm.setValueToField(entity, "name");
 
-		verify(invoker).setValueToField(entity, pm.getSetter(), "name");
+		verify(invoker).setValueToField(entity, pm.getField(), "name");
 	}
 
 	@Test

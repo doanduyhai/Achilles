@@ -76,10 +76,10 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ClusteredEntityWithCompositePartitionKey found = manager.getReference(
-				ClusteredEntityWithCompositePartitionKey.class, compoundKey);
+		ClusteredEntityWithCompositePartitionKey found = manager.getProxy(
+                ClusteredEntityWithCompositePartitionKey.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -93,10 +93,10 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.setValue("new_clustered_value");
-		manager.merge(entity);
+		manager.update(entity);
 
 		entity = manager.find(ClusteredEntityWithCompositePartitionKey.class, compoundKey);
 
@@ -111,7 +111,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -127,7 +127,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.removeById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
 
@@ -143,7 +143,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_clustered_value' WHERE id=" + id
 				+ " AND type='type' AND indexes=11");
@@ -192,9 +192,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
 				.getFirstOccurence();
 
-		// Check for merge
+		// Check for update
 		clusteredEntity.setValue("dirty");
-		manager.merge(clusteredEntity);
+		manager.update(clusteredEntity);
 
 		ClusteredEntityWithCompositePartitionKey check = manager.find(ClusteredEntityWithCompositePartitionKey.class,
 				clusteredEntity.getId());
@@ -202,7 +202,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		// Check for refresh
 		check.setValue("dirty_again");
-		manager.merge(check);
+		manager.update(check);
 
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
@@ -363,9 +363,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		iter.hasNext();
 		ClusteredEntityWithCompositePartitionKey clusteredEntity = iter.next();
 
-		// Check for merge
+		// Check for update
 		clusteredEntity.setValue("dirty");
-		manager.merge(clusteredEntity);
+		manager.update(clusteredEntity);
 
 		ClusteredEntityWithCompositePartitionKey check = manager.find(ClusteredEntityWithCompositePartitionKey.class,
 				clusteredEntity.getId());
@@ -373,7 +373,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		// Check for refresh
 		check.setValue("dirty_again");
-		manager.merge(check);
+		manager.update(check);
 
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");

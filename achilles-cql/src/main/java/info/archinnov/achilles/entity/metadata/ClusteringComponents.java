@@ -1,5 +1,6 @@
 package info.archinnov.achilles.entity.metadata;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
@@ -11,14 +12,14 @@ public class ClusteringComponents extends AbstractComponentProperties {
 	private final String reversedComponentName;
 
 	public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,
-			String reversedComponentName, List<Method> componentGetters, List<Method> componentSetters) {
-		super(componentClasses, componentNames, componentGetters, componentSetters);
+			String reversedComponentName,List<Field> componentFields, List<Method> componentGetters, List<Method> componentSetters) {
+		super(componentClasses, componentNames, componentFields,componentGetters, componentSetters);
 		this.reversedComponentName = reversedComponentName;
 	}
 
 	public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,
-			List<Method> componentGetters, List<Method> componentSetters) {
-		this(componentClasses, componentNames, null, componentGetters, componentSetters);
+            List<Field> componentFields,List<Method> componentGetters, List<Method> componentSetters) {
+		this(componentClasses, componentNames, null, componentFields,componentGetters, componentSetters);
 	}
 
 	void validateClusteringComponents(String className, List<Object> clusteringComponents) {

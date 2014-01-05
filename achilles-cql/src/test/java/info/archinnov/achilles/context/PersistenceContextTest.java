@@ -32,13 +32,12 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityMerger;
+import info.archinnov.achilles.entity.operations.EntityUpdater;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
-import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.proxy.EntityInterceptor;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -84,7 +83,7 @@ public class PersistenceContextTest {
 	private EntityPersister persister;
 
 	@Mock
-	private EntityMerger merger;
+	private EntityUpdater merger;
 
 	@Mock
 	private EntityProxifier proxifier;
@@ -122,7 +121,7 @@ public class PersistenceContextTest {
 		Whitebox.setInternalState(context, "proxifier", proxifier);
 		Whitebox.setInternalState(context, "refresher", refresher);
 		Whitebox.setInternalState(context, "loader", loader);
-		Whitebox.setInternalState(context, "merger", merger);
+		Whitebox.setInternalState(context, "updater", merger);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}
@@ -384,10 +383,10 @@ public class PersistenceContextTest {
 	@Test
 	public void should_merge() throws Exception {
         //Given
-		when(merger.merge(context, entity)).thenReturn(entity);
+		when(merger.update(context, entity)).thenReturn(entity);
 
         //When
-		CompleteBean merged = context.merge(entity);
+		CompleteBean merged = context.update(entity);
 
         //Then
         assertThat(merged).isSameAs(entity);
@@ -410,7 +409,7 @@ public class PersistenceContextTest {
         //Then
         InOrder inOrder = Mockito.inOrder(flushContext,persister);
 
-        inOrder.verify(flushContext).triggerInterceptor(meta,entity, PRE_REMOVE);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_REMOVE);
         inOrder.verify(persister).remove(context);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_REMOVE);
@@ -420,7 +419,7 @@ public class PersistenceContextTest {
 	public void should_find() throws Exception {
         //Given
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithEagerFieldsLoaded(entity, context)).thenReturn(entity);
 
         //When
 		CompleteBean found = context.find(CompleteBean.class);
@@ -442,12 +441,11 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_get_reference() throws Exception {
-		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxy(entity, context)).thenReturn(entity);
+		when(loader.createEmptyEntity(context, CompleteBean.class)).thenReturn(entity);
+		when(proxifier.buildProxyWithNoFieldLoaded(entity, context)).thenReturn(entity);
 
-		CompleteBean found = context.getReference(CompleteBean.class);
+		CompleteBean found = context.getProxy(CompleteBean.class);
 
-		assertThat(context.isLoadEagerFields()).isFalse();
 		assertThat(found).isSameAs(entity);
 	}
 

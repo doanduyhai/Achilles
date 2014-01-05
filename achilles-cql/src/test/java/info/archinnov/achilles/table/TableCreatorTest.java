@@ -33,6 +33,7 @@ import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Counter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,15 +145,15 @@ public class TableCreatorTest {
 		PropertyMeta idMeta = new PropertyMeta();
 		idMeta.setType(PropertyType.EMBEDDED_ID);
 		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class),
-				Arrays.asList("id"), new ArrayList<Method>(), new ArrayList<Method>());
+				Arrays.asList("id"), new ArrayList<Field>(),new ArrayList<Method>(), new ArrayList<Method>());
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class),
-				Arrays.asList("name"), "name", null, null);
+				Arrays.asList("name"), "name", null,null, null);
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
-				new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"), new ArrayList<Method>(),
-				new ArrayList<Method>(), new ArrayList<String>());
+				new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"), new ArrayList<Field>(), new ArrayList<Method>(),
+                new ArrayList<Method>(), new ArrayList<String>());
 		idMeta.setEmbeddedIdProperties(props);
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		Map<String, PropertyMeta> propertyMetas = new HashMap();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);

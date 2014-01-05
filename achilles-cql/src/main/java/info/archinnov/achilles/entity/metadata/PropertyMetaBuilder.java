@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import info.archinnov.achilles.type.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,6 +37,7 @@ public class PropertyMetaBuilder {
 	private String propertyName;
 	private String entityClassName;
 	private Method[] accessors;
+    private Field field;
 	private ObjectMapper objectMapper;
 	private CounterProperties counterProperties;
 
@@ -66,6 +68,7 @@ public class PropertyMetaBuilder {
 		log.debug("Build propertyMeta for property {} of entity class {}", propertyName, entityClassName);
 
         PropertyMeta meta = new PropertyMeta();
+        meta.setField(field);
         meta.setType(type);
 		meta.setPropertyName(propertyName);
 		meta.setEntityClassName(entityClassName);
@@ -92,6 +95,11 @@ public class PropertyMetaBuilder {
 		this.accessors = accessors;
 		return this;
 	}
+
+    public PropertyMetaBuilder field(Field field) {
+        this.field = field;
+        return this;
+    }
 
 	public PropertyMetaBuilder embeddedIdProperties(EmbeddedIdProperties embeddedIdProperties) {
 		this.embeddedIdProperties = embeddedIdProperties;

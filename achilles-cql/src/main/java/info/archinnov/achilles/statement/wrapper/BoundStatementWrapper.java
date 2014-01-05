@@ -51,7 +51,7 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 			String queryString = ps.getQueryString();
 			String consistencyLevel = boundStatement.getConsistencyLevel() == null ? "DEFAULT" : boundStatement
 					.getConsistencyLevel().name();
-			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel, values);
+			writeDMLStatementLog(false, queryType, queryString, consistencyLevel, values);
 		}
 	}
 }

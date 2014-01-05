@@ -100,7 +100,7 @@ public class EntrySetWrapperTest {
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 		Entry<Object, Object> entry = map.entrySet().iterator().next();
-		when(proxifier.unwrap(any())).thenReturn(entry);
+		when(proxifier.removeProxy(any())).thenReturn(entry);
 
 		assertThat(wrapper.contains(entry)).isTrue();
 	}
@@ -119,8 +119,8 @@ public class EntrySetWrapperTest {
 		Entry<Object, Object> entry1 = iterator.next();
 		Entry<Object, Object> entry2 = iterator.next();
 
-		when(proxifier.unwrap(entry1)).thenReturn(entry1);
-		when(proxifier.unwrap(entry2)).thenReturn(entry2);
+		when(proxifier.removeProxy(entry1)).thenReturn(entry1);
+		when(proxifier.removeProxy(entry2)).thenReturn(entry2);
 
 		assertThat(wrapper.containsAll(Arrays.asList(entry1, entry2))).isTrue();
 	}
@@ -152,7 +152,7 @@ public class EntrySetWrapperTest {
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 		Entry<Object, Object> entry = map.entrySet().iterator().next();
-		when(proxifier.unwrap(any())).thenReturn(entry);
+		when(proxifier.removeProxy(any())).thenReturn(entry);
 		wrapper.remove(entry);
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -189,7 +189,7 @@ public class EntrySetWrapperTest {
 		list.add(entry1);
 		list.add(entry2);
 
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
+		when(proxifier.removeProxy((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -227,7 +227,7 @@ public class EntrySetWrapperTest {
 		Entry<Object, Object> entry2 = iterator.next();
 		List<Entry<Object, Object>> list = Arrays.asList(entry1, entry2);
 
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
+		when(proxifier.removeProxy((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 
 		EntrySetWrapper wrapper = prepareWrapper(map);
 		wrapper.retainAll(list);
@@ -243,7 +243,7 @@ public class EntrySetWrapperTest {
 
 		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(1, "FR");
 		List<Entry<Object, Object>> list = Arrays.asList(entry1);
-		when(proxifier.unwrap((Collection<Entry<Object, Object>>) list)).thenReturn(list);
+		when(proxifier.removeProxy((Collection<Entry<Object, Object>>) list)).thenReturn(list);
 		EntrySetWrapper wrapper = prepareWrapper(map);
 
 		wrapper.retainAll(list);

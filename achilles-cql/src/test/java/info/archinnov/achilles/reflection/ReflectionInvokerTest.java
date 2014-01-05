@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.proxy;
+package info.archinnov.achilles.reflection;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.ID;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -48,71 +49,100 @@ public class ReflectionInvokerTest {
 
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
+    @Test
+    public void should_get_value_from_field_by_getter() throws Exception {
+        Bean bean = new Bean();
+        bean.setComplicatedAttributeName("test");
+        Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+
+        String value = (String) invoker.getValueFromField(bean, getter);
+        assertThat(value).isEqualTo("test");
+    }
+
+    @Test
+    public void should_get_value_from_null_field_by_getter() throws Exception {
+        Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+        assertThat(invoker.getValueFromField(null, getter)).isNull();
+    }
+
+    @Test
+    public void should_exception_when_getting_value_from_field_by_getter() throws Exception {
+        Bean bean = new Bean();
+        bean.setComplicatedAttributeName("test");
+        Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Cannot invoke '" + getter.getName() + "' of type '" + Bean.class.getCanonicalName()
+                                        + "' on instance 'bean'");
+
+        invoker.getValueFromField("bean", getter);
+    }
+
 	@Test
 	public void should_get_value_from_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+		Field field = Bean.class.getDeclaredField("complicatedAttributeName");
 
-		String value = (String) invoker.getValueFromField(bean, getter);
+		String value =  invoker.getValueFromField(bean, field);
 		assertThat(value).isEqualTo("test");
 	}
 
 	@Test
 	public void should_get_value_from_null_field() throws Exception {
-		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
-		assertThat(invoker.getValueFromField(null, getter)).isNull();
+        Field field = Bean.class.getDeclaredField("complicatedAttributeName");
+		assertThat(invoker.getValueFromField(null, field)).isNull();
 	}
 
 	@Test
 	public void should_exception_when_getting_value_from_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method getter = Bean.class.getDeclaredMethod("getComplicatedAttributeName");
+        Field field = Bean.class.getDeclaredField("complicatedAttributeName");
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot invoke '" + getter.getName() + "' of type '" + Bean.class.getCanonicalName()
+		exception.expectMessage("Cannot get value from field '" + field.getName() + "' of type '" + Bean.class.getCanonicalName()
 				+ "' on instance 'bean'");
 
-		invoker.getValueFromField("bean", getter);
+		invoker.getValueFromField("bean", field);
 	}
 
 	@Test
 	public void should_set_value_to_field() throws Exception {
 		Bean bean = new Bean();
-		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+        Field field = Bean.class.getDeclaredField("complicatedAttributeName");
 
-		invoker.setValueToField(bean, setter, "fecezzef");
+		invoker.setValueToField(bean, field, "fecezzef");
 
 		assertThat(bean.getComplicatedAttributeName()).isEqualTo("fecezzef");
 	}
 
 	@Test
 	public void should_not_set_value_when_null_field() throws Exception {
-		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
-		invoker.setValueToField(null, setter, "fecezzef");
+        Field field = Bean.class.getDeclaredField("complicatedAttributeName");
+		invoker.setValueToField(null, field, "fecezzef");
 	}
 
 	@Test
 	public void should_exception_when_setting_value_to_field() throws Exception {
 		Bean bean = new Bean();
 		bean.setComplicatedAttributeName("test");
-		Method setter = Bean.class.getDeclaredMethod("setComplicatedAttributeName", String.class);
+        Field field = Bean.class.getDeclaredField("complicatedAttributeName");
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot invoke '" + setter.getName() + "' of type '" + Bean.class.getCanonicalName()
+		exception.expectMessage("Cannot set value to field '" + field.getName() + "' of type '" + Bean.class.getCanonicalName()
 				+ "' on instance 'bean'");
 
-		invoker.setValueToField("bean", setter, "test");
+		invoker.setValueToField("bean", field, "test");
 	}
 
 	@Test
 	public void should_get_value_from_list_field() throws Exception {
 		CompleteBean bean = new CompleteBean();
 		bean.setFriends(Arrays.asList("foo", "bar"));
-		Method getter = CompleteBean.class.getDeclaredMethod("getFriends");
+		Field field = CompleteBean.class.getDeclaredField("friends");
 
-		List<String> value = invoker.getListValueFromField(bean, getter);
+		List<String> value = invoker.getListValueFromField(bean, field);
 		assertThat(value).containsExactly("foo", "bar");
 	}
 
@@ -120,9 +150,9 @@ public class ReflectionInvokerTest {
 	public void should_get_value_from_set_field() throws Exception {
 		CompleteBean bean = new CompleteBean();
 		bean.setFollowers(Sets.newHashSet("foo", "bar"));
-		Method getter = CompleteBean.class.getDeclaredMethod("getFollowers");
+        Field field = CompleteBean.class.getDeclaredField("followers");
 
-		Set<String> value = invoker.getSetValueFromField(bean, getter);
+		Set<String> value = invoker.getSetValueFromField(bean, field);
 		assertThat(value).containsOnly("foo", "bar");
 	}
 
@@ -130,9 +160,9 @@ public class ReflectionInvokerTest {
 	public void should_get_value_from_map_field() throws Exception {
 		CompleteBean bean = new CompleteBean();
 		bean.setPreferences(ImmutableMap.of(1, "FR"));
-		Method getter = CompleteBean.class.getDeclaredMethod("getPreferences");
+        Field field = CompleteBean.class.getDeclaredField("preferences");
 
-		Map<Integer, String> value = invoker.getMapValueFromField(bean, getter);
+		Map<Integer, String> value = invoker.getMapValueFromField(bean, field);
 		assertThat(value).containsKey(1).containsValue("FR");
 	}
 
@@ -155,7 +185,7 @@ public class ReflectionInvokerTest {
 				.accessors().build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot get primary key value by invoking getter 'getId' of type '"
+		exception.expectMessage("Cannot get primary key from field 'id' of type '"
 				+ CompleteBean.class.getCanonicalName() + "' from entity 'bean'");
 
 		invoker.getPrimaryKey("bean", idMeta);
@@ -171,9 +201,9 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_get_partition_key() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
-				.type(PropertyType.EMBEDDED_ID).build();
+		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+            .compFields(userIdField).type(PropertyType.EMBEDDED_ID).build();
 
 		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
 
@@ -183,12 +213,12 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_exception_when_getting_partition_key() throws Exception {
 
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
-				.type(PropertyType.EMBEDDED_ID).build();
+        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+            .compFields(userIdField).type(PropertyType.EMBEDDED_ID).build();
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot get partition key value by invoking getter 'getUserId' of type '"
+		exception.expectMessage("Cannot get partition key from field 'userId' of type '"
 				+ EmbeddedKey.class.getCanonicalName() + "' from compoundKey 'compound'");
 
 		invoker.getPartitionKey("compound", idMeta);
@@ -197,9 +227,9 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_return_null_for_partition_key_if_not_embedded_id() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compGetters(userIdGetter)
-				.type(PropertyType.ID).build();
+        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
+            .compFields(userIdField).type(PropertyType.ID).build();
 
 		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
 		assertThat(invoker.getPartitionKey(embeddedKey, idMeta)).isNull();
@@ -217,8 +247,8 @@ public class ReflectionInvokerTest {
 	public void should_instanciate_embedded_id_with_partition_key_using_default_constructor() throws Exception {
 		Long partitionKey = RandomUtils.nextLong();
 
-		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compSetters(userIdSetter).build();
+        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(userIdField).build();
 
 		Object actual = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta,
 				Arrays.<Object> asList(partitionKey));
@@ -230,50 +260,25 @@ public class ReflectionInvokerTest {
 	}
 
 	@Test
-	public void should_throw_exception_when_cannot_instanciate_entity_from_class() throws Exception {
-
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot instantiate entity from class '" + Pair.class.getCanonicalName() + "'");
-
-		invoker.instantiate(Pair.class);
-	}
-
-	@Test
 	public void should_exception_when_setting_null_to_primitive_type() throws Exception {
-		Method setter = BeanWithPrimitive.class.getDeclaredMethod("setCount", int.class);
+        Field field = BeanWithPrimitive.class.getDeclaredField("count");
 
 		exception.expect(AchillesException.class);
 		exception
-				.expectMessage("Cannot set null value to primitive type 'int' when invoking 'setCount' on instance of class'"
+				.expectMessage("Cannot set null value to primitive type 'int' of field 'count' on instance of class'"
 						+ BeanWithPrimitive.class.getCanonicalName() + "'");
 
-		invoker.setValueToField(new BeanWithPrimitive(), setter, null);
-
+		invoker.setValueToField(new BeanWithPrimitive(), field, null);
 	}
 
     @Test
     public void should_instantiate_class_without_public_constructor() throws Exception {
         //When
-        BeanWithoutPublicConstructor instance = invoker.instantiateImmutable(BeanWithoutPublicConstructor.class);
+        BeanWithoutPublicConstructor instance = invoker.instantiate(BeanWithoutPublicConstructor.class);
 
         //Then
         assertThat(instance).isInstanceOf(BeanWithoutPublicConstructor.class);
     }
-
-    @Test
-    public void should_set_field_when_no_setter_available() throws Exception {
-        //Given
-        BeanWithNoSetterForField instance = new BeanWithNoSetterForField("name");
-        Field nameField = BeanWithNoSetterForField.class.getDeclaredField("name");
-
-        //When
-        invoker.setValueToFinalField(nameField,instance,"new_name");
-
-        //Then
-        assertThat(instance.getName()).isEqualTo("new_name");
-    }
-
-
 
 	private class Bean {
 
@@ -304,18 +309,6 @@ public class ReflectionInvokerTest {
     public class BeanWithoutPublicConstructor {
         public BeanWithoutPublicConstructor(String name) {
 
-        }
-    }
-
-    public class BeanWithNoSetterForField
-    {
-        private final String name;
-        public BeanWithNoSetterForField(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
         }
     }
 }

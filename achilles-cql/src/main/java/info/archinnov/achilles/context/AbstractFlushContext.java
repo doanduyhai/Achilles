@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.context;
 
+import static info.archinnov.achilles.consistency.ConsistencyConverter.getCQLLevel;
+import info.archinnov.achilles.consistency.ConsistencyConverter;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
@@ -24,14 +26,17 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.ResultSet;
 
 public abstract class AbstractFlushContext {
 	protected DaoContext daoContext;
 
-	protected List<AbstractStatementWrapper> statementWrappers = new ArrayList<AbstractStatementWrapper>();
+    protected List<AbstractStatementWrapper> statementWrappers = new ArrayList();
+    protected List<AbstractStatementWrapper> counterStatementWrappers = new ArrayList();
 
-	protected ConsistencyLevel consistencyLevel;
+
+    protected ConsistencyLevel consistencyLevel;
 
 	public AbstractFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel) {
 		this.daoContext = daoContext;
@@ -45,9 +50,31 @@ public abstract class AbstractFlushContext {
 		this.consistencyLevel = consistencyLevel;
 	}
 
-	public void pushStatement(AbstractStatementWrapper statementWrapper) {
+    protected void executeBatch(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers) {
+        if (statementWrappers.size() > 1) {
+            BatchStatement batch = new BatchStatement(batchType);
+            AbstractStatementWrapper.writeDMLStartBatch();
+            for (AbstractStatementWrapper statementWrapper : statementWrappers) {
+                batch.add(statementWrapper.getStatement());
+                statementWrapper.logDMLStatement(true, "\t");
+            }
+            AbstractStatementWrapper.writeDMLEndBatch(consistencyLevel);
+            if(consistencyLevel != null) {
+                batch.setConsistencyLevel(getCQLLevel(consistencyLevel));
+            }
+            daoContext.executeBatch(batch);
+        } else if (statementWrappers.size() == 1) {
+            daoContext.execute(statementWrappers.get(0));
+        }
+    }
+
+    public void pushStatement(AbstractStatementWrapper statementWrapper) {
 		statementWrappers.add(statementWrapper);
 	}
+
+    public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
+        counterStatementWrappers.add(statementWrapper);
+    }
 
 	public ResultSet executeImmediate(AbstractStatementWrapper statementWrapper) {
 		return daoContext.execute(statementWrapper);

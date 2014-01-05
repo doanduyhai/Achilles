@@ -20,14 +20,12 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
-import info.archinnov.achilles.proxy.RowMethodInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 
 import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 
 public class SliceQueryIterator<T> implements Iterator<T> {
@@ -74,7 +72,7 @@ public class SliceQueryIterator<T> implements Iterator<T> {
 
 	private T proxify(T clusteredEntity) {
 		PersistenceContext duplicate = context.duplicate(clusteredEntity);
-		return proxifier.buildProxy(clusteredEntity, duplicate);
+		return proxifier.buildProxyWithEagerFieldsLoaded(clusteredEntity, duplicate);
 	}
 
 }

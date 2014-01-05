@@ -43,9 +43,9 @@ public class UnwrapIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
-		bean = manager.merge(bean);
+		bean = manager.update(bean);
 
-		bean = manager.unwrap(bean);
+		bean = manager.removeProxy(bean);
 
 		assertThat(bean).isNotInstanceOf(Factory.class);
 	}

@@ -21,8 +21,8 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.EntityMerger;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.entity.operations.EntityUpdater;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -50,7 +50,7 @@ public class MergerImplTest {
 	private ReflectionInvoker invoker;
 
 	@Mock
-	private EntityMerger entityMerger;
+	private EntityUpdater entityUpdater;
 
 	@Mock
 	private PersistenceContext context;

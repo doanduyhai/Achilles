@@ -17,6 +17,7 @@
 package info.archinnov.achilles.statement.prepared;
 
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -91,24 +92,24 @@ public class PreparedStatementBinderTest {
 		long age = RandomUtils.nextLong();
 		String name = "name";
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).accessors().transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
 				.accessors().transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(UUID.class, String.class).field("count")
+		PropertyMeta counterMeta = completeBean(UUID.class, String.class).field("count")
 				.type(COUNTER).accessors().invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, ageMeta, counterMeta));
 
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
-		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);
-		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(age);
+		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
+		when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(age);
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
@@ -124,13 +125,13 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_insert_with_null_fields() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).accessors().transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
 				.accessors().transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -139,8 +140,8 @@ public class PreparedStatementBinderTest {
 		long primaryKey = RandomUtils.nextLong();
 		String name = "name";
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
-		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);
-		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(null);
+		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
+		when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(null);
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
@@ -163,19 +164,19 @@ public class PreparedStatementBinderTest {
 		Set<Object> followers = Sets.<Object> newHashSet("George", "Paul");
 		Map<Object, Object> preferences = ImmutableMap.<Object, Object> of(1, "FR");
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(EMBEDDED_ID).transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
 				.transcoder(transcoder).accessors().invoker(invoker).build();
 
-		PropertyMeta friendsMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
+		PropertyMeta friendsMeta = completeBean(Void.class, String.class).field("friends")
 				.type(LIST).transcoder(transcoder).accessors().invoker(invoker).build();
 
-		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("followers")
+		PropertyMeta followersMeta = completeBean(Void.class, Long.class).field("followers")
 				.type(SET).transcoder(transcoder).accessors().invoker(invoker).build();
 
-		PropertyMeta preferencesMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class)
+		PropertyMeta preferencesMeta = completeBean(Void.class, Long.class)
 				.field("preferences").type(MAP).transcoder(transcoder).accessors().invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -184,10 +185,10 @@ public class PreparedStatementBinderTest {
 		EmbeddedKey embeddedKey = new EmbeddedKey(userId, name);
 
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(embeddedKey);
-		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(age);
-		when(invoker.getValueFromField(entity, friendsMeta.getGetter())).thenReturn(friends);
-		when(invoker.getValueFromField(entity, followersMeta.getGetter())).thenReturn(followers);
-		when(invoker.getValueFromField(entity, preferencesMeta.getGetter())).thenReturn(preferences);
+		when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(age);
+		when(invoker.getValueFromField(entity, friendsMeta.getField())).thenReturn(friends);
+		when(invoker.getValueFromField(entity, followersMeta.getField())).thenReturn(followers);
+		when(invoker.getValueFromField(entity, preferencesMeta.getField())).thenReturn(preferences);
 
 		when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(Arrays.<Object> asList(userId, name));
 		when(transcoder.encode(ageMeta, age)).thenReturn(age);
@@ -206,7 +207,7 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_with_only_pk_in_where_clause() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).transcoder(transcoder).invoker(invoker).build();
 		entityMeta.setIdMeta(idMeta);
 		long primaryKey = RandomUtils.nextLong();
@@ -223,13 +224,13 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_update() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.accessors().type(SIMPLE).transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").accessors()
 				.type(SIMPLE).transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -239,8 +240,8 @@ public class PreparedStatementBinderTest {
 		String name = "name";
 
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
-		when(invoker.getValueFromField(entity, nameMeta.getGetter())).thenReturn(name);
-		when(invoker.getValueFromField(entity, ageMeta.getGetter())).thenReturn(age);
+		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
+		when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(age);
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
@@ -257,14 +258,14 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_simple_counter_increment_decrement() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
@@ -272,66 +273,65 @@ public class PreparedStatementBinderTest {
 
 		when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
 		when(transcoder.forceEncodeToJSON(counter)).thenReturn(counter.toString());
-		when(ps.bind(counter, "CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
+		when(ps.bind(counter, "CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForSimpleCounterIncrementDecrement(ps, meta, counterMeta, primaryKey,
 				counter, ALL);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
 		assertThat(Arrays.asList(actual.getValues())).containsExactly(counter, "CompleteBean", primaryKey.toString(),
-				"counter");
+				"count");
 	}
 
 	@Test
 	public void should_bind_for_simple_counter_select() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
 
 		when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
-		when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
+		when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForSimpleCounterSelect(ps, meta, counterMeta, primaryKey, ALL);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "counter");
+		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "count");
 	}
 
 	@Test
 	public void should_bind_for_simple_counter_delete() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("counter")
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
 				.transcoder(transcoder).invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
 
 		when(transcoder.forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
-		when(ps.bind("CompleteBean", primaryKey.toString(), "counter")).thenReturn(bs);
+		when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForSimpleCounterDelete(ps, meta, counterMeta, primaryKey, ALL);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "counter");
-
+		assertThat(Arrays.asList(actual.getValues())).containsExactly("CompleteBean", primaryKey.toString(), "count");
 	}
 
 	@Test
 	public void should_bind_for_clustered_counter_increment_decrement() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).type(ID).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -354,7 +354,7 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_clustered_counter_select() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).type(ID).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -375,7 +375,7 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_clustered_counter_delete() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.transcoder(transcoder).type(ID).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();

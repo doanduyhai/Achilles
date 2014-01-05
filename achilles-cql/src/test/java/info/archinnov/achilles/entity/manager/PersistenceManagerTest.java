@@ -61,7 +61,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -174,7 +173,7 @@ public class PersistenceManagerTest {
 		when(proxifier.isProxy(entity)).thenReturn(true);
 
 		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Then entity is already in 'managed' state. Please use the merge() method instead of persist()");
+		exception.expectMessage("Then entity is already in 'managed' state. Please use the update() method instead of persist()");
 
 		manager.persist(entity);
 	}
@@ -182,8 +181,8 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_merge() throws Exception {
 		// When
-		when(context.merge(entity)).thenReturn(entity);
-		CompleteBean mergedEntity = manager.merge(entity);
+		when(context.update(entity)).thenReturn(entity);
+		CompleteBean mergedEntity = manager.update(entity);
 
 		// Then
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
@@ -199,9 +198,9 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_merge_with_options() throws Exception {
 		// When
-		when(context.merge(entity)).thenReturn(entity);
-		CompleteBean mergedEntity = manager.merge(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
-				.withTimestamp(100L));
+		when(context.update(entity)).thenReturn(entity);
+		CompleteBean mergedEntity = manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
+                                                                         .withTimestamp(100L));
 
 		// Then
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
@@ -326,11 +325,11 @@ public class PersistenceManagerTest {
 		// When
 		when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
 				context);
-		when(context.getReference(CompleteBean.class)).thenReturn(entity);
+		when(context.getProxy(CompleteBean.class)).thenReturn(entity);
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
-		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey);
+		CompleteBean bean = manager.getProxy(CompleteBean.class, primaryKey);
 
 		// Then
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
@@ -347,11 +346,11 @@ public class PersistenceManagerTest {
 		// When
 		when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
 				context);
-		when(context.getReference(CompleteBean.class)).thenReturn(entity);
+		when(context.getProxy(CompleteBean.class)).thenReturn(entity);
 		when(context.getIdMeta()).thenReturn(idMeta);
 		when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
-		CompleteBean bean = manager.getReference(CompleteBean.class, primaryKey, EACH_QUORUM);
+		CompleteBean bean = manager.getProxy(CompleteBean.class, primaryKey, EACH_QUORUM);
 
 		// Then
 		verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
@@ -437,8 +436,8 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_unwrap_entity() throws Exception {
 		// When
-		when(proxifier.unwrap(entity)).thenReturn(entity);
-		CompleteBean actual = manager.unwrap(entity);
+		when(proxifier.removeProxy(entity)).thenReturn(entity);
+		CompleteBean actual = manager.removeProxy(entity);
 
 		// Then
 		assertThat(actual).isSameAs(entity);
@@ -450,9 +449,9 @@ public class PersistenceManagerTest {
 		List<CompleteBean> proxies = new ArrayList<CompleteBean>();
 
 		// When
-		when(proxifier.unwrap(proxies)).thenReturn(proxies);
+		when(proxifier.removeProxy(proxies)).thenReturn(proxies);
 
-		List<CompleteBean> actual = manager.unwrap(proxies);
+		List<CompleteBean> actual = manager.removeProxy(proxies);
 
 		// Then
 		assertThat(actual).isSameAs(proxies);
@@ -464,7 +463,7 @@ public class PersistenceManagerTest {
 		Set<CompleteBean> proxies = new HashSet<CompleteBean>();
 
 		// When
-		when(proxifier.unwrap(proxies)).thenReturn(proxies);
+		when(proxifier.removeProxy(proxies)).thenReturn(proxies);
 
 		Set<CompleteBean> actual = manager.unwrap(proxies);
 
@@ -476,9 +475,9 @@ public class PersistenceManagerTest {
 	public void should_init_and_unwrap_entity() throws Exception {
 		// When
 		when(context.initialize(entity)).thenReturn(entity);
-		when(proxifier.unwrap(entity)).thenReturn(entity);
+		when(proxifier.removeProxy(entity)).thenReturn(entity);
 
-		CompleteBean actual = manager.initAndUnwrap(entity);
+		CompleteBean actual = manager.initAndRemoveProxy(entity);
 
 		// Then
 		assertThat(actual).isSameAs(entity);
@@ -492,9 +491,9 @@ public class PersistenceManagerTest {
 
 		// When
 		when(context.initialize(entities)).thenReturn(entities);
-		when(proxifier.unwrap(entities)).thenReturn(entities);
+		when(proxifier.removeProxy(entities)).thenReturn(entities);
 
-		List<CompleteBean> actual = manager.initAndUnwrap(entities);
+		List<CompleteBean> actual = manager.initAndRemoveProxy(entities);
 
 		// Then
 		assertThat(actual).isSameAs(entities);
@@ -507,9 +506,9 @@ public class PersistenceManagerTest {
 
 		// When
 		when(context.initialize(entities)).thenReturn(entities);
-		when(proxifier.unwrap(entities)).thenReturn(entities);
+		when(proxifier.removeProxy(entities)).thenReturn(entities);
 
-		Set<CompleteBean> actual = manager.initAndUnwrap(entities);
+		Set<CompleteBean> actual = manager.initAndRemoveProxy(entities);
 
 		// Then
 		assertThat(actual).isSameAs(entities);

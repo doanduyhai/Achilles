@@ -63,10 +63,10 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		EntityWithCompositePartitionKey found = manager.getReference(EntityWithCompositePartitionKey.class,
-				compositeRowKey);
+		EntityWithCompositePartitionKey found = manager.getProxy(EntityWithCompositePartitionKey.class,
+                                                                 compositeRowKey);
 
 		assertThat(found.getId()).isEqualTo(compositeRowKey);
 		assertThat(found.getValue()).isEqualTo("clustered_value");
@@ -77,10 +77,10 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.setValue("value2");
-		manager.merge(entity);
+		manager.update(entity);
 
 		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
@@ -92,7 +92,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -108,7 +108,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
 
@@ -122,7 +122,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_value' WHERE id=" + id + " AND type='type'");
 

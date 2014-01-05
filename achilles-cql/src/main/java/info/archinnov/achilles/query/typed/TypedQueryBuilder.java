@@ -136,9 +136,9 @@ public class TypedQueryBuilder<T> {
 
 	private void determineAlreadyLoadedSet() {
 		if (normalizedQuery.contains(SELECT_STAR)) {
-			alreadyLoaded = new HashSet<Method>(meta.getEagerGetters());
+			alreadyLoaded = new HashSet(meta.getEagerGetters());
 		} else {
-			alreadyLoaded = new HashSet<Method>();
+			alreadyLoaded = new HashSet();
 			Matcher matcher = SELECT_COLUMNS_EXTRACTION_PATTERN.matcher(normalizedQuery);
 			if (matcher.matches()) {
 				selectedColumns = Arrays.asList(matcher.group(1).replaceAll(WHITE_SPACES, "").split(","));

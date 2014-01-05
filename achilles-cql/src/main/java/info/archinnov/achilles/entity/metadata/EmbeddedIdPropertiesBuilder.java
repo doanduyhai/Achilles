@@ -1,16 +1,18 @@
 package info.archinnov.achilles.entity.metadata;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmbeddedIdPropertiesBuilder {
 
-	private final List<Class<?>> componentClasses = new ArrayList<Class<?>>();
-	private final List<String> componentNames = new ArrayList<String>();
-	private final List<Method> componentGetters = new ArrayList<Method>();
-	private final List<Method> componentSetters = new ArrayList<Method>();
-	private final List<String> componentsAsTimeUUID = new ArrayList<String>();
+	private final List<Class<?>> componentClasses = new ArrayList<>();
+	private final List<String> componentNames = new ArrayList<>();
+	private final List<Field> componentFields = new ArrayList<>();
+	private final List<Method> componentGetters = new ArrayList<>();
+	private final List<Method> componentSetters = new ArrayList<>();
+	private final List<String> componentsAsTimeUUID = new ArrayList<>();
 	private String reversedComponentName = null;
 
 	public void addComponentClass(Class<?> clazz) {
@@ -32,6 +34,16 @@ public class EmbeddedIdPropertiesBuilder {
 		componentNames.remove(firstComponentName);
 		return firstComponentName;
 	}
+
+    public void addComponentField(Field field) {
+        componentFields.add(field);
+    }
+
+    public Field removeFirstComponentField() {
+        Field firstComponentField = componentFields.get(0);
+        componentFields.remove(firstComponentField);
+        return firstComponentField  ;
+    }
 
 	public void addComponentGetter(Method getter) {
 		componentGetters.add(getter);
@@ -62,15 +74,15 @@ public class EmbeddedIdPropertiesBuilder {
 	}
 
 	public PartitionComponents buildPartitionKeys() {
-		return new PartitionComponents(componentClasses, componentNames, componentGetters, componentSetters);
+		return new PartitionComponents(componentClasses, componentNames,componentFields, componentGetters, componentSetters);
 	}
 
 	public ClusteringComponents buildClusteringKeys() {
-		return new ClusteringComponents(componentClasses, componentNames, reversedComponentName, componentGetters, componentSetters);
+		return new ClusteringComponents(componentClasses, componentNames, reversedComponentName,componentFields, componentGetters, componentSetters);
 	}
 
 	public EmbeddedIdProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents) {
 		return new EmbeddedIdProperties(partitionComponents, clusteringComponents, componentClasses, componentNames,
-				componentGetters, componentSetters, componentsAsTimeUUID);
+                componentFields,componentGetters, componentSetters, componentsAsTimeUUID);
 	}
 }

@@ -44,7 +44,6 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
-import com.google.common.base.Optional;
 
 public class ConsistencyLevelPriorityOrderingIT {
 	@Rule
@@ -111,7 +110,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -129,7 +128,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(THREE);
-		entity = batchEm.merge(entity);
+		entity = batchEm.update(entity);
 
 		Counter counter = entity.getCount();
 
@@ -144,7 +143,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -164,7 +163,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
-		entity = batchEm.merge(entity);
+		entity = batchEm.update(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);

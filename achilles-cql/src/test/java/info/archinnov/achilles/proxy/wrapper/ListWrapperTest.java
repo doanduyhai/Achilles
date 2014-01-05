@@ -60,7 +60,7 @@ public class ListWrapperTest {
 
 		ArrayList<String> target = new ArrayList<String>();
 		ListWrapper listWrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("a")).thenReturn("a");
+		when(proxifier.removeProxy("a")).thenReturn("a");
 		listWrapper.add(0, "a");
 
 		assertThat(target).hasSize(1);
@@ -78,7 +78,7 @@ public class ListWrapperTest {
 		listWrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("b", "c");
-		when(proxifier.unwrap(list)).thenReturn(list);
+		when(proxifier.removeProxy(list)).thenReturn(list);
 
 		listWrapper.addAll(1, list);
 
@@ -112,7 +112,7 @@ public class ListWrapperTest {
 		target.add("b");
 		target.add("c");
 		ListWrapper listWrapper = prepareListWrapper(target);
-		when(proxifier.unwrap("d")).thenReturn("d");
+		when(proxifier.removeProxy("d")).thenReturn("d");
 		listWrapper.set(1, "d");
 
 		assertThat(target).hasSize(3);
@@ -129,7 +129,7 @@ public class ListWrapperTest {
 		ListIterator<Object> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
 		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
-		when(proxifier.unwrap("c")).thenReturn("c");
+		when(proxifier.removeProxy("c")).thenReturn("c");
 		listIteratorWrapper.add("c");
 
 		verify(dirtyMap).put(setter, propertyMeta);
@@ -144,7 +144,7 @@ public class ListWrapperTest {
 		List<Object> subListWrapper = prepareListWrapper(target).subList(0, 1);
 
 		assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
-		when(proxifier.unwrap("d")).thenReturn("d");
+		when(proxifier.removeProxy("d")).thenReturn("d");
 		subListWrapper.add("d");
 
 		verify(dirtyMap).put(setter, propertyMeta);

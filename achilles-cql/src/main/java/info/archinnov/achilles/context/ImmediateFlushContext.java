@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.BatchStatement;
 
 public class ImmediateFlushContext extends AbstractFlushContext {
 	private static final Logger log = LoggerFactory.getLogger(ImmediateFlushContext.class);
@@ -53,9 +54,8 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 	@Override
 	public void flush() {
 		log.debug("Flush immediately all pending statements");
-		for (AbstractStatementWrapper statementWrapper : statementWrappers) {
-			daoContext.execute(statementWrapper);
-		}
+        executeBatch(BatchStatement.Type.UNLOGGED, statementWrappers);
+        executeBatch(BatchStatement.Type.COUNTER, counterStatementWrappers);
 	}
 
 	@Override

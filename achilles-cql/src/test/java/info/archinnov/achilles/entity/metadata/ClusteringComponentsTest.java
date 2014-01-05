@@ -38,7 +38,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_validate_clustering_components() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class), null,
-				null, null);
+                                                        null,null, null);
 
 		clusteringComponents.validateClusteringComponents("entityClass", Arrays.<Object> asList("name", 13));
 	}
@@ -46,7 +46,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_exception_when_no_clustering_component_provided() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class), null,
-				null, null);
+                                                        null,null, null);
 		exception.expect(AchillesException.class);
 		exception
 				.expectMessage("There should be at least one clustering key provided for querying on entity 'entityClass'");
@@ -57,7 +57,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_exception_when_wrong_type_provided_for_clustering_components() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,
-				UUID.class), null, null, null);
+				UUID.class), null, null, null,null);
 
 		exception.expect(AchillesException.class);
 		exception
@@ -70,7 +70,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_exception_when_too_many_values_for_clustering_components() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,
-				UUID.class), null, null, null);
+				UUID.class), null,null, null, null);
 
 		exception.expect(AchillesException.class);
 		exception
@@ -83,7 +83,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_exception_when_null_value_between_clustering_components() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,
-				UUID.class), null, null, null);
+				UUID.class),null, null, null, null);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("There should not be any null value between two non-null components of an @EmbeddedId");
@@ -95,7 +95,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_exception_when_component_not_comparable_for_clustering_component() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,
-				UserBean.class), null, null, null);
+				UserBean.class),null, null, null, null);
 
 		UserBean userBean = new UserBean();
 		exception.expect(AchillesException.class);
@@ -108,7 +108,7 @@ public class ClusteringComponentsTest {
 	@Test
 	public void should_skip_validation_when_null_clustering_value() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class,
-				Integer.class, UserBean.class), null, null, null);
+				Integer.class, UserBean.class), null,null, null, null);
 
 		clusteringComponents.validateClusteringComponents("entityClass", Arrays.<Object> asList(null, null, null));
 	}

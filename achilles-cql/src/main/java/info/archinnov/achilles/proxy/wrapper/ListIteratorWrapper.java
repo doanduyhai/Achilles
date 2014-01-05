@@ -33,7 +33,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements ListIterator
 	public void add(Object e) {
 		log.trace("Mark list property {} of entity class {} dirty upon element addition",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		this.target.add(proxifier.unwrap(e));
+		this.target.add(proxifier.removeProxy(e));
 		this.markDirty();
 	}
 
@@ -83,7 +83,7 @@ public class ListIteratorWrapper extends AbstractWrapper implements ListIterator
 	public void set(Object e) {
 		log.trace("Mark list property {} of entity class {} dirty upon element set at current position",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-		this.target.set(proxifier.unwrap(e));
+		this.target.set(proxifier.removeProxy(e));
 		this.markDirty();
 	}
 

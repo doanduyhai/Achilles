@@ -31,14 +31,13 @@ public class EntityRefresher {
 	private EntityLoader loader = new EntityLoader();
 
 
-	public void refresh(PersistenceContext context) throws AchillesStaleObjectStateException {
+	public void refresh(Object proxifiedEntity,PersistenceContext context) throws AchillesStaleObjectStateException {
 		Object primaryKey = context.getPrimaryKey();
 		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
 				primaryKey);
 
-		Object entity = context.getEntity();
-
-		EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+		EntityInterceptor<Object> interceptor = proxifier.getInterceptor(proxifiedEntity);
+        Object entity = context.getEntity();
 
 		interceptor.getDirtyMap().clear();
 		Set<Method> alreadyLoaded = interceptor.getAlreadyLoaded();

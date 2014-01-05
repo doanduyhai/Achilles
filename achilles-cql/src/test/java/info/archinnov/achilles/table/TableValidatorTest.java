@@ -19,6 +19,8 @@ package info.archinnov.achilles.table;
 import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.entity.metadata.PropertyType.*;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.valueClass;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.IndexProperties;
@@ -88,9 +90,9 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_id_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -108,10 +110,10 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_embedded_id_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("userId", "name")
+		PropertyMeta idMeta = valueClass(EmbeddedKey.class).compNames("userId", "name")
 				.compClasses(Long.class, String.class).type(EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -141,10 +143,10 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_embedded_id_with_time_uuid_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("userId", "date")
+		PropertyMeta idMeta = valueClass(EmbeddedKey.class).compNames("userId", "date")
 				.compClasses(Long.class, UUID.class).type(EMBEDDED_ID).compTimeUUID("date").build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("string")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -166,7 +168,7 @@ public class TableValidatorTest {
 		when(tableMetaData.getClusteringColumns()).thenReturn(Arrays.asList(nameColumn));
 		when(columnMetaDataComparator.isEqual(nameMetadata, nameColumn)).thenReturn(true);
 
-		when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
+		when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
 		when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
 		validator.validateForEntity(entityMeta, tableMetaData);
@@ -174,9 +176,9 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_simple_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+		PropertyMeta pm = completeBean(Void.class, String.class).field("name").type(SIMPLE)
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -191,16 +193,16 @@ public class TableValidatorTest {
 		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(LAZY_SIMPLE).build();
+		pm = completeBean(Void.class, String.class).field("name").type(LAZY_SIMPLE).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("name", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
 
 	@Test
 	public void should_validate_simple_indexed_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE)
+		PropertyMeta pm = completeBean(Void.class, String.class).field("name").type(SIMPLE)
 				.build();
 		pm.setIndexProperties(new IndexProperties(""));
 
@@ -225,9 +227,9 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_list_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").type(LIST)
+		PropertyMeta pm = completeBean(Void.class, String.class).field("friends").type(LIST)
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -242,16 +244,16 @@ public class TableValidatorTest {
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends").type(LAZY_LIST).build();
+		pm = completeBean(Void.class, String.class).field("friends").type(LAZY_LIST).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("friends", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
 
 	@Test
 	public void should_validate_set_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers").type(SET)
+		PropertyMeta pm = completeBean(Void.class, String.class).field("followers").type(SET)
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -269,9 +271,9 @@ public class TableValidatorTest {
 
 	@Test
 	public void should_validate_map_field_for_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences")
+		PropertyMeta pm = completeBean(Integer.class, String.class).field("preferences")
 				.type(MAP).build();
 
 		entityMeta.setIdMeta(idMeta);
@@ -286,7 +288,7 @@ public class TableValidatorTest {
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).field("preferences").type(LAZY_MAP)
+		pm = completeBean(Integer.class, String.class).field("preferences").type(LAZY_MAP)
 				.build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);

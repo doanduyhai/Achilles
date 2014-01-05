@@ -66,9 +66,9 @@ public class ClusteredEntityWithCounterIT {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		manager.merge(entity);
+		manager.update(entity);
 
-		ClusteredEntityWithCounter found = manager.getReference(ClusteredEntityWithCounter.class, compoundKey);
+		ClusteredEntityWithCounter found = manager.getProxy(ClusteredEntityWithCounter.class, compoundKey);
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
@@ -83,7 +83,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.getCounter().incr(incr);
 
@@ -100,7 +100,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -121,7 +121,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
 				+ " AND name='name'");

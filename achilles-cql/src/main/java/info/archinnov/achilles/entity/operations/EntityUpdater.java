@@ -27,22 +27,22 @@ import info.archinnov.achilles.entity.operations.impl.MergerImpl;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
-public class EntityMerger {
+public class EntityUpdater {
 
-    private static final Logger log = LoggerFactory.getLogger(EntityMerger.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityUpdater.class);
 
     private MergerImpl merger = new MergerImpl();
     private EntityPersister persister = new EntityPersister();
     private EntityProxifier proxifier = new EntityProxifier();
 
-    public <T> T merge(PersistenceContext context, T entity) {
+    public <T> T update(PersistenceContext context, T entity) {
         log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
                   context.getPrimaryKey());
 
         EntityMeta entityMeta = context.getEntityMeta();
 
-        Validator.validateNotNull(entity, "Proxy object should not be null for merge");
-        Validator.validateNotNull(entityMeta, "entityMeta should not be null for merge");
+        Validator.validateNotNull(entity, "Proxy object should not be null for update");
+        Validator.validateNotNull(entityMeta, "entityMeta should not be null for update");
 
         T proxy;
         if (proxifier.isProxy(entity)) {
@@ -61,7 +61,7 @@ public class EntityMerger {
             log.debug("Persisting transient entity");
 
             persister.persist(context);
-            proxy = proxifier.buildProxy(entity, context);
+            proxy = proxifier.buildProxyWithAllFieldsLoaded(entity, context);
         }
         return proxy;
     }

@@ -78,13 +78,13 @@ public class ClusteredEntityIT2 {
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
-		tweet = manager.merge(tweet);
+		tweet = manager.update(tweet);
 
 		tweet.setContent("this is a new tweet2");
 		tweet.setIsARetweet(true);
 		tweet.setOriginalAuthorId(originalAuthorId);
 
-		manager.merge(tweet);
+		manager.update(tweet);
 
 		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
@@ -103,7 +103,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.merge(tweet);
+		tweet = manager.update(tweet);
 
 		manager.remove(tweet);
 
@@ -124,7 +124,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.merge(tweet);
+		tweet = manager.update(tweet);
 
 		session.execute("update " + CLUSTERED_TWEET_TABLE + " set content='New tweet',original_author_id="
 				+ originalAuthorId + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId
@@ -162,11 +162,11 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
 
-		message = manager.merge(message);
+		message = manager.update(message);
 
 		message.setLabel("a JPEG image");
 
-		manager.merge(message);
+		manager.update(message);
 
 		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
@@ -180,7 +180,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
 
-		message = manager.merge(message);
+		message = manager.update(message);
 
 		manager.remove(message);
 
@@ -199,7 +199,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);
 
-		message = manager.merge(message);
+		message = manager.update(message);
 
 		String updateQuery = "update " + CLUSTERED_MESSAGE_TABLE + " set label='" + newLabel + "' where id=" + id
 				+ " and type='FILE'";

@@ -17,10 +17,11 @@
 package info.archinnov.achilles.entity.metadata;
 
 import info.archinnov.achilles.entity.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ public class PropertyMeta {
 	private Class<?> valueClass;
 	private Method getter;
 	private Method setter;
+    private Field field;
 	private CounterProperties counterProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
 	private IndexProperties indexProperties;
@@ -66,6 +68,15 @@ public class PropertyMeta {
 	private boolean timeUUID = false;
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker = new ReflectionInvoker();
+
+    public List<Field> getComponentFields() {
+        log.trace("Get component fields");
+        List<Field> compFields = new ArrayList();
+        if (embeddedIdProperties != null) {
+            compFields = embeddedIdProperties.getComponentFields();
+        }
+        return compFields;
+    }
 
 	public List<Method> getComponentGetters() {
 		log.trace("Get component getters");
@@ -76,18 +87,18 @@ public class PropertyMeta {
 		return compGetters;
 	}
 
-	public Method getPartitionKeyGetter() {
-		log.trace("Get partition key getter");
-		Method getter = null;
+	public Field getPartitionKeyField() {
+		log.trace("Get partition key field");
+		Field field = null;
 		if (embeddedIdProperties != null) {
-			getter = embeddedIdProperties.getComponentGetters().get(0);
+			field = embeddedIdProperties.getComponentFields().get(0);
 		}
-		return getter;
+		return field;
 	}
 
 	public List<Method> getComponentSetters() {
 		log.trace("Get component setters");
-		List<Method> compSetters = new ArrayList<Method>();
+		List<Method> compSetters = new ArrayList<>();
 		if (embeddedIdProperties != null) {
 			compSetters = embeddedIdProperties.getComponentSetters();
 		}
@@ -95,7 +106,7 @@ public class PropertyMeta {
 	}
 
 	public List<Class<?>> getComponentClasses() {
-		List<Class<?>> compClasses = new ArrayList<Class<?>>();
+		List<Class<?>> compClasses = new ArrayList<>();
 		if (embeddedIdProperties != null) {
 			compClasses = embeddedIdProperties.getComponentClasses();
 		}
@@ -104,7 +115,7 @@ public class PropertyMeta {
 
 	public List<String> getComponentNames() {
 		log.trace("Get component classes");
-		List<String> components = new ArrayList<String>();
+		List<String> components = new ArrayList<>();
 		if (embeddedIdProperties != null) {
 			return embeddedIdProperties.getComponentNames();
 		}
@@ -178,11 +189,11 @@ public class PropertyMeta {
 		}
 	}
 
-	public List<Method> getPartitionComponentSetters() {
-		log.trace("Get partition key component setters");
-		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentSetters() : Arrays
-				.<Method> asList();
-	}
+    public List<Field> getPartitionComponentFields() {
+        log.trace("Get partition key component fields");
+        return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentFields() : Arrays
+                .<Field>asList();
+    }
 
 	public List<Object> extractClusteringComponents(List<Object> components) {
 		log.trace("Extract clustering components");
@@ -343,23 +354,27 @@ public class PropertyMeta {
 	}
 
 	public Object getValueFromField(Object target) {
-		return invoker.getValueFromField(target, getter);
+		return invoker.getValueFromField(target, field);
 	}
 
+    public Object invokeGetter(Object target) {
+        return invoker.getValueFromField(target, getter);
+    }
+
 	public <T> List<T> getListValueFromField(Object target) {
-		return invoker.getListValueFromField(target, getter);
+		return invoker.getListValueFromField(target, field);
 	}
 
 	public <T> Set<T> getSetValueFromField(Object target) {
-		return invoker.getSetValueFromField(target, getter);
+		return invoker.getSetValueFromField(target, field);
 	}
 
 	public <K, V> Map<K, V> getMapValueFromField(Object target) {
-		return invoker.getMapValueFromField(target, getter);
+		return invoker.getMapValueFromField(target, field);
 	}
 
 	public void setValueToField(Object target, Object args) {
-		invoker.setValueToField(target, setter, args);
+		invoker.setValueToField(target, field, args);
 	}
 
 	public Class<?> getValueClassForTableCreation() {
@@ -421,7 +436,15 @@ public class PropertyMeta {
 		this.setter = setter;
 	}
 
-	public EmbeddedIdProperties getEmbeddedIdProperties() {
+    public Field getField() {
+        return field;
+    }
+
+    public void setField(Field field) {
+        this.field = field;
+    }
+
+    public EmbeddedIdProperties getEmbeddedIdProperties() {
 		return embeddedIdProperties;
 	}
 

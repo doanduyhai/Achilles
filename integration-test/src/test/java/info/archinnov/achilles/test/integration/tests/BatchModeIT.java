@@ -35,11 +35,9 @@ import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.utils.UUIDGen;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
@@ -51,7 +49,6 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.google.common.base.Optional;
 
 public class BatchModeIT {
 
@@ -85,7 +82,7 @@ public class BatchModeIT {
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = batchEm.merge(entity);
+		entity = batchEm.update(entity);
 
 		entity.setLabel("label");
 
@@ -93,7 +90,7 @@ public class BatchModeIT {
 		entity.setWelcomeTweet(welcomeTweet);
 
 		entity.getVersion().incr(10L);
-		batchEm.merge(entity);
+		batchEm.update(entity);
 
 		Map<String, Object> result = manager.nativeQuery("SELECT label from CompleteBean where id=" + entity.getId())
 				.first();
@@ -128,10 +125,10 @@ public class BatchModeIT {
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
-		batchEm.merge(bean);
-		batchEm.merge(tweet1);
-		batchEm.merge(tweet2);
-		batchEm.merge(user);
+		batchEm.update(bean);
+		batchEm.update(tweet1);
+		batchEm.update(tweet2);
+		batchEm.update(user);
 
 		CompleteBean foundBean = batchEm.find(CompleteBean.class, bean.getId());
 		Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
@@ -261,9 +258,9 @@ public class BatchModeIT {
         //When
         batchPM.startBatch();
 
-        entity = batchPM.merge(entity);
+        entity = batchPM.update(entity);
         entity.setLabel("label");
-        batchPM.merge(entity);
+        batchPM.update(entity);
 
         batchPM.endBatch();
 
@@ -283,9 +280,9 @@ public class BatchModeIT {
         //When
         batchPM.startBatch();
 
-        entity = batchPM.merge(entity);
+        entity = batchPM.update(entity);
         entity.setName("name");
-        batchPM.merge(entity);
+        batchPM.update(entity);
 
         batchPM.endBatch();
 

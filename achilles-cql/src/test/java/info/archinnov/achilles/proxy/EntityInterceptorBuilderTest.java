@@ -25,6 +25,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityInterceptorBuilderTest {
@@ -52,15 +54,14 @@ public class EntityInterceptorBuilderTest {
 		meta.setClassName("classname");
 		meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
 		meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
-		meta.setEagerGetters(Lists.newArrayList(idMeta.getGetter()));
+		meta.setEagerGetters(Arrays.asList(idMeta.getGetter()));
 
 		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(context.getPrimaryKey()).thenReturn(entity.getId());
-		when(context.isLoadEagerFields()).thenReturn(true);
 
-		EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,
-                                                                                                      entity).build();
+		EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,entity)
+            .alreadyLoaded(Sets.newHashSet(idMeta.getGetter())).build();
 
 		assertThat(interceptor.getContext()).isSameAs(context);
 		assertThat(interceptor.getTarget()).isSameAs(entity);
@@ -83,7 +84,6 @@ public class EntityInterceptorBuilderTest {
 		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(context.getPrimaryKey()).thenReturn(entity.getId());
-		when(context.isLoadEagerFields()).thenReturn(false);
 
 		EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,
                                                                                                       entity).build();

@@ -23,7 +23,7 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.impl.LoaderImpl;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
@@ -79,28 +79,25 @@ public class EntityLoaderTest {
 	}
 
 	@Test
-	public void should_load_lazy_entity() throws Exception {
+	public void should_create_empty_entity() throws Exception {
+        when(invoker.instantiate(CompleteBean.class)).thenReturn(entity);
 
-		when(context.isLoadEagerFields()).thenReturn(false);
-		when(invoker.instantiate(CompleteBean.class)).thenReturn(entity);
-
-		CompleteBean actual = loader.load(context, CompleteBean.class);
+        CompleteBean actual = loader.createEmptyEntity(context, CompleteBean.class);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(actual, idMeta.getSetter(), primaryKey);
+		verify(invoker).setValueToField(actual, idMeta.getField(), primaryKey);
 	}
 
 	@Test
 	public void should_load_entity() throws Exception {
-		when(context.isLoadEagerFields()).thenReturn(true);
 		when(loaderImpl.eagerLoadEntity(context)).thenReturn(entity);
 
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(actual, idMeta.getSetter(), primaryKey);
+		verify(invoker).setValueToField(actual, idMeta.getField(), primaryKey);
 	}
 
 	@Test

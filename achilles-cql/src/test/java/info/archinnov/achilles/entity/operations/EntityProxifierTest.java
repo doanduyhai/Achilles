@@ -74,7 +74,7 @@ public class EntityProxifierTest {
 	}
 
 	@Test
-	public void should_build_proxy() throws Exception {
+	public void should_build_proxy_with_eager_fields_loaded() throws Exception {
 
 		long primaryKey = RandomUtils.nextLong();
 
@@ -85,7 +85,7 @@ public class EntityProxifierTest {
 		doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
-		CompleteBean proxy = proxifier.buildProxy(entity, context);
+		CompleteBean proxy = proxifier.buildProxyWithEagerFieldsLoaded(entity, context);
 
 		assertThat(proxy).isNotNull();
 		assertThat(proxy).isInstanceOf(Factory.class);
@@ -97,7 +97,7 @@ public class EntityProxifierTest {
 
 	@Test
 	public void should_build_null_proxy() throws Exception {
-		assertThat(proxifier.buildProxy(null, context)).isNull();
+		assertThat(proxifier.buildProxyWithEagerFieldsLoaded(null, context)).isNull();
 	}
 
 	@Test
@@ -170,14 +170,14 @@ public class EntityProxifierTest {
 
 	@Test
 	public void should_return_null_when_unproxying_null() throws Exception {
-		assertThat(proxifier.unwrap((Object) null)).isNull();
+		assertThat(proxifier.removeProxy((Object) null)).isNull();
 	}
 
 	@Test
 	public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity() throws Exception {
 		CompleteBean realObject = new CompleteBean();
 
-		CompleteBean actual = proxifier.unwrap(realObject);
+		CompleteBean actual = proxifier.removeProxy(realObject);
 
 		assertThat(actual).isSameAs(realObject);
 	}
@@ -186,7 +186,7 @@ public class EntityProxifierTest {
 	public void should_unproxy_entity() throws Exception {
 		when(interceptor.getTarget()).thenReturn(realProxy);
 
-		Factory actual = proxifier.unwrap(realProxy);
+		Factory actual = proxifier.removeProxy(realProxy);
 
 		assertThat(actual).isSameAs(realProxy);
 	}
@@ -200,7 +200,7 @@ public class EntityProxifierTest {
 
 		when(proxifier.isProxy(completeBean)).thenReturn(false);
 
-		Map.Entry<Integer, CompleteBean> actual = proxifier.unwrap(entry);
+		Map.Entry<Integer, CompleteBean> actual = proxifier.removeProxy(entry);
 		assertThat(actual).isSameAs(entry);
 		assertThat(actual.getValue()).isSameAs(completeBean);
 	}
@@ -213,7 +213,7 @@ public class EntityProxifierTest {
 
 		when(interceptor.getTarget()).thenReturn(realProxy);
 
-		Map.Entry<Integer, Factory> actual = proxifier.unwrap(entry);
+		Map.Entry<Integer, Factory> actual = proxifier.removeProxy(entry);
 		assertThat(actual).isSameAs(entry);
 		assertThat(actual.getValue()).isSameAs(realProxy);
 	}
@@ -225,7 +225,7 @@ public class EntityProxifierTest {
 
 		when(interceptor.getTarget()).thenReturn(realProxy);
 
-		Collection<Factory> actual = proxifier.unwrap(proxies);
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
 		assertThat(actual).containsExactly(realProxy);
 	}
@@ -237,7 +237,7 @@ public class EntityProxifierTest {
 
 		when(interceptor.getTarget()).thenReturn(realProxy);
 
-		Collection<Factory> actual = proxifier.unwrap(proxies);
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
 		assertThat(actual).containsExactly(realProxy);
 	}
@@ -249,7 +249,7 @@ public class EntityProxifierTest {
 
 		when(interceptor.getTarget()).thenReturn(realProxy);
 
-		Collection<Factory> actual = proxifier.unwrap(proxies);
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
 		assertThat(actual).containsExactly(realProxy);
 	}

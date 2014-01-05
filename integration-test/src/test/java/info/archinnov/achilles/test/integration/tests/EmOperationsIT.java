@@ -198,7 +198,7 @@ public class EmOperationsIT {
 		found.getFriends().add("eve");
 		found.getPreferences().put(1, "FR");
 
-		CompleteBean merged = manager.merge(found);
+		CompleteBean merged = manager.update(found);
 
 		assertThat(merged).isSameAs(found);
 
@@ -231,7 +231,7 @@ public class EmOperationsIT {
 		found.setFollowers(null);
 		found.setPreferences(null);
 
-		manager.merge(found);
+		manager.update(found);
 
 		found = manager.find(CompleteBean.class, entity.getId());
 
@@ -248,7 +248,7 @@ public class EmOperationsIT {
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		exception.expect(IllegalAccessException.class);
 		exception.expectMessage("Cannot change primary key value for existing entity");
@@ -259,7 +259,7 @@ public class EmOperationsIT {
 	@Test
 	public void should_return_managed_entity_after_merge() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		assertThat(entity).isInstanceOf(Factory.class);
 	}
@@ -270,9 +270,9 @@ public class EmOperationsIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		entity.setWelcomeTweet(tweet);
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
-		CompleteBean entity2 = manager.merge(entity);
+		CompleteBean entity2 = manager.update(entity);
 
 		assertThat(entity2).isSameAs(entity);
 		assertThat(entity.getWelcomeTweet()).isEqualTo(tweet);
@@ -285,7 +285,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.remove(entity);
 
@@ -301,7 +301,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		manager.removeById(CompleteBean.class, entity.getId());
 
@@ -332,12 +332,12 @@ public class EmOperationsIT {
 
 		manager.persist(entity);
 
-		CompleteBean foundBean = manager.getReference(CompleteBean.class, entity.getId());
+		CompleteBean foundBean = manager.getProxy(CompleteBean.class, entity.getId());
 
 		assertThat(foundBean).isNotNull();
 
 		// Real object should be empty
-		CompleteBean realObject = manager.unwrap(foundBean);
+		CompleteBean realObject = manager.removeProxy(foundBean);
 
 		assertThat(realObject.getId()).isEqualTo(entity.getId());
 		assertThat(realObject.getName()).isNull();
@@ -376,7 +376,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		entity.getFriends();
 
@@ -395,7 +395,7 @@ public class EmOperationsIT {
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		session.execute("DELETE FROM completebean WHERE id=" + entity.getId());
 
@@ -409,7 +409,7 @@ public class EmOperationsIT {
 				.label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.merge(entity);
+		entity = manager.update(entity);
 
 		assertThat(entity.getLabel()).isEqualTo("label");
 	}

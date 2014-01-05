@@ -18,7 +18,7 @@ package info.archinnov.achilles.entity.metadata.transcoding;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 
 public class SimpleTranscoder extends AbstractTranscoder {
 

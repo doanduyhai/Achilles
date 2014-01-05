@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.entity.metadata;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.slf4j.Logger;
@@ -32,9 +33,9 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	private final List<String> timeUUIDComponents;
 
 	public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents,
-			List<Class<?>> componentClasses, List<String> componentNames, List<Method> componentGetters,
+			List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields,List<Method> componentGetters,
 			List<Method> componentSetters, List<String> timeUUIDComponents) {
-		super(componentClasses, componentNames, componentGetters, componentSetters);
+		super(componentClasses, componentNames, componentFields,componentGetters, componentSetters);
 		this.partitionComponents = partitionComponents;
 		this.clusteringComponents = clusteringComponents;
 		this.timeUUIDComponents = timeUUIDComponents;
@@ -100,28 +101,12 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 		return partitionComponents.getComponentClasses();
 	}
 
+    public List<Field> getPartitionComponentFields() {
+        return partitionComponents.getComponentFields();
+    }
+
 	public List<Method> getPartitionComponentSetters() {
 		return partitionComponents.getComponentSetters();
-	}
-
-	@Override
-	public List<Class<?>> getComponentClasses() {
-		return componentClasses;
-	}
-
-	@Override
-	public List<Method> getComponentGetters() {
-		return componentGetters;
-	}
-
-	@Override
-	public List<Method> getComponentSetters() {
-		return componentSetters;
-	}
-
-	@Override
-	public List<String> getComponentNames() {
-		return componentNames;
 	}
 
 	public List<String> getTimeUUIDComponents() {

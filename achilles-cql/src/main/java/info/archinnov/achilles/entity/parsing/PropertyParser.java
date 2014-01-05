@@ -133,7 +133,8 @@ public class PropertyParser {
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(propertyName).embeddedIdProperties(embeddedIdProperties)
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-				.consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
+                .field(field).consistencyLevels(context.getCurrentConsistencyLevels())
+                .build(Void.class, field.getType());
 
 		log.trace("Built embedded id property meta for property {} of entity class {} : {}",
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
@@ -154,8 +155,8 @@ public class PropertyParser {
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-				.consistencyLevels(context.getCurrentConsistencyLevels()).timeuuid(timeUUID)
-				.build(Void.class, field.getType());
+				.consistencyLevels(context.getCurrentConsistencyLevels())
+                .field(field).timeuuid(timeUUID).build(Void.class, field.getType());
 
 		log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
@@ -178,8 +179,8 @@ public class PropertyParser {
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-				.counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels())
-				.build(Void.class, field.getType());
+                .field(field).counterProperties(counterProperties)
+                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
 
 		context.hasSimpleCounterType();
 		context.getCounterMetas().add(propertyMeta);
@@ -210,8 +211,8 @@ public class PropertyParser {
 		PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
-				.build(Void.class, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
+                .field(field).timeuuid(timeUUID).build(Void.class, valueClass);
 
 		log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), listMeta);
@@ -238,8 +239,8 @@ public class PropertyParser {
 		PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
-				.build(Void.class, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
+                .field(field).timeuuid(timeUUID).build(Void.class, valueClass);
 
 		log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), setMeta);
@@ -267,8 +268,8 @@ public class PropertyParser {
 		PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).timeuuid(timeUUID)
-				.build(keyClass, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
+                .field(field).timeuuid(timeUUID).build(keyClass, valueClass);
 
 		log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context
 				.getCurrentEntityClass().getCanonicalName(), mapMeta);

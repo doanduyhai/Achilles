@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.context;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
@@ -28,12 +29,11 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
 import info.archinnov.achilles.entity.operations.EntityLoader;
-import info.archinnov.achilles.entity.operations.EntityMerger;
+import info.archinnov.achilles.entity.operations.EntityUpdater;
 import info.archinnov.achilles.entity.operations.EntityPersister;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
 import info.archinnov.achilles.entity.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -41,6 +41,8 @@ import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.validation.Validator;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
@@ -63,7 +66,7 @@ public class PersistenceContext {
     protected EntityProxifier proxifier = new EntityProxifier();
     protected EntityRefresher refresher = new EntityRefresher();
     protected EntityLoader loader = new EntityLoader();
-    protected EntityMerger merger = new EntityMerger();
+    protected EntityUpdater updater = new EntityUpdater();
 
     protected ConfigurationContext configContext;
     protected Class<?> entityClass;
@@ -73,9 +76,15 @@ public class PersistenceContext {
     protected Object partitionKey;
 
     protected Options options = OptionsBuilder.noOptions();
-    protected boolean loadEagerFields = true;
 
     protected DaoContext daoContext;
+
+    private Function<PropertyMeta,Method> metaToGetter = new Function<PropertyMeta, Method>() {
+        @Override
+        public Method apply(PropertyMeta meta) {
+            return meta.getGetter();
+        }
+    };
 
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
 			AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
@@ -180,7 +189,7 @@ public class PersistenceContext {
 
 	public Long getClusteredCounter(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
 		log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
-				readLevel);
+                  readLevel);
 
 		Row row = daoContext.getClusteredCounter(this, readLevel);
 		if (row != null) {
@@ -201,6 +210,10 @@ public class PersistenceContext {
 		flushContext.pushStatement(statementWrapper);
 	}
 
+    public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
+        flushContext.pushCounterStatement(statementWrapper);
+    }
+
 	public ResultSet executeImmediate(AbstractStatementWrapper bsWrapper) {
 		return flushContext.executeImmediate(bsWrapper);
 	}
@@ -212,11 +225,11 @@ public class PersistenceContext {
         flushContext.triggerInterceptor(entityMeta, entity, POST_PERSIST);
     }
 
-	public <T> T merge(T entity) {
+	public <T> T update(T entity) {
         flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
-		T merged = merger.merge(this, entity);
+		T merged = updater.update(this, entity);
 		flush();
-        flushContext.triggerInterceptor(entityMeta, merged, POST_UPDATE);
+        flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
 		return merged;
 	}
 
@@ -228,22 +241,23 @@ public class PersistenceContext {
 	}
 
 	public <T> T find(Class<T> entityClass) {
-		T entity = loader.load(this, entityClass);
+		T rawEntity = loader.load(this, entityClass);
+        T proxifiedEntity = null;
+		if (rawEntity != null) {
+            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
+            proxifiedEntity = proxifier.buildProxyWithEagerFieldsLoaded(rawEntity,this);
+        }
+		return proxifiedEntity;
+	}
 
-		if (entity != null) {
-			entity = proxifier.buildProxy(entity, this);
-		}
+	public <T> T getProxy(Class<T> entityClass) {
+        T entity = loader.createEmptyEntity(this,entityClass);
+        return  proxifier.buildProxyWithNoFieldLoaded(entity, this);
+	}
+
+	public void refresh(Object proxifiedEntity) throws AchillesStaleObjectStateException {
+		refresher.refresh(proxifiedEntity,this);
         flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
-		return entity;
-	}
-
-	public <T> T getReference(Class<T> entityClass) {
-		setLoadEagerFields(false);
-		return find(entityClass);
-	}
-
-	public void refresh() throws AchillesStaleObjectStateException {
-		refresher.refresh(this);
 	}
 
 	public <T> T initialize(T entity) {
@@ -338,14 +352,6 @@ public class PersistenceContext {
 		this.entityMeta = entityMeta;
 	}
 
-	public boolean isLoadEagerFields() {
-		return loadEagerFields;
-	}
-
-	public void setLoadEagerFields(boolean loadEagerFields) {
-		this.loadEagerFields = loadEagerFields;
-	}
-
 	public Optional<Integer> getTtt() {
 		return options.getTtl();
 	}
@@ -357,6 +363,14 @@ public class PersistenceContext {
 	public Optional<ConsistencyLevel> getConsistencyLevel() {
 		return Optional.fromNullable(flushContext.getConsistencyLevel());
 	}
+
+    public Set<Method> getEagerGetters() {
+        return new HashSet(entityMeta.getEagerGetters());
+    }
+
+    public Set<Method> getAllGetters() {
+        return new HashSet(from(entityMeta.getAllMetas()).transform(metaToGetter).toImmutableSet());
+    }
 
 	private void extractPartitionKey() {
 		if (entityMeta.hasEmbeddedId()) {

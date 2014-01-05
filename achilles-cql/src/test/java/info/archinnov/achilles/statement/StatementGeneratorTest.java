@@ -24,7 +24,7 @@ import info.archinnov.achilles.context.DaoContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
-import info.archinnov.achilles.proxy.ReflectionInvoker;
+import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.Pair;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -272,19 +273,19 @@ public class StatementGeneratorTest {
 
 	@Test
 	public void should_generate_update_for_clustered_id() throws Exception {
-		Method idGetter = ClusteredEntity.class.getDeclaredMethod("getId");
-		Method valueGetter = ClusteredEntity.class.getDeclaredMethod("getValue");
-		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
+		Field idField = ClusteredEntity.class.getDeclaredField("id");
+        Field valueField = ClusteredEntity.class.getDeclaredField("value");
+        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+        Field nameField = EmbeddedKey.class.getDeclaredField("name");
 
 		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compNames("id", "name")
-				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).field("id")
+				.compClasses(Long.class, String.class).compFields(userIdField, nameField).field("id")
 				.type(EMBEDDED_ID).invoker(invoker).build();
-		idMeta.setGetter(idGetter);
+        idMeta.setField(idField);
 
 		PropertyMeta valueMeta = PropertyMetaTestBuilder.valueClass(String.class).field("value").type(SIMPLE)
 				.invoker(invoker).build();
-		valueMeta.setGetter(valueGetter);
+        valueMeta.setField(valueField);
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
