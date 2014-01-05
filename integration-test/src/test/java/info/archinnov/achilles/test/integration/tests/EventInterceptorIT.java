@@ -200,11 +200,15 @@ public class EventInterceptorIT {
 	}
 
     @Test
-    public void should_apply_merge_interceptors() throws Exception {
+    public void should_apply_update_interceptors() throws Exception {
 
-        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+        CompleteBean entity = builder().randomId().buid();
 
-        entity = manager.update(entity);
+        entity = manager.persist(entity);
+        entity.setName("DuyHai");
+        entity.setLabel("label");
+
+        manager.update(entity);
 
         Row row = session.execute("select name,label from CompleteBean where id = "+ entity.getId()).one();
 

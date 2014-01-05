@@ -78,7 +78,7 @@ public class ClusteredEntityIT2 {
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
-		tweet = manager.update(tweet);
+		tweet = manager.persist(tweet);
 
 		tweet.setContent("this is a new tweet2");
 		tweet.setIsARetweet(true);
@@ -103,7 +103,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.update(tweet);
+		tweet = manager.persist(tweet);
 
 		manager.remove(tweet);
 
@@ -124,7 +124,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.update(tweet);
+		tweet = manager.persist(tweet);
 
 		session.execute("update " + CLUSTERED_TWEET_TABLE + " set content='New tweet',original_author_id="
 				+ originalAuthorId + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId
@@ -156,13 +156,13 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_merge_entity_having_compound_id_with_enum() throws Exception {
+	public void should_update_entity_having_compound_id_with_enum() throws Exception {
 		long id = RandomUtils.nextLong();
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.IMAGE);
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
 
-		message = manager.update(message);
+		message = manager.persist(message);
 
 		message.setLabel("a JPEG image");
 
@@ -180,7 +180,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
 
-		message = manager.update(message);
+		message = manager.persist(message);
 
 		manager.remove(message);
 
@@ -199,7 +199,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);
 
-		message = manager.update(message);
+		message = manager.persist(message);
 
 		String updateQuery = "update " + CLUSTERED_MESSAGE_TABLE + " set label='" + newLabel + "' where id=" + id
 				+ " and type='FILE'";

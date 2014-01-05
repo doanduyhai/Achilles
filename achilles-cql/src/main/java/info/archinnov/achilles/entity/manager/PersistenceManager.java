@@ -77,10 +77,11 @@ public class PersistenceManager {
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
+     * @return proxified entity
 	 */
-	public void persist(Object entity) {
+	public <T> T persist(T entity) {
 		log.debug("Persisting entity '{}'", entity);
-		persist(entity, noOptions());
+		return persist(entity, noOptions());
 	}
 
 
@@ -91,8 +92,9 @@ public class PersistenceManager {
 	 *            Entity to be persisted
 	 * @param options
 	 *            options for consistency level, ttl and timestamp
+     * @return proxified entity
 	 */
-	public void persist(final Object entity, Options options) {
+	public <T> T persist(final T entity, Options options) {
 		if (log.isDebugEnabled())
 			log.debug("Persisting entity '{}' with options {} ", entity, options);
 
@@ -101,79 +103,43 @@ public class PersistenceManager {
 		if (options.getTtl().isPresent()) {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
-		if (proxifier.isProxy(entity)) {
-			throw new IllegalStateException(
-					"Then entity is already in 'managed' state. Please use the update() method instead of persist()");
-		}
-
+        proxifier.ensureNotProxy(entity);
 		PersistenceContext context = initPersistenceContext(entity, options);
-		context.persist();
+		return context.persist(entity);
 	}
 
 	/**
-	 * Merge an entity.
-	 * 
-	 * Calling update on a transient entity will persist it and returns a managed
-	 * 
-	 * instance.
-	 * 
-	 * <strong>Achilles returns the same entity passed
-	 * 
-	 * in parameter if the latter is in managed state. It was designed on
-	 * purpose
-	 * 
-	 * so you do not loose the reference of the passed entity. For transient
-	 * 
-	 * entity, the return value is a new proxy object
-	 * 
-	 * </strong>
-	 * 
+	 * Update a "managed" entity
+	 *
 	 * @param entity
-	 *            Entity to be merged
-	 * @return Updated entity or a new proxified entity
+	 *            Managed entity to be updated
 	 */
-	public <T> T update(T entity) {
+	public void update(Object entity) {
 		if (log.isDebugEnabled())
-			log.debug("Updating entity '{}'", proxifier.removeProxy(entity));
-
-		return update(entity, noOptions());
+			log.debug("Updating entity '{}'", proxifier.getRealObject(entity));
+		update(entity, noOptions());
 	}
 
 	/**
-	 * Update an entity with the given options
-	 * 
-	 * Calling update on a transient entity will persist it and returns a managed
-	 * instance.
-	 * 
-	 * <strong>Achilles returns the same entity passed
-	 * 
-	 * in parameter if the latter is in managed state. It was designed on
-	 * purpose
-	 * 
-	 * so you do not loose the reference of the passed entity. For transient
-	 * 
-	 * entity, the return value is a new proxy object
-	 * 
-	 * </strong>
+     * Update a "managed" entity
 	 * 
 	 * @param entity
-	 *            Entity to be merged
+	 *            Managed entity to be updated
 	 * @param options
 	 *            options for consistency level, ttl and timestamp
-	 * @return Updated entity or a new proxified entity
 	 */
-	public <T> T update(final T entity, Options options) {
-		if (log.isDebugEnabled()) {
-			log.debug("Updating entity '{}' with options {} ", proxifier.removeProxy(entity), options);
-		}
-		entityValidator.validateEntity(entity, entityMetaMap);
-		if (options.getTtl().isPresent()) {
-			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
-		}
-        T realObject = proxifier.getRealObject(entity);
+	public void update(Object entity, Options options) {
+        proxifier.ensureProxy(entity);
+        Object realObject = proxifier.getRealObject(entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Updating entity '{}' with options {} ", realObject, options);
+        }
+        entityValidator.validateEntity(realObject, entityMetaMap);
+        if (options.getTtl().isPresent()) {
+            entityValidator.validateNotClusteredCounter(realObject, entityMetaMap);
+        }
 		PersistenceContext context = initPersistenceContext(realObject, options);
-		return context.update(entity);
-
+		context.update(entity);
 	}
 
 	/**
@@ -184,7 +150,7 @@ public class PersistenceManager {
 	 */
 	public void remove(Object entity) {
 		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}'", proxifier.removeProxy(entity));
+			log.debug("Removing entity '{}'", proxifier.getRealObject(entity));
 		remove(entity, noOptions());
 	}
 
@@ -198,7 +164,6 @@ public class PersistenceManager {
 	 *            Primary key
 	 */
 	public void removeById(Class<?> entityClass, Object primaryKey) {
-
 		Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
 		Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
 		if (log.isDebugEnabled()) {
@@ -218,10 +183,11 @@ public class PersistenceManager {
      *            options for consistency level and timestamp
 	 */
 	public void remove(final Object entity, Options options) {
-		if (log.isDebugEnabled())
-			log.debug("Removing entity '{}' with options {}", proxifier.removeProxy(entity), options);
+        Object realObject = proxifier.getRealObject(entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Removing entity '{}' with options {}", realObject, options);
+        }
 
-		Object realObject = proxifier.getRealObject(entity);
 		entityValidator.validateEntity(realObject, entityMetaMap);
 		PersistenceContext context = initPersistenceContext(realObject, options);
 		context.remove();
@@ -345,7 +311,6 @@ public class PersistenceManager {
 	public void refresh(Object entity) throws AchillesStaleObjectStateException {
 		if (log.isDebugEnabled())
 			log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
-
 		refresh(entity, null);
 	}
 
@@ -361,9 +326,9 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
 
-		entityValidator.validateEntity(entity, entityMetaMap);
-		proxifier.ensureProxy(entity);
+        proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
+        entityValidator.validateEntity(realObject, entityMetaMap);
 		PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(readLevel));
 		context.refresh(entity);
 	}

@@ -42,9 +42,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MergerImplTest {
+public class UpdaterImplTest {
 	@InjectMocks
-	private MergerImpl mergerImpl = new MergerImpl();
+	private UpdaterImpl updaterImpl = new UpdaterImpl();
 
 	@Mock
 	private ReflectionInvoker invoker;
@@ -81,7 +81,7 @@ public class MergerImplTest {
 		dirtyMap.put(idMeta.getGetter(), idMeta);
 		dirtyMap.put(ageMeta.getGetter(), ageMeta);
 
-		mergerImpl.merge(context, dirtyMap);
+		updaterImpl.update(context, dirtyMap);
 
 		assertThat(dirtyMap).isEmpty();
 
@@ -93,7 +93,7 @@ public class MergerImplTest {
 	@Test
 	public void should_not_merge_when_empty_dirty_map() throws Exception {
 		Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
-		mergerImpl.merge(context, dirtyMap);
+		updaterImpl.update(context, dirtyMap);
 
 		verifyZeroInteractions(context);
 	}

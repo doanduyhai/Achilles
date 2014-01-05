@@ -68,7 +68,7 @@ public class InitializeIT {
 	public void should_initialize_counter_value() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.getVersion().incr(2L);
 

@@ -220,19 +220,19 @@ public class PersistenceContext {
 		return flushContext.executeImmediate(bsWrapper);
 	}
 
-	public void persist() {
-        flushContext.triggerInterceptor(entityMeta, entity, PRE_PERSIST);
+	public <T> T persist(T rawEntity) {
+        flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
         persister.persist(this);
         flush();
-        flushContext.triggerInterceptor(entityMeta, entity, POST_PERSIST);
+        flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
+        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity,this);
     }
 
-	public <T> T update(T entity) {
+	public void update(Object proxifiedEntity) {
         flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
-		T merged = updater.update(this, entity);
+		updater.update(this, proxifiedEntity);
 		flush();
         flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
-		return merged;
 	}
 
 	public void remove() {
@@ -262,10 +262,10 @@ public class PersistenceContext {
         flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
 	}
 
-	public <T> T initialize(T entity) {
-		final EntityInterceptor<T> interceptor = proxifier.getInterceptor(entity);
-		initializer.initializeEntity(entity, entityMeta, interceptor);
-		return entity;
+	public <T> T initialize(T proxifiedEntity) {
+		final EntityInterceptor<T> interceptor = proxifier.getInterceptor(proxifiedEntity);
+		initializer.initializeEntity(proxifiedEntity, entityMeta, interceptor);
+		return proxifiedEntity;
 	}
 
 	public <T> List<T> initialize(List<T> entities) {

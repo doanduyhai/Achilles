@@ -69,14 +69,14 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		long id = RandomUtils.nextLong();
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ClusteredEntityWithCompositePartitionKey found = manager.getProxy(
                 ClusteredEntityWithCompositePartitionKey.class, compoundKey);
@@ -86,14 +86,14 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 		long id = RandomUtils.nextLong();
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -111,7 +111,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -127,7 +127,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.removeById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
 
@@ -143,7 +143,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_clustered_value' WHERE id=" + id
 				+ " AND type='type' AND indexes=11");

@@ -42,7 +42,7 @@ import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
-public class EmOperationsIT {
+public class PersistenceManagerOperationsIT {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
@@ -186,7 +186,7 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
@@ -198,14 +198,7 @@ public class EmOperationsIT {
 		found.getFriends().add("eve");
 		found.getPreferences().put(1, "FR");
 
-		CompleteBean merged = manager.update(found);
-
-		assertThat(merged).isSameAs(found);
-
-		assertThat(merged.getFriends()).hasSize(3);
-		assertThat(merged.getFriends()).containsExactly("bob", "alice", "eve");
-		assertThat(merged.getPreferences()).hasSize(2);
-		assertThat(merged.getPreferences().get(1)).isEqualTo("FR");
+		manager.update(found);
 
 		Row row = session.execute("select * from completebean where id=" + entity.getId()).one();
 
@@ -214,7 +207,6 @@ public class EmOperationsIT {
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("New York");
-
 	}
 
 	@Test
@@ -248,7 +240,7 @@ public class EmOperationsIT {
 				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
 				.addPreference(2, "New York").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		exception.expect(IllegalAccessException.class);
 		exception.expectMessage("Cannot change primary key value for existing entity");
@@ -257,26 +249,11 @@ public class EmOperationsIT {
 	}
 
 	@Test
-	public void should_return_managed_entity_after_merge() throws Exception {
+	public void should_return_managed_entity_after_persist() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		assertThat(entity).isInstanceOf(Factory.class);
-	}
-
-	@Test
-	public void should_return_same_entity_as_merged_entity_when_managed() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
-		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
-		entity.setWelcomeTweet(tweet);
-
-		entity = manager.update(entity);
-
-		CompleteBean entity2 = manager.update(entity);
-
-		assertThat(entity2).isSameAs(entity);
-		assertThat(entity.getWelcomeTweet()).isEqualTo(tweet);
-		assertThat(entity2.getWelcomeTweet()).isEqualTo(tweet);
 	}
 
 	@Test
@@ -285,7 +262,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -301,7 +278,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.removeById(CompleteBean.class, entity.getId());
 
@@ -376,7 +353,7 @@ public class EmOperationsIT {
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.getFriends();
 
@@ -395,7 +372,7 @@ public class EmOperationsIT {
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("DELETE FROM completebean WHERE id=" + entity.getId());
 
@@ -409,7 +386,7 @@ public class EmOperationsIT {
 				.label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
 				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		assertThat(entity.getLabel()).isEqualTo("label");
 	}

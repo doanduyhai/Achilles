@@ -47,11 +47,11 @@ public class ValuelessEntityIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ValuelessEntity found = manager.getProxy(ValuelessEntity.class, id);
 
@@ -70,15 +70,4 @@ public class ValuelessEntityIT {
 		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
 	}
 
-	@Test
-	public void should_merge_with_ttl() throws Exception {
-		Long id = RandomUtils.nextLong();
-		ValuelessEntity entity = new ValuelessEntity(id);
-
-		manager.update(entity, OptionsBuilder.withTtl(1));
-
-		Thread.sleep(1000);
-
-		assertThat(manager.find(ValuelessEntity.class, id)).isNull();
-	}
 }

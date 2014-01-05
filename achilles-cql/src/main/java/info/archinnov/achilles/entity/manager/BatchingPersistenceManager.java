@@ -87,24 +87,24 @@ public class BatchingPersistenceManager extends PersistenceManager {
 	}
 
 	@Override
-	public void persist(final Object entity, Options options) {
+	public <T> T persist(final T entity, Options options) {
 		if (options.getConsistencyLevel().isPresent()) {
             flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
-            super.persist(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
+            return super.persist(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
 		}
 	}
 
 	@Override
-	public <T> T update(final T entity, Options options) {
+	public void update(Object entity, Options options) {
 		if (options.getConsistencyLevel().isPresent()) {
             flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
 			throw new AchillesException(
 					"Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 		} else {
-            return super.update(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
+            super.update(entity, options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp()));
 		}
 	}
 

@@ -21,6 +21,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -142,24 +143,34 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_persist() throws Exception {
-		// When
-		when(proxifier.isProxy(entity)).thenReturn(false);
-		manager.persist(entity);
+		// Given
+        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
+        when(context.persist(entity)).thenReturn(entity);
 
-		// Then
-		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(context).persist();
+
+        // When
+        CompleteBean actual = manager.persist(entity);
+
+        // Then
+        assertThat(actual).isSameAs(entity);
+        verify(proxifier).ensureNotProxy(entity);
+        verify(entityValidator).validateEntity(entity, entityMetaMap);
 	}
 
 	@Test
 	public void should_persist_with_options() throws Exception {
-		// When
-		when(proxifier.isProxy(entity)).thenReturn(false);
-		manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
+		// Given
+        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
+        when(context.persist(entity)).thenReturn(entity);
+
+        // When
+        CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
 
 		// Then
+        assertThat(actual).isSameAs(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		verify(context).persist();
+        verify(proxifier).ensureNotProxy(entity);
+		verify(context).persist(entity);
 
 		Options value = optionsCaptor.getValue();
 		assertThat(value.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
@@ -168,29 +179,18 @@ public class PersistenceManagerTest {
 	}
 
 	@Test
-	public void should_exception_trying_to_persist_a_managed_entity() throws Exception {
-		// When
-		when(proxifier.isProxy(entity)).thenReturn(true);
-
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("Then entity is already in 'managed' state. Please use the update() method instead of persist()");
-
-		manager.persist(entity);
-	}
-
-	@Test
 	public void should_update() throws Exception {
 		// Given
-		when(context.update(entity)).thenReturn(entity);
+        when(proxifier.isProxy(entity)).thenReturn(true);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
 
         //When
-		CompleteBean mergedEntity = manager.update(entity);
+		manager.update(entity);
 
 		// Then
+        verify(proxifier).ensureProxy(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-
-		assertThat(mergedEntity).isSameAs(entity);
+        verify(context).update(entity);
 
 		Options options = optionsCaptor.getValue();
 		assertThat(options.getConsistencyLevel().isPresent()).isFalse();
@@ -201,16 +201,16 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_update_with_options() throws Exception {
         // Given
-        when(context.update(entity)).thenReturn(entity);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
 
         // When
-		CompleteBean mergedEntity = manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM)
+		manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM)
                 .withTtl(150).withTimestamp(100L));
 
 		// Then
+        verify(proxifier).ensureProxy(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-		assertThat(mergedEntity).isSameAs(entity);
+        verify(context).update(entity);
 
 		Options options = optionsCaptor.getValue();
 		assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
@@ -220,8 +220,10 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_remove() throws Exception {
-		// When
+		// Given
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
+
+        // When
 		manager.remove(entity);
 
 		// Then
@@ -235,9 +237,10 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_remove_with_consistency() throws Exception {
-		// When
+		// Given
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
+        // When
 		manager.remove(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 
 		// Then

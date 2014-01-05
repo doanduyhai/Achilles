@@ -115,11 +115,17 @@ public class EntityProxifier {
 		return interceptor;
 	}
 
-	public <T> void ensureProxy(T proxy) {
+	public void ensureProxy(Object proxy) {
 		if (!isProxy(proxy)) {
 			throw new IllegalStateException("The entity '" + proxy + "' is not in 'managed' state.");
 		}
 	}
+
+    public void ensureNotProxy(Object rawEntity) {
+        if (isProxy(rawEntity)) {
+            throw new IllegalStateException("Then entity is already in 'managed' state.");
+        }
+    }
 
 	public <T> T removeProxy(T proxy) {
 		log.debug("Unwrapping object {} ", proxy);

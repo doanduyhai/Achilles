@@ -55,13 +55,13 @@ public class ValuelessClusteredEntityIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		Long id = RandomUtils.nextLong();
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ValuelessClusteredEntity found = manager.getProxy(ValuelessClusteredEntity.class, compoundKey);
 
@@ -76,20 +76,6 @@ public class ValuelessClusteredEntityIT {
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
 		manager.persist(entity, OptionsBuilder.withTtl(1));
-
-		Thread.sleep(1000);
-
-		assertThat(manager.find(ValuelessClusteredEntity.class, compoundKey)).isNull();
-	}
-
-	@Test
-	public void should_merge_with_ttl() throws Exception {
-		Long id = RandomUtils.nextLong();
-		String name = "name";
-		CompoundKey compoundKey = new CompoundKey(id, name);
-		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
-
-		manager.update(entity, OptionsBuilder.withTtl(1));
 
 		Thread.sleep(1000);
 

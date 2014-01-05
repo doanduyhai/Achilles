@@ -82,7 +82,7 @@ public class BatchModeIT {
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = batchEm.update(entity);
+		entity = batchEm.persist(entity);
 
 		entity.setLabel("label");
 
@@ -125,10 +125,10 @@ public class BatchModeIT {
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch();
 
-		batchEm.update(bean);
-		batchEm.update(tweet1);
-		batchEm.update(tweet2);
-		batchEm.update(user);
+		batchEm.persist(bean);
+		batchEm.persist(tweet1);
+		batchEm.persist(tweet2);
+		batchEm.persist(user);
 
 		CompleteBean foundBean = batchEm.find(CompleteBean.class, bean.getId());
 		Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
@@ -258,7 +258,7 @@ public class BatchModeIT {
         //When
         batchPM.startBatch();
 
-        entity = batchPM.update(entity);
+        entity = batchPM.persist(entity);
         entity.setLabel("label");
         batchPM.update(entity);
 
@@ -280,7 +280,7 @@ public class BatchModeIT {
         //When
         batchPM.startBatch();
 
-        entity = batchPM.update(entity);
+        entity = batchPM.persist(entity);
         entity.setName("name");
         batchPM.update(entity);
 

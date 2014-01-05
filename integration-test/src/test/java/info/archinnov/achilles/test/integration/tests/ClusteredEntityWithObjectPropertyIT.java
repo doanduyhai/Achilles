@@ -63,12 +63,12 @@ public class ClusteredEntityWithObjectPropertyIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ClusteredEntityWithObjectValue found = manager.getProxy(ClusteredEntityWithObjectValue.class, compoundKey);
 
@@ -84,7 +84,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.setValue(newHolder);
 		manager.update(entity);
@@ -100,7 +100,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -118,7 +118,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='" + mapper.writeValueAsString(newHolder) + "' where id="
 				+ partitionKey + " and name='name'");

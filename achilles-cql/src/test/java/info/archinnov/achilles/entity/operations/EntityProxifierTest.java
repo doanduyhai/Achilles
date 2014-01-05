@@ -168,6 +168,19 @@ public class EntityProxifierTest {
 		proxifier.ensureProxy(proxy);
 	}
 
+    @Test
+    public void should_ensure_not_proxy() throws Exception {
+        proxifier.ensureNotProxy(new CompleteBean());
+    }
+
+    @Test
+    public void should_exception_when_proxy() throws Exception {
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Then entity is already in 'managed' state");
+        proxifier.ensureNotProxy(realProxy);
+    }
+
 	@Test
 	public void should_return_null_when_unproxying_null() throws Exception {
 		assertThat(proxifier.removeProxy((Object) null)).isNull();

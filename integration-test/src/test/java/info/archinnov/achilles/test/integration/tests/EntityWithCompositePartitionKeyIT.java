@@ -57,13 +57,13 @@ public class EntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		long id = RandomUtils.nextLong();
 		EmbeddedKey compositeRowKey = new EmbeddedKey(id, "type");
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		EntityWithCompositePartitionKey found = manager.getProxy(EntityWithCompositePartitionKey.class,
                                                                  compositeRowKey);
@@ -73,11 +73,11 @@ public class EntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.setValue("value2");
 		manager.update(entity);
@@ -92,7 +92,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -108,7 +108,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		entity = manager.update(entity);
+		manager.persist(entity);
 
 		manager.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
 
@@ -122,7 +122,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_value' WHERE id=" + id + " AND type='type'");
 

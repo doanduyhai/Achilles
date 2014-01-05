@@ -59,12 +59,12 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	}
 
 	@Test
-	public void should_merge_and_find() throws Exception {
+	public void should_persist_and_find() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ClusteredEntityWithEnumCompoundKey found = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
@@ -73,13 +73,13 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.FILE);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -95,7 +95,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -111,7 +111,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and type = 'FILE'");

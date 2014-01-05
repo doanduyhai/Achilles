@@ -84,12 +84,12 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ClusteredEntity found = manager.getProxy(ClusteredEntity.class, compoundKey);
 
@@ -98,10 +98,10 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_merge_with_ttl() throws Exception {
+	public void should_update_with_ttl() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
-		entity = manager.update(entity, OptionsBuilder.withTtl(1));
+		entity = manager.persist(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -111,12 +111,12 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -132,7 +132,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -146,7 +146,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.removeById(ClusteredEntity.class, entity.getId());
 
@@ -164,7 +164,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("update " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and count=" + count + " and name='" + name + "'");

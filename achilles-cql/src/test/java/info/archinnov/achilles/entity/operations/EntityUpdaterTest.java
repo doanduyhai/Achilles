@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.impl.MergerImpl;
+import info.archinnov.achilles.entity.operations.impl.UpdaterImpl;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -34,7 +34,7 @@ public class EntityUpdaterTest {
 	private EntityUpdater entityUpdater;
 
 	@Mock
-	private MergerImpl merger;
+	private UpdaterImpl updater;
 
 	@Mock
 	private EntityPersister persister;
@@ -68,7 +68,7 @@ public class EntityUpdaterTest {
 	}
 
 	@Test
-	public void should_merge_proxified_entity() throws Exception {
+	public void should_update_proxified_entity() throws Exception {
 		when(proxifier.isProxy(entity)).thenReturn(true);
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
@@ -81,27 +81,13 @@ public class EntityUpdaterTest {
 
 		dirtyMap.put(pm.getSetter(), pm);
 
-		CompleteBean actual = entityUpdater.update(context, entity);
+		entityUpdater.update(context, entity);
 
-		assertThat(actual).isSameAs(entity);
+        verify(updater).update(context, dirtyMap);
 		verify(context).setEntity(entity);
-		verify(merger).merge(context, dirtyMap);
 
 		verify(interceptor).setContext(context);
 		verify(interceptor).setTarget(entity);
 
 	}
-
-	@Test
-	public void should_persist_transient_entity() throws Exception {
-		when(proxifier.isProxy(entity)).thenReturn(false);
-		when(context.isClusteredEntity()).thenReturn(false);
-		when(proxifier.buildProxyWithAllFieldsLoaded(entity, context)).thenReturn(entity);
-
-		CompleteBean actual = entityUpdater.update(context, entity);
-
-		assertThat(actual).isSameAs(entity);
-		verify(persister).persist(context);
-	}
-
 }

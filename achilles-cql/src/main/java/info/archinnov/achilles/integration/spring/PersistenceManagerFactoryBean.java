@@ -67,10 +67,10 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 	private Map<String, String> consistencyLevelReadMap;
 	private Map<String, String> consistencyLevelWriteMap;
 
-	private boolean forceColumnFamilyCreation = false;
+	private boolean forceTableCreation = false;
 
 	protected void initialize() {
-		Map<String, Object> configMap = new HashMap<String, Object>();
+		Map<String, Object> configMap = new HashMap();
 
 		fillEntityPackages(configMap);
 
@@ -90,7 +90,7 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
 		fillConsistencyLevels(configMap);
 
-		configMap.put(FORCE_TABLE_CREATION_PARAM, forceColumnFamilyCreation);
+		configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
 
 		PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.build(configMap);
 		manager = pmf.createPersistenceManager();
@@ -254,8 +254,8 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 		this.entityPackages = entityPackages;
 	}
 
-	public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
-		this.forceColumnFamilyCreation = forceColumnFamilyCreation;
+	public void setForceTableCreation(boolean forceTableCreation) {
+		this.forceTableCreation = forceTableCreation;
 	}
 
 	public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {

@@ -61,12 +61,12 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	@Test
-	public void should_merge_and_get_reference() throws Exception {
+	public void should_persist_and_get_proxy() throws Exception {
 		long counterValue = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		manager.update(entity);
+		manager.persist(entity);
 
 		ClusteredEntityWithCounter found = manager.getProxy(ClusteredEntityWithCounter.class, compoundKey);
 
@@ -75,7 +75,7 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	@Test
-	public void should_merge_modifications() throws Exception {
+	public void should_update_modifications() throws Exception {
 		long counterValue = RandomUtils.nextLong();
 		long incr = RandomUtils.nextLong();
 
@@ -83,7 +83,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		entity.getCounter().incr(incr);
 
@@ -92,7 +92,6 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
 	}
 
-	// Problem with counter removal
 	@Test
 	public void should_remove() throws Exception {
 		long counterValue = RandomUtils.nextLong();
@@ -100,7 +99,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		manager.remove(entity);
 
@@ -121,7 +120,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
 
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
 				+ " AND name='name'");

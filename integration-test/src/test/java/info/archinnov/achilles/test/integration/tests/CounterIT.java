@@ -47,7 +47,7 @@ public class CounterIT {
 	public void should_persist_counter() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.update(bean);
+		bean = manager.persist(bean);
 		bean.getVersion().incr(2L);
 
 		Row row = session.execute(
@@ -62,7 +62,7 @@ public class CounterIT {
 		long version = 10L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.update(bean);
+		bean = manager.persist(bean);
 		bean.getVersion().incr(version);
 
 		assertThat(bean.getVersion().get()).isEqualTo(version);
@@ -72,7 +72,7 @@ public class CounterIT {
 	public void should_remove_counter() throws Exception {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		bean = manager.update(bean);
+		bean = manager.persist(bean);
 		bean.getVersion().incr(version);
 
 		Row row = session.execute(

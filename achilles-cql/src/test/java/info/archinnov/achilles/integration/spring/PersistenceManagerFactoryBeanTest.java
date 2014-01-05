@@ -129,7 +129,7 @@ public class PersistenceManagerFactoryBeanTest {
 		factory.setConsistencyLevelWriteDefault("ONE");
 		factory.setConsistencyLevelReadMap(ImmutableMap.of("entity", "ONE"));
 		factory.setConsistencyLevelWriteMap(ImmutableMap.of("entity", "ONE"));
-		factory.setForceColumnFamilyCreation(true);
+		factory.setForceTableCreation(true);
 
 		exception.expect(Exception.class);
 

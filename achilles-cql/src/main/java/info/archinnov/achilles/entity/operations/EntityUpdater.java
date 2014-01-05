@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
-import info.archinnov.achilles.entity.operations.impl.MergerImpl;
+import info.archinnov.achilles.entity.operations.impl.UpdaterImpl;
 import info.archinnov.achilles.proxy.EntityInterceptor;
 import info.archinnov.achilles.validation.Validator;
 
@@ -31,11 +31,11 @@ public class EntityUpdater {
 
     private static final Logger log = LoggerFactory.getLogger(EntityUpdater.class);
 
-    private MergerImpl merger = new MergerImpl();
+    private UpdaterImpl updater = new UpdaterImpl();
     private EntityPersister persister = new EntityPersister();
     private EntityProxifier proxifier = new EntityProxifier();
 
-    public <T> T update(PersistenceContext context, T entity) {
+    public void update(PersistenceContext context, Object entity) {
         log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
                   context.getPrimaryKey());
 
@@ -44,25 +44,15 @@ public class EntityUpdater {
         Validator.validateNotNull(entity, "Proxy object should not be null for update");
         Validator.validateNotNull(entityMeta, "entityMeta should not be null for update");
 
-        T proxy;
-        if (proxifier.isProxy(entity)) {
-            log.debug("Checking for dirty fields before merging");
+        log.debug("Checking for dirty fields before merging");
 
-            T realObject = proxifier.getRealObject(entity);
-            context.setEntity(realObject);
+        Object realObject = proxifier.getRealObject(entity);
+        context.setEntity(realObject);
 
-            EntityInterceptor<T> interceptor = proxifier.getInterceptor(entity);
-            Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
-            merger.merge(context, dirtyMap);
-            interceptor.setContext(context);
-            interceptor.setTarget(realObject);
-            proxy = entity;
-        } else {
-            log.debug("Persisting transient entity");
-
-            persister.persist(context);
-            proxy = proxifier.buildProxyWithAllFieldsLoaded(entity, context);
-        }
-        return proxy;
+        EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+        Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
+        updater.update(context, dirtyMap);
+        interceptor.setContext(context);
+        interceptor.setTarget(realObject);
     }
 }

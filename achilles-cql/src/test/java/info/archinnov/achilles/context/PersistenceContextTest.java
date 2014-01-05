@@ -83,7 +83,7 @@ public class PersistenceContextTest {
 	private EntityPersister persister;
 
 	@Mock
-	private EntityUpdater merger;
+	private EntityUpdater updater;
 
 	@Mock
 	private EntityProxifier proxifier;
@@ -121,7 +121,7 @@ public class PersistenceContextTest {
 		Whitebox.setInternalState(context, "proxifier", proxifier);
 		Whitebox.setInternalState(context, "refresher", refresher);
 		Whitebox.setInternalState(context, "loader", loader);
-		Whitebox.setInternalState(context, "updater", merger);
+		Whitebox.setInternalState(context, "updater", updater);
 
 		when(invoker.getPrimaryKey(any(), eq(idMeta))).thenReturn(primaryKey);
 	}
@@ -368,11 +368,14 @@ public class PersistenceContextTest {
         //Given
         Object entity = new Object();
         context.entity = entity;
+        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
 
         //When
-		context.persist();
+		Object actual = context.persist(entity);
 
         //Then
+        assertThat(actual).isSameAs(entity);
+
         InOrder inOrder = Mockito.inOrder(flushContext,persister);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_PERSIST);
@@ -382,20 +385,21 @@ public class PersistenceContextTest {
 	}
 
 	@Test
-	public void should_merge() throws Exception {
+	public void should_update() throws Exception {
         //Given
-		when(merger.update(context, entity)).thenReturn(entity);
+        final CompleteBean rawEntity = new CompleteBean();
+        context.entity = rawEntity;
 
         //When
-		CompleteBean merged = context.update(entity);
+		context.update(entity);
 
         //Then
-        assertThat(merged).isSameAs(entity);
-        InOrder inOrder = Mockito.inOrder(flushContext,persister);
+        InOrder inOrder = Mockito.inOrder(flushContext, updater);
 
-        inOrder.verify(flushContext).triggerInterceptor(meta,entity, PRE_UPDATE);
+        inOrder.verify(flushContext).triggerInterceptor(meta,rawEntity, PRE_UPDATE);
+        inOrder.verify(updater).update(context,entity);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
+        inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, POST_UPDATE);
     }
 
 	@Test

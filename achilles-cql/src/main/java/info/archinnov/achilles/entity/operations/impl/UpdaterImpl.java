@@ -28,12 +28,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MergerImpl {
-    private static final Logger log  = LoggerFactory.getLogger(MergerImpl.class);
+public class UpdaterImpl {
+    private static final Logger log  = LoggerFactory.getLogger(UpdaterImpl.class);
 
     private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
-	public void merge(PersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
+	public void update(PersistenceContext context, Map<Method, PropertyMeta> dirtyMap) {
         log.trace("Merging entity using PersistenceContext {}",context);
 		if (dirtyMap.size() > 0) {
 			List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());

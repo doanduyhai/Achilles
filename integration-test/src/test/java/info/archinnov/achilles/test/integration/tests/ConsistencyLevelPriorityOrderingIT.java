@@ -101,7 +101,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		expectedEx
 				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
+		batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
 	}
 
 	// Counter type
@@ -110,7 +110,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -128,7 +128,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(THREE);
-		entity = batchEm.update(entity);
+		entity = batchEm.persist(entity);
 
 		Counter counter = entity.getCount();
 
@@ -143,7 +143,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
-		entity = manager.update(entity);
+		entity = manager.persist(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
@@ -163,7 +163,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(ONE);
-		entity = batchEm.update(entity);
+		entity = batchEm.persist(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
