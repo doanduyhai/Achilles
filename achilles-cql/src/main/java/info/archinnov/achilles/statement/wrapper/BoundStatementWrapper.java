@@ -34,7 +34,7 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 
 	@Override
 	public ResultSet execute(Session session) {
-		logDMLStatement(false, "");
+		logDMLStatement("");
 		return session.execute(boundStatement);
 	}
 
@@ -44,14 +44,14 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public void logDMLStatement(boolean isBatch, String indentation) {
+	public void logDMLStatement(String indentation) {
 		if (dmlLogger.isDebugEnabled()) {
 			PreparedStatement ps = boundStatement.preparedStatement();
 			String queryType = "Prepared statement";
 			String queryString = ps.getQueryString();
 			String consistencyLevel = boundStatement.getConsistencyLevel() == null ? "DEFAULT" : boundStatement
 					.getConsistencyLevel().name();
-			writeDMLStatementLog(false, queryType, queryString, consistencyLevel, values);
+			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
 		}
 	}
 }

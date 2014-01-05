@@ -22,6 +22,7 @@ import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.context.ConfigurationContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.iterator.SliceQueryIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
@@ -73,6 +74,7 @@ public class SliceQueryExecutor {
 		for (Row row : rows) {
 			T clusteredEntity = meta.instanciate();
 			mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
+            meta.intercept(clusteredEntity, Event.POST_LOAD);
 			clusteredEntities.add(clusteredEntity);
 		}
 

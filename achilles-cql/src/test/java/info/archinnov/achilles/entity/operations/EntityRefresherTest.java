@@ -70,7 +70,7 @@ public class EntityRefresherTest {
 		when(entityMeta.getEagerGetters()).thenReturn(eagerGetters);
 		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
 
-		entityRefresher.refresh(context);
+		entityRefresher.refresh(bean,context);
 
 		verify(dirtyMap).clear();
 		verify(alreadyLoaded).clear();
@@ -96,6 +96,6 @@ public class EntityRefresherTest {
 		when(entityMeta.getEagerGetters()).thenReturn(eagerGetters);
 		when(loader.load(context, CompleteBean.class)).thenReturn(null);
 
-		entityRefresher.refresh(context);
+		entityRefresher.refresh(bean,context);
 	}
 }

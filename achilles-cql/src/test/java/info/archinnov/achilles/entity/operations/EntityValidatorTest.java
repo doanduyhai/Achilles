@@ -57,8 +57,9 @@ public class EntityValidatorTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when(proxifier.<CompleteBean> deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
+        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+        when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -68,8 +69,9 @@ public class EntityValidatorTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
 		when(proxifier.<CompleteBean> deriveBaseClass(bean)).thenReturn(CompleteBean.class);
-		when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-		when(entityMeta.getPrimaryKey(bean)).thenReturn(null);
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
+        when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
+        when(entityMeta.getPrimaryKey(bean)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
@@ -83,14 +85,18 @@ public class EntityValidatorTest {
 		EmbeddedKey clusteredId = new EmbeddedKey(11L, "name");
 
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(clusteredId);
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
 		when(idMeta.isEmbeddedId()).thenReturn(true);
 		when(idMeta.encodeToComponents(clusteredId)).thenReturn(Arrays.<Object> asList(11L, "name"));
+
 		entityValidator.validateEntity(bean, entityMeta);
 	}
 
 	@Test
 	public void should_validate_simple_id() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
 		when(idMeta.isEmbeddedId()).thenReturn(false);
 

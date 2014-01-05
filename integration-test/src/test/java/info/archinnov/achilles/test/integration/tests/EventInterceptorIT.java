@@ -31,11 +31,14 @@ import info.archinnov.achilles.entity.manager.PersistenceManager;
 import info.archinnov.achilles.entity.manager.PersistenceManagerFactory;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -130,7 +133,20 @@ public class EventInterceptorIT {
     private Interceptor<CompleteBean> postLoad = new Interceptor<CompleteBean>() {
         @Override
         public CompleteBean onEvent(CompleteBean entity) {
-            entity.setLabel("postLoad");
+            entity.setAge(100L);
+            return entity;
+        }
+
+        @Override
+        public List<Event> events() {
+            return Arrays.asList(POST_LOAD);
+        }
+    };
+
+    private Interceptor<ClusteredEntity> postLoadForClustered = new Interceptor<ClusteredEntity>() {
+        @Override
+        public ClusteredEntity onEvent(ClusteredEntity entity) {
+            entity.setValue("postLoad");
             return entity;
         }
 
@@ -159,7 +175,12 @@ public class EventInterceptorIT {
             .withKeyspaceName("interceptor_keyspace2")
             .withEventInterceptors(postRemoveInterceptors)
             .buildPersistenceManager();
-    private Session session2 = manager2.getNativeSession();
+
+    private PersistenceManager manager3 = CassandraEmbeddedServerBuilder
+            .withEntityPackages(ClusteredEntity.class.getPackage().getName())
+            .withKeyspaceName("interceptor_keyspace3")
+            .withEventInterceptors(Arrays.asList(postLoadForClustered))
+            .buildPersistenceManager();
 
 
 	@Test
@@ -216,13 +237,13 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_post_load_interceptors() throws Exception {
 
-        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
 
         manager.persist(entity);
 
         entity = manager.find(CompleteBean.class,entity.getId());
 
-        assertThat(entity.getLabel()).isEqualTo("postLoad");
+        assertThat(entity.getAge()).isEqualTo(100L);
     }
 
     @Test
@@ -246,6 +267,54 @@ public class EventInterceptorIT {
         //Then
         assertThat(entity.getName()).isEqualTo("prePersist");
         assertThat(entity.getLabel()).isEqualTo("postPersist");
+    }
 
+    @Test
+    public void should_apply_post_load_interceptor_on_slice_query() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong();
+        Integer count = RandomUtils.nextInt();
+        String name = RandomStringUtils.randomAlphabetic(10);
+        String value = "value_before_load";
+        ClusteredEntity entity = new ClusteredEntity(id,count,name,value);
+
+        manager3.persist(entity);
+
+        //When
+        final List<ClusteredEntity> clusteredEntities = manager3.sliceQuery(ClusteredEntity.class)
+                                                                .partitionComponents(id).get(10);
+
+        //Then
+        assertThat(clusteredEntities.get(0).getValue()).isEqualTo("postLoad");
+    }
+
+    @Test
+    public void should_apply_post_load_interceptor_on_typed_query() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
+
+        manager.persist(entity);
+
+        //When
+        final CompleteBean actual = manager
+                .typedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?", entity.getId()).getFirst();
+
+        //Then
+        assertThat(actual.getAge()).isEqualTo(100L);
+    }
+
+    @Test
+    public void should_apply_post_load_interceptor_on_raw_typed_query() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
+
+        manager.persist(entity);
+
+        //When
+        final CompleteBean actual = manager
+                .rawTypedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?", entity.getId()).getFirst();
+
+        //Then
+        assertThat(actual.getAge()).isEqualTo(100L);
     }
 }

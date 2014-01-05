@@ -18,7 +18,7 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
 
 	@Override
 	public ResultSet execute(Session session) {
-		logDMLStatement(false, "");
+		logDMLStatement("");
 		return session.execute(regularStatement);
 	}
 
@@ -28,13 +28,13 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public void logDMLStatement(boolean isBatch, String indentation) {
+	public void logDMLStatement(String indentation) {
 		if (dmlLogger.isDebugEnabled()) {
 			String queryType = "Parameterized statement";
 			String queryString = regularStatement.getQueryString();
 			String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement
 					.getConsistencyLevel().name();
-			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel, values);
+			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
 		}
 	}
 }

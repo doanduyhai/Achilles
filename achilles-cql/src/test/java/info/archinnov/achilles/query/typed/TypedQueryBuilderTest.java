@@ -28,6 +28,7 @@ import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.metadata.PropertyType;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -99,8 +100,7 @@ public class TypedQueryBuilderTest {
 		initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
 		when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
+		when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
 						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
 		when(proxifier.buildProxy(eq(entity), eq(context), alreadyLoadedCaptor.capture())).thenReturn(entity);
@@ -110,6 +110,7 @@ public class TypedQueryBuilderTest {
 		assertThat(actual).containsExactly(entity);
 
 		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter(), nameMeta.getGetter());
+        verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
 	@Test
@@ -140,6 +141,7 @@ public class TypedQueryBuilderTest {
 		assertThat(actual).containsExactly(entity);
 
 		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter(), nameMeta.getGetter());
+        verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
 	@Test
@@ -155,6 +157,7 @@ public class TypedQueryBuilderTest {
 		List<CompleteBean> actual = builder.get();
 
 		assertThat(actual).isEmpty();
+        verify(meta,never()).intercept(entity, Event.POST_LOAD);
 	}
 
 	@Test
@@ -172,7 +175,7 @@ public class TypedQueryBuilderTest {
 		List<CompleteBean> actual = builder.get();
 
 		assertThat(actual).containsExactly(entity);
-
+        verify(meta).intercept(entity, Event.POST_LOAD);
 		verifyZeroInteractions(contextFactory, proxifier);
 	}
 
@@ -200,6 +203,7 @@ public class TypedQueryBuilderTest {
 
 		assertThat(actual).isSameAs(entity);
 		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter());
+        verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
 	@Test
@@ -222,7 +226,7 @@ public class TypedQueryBuilderTest {
 		CompleteBean actual = builder.getFirst();
 
 		assertThat(actual).isSameAs(entity);
-
+        verify(meta).intercept(entity, Event.POST_LOAD);
 		verifyZeroInteractions(contextFactory, proxifier);
 	}
 
@@ -237,7 +241,7 @@ public class TypedQueryBuilderTest {
 		assertThat(actual).isNull();
 
 		verifyZeroInteractions(contextFactory, proxifier);
-
+        verify(meta,never()).intercept(entity, Event.POST_LOAD);
 	}
 
 	@Test
@@ -258,22 +262,22 @@ public class TypedQueryBuilderTest {
 	}
 
 	private EntityMeta buildEntityMeta(PropertyMeta... pms) {
-		EntityMeta meta = new EntityMeta();
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-		List<Method> eagerMetas = new ArrayList<Method>();
+		EntityMeta meta = mock(EntityMeta.class);
+		Map<String, PropertyMeta> propertyMetas = new HashMap();
+		List<Method> eagerGetters = new ArrayList();
 		for (PropertyMeta pm : pms) {
 			propertyMetas.put(pm.getPropertyName(), pm);
-			eagerMetas.add(pm.getGetter());
+			eagerGetters.add(pm.getGetter());
 		}
 
-		meta.setPropertyMetas(propertyMetas);
-		meta.setEagerGetters(eagerMetas);
+        when(meta.getPropertyMetas()).thenReturn(propertyMetas);
+		when(meta.getEagerGetters()).thenReturn(eagerGetters);
 		return meta;
 	}
 
 	private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
 			boolean managed) {
-		builder = new TypedQueryBuilder<CompleteBean>(entityClass, daoContext, queryString, meta, contextFactory,
+		builder = new TypedQueryBuilder(entityClass, daoContext, queryString, meta, contextFactory,
 				managed, true, new Object[] { "a" });
 
 		Whitebox.setInternalState(builder, String.class, queryString);

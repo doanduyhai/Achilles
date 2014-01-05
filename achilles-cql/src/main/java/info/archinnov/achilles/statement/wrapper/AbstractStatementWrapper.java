@@ -31,7 +31,7 @@ public abstract class AbstractStatementWrapper {
 
 	public abstract Statement getStatement();
 
-	public abstract void logDMLStatement(boolean isBatch, String indentation);
+	public abstract void logDMLStatement(String indentation);
 
 	public static void writeDMLStartBatch() {
 		if (dmlLogger.isDebugEnabled()) {
@@ -45,12 +45,10 @@ public abstract class AbstractStatementWrapper {
 		}
 	}
 
-	protected void writeDMLStatementLog(boolean isBatch, String queryType, String queryString, String consistencyLevel,
+	protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel,
 			Object... values) {
-		if (!isBatch)
-			dmlLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
-		else
-			dmlLogger.debug("{} : [{}]", queryType, queryString);
+
+        dmlLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
 
 		if (ArrayUtils.isNotEmpty(values)) {
 			dmlLogger.debug("\t bound values : {}", Arrays.asList(values));

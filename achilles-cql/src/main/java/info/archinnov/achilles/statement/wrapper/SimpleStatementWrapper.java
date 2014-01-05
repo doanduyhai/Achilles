@@ -15,7 +15,7 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
 
 	@Override
 	public ResultSet execute(Session session) {
-		logDMLStatement(false, "");
+		logDMLStatement("");
 		return session.execute(simpleStatement.getQueryString(), values);
 	}
 
@@ -25,13 +25,13 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
 	}
 
 	@Override
-	public void logDMLStatement(boolean isBatch, String indentation) {
+	public void logDMLStatement(String indentation) {
 		if (dmlLogger.isDebugEnabled()) {
 			String queryType = "Simple statement";
 			String queryString = simpleStatement.getQueryString();
 			String consistencyLevel = simpleStatement.getConsistencyLevel() == null ? "DEFAULT" : simpleStatement
 					.getConsistencyLevel().name();
-			writeDMLStatementLog(isBatch, queryType, queryString, consistencyLevel, values);
+			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
 		}
 	}
 }

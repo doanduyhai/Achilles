@@ -25,6 +25,7 @@ import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
 import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
+import info.archinnov.achilles.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
 import info.archinnov.achilles.entity.operations.EntityInitializer;
@@ -79,6 +80,7 @@ public class PersistenceContext {
 
     protected DaoContext daoContext;
 
+    private ConsistencyOverrider overrider = new ConsistencyOverrider();
     private Function<PropertyMeta,Method> metaToGetter = new Function<PropertyMeta, Method>() {
         @Override
         public Method apply(PropertyMeta meta) {
@@ -98,7 +100,7 @@ public class PersistenceContext {
 		this.flushContext = flushContext;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
-		this.options = options;
+		this.options = overrider.overrideRuntimeValueByBatchSetting(options,flushContext);
 	}
 
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
@@ -117,7 +119,7 @@ public class PersistenceContext {
 		this.daoContext = daoContext;
 		this.flushContext = flushContext;
 		this.entity = entity;
-		this.options = options;
+		this.options = overrider.overrideRuntimeValueByBatchSetting(options,flushContext);
 	}
 
 	public PersistenceContext duplicate(Object entity) {
@@ -361,7 +363,7 @@ public class PersistenceContext {
 	}
 
 	public Optional<ConsistencyLevel> getConsistencyLevel() {
-		return Optional.fromNullable(flushContext.getConsistencyLevel());
+		return options.getConsistencyLevel();
 	}
 
     public Set<Method> getEagerGetters() {

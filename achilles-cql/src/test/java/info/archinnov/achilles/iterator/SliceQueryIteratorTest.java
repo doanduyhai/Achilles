@@ -22,6 +22,7 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.reflection.RowMethodInvoker;
 import info.archinnov.achilles.reflection.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
@@ -45,9 +46,6 @@ public class SliceQueryIteratorTest {
 	private SliceQueryIterator<ClusteredEntity> sliceIterator;
 
 	@Mock
-	private ReflectionInvoker invoker;
-
-	@Mock
 	private EntityMapper mapper;
 
 	@Mock
@@ -65,7 +63,8 @@ public class SliceQueryIteratorTest {
 	@Mock
 	private Iterator<Row> iterator;
 
-	private EntityMeta meta = new EntityMeta();
+    @Mock
+	private EntityMeta meta;
 
 	private int batchSize = 99;
 
@@ -101,13 +100,12 @@ public class SliceQueryIteratorTest {
 		ClusteredEntity entity = new ClusteredEntity();
 		Row row = mock(Row.class);
 
-		meta.setEntityClass(ClusteredEntity.class);
-		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
+		when(meta.<ClusteredEntity>getEntityClass()).thenReturn(ClusteredEntity.class);
+        when(meta.instanciate()).thenReturn(entity);
 
 		when(iterator.next()).thenReturn(row);
 
 		when(cqlInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn("name1");
-		when(invoker.instantiate(ClusteredEntity.class)).thenReturn(entity);
 
 		when(context.duplicate(entity)).thenReturn(context);
 		when(proxifier.buildProxyWithEagerFieldsLoaded(entity, context)).thenReturn(entity);
@@ -115,6 +113,7 @@ public class SliceQueryIteratorTest {
 		ClusteredEntity actual = sliceIterator.next();
 
 		assertThat(actual).isSameAs(entity);
+        verify(meta).intercept(entity,Event.POST_LOAD);
 		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
 	}
 

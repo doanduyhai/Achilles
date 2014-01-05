@@ -169,6 +169,7 @@ public class PersistenceContextTest {
 		CompleteBean entity = new CompleteBean();
 		entity.setId(primaryKey);
 		when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(flushContext.duplicate()).thenReturn(flushContext);
 
 		PersistenceContext duplicateContext = context.duplicate(entity);
 
@@ -451,8 +452,8 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_refresh() throws Exception {
-		context.refresh();
-		verify(refresher).refresh(context);
+		context.refresh(entity);
+		verify(refresher).refresh(entity,context);
 	}
 
 	@Test

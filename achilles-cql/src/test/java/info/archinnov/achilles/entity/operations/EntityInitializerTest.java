@@ -87,7 +87,7 @@ public class EntityInitializerTest {
 
         initializer.initializeEntity(bean, entityMeta, interceptor);
 
-        verify(invoker).getValueFromField(bean, followersMeta.getField());
+        verify(invoker).getValueFromField(bean, followersMeta.getGetter());
     }
 
     @Test
@@ -113,8 +113,9 @@ public class EntityInitializerTest {
         entityMeta.setGetterMetas(getterMetas);
 
         when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
-        when(invoker.getValueFromField(bean, counterMeta.getField())).thenReturn(CounterBuilder.incr(10L));
+        when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
         when(proxifier.getRealObject(bean)).thenReturn(bean);
+
 
         initializer.initializeEntity(bean, entityMeta, interceptor);
 
@@ -148,7 +149,7 @@ public class EntityInitializerTest {
         entityMeta.setGetterMetas(getterMetas);
 
         when(interceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
-        when(invoker.getValueFromField(bean, counterMeta.getField())).thenReturn(CounterBuilder.incr(10L));
+        when(invoker.getValueFromField(bean, counterMeta.getGetter())).thenReturn(CounterBuilder.incr(10L));
         when(proxifier.getRealObject(bean)).thenReturn(bean);
 
         initializer.initializeEntity(bean, entityMeta, interceptor);

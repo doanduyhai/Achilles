@@ -29,6 +29,7 @@ import info.archinnov.achilles.context.PersistenceContextFactory;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.metadata.PropertyMeta;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.iterator.SliceQueryIterator;
 import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
@@ -140,6 +141,7 @@ public class SliceQueryExecutorTest {
 		List<ClusteredEntity> actual = executor.get(sliceQuery);
 
 		assertThat(actual).containsOnly(entity);
+        verify(meta).intercept(entity, Event.POST_LOAD);
 		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
 	}
 
@@ -175,6 +177,6 @@ public class SliceQueryExecutorTest {
 	}
 
 	private CQLSliceQuery<ClusteredEntity> anySliceQuery() {
-		return Mockito.<CQLSliceQuery<ClusteredEntity>> any();
+		return Mockito.any();
 	}
 }

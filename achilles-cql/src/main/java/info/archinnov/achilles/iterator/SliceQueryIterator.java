@@ -20,6 +20,7 @@ import info.archinnov.achilles.context.PersistenceContext;
 import info.archinnov.achilles.entity.EntityMapper;
 import info.archinnov.achilles.entity.metadata.EntityMeta;
 import info.archinnov.achilles.entity.operations.EntityProxifier;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 
 import java.util.Iterator;
@@ -60,6 +61,7 @@ public class SliceQueryIterator<T> implements Iterator<T> {
         if(row != null) {
             clusteredEntity = meta.instanciate();
             mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
+            meta.intercept(clusteredEntity, Event.POST_LOAD);
             clusteredEntity = proxify(clusteredEntity);
         }
 		return clusteredEntity;
