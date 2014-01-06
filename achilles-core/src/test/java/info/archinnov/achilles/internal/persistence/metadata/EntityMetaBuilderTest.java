@@ -47,7 +47,7 @@ public class EntityMetaBuilderTest {
 	@Test
 	public void should_build_meta() throws Exception {
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		Map<String, PropertyMeta> propertyMetas = new HashMap();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 
@@ -61,7 +61,7 @@ public class EntityMetaBuilderTest {
 
 		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
-		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
+		List<PropertyMeta> eagerMetas = new ArrayList();
 		eagerMetas.add(simpleMeta);
 
 		EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean")
@@ -83,23 +83,21 @@ public class EntityMetaBuilderTest {
 		assertThat(meta.getSetterMetas().containsKey(setter));
 		assertThat(meta.getSetterMetas().get(setter)).isSameAs(simpleMeta);
 
-		assertThat(meta.getEagerMetas()).containsOnly(simpleMeta);
-		assertThat(meta.getEagerGetters()).containsOnly(simpleMeta.getGetter());
-		assertThat(meta.getAllMetasExceptIdMeta()).containsOnly(simpleMeta);
+		assertThat(meta.getAllMetasExceptId()).containsOnly(simpleMeta);
 		assertThat(meta.getFirstMeta()).isSameAs(simpleMeta);
 	}
 
 	@Test
 	public void should_build_meta_with_column_family_name() throws Exception {
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+		Map<String, PropertyMeta> propertyMetas = new HashMap();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 		propertyMetas.put("name", simpleMeta);
 
 		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
-		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
+		List<PropertyMeta> eagerMetas = new ArrayList();
 		eagerMetas.add(simpleMeta);
 
 		EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)

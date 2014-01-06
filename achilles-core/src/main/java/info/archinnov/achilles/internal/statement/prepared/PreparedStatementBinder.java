@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.*;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
@@ -49,8 +50,8 @@ public class PreparedStatementBinder {
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
-				.filter(PropertyType.excludeCounterType).toImmutableList();
+		List<PropertyMeta> nonProxyMetas = from(entityMeta.getAllMetasExceptIdAndCounters())
+				.toImmutableList();
 
 		List<PropertyMeta> fieldMetas = new ArrayList(nonProxyMetas);
 
@@ -159,7 +160,7 @@ public class PreparedStatementBinder {
 	}
 
 	private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta) {
-		List<Object> values = new ArrayList<Object>();
+		List<Object> values = new ArrayList();
 		if (idMeta.isEmbeddedId()) {
 			values.addAll(idMeta.encodeToComponents(primaryKey));
 		} else {
@@ -172,16 +173,12 @@ public class PreparedStatementBinder {
 		if (value != null) {
 			switch (pm.type()) {
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				return pm.encode(value);
 			case LIST:
-			case LAZY_LIST:
 				return pm.encode((List<?>) value);
 			case SET:
-			case LAZY_SET:
 				return pm.encode((Set<?>) value);
 			case MAP:
-			case LAZY_MAP:
 				return pm.encode((Map<?, ?>) value);
 			default:
 				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"

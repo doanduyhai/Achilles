@@ -30,7 +30,6 @@ import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class SliceQueryExecutor {
 
@@ -72,12 +70,12 @@ public class SliceQueryExecutor {
 
 		for (Row row : rows) {
 			T clusteredEntity = meta.instanciate();
-			mapper.setEagerPropertiesToEntity(row, meta, clusteredEntity);
+			mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
             meta.intercept(clusteredEntity, Event.POST_LOAD);
 			clusteredEntities.add(clusteredEntity);
 		}
 
-		return Lists.transform(clusteredEntities, this.<T>getProxyTransformer(meta.getEagerGetters()));
+		return Lists.transform(clusteredEntities, this.<T>getProxyTransformer());
 	}
 
 	public <T> Iterator<T> iterator(SliceQuery<T> sliceQuery) {
@@ -105,12 +103,12 @@ public class SliceQueryExecutor {
 				cl);
 	}
 
-	private <T> Function<T, T> getProxyTransformer(final List<Method> getters) {
+	private <T> Function<T, T> getProxyTransformer() {
 		return new Function<T, T>() {
 			@Override
 			public T apply(T clusteredEntity) {
 				PersistenceContext context = contextFactory.newContext(clusteredEntity);
-				return proxifier.buildProxy(clusteredEntity, context, Sets.newHashSet(getters));
+				return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(clusteredEntity, context);
 			}
 		};
 	}

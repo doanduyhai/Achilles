@@ -79,10 +79,9 @@ public class EntityInterceptorTest {
 
 	private Object[] args = new Object[] {};
 
-	private Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
-	private Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
-	private Set<Method> alreadyLoaded = new HashSet<Method>();
-	private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
+	private Map<Method, PropertyMeta> getterMetas = new HashMap();
+	private Map<Method, PropertyMeta> setterMetas = new HashMap();
+	private Map<Method, PropertyMeta> dirtyMap = new HashMap();
 	private CompleteBean bean;
 	private Long key = RandomUtils.nextLong();
 	private Object rawValue = "raw";
@@ -101,10 +100,7 @@ public class EntityInterceptorTest {
 		interceptor.setTarget(bean);
 		interceptor.setPrimaryKey(key);
 		interceptor.setContext(context);
-		interceptor.setAlreadyLoaded(alreadyLoaded);
 		interceptor.setDirtyMap(dirtyMap);
-
-		alreadyLoaded.clear();
 
 		dirtyMap.clear();
 
@@ -134,41 +130,12 @@ public class EntityInterceptorTest {
 		interceptor.intercept(null, idMeta.getSetter(), args, null);
 	}
 
-	@Test
-	public void should_load_lazy_property_and_return_it() throws Throwable {
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.LAZY_SIMPLE).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isEqualTo(rawValue);
-		verify(loader).loadPropertyIntoObject(context, bean, propertyMeta);
-	}
-
-	@Test
-	public void should_return_lazy_property_already_loaded() throws Throwable {
-
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.LAZY_SIMPLE).build();
-
-		alreadyLoaded.add(propertyMeta.getGetter());
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isEqualTo(rawValue);
-		verifyZeroInteractions(loader);
-	}
 
 	@Test
 	public void should_return_simple_property() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.accessors().type(PropertyType.SIMPLE).build();
 
-		alreadyLoaded.add(propertyMeta.getGetter());
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		when(proxy.invoke(bean, args)).thenReturn(rawValue);
 
@@ -211,20 +178,6 @@ public class EntityInterceptorTest {
 	}
 
 	@Test
-	public void should_return_lazy_list_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(PropertyType.LAZY_LIST).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new ArrayList<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isInstanceOf(ListWrapper.class);
-	}
-
-	@Test
 	public void should_return_null_for_list_property() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
 				.accessors().type(PropertyType.LIST).build();
@@ -251,19 +204,6 @@ public class EntityInterceptorTest {
 		assertThat(actual).isInstanceOf(SetWrapper.class);
 	}
 
-	@Test
-	public void should_return_lazy_set_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
-				.accessors().type(PropertyType.LAZY_SET).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new HashSet<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isInstanceOf(SetWrapper.class);
-	}
 
 	@Test
 	public void should_return_null_for_set_property() throws Throwable {
@@ -282,20 +222,6 @@ public class EntityInterceptorTest {
 	public void should_return_map_wrapper() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
 				.field("preferences").accessors().type(PropertyType.MAP).build();
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		rawValue = new HashMap<Integer, String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isInstanceOf(MapWrapper.class);
-	}
-
-	@Test
-	public void should_return_lazy_map_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
-				.field("preferences").accessors().type(PropertyType.LAZY_MAP).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new HashMap<Integer, String>();
@@ -342,22 +268,6 @@ public class EntityInterceptorTest {
 
 		Object actual = interceptor.intercept(bean, propertyMeta.getSetter(), args, proxy);
 
-		assertThat(alreadyLoaded).isEmpty();
-		assertThat(dirtyMap).containsKey(propertyMeta.getSetter());
-		assertThat(dirtyMap).containsValue(propertyMeta);
-		assertThat(actual).isSameAs(rawValue);
-	}
-
-	@Test
-	public void should_set_lazy_value() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.LAZY_SIMPLE).build();
-		setterMetas.put(propertyMeta.getSetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getSetter(), args, proxy);
-
-		assertThat(alreadyLoaded).contains(propertyMeta.getGetter());
 		assertThat(dirtyMap).containsKey(propertyMeta.getSetter());
 		assertThat(dirtyMap).containsValue(propertyMeta);
 		assertThat(actual).isSameAs(rawValue);

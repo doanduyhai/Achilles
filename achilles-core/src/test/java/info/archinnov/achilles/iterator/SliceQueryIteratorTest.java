@@ -107,13 +107,13 @@ public class SliceQueryIteratorTest {
 		when(cqlInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn("name1");
 
 		when(context.duplicate(entity)).thenReturn(context);
-		when(proxifier.buildProxyWithEagerFieldsLoaded(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
 		ClusteredEntity actual = sliceIterator.next();
 
 		assertThat(actual).isSameAs(entity);
         verify(meta).intercept(entity,Event.POST_LOAD);
-		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
+		verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

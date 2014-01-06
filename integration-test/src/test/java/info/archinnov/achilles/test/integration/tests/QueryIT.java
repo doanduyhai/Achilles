@@ -179,7 +179,6 @@ public class QueryIT {
 
 		Factory factory1 = (Factory) found1;
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-		assertThat(interceptor1.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 
@@ -188,7 +187,6 @@ public class QueryIT {
 
 		Factory factory2 = (Factory) found1;
 		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
-		assertThat(interceptor2.getAlreadyLoaded()).hasSize(7);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
 
@@ -275,7 +273,6 @@ public class QueryIT {
 
 		Factory factory1 = (Factory) found1;
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-		assertThat(interceptor1.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 
@@ -287,7 +284,6 @@ public class QueryIT {
 
 		Factory factory2 = (Factory) found1;
 		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
-		assertThat(interceptor2.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
 
@@ -508,7 +504,6 @@ public class QueryIT {
 
 		Factory factory1 = (Factory) actual;
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-		assertThat(interceptor1.getAlreadyLoaded()).hasSize(3);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 

@@ -88,9 +88,8 @@ public class PersisterImpl {
         log.trace("Removing counter values related to entity using PersistenceContext {}",context);
 		EntityMeta entityMeta = context.getEntityMeta();
 
-		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
-		Collection<PropertyMeta> proxyMetas = filter(allMetas, counterType);
-		for (PropertyMeta pm : proxyMetas) {
+		Collection<PropertyMeta> counterMetas = filter(entityMeta.getAllMetas(), counterType);
+		for (PropertyMeta pm : counterMetas) {
 			context.bindForSimpleCounterRemoval(pm);
 		}
 	}

@@ -37,8 +37,6 @@ import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -108,7 +106,6 @@ public class SliceQueryExecutorTest {
 	@Before
 	public void setUp() {
 		when(configContext.getDefaultReadConsistencyLevel()).thenReturn(EACH_QUORUM);
-		when(meta.getEagerGetters()).thenReturn(new ArrayList<Method>());
 		when(meta.getIdMeta()).thenReturn(idMeta);
 
 		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
@@ -135,13 +132,13 @@ public class SliceQueryExecutorTest {
 
 		when(meta.instanciate()).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxy(eq(entity), eq(context), anySetOf(Method.class))).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
 		List<ClusteredEntity> actual = executor.get(sliceQuery);
 
 		assertThat(actual).containsOnly(entity);
         verify(meta).intercept(entity, Event.POST_LOAD);
-		verify(mapper).setEagerPropertiesToEntity(row, meta, entity);
+		verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
 	}
 
 	@Test

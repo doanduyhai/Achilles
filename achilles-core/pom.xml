@@ -5,8 +5,8 @@
         <artifactId>achilles</artifactId>
         <version>3.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>achilles-cql</artifactId>
-    <name>Achilles CQL</name>
+    <artifactId>achilles-core</artifactId>
+    <name>Achilles Core</name>
     <description>CQL implementation for Achilles using Datastax Java driver</description>
 
     <dependencies>

@@ -67,7 +67,7 @@ public class SliceQuery<T> {
 
 		this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
 
-		List<Object> componentsTo = new ArrayList<Object>();
+		List<Object> componentsTo = new ArrayList();
 		componentsTo.addAll(partitionComponents);
 		componentsTo.addAll(clusteringsTo);
 

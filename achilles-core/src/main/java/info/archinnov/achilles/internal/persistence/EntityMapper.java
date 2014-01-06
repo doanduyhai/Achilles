@@ -34,9 +34,9 @@ public class EntityMapper  {
 
     private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
 
-	public void setEagerPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
-        log.debug("Set eager properties to entity class {} from fetched CQL row", entityMeta.getClassName());
-		for (PropertyMeta pm : entityMeta.getEagerMetas()) {
+	public void setNonCounterPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
+        log.debug("Set non-counter properties to entity class {} from fetched CQL row", entityMeta.getClassName());
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
 			setPropertyToEntity(row, pm, entity);
 		}
 	}

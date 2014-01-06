@@ -35,7 +35,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -225,7 +224,7 @@ public class PersistenceContext {
         persister.persist(this);
         flush();
         flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
-        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity,this);
+        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity, this);
     }
 
 	public void update(Object proxifiedEntity) {
@@ -247,7 +246,7 @@ public class PersistenceContext {
         T proxifiedEntity = null;
 		if (rawEntity != null) {
             flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
-            proxifiedEntity = proxifier.buildProxyWithEagerFieldsLoaded(rawEntity,this);
+            proxifiedEntity = proxifier.buildProxyWithAllFieldsLoaded(rawEntity, this);
         }
 		return proxifiedEntity;
 	}
@@ -263,8 +262,7 @@ public class PersistenceContext {
 	}
 
 	public <T> T initialize(T proxifiedEntity) {
-		final EntityInterceptor<T> interceptor = proxifier.getInterceptor(proxifiedEntity);
-		initializer.initializeEntity(proxifiedEntity, entityMeta, interceptor);
+		initializer.initializeEntity(proxifiedEntity, entityMeta);
 		return proxifiedEntity;
 	}
 
@@ -287,7 +285,7 @@ public class PersistenceContext {
 	}
 
 	public PropertyMeta getFirstMeta() {
-		return entityMeta.getAllMetasExceptIdMeta().get(0);
+		return entityMeta.getAllMetasExceptId().get(0);
 	}
 
 	public boolean isClusteredEntity() {
@@ -366,12 +364,12 @@ public class PersistenceContext {
 		return options.getConsistencyLevel();
 	}
 
-    public Set<Method> getEagerGetters() {
-        return new HashSet(entityMeta.getEagerGetters());
-    }
-
     public Set<Method> getAllGetters() {
         return new HashSet(from(entityMeta.getAllMetas()).transform(metaToGetter).toImmutableSet());
+    }
+
+    public Set<Method> getAllGettersExceptCounters() {
+        return new HashSet(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toImmutableSet());
     }
 
 	private void extractPartitionKey() {

@@ -77,7 +77,7 @@ public class EntityUpdaterTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
 				.accessors().build();
 
-		meta.setAllMetasExceptIdMeta(Arrays.<PropertyMeta> asList(pm));
+		meta.setAllMetasExceptId(Arrays.<PropertyMeta>asList(pm));
 
 		dirtyMap.put(pm.getSetter(), pm);
 

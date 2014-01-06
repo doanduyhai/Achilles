@@ -23,8 +23,8 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
 
 @Entity
 @Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)
@@ -42,7 +42,6 @@ public class Bean {
 	// un-mapped field
 	private String label;
 
-	@Lazy
 	@Column
 	private List<String> friends;
 
@@ -52,8 +51,12 @@ public class Bean {
 	@Column
 	private Map<Integer, String> preferences;
 
-	@Column
-	private UserBean creator;
+    @Column
+
+    private UserBean creator;
+
+    @Column
+    private Counter count;
 
 	public Long getId() {
 		return id;
@@ -119,4 +122,7 @@ public class Bean {
 		this.label = label;
 	}
 
+    public Counter getCount() {
+        return count;
+    }
 }

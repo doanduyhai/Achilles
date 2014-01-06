@@ -56,8 +56,6 @@ public class TypedQueryBuilder<T> {
 	private EntityMeta meta;
 	private PersistenceContextFactory contextFactory;
 	private boolean managed;
-	private List<String> selectedColumns;
-	private Set<Method> alreadyLoaded;
 	private Object[] boundValues;
 
 	private EntityMapper mapper = new EntityMapper();
@@ -73,7 +71,6 @@ public class TypedQueryBuilder<T> {
 		this.contextFactory = contextFactory;
 		this.managed = managed;
 		this.propertiesMap = transformPropertiesMap(meta);
-		determineAlreadyLoadedSet();
 	}
 
 	/**
@@ -137,26 +134,9 @@ public class TypedQueryBuilder<T> {
 		return propertiesMap;
 	}
 
-	private void determineAlreadyLoadedSet() {
-		if (normalizedQuery.contains(SELECT_STAR)) {
-			alreadyLoaded = new HashSet(meta.getEagerGetters());
-		} else {
-			alreadyLoaded = new HashSet();
-			Matcher matcher = SELECT_COLUMNS_EXTRACTION_PATTERN.matcher(normalizedQuery);
-			if (matcher.matches()) {
-				selectedColumns = Arrays.asList(matcher.group(1).replaceAll(WHITE_SPACES, "").split(","));
-				for (PropertyMeta pm : propertiesMap.values()) {
-					if (selectedColumns.contains(pm.getPropertyName().toLowerCase())) {
-						alreadyLoaded.add(pm.getGetter());
-					}
-				}
-			}
-		}
-	}
-
 	private T buildProxy(T entity) {
 		PersistenceContext context = contextFactory.newContext(entity);
-		entity = proxifier.buildProxy(entity, context, alreadyLoaded);
+		entity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);
 		return entity;
 	}
 }

@@ -53,13 +53,7 @@ public class PreparedStatementGenerator {
 		Insert insert = insertInto(entityMeta.getTableName());
 		prepareInsertPrimaryKey(idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
-				.filter(PropertyType.excludeCounterType).toImmutableList();
-
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
-		fieldMetas.remove(idMeta);
-
-		for (PropertyMeta pm : fieldMetas) {
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
 			insert.value(pm.getPropertyName(), bindMarker());
 		}
 
@@ -110,7 +104,7 @@ public class PreparedStatementGenerator {
 
 		Selection select = select();
 
-		for (PropertyMeta pm : entityMeta.getEagerMetas()) {
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
 			select = prepareSelectField(pm, select);
 		}
 		Select from = select.from(entityMeta.getTableName());

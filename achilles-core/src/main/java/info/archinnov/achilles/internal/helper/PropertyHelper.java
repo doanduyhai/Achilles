@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 
 public class PropertyHelper {
@@ -110,17 +109,6 @@ public class PropertyHelper {
 		log.trace("Inferred value class : {}", valueClass.getCanonicalName());
 
 		return valueClass;
-	}
-
-	public boolean isLazy(Field field) {
-		log.debug("Check @Lazy annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
-				.getCanonicalName());
-
-		boolean lazy = false;
-		if (field.getAnnotation(Lazy.class) != null) {
-			lazy = true;
-		}
-		return lazy;
 	}
 
 	public String getIndexName(Field field) {

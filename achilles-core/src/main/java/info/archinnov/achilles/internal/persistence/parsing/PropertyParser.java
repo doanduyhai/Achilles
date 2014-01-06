@@ -19,10 +19,6 @@ package info.archinnov.achilles.internal.persistence.parsing;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.EMBEDDED_ID;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.ID;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.LAZY_LIST;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.LAZY_MAP;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.LAZY_SET;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.LAZY_SIMPLE;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.LIST;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.MAP;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SET;
@@ -150,7 +146,7 @@ public class PropertyParser {
 		boolean timeUUID = isTimeUUID(context, field);
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SIMPLE : SIMPLE;
+		PropertyType type = SIMPLE;
 
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
@@ -206,7 +202,7 @@ public class PropertyParser {
 		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-		PropertyType type = propertyHelper.isLazy(field) ? LAZY_LIST : LIST;
+		PropertyType type = LIST;
 
 		PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
@@ -234,7 +230,7 @@ public class PropertyParser {
 
 		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-		PropertyType type = propertyHelper.isLazy(field) ? LAZY_SET : SET;
+		PropertyType type = SET;
 
 		PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
@@ -263,7 +259,7 @@ public class PropertyParser {
 		Class<V> valueClass = types.right;
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-		PropertyType type = propertyHelper.isLazy(field) ? LAZY_MAP : MAP;
+		PropertyType type = MAP;
 
 		PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())

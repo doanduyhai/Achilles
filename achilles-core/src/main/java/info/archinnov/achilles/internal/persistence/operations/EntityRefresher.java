@@ -16,8 +16,6 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import java.lang.reflect.Method;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -40,9 +38,6 @@ public class EntityRefresher {
         Object entity = context.getEntity();
 
 		interceptor.getDirtyMap().clear();
-		Set<Method> alreadyLoaded = interceptor.getAlreadyLoaded();
-		alreadyLoaded.clear();
-		alreadyLoaded.addAll(context.getEntityMeta().getEagerGetters());
 
 		Object freshEntity = loader.load(context, context.getEntityClass());
 

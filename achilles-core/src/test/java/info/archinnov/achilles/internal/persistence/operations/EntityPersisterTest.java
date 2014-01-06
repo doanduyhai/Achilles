@@ -82,7 +82,7 @@ public class EntityPersisterTest {
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
 		when(context.getEntity()).thenReturn(entity);
 		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
+		when(entityMeta.getAllMetasExceptId()).thenReturn(allMetas);
 	}
 
 	@Test

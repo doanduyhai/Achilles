@@ -23,7 +23,6 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
@@ -36,14 +35,12 @@ public class CompleteBean {
 	@Index
 	private String name;
 
-	@Lazy
 	@Column
 	private String label;
 
 	@Column(name = "age_in_years")
 	private Long age;
 
-	@Lazy
 	@Column
 	private List<String> friends;
 

@@ -60,7 +60,7 @@ public class TypedQueryValidatorTest {
 				.type(PropertyType.ID).build();
 
 		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
+		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
 
@@ -78,7 +78,7 @@ public class TypedQueryValidatorTest {
 				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
 		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
+		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
 
@@ -98,7 +98,7 @@ public class TypedQueryValidatorTest {
 				.type(PropertyType.ID).build();
 
 		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
+		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
 
@@ -113,7 +113,7 @@ public class TypedQueryValidatorTest {
 				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
 		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptIdMeta(new ArrayList<PropertyMeta>());
+		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
 

@@ -60,7 +60,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
-		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.getField()).isEqualTo(field);
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
@@ -82,28 +81,12 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<EmbeddedKey> getValueClass()).isEqualTo(EmbeddedKey.class);
 
-		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isTrue();
 		assertThat(built.getReadConsistencyLevel()).isEqualTo(ONE);
 		assertThat(built.getWriteConsistencyLevel()).isEqualTo(ALL);
 		assertThat(built.getTranscoder()).isInstanceOf(CompoundTranscoder.class);
 	}
 
-	@Test
-	public void should_build_simple_lazy() throws Exception {
-
-		PropertyMeta built = PropertyMetaBuilder.factory().type(LAZY_SIMPLE).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build(Void.class, String.class);
-
-		assertThat(built.type()).isEqualTo(LAZY_SIMPLE);
-		assertThat(built.getPropertyName()).isEqualTo("prop");
-
-		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
-
-		assertThat(built.type().isLazy()).isTrue();
-		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
-	}
 
 	@Test
 	public void should_build_simple_with_object_as_value() throws Exception {
@@ -115,7 +98,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<Bean> getValueClass()).isEqualTo(Bean.class);
 
-		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SimpleTranscoder.class);
 	}
@@ -131,23 +113,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
-		assertThat(built.type().isLazy()).isFalse();
-		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
-	}
-
-	@Test
-	public void should_build_list_lazy() throws Exception {
-
-		PropertyMeta built = PropertyMetaBuilder.factory().type(LAZY_LIST).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build(Void.class, String.class);
-
-		assertThat(built.type()).isEqualTo(LAZY_LIST);
-		assertThat(built.getPropertyName()).isEqualTo("prop");
-
-		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
-
-		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
 	}
@@ -163,23 +128,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
-		assertThat(built.type().isLazy()).isFalse();
-		assertThat(built.isEmbeddedId()).isFalse();
-		assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
-	}
-
-	@Test
-	public void should_build_set_lazy() throws Exception {
-
-		PropertyMeta built = PropertyMetaBuilder.factory().type(LAZY_SET).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build(Void.class, String.class);
-
-		assertThat(built.type()).isEqualTo(LAZY_SET);
-		assertThat(built.getPropertyName()).isEqualTo("prop");
-
-		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
-
-		assertThat(built.type().isLazy()).isTrue();
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(SetTranscoder.class);
 	}
@@ -197,7 +145,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
-		assertThat(built.type().isLazy()).isFalse();
 		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
 	}
@@ -214,25 +161,6 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
-		assertThat(built.type().isLazy()).isFalse();
-		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
-	}
-
-	@Test
-	public void should_build_map_lazy() throws Exception {
-
-		PropertyMeta built = PropertyMetaBuilder.factory().type(LAZY_MAP).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build(Integer.class, String.class);
-
-		assertThat(built.type()).isEqualTo(LAZY_MAP);
-		assertThat(built.getPropertyName()).isEqualTo("prop");
-
-		assertThat(built.<Integer> getKeyClass()).isEqualTo(Integer.class);
-
-		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
-
-		assertThat(built.type().isLazy()).isTrue();
-		assertThat(built.isEmbeddedId()).isFalse();
 		assertThat(built.getTranscoder()).isInstanceOf(MapTranscoder.class);
 	}
 }

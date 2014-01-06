@@ -106,28 +106,24 @@ public class TableCreator {
 	private void createTable(Session session, EntityMeta entityMeta) {
 		String tableName = entityMeta.getTableName();
 		TableBuilder builder = TableBuilder.createTable(tableName);
-		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
 			String propertyName = pm.getPropertyName();
 			Class<?> keyClass = pm.getKeyClass();
 			Class<?> valueClass = pm.getValueClassForTableCreation();
 			switch (pm.type()) {
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				builder.addColumn(propertyName, valueClass);
 				if (pm.isIndexed()) {
 					builder.addIndex(new IndexProperties(pm.getIndexProperties().getName(), propertyName));
 				}
 				break;
 			case LIST:
-			case LAZY_LIST:
 				builder.addList(propertyName, valueClass);
 				break;
 			case SET:
-			case LAZY_SET:
 				builder.addSet(propertyName, valueClass);
 				break;
 			case MAP:
-			case LAZY_MAP:
 				builder.addMap(propertyName, keyClass, pm.getValueClass());
 				break;
 			default:

@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
@@ -51,9 +52,7 @@ public class EntityPersister {
 	private void persistEntity(PersistenceContext context, EntityMeta entityMeta) {
 		persisterImpl.persist(context);
 
-		List<PropertyMeta> allMetas = entityMeta.getAllMetasExceptIdMeta();
-
-		Set<PropertyMeta> counterMetas = FluentIterable.from(allMetas).filter(counterType).toImmutableSet();
+		Set<PropertyMeta> counterMetas = from(entityMeta.getAllMetas()).filter(counterType).toImmutableSet();
 
 		persisterImpl.persistCounters(context, counterMetas);
 	}

@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import org.junit.Test;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.ParentBean;
@@ -48,14 +47,14 @@ public class PropertyFilterTest {
 	public void should_match_annotation() throws Exception {
 		Field friends = CompleteBean.class.getDeclaredField("friends");
 
-		assertThat(filter.matches(friends, Lazy.class)).isTrue();
+		assertThat(filter.matches(friends, Column.class)).isTrue();
 	}
 
 	@Test
 	public void should_match_annotation_and_name() throws Exception {
 		Field friends = CompleteBean.class.getDeclaredField("friends");
 
-		assertThat(filter.matches(friends, Lazy.class, "friends")).isTrue();
+		assertThat(filter.matches(friends, Column.class, "friends")).isTrue();
 	}
 
 	@Test

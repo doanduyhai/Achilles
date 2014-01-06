@@ -27,21 +27,8 @@ public enum PropertyType {
 	LIST, //
 	SET, //
 	MAP, //
-	LAZY_SIMPLE, //
-	COUNTER, //
-	LAZY_LIST, //
-	LAZY_SET, //
-	LAZY_MAP;
+	COUNTER;
 
-
-	public boolean isLazy() {
-		return (this == COUNTER //
-				|| this == LAZY_SIMPLE //
-				|| this == LAZY_LIST //
-				|| this == LAZY_SET //
-		|| this == LAZY_MAP //
-		);
-	}
 
 	public boolean isCounter() {
 		return (this == COUNTER);
@@ -61,11 +48,8 @@ public enum PropertyType {
 
 	public static PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
 
-	public static PropertyTypeFilter eagerType = new PropertyTypeFilter(ID, EMBEDDED_ID, SIMPLE, LIST, SET, MAP);
-	public static PropertyTypeFilter lazyType = new PropertyTypeFilter(LAZY_SIMPLE, LAZY_LIST, LAZY_SET, LAZY_MAP,
-			COUNTER);
-
 	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
-
 	public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
+
+    public static PropertyTypeExclude excludeIdAndCounterType = new PropertyTypeExclude(ID, EMBEDDED_ID,COUNTER);
 }

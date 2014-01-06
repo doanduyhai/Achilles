@@ -128,16 +128,12 @@ public class PropertyMetaBuilder {
 		case ID:
 		case COUNTER:
 		case SIMPLE:
-		case LAZY_SIMPLE:
 			return new SimpleTranscoder(objectMapper);
 		case LIST:
-		case LAZY_LIST:
 			return new ListTranscoder(objectMapper);
 		case SET:
-		case LAZY_SET:
 			return new SetTranscoder(objectMapper);
 		case MAP:
-		case LAZY_MAP:
 			return new MapTranscoder(objectMapper);
 
 		default:

@@ -241,20 +241,12 @@ public class PropertyMeta {
 		return counterProperties != null ? counterProperties.getFqcn() : null;
 	}
 
-	public boolean isLazy() {
-		return this.type.isLazy();
-	}
-
 	public boolean isCounter() {
 		return this.type.isCounter();
 	}
 
 	public boolean isEmbeddedId() {
 		return type.isEmbeddedId();
-	}
-
-	public boolean isCompositePartitionKey() {
-		return embeddedIdProperties != null && embeddedIdProperties.isCompositePartitionKey();
 	}
 
 	public ConsistencyLevel getReadConsistencyLevel() {

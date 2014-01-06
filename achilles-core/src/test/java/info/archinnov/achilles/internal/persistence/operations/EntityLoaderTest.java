@@ -100,25 +100,25 @@ public class EntityLoaderTest {
 		verify(invoker).setValueToField(actual, idMeta.getField(), primaryKey);
 	}
 
-	@Test
-	public void should_load_property_into_object() throws Exception {
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
+    @Test
+    public void should_load_property_into_object() throws Exception {
+        when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).build();
 
-		loader.loadPropertyIntoObject(context, entity, pm);
+        loader.loadPropertyIntoObject(context, entity, pm);
 
-		verify(loaderImpl).loadPropertyIntoEntity(context, pm, entity);
-	}
+        verify(loaderImpl).loadPropertyIntoEntity(context, pm, entity);
+    }
 
-	@Test
-	public void should_not_load_property_into_object_for_proxy_type() throws Exception {
-		when(proxifier.getRealObject(entity)).thenReturn(entity);
+    @Test
+    public void should_not_load_property_into_object_for_proxy_type() throws Exception {
+        when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).build();
 
-		loader.loadPropertyIntoObject(context, entity, pm);
+        loader.loadPropertyIntoObject(context, entity, pm);
 
-		verifyZeroInteractions(loaderImpl);
-	}
+        verifyZeroInteractions(loaderImpl);
+    }
 }

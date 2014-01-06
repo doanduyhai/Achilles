@@ -57,8 +57,8 @@ public class EntityMeta {
 	private String tableName;
 	private Class<?> idClass;
 	private Map<String, PropertyMeta> propertyMetas;
-	private List<PropertyMeta> eagerMetas;
-	private List<Method> eagerGetters;
+    private List<PropertyMeta> allMetasExceptCounters;
+    private List<PropertyMeta> allMetasExceptIdAndCounters;
 	private PropertyMeta idMeta;
 	private Map<Method, PropertyMeta> getterMetas;
 	private Map<Method, PropertyMeta> setterMetas;
@@ -213,22 +213,6 @@ public class EntityMeta {
 		this.idClass = idClass;
 	}
 
-	public List<PropertyMeta> getEagerMetas() {
-		return eagerMetas;
-	}
-
-	public void setEagerMetas(List<PropertyMeta> eagerMetas) {
-		this.eagerMetas = eagerMetas;
-	}
-
-	public List<Method> getEagerGetters() {
-		return eagerGetters;
-	}
-
-	public void setEagerGetters(List<Method> eagerGetters) {
-		this.eagerGetters = eagerGetters;
-	}
-
 	public PropertyMeta getFirstMeta() {
 		return this.firstMeta;
 	}
@@ -238,15 +222,14 @@ public class EntityMeta {
 	}
 
 	public List<PropertyMeta> getAllMetas() {
-		return new ArrayList<PropertyMeta>(propertyMetas.values());
+		return new ArrayList(propertyMetas.values());
 	}
 
-	public List<PropertyMeta> getAllMetasExceptIdMeta() {
-
+	public List<PropertyMeta> getAllMetasExceptId() {
 		return this.allMetasExceptIdMeta;
 	}
 
-	public void setAllMetasExceptIdMeta(List<PropertyMeta> allMetasExceptIdMeta) {
+	public void setAllMetasExceptId(List<PropertyMeta> allMetasExceptIdMeta) {
 		this.allMetasExceptIdMeta = allMetasExceptIdMeta;
 	}
 
@@ -262,7 +245,23 @@ public class EntityMeta {
 		return propertyMetas.size() == 1;
 	}
 
-	@Override
+    public List<PropertyMeta> getAllMetasExceptIdAndCounters() {
+        return allMetasExceptIdAndCounters;
+    }
+
+    public void setAllMetasExceptIdAndCounters(List<PropertyMeta> allMetasExceptIdAndCounters) {
+        this.allMetasExceptIdAndCounters = allMetasExceptIdAndCounters;
+    }
+
+    public List<PropertyMeta> getAllMetasExceptCounters() {
+        return allMetasExceptCounters;
+    }
+
+    public void setAllMetasExceptCounters(List<PropertyMeta> allMetasExceptCounters) {
+        this.allMetasExceptCounters = allMetasExceptCounters;
+    }
+
+    @Override
 	public String toString() {
 		return Objects.toStringHelper(this.getClass()).add("className", className)
 				.add("tableName/columnFamilyName", tableName)

@@ -79,7 +79,7 @@ public class PersisterImplTest {
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 
 		when(entityMeta.getAllMetas()).thenReturn(allMetas);
-		when(entityMeta.getAllMetasExceptIdMeta()).thenReturn(allMetas);
+		when(entityMeta.getAllMetasExceptId()).thenReturn(allMetas);
 		allMetas.clear();
 	}
 

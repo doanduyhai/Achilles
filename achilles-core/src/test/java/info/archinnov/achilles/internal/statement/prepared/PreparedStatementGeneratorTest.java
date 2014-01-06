@@ -84,7 +84,7 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("table");
-		meta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, counterMeta));
+		meta.setAllMetasExceptId(Arrays.asList(nameMeta, counterMeta));
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -107,7 +107,7 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("table");
-		meta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
+		meta.setAllMetasExceptId(Arrays.asList(nameMeta));
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -226,7 +226,6 @@ public class PreparedStatementGeneratorTest {
 
 	@Test
 	public void should_prepare_select_eager_ps_with_single_key() throws Exception {
-		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
 		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.type(PropertyType.SIMPLE).build();
@@ -234,11 +233,13 @@ public class PreparedStatementGeneratorTest {
 		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
-		eagerMetas.add(nameMeta);
+
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-		meta.setEagerMetas(eagerMetas);
+		meta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
+		meta.setAllMetasExceptId(Arrays.asList(nameMeta));
+        meta.setAllMetasExceptCounters(Arrays.asList(nameMeta));
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -250,7 +251,6 @@ public class PreparedStatementGeneratorTest {
 
 	@Test
 	public void should_prepare_select_eager_ps_with_clustered_key() throws Exception {
-		List<PropertyMeta> eagerMetas = new ArrayList<PropertyMeta>();
 
 		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
 				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
@@ -258,12 +258,12 @@ public class PreparedStatementGeneratorTest {
 		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
 
-		eagerMetas.add(idMeta);
-		eagerMetas.add(nameMeta);
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-		meta.setEagerMetas(eagerMetas);
+        meta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
+        meta.setAllMetasExceptId(Arrays.asList(nameMeta));
+        meta.setAllMetasExceptCounters(Arrays.asList(nameMeta));;
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 

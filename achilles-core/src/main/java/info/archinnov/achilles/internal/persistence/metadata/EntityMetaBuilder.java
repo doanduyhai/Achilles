@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -31,8 +32,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.FluentIterable;
 
 public class EntityMetaBuilder {
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
@@ -71,16 +70,20 @@ public class EntityMetaBuilder {
 		meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
 		meta.setConsistencyLevels(consistencyLevels);
 
-		List<PropertyMeta> eagerMetas = FluentIterable.from(propertyMetas.values()).filter(eagerType).toImmutableList();
+		List<PropertyMeta> allMetasExceptId = new ArrayList(from(propertyMetas.values()).filter(excludeIdType)
+				.toImmutableList());
+		meta.setAllMetasExceptId(allMetasExceptId);
 
-		meta.setEagerMetas(eagerMetas);
-		meta.setEagerGetters(Collections.unmodifiableList(extractEagerGetters(eagerMetas)));
+        List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList(from(propertyMetas.values()).filter(excludeIdAndCounterType)
+                                                                        .toImmutableList());
+        meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
 
-		List<PropertyMeta> allMetasExceptIdMeta = FluentIterable.from(propertyMetas.values()).filter(excludeIdType)
-				.toImmutableList();
-		meta.setAllMetasExceptIdMeta(allMetasExceptIdMeta);
+        List<PropertyMeta> allMetasExceptCounters = new ArrayList(from(propertyMetas.values()).filter(excludeCounterType)
+                                                                               .toImmutableList());
+        meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
-		PropertyMeta firstMeta = allMetasExceptIdMeta.isEmpty() ? null : allMetasExceptIdMeta.get(0);
+
+        PropertyMeta firstMeta = allMetasExceptId.isEmpty() ? null : allMetasExceptId.get(0);
 		meta.setFirstMeta(firstMeta);
 
 		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;
@@ -92,7 +95,7 @@ public class EntityMetaBuilder {
 	}
 
 	private Map<Method, PropertyMeta> extractGetterMetas(Map<String, PropertyMeta> propertyMetas) {
-		Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
+		Map<Method, PropertyMeta> getterMetas = new HashMap();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		}
@@ -100,20 +103,11 @@ public class EntityMetaBuilder {
 	}
 
 	private Map<Method, PropertyMeta> extractSetterMetas(Map<String, PropertyMeta> propertyMetas) {
-		Map<Method, PropertyMeta> setterMetas = new HashMap<Method, PropertyMeta>();
+		Map<Method, PropertyMeta> setterMetas = new HashMap();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
 		}
 		return setterMetas;
-	}
-
-	private List<Method> extractEagerGetters(List<PropertyMeta> eagerMetas) {
-		List<Method> eagerMethods = new ArrayList<Method>();
-		for (PropertyMeta propertyMeta : eagerMetas) {
-			eagerMethods.add(propertyMeta.getGetter());
-		}
-		return eagerMethods;
-
 	}
 
 	public EntityMetaBuilder entityClass(Class<?> entityClass) {

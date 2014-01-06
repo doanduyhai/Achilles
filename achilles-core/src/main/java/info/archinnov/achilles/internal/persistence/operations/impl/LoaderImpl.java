@@ -49,7 +49,7 @@ public class LoaderImpl {
 			Row row = context.eagerLoadEntity();
 			if (row != null) {
 				entity = entityMeta.instanciate();
-				mapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+				mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
 			}
 		}
 		return entity;

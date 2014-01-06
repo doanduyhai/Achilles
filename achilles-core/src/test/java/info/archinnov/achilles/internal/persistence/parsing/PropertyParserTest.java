@@ -23,7 +23,6 @@ import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.persistence.metadata.EmbeddedIdProperties;
@@ -386,27 +385,6 @@ public class PropertyParserTest {
 	}
 
 	@Test
-	public void should_parse_lazy() throws Exception {
-		@SuppressWarnings("unused")
-		class Test {
-			@Column
-			@Lazy
-			private List<String> friends;
-
-			public List<String> getFriends() {
-				return friends;
-			}
-
-			public void setFriends(List<String> friends) {
-				this.friends = friends;
-			}
-		}
-		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("friends"));
-		PropertyMeta meta = parser.parse(context);
-		assertThat(meta.type().isLazy()).isTrue();
-	}
-
-	@Test
 	public void should_parse_index() throws Exception {
 		@SuppressWarnings("unused")
 		class Test {
@@ -456,7 +434,6 @@ public class PropertyParserTest {
 		assertThat((Class<List>) meta.getSetter().getParameterTypes()[0]).isEqualTo(List.class);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.LIST);
-		assertThat(meta.isLazy()).isFalse();
 	}
 
 	@SuppressWarnings("rawtypes")

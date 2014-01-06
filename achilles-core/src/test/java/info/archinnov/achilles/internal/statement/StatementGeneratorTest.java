@@ -143,7 +143,7 @@ public class StatementGeneratorTest {
         when(idMeta.encode(primaryKey)).thenReturn(primaryKey);
         when(idMeta.getPropertyName()).thenReturn("id");
 
-        when(meta.getAllMetasExceptIdMeta()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getAllMetasExceptId()).thenReturn(Arrays.asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
         when(nameMeta.getValueFromField(entity)).thenReturn(myName);
@@ -178,7 +178,7 @@ public class StatementGeneratorTest {
         when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id","type"));
         when(idMeta.encodeToComponents(primaryKey)).thenReturn(Arrays.<Object>asList(id,type));
 
-        when(meta.getAllMetasExceptIdMeta()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getAllMetasExceptId()).thenReturn(Arrays.asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
         when(nameMeta.getValueFromField(entity)).thenReturn(myName);
@@ -233,7 +233,7 @@ public class StatementGeneratorTest {
 				.type(SIMPLE).invoker(invoker).build();
 
 		PropertyMeta friendsMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(LAZY_LIST).invoker(invoker).build();
+				.accessors().type(LIST).invoker(invoker).build();
 
 		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
 				.accessors().type(SET).invoker(invoker).build();
@@ -328,7 +328,9 @@ public class StatementGeneratorTest {
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
-		meta.setEagerMetas(Arrays.asList(idMeta, ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptCounters(Arrays.asList(idMeta, ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptId(Arrays.asList(ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptIdAndCounters(Arrays.asList(ageMeta, nameMeta, labelMeta));
 		meta.setIdMeta(idMeta);
 
 		return meta;

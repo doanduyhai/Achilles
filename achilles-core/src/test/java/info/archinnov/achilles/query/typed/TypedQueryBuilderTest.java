@@ -79,9 +79,6 @@ public class TypedQueryBuilderTest {
 	@Mock
 	private EntityMeta meta;
 
-	@Captor
-	private ArgumentCaptor<Set<Method>> alreadyLoadedCaptor;
-
 	private Class<CompleteBean> entityClass = CompleteBean.class;
 
 	private CompleteBean entity = new CompleteBean();
@@ -103,13 +100,12 @@ public class TypedQueryBuilderTest {
 		when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
 						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxy(eq(entity), eq(context), alreadyLoadedCaptor.capture())).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
 		List<CompleteBean> actual = builder.get();
 
 		assertThat(actual).containsExactly(entity);
 
-		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter(), nameMeta.getGetter());
         verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
@@ -134,13 +130,12 @@ public class TypedQueryBuilderTest {
 				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
 						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxy(eq(entity), eq(context), alreadyLoadedCaptor.capture())).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
 		List<CompleteBean> actual = builder.get();
 
 		assertThat(actual).containsExactly(entity);
 
-		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter(), nameMeta.getGetter());
         verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
@@ -197,12 +192,11 @@ public class TypedQueryBuilderTest {
 				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
 						eq(true))).thenReturn(entity);
 		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxy(eq(entity), eq(context), alreadyLoadedCaptor.capture())).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
 		CompleteBean actual = builder.getFirst();
 
 		assertThat(actual).isSameAs(entity);
-		assertThat(alreadyLoadedCaptor.getValue()).contains(idMeta.getGetter());
         verify(meta).intercept(entity, Event.POST_LOAD);
 	}
 
@@ -264,14 +258,11 @@ public class TypedQueryBuilderTest {
 	private EntityMeta buildEntityMeta(PropertyMeta... pms) {
 		EntityMeta meta = mock(EntityMeta.class);
 		Map<String, PropertyMeta> propertyMetas = new HashMap();
-		List<Method> eagerGetters = new ArrayList();
 		for (PropertyMeta pm : pms) {
 			propertyMetas.put(pm.getPropertyName(), pm);
-			eagerGetters.add(pm.getGetter());
 		}
 
         when(meta.getPropertyMetas()).thenReturn(propertyMetas);
-		when(meta.getEagerGetters()).thenReturn(eagerGetters);
 		return meta;
 	}
 

@@ -424,7 +424,7 @@ public class PersistenceContextTest {
 	public void should_find() throws Exception {
         //Given
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxyWithEagerFieldsLoaded(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoaded(entity, context)).thenReturn(entity);
 
         //When
 		CompleteBean found = context.find(CompleteBean.class);
@@ -445,7 +445,7 @@ public class PersistenceContextTest {
 	}
 
 	@Test
-	public void should_get_reference() throws Exception {
+	public void should_get_proxy() throws Exception {
 		when(loader.createEmptyEntity(context, CompleteBean.class)).thenReturn(entity);
 		when(proxifier.buildProxyWithNoFieldLoaded(entity, context)).thenReturn(entity);
 
@@ -462,15 +462,10 @@ public class PersistenceContextTest {
 
 	@Test
 	public void should_initialize() throws Exception {
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor = mock(EntityInterceptor.class);
-
-		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
-
 		CompleteBean actual = context.initialize(entity);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(initializer).initializeEntity(entity, meta, interceptor);
+		verify(initializer).initializeEntity(entity, meta);
 	}
 }

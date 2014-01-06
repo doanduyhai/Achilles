@@ -47,7 +47,7 @@
 
 		<dependency>
 			<groupId>info.archinnov</groupId>
-			<artifactId>achilles-cql</artifactId>
+			<artifactId>achilles-core</artifactId>
 		</dependency>
 
 		<!-- Logging -->

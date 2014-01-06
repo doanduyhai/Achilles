@@ -38,6 +38,7 @@ import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Counter;
 
 import java.util.Map;
 
@@ -101,6 +102,7 @@ public class EntityParserTest {
 		PropertyMeta preferences = meta.getPropertyMetas().get("preferences");
 
 		PropertyMeta creator = meta.getPropertyMetas().get("creator");
+		PropertyMeta count = meta.getPropertyMetas().get("count");
 
 		assertThat(id).isNotNull();
 		assertThat(name).isNotNull();
@@ -109,6 +111,7 @@ public class EntityParserTest {
 		assertThat(followers).isNotNull();
 		assertThat(preferences).isNotNull();
 		assertThat(creator).isNotNull();
+		assertThat(count).isNotNull();
 
 		assertThat(id.getPropertyName()).isEqualTo("id");
 		assertThat(id.<Long> getValueClass()).isEqualTo(Long.class);
@@ -130,8 +133,7 @@ public class EntityParserTest {
 
 		assertThat(friends.getPropertyName()).isEqualTo("friends");
 		assertThat(friends.<String> getValueClass()).isEqualTo(String.class);
-		assertThat(friends.type()).isEqualTo(PropertyType.LAZY_LIST);
-		assertThat(friends.type().isLazy()).isTrue();
+		assertThat(friends.type()).isEqualTo(PropertyType.LIST);
 		assertThat(friends.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(friends.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
@@ -152,12 +154,17 @@ public class EntityParserTest {
 		assertThat(creator.<UserBean> getValueClass()).isEqualTo(UserBean.class);
 		assertThat(creator.type()).isEqualTo(SIMPLE);
 
+        assertThat(count.getPropertyName()).isEqualTo("count");
+        assertThat(count.<Counter> getValueClass()).isEqualTo(Counter.class);
+        assertThat(count.type()).isEqualTo(COUNTER);
+
 		assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(meta.getEagerMetas()).containsOnly(id, name, age, followers, preferences, creator);
-		assertThat(meta.getEagerGetters()).containsOnly(id.getGetter(), name.getGetter(), age.getGetter(),
-				followers.getGetter(), preferences.getGetter(), creator.getGetter());
+		assertThat(meta.getAllMetasExceptId()).containsOnly(name, age, followers, preferences, creator,count);
+		assertThat(meta.getAllMetasExceptIdAndCounters()).containsOnly(name, age, followers, preferences, creator);
+		assertThat(meta.getAllMetasExceptCounters()).containsOnly(id,name, age, followers, preferences, creator);
+
 	}
 
 	@Test

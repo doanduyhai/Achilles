@@ -44,53 +44,51 @@ public class EntityInterceptorBuilderTest {
 
 	private CompleteBean entity = new CompleteBean();
 
-	@Test
-	public void should_build_interceptor_with_eager_fields_already_loaded() throws Exception {
+    @Test
+    public void should_build_interceptor_with_eager_fields_already_loaded() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(idMeta);
-		meta.setClassName("classname");
-		meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
-		meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
-		meta.setEagerGetters(Arrays.asList(idMeta.getGetter()));
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setClassName("classname");
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
 
-		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(context.getPrimaryKey()).thenReturn(entity.getId());
+        when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(context.getPrimaryKey()).thenReturn(entity.getId());
 
-		EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,entity)
-            .alreadyLoaded(Sets.newHashSet(idMeta.getGetter())).build();
+        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,entity)
+                                                                              .alreadyLoaded(Sets.newHashSet(idMeta.getGetter())).build();
 
-		assertThat(interceptor.getContext()).isSameAs(context);
-		assertThat(interceptor.getTarget()).isSameAs(entity);
-		assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
-		assertThat(interceptor.getAlreadyLoaded()).containsOnly(idMeta.getGetter());
-	}
+        assertThat(interceptor.getContext()).isSameAs(context);
+        assertThat(interceptor.getTarget()).isSameAs(entity);
+        assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
+        assertThat(interceptor.getAlreadyLoaded()).containsOnly(idMeta.getGetter());
+    }
 
-	@Test
-	public void should_build_interceptor_with_no_eager_fields() throws Exception {
+    @Test
+    public void should_build_interceptor_with_no_eager_fields() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setIdMeta(idMeta);
-		meta.setClassName("classname");
-		meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
-		meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
-		meta.setEagerGetters(Lists.newArrayList(idMeta.getGetter()));
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setClassName("classname");
+        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
+        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
 
-		when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(context.getPrimaryKey()).thenReturn(entity.getId());
+        when((Class) context.getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(context.getPrimaryKey()).thenReturn(entity.getId());
 
-		EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,
+        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean> builder(context,
                                                                                                       entity).build();
 
-		assertThat(interceptor.getContext()).isSameAs(context);
-		assertThat(interceptor.getTarget()).isSameAs(entity);
-		assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
-		assertThat(interceptor.getAlreadyLoaded()).isEmpty();
-	}
+        assertThat(interceptor.getContext()).isSameAs(context);
+        assertThat(interceptor.getTarget()).isSameAs(entity);
+        assertThat(interceptor.getPrimaryKey()).isEqualTo(entity.getId());
+        assertThat(interceptor.getAlreadyLoaded()).isEmpty();
+    }
 }

@@ -134,53 +134,9 @@ public class PersistenceManagerOperationsIT {
 		manager.persist(entity);
 
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
-	}
 
-	@Test
-	public void should_find_lazy_simple() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").label("label").buid();
-
-		manager.persist(entity);
-
-		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
-
-		Factory factory = (Factory) found;
-		EntityInterceptor<CompleteBean> interceptor = (EntityInterceptor<CompleteBean>) factory.getCallback(0);
-
-		Method getLabel = CompleteBean.class.getDeclaredMethod("getLabel");
-		String label = (String) getLabel.invoke(interceptor.getTarget());
-
-		assertThat(label).isNull();
-
-		String lazyLabel = found.getLabel();
-
-		assertThat(lazyLabel).isNotNull();
-		assertThat(lazyLabel).isEqualTo("label");
-	}
-
-	@Test
-	public void should_find_lazy_list() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
-				.addPreference(2, "New York").buid();
-
-		manager.persist(entity);
-
-		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
-
-		Factory factory = (Factory) found;
-		EntityInterceptor<CompleteBean> interceptor = (EntityInterceptor<CompleteBean>) factory.getCallback(0);
-
-		Method getFriends = CompleteBean.class.getDeclaredMethod("getFriends", (Class<?>[]) null);
-		List<String> lazyFriends = (List<String>) getFriends.invoke(interceptor.getTarget());
-
-		assertThat(lazyFriends).isNull();
-
-		List<String> friends = found.getFriends();
-
-		assertThat(friends).isNotNull();
-		assertThat(friends).hasSize(2);
-		assertThat(friends).containsExactly("bob", "alice");
+        assertThat(found).isNotNull();
+        assertThat(found.getName()).isEqualTo("Jonathan");
 	}
 
 	@Test

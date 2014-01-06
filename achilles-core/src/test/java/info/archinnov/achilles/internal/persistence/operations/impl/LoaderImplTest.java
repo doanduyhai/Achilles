@@ -107,7 +107,7 @@ public class LoaderImplTest {
 
 		assertThat(actual).isInstanceOf(CompleteBean.class);
 
-		verify(mapper).setEagerPropertiesToEntity(row, entityMeta, actual);
+		verify(mapper).setNonCounterPropertiesToEntity(row, entityMeta, actual);
 	}
 
 	@Test

@@ -104,7 +104,7 @@ public class PreparedStatementBinderTest {
 				.type(COUNTER).accessors().invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, ageMeta, counterMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta, ageMeta, counterMeta));
 
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
@@ -134,7 +134,7 @@ public class PreparedStatementBinderTest {
 				.accessors().transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta, ageMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta, ageMeta));
 
 		long primaryKey = RandomUtils.nextLong();
 		String name = "name";
@@ -179,7 +179,7 @@ public class PreparedStatementBinderTest {
 				.field("preferences").type(MAP).transcoder(transcoder).accessors().invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
 
 		EmbeddedKey embeddedKey = new EmbeddedKey(userId, name);
 

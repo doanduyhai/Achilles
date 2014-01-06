@@ -61,19 +61,15 @@ public class TableValidator {
 					idMeta.getValueClassForTableCreation(), idMeta.isIndexed());
 		}
 
-		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdMeta()) {
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
 			switch (pm.type()) {
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(), pm.getValueClassForTableCreation(),
 						pm.isIndexed());
 				break;
 			case LIST:
 			case SET:
 			case MAP:
-			case LAZY_LIST:
-			case LAZY_SET:
-			case LAZY_MAP:
 				validateCollectionAndMapColumn(tableMetadata, pm);
 				break;
 			default:

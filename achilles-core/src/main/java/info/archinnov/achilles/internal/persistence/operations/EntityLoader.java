@@ -63,12 +63,11 @@ public class EntityLoader {
         return entity;
     }
 
-	public void loadPropertyIntoObject(PersistenceContext context, Object realObject, PropertyMeta pm) {
+    public void loadPropertyIntoObject(PersistenceContext context, Object realObject, PropertyMeta pm) {
         log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);
-		PropertyType type = pm.type();
-		if (!type.isCounter()) {
-			loaderImpl.loadPropertyIntoEntity(context, pm, realObject);
-		}
-	}
-
+        PropertyType type = pm.type();
+        if (!type.isCounter()) {
+            loaderImpl.loadPropertyIntoEntity(context, pm, realObject);
+        }
+    }
 }

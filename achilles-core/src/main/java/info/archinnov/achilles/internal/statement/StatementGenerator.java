@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static com.google.common.collect.FluentIterable.from;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
@@ -89,10 +90,7 @@ public class StatementGenerator {
 
 		generateSelectForPrimaryKey(idMeta, select);
 
-		List<PropertyMeta> eagerMetas = FluentIterable.from(entityMeta.getEagerMetas())
-				.filter(PropertyType.excludeIdType).toImmutableList();
-
-		for (PropertyMeta pm : eagerMetas) {
+		for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
 			select.column(pm.getPropertyName());
 		}
 		return select.from(entityMeta.getTableName());
@@ -103,11 +101,10 @@ public class StatementGenerator {
 		Insert insert = insertInto(entityMeta.getTableName());
 		final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = FluentIterable.from(entityMeta.getAllMetasExceptIdMeta())
-				.filter(PropertyType.excludeCounterType).toImmutableList();
+		List<PropertyMeta> nonProxyMetas = from(entityMeta.getAllMetasExceptIdAndCounters())
+				.toImmutableList();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<PropertyMeta>(nonProxyMetas);
-		//fieldMetas.remove(idMeta);
+		List<PropertyMeta> fieldMetas = new ArrayList(nonProxyMetas);
 
 		final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
 		for (int i = 0; i < fieldMetas.size(); i++) {
@@ -198,16 +195,12 @@ public class StatementGenerator {
 		if (value != null) {
 			switch (pm.type()) {
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				return pm.encode(value);
 			case LIST:
-			case LAZY_LIST:
 				return pm.encode((List<?>) value);
 			case SET:
-			case LAZY_SET:
 				return pm.encode((Set<?>) value);
 			case MAP:
-			case LAZY_MAP:
 				return pm.encode((Map<?, ?>) value);
 			default:
 				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"

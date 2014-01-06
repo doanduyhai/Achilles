@@ -31,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
@@ -96,18 +95,6 @@ public class PropertyHelperTest {
 
 	}
 
-	@Test
-	public void should_find_lazy() throws Exception {
-
-		class Test {
-			@Lazy
-			private String name;
-		}
-
-		Field field = Test.class.getDeclaredField("name");
-
-		assertThat(helper.isLazy(field)).isTrue();
-	}
 
 	@Test
 	public void should_find_index() throws Exception {

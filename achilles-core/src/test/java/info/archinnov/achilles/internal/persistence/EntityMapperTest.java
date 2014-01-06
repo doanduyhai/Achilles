@@ -32,7 +32,6 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -76,19 +75,15 @@ public class EntityMapperTest {
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
 	@Test
-	public void should_set_eager_properties_to_entity() throws Exception {
+	public void should_set_non_counter_properties_to_entity() throws Exception {
 		PropertyMeta pm = mock(PropertyMeta.class);
 		when(pm.isEmbeddedId()).thenReturn(false);
 		when(pm.getPropertyName()).thenReturn("name");
 
-		List<PropertyMeta> eagerMetas = Arrays.asList(pm);
-
-		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
-
 		when(row.isNull("name")).thenReturn(false);
 		when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
 
-		entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+		entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
 
 		verify(pm).setValueToField(entity, "value");
 	}
@@ -99,13 +94,9 @@ public class EntityMapperTest {
 		when(pm.isEmbeddedId()).thenReturn(false);
 		when(pm.getPropertyName()).thenReturn("name");
 
-		List<PropertyMeta> eagerMetas = Arrays.asList(pm);
-
-		when(entityMeta.getEagerMetas()).thenReturn(eagerMetas);
-
 		when(row.isNull("name")).thenReturn(true);
 
-		entityMapper.setEagerPropertiesToEntity(row, entityMeta, entity);
+		entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
 
 		verify(pm, never()).setValueToField(eq(entity), any());
 		verifyZeroInteractions(cqlRowInvoker);

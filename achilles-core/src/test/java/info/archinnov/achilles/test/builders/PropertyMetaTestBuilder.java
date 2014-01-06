@@ -236,19 +236,15 @@ public class PropertyMetaTestBuilder<T, K, V> {
 			switch (type) {
 			case ID:
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				pm.setTranscoder(new SimpleTranscoder(objectMapper));
 				break;
 			case LIST:
-			case LAZY_LIST:
 				pm.setTranscoder(new ListTranscoder(objectMapper));
 				break;
 			case SET:
-			case LAZY_SET:
 				pm.setTranscoder(new SetTranscoder(objectMapper));
 				break;
 			case MAP:
-			case LAZY_MAP:
 				pm.setTranscoder(new MapTranscoder(objectMapper));
 				break;
 			case EMBEDDED_ID:

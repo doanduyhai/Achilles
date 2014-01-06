@@ -94,7 +94,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -115,7 +115,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
 
 		ColumnMetadata userColumn = mock(ColumnMetadata.class);
 		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
@@ -148,7 +148,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
 
 		ColumnMetadata userColumn = mock(ColumnMetadata.class);
 		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
@@ -180,7 +180,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -191,7 +191,7 @@ public class TableValidatorTest {
 		when(columnMetadataForField.getIndex()).thenReturn(null);
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = completeBean(Void.class, String.class).field("name").type(LAZY_SIMPLE).build();
+		pm = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("name", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
@@ -205,7 +205,7 @@ public class TableValidatorTest {
 		pm.setIndexProperties(new IndexProperties(""));
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -231,7 +231,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -242,7 +242,7 @@ public class TableValidatorTest {
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = completeBean(Void.class, String.class).field("friends").type(LAZY_LIST).build();
+		pm = completeBean(Void.class, String.class).field("friends").type(LIST).build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("friends", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);
 	}
@@ -255,7 +255,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -275,7 +275,7 @@ public class TableValidatorTest {
 				.type(MAP).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptIdMeta(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -286,7 +286,7 @@ public class TableValidatorTest {
 
 		validator.validateForEntity(entityMeta, tableMetaData);
 
-		pm = completeBean(Integer.class, String.class).field("preferences").type(LAZY_MAP)
+		pm = completeBean(Integer.class, String.class).field("preferences").type(MAP)
 				.build();
 		entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
 		validator.validateForEntity(entityMeta, tableMetaData);

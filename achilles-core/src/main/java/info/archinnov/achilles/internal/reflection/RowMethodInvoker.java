@@ -41,22 +41,18 @@ public class RowMethodInvoker {
 		if (row != null && !row.isNull(propertyName)) {
 			switch (pm.type()) {
 			case LIST:
-			case LAZY_LIST:
 				value = invokeOnRowForList(row, pm, propertyName, pm.getValueClass());
 				break;
 			case SET:
-			case LAZY_SET:
 				value = invokeOnRowForSet(row, pm, propertyName, pm.getValueClass());
 				break;
 			case MAP:
-			case LAZY_MAP:
 				Class<?> keyClass = pm.getKeyClass();
 				Class<?> valueClass = pm.getValueClass();
 				value = invokeOnRowForMap(row, pm, propertyName, keyClass, valueClass);
 				break;
 			case ID:
 			case SIMPLE:
-			case LAZY_SIMPLE:
 				value = invokeOnRowForProperty(row, pm, propertyName, pm.getValueClass());
 				break;
 			default:

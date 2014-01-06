@@ -22,20 +22,6 @@ import org.junit.Test;
 
 public class PropertyTypeTest {
 
-	@Test
-	public void should_test_is_lazy() throws Exception {
-		assertThat(PropertyType.COUNTER.isLazy()).isTrue();
-		assertThat(PropertyType.LAZY_SIMPLE.isLazy()).isTrue();
-		assertThat(PropertyType.LAZY_LIST.isLazy()).isTrue();
-		assertThat(PropertyType.LAZY_SET.isLazy()).isTrue();
-		assertThat(PropertyType.LAZY_MAP.isLazy()).isTrue();
-
-		assertThat(PropertyType.ID.isLazy()).isFalse();
-		assertThat(PropertyType.SIMPLE.isLazy()).isFalse();
-		assertThat(PropertyType.LIST.isLazy()).isFalse();
-		assertThat(PropertyType.MAP.isLazy()).isFalse();
-		assertThat(PropertyType.EMBEDDED_ID.isLazy()).isFalse();
-	}
 
 	@Test
 	public void should_test_is_counter() throws Exception {
@@ -44,20 +30,12 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.LIST.isCounter()).isFalse();
 		assertThat(PropertyType.MAP.isCounter()).isFalse();
 		assertThat(PropertyType.COUNTER.isCounter()).isTrue();
-		assertThat(PropertyType.LAZY_SIMPLE.isCounter()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isCounter()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isCounter()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isCounter()).isFalse();
 		assertThat(PropertyType.EMBEDDED_ID.isCounter()).isFalse();
 	}
 
 	@Test
 	public void should_test_is_id() throws Exception {
 		assertThat(PropertyType.COUNTER.isId()).isFalse();
-		assertThat(PropertyType.LAZY_SIMPLE.isId()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isId()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isId()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isId()).isFalse();
 
 		assertThat(PropertyType.ID.isId()).isTrue();
 		assertThat(PropertyType.SIMPLE.isId()).isFalse();
@@ -69,10 +47,6 @@ public class PropertyTypeTest {
 	@Test
 	public void should_test_is_embedded_id() throws Exception {
 		assertThat(PropertyType.COUNTER.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.LAZY_SIMPLE.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isEmbeddedId()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isEmbeddedId()).isFalse();
 
 		assertThat(PropertyType.ID.isEmbeddedId()).isFalse();
 		assertThat(PropertyType.SIMPLE.isEmbeddedId()).isFalse();
@@ -84,10 +58,6 @@ public class PropertyTypeTest {
 	@Test
 	public void should_test_is_valid_clustered_value() throws Exception {
 		assertThat(PropertyType.COUNTER.isValidClusteredValueType()).isTrue();
-		assertThat(PropertyType.LAZY_SIMPLE.isValidClusteredValueType()).isFalse();
-		assertThat(PropertyType.LAZY_LIST.isValidClusteredValueType()).isFalse();
-		assertThat(PropertyType.LAZY_SET.isValidClusteredValueType()).isFalse();
-		assertThat(PropertyType.LAZY_MAP.isValidClusteredValueType()).isFalse();
 
 		assertThat(PropertyType.ID.isValidClusteredValueType()).isFalse();
 		assertThat(PropertyType.SIMPLE.isValidClusteredValueType()).isTrue();

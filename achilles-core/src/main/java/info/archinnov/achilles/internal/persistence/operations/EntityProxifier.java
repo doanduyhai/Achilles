@@ -52,39 +52,33 @@ public class EntityProxifier {
 		return baseClass;
 	}
 
-    public <T> T buildProxyWithEagerFieldsLoaded(T entity, PersistenceContext context) {
-        return buildProxy(entity, context, context.getEagerGetters());
-    }
-
     public <T> T buildProxyWithAllFieldsLoaded(T entity, PersistenceContext context) {
         return buildProxy(entity, context, context.getAllGetters());
+    }
+
+    public <T> T buildProxyWithAllFieldsLoadedExceptCounters(T entity, PersistenceContext context) {
+        return buildProxy(entity, context, context.getAllGettersExceptCounters());
     }
 
     public <T> T buildProxyWithNoFieldLoaded(T entity, PersistenceContext context) {
         return buildProxy(entity, context, new HashSet<Method>());
     }
 
-    /*
-	public <T> T buildProxy(T entity, PersistenceContext context) {
-		return buildProxy(entity, context, new HashSet<Method>());
-	}
-	*/
+    public <T> T buildProxy(T entity, PersistenceContext context, Set<Method> alreadyLoaded) {
 
-	public <T> T buildProxy(T entity, PersistenceContext context, Set<Method> alreadyLoaded) {
+        if (entity == null) {
+            return null;
+        }
 
-		if (entity == null) {
-			return null;
-		}
+        log.debug("Build Cglib proxy for entity {} ", entity);
 
-		log.debug("Build Cglib proxy for entity {} ", entity);
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(entity.getClass());
+        enhancer.setInterfaces(new Class[] { Serializable.class });
+        enhancer.setCallback(buildInterceptor(context, entity, alreadyLoaded));
 
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(entity.getClass());
-		enhancer.setInterfaces(new Class[] { Serializable.class });
-		enhancer.setCallback(buildInterceptor(context, entity, alreadyLoaded));
-
-		return (T) enhancer.create();
-	}
+        return (T) enhancer.create();
+    }
 
 	@SuppressWarnings("unchecked")
 	public <T> T getRealObject(T proxy) {
@@ -176,8 +170,8 @@ public class EntityProxifier {
 		return result;
 	}
 
-	public <T> EntityInterceptor<T> buildInterceptor(PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
-		return new EntityInterceptorBuilder(context, entity).alreadyLoaded(alreadyLoaded).build();
-	}
+    public <T> EntityInterceptor<T> buildInterceptor(PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
+        return new EntityInterceptorBuilder(context, entity).alreadyLoaded(alreadyLoaded).build();
+    }
 
 }

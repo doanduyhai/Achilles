@@ -55,7 +55,6 @@ public class EntityRefresherTest {
 	@Test
 	public void should_refresh() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		List<Method> eagerGetters = new ArrayList<Method>();
 
 		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getPrimaryKey()).thenReturn(bean.getId());
@@ -65,23 +64,19 @@ public class EntityRefresherTest {
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
-		when(entityMeta.getEagerGetters()).thenReturn(eagerGetters);
 		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
 
 		entityRefresher.refresh(bean,context);
 
 		verify(dirtyMap).clear();
 		verify(alreadyLoaded).clear();
-		verify(alreadyLoaded).addAll(eagerGetters);
 		verify(jpaEntityInterceptor).setTarget(bean);
 	}
 
 	@Test(expected = AchillesStaleObjectStateException.class)
 	public void should_throw_exception_when_object_staled() throws Exception {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
-		List<Method> eagerGetters = new ArrayList<Method>();
 
 		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getPrimaryKey()).thenReturn(bean.getId());
@@ -91,9 +86,7 @@ public class EntityRefresherTest {
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-		when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
-		when(entityMeta.getEagerGetters()).thenReturn(eagerGetters);
 		when(loader.load(context, CompleteBean.class)).thenReturn(null);
 
 		entityRefresher.refresh(bean,context);

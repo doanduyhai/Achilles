@@ -23,7 +23,6 @@ import java.util.UUID;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Lazy;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.type.Counter;
 
@@ -40,7 +39,6 @@ public class CompleteBean {
 	@Column(name = "age_in_years")
 	private Long age;
 
-	@Lazy
 	@Column
 	private List<String> friends;
 
