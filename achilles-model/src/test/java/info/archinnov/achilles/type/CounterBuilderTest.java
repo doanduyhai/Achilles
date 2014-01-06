@@ -54,14 +54,6 @@ public class CounterBuilderTest {
 	}
 
 	@Test
-	public void should_exception_when_calling_get_with_consistency() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.get(EACH_QUORUM);
-	}
-
-	@Test
 	public void should_exception_when_calling_incr() throws Exception {
 		Counter counter = CounterBuilder.incr();
 		exception.expect(UnsupportedOperationException.class);
@@ -93,37 +85,8 @@ public class CounterBuilderTest {
 		counter.decr(10L);
 	}
 
-	@Test
-	public void should_exception_when_calling_incr_with_consistency() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.incr(EACH_QUORUM);
-	}
 
-	@Test
-	public void should_exception_when_calling_incr_n_with_consistency() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.incr(10L, EACH_QUORUM);
-	}
 
-	@Test
-	public void should_exception_when_calling_decr_with_consistency() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.decr(EACH_QUORUM);
-	}
-
-	@Test
-	public void should_exception_when_calling_decr_n_with_consistency() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.decr(10L, EACH_QUORUM);
-	}
 
 	@Test
 	public void should_be_able_to_serialize_and_deserialize_counter_impl() throws Exception {
@@ -137,6 +100,6 @@ public class CounterBuilderTest {
 		Counter deserialized = mapper.readValue(serialized, Counter.class);
 		assertThat(deserialized.get()).isEqualTo(11L);
 
-		assertThat(mapper.writeValueAsString(CounterBuilder.incr(null))).isEqualTo("\"0\"");
+		assertThat(mapper.writeValueAsString(CounterBuilder.incr(0))).isEqualTo("\"0\"");
 	}
 }

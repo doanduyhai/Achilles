@@ -22,7 +22,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.impl.LoaderImpl;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -42,9 +41,6 @@ public class EntityLoaderTest {
 
 	@InjectMocks
 	private EntityLoader loader;
-
-	@Mock
-	private LoaderImpl loaderImpl;
 
 	@Mock
 	private ReflectionInvoker invoker;
@@ -91,7 +87,6 @@ public class EntityLoaderTest {
 
 	@Test
 	public void should_load_entity() throws Exception {
-		when(loaderImpl.eagerLoadEntity(context)).thenReturn(entity);
 
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 
@@ -108,7 +103,6 @@ public class EntityLoaderTest {
 
         loader.loadPropertyIntoObject(context, entity, pm);
 
-        verify(loaderImpl).loadPropertyIntoEntity(context, pm, entity);
     }
 
     @Test
@@ -119,6 +113,5 @@ public class EntityLoaderTest {
 
         loader.loadPropertyIntoObject(context, entity, pm);
 
-        verifyZeroInteractions(loaderImpl);
     }
 }

@@ -18,18 +18,20 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.EntityMapper;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.internal.persistence.operations.impl.LoaderImpl;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class EntityLoader {
 
     private static final Logger log  = LoggerFactory.getLogger(EntityLoader.class);
 
-    private LoaderImpl loaderImpl = new LoaderImpl();
+    private EntityMapper mapper = new EntityMapper();
 
 	public <T> T load(PersistenceContext context, Class<T> entityClass) {
         log.debug("Loading entity of class {} using PersistenceContext {}",entityClass,context);
@@ -41,7 +43,7 @@ public class EntityLoader {
 		Validator
 				.validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
-		T entity= loaderImpl.eagerLoadEntity(context);
+		T entity= loadEntity(context);
 		entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 
 		return entity;
@@ -67,7 +69,36 @@ public class EntityLoader {
         log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);
         PropertyType type = pm.type();
         if (!type.isCounter()) {
-            loaderImpl.loadPropertyIntoEntity(context, pm, realObject);
+            loadPropertyIntoEntity(context, pm, realObject);
         }
+    }
+
+    protected <T> T loadEntity(PersistenceContext context) {
+        log.trace("Loading entity using PersistenceContext {}",context);
+        EntityMeta entityMeta = context.getEntityMeta();
+
+        T entity = null;
+
+        if (entityMeta.isClusteredCounter()) {
+            PropertyMeta counterMeta = entityMeta.getFirstMeta();
+            ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel()
+                                                                                            .get() : counterMeta.getReadConsistencyLevel();
+            Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
+            if (counterValue != null) {
+                entity = entityMeta.instanciate();
+            }
+        } else {
+            Row row = context.eagerLoadEntity();
+            if (row != null) {
+                entity = entityMeta.instanciate();
+                mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
+            }
+        }
+        return entity;
+    }
+
+    protected void loadPropertyIntoEntity(PersistenceContext context, PropertyMeta pm, Object entity) {
+        Row row = context.loadProperty(pm);
+        mapper.setPropertyToEntity(row, pm, entity);
     }
 }

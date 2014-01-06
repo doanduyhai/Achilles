@@ -30,8 +30,7 @@ import org.codehaus.jackson.map.JsonDeserializer;
 public final class CounterDeserializer extends JsonDeserializer<Counter> {
 
 	@Override
-	public Counter deserialize(JsonParser parser, DeserializationContext context) throws IOException,
-			JsonProcessingException {
+	public Counter deserialize(JsonParser parser, DeserializationContext context) throws IOException {
 
 		Counter counter = null;
 		String value = parser.getText();

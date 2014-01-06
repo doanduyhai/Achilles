@@ -15,7 +15,6 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndex;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.IndexCondition;
 
 public class SecondaryIndexIT {

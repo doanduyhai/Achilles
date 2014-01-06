@@ -17,13 +17,16 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.impl.UpdaterImpl;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.validation.Validator;
 
@@ -31,7 +34,8 @@ public class EntityUpdater {
 
     private static final Logger log = LoggerFactory.getLogger(EntityUpdater.class);
 
-    private UpdaterImpl updater = new UpdaterImpl();
+    private PropertyMetaComparator comparator = new PropertyMetaComparator();
+
     private EntityPersister persister = new EntityPersister();
     private EntityProxifier proxifier = new EntityProxifier();
 
@@ -51,8 +55,21 @@ public class EntityUpdater {
 
         EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
         Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
-        updater.update(context, dirtyMap);
+        if (dirtyMap.size() > 0) {
+            List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());
+            Collections.sort(sortedDirtyMetas, comparator);
+            context.pushUpdateStatement(sortedDirtyMetas);
+            dirtyMap.clear();
+        }
         interceptor.setContext(context);
         interceptor.setTarget(realObject);
+    }
+
+    public static class PropertyMetaComparator implements Comparator<PropertyMeta> {
+        @Override
+        public int compare(PropertyMeta arg0, PropertyMeta arg1) {
+            return arg0.getPropertyName().compareTo(arg1.getPropertyName());
+        }
+
     }
 }

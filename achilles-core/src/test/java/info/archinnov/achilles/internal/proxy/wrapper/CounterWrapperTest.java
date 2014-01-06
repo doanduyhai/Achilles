@@ -76,16 +76,6 @@ public class CounterWrapperTest {
 		assertThat(wrapper.get()).isEqualTo(counterValue);
 	}
 
-	@Test
-	public void should_get_simple_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		when(context.getSimpleCounter(counterMeta, THREE)).thenReturn(counterValue);
-
-		assertThat(wrapper.get(THREE)).isEqualTo(counterValue);
-	}
 
 	@Test
 	public void should_get_clustered_counter() throws Exception {
@@ -98,16 +88,6 @@ public class CounterWrapperTest {
 		assertThat(wrapper.get()).isEqualTo(counterValue);
 	}
 
-	@Test
-	public void should_get_clustered_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(true);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		when(context.getClusteredCounter(counterMeta, TWO)).thenReturn(counterValue);
-
-		assertThat(wrapper.get(TWO)).isEqualTo(counterValue);
-	}
 
 	@Test
 	public void should_increment_simple_counter() throws Exception {
@@ -127,23 +107,6 @@ public class CounterWrapperTest {
 		verify(context).incrementClusteredCounter(1L, ONE);
 	}
 
-	@Test
-	public void should_increment_simple_counter_with_consistency() throws Exception {
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.incr(EACH_QUORUM);
-		verify(context).incrementSimpleCounter(counterMeta, 1L, EACH_QUORUM);
-	}
-
-	@Test
-	public void should_increment_clustered_counter_with_consistency() throws Exception {
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(true);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.incr(EACH_QUORUM);
-		verify(context).incrementClusteredCounter(1L, EACH_QUORUM);
-	}
 
 	@Test
 	public void should_increment_n_simple_counter() throws Exception {
@@ -165,25 +128,6 @@ public class CounterWrapperTest {
 		verify(context).incrementClusteredCounter(counterValue, ONE);
 	}
 
-	@Test
-	public void should_increment_n_simple_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.incr(counterValue, EACH_QUORUM);
-		verify(context).incrementSimpleCounter(counterMeta, counterValue, EACH_QUORUM);
-	}
-
-	@Test
-	public void should_increment_n_clustered_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(true);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.incr(counterValue, EACH_QUORUM);
-		verify(context).incrementClusteredCounter(counterValue, EACH_QUORUM);
-	}
 
 	@Test
 	public void should_decrement_simple_counter() throws Exception {
@@ -203,23 +147,6 @@ public class CounterWrapperTest {
 		verify(context).decrementClusteredCounter(1L, ONE);
 	}
 
-	@Test
-	public void should_decrement_simple_counter_with_consistency() throws Exception {
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.decr(EACH_QUORUM);
-		verify(context).decrementSimpleCounter(counterMeta, 1L, EACH_QUORUM);
-	}
-
-	@Test
-	public void should_decrement_clustered_counter_with_consistency() throws Exception {
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(true);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.decr(EACH_QUORUM);
-		verify(context).decrementClusteredCounter(1L, EACH_QUORUM);
-	}
 
 	@Test
 	public void should_decrement_n_simple_counter() throws Exception {
@@ -239,25 +166,5 @@ public class CounterWrapperTest {
 
 		wrapper.decr(counterValue);
 		verify(context).decrementClusteredCounter(counterValue, ONE);
-	}
-
-	@Test
-	public void should_decrement_n_simple_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(false);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.decr(counterValue, EACH_QUORUM);
-		verify(context).decrementSimpleCounter(counterMeta, counterValue, EACH_QUORUM);
-	}
-
-	@Test
-	public void should_decrement_n_clustered_counter_with_consistency() throws Exception {
-		Long counterValue = RandomUtils.nextLong();
-		when(context.getEntityMeta().isClusteredCounter()).thenReturn(true);
-		wrapper = new CounterWrapper(context, counterMeta);
-
-		wrapper.decr(counterValue, EACH_QUORUM);
-		verify(context).decrementClusteredCounter(counterValue, EACH_QUORUM);
 	}
 }

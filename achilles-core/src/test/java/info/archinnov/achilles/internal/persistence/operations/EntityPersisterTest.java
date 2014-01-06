@@ -24,7 +24,6 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.impl.PersisterImpl;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -50,9 +49,6 @@ import com.datastax.driver.core.Session;
 public class EntityPersisterTest {
 	@InjectMocks
 	private EntityPersister persister;
-
-	@Mock
-	private PersisterImpl persisterImpl;
 
 	@Mock
 	private Session session;
@@ -96,10 +92,6 @@ public class EntityPersisterTest {
 
 		persister.persist(context);
 
-		verify(persisterImpl).persist(context);
-		verify(persisterImpl).persistCounters(eq(context), metaSetCaptor.capture());
-
-		assertThat(metaSetCaptor.getAllValues().get(0)).containsOnly(counterMeta);
 	}
 
 	@Test
@@ -108,13 +100,11 @@ public class EntityPersisterTest {
 
 		persister.persist(context);
 
-		verify(persisterImpl).persistClusteredCounter(context);
 	}
 
 	@Test
 	public void should_remove() throws Exception {
 		persister.remove(context);
 
-		verify(persisterImpl).remove(context);
 	}
 }

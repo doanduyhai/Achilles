@@ -31,15 +31,14 @@ import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
+import info.archinnov.achilles.type.CounterBuilder;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.commons.lang.math.RandomUtils;

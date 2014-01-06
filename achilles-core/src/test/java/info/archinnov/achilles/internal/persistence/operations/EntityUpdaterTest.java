@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.impl.UpdaterImpl;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
@@ -32,9 +31,6 @@ public class EntityUpdaterTest {
 
 	@InjectMocks
 	private EntityUpdater entityUpdater;
-
-	@Mock
-	private UpdaterImpl updater;
 
 	@Mock
 	private EntityPersister persister;
@@ -83,7 +79,6 @@ public class EntityUpdaterTest {
 
 		entityUpdater.update(context, entity);
 
-        verify(updater).update(context, dirtyMap);
 		verify(context).setEntity(entity);
 
 		verify(interceptor).setContext(context);

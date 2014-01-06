@@ -29,7 +29,6 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUU
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Date;

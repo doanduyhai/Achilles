@@ -16,25 +16,23 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static com.google.common.collect.Collections2.filter;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.impl.PersisterImpl;
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.CounterImpl;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.FluentIterable;
-
 public class EntityPersister {
 	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
-
-	private PersisterImpl persisterImpl = new PersisterImpl();
 
 	public void persist(PersistenceContext context) {
 		EntityMeta entityMeta = context.getEntityMeta();
@@ -43,22 +41,71 @@ public class EntityPersister {
 		log.debug("Persisting transient entity {}", entity);
 
 		if (entityMeta.isClusteredCounter()) {
-			persisterImpl.persistClusteredCounter(context);
+			persistClusteredCounter(context);
 		} else {
 			persistEntity(context, entityMeta);
 		}
 	}
 
 	private void persistEntity(PersistenceContext context, EntityMeta entityMeta) {
-		persisterImpl.persist(context);
-
+        context.pushInsertStatement();
 		Set<PropertyMeta> counterMetas = from(entityMeta.getAllMetas()).filter(counterType).toImmutableSet();
-
-		persisterImpl.persistCounters(context, counterMetas);
+		persistCounters(context, counterMetas);
 	}
 
-	public void remove(PersistenceContext context) {
-        log.debug("Deleting entity from PersistenceContext {}", context);
-        persisterImpl.remove(context);
-	}
+    public void remove(PersistenceContext context) {
+        log.trace("Removing entity using PersistenceContext {}", context);
+        EntityMeta entityMeta = context.getEntityMeta();
+        if (entityMeta.isClusteredCounter()) {
+            context.bindForClusteredCounterRemoval(entityMeta.getFirstMeta());
+        } else {
+            context.bindForRemoval(entityMeta.getTableName());
+            removeRelatedCounters(context);
+        }
+    }
+
+    protected void persistCounters(PersistenceContext context, Set<PropertyMeta> counterMetas) {
+        log.trace("Persisting counters using PersistenceContext {}",context);
+        Object entity = context.getEntity();
+        for (PropertyMeta counterMeta : counterMetas) {
+            Object counter = counterMeta.getValueFromField(entity);
+            if (counter != null) {
+                Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
+                                       "Counter property '%s' value from entity class '%s'  should be of type '%s'",
+                                       counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+                                       CounterImpl.class.getCanonicalName());
+                CounterImpl counterValue = (CounterImpl) counter;
+                context.bindForSimpleCounterIncrement(counterMeta, counterValue.getInternalCounterDelta());
+            }
+        }
+    }
+
+    protected void persistClusteredCounter(PersistenceContext context) {
+        log.trace("Persisting clustered counter using PersistenceContext {}",context);
+        Object entity = context.getEntity();
+        PropertyMeta counterMeta = context.getFirstMeta();
+        Object counter = counterMeta.getValueFromField(entity);
+        if (counter != null) {
+            Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
+                                   "Counter property '%s' value from entity class '%s'  should be of type '%s'",
+                                   counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
+                                   CounterImpl.class.getCanonicalName());
+            CounterImpl counterValue = (CounterImpl) counter;
+            context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.getInternalCounterDelta());
+        } else {
+            throw new IllegalStateException("Cannot insert clustered counter entity '" + entity
+                                                    + "' with null clustered counter value");
+        }
+
+    }
+
+    protected void removeRelatedCounters(PersistenceContext context) {
+        log.trace("Removing counter values related to entity using PersistenceContext {}", context);
+        EntityMeta entityMeta = context.getEntityMeta();
+
+        Collection<PropertyMeta> counterMetas = filter(entityMeta.getAllMetas(), counterType);
+        for (PropertyMeta pm : counterMetas) {
+            context.bindForSimpleCounterRemoval(pm);
+        }
+    }
 }

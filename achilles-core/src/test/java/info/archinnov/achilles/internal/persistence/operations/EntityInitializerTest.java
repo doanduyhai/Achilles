@@ -1,14 +1,12 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
