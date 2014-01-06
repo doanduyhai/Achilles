@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.query;
+package info.archinnov.achilles.query.slice;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -29,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.query.slice.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;

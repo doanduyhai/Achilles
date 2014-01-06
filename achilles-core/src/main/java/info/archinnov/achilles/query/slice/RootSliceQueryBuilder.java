@@ -16,8 +16,8 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.query.SliceQuery.DEFAULT_BATCH_SIZE;
-import static info.archinnov.achilles.query.SliceQuery.DEFAULT_LIMIT;
+import static info.archinnov.achilles.query.slice.SliceQuery.DEFAULT_BATCH_SIZE;
+import static info.archinnov.achilles.query.slice.SliceQuery.DEFAULT_LIMIT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;

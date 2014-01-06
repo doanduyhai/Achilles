@@ -17,7 +17,6 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.OrderingMode;
 import info.archinnov.achilles.internal.validation.Validator;
 

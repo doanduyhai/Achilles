@@ -27,7 +27,6 @@ import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 import java.util.ArrayList;

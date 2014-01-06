@@ -31,7 +31,7 @@ import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.iterator.SliceQueryIterator;
-import info.archinnov.achilles.query.SliceQuery;
+import info.archinnov.achilles.query.slice.SliceQuery;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;

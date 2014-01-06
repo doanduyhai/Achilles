@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
 

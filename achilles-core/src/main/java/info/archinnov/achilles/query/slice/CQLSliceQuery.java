@@ -19,7 +19,6 @@ package info.archinnov.achilles.query.slice;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.query.SliceQuery;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
