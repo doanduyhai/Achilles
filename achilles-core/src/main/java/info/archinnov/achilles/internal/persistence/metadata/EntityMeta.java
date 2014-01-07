@@ -215,14 +215,6 @@ public class EntityMeta {
 		this.idClass = idClass;
 	}
 
-	public PropertyMeta getFirstMeta() {
-		return this.firstMeta;
-	}
-
-	public void setFirstMeta(PropertyMeta firstMeta) {
-		this.firstMeta = firstMeta;
-	}
-
 	public List<PropertyMeta> getAllMetas() {
 		return new ArrayList(propertyMetas.values());
 	}

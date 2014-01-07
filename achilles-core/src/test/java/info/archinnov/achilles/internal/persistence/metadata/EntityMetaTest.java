@@ -144,16 +144,6 @@ public class EntityMetaTest {
 		assertThat(entityMeta.isClusteredCounter()).isFalse();
 	}
 
-	@Test
-	public void should_return_null_when_no_first_meta() throws Exception {
-		EntityMeta entityMeta = new EntityMeta();
-
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
-
-		entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
-
-		assertThat(entityMeta.getFirstMeta()).isNull();
-	}
 
 	@Test
 	public void should_return_true_when_value_less() throws Exception {

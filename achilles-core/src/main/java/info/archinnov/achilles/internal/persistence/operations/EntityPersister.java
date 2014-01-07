@@ -60,7 +60,7 @@ public class EntityPersister {
         log.trace("Removing entity using PersistenceContext {}", context);
         EntityMeta entityMeta = context.getEntityMeta();
         if (entityMeta.isClusteredCounter()) {
-            context.bindForClusteredCounterRemoval(entityMeta.getFirstMeta());
+            context.bindForClusteredCounterRemoval();
         } else {
             context.bindForRemoval(entityMeta.getTableName());
             removeRelatedCounters(context);
@@ -72,23 +72,21 @@ public class EntityPersister {
         Object entity = context.getEntity();
         for (PropertyMeta counterMeta : counterMetas) {
             Object counter = counterMeta.getValueFromField(entity);
-            Counter newCounter;
             if (counter != null) {
                 Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
                                        "Counter property '%s' value from entity class '%s'  should be of type '%s'",
                                        counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
                                        CounterImpl.class.getCanonicalName());
                 CounterImpl counterValue = (CounterImpl) counter;
-                context.bindForSimpleCounterIncrement(counterMeta, counterValue.getInternalCounterDelta());
-                newCounter = initialValue(counterValue.getInternalCounterDelta());
-            } else {
-                newCounter = initialValue(0L);
+                final long counterDelta = counterValue.getInternalCounterDelta();
+                if(counterDelta >0) {
+                    context.bindForSimpleCounterIncrement(counterMeta, counterDelta);
+                }
             }
-            counterMeta.setValueToField(entity,newCounter);
         }
     }
 
-    void persistClusteredCounter(PersistenceContext context) {
+    protected void persistClusteredCounter(PersistenceContext context) {
         log.trace("Persisting clustered counter using PersistenceContext {}",context);
         Object entity = context.getEntity();
 
@@ -102,8 +100,10 @@ public class EntityPersister {
                                        counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
                                        CounterImpl.class.getCanonicalName());
                 CounterImpl counterValue = (CounterImpl) counter;
-                context.pushClusteredCounterIncrementStatement(counterMeta, counterValue.getInternalCounterDelta());
-                counterMeta.setValueToField(entity, initialValue(counterValue.getInternalCounterDelta()));
+                final long counterDelta = counterValue.getInternalCounterDelta();
+                if(counterDelta >0) {
+                    context.pushClusteredCounterIncrementStatement(counterMeta, counterDelta);
+                }
             } else {
                 nullCount++;
             }

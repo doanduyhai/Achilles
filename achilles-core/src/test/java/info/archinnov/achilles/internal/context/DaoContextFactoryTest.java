@@ -75,6 +75,7 @@ public class DaoContextFactoryTest {
 
 	@Mock
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
+	private Map<CQLQueryType, Map<String,PreparedStatement>> clusteredCounterQueryMap;
 
 	@Before
 	public void setUp() {
@@ -125,16 +126,16 @@ public class DaoContextFactoryTest {
 	public void should_get_clustered_counter_ps_transformer() throws Exception {
 
 		// When
-		when(queryGenerator.prepareClusteredCounterQueryMap(session, entityMeta)).thenReturn(counterQueryMap);
+		when(queryGenerator.prepareClusteredCounterQueryMap(session, entityMeta)).thenReturn(clusteredCounterQueryMap);
 
-		Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> function = builder
+		Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>> function = builder
 				.getClusteredCounterTransformer(session);
 
-		ImmutableList<Map<CQLQueryType, PreparedStatement>> result = FluentIterable.from(Arrays.asList(entityMeta))
+		ImmutableList<Map<CQLQueryType, Map<String,PreparedStatement>>> result = FluentIterable.from(Arrays.asList(entityMeta))
 				.transform(function).toImmutableList();
 
 		// Then
-		assertThat(result.get(0)).isSameAs(counterQueryMap);
+		assertThat(result.get(0)).isSameAs(clusteredCounterQueryMap);
 	}
 
 	@Test

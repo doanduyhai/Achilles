@@ -143,18 +143,14 @@ public class TableCreator {
 	}
 
 	private void createTableForClusteredCounter(Session session, EntityMeta meta) {
+        log.debug("Creating table for clustered counter entity {}", meta.getClassName());
 
-        log.debug("Create table for clustered countered entity {}",meta);
-
-		PropertyMeta pm = meta.getFirstMeta();
-
-		log.debug("Creating table for counter property {} for entity {}", pm.getPropertyName(), meta.getClassName());
-
-		TableBuilder builder = TableBuilder.createCounterTable(meta.getTableName());
-		PropertyMeta idMeta = meta.getIdMeta();
-		buildPrimaryKey(idMeta, builder);
-		builder.addColumn(pm.getPropertyName(), pm.getValueClass());
-
+        TableBuilder builder = TableBuilder.createCounterTable(meta.getTableName());
+        PropertyMeta idMeta = meta.getIdMeta();
+        buildPrimaryKey(idMeta, builder);
+        for(PropertyMeta counterMeta:meta.getAllCounterMetas()) {
+            builder.addColumn(counterMeta.getPropertyName(), Counter.class);
+        }
 		builder.addComment("Create table for clustered counter entity '" + meta.getClassName() + "'");
 
 		session.execute(builder.generateDDLScript());

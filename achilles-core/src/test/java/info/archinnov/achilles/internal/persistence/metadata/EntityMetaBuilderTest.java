@@ -84,7 +84,6 @@ public class EntityMetaBuilderTest {
 		assertThat(meta.getSetterMetas().get(setter)).isSameAs(simpleMeta);
 
 		assertThat(meta.getAllMetasExceptId()).containsOnly(simpleMeta);
-		assertThat(meta.getFirstMeta()).isSameAs(simpleMeta);
 	}
 
 	@Test

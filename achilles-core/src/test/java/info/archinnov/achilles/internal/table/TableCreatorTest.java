@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.table;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.persistence.metadata.ClusteringComponents;
@@ -58,6 +59,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TableCreatorTest {
@@ -96,7 +98,7 @@ public class TableCreatorTest {
 	@Test
 	public void should_fetch_table_metas() throws Exception {
 		// Given
-		List<TableMetadata> tableMetas = Arrays.asList(tableMeta);
+		List<TableMetadata> tableMetas = asList(tableMeta);
 
 		// When
 		when(keyspaceMeta.getTables()).thenReturn(tableMetas);
@@ -124,7 +126,7 @@ public class TableCreatorTest {
 				.field("longMapCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(Arrays.asList(longColPM, longListColPM, longSetColPM, longMapColPM));
+		meta.setAllMetasExceptId(asList(longColPM, longListColPM, longSetColPM, longMapColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -145,11 +147,11 @@ public class TableCreatorTest {
 		PropertyMeta idMeta = new PropertyMeta();
 		idMeta.setType(PropertyType.EMBEDDED_ID);
 		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class),
-				Arrays.asList("id"), new ArrayList<Field>(),new ArrayList<Method>(), new ArrayList<Method>());
+				asList("id"), new ArrayList<Field>(),new ArrayList<Method>(), new ArrayList<Method>());
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class),
-				Arrays.asList("name"), "name", null,null, null);
+				asList("name"), "name", null,null, null);
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
-				new ArrayList<Class<?>>(), Arrays.asList("a", "b", "c"), new ArrayList<Field>(), new ArrayList<Method>(),
+				new ArrayList<Class<?>>(), asList("a", "b", "c"), new ArrayList<Field>(), new ArrayList<Method>(),
                 new ArrayList<Method>(), new ArrayList<String>());
 		idMeta.setEmbeddedIdProperties(props);
 
@@ -165,7 +167,7 @@ public class TableCreatorTest {
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(Arrays.asList(longColPM));
+		meta.setAllMetasExceptId(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -188,7 +190,7 @@ public class TableCreatorTest {
 		longColPM.setIndexProperties(new IndexProperties(""));
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(Arrays.asList(longColPM));
+		meta.setAllMetasExceptId(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -210,7 +212,7 @@ public class TableCreatorTest {
 		longColPM.setIndexProperties(new IndexProperties("monIndex"));
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(Arrays.asList(longColPM));
+		meta.setAllMetasExceptId(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -231,7 +233,7 @@ public class TableCreatorTest {
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(Arrays.asList(longColPM));
+		meta.setAllMetasExceptId(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -256,7 +258,9 @@ public class TableCreatorTest {
 				.field("counterCol").build();
 
 		meta = new EntityMeta();
-		meta.setFirstMeta(counterColPM);
+		meta.setPropertyMetas(ImmutableMap.of("id",idMeta,"counter",counterColPM));
+		meta.setAllMetasExceptCounters(asList(idMeta));
+		meta.setAllMetasExceptId(asList(counterColPM));
 		meta.setIdMeta(idMeta);
 		meta.setClusteredCounter(true);
 		meta.setTableName("tableName");

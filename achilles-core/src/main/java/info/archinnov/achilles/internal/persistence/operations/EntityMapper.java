@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.type.CounterBuilder.initialValue;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
@@ -73,18 +74,15 @@ public class EntityMapper  {
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Long counterValue) {
         log.debug("Set counter value {} to property {} of entity class {}", counterValue,counterMeta.getPropertyName(),counterMeta.getEntityClassName());
-        long initialValue = counterValue != null ? counterValue:0L;
-        final Counter counter = CounterBuilder.initialValue(initialValue);
+        //long initialValue = counterValue != null ? counterValue:0L;
+        final Counter counter = CounterBuilder.initialValue(counterValue);
         counterMeta.setValueToField(entity,counter);
     }
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Row row) {
         log.debug("Set counter value to property {} of entity class {} from CQL row", counterMeta.getPropertyName(),counterMeta.getEntityClassName());
-
-        Long initialCounterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getPropertyName());
-        long initialValue = initialCounterValue != null ? initialCounterValue:0L;
-        final Counter counter = CounterBuilder.initialValue(initialValue);
-        counterMeta.setValueToField(entity,counter);
+        Long counterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getPropertyName());
+        setCounterToEntity(counterMeta,entity,counterValue);
     }
 
 

@@ -17,8 +17,11 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
@@ -40,6 +43,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.google.common.collect.ImmutableMap;
 
 public class PreparedStatementGenerator {
 	private static final Logger log = LoggerFactory.getLogger(PreparedStatementGenerator.class);
@@ -150,27 +154,39 @@ public class PreparedStatementGenerator {
 		return counterPSMap;
 	}
 
-	public Map<CQLQueryType, PreparedStatement> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
+	public Map<CQLQueryType, Map<String,PreparedStatement>> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
 		PropertyMeta idMeta = meta.getIdMeta();
-		PropertyMeta counterMeta = meta.getFirstMeta();
 		String tableName = meta.getTableName();
-		String counterName = counterMeta.getPropertyName();
 
-		RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
-                .with(incr(counterName, bindMarker())),false);
+        Map<CQLQueryType, Map<String,PreparedStatement>> clusteredCounterPSMap = new HashMap();
+        Map<String,PreparedStatement> incrStatementPerCounter = new HashMap();
+        Map<String,PreparedStatement> decrStatementPerCounter = new HashMap();
+        Map<String,PreparedStatement> selectStatementPerCounter = new HashMap();
 
-		RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
-                .with(decr(counterName, bindMarker())), false);
+        for(PropertyMeta counterMeta:meta.getAllCounterMetas()) {
+            String counterName = counterMeta.getPropertyName();
 
-		RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
+            RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
+                    .with(incr(counterName, bindMarker())),false);
 
-		RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
+            RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
+                    .with(decr(counterName, bindMarker())), false);
+            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName)
+                    .from(tableName));
 
-		Map<CQLQueryType, PreparedStatement> clusteredCounterPSMap = new HashMap();
-		clusteredCounterPSMap.put(INCR, session.prepare(incrementStatement));
-		clusteredCounterPSMap.put(DECR, session.prepare(decrementStatement));
-		clusteredCounterPSMap.put(SELECT, session.prepare(selectStatement));
-        clusteredCounterPSMap.put(DELETE, session.prepare(deleteStatement));
+            incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
+            decrStatementPerCounter.put(counterName, session.prepare(decrementStatement));
+            selectStatementPerCounter.put(counterName,session.prepare(selectStatement));
+        }
+        clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
+        clusteredCounterPSMap.put(DECR, decrStatementPerCounter);
+
+        RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select().from(tableName));
+        selectStatementPerCounter.put(SELECT_ALL.name(),session.prepare(selectStatement));
+        clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
+
+        RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
+        clusteredCounterPSMap.put(DELETE, of(DELETE_ALL.name(), session.prepare(deleteStatement)));
 
 		return clusteredCounterPSMap;
 	}

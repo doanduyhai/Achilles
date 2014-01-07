@@ -181,27 +181,20 @@ public class PersistenceContext {
 		daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
 	}
 
-	public void incrementClusteredCounter(Long increment, ConsistencyLevel consistency) {
-		daoContext.incrementClusteredCounter(this, entityMeta, increment, consistency);
-	}
-
-	public void decrementClusteredCounter(Long decrement, ConsistencyLevel consistency) {
-		daoContext.decrementClusteredCounter(this, entityMeta, decrement, consistency);
-	}
-
-	public Long getClusteredCounter(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
-		log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
+	public Row getClusteredCounter(ConsistencyLevel readLevel) {
+		log.trace("Get clustered counter value for entityMeta '{}' with consistency level '{}'", entityMeta,
                   readLevel);
-
-		Row row = daoContext.getClusteredCounter(this, readLevel);
-		if (row != null) {
-			return row.getLong(counterMeta.getPropertyName());
-		}
-		return null;
+		return daoContext.getClusteredCounter(this, readLevel);
 	}
 
-	public void bindForClusteredCounterRemoval(PropertyMeta counterMeta) {
-		daoContext.bindForClusteredCounterDelete(this, entityMeta, counterMeta, primaryKey);
+    public Long getClusteredCounterColumn(PropertyMeta counterMeta,ConsistencyLevel readLevel) {
+        log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
+                  readLevel);
+        return daoContext.getClusteredCounterColumn(this, counterMeta,readLevel);
+    }
+
+	public void bindForClusteredCounterRemoval() {
+		daoContext.bindForClusteredCounterDelete(this, entityMeta, primaryKey);
 	}
 
 	public ResultSet bindAndExecute(PreparedStatement ps, Object... params) {
@@ -225,7 +218,7 @@ public class PersistenceContext {
         persister.persist(this);
         flush();
         flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
-        return proxifier.buildProxyWithAllFieldsLoaded(rawEntity, this);
+        return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
     }
 
 	public void update(Object proxifiedEntity) {
@@ -247,7 +240,7 @@ public class PersistenceContext {
         T proxifiedEntity = null;
 		if (rawEntity != null) {
             flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
-            proxifiedEntity = proxifier.buildProxyWithAllFieldsLoaded(rawEntity, this);
+            proxifiedEntity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
         }
 		return proxifiedEntity;
 	}
@@ -283,10 +276,6 @@ public class PersistenceContext {
 
 	public PropertyMeta getIdMeta() {
 		return entityMeta.getIdMeta();
-	}
-
-	public PropertyMeta getFirstMeta() {
-		return entityMeta.getAllMetasExceptId().get(0);
 	}
 
 	public boolean isClusteredEntity() {

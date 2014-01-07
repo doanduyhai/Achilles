@@ -493,11 +493,11 @@ public class QueryIT {
 		assertThat(target1.getPreferences()).isNull();
 		assertThat(target1.getWelcomeTweet()).isNull();
 
-		assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
-		assertThat(actual.getId()).isEqualTo(entity.getId());
-		assertThat(actual.getName()).isEqualTo(entity.getName());
-		assertThat(actual.getFriends()).containsAll(entity.getFriends());
-		assertThat(actual.getVersion().get()).isEqualTo(entity.getVersion().get());
+        assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
+        assertThat(actual.getId()).isEqualTo(entity.getId());
+        assertThat(actual.getName()).isEqualTo(entity.getName());
+        assertThat(actual.getFriends()).containsAll(entity.getFriends());
+        assertThat(actual.getVersion().get()).isEqualTo(15L);
 
 	}
 

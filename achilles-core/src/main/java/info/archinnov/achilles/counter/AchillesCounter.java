@@ -27,4 +27,8 @@ public interface AchillesCounter {
 	public static enum CQLQueryType {
 		INCR, DECR, SELECT, DELETE;
 	}
+
+    public static enum ClusteredCounterStatement {
+        SELECT_ALL,DELETE_ALL;
+    }
 }

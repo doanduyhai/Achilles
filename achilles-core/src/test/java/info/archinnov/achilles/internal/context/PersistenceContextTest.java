@@ -293,49 +293,33 @@ public class PersistenceContextTest {
 		verify(daoContext).pushClusteredCounterIncrementStatement(context, meta, counterMeta, 11L);
 	}
 
-	@Test
-	public void should_increment_clustered_counter() throws Exception {
-		context.incrementClusteredCounter(11L, LOCAL_QUORUM);
-
-		verify(daoContext).incrementClusteredCounter(context, meta, 11L, LOCAL_QUORUM);
-	}
-
-	@Test
-	public void should_decrement_clustered_counter() throws Exception {
-		context.decrementClusteredCounter(11L, LOCAL_QUORUM);
-
-		verify(daoContext).decrementClusteredCounter(context, meta, 11L, LOCAL_QUORUM);
-	}
 
 	@Test
 	public void should_get_clustered_counter() throws Exception {
 		PropertyMeta counterMeta = new PropertyMeta();
 		counterMeta.setPropertyName("count");
+        Long counterValue=11L;
 
-		Row row = mock(Row.class);
-		when(daoContext.getClusteredCounter(context, LOCAL_QUORUM)).thenReturn(row);
-		when(row.getLong("count")).thenReturn(11L);
-		Long counterValue = context.getClusteredCounter(counterMeta, LOCAL_QUORUM);
+		when(daoContext.getClusteredCounterColumn(context, counterMeta,LOCAL_QUORUM)).thenReturn(counterValue);
 
-		assertThat(counterValue).isEqualTo(11L);
+		Long actual = context.getClusteredCounterColumn(counterMeta, LOCAL_QUORUM);
+
+		assertThat(actual).isEqualTo(counterValue);
 	}
 
 	@Test
 	public void should_return_null_when_no_clustered_counter_value() throws Exception {
-		PropertyMeta counterMeta = new PropertyMeta();
 
 		when(daoContext.getClusteredCounter(context, LOCAL_QUORUM)).thenReturn(null);
 
-		assertThat(context.getClusteredCounter(counterMeta, LOCAL_QUORUM)).isNull();
+		assertThat(context.getClusteredCounter(LOCAL_QUORUM)).isNull();
 	}
 
 	@Test
 	public void should_bind_for_clustered_counter_removal() throws Exception {
-		PropertyMeta counterMeta = new PropertyMeta();
+		context.bindForClusteredCounterRemoval();
 
-		context.bindForClusteredCounterRemoval(counterMeta);
-
-		verify(daoContext).bindForClusteredCounterDelete(context, meta, counterMeta, entity.getId());
+		verify(daoContext).bindForClusteredCounterDelete(context, meta, entity.getId());
 	}
 
 	@Test

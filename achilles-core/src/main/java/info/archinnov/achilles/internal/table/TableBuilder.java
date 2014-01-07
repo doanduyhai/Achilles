@@ -261,9 +261,6 @@ public class TableBuilder {
 
 	private String generateCounterTable() {
 
-		Validator.validateTrue(columns.size() == partitionComponents.size() + clusteringComponents.size() + 1,
-				"Counter table '%s' should contain only one counter column and primary keys", tableName);
-
 		StringBuilder ddl = new StringBuilder();
 
 		ddl.append("\n");

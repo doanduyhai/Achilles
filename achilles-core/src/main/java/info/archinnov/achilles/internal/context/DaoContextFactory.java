@@ -63,7 +63,7 @@ public class DaoContextFactory {
 			counterQueryMap = ImmutableMap.of();
 		}
 
-		Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueriesMap = new HashMap(
+		Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueriesMap = new HashMap(
 				transformValues(filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
                                 getClusteredCounterTransformer(session)));
 
@@ -98,12 +98,10 @@ public class DaoContextFactory {
 		};
 	}
 
-	Function<EntityMeta, Map<CQLQueryType, PreparedStatement>> getClusteredCounterTransformer(final Session session) {
-		return new Function<EntityMeta, Map<CQLQueryType, PreparedStatement>>() {
-
-
+	Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>> getClusteredCounterTransformer(final Session session) {
+		return new Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>>() {
 			@Override
-			public Map<CQLQueryType, PreparedStatement> apply(EntityMeta meta) {
+			public Map<CQLQueryType, Map<String,PreparedStatement>> apply(EntityMeta meta) {
 				return queryGenerator.prepareClusteredCounterQueryMap(session, meta);
 			}
 		};

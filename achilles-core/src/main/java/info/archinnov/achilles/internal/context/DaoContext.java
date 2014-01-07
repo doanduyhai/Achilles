@@ -17,8 +17,11 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
@@ -52,6 +55,7 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
+import com.google.common.collect.Iterables;
 
 public class DaoContext {
 	private static final Logger log = LoggerFactory.getLogger(DaoContext.class);
@@ -61,7 +65,7 @@ public class DaoContext {
 	private Map<Class<?>, PreparedStatement> selectPSs;
 	private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
-	private Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap;
+	private Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueryMap;
 	private Session session;
 
 	private PreparedStatementBinder binder = new PreparedStatementBinder();
@@ -73,7 +77,7 @@ public class DaoContext {
 			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
 			Map<Class<?>, PreparedStatement> selectPSs, Map<Class<?>, Map<String, PreparedStatement>> removePSs,
 			Map<CQLQueryType, PreparedStatement> counterQueryMap,
-			Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap, Session session) {
+			Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueryMap, Session session) {
 		this.insertPSs = insertPSs;
 		this.dynamicPSCache = dynamicPSCache;
 		this.selectPSs = selectPSs;
@@ -220,37 +224,17 @@ public class DaoContext {
 				"Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'",
 				counterMeta, context, increment);
 		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, counterMeta);
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
+		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR).get(counterMeta.getPropertyName());
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
 				context.getPrimaryKey(), increment, writeLevel);
 		context.pushCounterStatement(bsWrapper);
-	}
-
-	public void incrementClusteredCounter(PersistenceContext context, EntityMeta meta, Long increment,
-			ConsistencyLevel consistencyLevel) {
-		log.debug("Increment immediately clustered counter for PersistenceContext '{}' and value '{}'", context,
-				increment);
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR);
-		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-				context.getPrimaryKey(), increment, consistencyLevel);
-		context.executeImmediate(bsWrapper);
-	}
-
-	public void decrementClusteredCounter(PersistenceContext context, EntityMeta meta, Long decrement,
-			ConsistencyLevel consistencyLevel) {
-		log.debug("Decrement immediately clustered counter for PersistenceContext '{}' and value '{}'", context,
-				decrement);
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DECR);
-		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
-				context.getPrimaryKey(), decrement, consistencyLevel);
-		context.executeImmediate(bsWrapper);
 	}
 
 	public Row getClusteredCounter(PersistenceContext context, ConsistencyLevel consistencyLevel) {
 		log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
 				consistencyLevel);
 		EntityMeta entityMeta = context.getEntityMeta();
-		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT);
+		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL.name());
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
 				consistencyLevel);
 		ResultSet resultSet = context.executeImmediate(bsWrapper);
@@ -258,11 +242,25 @@ public class DaoContext {
 		return returnFirstRowOrNull(resultSet.all());
 	}
 
-	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta, PropertyMeta counterMeta,
-			Object primaryKey) {
+    public Long getClusteredCounterColumn(PersistenceContext context, PropertyMeta counterMeta,ConsistencyLevel consistencyLevel) {
+        log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
+                  consistencyLevel);
+        EntityMeta entityMeta = context.getEntityMeta();
+        PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(counterMeta.getPropertyName());
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
+                                                                               consistencyLevel);
+        Row row = context.executeImmediate(bsWrapper).one();
+        Long counterValue = null;
+        if(row != null) {
+            counterValue = row.getLong(counterMeta.getPropertyName());
+        }
+        return counterValue;
+    }
+
+	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta,Object primaryKey) {
 		log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE);
-		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, counterMeta);
+		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE).get(DELETE_ALL.name());
+		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, meta);
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(ps, meta, primaryKey, writeLevel);
 		context.pushCounterStatement(bsWrapper);
 	}

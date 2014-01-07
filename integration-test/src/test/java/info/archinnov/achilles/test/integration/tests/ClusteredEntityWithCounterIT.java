@@ -17,6 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.TABLE_NAME;
+import static info.archinnov.achilles.type.CounterBuilder.incr;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
@@ -48,9 +49,10 @@ public class ClusteredEntityWithCounterIT {
 	@Test
 	public void should_persist_and_find() throws Exception {
 		long counterValue = RandomUtils.nextLong();
+		long versionValue = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue), incr(versionValue));
 
 		manager.persist(entity);
 
@@ -58,13 +60,14 @@ public class ClusteredEntityWithCounterIT {
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
+		assertThat(found.getVersion().get()).isEqualTo(versionValue);
 	}
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
 		long counterValue = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
 		manager.persist(entity);
 
@@ -72,6 +75,7 @@ public class ClusteredEntityWithCounterIT {
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
+		assertThat(found.getVersion().get()).isEqualTo(0L);
 	}
 
 	@Test
@@ -81,19 +85,21 @@ public class ClusteredEntityWithCounterIT {
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(initialValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, incr(initialValue),incr(initialValue));
 
 		entity = manager.persist(entity);
 
         assertThat(entity.getCounter().get()).isEqualTo(initialValue);
 
 		entity.getCounter().incr(increment);
+		entity.getVersion().incr(increment);
 
         manager.update(entity);
 
 		entity = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
 		assertThat(entity.getCounter().get()).isEqualTo(initialValue + increment);
+		assertThat(entity.getVersion().get()).isEqualTo(initialValue + increment);
 	}
 
 	@Test
@@ -101,7 +107,7 @@ public class ClusteredEntityWithCounterIT {
 		long counterValue = RandomUtils.nextLong();
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
 		entity = manager.persist(entity);
 
@@ -122,19 +128,21 @@ public class ClusteredEntityWithCounterIT {
 		String name = "name";
 		compoundKey = new ClusteredKey(partitionKey, name);
 
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
 		entity = manager.persist(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
 				+ " AND name='name'");
-
+        session.execute("UPDATE " + TABLE_NAME + " SET version = version + " + incr + " WHERE id=" + partitionKey
+                                + " AND name='name'");
 		// Wait for the counter to be updated
 		Thread.sleep(100);
 
 		manager.refresh(entity);
 
 		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
+		assertThat(entity.getVersion().get()).isEqualTo(incr);
 
 	}
 
@@ -154,12 +162,15 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(entities).hasSize(3);
 
 		assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
+		assertThat(entities.get(0).getVersion().get()).isEqualTo(2);
 		assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
 		assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
+        assertThat(entities.get(1).getVersion().get()).isEqualTo(3);
 		assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
 		assertThat(entities.get(2).getCounter().get()).isEqualTo(4);
+        assertThat(entities.get(2).getVersion().get()).isEqualTo(4);
 		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
 
@@ -170,12 +181,15 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(entities).hasSize(3);
 
 		assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
+        assertThat(entities.get(0).getVersion().get()).isEqualTo(2);
 		assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
 		assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
+        assertThat(entities.get(1).getVersion().get()).isEqualTo(3);
 		assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
 		assertThat(entities.get(2).getCounter().get()).isEqualTo(4);
+        assertThat(entities.get(2).getVersion().get()).isEqualTo(4);
 		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
 	}
@@ -193,6 +207,7 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getId()).isEqualTo(partitionKey);
 		assertThat(next.getId().getName()).isEqualTo("name1");
 		assertThat(next.getCounter().get()).isEqualTo(1L);
+		assertThat(next.getVersion().get()).isEqualTo(1L);
 		assertThat(iter.hasNext()).isTrue();
 
 		assertThat(iter.hasNext()).isTrue();
@@ -200,24 +215,29 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(next.getId().getId()).isEqualTo(partitionKey);
 		assertThat(next.getId().getName()).isEqualTo("name2");
 		assertThat(next.getCounter().get()).isEqualTo(2L);
+        assertThat(next.getVersion().get()).isEqualTo(2L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
 		assertThat(next.getId().getId()).isEqualTo(partitionKey);
 		assertThat(next.getId().getName()).isEqualTo("name3");
 		assertThat(next.getCounter().get()).isEqualTo(3L);
+        assertThat(next.getVersion().get()).isEqualTo(3L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
 		assertThat(next.getId().getId()).isEqualTo(partitionKey);
 		assertThat(next.getId().getName()).isEqualTo("name4");
 		assertThat(next.getCounter().get()).isEqualTo(4L);
+        assertThat(next.getVersion().get()).isEqualTo(4L);
 
 		assertThat(iter.hasNext()).isTrue();
 		next = iter.next();
 		assertThat(next.getId().getId()).isEqualTo(partitionKey);
 		assertThat(next.getId().getName()).isEqualTo("name5");
 		assertThat(next.getCounter().get()).isEqualTo(5L);
+        assertThat(next.getVersion().get()).isEqualTo(5L);
+
 		assertThat(iter.hasNext()).isFalse();
 	}
 
@@ -239,13 +259,15 @@ public class ClusteredEntityWithCounterIT {
 		assertThat(entities).hasSize(2);
 
 		assertThat(entities.get(0).getCounter().get()).isEqualTo(1L);
+		assertThat(entities.get(0).getVersion().get()).isEqualTo(1L);
 		assertThat(entities.get(1).getCounter().get()).isEqualTo(3L);
+        assertThat(entities.get(1).getVersion().get()).isEqualTo(3L);
 	}
 
-	private void insertClusteredEntity(Long partitionKey, String name, Long clusteredCounter) {
+	private void insertClusteredEntity(Long partitionKey, String name, Long counterValue) {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(embeddedId,
-				CounterBuilder.incr(clusteredCounter));
+				incr(counterValue),incr(counterValue));
 		manager.persist(entity);
 	}
 

@@ -90,7 +90,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
         if (!this.alreadyLoaded.contains(method)) {
             log.trace("Loading property {}", propertyMeta.getPropertyName());
             if(context.isClusteredCounter()) {
-                loader.loadClusteredCounterIntoObject(context,target,propertyMeta);
+                loader.loadClusteredCounterColumn(context, target, propertyMeta);
             } else {
                 loader.loadPropertyIntoObject(context, target, propertyMeta);
             }

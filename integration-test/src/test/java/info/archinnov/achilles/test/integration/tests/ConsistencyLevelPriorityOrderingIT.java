@@ -133,13 +133,11 @@ public class ConsistencyLevelPriorityOrderingIT {
 		batchEm.startBatch(THREE);
 		entity = batchEm.persist(entity);
 
-		Counter counter = entity.getCount();
-        counter.incr(10L);
-
         expectedEx.expect(UnavailableException.class);
         expectedEx
-				.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
-        batchEm.endBatch();
+                .expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+
+        entity.getCount();
 	}
 
 	@Test

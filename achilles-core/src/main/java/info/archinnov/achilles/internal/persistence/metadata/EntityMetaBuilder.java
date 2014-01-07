@@ -83,9 +83,6 @@ public class EntityMetaBuilder {
         meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
 
-        PropertyMeta firstMeta = allMetasExceptId.isEmpty() ? null : allMetasExceptId.get(0);
-		meta.setFirstMeta(firstMeta);
-
 		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;
 		meta.setClusteredEntity(clusteredEntity);
 

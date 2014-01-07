@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -387,7 +388,6 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("counterTable");
-		meta.setFirstMeta(counterMeta);
 
 		PreparedStatement incrPs = mock(PreparedStatement.class);
 		PreparedStatement decrPs = mock(PreparedStatement.class);
@@ -396,12 +396,12 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(regularStatementCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
 
-		Map<CQLQueryType, PreparedStatement> actual = generator.prepareClusteredCounterQueryMap(session, meta);
+		Map<CQLQueryType, Map<String,PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session, meta);
 
-		assertThat(actual.get(INCR)).isSameAs(incrPs);
-		assertThat(actual.get(DECR)).isSameAs(decrPs);
-		assertThat(actual.get(SELECT)).isSameAs(selectPs);
-		assertThat(actual.get(DELETE)).isSameAs(deletePs);
+		assertThat(actual.get(INCR).get("count")).isSameAs(incrPs);
+		assertThat(actual.get(DECR).get("count")).isSameAs(decrPs);
+		assertThat(actual.get(SELECT).get("count")).isSameAs(selectPs);
+		assertThat(actual.get(DELETE).get(DELETE_ALL.name())).isSameAs(deletePs);
 
 		List<RegularStatement> regularStatements = regularStatementCaptor.getAllValues();
 

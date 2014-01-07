@@ -52,13 +52,14 @@ public class EntityLoader {
         T entity = null;
 
         if (entityMeta.isClusteredCounter()) {
-            for(PropertyMeta counterMeta:context.getAllCountersMeta()) {
-                ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
-                Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
-                if (counterValue != null) {
-                    entity = entityMeta.instanciate();
-                    mapper.setCounterToEntity(counterMeta, entity, counterValue);
-                    entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+            ConsistencyLevel readLevel = overrider.getReadLevel(context,entityMeta);
+            Row row =context.getClusteredCounter(readLevel);
+            if(row != null) {
+                entity = entityMeta.instanciate();
+                entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+
+                for(PropertyMeta counterMeta:context.getAllCountersMeta()) {
+                    mapper.setCounterToEntity(counterMeta, entity, row);
                 }
             }
         } else {
@@ -66,11 +67,6 @@ public class EntityLoader {
             if (row != null) {
                 entity = entityMeta.instanciate();
                 mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
-                final ImmutableList<PropertyMeta> counterMetas = from(entityMeta.getAllMetas()).filter(counterType)
-                        .toImmutableList();
-                for (PropertyMeta counterMeta : counterMetas) {
-                    loadCounter(context, entity, counterMeta);
-                }
             }
         }
 		entityMeta.getIdMeta().setValueToField(entity, primaryKey);
@@ -105,14 +101,10 @@ public class EntityLoader {
 
     }
 
-    public void loadClusteredCounterIntoObject(PersistenceContext context, Object realObject, PropertyMeta counterMeta) {
+    public void loadClusteredCounterColumn(PersistenceContext context, Object realObject, PropertyMeta counterMeta) {
         ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
-        Long counterValue = context.getClusteredCounter(counterMeta, readLevel);
-        if (counterValue != null) {
-            mapper.setCounterToEntity(counterMeta, realObject, counterValue);
-        } else {
-            mapper.setCounterToEntity(counterMeta, realObject, 0L);
-        }
+        Long counterValue = context.getClusteredCounterColumn(counterMeta, readLevel);
+        mapper.setCounterToEntity(counterMeta, realObject, counterValue);
     }
 
     private void loadCounter(PersistenceContext context, Object entity, PropertyMeta counterMeta) {
