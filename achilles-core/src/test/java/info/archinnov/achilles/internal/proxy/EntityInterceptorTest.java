@@ -145,24 +145,6 @@ public class EntityInterceptorTest {
 	}
 
 	@Test
-	public void should_build_counter_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, Counter.class).field("count")
-				.accessors().type(PropertyType.COUNTER).build();
-		interceptor = spy(interceptor);
-
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		Counter counterWrapper = CounterBuilder.incr();
-
-		doReturn(counterWrapper).when(interceptor).buildCounterWrapper(propertyMeta);
-
-		when(proxy.invoke(bean, args)).thenReturn(counterWrapper);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
-
-		assertThat(actual).isSameAs(counterWrapper);
-	}
-
-	@Test
 	public void should_return_list_wrapper() throws Throwable {
 		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
 				.accessors().type(PropertyType.LIST).build();

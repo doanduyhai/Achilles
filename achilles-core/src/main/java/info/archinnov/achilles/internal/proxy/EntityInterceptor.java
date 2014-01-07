@@ -18,7 +18,6 @@ package info.archinnov.achilles.internal.proxy;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
-import info.archinnov.achilles.internal.proxy.wrapper.CounterWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.SetWrapperBuilder;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.type.CounterBuilder;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -46,7 +46,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
     private transient EntityLoader loader = new EntityLoader();
     private transient ReflectionInvoker invoker = new ReflectionInvoker();
 
-    private T target;
+    private transient T target;
     private transient Object primaryKey;
     private transient Method idGetter;
     private transient Method idSetter;
@@ -71,26 +71,29 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
             throw new IllegalAccessException("Cannot change primary key value for existing entity ");
         }
 
-        Object result;
+        Object result = null;
         if (this.getterMetas.containsKey(method)) {
-            result = interceptGetter(method, args, proxy);
+            result = interceptGetter(method);
         } else if (this.setterMetas.containsKey(method)) {
-            result = interceptSetter(method, args, proxy);
+            interceptSetter(method, args);
         } else {
             result = proxy.invoke(target, args);
         }
         return result;
     }
 
-    private Object interceptGetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
+    private Object interceptGetter(Method method) throws Throwable {
         Object result = null;
         PropertyMeta propertyMeta = this.getterMetas.get(method);
 
         // Load fields into target object
-        if (!propertyMeta.isCounter() && !this.alreadyLoaded.contains(method)) {
+        if (!this.alreadyLoaded.contains(method)) {
             log.trace("Loading property {}", propertyMeta.getPropertyName());
-
-            loader.loadPropertyIntoObject(context, target, propertyMeta);
+            if(context.isClusteredCounter()) {
+                loader.loadClusteredCounterIntoObject(context,target,propertyMeta);
+            } else {
+                loader.loadPropertyIntoObject(context, target, propertyMeta);
+            }
             alreadyLoaded.add(method);
         }
 
@@ -100,9 +103,11 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
         // Build proxy when necessary
         switch (propertyMeta.type()) {
             case COUNTER:
-                log.trace("Build counter wrapper for property {} of entity of class {} ", propertyMeta.getPropertyName(),
-                          propertyMeta.getEntityClassName());
-                result = buildCounterWrapper(propertyMeta);
+                if(rawValue == null) {
+                    final Counter counter = CounterBuilder.initialValue(0L);
+                    propertyMeta.setValueToField(target,counter);
+                }
+                result = rawValue;
                 break;
             case LIST:
                 if (rawValue != null) {
@@ -134,7 +139,6 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
                     @SuppressWarnings("unchecked")
                     Map<Object, Object> map = (Map<Object, Object>) rawValue;
                     result = MapWrapperBuilder
-                            //
                             .builder(context, map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
                             .propertyMeta(this.getPropertyMetaByProperty(method)).build();
                 }
@@ -149,23 +153,17 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
         return result;
     }
 
-    private Object interceptSetter(Method method, Object[] args, MethodProxy proxy) throws Throwable {
+    private void interceptSetter(Method method, Object[] args) throws Throwable {
         PropertyMeta propertyMeta = this.setterMetas.get(method);
-        Object result;
-
-        switch (propertyMeta.type()) {
-            case COUNTER:
-                throw new UnsupportedOperationException(
-                        "Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
-            default:
-                break;
-        }
 
         log.trace("Flagging property {}", propertyMeta.getPropertyName());
 
         dirtyMap.put(method, propertyMeta);
-        result = proxy.invoke(target, args);
-        return result;
+        Object value = null;
+        if(args.length>0) {
+            value = args[0];
+        }
+        propertyMeta.setValueToField(target,value);
     }
 
     public Object writeReplace() {
@@ -227,10 +225,6 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 
     private PropertyMeta getPropertyMetaByProperty(Method method) {
         return getterMetas.get(method);
-    }
-
-    protected Counter buildCounterWrapper(PropertyMeta propertyMeta) {
-        return new CounterWrapper(context, propertyMeta);
     }
 
 }

@@ -32,6 +32,7 @@ import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLeve
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 
 import java.util.List;
 
@@ -110,13 +111,14 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
+        entity.setCount(CounterBuilder.incr());
 		entity = manager.persist(entity);
 
 		Counter counter = entity.getCount();
 		counter.incr(10L);
 
 		logAsserter.prepareLogLevel();
-		assertThat(counter.get()).isEqualTo(10L);
+		assertThat(counter.get()).isEqualTo(11L);
 		logAsserter.assertConsistencyLevels(ONE, ONE);
 	}
 
@@ -125,54 +127,19 @@ public class ConsistencyLevelPriorityOrderingIT {
 		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
 		entity.setId(RandomUtils.nextLong());
 		entity.setName("name");
+        entity.setCount(CounterBuilder.incr());
 
 		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
 		batchEm.startBatch(THREE);
 		entity = batchEm.persist(entity);
 
 		Counter counter = entity.getCount();
+        counter.incr(10L);
 
-		expectedEx.expect(UnavailableException.class);
-		expectedEx
+        expectedEx.expect(UnavailableException.class);
+        expectedEx
 				.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
-		counter.incr(10L);
-	}
-
-	@Test
-	public void should_override_mapping_on_field_by_runtime_value_for_counter_type() throws Exception {
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-		entity = manager.persist(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-		assertThat(counter.get()).isEqualTo(10L);
-
-		expectedEx.expect(InvalidQueryException.class);
-		expectedEx.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
-
-		counter.get(EACH_QUORUM);
-	}
-
-	@Test
-	public void should_override_batch_level_by_runtime_value_for_counter_type() throws Exception {
-		EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-		entity.setId(RandomUtils.nextLong());
-		entity.setName("name");
-
-		BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
-		batchEm.startBatch(ONE);
-		entity = batchEm.persist(entity);
-
-		Counter counter = entity.getCount();
-		counter.incr(10L);
-		assertThat(counter.get()).isEqualTo(10L);
-
-		expectedEx.expect(InvalidQueryException.class);
-		expectedEx.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
-
-		counter.get(EACH_QUORUM);
+        batchEm.endBatch();
 	}
 
 	@Test

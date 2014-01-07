@@ -34,6 +34,7 @@ import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.List;
@@ -99,7 +100,7 @@ public class BatchModeIT {
 		result = manager.nativeQuery(
 				"SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
 						+ "' and primary_key='" + entity.getId() + "' and property_name='version'").first();
-		assertThat(result.get("counter_value")).isEqualTo(10L);
+		assertThat(result).isNull();
 
 		// Flush
 		batchEm.endBatch();

@@ -20,16 +20,12 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static com.google.common.collect.FluentIterable.from;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -43,7 +39,6 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
-import com.google.common.collect.FluentIterable;
 
 public class StatementGenerator {
 
@@ -90,7 +85,7 @@ public class StatementGenerator {
 
 		generateSelectForPrimaryKey(idMeta, select);
 
-		for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
+		for (PropertyMeta pm : entityMeta.getColumnsMetaToInsert()) {
 			select.column(pm.getPropertyName());
 		}
 		return select.from(entityMeta.getTableName());
@@ -101,16 +96,12 @@ public class StatementGenerator {
 		Insert insert = insertInto(entityMeta.getTableName());
 		final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
 
-		List<PropertyMeta> nonProxyMetas = from(entityMeta.getAllMetasExceptIdAndCounters())
-				.toImmutableList();
-
-		List<PropertyMeta> fieldMetas = new ArrayList(nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList(entityMeta.getColumnsMetaToInsert());
 
 		final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
 		for (int i = 0; i < fieldMetas.size(); i++) {
 			PropertyMeta pm = fieldMetas.get(i);
-			Object value = pm.getValueFromField(entity);
-			value = encodeValueForCassandra(pm, value);
+            Object value = pm.getAndEncodeValueForCassandra(entity);
 			insert.value(pm.getPropertyName(), value);
 			boundValuesForColumns[i] = value;
 		}
@@ -128,8 +119,7 @@ public class StatementGenerator {
 		Assignments assignments = null;
 		for (int i = 0; i < pms.size(); i++) {
 			PropertyMeta pm = pms.get(i);
-			Object value = pm.getValueFromField(entity);
-			value = encodeValueForCassandra(pm, value);
+			Object value = pm.getAndEncodeValueForCassandra(entity);
 			if (i == 0) {
 				assignments = update.with(set(pm.getPropertyName(), value));
 			} else {
@@ -189,25 +179,6 @@ public class StatementGenerator {
 			boundValues = new Object[] { id };
 		}
 		return boundValues;
-	}
-
-	private Object encodeValueForCassandra(PropertyMeta pm, Object value) {
-		if (value != null) {
-			switch (pm.type()) {
-			case SIMPLE:
-				return pm.encode(value);
-			case LIST:
-				return pm.encode((List<?>) value);
-			case SET:
-				return pm.encode((Set<?>) value);
-			case MAP:
-				return pm.encode((Map<?, ?>) value);
-			default:
-				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
-						+ pm.getPropertyName() + "' of type '" + pm.type().name() + "'");
-			}
-		}
-		return value;
 	}
 
 	private void generateSelectForPrimaryKey(PropertyMeta idMeta, Selection select) {

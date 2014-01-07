@@ -58,7 +58,7 @@ public class DaoContext {
 
 	private Map<Class<?>, PreparedStatement> insertPSs;
 	private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
-	private Map<Class<?>, PreparedStatement> selectEagerPSs;
+	private Map<Class<?>, PreparedStatement> selectPSs;
 	private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
 	private Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap;
@@ -71,12 +71,12 @@ public class DaoContext {
 
 	public DaoContext(Map<Class<?>, PreparedStatement> insertPSs,
 			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-			Map<Class<?>, PreparedStatement> selectEagerPSs, Map<Class<?>, Map<String, PreparedStatement>> removePSs,
+			Map<Class<?>, PreparedStatement> selectPSs, Map<Class<?>, Map<String, PreparedStatement>> removePSs,
 			Map<CQLQueryType, PreparedStatement> counterQueryMap,
 			Map<Class<?>, Map<CQLQueryType, PreparedStatement>> clusteredCounterQueryMap, Session session) {
 		this.insertPSs = insertPSs;
 		this.dynamicPSCache = dynamicPSCache;
-		this.selectEagerPSs = selectEagerPSs;
+		this.selectPSs = selectPSs;
 		this.removePSs = removePSs;
 		this.counterQueryMap = counterQueryMap;
 		this.clusteredCounterQueryMap = clusteredCounterQueryMap;
@@ -267,11 +267,11 @@ public class DaoContext {
 		context.pushCounterStatement(bsWrapper);
 	}
 
-	public Row eagerLoadEntity(PersistenceContext context) {
+	public Row loadEntity(PersistenceContext context) {
 		log.debug("Load entity for PersistenceContext '{}'", context);
 		EntityMeta meta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
-		PreparedStatement ps = selectEagerPSs.get(entityClass);
+		PreparedStatement ps = selectPSs.get(entityClass);
 
 		ConsistencyLevel readLevel = overrider.getReadLevel(context, meta);
 		List<Row> rows = executeReadWithConsistency(context, ps, readLevel);

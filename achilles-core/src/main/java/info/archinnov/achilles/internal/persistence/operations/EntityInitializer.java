@@ -16,12 +16,9 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
 
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
@@ -36,15 +33,11 @@ public class EntityInitializer {
 
 		log.debug("Initializing lazy fields for entity {} of class {}", entity, entityMeta.getClassName());
 
-
-		Set<PropertyMeta> allCounterMetas = FluentIterable.from(entityMeta.getPropertyMetas().values()).filter(counterType)
-				.toImmutableSet();
-
-		for (PropertyMeta propertyMeta : allCounterMetas) {
+		for (PropertyMeta propertyMeta : entityMeta.getAllCounterMetas()) {
 				Object value = propertyMeta.invokeGetter(entity);
 				Counter counter = (Counter) value;
 				Object realObject = proxifier.getRealObject(entity);
-				propertyMeta.setValueToField(realObject, CounterBuilder.incr(counter.get()));
+				propertyMeta.setValueToField(realObject, CounterBuilder.initialValue(counter.get()));
 		}
 	}
 }

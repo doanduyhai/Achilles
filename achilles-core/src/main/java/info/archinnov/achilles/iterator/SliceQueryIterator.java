@@ -17,7 +17,8 @@
 package info.archinnov.achilles.iterator;
 
 import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.EntityMapper;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
@@ -60,7 +61,11 @@ public class SliceQueryIterator<T> implements Iterator<T> {
         Row row = iterator.next();
         if(row != null) {
             clusteredEntity = meta.instanciate();
-            mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+            if(context.isClusteredCounter()) {
+                mapper.setValuesToClusteredCounterEntity(row,meta,clusteredEntity);
+            } else {
+                mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+            }
             meta.intercept(clusteredEntity, Event.POST_LOAD);
             clusteredEntity = proxify(clusteredEntity);
         }

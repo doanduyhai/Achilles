@@ -36,7 +36,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -180,9 +179,9 @@ public class PersistenceContextTest {
 	@Test
 	public void should_eager_load_entity() throws Exception {
 		Row row = mock(Row.class);
-		when(daoContext.eagerLoadEntity(context)).thenReturn(row);
+		when(daoContext.loadEntity(context)).thenReturn(row);
 
-		assertThat(context.eagerLoadEntity()).isSameAs(row);
+		assertThat(context.loadEntity()).isSameAs(row);
 	}
 
 	@Test

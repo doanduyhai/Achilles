@@ -139,10 +139,10 @@ public class RowMethodInvoker {
 		}
 	}
 
-	public Object invokeOnRowForType(Row row, Class<?> type, String name) {
+	public <T> T invokeOnRowForType(Row row, Class<T> type, String name) {
         log.trace("Extract property {} of type {} from CQL row ",name,type);
 		try {
-			return getRowMethod(type).invoke(row, name);
+			return (T)getRowMethod(type).invoke(row, name);
 		} catch (Exception e) {
 			throw new AchillesException("Cannot retrieve column '" + name + "' of type '" + type.getCanonicalName()
 					+ "' from CQL Row", e);

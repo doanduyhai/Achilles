@@ -27,7 +27,8 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
-import info.archinnov.achilles.type.CounterBuilder.CounterImpl;
+import info.archinnov.achilles.type.CounterBuilder;
+import info.archinnov.achilles.type.CounterImpl;
 
 public class InitializeIT {
 
@@ -44,9 +45,7 @@ public class InitializeIT {
 		tweet.setContent("welcome");
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").label("label").age(45L)
-				.addFriends("foo", "bar").welcomeTweet(tweet).buid();
-
-		entity.setVersion(CounterBuilder.incr(11L));
+				.addFriends("foo", "bar").welcomeTweet(tweet).version(CounterBuilder.incr(11L)).buid();
 
 		manager.persist(entity);
 
@@ -71,7 +70,9 @@ public class InitializeIT {
 
 		entity.getVersion().incr(2L);
 
-		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
+        manager.update(entity);
+
+		CompleteBean foundEntity = manager.typedQuery(CompleteBean.class,"SELECT * FROM CompleteBean WHERE id=?",entity.getId()).getFirst();
 
 		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 

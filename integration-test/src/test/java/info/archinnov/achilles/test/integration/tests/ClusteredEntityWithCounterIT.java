@@ -30,6 +30,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.ClusteredKey;
+import info.archinnov.achilles.type.CounterBuilder;
 
 public class ClusteredEntityWithCounterIT {
 
@@ -75,20 +76,24 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		long counterValue = RandomUtils.nextLong();
-		long incr = RandomUtils.nextLong();
+		long initialValue = RandomUtils.nextLong();
+		long increment = RandomUtils.nextLong();
 
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 
-		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(counterValue));
+		entity = new ClusteredEntityWithCounter(compoundKey, CounterBuilder.incr(initialValue));
 
 		entity = manager.persist(entity);
 
-		entity.getCounter().incr(incr);
+        assertThat(entity.getCounter().get()).isEqualTo(initialValue);
+
+		entity.getCounter().incr(increment);
+
+        manager.update(entity);
 
 		entity = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
-		assertThat(entity.getCounter().get()).isEqualTo(counterValue + incr);
+		assertThat(entity.getCounter().get()).isEqualTo(initialValue + increment);
 	}
 
 	@Test

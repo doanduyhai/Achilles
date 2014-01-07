@@ -29,6 +29,7 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUU
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 import java.util.Date;
@@ -155,15 +156,13 @@ public class QueryIT {
 
 	@Test
 	public void should_return_entities_for_typed_query_with_select_star() throws Exception {
-		Counter counter1 = CounterBuilder.incr(15L);
 		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		Counter counter2 = CounterBuilder.incr(17L);
 		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(counter2).buid();
+				.addPreference(2, "NewYork").buid();
 
 		manager.persist(entity1);
 		manager.persist(entity2);
@@ -194,7 +193,6 @@ public class QueryIT {
 
 		if (found1.getId().equals(entity1.getId())) {
 			CompleteBean reference = entity1;
-			Counter referenceCount = counter1;
 
 			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
 			assertThat(found1.getId()).isEqualTo(reference.getId());
@@ -205,10 +203,8 @@ public class QueryIT {
 			assertThat(found1.getPreferences().get(1)).isEqualTo("FR");
 			assertThat(found1.getPreferences().get(2)).isEqualTo("Paris");
 			assertThat(found1.getPreferences().get(3)).isEqualTo("75014");
-			assertThat(found1.getVersion().get()).isEqualTo(referenceCount.get());
 
 			reference = entity2;
-			referenceCount = counter2;
 
 			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
 			assertThat(found2.getId()).isEqualTo(reference.getId());
@@ -218,10 +214,8 @@ public class QueryIT {
 			assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
 			assertThat(found2.getPreferences().get(1)).isEqualTo("US");
 			assertThat(found2.getPreferences().get(2)).isEqualTo("NewYork");
-			assertThat(found2.getVersion().get()).isEqualTo(referenceCount.get());
 		} else {
 			CompleteBean reference = entity2;
-			Counter referenceCount = counter2;
 
 			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
 			assertThat(found1.getId()).isEqualTo(reference.getId());
@@ -230,10 +224,8 @@ public class QueryIT {
 			assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
 			assertThat(found1.getPreferences().get(1)).isEqualTo("US");
 			assertThat(found1.getPreferences().get(2)).isEqualTo("NewYork");
-			assertThat(found1.getVersion().get()).isEqualTo(referenceCount.get());
 
 			reference = entity1;
-			referenceCount = counter1;
 
 			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
 			assertThat(found2.getId()).isEqualTo(reference.getId());
@@ -243,21 +235,18 @@ public class QueryIT {
 			assertThat(found2.getPreferences().get(1)).isEqualTo("FR");
 			assertThat(found2.getPreferences().get(2)).isEqualTo("Paris");
 			assertThat(found2.getPreferences().get(3)).isEqualTo("75014");
-			assertThat(found2.getVersion().get()).isEqualTo(referenceCount.get());
 		}
 	}
 
 	@Test
 	public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
-		Counter counter1 = CounterBuilder.incr(15L);
 		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
 				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
+				.addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-		Counter counter2 = CounterBuilder.incr(17L);
 		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
 				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(counter2).buid();
+				.addPreference(2, "NewYork").buid();
 
 		manager.persist(entity1);
 		manager.persist(entity2);
@@ -294,40 +283,32 @@ public class QueryIT {
 
 		if (found1.getId().equals(entity1.getId())) {
 			CompleteBean reference = entity1;
-			Counter referenceCount = counter1;
 
 			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
 			assertThat(found1.getId()).isEqualTo(reference.getId());
 			assertThat(found1.getName()).isEqualTo(reference.getName());
 			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getVersion().get()).isEqualTo(referenceCount.get());
 
 			reference = entity2;
-			referenceCount = counter2;
 
 			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
 			assertThat(found2.getId()).isEqualTo(reference.getId());
 			assertThat(found2.getName()).isEqualTo(reference.getName());
 			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getVersion().get()).isEqualTo(referenceCount.get());
 		} else {
 			CompleteBean reference = entity2;
-			Counter referenceCount = counter2;
 
 			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
 			assertThat(found1.getId()).isEqualTo(reference.getId());
 			assertThat(found1.getName()).isEqualTo(reference.getName());
 			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getVersion().get()).isEqualTo(referenceCount.get());
 
 			reference = entity1;
-			referenceCount = counter1;
 
 			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
 			assertThat(found2.getId()).isEqualTo(reference.getId());
 			assertThat(found2.getName()).isEqualTo(reference.getName());
 			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getVersion().get()).isEqualTo(referenceCount.get());
 		}
 	}
 

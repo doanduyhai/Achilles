@@ -133,7 +133,7 @@ public class EventInterceptorIT {
     private Interceptor<CompleteBean> postLoad = new Interceptor<CompleteBean>() {
         @Override
         public CompleteBean onEvent(CompleteBean entity) {
-            entity.setAge(100L);
+            entity.setLabel("postLoad");
             return entity;
         }
 
@@ -241,13 +241,13 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_post_load_interceptors() throws Exception {
 
-        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         manager.persist(entity);
 
         entity = manager.find(CompleteBean.class,entity.getId());
 
-        assertThat(entity.getAge()).isEqualTo(100L);
+        assertThat(entity.getLabel()).isEqualTo("postLoad");
     }
 
     @Test
@@ -295,7 +295,7 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_post_load_interceptor_on_typed_query() throws Exception {
         //Given
-        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         manager.persist(entity);
 
@@ -304,13 +304,13 @@ public class EventInterceptorIT {
                 .typedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?", entity.getId()).getFirst();
 
         //Then
-        assertThat(actual.getAge()).isEqualTo(100L);
+        assertThat(actual.getLabel()).isEqualTo("postLoad");
     }
 
     @Test
     public void should_apply_post_load_interceptor_on_raw_typed_query() throws Exception {
         //Given
-        CompleteBean entity = builder().randomId().name("DuyHai").age(10L).buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         manager.persist(entity);
 
@@ -319,6 +319,6 @@ public class EventInterceptorIT {
                 .rawTypedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?", entity.getId()).getFirst();
 
         //Then
-        assertThat(actual.getAge()).isEqualTo(100L);
+        assertThat(actual.getLabel()).isEqualTo("postLoad");
     }
 }

@@ -16,19 +16,14 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
-import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.*;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -37,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
 
 public class PreparedStatementBinder {
 
@@ -50,14 +44,10 @@ public class PreparedStatementBinder {
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
-		List<PropertyMeta> nonProxyMetas = from(entityMeta.getAllMetasExceptIdAndCounters())
-				.toImmutableList();
-
-		List<PropertyMeta> fieldMetas = new ArrayList(nonProxyMetas);
+		List<PropertyMeta> fieldMetas = new ArrayList(entityMeta.getColumnsMetaToInsert());
 
 		for (PropertyMeta pm : fieldMetas) {
-			Object value = pm.getValueFromField(entity);
-			value = encodeValueForCassandra(pm, value);
+            Object value = pm.getAndEncodeValueForCassandra(entity);
 			values.add(value);
 		}
 
@@ -70,12 +60,11 @@ public class PreparedStatementBinder {
 	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
 			Object entity, ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
-		List<Object> values = new ArrayList<Object>();
+		List<Object> values = new ArrayList();
         // TTL or default value 0
         values.add(ttlO.or(0));
 		for (PropertyMeta pm : pms) {
-			Object value = pm.getValueFromField(entity);
-			value = encodeValueForCassandra(pm, value);
+            Object value = pm.getAndEncodeValueForCassandra(entity);
 			values.add(value);
 		}
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
@@ -167,25 +156,6 @@ public class PreparedStatementBinder {
 			values.add(idMeta.encode(primaryKey));
 		}
 		return values;
-	}
-
-	private Object encodeValueForCassandra(PropertyMeta pm, Object value) {
-		if (value != null) {
-			switch (pm.type()) {
-			case SIMPLE:
-				return pm.encode(value);
-			case LIST:
-				return pm.encode((List<?>) value);
-			case SET:
-				return pm.encode((Set<?>) value);
-			case MAP:
-				return pm.encode((Map<?, ?>) value);
-			default:
-				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
-						+ pm.getPropertyName() + "' of type '" + pm.type().name() + "'");
-			}
-		}
-		return value;
 	}
 
 	private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {

@@ -28,6 +28,7 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
+import info.archinnov.achilles.type.CounterBuilder;
 
 public class CounterIT {
 	@Rule
@@ -45,10 +46,10 @@ public class CounterIT {
 
 	@Test
 	public void should_persist_counter() throws Exception {
-		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
+		bean = CompleteBeanTestBuilder.builder().randomId().name("test")
+            .version(CounterBuilder.incr(2L)).buid();
 
 		bean = manager.persist(bean);
-		bean.getVersion().incr(2L);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -56,6 +57,25 @@ public class CounterIT {
 
 		assertThat(row.getLong("counter_value")).isEqualTo(2L);
 	}
+
+    @Test
+    public void should_set_counter_on_managed_entity() throws Exception {
+        bean = CompleteBeanTestBuilder.builder().randomId().name("test")
+                                      .buid();
+
+        bean = manager.persist(bean);
+
+        bean.getVersion().incr(2L);
+
+        manager.update(bean);
+
+
+        Row row = session.execute(
+                "select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+                        + "' and primary_key='" + bean.getId() + "' and property_name='version'").one();
+
+        assertThat(row.getLong("counter_value")).isEqualTo(2L);
+    }
 
 	@Test
 	public void should_find_counter() throws Exception {
@@ -65,15 +85,25 @@ public class CounterIT {
 		bean = manager.persist(bean);
 		bean.getVersion().incr(version);
 
-		assertThat(bean.getVersion().get()).isEqualTo(version);
+        manager.update(bean);
+
+        Row row = session.execute(
+                "select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
+                        + "' and primary_key='" + bean.getId() + "' and property_name='version'").one();
+
+        assertThat(row.getLong("counter_value")).isEqualTo(version);
 	}
 
 	@Test
 	public void should_remove_counter() throws Exception {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
-		bean = manager.persist(bean);
-		bean.getVersion().incr(version);
+
+        bean = manager.persist(bean);
+
+        bean.getVersion().incr(version);
+
+        manager.update(bean);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()

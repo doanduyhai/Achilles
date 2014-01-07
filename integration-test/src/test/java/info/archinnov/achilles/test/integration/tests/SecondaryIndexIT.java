@@ -15,6 +15,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndex;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.IndexCondition;
 
 public class SecondaryIndexIT {
@@ -29,15 +30,10 @@ public class SecondaryIndexIT {
 
 	@Test
 	public void should_return_entities_for_indexed_query() throws Exception {
-		Counter counter1 = CounterBuilder.incr(15L);
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
+		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").buid();
 
-		Counter counter2 = CounterBuilder.incr(17L);
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L).addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(counter2).buid();
-
-		manager.persist(entity1);
+        manager.persist(entity1);
 		manager.persist(entity2);
 
 		IndexCondition condition = new IndexCondition("name", "John DOO");

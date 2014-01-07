@@ -25,6 +25,7 @@ import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
 import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
@@ -128,8 +129,8 @@ public class PersistenceContext {
 				options.duplicateWithoutTtlAndTimestamp());
 	}
 
-	public Row eagerLoadEntity() {
-		return daoContext.eagerLoadEntity(this);
+	public Row loadEntity() {
+		return daoContext.loadEntity(this);
 	}
 
 	public Row loadProperty(PropertyMeta pm) {
@@ -292,6 +293,10 @@ public class PersistenceContext {
 		return this.entityMeta.isClusteredEntity();
 	}
 
+    public boolean isClusteredCounter() {
+        return this.entityMeta.isClusteredCounter();
+    }
+
 	public String getTableName() {
 		return entityMeta.getTableName();
 	}
@@ -370,6 +375,10 @@ public class PersistenceContext {
 
     public Set<Method> getAllGettersExceptCounters() {
         return new HashSet(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toImmutableSet());
+    }
+
+    public List<PropertyMeta> getAllCountersMeta() {
+        return entityMeta.getAllCounterMetas();
     }
 
 	private void extractPartitionKey() {

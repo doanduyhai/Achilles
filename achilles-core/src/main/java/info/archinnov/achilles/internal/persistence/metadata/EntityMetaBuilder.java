@@ -89,7 +89,14 @@ public class EntityMetaBuilder {
 		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;
 		meta.setClusteredEntity(clusteredEntity);
 
-		boolean clusteredCounter = clusteredEntity && firstMeta != null && firstMeta.isCounter();
+
+		boolean clusteredCounter = allMetasExceptId.size()>0;
+        for(PropertyMeta pm: allMetasExceptId) {
+            if(!pm.isCounter()) {
+                clusteredCounter = false;
+                break;
+            }
+        }
 		meta.setClusteredCounter(clusteredCounter);
 		return meta;
 	}

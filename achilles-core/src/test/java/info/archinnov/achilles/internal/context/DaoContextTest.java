@@ -358,7 +358,7 @@ public class DaoContextTest {
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
 
 		// Then
-		Row actual = daoContext.eagerLoadEntity(context);
+		Row actual = daoContext.loadEntity(context);
 		assertThat(actual).isSameAs(row);
 	}
 

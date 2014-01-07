@@ -22,9 +22,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +40,6 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
-import com.google.common.collect.FluentIterable;
 
 public class PreparedStatementGenerator {
 	private static final Logger log = LoggerFactory.getLogger(PreparedStatementGenerator.class);
@@ -97,14 +94,14 @@ public class PreparedStatementGenerator {
 		return session.prepare(statement.getQueryString());
 	}
 
-	public PreparedStatement prepareSelectEagerPS(Session session, EntityMeta entityMeta) {
+	public PreparedStatement prepareSelectPS(Session session, EntityMeta entityMeta) {
 		log.trace("Generate prepared statement for SELECT of {}", entityMeta);
 
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
 		Selection select = select();
 
-		for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
+		for (PropertyMeta pm : entityMeta.getColumnsMetaToLoad()) {
 			select = prepareSelectField(pm, select);
 		}
 		Select from = select.from(entityMeta.getTableName());

@@ -27,6 +27,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import java.util.List;
 import java.util.Map;
 
+import info.archinnov.achilles.type.CounterBuilder;
 import net.sf.cglib.proxy.Factory;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -46,11 +47,6 @@ public class PersistenceManagerOperationsIT {
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 	private Session session = manager.getNativeSession();
-
-	@Test
-	public void should_test() throws Exception {
-
-	}
 
 	@Test
 	public void should_persist() throws Exception {

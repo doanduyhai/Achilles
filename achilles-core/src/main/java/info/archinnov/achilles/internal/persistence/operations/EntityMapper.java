@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.internal.persistence;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterBuilder;
 
 import java.util.Map;
 
@@ -41,6 +43,17 @@ public class EntityMapper  {
 		}
 	}
 
+    public void setValuesToClusteredCounterEntity(Row row, EntityMeta entityMeta, Object clusteredEntity) {
+        log.debug("Set values to clustered counter entity class {} from fetched CQL row", entityMeta.getClassName());
+        for(PropertyMeta pm:entityMeta.getAllMetas()) {
+            if(pm.isCounter()) {
+                setCounterToEntity(pm,clusteredEntity,row);
+            } else {
+                setPropertyToEntity(row,pm,clusteredEntity);
+            }
+        }
+    }
+
 	public void setPropertyToEntity(Row row, PropertyMeta pm, Object entity) {
         log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
 		if (row != null) {
@@ -56,6 +69,24 @@ public class EntityMapper  {
 			}
 		}
 	}
+
+
+    public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Long counterValue) {
+        log.debug("Set counter value {} to property {} of entity class {}", counterValue,counterMeta.getPropertyName(),counterMeta.getEntityClassName());
+        long initialValue = counterValue != null ? counterValue:0L;
+        final Counter counter = CounterBuilder.initialValue(initialValue);
+        counterMeta.setValueToField(entity,counter);
+    }
+
+    public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Row row) {
+        log.debug("Set counter value to property {} of entity class {} from CQL row", counterMeta.getPropertyName(),counterMeta.getEntityClassName());
+
+        Long initialCounterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getPropertyName());
+        long initialValue = initialCounterValue != null ? initialCounterValue:0L;
+        final Counter counter = CounterBuilder.initialValue(initialValue);
+        counterMeta.setValueToField(entity,counter);
+    }
+
 
 	public <T> T mapRowToEntityWithPrimaryKey(EntityMeta meta, Row row,
                                               Map<String, PropertyMeta> propertiesMap, boolean isEntityManaged) {

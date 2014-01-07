@@ -243,7 +243,7 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
@@ -267,7 +267,7 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareSelectEagerPS(session, meta);
+		PreparedStatement actual = generator.prepareSelectPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
 		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b,name FROM table WHERE id=? AND a=? AND b=?;");

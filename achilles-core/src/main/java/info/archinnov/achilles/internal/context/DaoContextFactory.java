@@ -48,7 +48,7 @@ public class DaoContextFactory {
 		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap(transformValues(
                 filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
 
-		Map<Class<?>, PreparedStatement> selectEagerPSMap = new HashMap(transformValues(entityMetaMap,getSelectEagerPSTransformer(session)));
+		Map<Class<?>, PreparedStatement> selectPSMap = new HashMap(transformValues(entityMetaMap, getSelectPSTransformer(session)));
 
 		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap(transformValues(filterValues(entityMetaMap,
                 EXCLUDE_CLUSTERED_COUNTER_FILTER), getRemovePSTransformer(session)));
@@ -67,7 +67,7 @@ public class DaoContextFactory {
 				transformValues(filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
                                 getClusteredCounterTransformer(session)));
 
-		return new DaoContext(insertPSMap, dynamicPSCache, selectEagerPSMap, removePSMap, counterQueryMap,
+		return new DaoContext(insertPSMap, dynamicPSCache, selectPSMap, removePSMap, counterQueryMap,
 				clusteredCounterQueriesMap, session);
 	}
 
@@ -80,11 +80,11 @@ public class DaoContextFactory {
 		};
 	}
 
-	Function<EntityMeta, PreparedStatement> getSelectEagerPSTransformer(final Session session) {
+	Function<EntityMeta, PreparedStatement> getSelectPSTransformer(final Session session) {
 		return new Function<EntityMeta, PreparedStatement>() {
 			@Override
 			public PreparedStatement apply(EntityMeta meta) {
-				return queryGenerator.prepareSelectEagerPS(session, meta);
+				return queryGenerator.prepareSelectPS(session, meta);
 			}
 		};
 	}

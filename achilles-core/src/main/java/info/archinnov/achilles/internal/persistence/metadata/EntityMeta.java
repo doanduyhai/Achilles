@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata;
 
+import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
@@ -65,7 +67,7 @@ public class EntityMeta {
 	private boolean clusteredEntity = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
 	private PropertyMeta firstMeta;
-	private List<PropertyMeta> allMetasExceptIdMeta;
+	private List<PropertyMeta> allMetasExceptId;
 	private boolean clusteredCounter = false;
 	private List<Interceptor<?>> interceptors = new ArrayList<>();
 
@@ -225,12 +227,18 @@ public class EntityMeta {
 		return new ArrayList(propertyMetas.values());
 	}
 
+
+    public List<PropertyMeta> getAllCounterMetas() {
+        return from(propertyMetas.values()).filter(counterType)
+                .toImmutableList();
+    }
+
 	public List<PropertyMeta> getAllMetasExceptId() {
-		return this.allMetasExceptIdMeta;
+		return this.allMetasExceptId;
 	}
 
 	public void setAllMetasExceptId(List<PropertyMeta> allMetasExceptIdMeta) {
-		this.allMetasExceptIdMeta = allMetasExceptIdMeta;
+		this.allMetasExceptId = allMetasExceptIdMeta;
 	}
 
 	public boolean isClusteredCounter() {
@@ -259,6 +267,22 @@ public class EntityMeta {
 
     public void setAllMetasExceptCounters(List<PropertyMeta> allMetasExceptCounters) {
         this.allMetasExceptCounters = allMetasExceptCounters;
+    }
+
+    public List<PropertyMeta> getColumnsMetaToInsert() {
+        if(clusteredCounter) {
+           return allMetasExceptId;
+        } else {
+           return allMetasExceptIdAndCounters;
+        }
+    }
+
+    public List<PropertyMeta> getColumnsMetaToLoad() {
+        if(clusteredCounter) {
+            return new ArrayList(propertyMetas.values());
+        } else {
+            return allMetasExceptCounters;
+        }
     }
 
     @Override

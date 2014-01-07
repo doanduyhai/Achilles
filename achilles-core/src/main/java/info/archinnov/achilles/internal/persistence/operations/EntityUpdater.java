@@ -16,6 +16,9 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.excludeCounterType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +27,11 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.validation.Validator;
 
@@ -55,11 +60,18 @@ public class EntityUpdater {
 
         EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
         Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
-        if (dirtyMap.size() > 0) {
-            List<PropertyMeta> sortedDirtyMetas = new ArrayList<PropertyMeta>(dirtyMap.values());
-            Collections.sort(sortedDirtyMetas, comparator);
-            context.pushUpdateStatement(sortedDirtyMetas);
+        List<PropertyMeta> sortedDirtyNonCounterMetas = new ArrayList(from(dirtyMap.values()).filter(excludeCounterType).toImmutableList());
+        if (sortedDirtyNonCounterMetas.size() > 0) {
+            Collections.sort(sortedDirtyNonCounterMetas, comparator);
+            context.pushUpdateStatement(sortedDirtyNonCounterMetas);
             dirtyMap.clear();
+        }
+
+
+        if(context.isClusteredCounter()) {
+            persister.persistClusteredCounter(context);
+        } else {
+            persister.persistCounters(context,entityMeta.getAllCounterMetas());
         }
         interceptor.setContext(context);
         interceptor.setTarget(realObject);

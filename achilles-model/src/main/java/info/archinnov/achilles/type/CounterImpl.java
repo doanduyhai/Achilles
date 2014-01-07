@@ -44,7 +44,7 @@ public class CounterImpl implements Counter {
     }
 
     /**
-     * <strong>Internal method, not to be used by clients</strong>
+     * <strong>Internal method, not to be used by clients !!!</strong>
      *
      * @return
      *      delta between the initial counter value and the <strong>current</strong> counter value

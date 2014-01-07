@@ -19,23 +19,18 @@ package info.archinnov.achilles.query.typed;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.internal.persistence.EntityMapper;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -45,10 +40,6 @@ import com.datastax.driver.core.Row;
 
 public class TypedQueryBuilder<T> {
 	private static final Logger log = LoggerFactory.getLogger(TypedQueryBuilder.class);
-
-	private static final Pattern SELECT_COLUMNS_EXTRACTION_PATTERN = Pattern.compile("^\\s*select\\s+(.+)\\s+from.+$");
-	private static final String SELECT_STAR = "select * ";
-	private static final String WHITE_SPACES = "\\s+";
 
 	private DaoContext daoContext;
 	private String normalizedQuery;

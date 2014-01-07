@@ -16,9 +16,11 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata;
 
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.CounterImpl;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Field;
@@ -281,9 +283,37 @@ public class PropertyMeta {
 		return components == null ? null : transcoder.decodeFromComponents(this, components);
 	}
 
-	public Object encode(Object entityValue) {
-		return entityValue == null ? null : transcoder.encode(this, entityValue);
+	public Object getAndEncodeValueForCassandra(Object entity) {
+        Object value = getValueFromField(entity);
+        Object encoded = null;
+        if(value != null) {
+            switch (type) {
+                case SIMPLE:
+                    encoded = transcoder.encode(this,value);
+                    break;
+                case LIST:
+                    encoded = transcoder.encode(this,(List<?>)value);
+                    break;
+                case SET:
+                    encoded = transcoder.encode(this,(Set<?>)value);
+                    break;
+                case MAP:
+                    encoded = transcoder.encode(this,(Map<?,?>)value);
+                    break;
+                case COUNTER:
+                    encoded= ((CounterImpl)value).getInternalCounterDelta();
+                    break;
+                default:
+                    throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
+                                                        + propertyName + "' of type '" + type.name() + "'");
+            }
+        }
+		return encoded;
 	}
+
+    public Object encode(Object entityValue) {
+        return entityValue == null ? null : transcoder.encode(this, entityValue);
+    }
 
 	public Object encodeKey(Object entityValue) {
 		return entityValue == null ? null : transcoder.encodeKey(this, entityValue);

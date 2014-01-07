@@ -39,7 +39,7 @@ public class NativeQueryMapper {
 
 	public List<Map<String, Object>> mapRows(List<Row> rows) {
         log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
-		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> result = new ArrayList();
 		if (!rows.isEmpty()) {
 			for (Row row : rows) {
 				mapRow(result, row);

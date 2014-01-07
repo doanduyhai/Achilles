@@ -97,9 +97,9 @@ public class DaoContextFactoryTest {
 	@Test
 	public void should_get_select_eager_ps_transformer() throws Exception {
 		// When
-		when(queryGenerator.prepareSelectEagerPS(session, entityMeta)).thenReturn(selectEagerPS);
+		when(queryGenerator.prepareSelectPS(session, entityMeta)).thenReturn(selectEagerPS);
 
-		Function<EntityMeta, PreparedStatement> function = builder.getSelectEagerPSTransformer(session);
+		Function<EntityMeta, PreparedStatement> function = builder.getSelectPSTransformer(session);
 		ImmutableList<PreparedStatement> result = FluentIterable.from(Arrays.asList(entityMeta)).transform(function)
 				.toImmutableList();
 
@@ -150,7 +150,7 @@ public class DaoContextFactoryTest {
 
 		// When
 		when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);
-		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
+		when(queryGenerator.prepareSelectPS(session, meta)).thenReturn(selectEagerPS);
 		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
 		when(queryGenerator.prepareSimpleCounterQueryMap(session)).thenReturn(counterQueryMap);
 
@@ -184,7 +184,7 @@ public class DaoContextFactoryTest {
 
 		// When
 		when(queryGenerator.prepareInsertPS(session, meta)).thenReturn(insertPS);
-		when(queryGenerator.prepareSelectEagerPS(session, meta)).thenReturn(selectEagerPS);
+		when(queryGenerator.prepareSelectPS(session, meta)).thenReturn(selectEagerPS);
 		when(queryGenerator.prepareRemovePSs(session, meta)).thenReturn(removePSs);
 
 		DaoContext actual = builder.build(session, entityMetaMap, false);

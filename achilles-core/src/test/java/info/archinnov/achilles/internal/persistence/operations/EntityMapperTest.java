@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package info.archinnov.achilles.internal.persistence;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -22,6 +22,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
