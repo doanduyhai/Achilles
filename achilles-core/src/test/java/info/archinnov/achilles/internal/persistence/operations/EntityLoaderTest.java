@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -35,6 +36,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.Row;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityLoaderTest {
@@ -43,75 +45,120 @@ public class EntityLoaderTest {
 	private EntityLoader loader;
 
 	@Mock
-	private ReflectionInvoker invoker;
+	private EntityMapper mapper;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private CounterLoader counterLoader;
 
 	@Mock
 	private PersistenceContext context;
 
-	private CompleteBean entity = new CompleteBean();
+    @Mock
+    private EntityMeta meta;
 
+    @Mock
 	private PropertyMeta idMeta;
 
+    @Mock
+    private PropertyMeta pm;
+
 	private Long primaryKey = RandomUtils.nextLong();
+
+    private CompleteBean entity = new CompleteBean();
 
 	@Before
 	public void setUp() throws Exception {
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors().invoker(invoker)
-				.build();
-
-		EntityMeta meta = new EntityMeta();
-		meta.setClusteredEntity(false);
-		meta.setIdMeta(idMeta);
-		meta.setEntityClass(CompleteBean.class);
-		Whitebox.setInternalState(meta, ReflectionInvoker.class, invoker);
-
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getEntityMeta()).thenReturn(meta);
 		when(context.getPrimaryKey()).thenReturn(primaryKey);
+        when(meta.getIdMeta()).thenReturn(idMeta);
 	}
 
 	@Test
 	public void should_create_empty_entity() throws Exception {
-        when(invoker.instantiate(CompleteBean.class)).thenReturn(entity);
+        when(meta.instanciate()).thenReturn(entity);
 
         CompleteBean actual = loader.createEmptyEntity(context, CompleteBean.class);
 
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(actual, idMeta.getField(), primaryKey);
+		verify(idMeta).setValueToField(actual, primaryKey);
 	}
 
 	@Test
-	public void should_load_entity() throws Exception {
+	public void should_load_simple_entity() throws Exception {
+        // Given
+        Row row = mock(Row.class);
+        when(meta.isClusteredCounter()).thenReturn(false);
+        when(context.loadEntity()).thenReturn(row);
+        when(meta.instanciate()).thenReturn(entity);
 
+        // When
 		CompleteBean actual = loader.load(context, CompleteBean.class);
 
+        // Then
 		assertThat(actual).isSameAs(entity);
 
-		verify(invoker).setValueToField(actual, idMeta.getField(), primaryKey);
+		verify(mapper).setNonCounterPropertiesToEntity(row,meta,entity);
+        verifyZeroInteractions(counterLoader);
 	}
 
     @Test
-    public void should_load_property_into_object() throws Exception {
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+    public void should_not_load_simple_entity_when_not_found() throws Exception {
+        // Given
+        when(meta.isClusteredCounter()).thenReturn(false);
+        when(meta.instanciate()).thenReturn(entity);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).build();
+        // When
+        CompleteBean actual = loader.load(context, CompleteBean.class);
 
-        loader.loadPropertyIntoObject(context, entity, pm);
+        // Then
+        assertThat(actual).isNull();
 
+        verifyZeroInteractions(mapper, counterLoader);
     }
 
     @Test
-    public void should_not_load_property_into_object_for_proxy_type() throws Exception {
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+    public void should_load_clustered_counter_entity() throws Exception {
+        // Given
+        when(meta.isClusteredCounter()).thenReturn(true);
+        when(counterLoader.loadClusteredCounters(context)).thenReturn(entity);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).build();
+        // When
+        CompleteBean actual = loader.load(context, CompleteBean.class);
 
+        // Then
+        assertThat(actual).isSameAs(entity);
+
+        verifyZeroInteractions(mapper);
+    }
+
+    @Test
+    public void should_load_properties_into_object() throws Exception {
+        // Given
+        when(pm.type()).thenReturn(PropertyType.SIMPLE);
+        Row row = mock(Row.class);
+        when(context.loadProperty(pm)).thenReturn(row);
+
+        // When
         loader.loadPropertyIntoObject(context, entity, pm);
 
+        // Then
+        verify(mapper).setPropertyToEntity(row,pm,entity);
+        verifyZeroInteractions(counterLoader);
+    }
+
+    @Test
+    public void should_load_counter_properties_into_object() throws Exception {
+        // Given
+        when(pm.type()).thenReturn(PropertyType.COUNTER);
+
+        // When
+        loader.loadPropertyIntoObject(context, entity, pm);
+
+        // Then
+        verify(counterLoader).loadCounter(context,entity,pm);
+        verifyZeroInteractions(mapper);
     }
 }

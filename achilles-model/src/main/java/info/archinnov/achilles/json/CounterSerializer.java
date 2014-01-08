@@ -18,6 +18,7 @@
 package info.archinnov.achilles.json;
 
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.CounterImpl;
 
 import java.io.IOException;
 
@@ -33,7 +34,7 @@ public final class CounterSerializer extends JsonSerializer<Counter> {
 			JsonProcessingException {
 
 		if (value != null) {
-			Long counterValue = value.get();
+			Long counterValue = ((CounterImpl)value).getInternalCounterDelta();
 			if (counterValue != null) {
 				generator.writeString(counterValue.toString());
 			} else {

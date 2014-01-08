@@ -63,6 +63,7 @@ public class SliceQueryIterator<T> implements Iterator<T> {
             clusteredEntity = meta.instanciate();
             if(context.isClusteredCounter()) {
                 mapper.setValuesToClusteredCounterEntity(row,meta,clusteredEntity);
+                mapper.setPropertyToEntity(row,meta.getIdMeta(),clusteredEntity);
             } else {
                 mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
             }
@@ -79,7 +80,7 @@ public class SliceQueryIterator<T> implements Iterator<T> {
 
 	private T proxify(T clusteredEntity) {
 		PersistenceContext duplicate = context.duplicate(clusteredEntity);
-		return proxifier.buildProxyWithAllFieldsLoaded(clusteredEntity, duplicate);
+		return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(clusteredEntity, duplicate);
 	}
 
 }

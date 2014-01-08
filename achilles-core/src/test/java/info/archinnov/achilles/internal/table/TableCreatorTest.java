@@ -126,7 +126,7 @@ public class TableCreatorTest {
 				.field("longMapCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(asList(longColPM, longListColPM, longSetColPM, longMapColPM));
+		meta.setAllMetasExceptIdAndCounters(asList(longColPM, longListColPM, longSetColPM, longMapColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -167,7 +167,7 @@ public class TableCreatorTest {
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(asList(longColPM));
+		meta.setAllMetasExceptIdAndCounters(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -190,7 +190,7 @@ public class TableCreatorTest {
 		longColPM.setIndexProperties(new IndexProperties(""));
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(asList(longColPM));
+		meta.setAllMetasExceptIdAndCounters(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -212,7 +212,7 @@ public class TableCreatorTest {
 		longColPM.setIndexProperties(new IndexProperties("monIndex"));
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(asList(longColPM));
+		meta.setAllMetasExceptIdAndCounters(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");
@@ -233,7 +233,7 @@ public class TableCreatorTest {
 		PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
 		meta = new EntityMeta();
-		meta.setAllMetasExceptId(asList(longColPM));
+		meta.setAllMetasExceptIdAndCounters(asList(longColPM));
 		meta.setIdMeta(idMeta);
 		meta.setTableName("tableName");
 		meta.setClassName("entityName");

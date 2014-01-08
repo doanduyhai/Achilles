@@ -16,29 +16,34 @@
  */
 package info.archinnov.achilles.internal.proxy;
 
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.MapWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.SetWrapper;
+import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import info.archinnov.achilles.type.CounterBuilder;
+import info.archinnov.achilles.type.CounterImpl;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -51,6 +56,7 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityInterceptorTest {
@@ -68,23 +74,28 @@ public class EntityInterceptorTest {
 	private EntityLoader loader;
 
 	@Mock
-	private EntityPersister persister;
+	private CounterLoader counterLoader;
 
 	@Mock
-	private EntityProxifier proxifier;
+	private ReflectionInvoker invoker;
 
 	@Mock
 	private MethodProxy proxy;
+
+    @Mock
+    private PropertyMeta pm;
 
 	private Object[] args = new Object[] {};
 
 	private Map<Method, PropertyMeta> getterMetas = new HashMap();
 	private Map<Method, PropertyMeta> setterMetas = new HashMap();
+    private Set<Method> alreadyLoaded = new HashSet<Method>();
 	private Map<Method, PropertyMeta> dirtyMap = new HashMap();
-	private CompleteBean bean;
+	private CompleteBean target;
 	private Long key = RandomUtils.nextLong();
 	private Object rawValue = "raw";
 	private PropertyMeta idMeta;
+
 
 	@Before
 	public void setUp() throws Throwable {
@@ -95,28 +106,34 @@ public class EntityInterceptorTest {
 		interceptor.setGetterMetas(getterMetas);
 		interceptor.setSetterMetas(setterMetas);
 
-		bean = CompleteBeanTestBuilder.builder().id(key).buid();
-		interceptor.setTarget(bean);
+		target = CompleteBeanTestBuilder.builder().id(key).buid();
+		interceptor.setTarget(target);
 		interceptor.setPrimaryKey(key);
 		interceptor.setContext(context);
 		interceptor.setDirtyMap(dirtyMap);
+        interceptor.setAlreadyLoaded(alreadyLoaded);
 
 		dirtyMap.clear();
+        alreadyLoaded.clear();
 
-		idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors().build();
+		idMeta = completeBean(Void.class, Long.class).field("id").accessors().build();
 
 		interceptor.setIdGetter(idMeta.getGetter());
 		interceptor.setIdSetter(idMeta.getSetter());
+
+        Whitebox.setInternalState(interceptor,"loader",loader);
+        Whitebox.setInternalState(interceptor,"counterLoader",counterLoader);
+        Whitebox.setInternalState(interceptor,"invoker",invoker);
 	}
 
 	@Test
 	public void should_return_key_when_invoking_id_getter() throws Throwable {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.build();
 
 		interceptor.setIdGetter(idMeta.getGetter());
 
-		Object id = interceptor.intercept(bean, idMeta.getGetter(), args, null);
+		Object id = interceptor.intercept(target, idMeta.getGetter(), args, null);
 
 		assertThat(id).isEqualTo(key);
 	}
@@ -132,55 +149,72 @@ public class EntityInterceptorTest {
 
 	@Test
 	public void should_return_simple_property() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name")
 				.accessors().type(PropertyType.SIMPLE).build();
 
+        alreadyLoaded.add(propertyMeta.getGetter());
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
+		when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(rawValue);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isEqualTo(rawValue);
 		verifyZeroInteractions(loader);
 	}
 
+    @Test
+    public void should_load_and_return_simple_property() throws Throwable {
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name")
+                                                           .accessors().type(PropertyType.SIMPLE).build();
+
+        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
+        when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(rawValue);
+
+        Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
+
+        assertThat(actual).isEqualTo(rawValue);
+        verify(loader).loadPropertyIntoObject(context,target,propertyMeta);
+    }
+
 	@Test
 	public void should_return_list_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
+		PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("friends")
 				.accessors().type(PropertyType.LIST).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new ArrayList<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
+		when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(rawValue);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isInstanceOf(ListWrapper.class);
 	}
 
 	@Test
 	public void should_return_null_for_list_property() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
-				.accessors().type(PropertyType.LIST).build();
+        // Given
+        Method method = CompleteBean.class.getDeclaredMethod("getFriends");
+        Field field = CompleteBean.class.getDeclaredField("friends");
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.LIST);
+		getterMetas.put(method, pm);
+		when(invoker.getValueFromField(target,field)).thenReturn(null);
 
-		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(null);
-
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, method, args, proxy);
 
 		assertThat(actual).isNull();
 	}
 
 	@Test
 	public void should_return_set_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("followers")
 				.accessors().type(PropertyType.SET).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new HashSet<String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
+		when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(rawValue);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isInstanceOf(SetWrapper.class);
 	}
@@ -188,47 +222,47 @@ public class EntityInterceptorTest {
 
 	@Test
 	public void should_return_null_for_set_property() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("followers")
 				.accessors().type(PropertyType.SET).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(null);
+		when(proxy.invoke(target, args)).thenReturn(null);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isNull();
 	}
 
 	@Test
 	public void should_return_map_wrapper() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
+		PropertyMeta propertyMeta = completeBean(Integer.class, String.class)
 				.field("preferences").accessors().type(PropertyType.MAP).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		rawValue = new HashMap<Integer, String>();
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
+		when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(rawValue);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isInstanceOf(MapWrapper.class);
 	}
 
 	@Test
 	public void should_return_null_for_map_property() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
+		PropertyMeta propertyMeta = completeBean(Integer.class, String.class)
 				.field("preferences").accessors().type(PropertyType.MAP).build();
 
 		getterMetas.put(propertyMeta.getGetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(null);
+		when(invoker.getValueFromField(target, propertyMeta.getField())).thenReturn(null);
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 		assertThat(actual).isNull();
 	}
 
 	@Test
 	public void should_exception_when_calling_setter_on_counter() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, Counter.class).field("count")
+		PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).field("count")
 				.accessors().type(PropertyType.COUNTER).build();
 
 		// No setter, use getter to simulate setter
@@ -236,21 +270,48 @@ public class EntityInterceptorTest {
 		exception.expect(UnsupportedOperationException.class);
 		exception
 				.expectMessage("Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
-		interceptor.intercept(bean, propertyMeta.getGetter(), args, proxy);
+		interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
 	}
 
 	@Test
 	public void should_set_simple_value() throws Throwable {
-		PropertyMeta propertyMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.accessors().type(PropertyType.SIMPLE).build();
-		setterMetas.put(propertyMeta.getSetter(), propertyMeta);
-		when(proxy.invoke(bean, args)).thenReturn(rawValue);
+        // Given
+        Method method = CompleteBean.class.getDeclaredMethod("getName");
 
-		Object actual = interceptor.intercept(bean, propertyMeta.getSetter(), args, proxy);
+		setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
-		assertThat(dirtyMap).containsKey(propertyMeta.getSetter());
-		assertThat(dirtyMap).containsValue(propertyMeta);
-		assertThat(actual).isSameAs(rawValue);
+        // When
+		Object actual = interceptor.intercept(target, method, new Object[]{rawValue}, proxy);
+
+
+        // Then
+        assertThat(alreadyLoaded).isEmpty();
+		assertThat(dirtyMap).containsKey(method);
+		assertThat(dirtyMap).containsValue(pm);
+		assertThat(actual).isNull();
+
+        verify(pm).setValueToField(target,rawValue);
 	}
+
+    @Test
+    public void should_load_clustered_counter() throws Throwable {
+        PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).field("count")
+                .accessors().type(PropertyType.COUNTER).invoker(new ReflectionInvoker()).build();
+
+        when(context.isClusteredCounter()).thenReturn(true);
+        getterMetas.put(propertyMeta.getGetter(), propertyMeta);
+
+        Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
+
+        assertThat(actual).isNull();
+        CounterImpl counter = (CounterImpl)target.getCount();
+
+        assertThat(counter.get()).isEqualTo(0L);
+        assertThat(counter.getInternalCounterDelta()).isEqualTo(0);
+
+        verify(counterLoader).loadClusteredCounterColumn(context,target,propertyMeta);
+    }
+
 }

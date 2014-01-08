@@ -153,7 +153,7 @@ public class DaoContextTest {
 		Whitebox.setInternalState(daoContext, CacheManager.class, cacheManager);
 		Whitebox.setInternalState(daoContext, "insertPSs", insertPSs);
 		Whitebox.setInternalState(daoContext, Cache.class, dynamicPSCache);
-		Whitebox.setInternalState(daoContext, "selectEagerPSs", selectEagerPSs);
+		Whitebox.setInternalState(daoContext, "selectPSs", selectEagerPSs);
 		Whitebox.setInternalState(daoContext, "removePSs", removePSs);
 		Whitebox.setInternalState(daoContext, "counterQueryMap", counterQueryMap);
 		Whitebox.setInternalState(daoContext, "clusteredCounterQueryMap", clusteredCounterQueryMap);
@@ -556,6 +556,80 @@ public class DaoContextTest {
 
 		assertThat(actual).isSameAs(row);
 	}
+
+
+    @Test
+    public void should_get_clustered_counter_column() throws Exception {
+        // Given
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        when(counterMeta.getPropertyName()).thenReturn("counter");
+
+        ResultSet resultSet = mock(ResultSet.class);
+        Row row = mock(Row.class);
+        when(resultSet.one()).thenReturn(row);
+        when(row.getLong("counter")).thenReturn(11L);
+
+        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
+                (SELECT, of("counter", ps)));
+
+        // When
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
+
+
+        // Then
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
+
+        assertThat(actual).isEqualTo(11L);
+    }
+
+    @Test
+    public void should_get_null_clustered_counter_column() throws Exception {
+        // Given
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        when(counterMeta.getPropertyName()).thenReturn("counter");
+
+        ResultSet resultSet = mock(ResultSet.class);
+        Row row = mock(Row.class);
+        when(resultSet.one()).thenReturn(row);
+        when(row.isNull("counter")).thenReturn(true);
+
+
+        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
+                (SELECT, of("counter", ps)));
+
+        // When
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
+
+
+        // Then
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
+
+        assertThat(actual).isNull();
+    }
+
+    @Test
+    public void should_get_null_clustered_counter_column_when_not_found() throws Exception {
+        // Given
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        when(counterMeta.getPropertyName()).thenReturn("counter");
+
+        ResultSet resultSet = mock(ResultSet.class);
+
+        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
+                (SELECT, of("counter", ps)));
+
+        // When
+        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
+
+
+        // Then
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
+
+        assertThat(actual).isNull();
+    }
 
 	@Test
 	public void should_bind_clustered_counter_delete() throws Exception {

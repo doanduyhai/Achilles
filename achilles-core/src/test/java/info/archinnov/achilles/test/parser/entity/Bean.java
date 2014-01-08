@@ -52,7 +52,6 @@ public class Bean {
 	private Map<Integer, String> preferences;
 
     @Column
-
     private UserBean creator;
 
     @Column
@@ -124,5 +123,9 @@ public class Bean {
 
     public Counter getCount() {
         return count;
+    }
+
+    public void setCount(Counter count) {
+        this.count = count;
     }
 }

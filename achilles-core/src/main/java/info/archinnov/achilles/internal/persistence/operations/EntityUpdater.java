@@ -17,7 +17,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.excludeCounterType;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,11 +26,9 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.validation.Validator;
 
@@ -41,7 +38,7 @@ public class EntityUpdater {
 
     private PropertyMetaComparator comparator = new PropertyMetaComparator();
 
-    private EntityPersister persister = new EntityPersister();
+    private CounterPersister counterPersister = new CounterPersister();
     private EntityProxifier proxifier = new EntityProxifier();
 
     public void update(PersistenceContext context, Object entity) {
@@ -69,9 +66,9 @@ public class EntityUpdater {
 
 
         if(context.isClusteredCounter()) {
-            persister.persistClusteredCounter(context);
+            counterPersister.persistClusteredCounters(context);
         } else {
-            persister.persistCounters(context,entityMeta.getAllCounterMetas());
+            counterPersister.persistCounters(context, entityMeta.getAllCounterMetas());
         }
         interceptor.setContext(context);
         interceptor.setTarget(realObject);

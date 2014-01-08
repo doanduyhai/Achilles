@@ -75,7 +75,7 @@ public class ClusteredEntityWithCounterIT {
 
 		assertThat(found.getId()).isEqualTo(compoundKey);
 		assertThat(found.getCounter().get()).isEqualTo(counterValue);
-		assertThat(found.getVersion().get()).isEqualTo(0L);
+		assertThat(found.getVersion().get()).isNull();
 	}
 
 	@Test

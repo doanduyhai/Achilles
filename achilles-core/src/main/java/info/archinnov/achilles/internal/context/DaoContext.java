@@ -234,7 +234,8 @@ public class DaoContext {
 		log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
 				consistencyLevel);
 		EntityMeta entityMeta = context.getEntityMeta();
-		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL.name());
+		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL
+                                                                                                                 .name());
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
 				consistencyLevel);
 		ResultSet resultSet = context.executeImmediate(bsWrapper);
@@ -246,13 +247,14 @@ public class DaoContext {
         log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
                   consistencyLevel);
         EntityMeta entityMeta = context.getEntityMeta();
-        PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(counterMeta.getPropertyName());
+        final String counterColumnName = counterMeta.getPropertyName();
+        PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(counterColumnName);
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
                                                                                consistencyLevel);
         Row row = context.executeImmediate(bsWrapper).one();
         Long counterValue = null;
-        if(row != null) {
-            counterValue = row.getLong(counterMeta.getPropertyName());
+        if(row != null && !row.isNull(counterColumnName)) {
+            counterValue = row.getLong(counterColumnName);
         }
         return counterValue;
     }

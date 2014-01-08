@@ -279,6 +279,7 @@ public class EntityMeta {
 
     @Override
 	public String toString() {
+
 		return Objects.toStringHelper(this.getClass()).add("className", className)
 				.add("tableName/columnFamilyName", tableName)
 				.add("propertyMetas", StringUtils.join(propertyMetas.keySet(), ",")).add("idMeta", idMeta)

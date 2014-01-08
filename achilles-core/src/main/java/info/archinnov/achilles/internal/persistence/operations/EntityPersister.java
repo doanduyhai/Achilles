@@ -16,21 +16,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static com.google.common.collect.Collections2.filter;
-import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
-import static info.archinnov.achilles.type.CounterBuilder.initialValue;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
-import info.archinnov.achilles.type.CounterImpl;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,22 +25,20 @@ import org.slf4j.LoggerFactory;
 public class EntityPersister {
 	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
 
+    private CounterPersister counterPersister = new CounterPersister();
+
 	public void persist(PersistenceContext context) {
 		EntityMeta entityMeta = context.getEntityMeta();
-
 		Object entity = context.getEntity();
+
 		log.debug("Persisting transient entity {}", entity);
 
 		if (entityMeta.isClusteredCounter()) {
-			persistClusteredCounter(context);
+			counterPersister.persistClusteredCounters(context);
 		} else {
-			persistEntity(context, entityMeta);
+            context.pushInsertStatement();
+            counterPersister.persistCounters(context, entityMeta.getAllCounterMetas());
 		}
-	}
-
-	private void persistEntity(PersistenceContext context, EntityMeta entityMeta) {
-        context.pushInsertStatement();
-		persistCounters(context, entityMeta.getAllCounterMetas());
 	}
 
     public void remove(PersistenceContext context) {
@@ -63,66 +48,9 @@ public class EntityPersister {
             context.bindForClusteredCounterRemoval();
         } else {
             context.bindForRemoval(entityMeta.getTableName());
-            removeRelatedCounters(context);
+            counterPersister.removeRelatedCounters(context);
         }
     }
 
-    protected void persistCounters(PersistenceContext context, List<PropertyMeta> counterMetas) {
-        log.trace("Persisting counters using PersistenceContext {}",context);
-        Object entity = context.getEntity();
-        for (PropertyMeta counterMeta : counterMetas) {
-            Object counter = counterMeta.getValueFromField(entity);
-            if (counter != null) {
-                Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
-                                       "Counter property '%s' value from entity class '%s'  should be of type '%s'",
-                                       counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
-                                       CounterImpl.class.getCanonicalName());
-                CounterImpl counterValue = (CounterImpl) counter;
-                final long counterDelta = counterValue.getInternalCounterDelta();
-                if(counterDelta >0) {
-                    context.bindForSimpleCounterIncrement(counterMeta, counterDelta);
-                }
-            }
-        }
-    }
 
-    protected void persistClusteredCounter(PersistenceContext context) {
-        log.trace("Persisting clustered counter using PersistenceContext {}",context);
-        Object entity = context.getEntity();
-
-        int nullCount=0;
-        final List<PropertyMeta> allCountersMeta = context.getAllCountersMeta();
-        for(PropertyMeta counterMeta: allCountersMeta) {
-            Object counter = counterMeta.getValueFromField(entity);
-            if (counter != null) {
-                Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
-                                       "Counter property '%s' value from entity class '%s'  should be of type '%s'",
-                                       counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
-                                       CounterImpl.class.getCanonicalName());
-                CounterImpl counterValue = (CounterImpl) counter;
-                final long counterDelta = counterValue.getInternalCounterDelta();
-                if(counterDelta >0) {
-                    context.pushClusteredCounterIncrementStatement(counterMeta, counterDelta);
-                }
-            } else {
-                nullCount++;
-            }
-        }
-
-        if(nullCount == allCountersMeta.size()) {
-            throw new IllegalStateException("Cannot insert clustered counter entity '" + entity
-                                                    + "' with null clustered counter value");
-        }
-
-    }
-
-    protected void removeRelatedCounters(PersistenceContext context) {
-        log.trace("Removing counter values related to entity using PersistenceContext {}", context);
-        EntityMeta entityMeta = context.getEntityMeta();
-
-        Collection<PropertyMeta> counterMetas = filter(entityMeta.getAllMetas(), counterType);
-        for (PropertyMeta pm : counterMetas) {
-            context.bindForSimpleCounterRemoval(pm);
-        }
-    }
 }

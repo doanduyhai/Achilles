@@ -331,6 +331,15 @@ public class PersistenceContextTest {
 		verify(flushContext).pushStatement(bsWrapper);
 	}
 
+    @Test
+    public void should_push_counter_statement_wrapper() throws Exception {
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
+
+        context.pushCounterStatement(bsWrapper);
+
+        verify(flushContext).pushCounterStatement(bsWrapper);
+    }
+
 	@Test
 	public void should_execute_immediate() throws Exception {
 		// Given
@@ -351,7 +360,7 @@ public class PersistenceContextTest {
         //Given
         Object entity = new Object();
         context.entity = entity;
-        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity,context)).thenReturn(entity);
 
         //When
 		Object actual = context.persist(entity);
@@ -407,7 +416,7 @@ public class PersistenceContextTest {
 	public void should_find() throws Exception {
         //Given
 		when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-		when(proxifier.buildProxyWithAllFieldsLoaded(entity, context)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
         //When
 		CompleteBean found = context.find(CompleteBean.class);

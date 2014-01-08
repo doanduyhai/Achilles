@@ -5,14 +5,11 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.helper.EntityIntrospector;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,10 +23,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class EntityRefresherTest {
 
 	@InjectMocks
-	private EntityRefresher entityRefresher;
+	private EntityRefresher refresher;
 
-	@Mock
-	private EntityIntrospector introspector;
 
 	@Mock
 	private EntityProxifier proxifier;
@@ -49,6 +44,9 @@ public class EntityRefresherTest {
 	@Mock
 	private Set<Method> alreadyLoaded;
 
+    @Mock
+    private Set<Method> allGettersExceptCounters;
+
 	@Mock
 	private PersistenceContext context;
 
@@ -64,13 +62,15 @@ public class EntityRefresherTest {
 
 		when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
 		when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
+		when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
+        when(context.getAllGettersExceptCounters()).thenReturn(allGettersExceptCounters);
 
-		entityRefresher.refresh(bean,context);
+		refresher.refresh(bean, context);
 
 		verify(dirtyMap).clear();
-		verify(alreadyLoaded).clear();
+		verify(alreadyLoaded).addAll(allGettersExceptCounters);
 		verify(jpaEntityInterceptor).setTarget(bean);
 	}
 
@@ -89,6 +89,6 @@ public class EntityRefresherTest {
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(loader.load(context, CompleteBean.class)).thenReturn(null);
 
-		entityRefresher.refresh(bean,context);
+		refresher.refresh(bean, context);
 	}
 }

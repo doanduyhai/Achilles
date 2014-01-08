@@ -46,5 +46,6 @@ public class EntityRefresher {
 					+ "' no longer exists in Cassandra");
 		}
 		interceptor.setTarget(freshEntity);
+        interceptor.getAlreadyLoaded().addAll(context.getAllGettersExceptCounters());
 	}
 }

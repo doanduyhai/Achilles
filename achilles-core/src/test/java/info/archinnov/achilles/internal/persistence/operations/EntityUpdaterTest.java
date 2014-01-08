@@ -1,6 +1,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -22,6 +23,8 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -33,7 +36,7 @@ public class EntityUpdaterTest {
 	private EntityUpdater entityUpdater;
 
 	@Mock
-	private EntityPersister persister;
+	private CounterPersister counterPersister;
 
 	@Mock
 	private EntityProxifier proxifier;
@@ -44,19 +47,28 @@ public class EntityUpdaterTest {
 	@Mock
 	private PersistenceContext context;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+    @Mock
+    private PropertyMeta pm;
 
-	private EntityMeta meta = new EntityMeta();
+    @Mock
+    private EntityMeta meta;
 
-	private List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
+    @Captor
+    private ArgumentCaptor<List<PropertyMeta>> pmCaptor;
 
-	private Map<Method, PropertyMeta> dirtyMap = new HashMap<Method, PropertyMeta>();
+    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+
+    private List<PropertyMeta> allMetas = new ArrayList();
+
+	private List<PropertyMeta> allCounterMetas = new ArrayList();
+
+	private Map<Method, PropertyMeta> dirtyMap = new HashMap();
 
 	@Before
 	public void setUp() {
 
 		when(context.getEntity()).thenReturn(entity);
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 
 		allMetas.clear();
@@ -69,20 +81,50 @@ public class EntityUpdaterTest {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+        when(meta.getAllCounterMetas()).thenReturn(allCounterMetas);
 
-		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
 				.accessors().build();
-
-		meta.setAllMetasExceptId(Arrays.<PropertyMeta>asList(pm));
-
-		dirtyMap.put(pm.getSetter(), pm);
+        dirtyMap.put(pm.getGetter(),pm);
+        when(context.isClusteredCounter()).thenReturn(false);
 
 		entityUpdater.update(context, entity);
 
 		verify(context).setEntity(entity);
+        verify(context).pushUpdateStatement(pmCaptor.capture());
 
+        assertThat(pmCaptor.getValue()).containsOnly(pm);
+
+        verify(counterPersister).persistCounters(context,allCounterMetas);
 		verify(interceptor).setContext(context);
 		verify(interceptor).setTarget(entity);
 
 	}
+
+
+    @Test
+    public void should_update_proxified_clustered_counter_entity() throws Exception {
+        when(proxifier.isProxy(entity)).thenReturn(true);
+        when(proxifier.getRealObject(entity)).thenReturn(entity);
+        when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+        when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+
+        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+                                                 .accessors().build();
+        dirtyMap.put(pm.getGetter(),pm);
+        when(context.isClusteredCounter()).thenReturn(true);
+
+
+        entityUpdater.update(context, entity);
+
+        verify(context).setEntity(entity);
+        verify(context).pushUpdateStatement(pmCaptor.capture());
+
+        assertThat(pmCaptor.getValue()).containsOnly(pm);
+
+        verify(counterPersister).persistClusteredCounters(context);
+        verify(interceptor).setContext(context);
+        verify(interceptor).setTarget(entity);
+
+    }
 }

@@ -84,7 +84,7 @@ public class EntityProxifierTest {
         doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
 
-        CompleteBean proxy = proxifier.buildProxyWithAllFieldsLoaded(entity, context);
+        CompleteBean proxy = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);
 
         assertThat(proxy).isNotNull();
         assertThat(proxy).isInstanceOf(Factory.class);
@@ -96,7 +96,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_build_null_proxy() throws Exception {
-        assertThat(proxifier.buildProxyWithAllFieldsLoaded(null, context)).isNull();
+        assertThat(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(null, context)).isNull();
     }
 
     @Test

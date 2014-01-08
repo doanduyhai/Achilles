@@ -146,7 +146,7 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_persist() throws Exception {
 		// Given
-        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity,context)).thenReturn(entity);
         when(context.persist(entity)).thenReturn(entity);
 
 
@@ -162,7 +162,7 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_persist_with_options() throws Exception {
 		// Given
-        when(proxifier.buildProxyWithAllFieldsLoaded(entity,context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity,context)).thenReturn(entity);
         when(context.persist(entity)).thenReturn(entity);
 
         // When

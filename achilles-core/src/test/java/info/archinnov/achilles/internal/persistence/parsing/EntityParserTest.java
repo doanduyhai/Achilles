@@ -92,7 +92,7 @@ public class EntityParserTest {
 		assertThat(meta.getIdMeta().<Long> getValueClass()).isEqualTo(Long.class);
 		assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
 		assertThat(meta.<Long> getIdClass()).isEqualTo(Long.class);
-		assertThat(meta.getPropertyMetas()).hasSize(7);
+		assertThat(meta.getPropertyMetas()).hasSize(8);
 
 		PropertyMeta id = meta.getPropertyMetas().get("id");
 		PropertyMeta name = meta.getPropertyMetas().get("name");
@@ -161,9 +161,9 @@ public class EntityParserTest {
 		assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
 		assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
-		assertThat(meta.getAllMetasExceptId()).containsOnly(name, age, followers, preferences, creator,count);
-		assertThat(meta.getAllMetasExceptIdAndCounters()).containsOnly(name, age, followers, preferences, creator);
-		assertThat(meta.getAllMetasExceptCounters()).containsOnly(id,name, age, followers, preferences, creator);
+		assertThat(meta.getAllMetasExceptId()).hasSize(7).containsOnly(name, age, friends,followers, preferences, creator,count);
+		assertThat(meta.getAllMetasExceptIdAndCounters()).hasSize(6).containsOnly(name, age, friends,followers, preferences, creator);
+		assertThat(meta.getAllMetasExceptCounters()).hasSize(7).containsOnly(id,name, age, friends,followers, preferences, creator);
 
 	}
 

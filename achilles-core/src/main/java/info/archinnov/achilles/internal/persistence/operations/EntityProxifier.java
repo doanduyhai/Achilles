@@ -52,10 +52,6 @@ public class EntityProxifier {
 		return baseClass;
 	}
 
-    public <T> T buildProxyWithAllFieldsLoaded(T entity, PersistenceContext context) {
-        return buildProxy(entity, context, context.getAllGetters());
-    }
-
     public <T> T buildProxyWithAllFieldsLoadedExceptCounters(T entity, PersistenceContext context) {
         return buildProxy(entity, context, context.getAllGettersExceptCounters());
     }

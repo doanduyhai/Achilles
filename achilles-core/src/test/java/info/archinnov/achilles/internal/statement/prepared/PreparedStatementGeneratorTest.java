@@ -21,6 +21,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
@@ -85,7 +86,7 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("table");
-		meta.setAllMetasExceptId(Arrays.asList(nameMeta, counterMeta));
+		meta.setAllMetasExceptIdAndCounters(asList(nameMeta));
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -108,7 +109,7 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("table");
-		meta.setAllMetasExceptId(Arrays.asList(nameMeta));
+		meta.setAllMetasExceptIdAndCounters(asList(nameMeta));
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
@@ -176,7 +177,7 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareUpdateFields(session, meta, Arrays.asList(nameMeta, ageMeta));
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
 
@@ -201,7 +202,7 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = generator.prepareUpdateFields(session, meta, Arrays.asList(nameMeta, ageMeta));
+		PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta));
 
 		assertThat(actual).isSameAs(ps);
 
@@ -238,9 +239,9 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-		meta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
-		meta.setAllMetasExceptId(Arrays.asList(nameMeta));
-        meta.setAllMetasExceptCounters(Arrays.asList(nameMeta));
+		meta.setAllMetasExceptIdAndCounters(asList(nameMeta));
+		meta.setAllMetasExceptId(asList(nameMeta));
+        meta.setAllMetasExceptCounters(asList(nameMeta));
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -262,9 +263,8 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-        meta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
-        meta.setAllMetasExceptId(Arrays.asList(nameMeta));
-        meta.setAllMetasExceptCounters(Arrays.asList(nameMeta));;
+        meta.setAllMetasExceptCounters(asList(idMeta, nameMeta));
+        meta.setClusteredCounter(false);
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -388,6 +388,7 @@ public class PreparedStatementGeneratorTest {
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("counterTable");
+        meta.setPropertyMetas(ImmutableMap.of("id",idMeta,"counter",counterMeta));
 
 		PreparedStatement incrPs = mock(PreparedStatement.class);
 		PreparedStatement decrPs = mock(PreparedStatement.class);
@@ -405,10 +406,12 @@ public class PreparedStatementGeneratorTest {
 
 		List<RegularStatement> regularStatements = regularStatementCaptor.getAllValues();
 
-		assertThat(regularStatements).hasSize(4);
-		assertThat(regularStatements.get(0).getQueryString()).isEqualTo("UPDATE counterTable SET count=count+? WHERE id=?;");
+		assertThat(regularStatements).hasSize(5);
+		assertThat(regularStatements.get(0).getQueryString()).isEqualTo("UPDATE counterTable SET count=count+? WHERE " +
+                                                                                "id=?;");
 		assertThat(regularStatements.get(1).getQueryString()).isEqualTo("UPDATE counterTable SET count=count-? WHERE id=?;");
 		assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=?;");
-		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
+		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=?;");
+		assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
 	}
 }

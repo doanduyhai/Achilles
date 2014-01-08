@@ -16,28 +16,21 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.CounterBuilder;
 
 public class EntityLoader {
 
     private static final Logger log  = LoggerFactory.getLogger(EntityLoader.class);
 
     private EntityMapper mapper = new EntityMapper();
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
+    private CounterLoader counterLoader = new CounterLoader();
 
 	public <T> T load(PersistenceContext context, Class<T> entityClass) {
         log.debug("Loading entity of class {} using PersistenceContext {}",entityClass,context);
@@ -52,16 +45,7 @@ public class EntityLoader {
         T entity = null;
 
         if (entityMeta.isClusteredCounter()) {
-            ConsistencyLevel readLevel = overrider.getReadLevel(context,entityMeta);
-            Row row =context.getClusteredCounter(readLevel);
-            if(row != null) {
-                entity = entityMeta.instanciate();
-                entityMeta.getIdMeta().setValueToField(entity, primaryKey);
-
-                for(PropertyMeta counterMeta:context.getAllCountersMeta()) {
-                    mapper.setCounterToEntity(counterMeta, entity, row);
-                }
-            }
+            entity = counterLoader.loadClusteredCounters(context);
         } else {
             Row row = context.loadEntity();
             if (row != null) {
@@ -69,7 +53,6 @@ public class EntityLoader {
                 mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
             }
         }
-		entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 
 		return entity;
 	}
@@ -94,27 +77,11 @@ public class EntityLoader {
         log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);
         PropertyType type = pm.type();
         if (type.isCounter()) {
-            loadCounter(context, realObject, pm);
+            counterLoader.loadCounter(context, realObject, pm);
         } else {
-            loadPropertyIntoEntity(context, pm, realObject);
+            Row row = context.loadProperty(pm);
+            mapper.setPropertyToEntity(row, pm, realObject);
         }
 
-    }
-
-    public void loadClusteredCounterColumn(PersistenceContext context, Object realObject, PropertyMeta counterMeta) {
-        ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
-        Long counterValue = context.getClusteredCounterColumn(counterMeta, readLevel);
-        mapper.setCounterToEntity(counterMeta, realObject, counterValue);
-    }
-
-    private void loadCounter(PersistenceContext context, Object entity, PropertyMeta counterMeta) {
-        ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
-        final Long initialCounterValue = context.getSimpleCounter(counterMeta, readLevel);
-        mapper.setCounterToEntity(counterMeta, entity, initialCounterValue);
-    }
-
-    private void loadPropertyIntoEntity(PersistenceContext context, PropertyMeta pm, Object entity) {
-        Row row = context.loadProperty(pm);
-        mapper.setPropertyToEntity(row, pm, entity);
     }
 }

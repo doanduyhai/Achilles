@@ -143,11 +143,10 @@ public class StatementGeneratorTest {
         when(idMeta.encode(primaryKey)).thenReturn(primaryKey);
         when(idMeta.getPropertyName()).thenReturn("id");
 
-        when(meta.getAllMetasExceptId()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getColumnsMetaToInsert()).thenReturn(Arrays.asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
-        when(nameMeta.getValueFromField(entity)).thenReturn(myName);
-        when(nameMeta.encode(myName)).thenReturn(myName);
+        when(nameMeta.getAndEncodeValueForCassandra(entity)).thenReturn(myName);
         when(nameMeta.getPropertyName()).thenReturn("name");
 
         final Pair<Insert, Object[]> pair = generator.generateInsert(entity, meta);
@@ -178,11 +177,10 @@ public class StatementGeneratorTest {
         when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id","type"));
         when(idMeta.encodeToComponents(primaryKey)).thenReturn(Arrays.<Object>asList(id,type));
 
-        when(meta.getAllMetasExceptId()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getColumnsMetaToInsert()).thenReturn(Arrays.asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
-        when(nameMeta.getValueFromField(entity)).thenReturn(myName);
-        when(nameMeta.encode(myName)).thenReturn(myName);
+        when(nameMeta.getAndEncodeValueForCassandra(entity)).thenReturn(myName);
         when(nameMeta.getPropertyName()).thenReturn("name");
 
         final Pair<Insert, Object[]> pair = generator.generateInsert(entity, meta);

@@ -94,7 +94,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -115,7 +115,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
 
 		ColumnMetadata userColumn = mock(ColumnMetadata.class);
 		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
@@ -148,7 +148,7 @@ public class TableValidatorTest {
 				.type(SIMPLE).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(nameMeta));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(nameMeta));
 
 		ColumnMetadata userColumn = mock(ColumnMetadata.class);
 		ColumnMetadata nameColumn = mock(ColumnMetadata.class);
@@ -180,7 +180,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -205,7 +205,7 @@ public class TableValidatorTest {
 		pm.setIndexProperties(new IndexProperties(""));
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -231,7 +231,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -255,7 +255,7 @@ public class TableValidatorTest {
 				.build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);
@@ -275,7 +275,7 @@ public class TableValidatorTest {
 				.type(MAP).build();
 
 		entityMeta.setIdMeta(idMeta);
-		entityMeta.setAllMetasExceptId(Arrays.asList(pm));
+		entityMeta.setAllMetasExceptIdAndCounters(Arrays.asList(pm));
 
 		when(tableMetaData.getName()).thenReturn("table");
 		when(tableMetaData.getColumn("id")).thenReturn(columnMetadata);

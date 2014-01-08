@@ -108,8 +108,9 @@ public class EntityMetaBuilderTest {
 
 	@Test
 	public void should_build_meta_with_consistency_levels() throws Exception {
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		Map<String, PropertyMeta> propertyMetas = new HashMap();
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class)
+                .field("name").type(PropertyType.SIMPLE)
 				.accessors().build();
 		propertyMetas.put("name", nameMeta);
 

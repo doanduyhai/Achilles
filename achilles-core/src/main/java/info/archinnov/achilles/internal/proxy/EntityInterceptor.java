@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internal.proxy;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.MapWrapperBuilder;
@@ -44,6 +45,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
     private static final transient Logger log = LoggerFactory.getLogger(EntityInterceptor.class);
 
     private transient EntityLoader loader = new EntityLoader();
+    private transient CounterLoader counterLoader = new CounterLoader();
     private transient ReflectionInvoker invoker = new ReflectionInvoker();
 
     private transient T target;
@@ -90,7 +92,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
         if (!this.alreadyLoaded.contains(method)) {
             log.trace("Loading property {}", propertyMeta.getPropertyName());
             if(context.isClusteredCounter()) {
-                loader.loadClusteredCounterColumn(context, target, propertyMeta);
+                counterLoader.loadClusteredCounterColumn(context, target, propertyMeta);
             } else {
                 loader.loadPropertyIntoObject(context, target, propertyMeta);
             }
@@ -155,6 +157,14 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 
     private void interceptSetter(Method method, Object[] args) throws Throwable {
         PropertyMeta propertyMeta = this.setterMetas.get(method);
+
+        switch (propertyMeta.type()) {
+            case COUNTER:
+                throw new UnsupportedOperationException(
+                        "Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
+            default:
+                break;
+        }
 
         log.trace("Flagging property {}", propertyMeta.getPropertyName());
 
@@ -226,5 +236,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
     private PropertyMeta getPropertyMetaByProperty(Method method) {
         return getterMetas.get(method);
     }
+
+
 
 }

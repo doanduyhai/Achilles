@@ -17,6 +17,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.EMBEDDED_ID;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -30,6 +31,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.CounterImpl;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,6 +40,8 @@ import java.util.Map;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -70,6 +74,9 @@ public class EntityMapperTest {
 	@Mock
 	private EntityMeta entityMeta;
 
+    @Captor
+    private ArgumentCaptor<CounterImpl> counterCaptor;
+
 	private Definition def1;
 	private Definition def2;
 
@@ -80,6 +87,7 @@ public class EntityMapperTest {
 		PropertyMeta pm = mock(PropertyMeta.class);
 		when(pm.isEmbeddedId()).thenReturn(false);
 		when(pm.getPropertyName()).thenReturn("name");
+        when(entityMeta.getAllMetasExceptCounters()).thenReturn(asList(pm));
 
 		when(row.isNull("name")).thenReturn(false);
 		when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
@@ -88,6 +96,24 @@ public class EntityMapperTest {
 
 		verify(pm).setValueToField(entity, "value");
 	}
+
+    @Test
+    public void should_set_value_to_clustered_counter_entity() throws Exception {
+        //Given
+        Long counterValue = 10L;
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        when(counterMeta.getPropertyName()).thenReturn("counter");
+        when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
+        when(cqlRowInvoker.invokeOnRowForType(row,Long.class,"counter")).thenReturn(counterValue);
+
+        //When
+        entityMapper.setValuesToClusteredCounterEntity(row,entityMeta,entity);
+
+        //Then
+        verify(counterMeta).setValueToField(eq(entity),counterCaptor.capture());
+
+        assertThat(counterCaptor.getValue().get()).isEqualTo(counterValue);
+    }
 
 	@Test
 	public void should_set_null_to_entity_when_no_value_from_row() throws Exception {
@@ -139,7 +165,7 @@ public class EntityMapperTest {
 		def2 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "value", DataType.text());
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
-		when(columnDefs.iterator()).thenReturn(Arrays.asList(def1, def2).iterator());
+		when(columnDefs.iterator()).thenReturn(asList(def1, def2).iterator());
 
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.instanciate()).thenReturn(entity);

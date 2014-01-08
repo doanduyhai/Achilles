@@ -31,59 +31,28 @@ public class CounterBuilderTest {
 
 	@Test
 	public void should_incr() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		assertThat(counter.get()).isEqualTo(1L);
+		CounterImpl counter = (CounterImpl)CounterBuilder.incr();
+		assertThat(counter.getInternalCounterDelta()).isEqualTo(1L);
 	}
 
 	@Test
 	public void should_incr_n() throws Exception {
-		Counter counter = CounterBuilder.incr(10L);
-		assertThat(counter.get()).isEqualTo(10L);
+        CounterImpl counter = (CounterImpl)CounterBuilder.incr(10L);
+		assertThat(counter.getInternalCounterDelta()).isEqualTo(10L);
 	}
 
 	@Test
 	public void should_decr() throws Exception {
-		Counter counter = CounterBuilder.decr();
-		assertThat(counter.get()).isEqualTo(-1L);
+        CounterImpl counter = (CounterImpl)CounterBuilder.decr();
+		assertThat(counter.getInternalCounterDelta()).isEqualTo(-1L);
 	}
 
 	@Test
 	public void should_decr_n() throws Exception {
-		Counter counter = CounterBuilder.decr(10L);
-		assertThat(counter.get()).isEqualTo(-10L);
+        CounterImpl counter = (CounterImpl)CounterBuilder.decr(10L);
+		assertThat(counter.getInternalCounterDelta()).isEqualTo(-10L);
 	}
 
-	@Test
-	public void should_exception_when_calling_incr() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.incr();
-	}
-
-	@Test
-	public void should_exception_when_calling_incr_n() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.incr(10L);
-	}
-
-	@Test
-	public void should_exception_when_calling_decr() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.decr();
-	}
-
-	@Test
-	public void should_exception_when_calling_decr_n() throws Exception {
-		Counter counter = CounterBuilder.incr();
-		exception.expect(UnsupportedOperationException.class);
-		exception.expectMessage("This method is not meant to be called");
-		counter.decr(10L);
-	}
 
 
 
@@ -97,8 +66,8 @@ public class CounterBuilderTest {
 		String serialized = mapper.writeValueAsString(counter);
 		assertThat(serialized).isEqualTo("\"11\"");
 
-		Counter deserialized = mapper.readValue(serialized, Counter.class);
-		assertThat(deserialized.get()).isEqualTo(11L);
+		CounterImpl deserialized = (CounterImpl)mapper.readValue(serialized, Counter.class);
+		assertThat(deserialized.getInternalCounterDelta()).isEqualTo(11L);
 
 		assertThat(mapper.writeValueAsString(CounterBuilder.incr(0))).isEqualTo("\"0\"");
 	}

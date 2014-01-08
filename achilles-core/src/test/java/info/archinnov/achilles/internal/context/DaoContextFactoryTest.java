@@ -75,6 +75,8 @@ public class DaoContextFactoryTest {
 
 	@Mock
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
+
+    @Mock
 	private Map<CQLQueryType, Map<String,PreparedStatement>> clusteredCounterQueryMap;
 
 	@Before
@@ -160,7 +162,7 @@ public class DaoContextFactoryTest {
 		// Then
 		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs")).containsValue(
 				insertPS);
-		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectEagerPSs"))
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs"))
 				.containsValue(selectEagerPS);
 		assertThat((Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual, "removePSs"))
 				.containsKey(CompleteBean.class);
@@ -175,7 +177,7 @@ public class DaoContextFactoryTest {
 	@Test
 	public void should_build_dao_context_without_counter() throws Exception {
 		// Given
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap();
 		EntityMeta meta = new EntityMeta();
 		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
@@ -193,7 +195,7 @@ public class DaoContextFactoryTest {
 		// Then
 		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs")).containsValue(
 				insertPS);
-		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectEagerPSs"))
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs"))
 				.containsValue(selectEagerPS);
 		assertThat((Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual, "removePSs"))
 				.containsKey(CompleteBean.class);

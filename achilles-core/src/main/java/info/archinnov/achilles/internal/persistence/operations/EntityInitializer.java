@@ -23,21 +23,17 @@ import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
+import info.archinnov.achilles.type.CounterImpl;
 
 public class EntityInitializer {
 	private static final Logger log = LoggerFactory.getLogger(EntityInitializer.class);
-
-	private EntityProxifier proxifier = new EntityProxifier();
 
 	public <T> void initializeEntity(T entity, EntityMeta entityMeta) {
 
 		log.debug("Initializing lazy fields for entity {} of class {}", entity, entityMeta.getClassName());
 
 		for (PropertyMeta propertyMeta : entityMeta.getAllCounterMetas()) {
-				Object value = propertyMeta.invokeGetter(entity);
-				Counter counter = (Counter) value;
-				Object realObject = proxifier.getRealObject(entity);
-				propertyMeta.setValueToField(realObject, CounterBuilder.initialValue(counter.get()));
+				propertyMeta.invokeGetter(entity);
 		}
 	}
 }
