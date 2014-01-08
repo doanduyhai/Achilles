@@ -498,16 +498,16 @@ public class SliceQueryBuilder<T> extends RootSliceQueryBuilder<T> {
 		}
 
 		/**
-		 * Iterator on entities with batchSize<br/>
+		 * Iterator on entities with fetchSize<br/>
 		 * <br/>
 		 * 
-		 * @param batchSize
+		 * @param fetchSize
 		 *            maximum number of rows to fetch on each batch
 		 * 
 		 * @return Iterator<T>
 		 */
-		public Iterator<T> iterator(int batchSize) {
-			return SliceQueryBuilder.super.iterator(batchSize);
+		public Iterator<T> iterator(int fetchSize) {
+			return SliceQueryBuilder.super.iterator(fetchSize);
 		}
 
 		/**

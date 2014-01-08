@@ -20,7 +20,6 @@ import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
 
 import java.util.Map;
 
@@ -92,7 +91,7 @@ public class EntityMapper  {
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Long counterValue) {
         log.debug("Set counter value {} to property {} of entity class {}", counterValue,counterMeta.getPropertyName(),counterMeta.getEntityClassName());
-        final Counter counter = CounterBuilder.initialValue(counterValue);
+        final Counter counter = InternalCounterBuilder.initialValue(counterValue);
         counterMeta.setValueToField(entity,counter);
     }
 

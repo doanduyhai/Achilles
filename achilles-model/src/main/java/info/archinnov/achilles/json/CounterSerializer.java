@@ -18,23 +18,20 @@
 package info.archinnov.achilles.json;
 
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterImpl;
 
 import java.io.IOException;
 
 import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
 
 public final class CounterSerializer extends JsonSerializer<Counter> {
 
 	@Override
-	public void serialize(Counter value, JsonGenerator generator, SerializerProvider provider) throws IOException,
-			JsonProcessingException {
+	public void serialize(Counter value, JsonGenerator generator, SerializerProvider provider) throws IOException {
 
 		if (value != null) {
-			Long counterValue = ((CounterImpl)value).getInternalCounterDelta();
+			Long counterValue = value.get();
 			if (counterValue != null) {
 				generator.writeString(counterValue.toString());
 			} else {

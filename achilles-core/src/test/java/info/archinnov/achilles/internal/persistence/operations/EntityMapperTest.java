@@ -23,7 +23,6 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -31,7 +30,6 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.type.CounterImpl;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,7 +73,7 @@ public class EntityMapperTest {
 	private EntityMeta entityMeta;
 
     @Captor
-    private ArgumentCaptor<CounterImpl> counterCaptor;
+    private ArgumentCaptor<InternalCounterImpl> counterCaptor;
 
 	private Definition def1;
 	private Definition def2;

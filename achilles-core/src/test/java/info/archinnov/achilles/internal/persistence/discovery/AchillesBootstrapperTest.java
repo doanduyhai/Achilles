@@ -227,8 +227,7 @@ public class AchillesBootstrapperTest {
 
     private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {
         @Override
-        public String onEvent(String entity) {
-            return null;
+        public void onEvent(String entity) {
         }
 
         @Override
@@ -239,8 +238,7 @@ public class AchillesBootstrapperTest {
 
     private Interceptor<String> stringInterceptor2 = new Interceptor<String>() {
         @Override
-        public String onEvent(String entity) {
-            return null;
+        public void onEvent(String entity) {
         }
 
         @Override
@@ -251,8 +249,7 @@ public class AchillesBootstrapperTest {
 
     private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
         @Override
-        public Long onEvent(Long entity) {
-            return null;
+        public void onEvent(Long entity) {
         }
 
         @Override

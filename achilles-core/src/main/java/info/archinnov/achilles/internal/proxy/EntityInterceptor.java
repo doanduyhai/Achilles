@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.archinnov.achilles.type.CounterBuilder;
+import info.archinnov.achilles.internal.persistence.operations.InternalCounterBuilder;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
@@ -106,7 +106,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
         switch (propertyMeta.type()) {
             case COUNTER:
                 if(rawValue == null) {
-                    final Counter counter = CounterBuilder.initialValue(0L);
+                    final Counter counter = InternalCounterBuilder.initialValue(0L);
                     propertyMeta.setValueToField(target,counter);
                 }
                 result = rawValue;

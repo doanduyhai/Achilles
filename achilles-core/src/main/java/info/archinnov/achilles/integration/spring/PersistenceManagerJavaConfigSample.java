@@ -19,11 +19,13 @@ package info.archinnov.achilles.integration.spring;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.persistence.PersistenceManagerFactory.*;
 import static org.apache.commons.lang.StringUtils.*;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -85,6 +87,9 @@ public class PersistenceManagerJavaConfigSample {
 	@Autowired
 	private ObjectMapperFactory objecMapperFactory;
 
+    @Autowired
+    private List<Interceptor<?>> eventInterceptors;
+
 	@Value("#{cassandraProperties['achilles.consistency.read.default']}")
 	private String consistencyLevelReadDefault;
 
@@ -97,8 +102,8 @@ public class PersistenceManagerJavaConfigSample {
 	@Value("#{cassandraProperties['achilles.consistency.write.map']}")
 	private String consistencyLevelWriteMap;
 
-	@Value("#{cassandraProperties['achilles.ddl.force.column.family.creation']}")
-	private String forceColumnFamilyCreation;
+	@Value("#{cassandraProperties['achilles.ddl.force.table.creation']}")
+	private String forceTableCreation;
 
 	private PersistenceManagerFactory pmf;
 
@@ -155,7 +160,9 @@ public class PersistenceManagerJavaConfigSample {
 			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, extractConsistencyMap(consistencyLevelWriteMap));
 		}
 
-		configMap.put(FORCE_TABLE_CREATION_PARAM, Boolean.parseBoolean(forceColumnFamilyCreation));
+		configMap.put(FORCE_TABLE_CREATION_PARAM, Boolean.parseBoolean(forceTableCreation));
+
+        configMap.put(EVENT_INTERCEPTORS_PARAM,eventInterceptors);
 
 		return configMap;
 	}

@@ -20,7 +20,7 @@ import java.util.List;
 
 public interface Interceptor<T> {
 
-	public T onEvent(T entity);
+	public void onEvent(T entity);
 
 	public List<Event> events();
 

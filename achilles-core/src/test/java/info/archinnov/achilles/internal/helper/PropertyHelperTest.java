@@ -137,8 +137,8 @@ public class PropertyHelperTest {
 
     private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
         @Override
-        public Long onEvent(Long entity) {
-            return null;
+        public void onEvent(Long entity) {
+
         }
 
         @Override

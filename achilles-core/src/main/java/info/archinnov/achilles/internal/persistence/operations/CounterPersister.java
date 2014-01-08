@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.type.CounterBuilder.CounterImpl;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +8,7 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.CounterImpl;
+import info.archinnov.achilles.type.CounterBuilder;
 
 public class CounterPersister {
     private static final Logger log = LoggerFactory.getLogger(CounterPersister.class);
@@ -18,12 +19,8 @@ public class CounterPersister {
         for (PropertyMeta counterMeta : counterMetas) {
             Object counter = counterMeta.getValueFromField(entity);
             if (counter != null) {
-                Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
-                                       "Counter property '%s' value from entity class '%s'  should be of type '%s'",
-                                       counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
-                                       CounterImpl.class.getCanonicalName());
-                CounterImpl counterValue = (CounterImpl) counter;
-                final long counterDelta = counterValue.getInternalCounterDelta();
+
+                final long counterDelta = retrieveCounterValue(counter);
                 if(counterDelta !=0) {
                     context.bindForSimpleCounterIncrement(counterMeta, counterDelta);
                 }
@@ -40,12 +37,8 @@ public class CounterPersister {
         for(PropertyMeta counterMeta: allCountersMeta) {
             Object counter = counterMeta.getValueFromField(entity);
             if (counter != null) {
-                Validator.validateTrue(CounterImpl.class.isAssignableFrom(counter.getClass()),
-                                       "Counter property '%s' value from entity class '%s'  should be of type '%s'",
-                                       counterMeta.getPropertyName(), counterMeta.getEntityClassName(),
-                                       CounterImpl.class.getCanonicalName());
-                CounterImpl counterValue = (CounterImpl) counter;
-                final long counterDelta = counterValue.getInternalCounterDelta();
+
+                final long counterDelta = retrieveCounterValue(counter);
                 if(counterDelta != 0) {
                     context.pushClusteredCounterIncrementStatement(counterMeta, counterDelta);
                 }
@@ -59,6 +52,18 @@ public class CounterPersister {
                                                     + "' with null clustered counter value");
         }
 
+    }
+
+    private long retrieveCounterValue(Object counter) {
+        long counterDelta;
+        if(InternalCounterImpl.class.isInstance(counter)) {
+            counterDelta = ((InternalCounterImpl)counter).getInternalCounterDelta();
+        } else if (CounterImpl.class.isInstance(counter)){
+            counterDelta = ((CounterImpl)counter).get();
+        } else {
+            throw new IllegalArgumentException(String.format("The type of counter '%s' should be '%s' or '%s'",counter,InternalCounterImpl.class.getCanonicalName(),CounterImpl.class.getCanonicalName()));
+        }
+        return counterDelta;
     }
 
     public void removeRelatedCounters(PersistenceContext context) {

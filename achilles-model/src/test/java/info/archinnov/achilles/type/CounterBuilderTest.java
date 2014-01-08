@@ -16,7 +16,6 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,26 +30,26 @@ public class CounterBuilderTest {
 
 	@Test
 	public void should_incr() throws Exception {
-		CounterImpl counter = (CounterImpl)CounterBuilder.incr();
-		assertThat(counter.getInternalCounterDelta()).isEqualTo(1L);
+		Counter counter =  CounterBuilder.incr();
+		assertThat(counter.get()).isEqualTo(1L);
 	}
 
 	@Test
 	public void should_incr_n() throws Exception {
-        CounterImpl counter = (CounterImpl)CounterBuilder.incr(10L);
-		assertThat(counter.getInternalCounterDelta()).isEqualTo(10L);
+        Counter counter =  CounterBuilder.incr(10L);
+		assertThat(counter.get()).isEqualTo(10L);
 	}
 
 	@Test
 	public void should_decr() throws Exception {
-        CounterImpl counter = (CounterImpl)CounterBuilder.decr();
-		assertThat(counter.getInternalCounterDelta()).isEqualTo(-1L);
+        Counter counter =  CounterBuilder.decr();
+		assertThat(counter.get()).isEqualTo(-1L);
 	}
 
 	@Test
 	public void should_decr_n() throws Exception {
-        CounterImpl counter = (CounterImpl)CounterBuilder.decr(10L);
-		assertThat(counter.getInternalCounterDelta()).isEqualTo(-10L);
+        Counter counter =  CounterBuilder.decr(10L);
+		assertThat(counter.get()).isEqualTo(-10L);
 	}
 
 
@@ -66,8 +65,8 @@ public class CounterBuilderTest {
 		String serialized = mapper.writeValueAsString(counter);
 		assertThat(serialized).isEqualTo("\"11\"");
 
-		CounterImpl deserialized = (CounterImpl)mapper.readValue(serialized, Counter.class);
-		assertThat(deserialized.getInternalCounterDelta()).isEqualTo(11L);
+		Counter deserialized = mapper.readValue(serialized, Counter.class);
+		assertThat(deserialized.get()).isEqualTo(11L);
 
 		assertThat(mapper.writeValueAsString(CounterBuilder.incr(0))).isEqualTo("\"0\"");
 	}

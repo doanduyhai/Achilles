@@ -21,9 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.type.CounterBuilder;
-import info.archinnov.achilles.type.CounterImpl;
 
 public class EntityInitializer {
 	private static final Logger log = LoggerFactory.getLogger(EntityInitializer.class);

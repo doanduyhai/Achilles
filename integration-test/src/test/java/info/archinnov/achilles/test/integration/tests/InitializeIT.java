@@ -21,6 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.apache.cassandra.utils.UUIDGen;
 import org.junit.Rule;
 import org.junit.Test;
+import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -28,7 +29,6 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.CounterBuilder;
-import info.archinnov.achilles.type.CounterImpl;
 
 public class InitializeIT {
 
@@ -58,7 +58,7 @@ public class InitializeIT {
 		assertThat(rawEntity.getAge()).isEqualTo(45L);
 		assertThat(rawEntity.getFriends()).containsExactly("foo", "bar");
 		assertThat(rawEntity.getWelcomeTweet().getContent()).isEqualTo("welcome");
-		assertThat(rawEntity.getVersion()).isInstanceOf(CounterImpl.class);
+		assertThat(rawEntity.getVersion()).isInstanceOf(InternalCounterImpl.class);
 		assertThat(rawEntity.getVersion().get()).isEqualTo(11L);
 	}
 
@@ -76,7 +76,7 @@ public class InitializeIT {
 
 		CompleteBean rawEntity = manager.initAndRemoveProxy(foundEntity);
 
-		assertThat(rawEntity.getVersion()).isInstanceOf(CounterImpl.class);
+		assertThat(rawEntity.getVersion()).isInstanceOf(InternalCounterImpl.class);
 		assertThat(rawEntity.getVersion().get()).isEqualTo(2L);
 	}
 }

@@ -11,10 +11,6 @@
     <dependencies>
         <dependency>
             <groupId>info.archinnov</groupId>
-            <artifactId>achilles-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>info.archinnov</groupId>
             <artifactId>achilles-embedded</artifactId>
         </dependency>
         <dependency>

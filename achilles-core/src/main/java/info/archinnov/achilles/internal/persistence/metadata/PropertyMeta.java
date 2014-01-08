@@ -20,7 +20,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.CounterImpl;
+import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Field;
@@ -301,7 +301,7 @@ public class PropertyMeta {
                     encoded = transcoder.encode(this,(Map<?,?>)value);
                     break;
                 case COUNTER:
-                    encoded= ((CounterImpl)value).getInternalCounterDelta();
+                    encoded= ((InternalCounterImpl)value).getInternalCounterDelta();
                     break;
                 default:
                     throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"

@@ -53,9 +53,8 @@ public class EventInterceptorIT {
     private Interceptor<CompleteBean> prePersist = new Interceptor<CompleteBean>() {
 
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setName("prePersist");
-            return entity;
         }
 
         @Override
@@ -66,9 +65,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> postPersist = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setLabel("postPersist");
-            return entity;
         }
 
         @Override
@@ -80,9 +78,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> preUpdate = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setName("preUpdate");
-            return entity;
         }
 
         @Override
@@ -93,9 +90,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> postUpdate = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setLabel("postUpdate");
-            return entity;
         }
 
         @Override
@@ -106,9 +102,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> preRemove = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setName("preRemove");
-            return entity;
         }
 
         @Override
@@ -119,9 +114,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> postRemove = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setLabel("postRemove");
-            return entity;
         }
 
         @Override
@@ -132,9 +126,8 @@ public class EventInterceptorIT {
 
     private Interceptor<CompleteBean> postLoad = new Interceptor<CompleteBean>() {
         @Override
-        public CompleteBean onEvent(CompleteBean entity) {
+        public void onEvent(CompleteBean entity) {
             entity.setLabel("postLoad");
-            return entity;
         }
 
         @Override
@@ -145,9 +138,8 @@ public class EventInterceptorIT {
 
     private Interceptor<ClusteredEntity> postLoadForClustered = new Interceptor<ClusteredEntity>() {
         @Override
-        public ClusteredEntity onEvent(ClusteredEntity entity) {
+        public void onEvent(ClusteredEntity entity) {
             entity.setValue("postLoad");
-            return entity;
         }
 
         @Override

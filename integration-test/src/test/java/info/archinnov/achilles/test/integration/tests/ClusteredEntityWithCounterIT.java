@@ -31,7 +31,6 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCounter.ClusteredKey;
-import info.archinnov.achilles.type.CounterBuilder;
 
 public class ClusteredEntityWithCounterIT {
 

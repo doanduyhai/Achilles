@@ -24,14 +24,11 @@ import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
-import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.MapWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.SetWrapper;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Counter;
 
@@ -43,7 +40,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import info.archinnov.achilles.type.CounterImpl;
+import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
 import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -306,7 +303,7 @@ public class EntityInterceptorTest {
         Object actual = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
 
         assertThat(actual).isNull();
-        CounterImpl counter = (CounterImpl)target.getCount();
+        InternalCounterImpl counter = (InternalCounterImpl)target.getCount();
 
         assertThat(counter.get()).isEqualTo(0L);
         assertThat(counter.getInternalCounterDelta()).isEqualTo(0);

@@ -206,8 +206,7 @@ public class EntityMetaTest {
         Interceptor<String> interceptor = new Interceptor<String>() {
 
             @Override
-            public String onEvent(String entity) {
-                return null;
+            public void onEvent(String entity) {
             }
 
             @Override
@@ -224,9 +223,8 @@ public class EntityMetaTest {
 		Interceptor<CompleteBean> interceptor = new Interceptor<CompleteBean>() {
 
 			@Override
-			public CompleteBean onEvent(CompleteBean entity) {
+			public void onEvent(CompleteBean entity) {
 				entity.setAge(age);
-				return entity;
 			}
 
 			@Override

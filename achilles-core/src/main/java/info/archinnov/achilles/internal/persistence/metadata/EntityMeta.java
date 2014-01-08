@@ -90,7 +90,6 @@ public class EntityMeta {
             for (Interceptor interceptor : interceptors) {
                 interceptor.onEvent(entity);
             }
-            Validator.validateNotNull(entity, "The entity class should not be null after intercepting the event '%s'",event);
             Validator.validateNotNull(getPrimaryKey(entity),"The primary key should not be null after intercepting the event '%s'",event);
         }
     }

@@ -1,16 +1,21 @@
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.internal.persistence.operations;
 
-public class CounterImpl implements Counter {
+import info.archinnov.achilles.type.Counter;
+
+/**
+ * <strong>Class internal to Achilles, DO NOT USE</strong>
+ */
+public class InternalCounterImpl implements Counter {
 
     private Long initialValue;
 
     private transient long delta;
 
-    protected CounterImpl(long delta) {
+    protected InternalCounterImpl(long delta) {
         this.delta = delta;
     }
 
-    protected CounterImpl(long delta,Long initialValue) {
+    protected InternalCounterImpl(long delta, Long initialValue) {
         this.delta = delta;
         this.initialValue = initialValue;
     }
