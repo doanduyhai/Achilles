@@ -38,8 +38,10 @@ public class ClusteredEntityWithCounter {
     @Column
     private Counter version;
 
+    /*
     public ClusteredEntityWithCounter() {
     }
+    */
 
     public ClusteredEntityWithCounter(ClusteredKey id, Counter counter) {
 		this.id = id;

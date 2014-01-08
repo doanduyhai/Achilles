@@ -27,8 +27,11 @@ import org.apache.commons.lang.StringUtils;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
+import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 
 public class Validator {
+    private static ObjectInstantiator instantiator = new ObjectInstantiator();
+
 	public static void validateNotBlank(String arg, String message, Object... args) {
 		if (StringUtils.isBlank(arg)) {
 			throw new AchillesException(format(message, args));
@@ -66,18 +69,6 @@ public class Validator {
 		}
 	}
 
-	public static void validateNoargsConstructor(Class<?> clazz) {
-		if (!clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())) {
-			Constructor<?>[] constructors = clazz.getConstructors();
-			for (Constructor<?> constructor : constructors) {
-				if (Modifier.isPublic(constructor.getModifiers()) && constructor.getParameterTypes().length == 0) {
-					return;
-				}
-			}
-			throw new AchillesBeanMappingException(format("The class '%s' should have a public default constructor",
-					clazz.getCanonicalName()));
-		}
-	}
 
 	public static void validateRegExp(String arg, String regexp, String label) {
 		validateNotBlank(arg, "The text value '%s' should not be blank", label);
@@ -89,19 +80,13 @@ public class Validator {
 	public static void validateInstantiable(Class<?> arg) {
 		validateNotNull(arg, "The class should not be null");
 		String canonicalName = arg.getCanonicalName();
-		validateNoargsConstructor(arg);
+
 		try {
-			arg.newInstance();
-		} catch (InstantiationException e) {
+            instantiator.instantiate(arg);
+		} catch (NoClassDefFoundError | InstantiationError e) {
 			throw new AchillesBeanMappingException(
 					format("Cannot instantiate the class '%s'. Please ensure the class is not an abstract class, an interface, an array class, a primitive type, or void and have a nullary (default) constructor and is declared public",
 							canonicalName));
-		} catch (IllegalAccessException e) {
-			throw new AchillesBeanMappingException(
-					format("Cannot instantiate the class '%s'. Please ensure the class has a public nullary (default) constructor",
-							canonicalName));
-		} catch (SecurityException e) {
-			throw new AchillesBeanMappingException(format("Cannot instantiate the class '%s'", canonicalName));
 		}
 	}
 

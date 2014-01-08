@@ -68,11 +68,6 @@ public class ValidatorTest {
 		Validator.validateSize(map, 2, "arg", map);
 	}
 
-	@Test(expected = AchillesBeanMappingException.class)
-	public void should_exception_when_no_default_constructor() throws Exception {
-		Validator.validateNoargsConstructor(TestNoArgConstructor.class);
-	}
-
 	@Test
 	public void should_match_pattern() throws Exception {
 		Validator.validateRegExp("1_abcd01_sdf", "[a-zA-Z0-9_]+", "arg");
@@ -88,10 +83,6 @@ public class ValidatorTest {
 		Validator.validateInstantiable(NormalClass.class);
 	}
 
-	@Test(expected = AchillesBeanMappingException.class)
-	public void should_exception_when_private_class() throws Exception {
-		Validator.validateInstantiable(PrivateEntity.class);
-	}
 
 	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_interface() throws Exception {
@@ -105,7 +96,7 @@ public class ValidatorTest {
 
 	@Test(expected = AchillesBeanMappingException.class)
 	public void should_exception_when_primitive() throws Exception {
-		Validator.validateInstantiable(Long.class);
+		Validator.validateInstantiable(long.class);
 	}
 
 	@Test(expected = AchillesBeanMappingException.class)

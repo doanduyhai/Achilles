@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
+import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
+import net.sf.cglib.proxy.MethodInterceptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,8 @@ import org.slf4j.LoggerFactory;
 public class EntityProxifier {
 
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
+
+    private ObjectInstantiator instantiator = new ObjectInstantiator();
 
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> deriveBaseClass(Object entity) {
@@ -71,9 +76,15 @@ public class EntityProxifier {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(entity.getClass());
         enhancer.setInterfaces(new Class[] { Serializable.class });
-        enhancer.setCallback(buildInterceptor(context, entity, alreadyLoaded));
+        enhancer.setClassLoader(this.getClass().getClassLoader());
 
-        return (T) enhancer.create();
+        enhancer.setCallbackTypes(new Class[]{MethodInterceptor.class});
+        enhancer.setUseFactory(true);
+        final Class proxyClass = enhancer.createClass();
+        T instance =  (T)instantiator.instantiate(proxyClass);
+
+        ((Factory)instance).setCallbacks(new Callback[]{buildInterceptor(context, entity, alreadyLoaded)});
+        return instance;
     }
 
 	@SuppressWarnings("unchecked")

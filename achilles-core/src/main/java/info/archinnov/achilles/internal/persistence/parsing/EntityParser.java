@@ -96,8 +96,6 @@ public class EntityParser {
 		Class<?> entityClass = context.getCurrentEntityClass();
 		log.debug("Validate entity {}", entityClass.getCanonicalName());
 
-		Validator.validateInstantiable(entityClass);
-
 		ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
 		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '%s'",
 				entityClass.getCanonicalName());
