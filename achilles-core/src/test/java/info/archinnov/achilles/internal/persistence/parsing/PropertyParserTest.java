@@ -24,13 +24,13 @@ import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.persistence.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 import info.archinnov.achilles.internal.persistence.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.persistence.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -113,19 +113,17 @@ public class PropertyParserTest {
 		}
 
 		PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
-		context.isEmbeddedId(true);
+		context.setEmbeddedId(true);
 
 		PropertyMeta meta = parser.parse(context);
 
-        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
 		Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
 		Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
 
-        Field nameField = EmbeddedKey.class.getDeclaredField("name");
+		Field nameField = EmbeddedKey.class.getDeclaredField("name");
 		Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
 		Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
-
-
 
 		assertThat(meta.getPropertyName()).isEqualTo("id");
 		assertThat(meta.<EmbeddedKey> getValueClass()).isEqualTo(EmbeddedKey.class);
@@ -133,13 +131,14 @@ public class PropertyParserTest {
 		assertThat(embeddedIdProperties).isNotNull();
 		assertThat(embeddedIdProperties.getComponentClasses()).contains(Long.class, String.class);
 		assertThat(embeddedIdProperties.getComponentNames()).contains("id", "name");
-		assertThat(embeddedIdProperties.getComponentFields()).contains(userIdField,nameField);
+		assertThat(embeddedIdProperties.getComponentFields()).contains(userIdField, nameField);
 		assertThat(embeddedIdProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
 		assertThat(embeddedIdProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
 		assertThat(context.getPropertyMetas()).hasSize(1);
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_parse_simple_property_string() throws Exception {
 
@@ -165,9 +164,9 @@ public class PropertyParserTest {
 		assertThat(meta.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(meta.getGetter().getName()).isEqualTo("getName");
-		assertThat((Class) meta.getGetter().getReturnType()).isEqualTo(String.class);
+		assertThat((Class<String>) meta.getGetter().getReturnType()).isEqualTo(String.class);
 		assertThat(meta.getSetter().getName()).isEqualTo("setName");
-		assertThat((Class) meta.getSetter().getParameterTypes()[0]).isEqualTo(String.class);
+		assertThat((Class<String>) meta.getSetter().getParameterTypes()[0]).isEqualTo(String.class);
 
 		assertThat(meta.type()).isEqualTo(PropertyType.SIMPLE);
 
@@ -406,7 +405,7 @@ public class PropertyParserTest {
 		assertThat(meta.isIndexed()).isTrue();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_parse_list() throws Exception {
 		@SuppressWarnings("unused")
@@ -436,7 +435,7 @@ public class PropertyParserTest {
 		assertThat(meta.type()).isEqualTo(PropertyType.LIST);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_parse_set() throws Exception {
 		@SuppressWarnings("unused")
@@ -466,7 +465,7 @@ public class PropertyParserTest {
 		assertThat(meta.type()).isEqualTo(PropertyType.SET);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_parse_map() throws Exception {
 		@SuppressWarnings("unused")
@@ -497,7 +496,7 @@ public class PropertyParserTest {
 		assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void should_parse_map_with_parameterized_value() throws Exception {
 		@SuppressWarnings("unused")

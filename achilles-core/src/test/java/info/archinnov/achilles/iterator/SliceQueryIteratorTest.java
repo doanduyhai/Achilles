@@ -18,11 +18,11 @@ package info.archinnov.achilles.iterator;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
@@ -62,7 +62,7 @@ public class SliceQueryIteratorTest {
 	@Mock
 	private Iterator<Row> iterator;
 
-    @Mock
+	@Mock
 	private EntityMeta meta;
 
 	private int batchSize = 99;
@@ -72,10 +72,9 @@ public class SliceQueryIteratorTest {
 		when(sliceQuery.getEntityClass()).thenReturn(ClusteredEntity.class);
 		when(sliceQuery.getMeta()).thenReturn(meta);
 		when(sliceQuery.getVaryingComponentName()).thenReturn("name");
-		when(sliceQuery.getVaryingComponentClass()).thenReturn((Class) String.class);
 		when(sliceQuery.getBatchSize()).thenReturn(batchSize);
 
-		sliceIterator = new SliceQueryIterator(sliceQuery, context, iterator);
+		sliceIterator = new SliceQueryIterator<>(sliceQuery, context, iterator);
 
 		Whitebox.setInternalState(sliceIterator, "mapper", mapper);
 		Whitebox.setInternalState(sliceIterator, "proxifier", proxifier);
@@ -99,8 +98,8 @@ public class SliceQueryIteratorTest {
 		ClusteredEntity entity = new ClusteredEntity();
 		Row row = mock(Row.class);
 
-		when(meta.<ClusteredEntity>getEntityClass()).thenReturn(ClusteredEntity.class);
-        when(meta.instanciate()).thenReturn(entity);
+		when(meta.<ClusteredEntity> getEntityClass()).thenReturn(ClusteredEntity.class);
+		when(meta.instanciate()).thenReturn(entity);
 
 		when(iterator.next()).thenReturn(row);
 
@@ -112,7 +111,7 @@ public class SliceQueryIteratorTest {
 		ClusteredEntity actual = sliceIterator.next();
 
 		assertThat(actual).isSameAs(entity);
-        verify(meta).intercept(entity,Event.POST_LOAD);
+		verify(meta).intercept(entity, Event.POST_LOAD);
 		verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
 	}
 

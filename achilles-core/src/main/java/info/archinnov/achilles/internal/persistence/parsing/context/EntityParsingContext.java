@@ -16,17 +16,19 @@
  */
 package info.archinnov.achilles.internal.persistence.parsing.context;
 
+import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import info.archinnov.achilles.type.Pair;
+
 import org.codehaus.jackson.map.ObjectMapper;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class EntityParsingContext {
 	private ConfigurationContext configContext;
@@ -37,7 +39,6 @@ public class EntityParsingContext {
 	private Class<?> currentEntityClass;
 	private ObjectMapper currentObjectMapper;
 	private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
-	private boolean clusteredEntity = false;
 
 	public EntityParsingContext(//
 			ConfigurationContext configContext, //
@@ -78,10 +79,6 @@ public class EntityParsingContext {
 		this.currentObjectMapper = currentObjectMapper;
 	}
 
-	public void setClusteredEntity(boolean wideRow) {
-		this.clusteredEntity = wideRow;
-	}
-
 	public void setCurrentConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
 		this.currentConsistencyLevels = currentConsistencyLevels;
 	}
@@ -94,12 +91,12 @@ public class EntityParsingContext {
 		return currentConsistencyLevels;
 	}
 
-
 	public ObjectMapperFactory getObjectMapperFactory() {
 		return configContext.getObjectMapperFactory();
 	}
 
-    public Pair<ConsistencyLevel,ConsistencyLevel> getDefaultConsistencyLevels() {
-        return Pair.create(configContext.getDefaultReadConsistencyLevel(),configContext.getDefaultWriteConsistencyLevel());
-    }
+	public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
+		return Pair.create(configContext.getDefaultReadConsistencyLevel(),
+				configContext.getDefaultWriteConsistencyLevel());
+	}
 }

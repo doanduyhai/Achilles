@@ -47,7 +47,7 @@ public class EntityMetaBuilderTest {
 	@Test
 	public void should_build_meta() throws Exception {
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap();
+		Map<String, PropertyMeta> propertyMetas = new HashMap<>();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 
@@ -61,7 +61,7 @@ public class EntityMetaBuilderTest {
 
 		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
-		List<PropertyMeta> eagerMetas = new ArrayList();
+		List<PropertyMeta> eagerMetas = new ArrayList<>();
 		eagerMetas.add(simpleMeta);
 
 		EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean")
@@ -89,14 +89,14 @@ public class EntityMetaBuilderTest {
 	@Test
 	public void should_build_meta_with_column_family_name() throws Exception {
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap();
+		Map<String, PropertyMeta> propertyMetas = new HashMap<>();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 		propertyMetas.put("name", simpleMeta);
 
 		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);
 
-		List<PropertyMeta> eagerMetas = new ArrayList();
+		List<PropertyMeta> eagerMetas = new ArrayList<>();
 		eagerMetas.add(simpleMeta);
 
 		EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
@@ -108,10 +108,9 @@ public class EntityMetaBuilderTest {
 
 	@Test
 	public void should_build_meta_with_consistency_levels() throws Exception {
-		Map<String, PropertyMeta> propertyMetas = new HashMap();
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class)
-                .field("name").type(PropertyType.SIMPLE)
-				.accessors().build();
+		Map<String, PropertyMeta> propertyMetas = new HashMap<>();
+		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+				.type(PropertyType.SIMPLE).accessors().build();
 		propertyMetas.put("name", nameMeta);
 
 		when(idMeta.<Long> getValueClass()).thenReturn(Long.class);

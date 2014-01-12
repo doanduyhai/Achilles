@@ -30,7 +30,6 @@ import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -68,20 +67,15 @@ public class PreparedStatementGeneratorTest {
 	@Captor
 	ArgumentCaptor<String> queryCaptor;
 
-    @Captor
+	@Captor
 	ArgumentCaptor<RegularStatement> regularStatementCaptor;
 
 	@Test
 	public void should_prepare_insert_ps() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
-
-		PropertyMeta counterMeta = completeBean(Void.class, String.class).field("count")
-				.type(PropertyType.COUNTER).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
@@ -99,11 +93,10 @@ public class PreparedStatementGeneratorTest {
 	public void should_prepare_insert_ps_with_clustered_id() throws Exception {
 		List<PropertyMeta> allMetas = new ArrayList<PropertyMeta>();
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
+				.type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		allMetas.add(nameMeta);
 		EntityMeta meta = new EntityMeta();
@@ -121,11 +114,9 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_select_field_ps() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -143,8 +134,8 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_select_field_ps_for_clustered_id() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).compNames("id", "a", "b").build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.EMBEDDED_ID)
+				.compNames("id", "a", "b").build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -162,14 +153,11 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_update_fields_ps() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -187,14 +175,12 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_update_fields_with_clustered_id_ps() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
+				.type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -206,14 +192,14 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL ? SET name=?,age=? WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"UPDATE table USING TTL ? SET name=?,age=? WHERE id=? AND a=? AND b=?;");
 	}
 
 	@Test
 	public void should_exception_when_preparing_select_for_counter_type() throws Exception {
 
-		PropertyMeta nameMeta = completeBean(Void.class, Long.class).field("count")
-				.type(PropertyType.COUNTER).build();
+		PropertyMeta nameMeta = completeBean(Void.class, Long.class).field("count").type(PropertyType.COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("entity");
@@ -229,19 +215,16 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_select_eager_ps_with_single_key() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
-
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
 		meta.setAllMetasExceptIdAndCounters(asList(nameMeta));
 		meta.setAllMetasExceptId(asList(nameMeta));
-        meta.setAllMetasExceptCounters(asList(nameMeta));
+		meta.setAllMetasExceptCounters(asList(nameMeta));
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -254,17 +237,16 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_prepare_select_eager_ps_with_clustered_key() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
+				.type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
 		meta.setIdMeta(idMeta);
-        meta.setAllMetasExceptCounters(asList(idMeta, nameMeta));
-        meta.setClusteredCounter(false);
+		meta.setAllMetasExceptCounters(asList(idMeta, nameMeta));
+		meta.setClusteredCounter(false);
 
 		when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -277,11 +259,9 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_remove_entity_having_single_key() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -300,11 +280,10 @@ public class PreparedStatementGeneratorTest {
 	@Test
 	public void should_remove_entity_having_clustered_key() throws Exception {
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.compNames("id", "a", "b").type(PropertyType.EMBEDDED_ID).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
+				.type(PropertyType.EMBEDDED_ID).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -321,11 +300,10 @@ public class PreparedStatementGeneratorTest {
 
 	@Test
 	public void should_remove_entity_having_counter() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.SIMPLE).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
 
-		PropertyMeta nameMeta = completeBean(UUID.class, String.class).field("count")
-				.type(PropertyType.COUNTER).build();
+		PropertyMeta nameMeta = completeBean(UUID.class, String.class).field("count").type(PropertyType.COUNTER)
+				.build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
@@ -382,13 +360,12 @@ public class PreparedStatementGeneratorTest {
 	public void should_prepare_clustered_counter_queries() throws Exception {
 		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
 
-		PropertyMeta counterMeta = completeBean(Void.class, String.class).field("count")
-				.type(COUNTER).build();
+		PropertyMeta counterMeta = completeBean(Void.class, String.class).field("count").type(COUNTER).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		meta.setTableName("counterTable");
-        meta.setPropertyMetas(ImmutableMap.of("id",idMeta,"counter",counterMeta));
+		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "counter", counterMeta));
 
 		PreparedStatement incrPs = mock(PreparedStatement.class);
 		PreparedStatement decrPs = mock(PreparedStatement.class);
@@ -397,7 +374,8 @@ public class PreparedStatementGeneratorTest {
 
 		when(session.prepare(regularStatementCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
 
-		Map<CQLQueryType, Map<String,PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session, meta);
+		Map<CQLQueryType, Map<String, PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session,
+				meta);
 
 		assertThat(actual.get(INCR).get("count")).isSameAs(incrPs);
 		assertThat(actual.get(DECR).get("count")).isSameAs(decrPs);
@@ -407,9 +385,10 @@ public class PreparedStatementGeneratorTest {
 		List<RegularStatement> regularStatements = regularStatementCaptor.getAllValues();
 
 		assertThat(regularStatements).hasSize(5);
-		assertThat(regularStatements.get(0).getQueryString()).isEqualTo("UPDATE counterTable SET count=count+? WHERE " +
-                                                                                "id=?;");
-		assertThat(regularStatements.get(1).getQueryString()).isEqualTo("UPDATE counterTable SET count=count-? WHERE id=?;");
+		assertThat(regularStatements.get(0).getQueryString()).isEqualTo(
+				"UPDATE counterTable SET count=count+? WHERE " + "id=?;");
+		assertThat(regularStatements.get(1).getQueryString()).isEqualTo(
+				"UPDATE counterTable SET count=count-? WHERE id=?;");
 		assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=?;");
 		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=?;");
 		assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=?;");

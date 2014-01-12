@@ -17,8 +17,8 @@
 package info.archinnov.achilles.internal.reflection;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.*;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.ArrayList;
@@ -29,13 +29,14 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 
 public class RowMethodInvoker {
-    private static final Logger log  = LoggerFactory.getLogger(RowMethodInvoker.class);
+	private static final Logger log = LoggerFactory.getLogger(RowMethodInvoker.class);
 
-    public Object invokeOnRowForFields(Row row, PropertyMeta pm) {
+	public Object invokeOnRowForFields(Row row, PropertyMeta pm) {
 		String propertyName = pm.getPropertyName().toLowerCase();
 		Object value = null;
 		if (row != null && !row.isNull(propertyName)) {
@@ -63,7 +64,8 @@ public class RowMethodInvoker {
 	}
 
 	public Object extractCompoundPrimaryKeyFromRow(Row row, PropertyMeta pm, boolean isManagedEntity) {
-        log.trace("Extract compound primary key {} from CQL row for entity class {}",pm.getPropertyName(),pm.getEntityClassName());
+		log.trace("Extract compound primary key {} from CQL row for entity class {}", pm.getPropertyName(),
+				pm.getEntityClassName());
 		List<String> componentNames = pm.getCQLComponentNames();
 		List<Class<?>> componentClasses = pm.getComponentClasses();
 		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(componentNames.size(), null));
@@ -94,7 +96,7 @@ public class RowMethodInvoker {
 	}
 
 	private Object invokeOnRowForProperty(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass) {
-        log.trace("Extract property {} from CQL row for entity class {}",propertyName,pm.getEntityClassName());
+		log.trace("Extract property {} from CQL row for entity class {}", propertyName, pm.getEntityClassName());
 		try {
 			Object rawValue = getRowMethod(valueClass).invoke(row, propertyName);
 			return pm.decode(rawValue);
@@ -105,7 +107,7 @@ public class RowMethodInvoker {
 	}
 
 	public List<?> invokeOnRowForList(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass) {
-        log.trace("Extract list property {} from CQL row for entity class {}",propertyName,pm.getEntityClassName());
+		log.trace("Extract list property {} from CQL row for entity class {}", propertyName, pm.getEntityClassName());
 		try {
 			List<?> rawValues = row.getList(propertyName, toCompatibleJavaType(valueClass));
 			return pm.decode(rawValues);
@@ -116,7 +118,7 @@ public class RowMethodInvoker {
 	}
 
 	public Set<?> invokeOnRowForSet(Row row, PropertyMeta pm, String propertyName, Class<?> valueClass) {
-        log.trace("Extract set property {} from CQL row for entity class {}",propertyName,pm.getEntityClassName());
+		log.trace("Extract set property {} from CQL row for entity class {}", propertyName, pm.getEntityClassName());
 		try {
 			Set<?> rawValues = row.getSet(propertyName, toCompatibleJavaType(valueClass));
 			return pm.decode(rawValues);
@@ -128,7 +130,7 @@ public class RowMethodInvoker {
 
 	public Map<?, ?> invokeOnRowForMap(Row row, PropertyMeta pm, String propertyName, Class<?> keyClass,
 			Class<?> valueClass) {
-        log.trace("Extract map property {} from CQL row for entity class {}",propertyName,pm.getEntityClassName());
+		log.trace("Extract map property {} from CQL row for entity class {}", propertyName, pm.getEntityClassName());
 		try {
 			Map<?, ?> rawValues = row.getMap(propertyName, toCompatibleJavaType(keyClass),
 					toCompatibleJavaType(valueClass));
@@ -139,10 +141,11 @@ public class RowMethodInvoker {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T invokeOnRowForType(Row row, Class<T> type, String name) {
-        log.trace("Extract property {} of type {} from CQL row ",name,type);
+		log.trace("Extract property {} of type {} from CQL row ", name, type);
 		try {
-			return (T)getRowMethod(type).invoke(row, name);
+			return (T) getRowMethod(type).invoke(row, name);
 		} catch (Exception e) {
 			throw new AchillesException("Cannot retrieve column '" + name + "' of type '" + type.getCanonicalName()
 					+ "' from CQL Row", e);

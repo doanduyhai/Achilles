@@ -36,7 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -57,9 +56,9 @@ import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementBinderTest {
-    private final Optional<Integer> ttlO = Optional.fromNullable(null);
+	private final Optional<Integer> ttlO = Optional.fromNullable(null);
 
-    @InjectMocks
+	@InjectMocks
 	private PreparedStatementBinder binder;
 
 	@Mock
@@ -92,23 +91,20 @@ public class PreparedStatementBinderTest {
 		long age = RandomUtils.nextLong();
 		String name = "name";
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().type(ID)
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors()
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
-				.accessors().transcoder(transcoder).invoker(invoker).build();
-
-		PropertyMeta counterMeta = completeBean(UUID.class, String.class).field("count")
-				.type(COUNTER).accessors().invoker(invoker).build();
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE).accessors()
+				.transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdAndCounters(asList(nameMeta, ageMeta));
-        entityMeta.setClusteredCounter(false);
+		entityMeta.setClusteredCounter(false);
 
-        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
 		when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(age);
 
@@ -118,28 +114,28 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL,ttlO);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
 		verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
-		assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, age,0);
+		assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, age, 0);
 	}
 
 	@Test
 	public void should_bind_for_insert_with_null_fields() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().type(ID)
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors()
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
-				.accessors().transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE).accessors()
+				.transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdAndCounters(asList(nameMeta, ageMeta));
-        entityMeta.setClusteredCounter(false);
+		entityMeta.setClusteredCounter(false);
 
-        long primaryKey = RandomUtils.nextLong();
+		long primaryKey = RandomUtils.nextLong();
 		String name = "name";
 		when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
 		when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
@@ -154,7 +150,7 @@ public class PreparedStatementBinderTest {
 		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, null,0);
+		assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, null, 0);
 	}
 
 	@Test
@@ -166,25 +162,24 @@ public class PreparedStatementBinderTest {
 		Set<Object> followers = Sets.<Object> newHashSet("George", "Paul");
 		Map<Object, Object> preferences = ImmutableMap.<Object, Object> of(1, "FR");
 
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
-				.type(EMBEDDED_ID).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().type(EMBEDDED_ID)
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE).transcoder(transcoder)
+				.accessors().invoker(invoker).build();
+
+		PropertyMeta friendsMeta = completeBean(Void.class, String.class).field("friends").type(LIST)
 				.transcoder(transcoder).accessors().invoker(invoker).build();
 
-		PropertyMeta friendsMeta = completeBean(Void.class, String.class).field("friends")
-				.type(LIST).transcoder(transcoder).accessors().invoker(invoker).build();
+		PropertyMeta followersMeta = completeBean(Void.class, Long.class).field("followers").type(SET)
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
-		PropertyMeta followersMeta = completeBean(Void.class, Long.class).field("followers")
-				.type(SET).transcoder(transcoder).accessors().invoker(invoker).build();
-
-		PropertyMeta preferencesMeta = completeBean(Void.class, Long.class)
-				.field("preferences").type(MAP).transcoder(transcoder).accessors().invoker(invoker).build();
+		PropertyMeta preferencesMeta = completeBean(Void.class, Long.class).field("preferences").type(MAP)
+				.transcoder(transcoder).accessors().invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 		entityMeta.setAllMetasExceptIdAndCounters(asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
-        entityMeta.setClusteredCounter(false);
-
+		entityMeta.setClusteredCounter(false);
 
 		EmbeddedKey embeddedKey = new EmbeddedKey(userId, name);
 
@@ -202,17 +197,16 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL,ttlO);
+		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(asList(actual.getValues())).containsExactly(userId, name, age, friends, followers,
-				preferences,0);
+		assertThat(asList(actual.getValues())).containsExactly(userId, name, age, friends, followers, preferences, 0);
 	}
 
 	@Test
 	public void should_bind_with_only_pk_in_where_clause() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().type(ID)
+				.transcoder(transcoder).invoker(invoker).build();
 		entityMeta.setIdMeta(idMeta);
 		long primaryKey = RandomUtils.nextLong();
 
@@ -228,14 +222,14 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_update() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
-				.type(ID).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().type(ID)
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
-				.accessors().type(SIMPLE).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").accessors().type(SIMPLE)
+				.transcoder(transcoder).invoker(invoker).build();
 
-		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").accessors()
-				.type(SIMPLE).transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").accessors().type(SIMPLE)
+				.transcoder(transcoder).invoker(invoker).build();
 
 		entityMeta.setIdMeta(idMeta);
 
@@ -253,24 +247,24 @@ public class PreparedStatementBinderTest {
 
 		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
 
-		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, asList(nameMeta, ageMeta), entity,
-				ALL, ttlO);
+		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, asList(nameMeta, ageMeta), entity, ALL,
+				ttlO);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(asList(actual.getValues())).containsExactly(0,name, age, primaryKey);
+		assertThat(asList(actual.getValues())).containsExactly(0, name, age, primaryKey);
 	}
 
 	@Test
 	public void should_bind_for_simple_counter_increment_decrement() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).invoker(invoker)
+				.build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count").transcoder(transcoder)
+				.invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
 		Long counter = RandomUtils.nextLong();
@@ -283,21 +277,20 @@ public class PreparedStatementBinderTest {
 				counter, ALL);
 
 		verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-		assertThat(asList(actual.getValues())).containsExactly(counter, "CompleteBean", primaryKey.toString(),
-				"count");
+		assertThat(asList(actual.getValues())).containsExactly(counter, "CompleteBean", primaryKey.toString(), "count");
 	}
 
 	@Test
 	public void should_bind_for_simple_counter_select() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).invoker(invoker)
+				.build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count").transcoder(transcoder)
+				.invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
 
@@ -312,15 +305,15 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_simple_counter_delete() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).invoker(invoker)
+				.build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
 		meta.setIdMeta(idMeta);
 
-		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count")
-				.transcoder(transcoder).invoker(invoker).build();
+		PropertyMeta counterMeta = completeBean(Void.class, Long.class).field("count").transcoder(transcoder)
+				.invoker(invoker).build();
 
 		Long primaryKey = RandomUtils.nextLong();
 
@@ -335,8 +328,8 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_clustered_counter_increment_decrement() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).type(ID).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+				.invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
@@ -358,8 +351,8 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_clustered_counter_select() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).type(ID).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+				.invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");
@@ -379,8 +372,8 @@ public class PreparedStatementBinderTest {
 
 	@Test
 	public void should_bind_for_clustered_counter_delete() throws Exception {
-		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id")
-				.transcoder(transcoder).type(ID).invoker(invoker).build();
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+				.invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setClassName("CompleteBean");

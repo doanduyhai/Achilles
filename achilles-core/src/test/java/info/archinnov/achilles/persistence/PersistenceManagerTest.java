@@ -16,15 +16,10 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -35,8 +30,6 @@ import info.archinnov.achilles.internal.persistence.operations.EntityInitializer
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
@@ -146,32 +139,32 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_persist() throws Exception {
 		// Given
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity,context)).thenReturn(entity);
-        when(context.persist(entity)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+		when(context.persist(entity)).thenReturn(entity);
 
+		// When
+		CompleteBean actual = manager.persist(entity);
 
-        // When
-        CompleteBean actual = manager.persist(entity);
-
-        // Then
-        assertThat(actual).isSameAs(entity);
-        verify(proxifier).ensureNotProxy(entity);
-        verify(entityValidator).validateEntity(entity, entityMetaMap);
+		// Then
+		assertThat(actual).isSameAs(entity);
+		verify(proxifier).ensureNotProxy(entity);
+		verify(entityValidator).validateEntity(entity, entityMetaMap);
 	}
 
 	@Test
 	public void should_persist_with_options() throws Exception {
 		// Given
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity,context)).thenReturn(entity);
-        when(context.persist(entity)).thenReturn(entity);
+		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+		when(context.persist(entity)).thenReturn(entity);
 
-        // When
-        CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
+		// When
+		CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
+				.withTimestamp(100L));
 
 		// Then
-        assertThat(actual).isSameAs(entity);
+		assertThat(actual).isSameAs(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(proxifier).ensureNotProxy(entity);
+		verify(proxifier).ensureNotProxy(entity);
 		verify(context).persist(entity);
 
 		Options value = optionsCaptor.getValue();
@@ -183,16 +176,16 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_update() throws Exception {
 		// Given
-        when(proxifier.isProxy(entity)).thenReturn(true);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        //When
+		// When
 		manager.update(entity);
 
 		// Then
-        verify(proxifier).ensureProxy(entity);
+		verify(proxifier).ensureProxy(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(context).update(entity);
+		verify(context).update(entity);
 
 		Options options = optionsCaptor.getValue();
 		assertThat(options.getConsistencyLevel().isPresent()).isFalse();
@@ -202,17 +195,16 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_update_with_options() throws Exception {
-        // Given
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		// Given
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
-		manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM)
-                .withTtl(150).withTimestamp(100L));
+		// When
+		manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
 
 		// Then
-        verify(proxifier).ensureProxy(entity);
+		verify(proxifier).ensureProxy(entity);
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(context).update(entity);
+		verify(context).update(entity);
 
 		Options options = optionsCaptor.getValue();
 		assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
@@ -225,7 +217,7 @@ public class PersistenceManagerTest {
 		// Given
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
+		// When
 		manager.remove(entity);
 
 		// Then
@@ -242,7 +234,7 @@ public class PersistenceManagerTest {
 		// Given
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
+		// When
 		manager.remove(entity, OptionsBuilder.withConsistency(EACH_QUORUM));
 
 		// Then
@@ -375,8 +367,8 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_refresh() throws Exception {
-        // Given
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		// Given
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
 		// When
 		manager.refresh(entity);
@@ -394,13 +386,13 @@ public class PersistenceManagerTest {
 
 	@Test
 	public void should_refresh_with_consistency() throws Exception {
-        // Given
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		// Given
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
-        manager.refresh(entity, EACH_QUORUM);
+		// When
+		manager.refresh(entity, EACH_QUORUM);
 
-        // Then
+		// Then
 		verify(entityValidator).validateEntity(entity, entityMetaMap);
 		verify(proxifier).ensureProxy(entity);
 		verify(context).refresh(entity);
@@ -414,13 +406,13 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_initialize_entity() throws Exception {
 		// Given
-        when(context.initialize(entity)).thenReturn(entity);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(context.initialize(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
-        CompleteBean actual = manager.initialize(entity);
+		// When
+		CompleteBean actual = manager.initialize(entity);
 
-        // Then
+		// Then
 		verify(proxifier).ensureProxy(entity);
 		assertThat(actual).isSameAs(entity);
 
@@ -434,10 +426,10 @@ public class PersistenceManagerTest {
 	public void should_initialize_list_of_entities() throws Exception {
 		// Given
 		List<CompleteBean> entities = Arrays.asList(entity);
-        when(context.initialize(entity)).thenReturn(entity);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(context.initialize(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
+		// When
 		List<CompleteBean> actual = manager.initialize(entities);
 
 		// Then
@@ -448,10 +440,10 @@ public class PersistenceManagerTest {
 	public void should_initialize_set_of_entities() throws Exception {
 		// Given
 		Set<CompleteBean> entities = Sets.newHashSet(entity);
-        when(context.initialize(entity)).thenReturn(entity);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(context.initialize(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
 
-        // When
+		// When
 		Set<CompleteBean> actual = manager.initialize(entities);
 
 		// Then
@@ -461,10 +453,10 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_remove_proxy_from_entity() throws Exception {
 		// Given
-        when(proxifier.removeProxy(entity)).thenReturn(entity);
+		when(proxifier.removeProxy(entity)).thenReturn(entity);
 
-        // When
-        CompleteBean actual = manager.removeProxy(entity);
+		// When
+		CompleteBean actual = manager.removeProxy(entity);
 
 		// Then
 		assertThat(actual).isSameAs(entity);
@@ -473,10 +465,10 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_remove_proxy_for_list_of_entities() throws Exception {
 		// Given
-		List<CompleteBean> proxies = new ArrayList();
-        when(proxifier.removeProxy(proxies)).thenReturn(proxies);
+		List<CompleteBean> proxies = new ArrayList<>();
+		when(proxifier.removeProxy(proxies)).thenReturn(proxies);
 
-        // When
+		// When
 		List<CompleteBean> actual = manager.removeProxy(proxies);
 
 		// Then
@@ -486,7 +478,7 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_remove_proxy_for_set_of_entities() throws Exception {
 		// Given
-		Set<CompleteBean> proxies = new HashSet();
+		Set<CompleteBean> proxies = new HashSet<>();
 
 		// When
 		when(proxifier.removeProxy(proxies)).thenReturn(proxies);
@@ -500,12 +492,12 @@ public class PersistenceManagerTest {
 	@Test
 	public void should_init_and_remove_proxy_for_entity() throws Exception {
 		// Given
-        when(context.initialize(entity)).thenReturn(entity);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
-        when(proxifier.removeProxy(entity)).thenReturn(entity);
+		when(context.initialize(entity)).thenReturn(entity);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.removeProxy(entity)).thenReturn(entity);
 
-        // When
-        CompleteBean actual = manager.initAndRemoveProxy(entity);
+		// When
+		CompleteBean actual = manager.initAndRemoveProxy(entity);
 
 		// Then
 		assertThat(actual).isSameAs(entity);
@@ -516,11 +508,11 @@ public class PersistenceManagerTest {
 	public void should_init_and_remove_proxy_for_list_of_entities() throws Exception {
 		// Given
 		List<CompleteBean> entities = Arrays.asList(entity);
-        when(context.initialize(entities)).thenReturn(entities);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
-        when(proxifier.removeProxy(entities)).thenReturn(entities);
+		when(context.initialize(entities)).thenReturn(entities);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.removeProxy(entities)).thenReturn(entities);
 
-        // When
+		// When
 		List<CompleteBean> actual = manager.initAndRemoveProxy(entities);
 
 		// Then
@@ -531,11 +523,11 @@ public class PersistenceManagerTest {
 	public void should_init_and_remove_proxy_for_set_of_entities() throws Exception {
 		// Given
 		Set<CompleteBean> entities = Sets.newHashSet(entity);
-        when(context.initialize(entities)).thenReturn(entities);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
-        when(proxifier.removeProxy(entities)).thenReturn(entities);
+		when(context.initialize(entities)).thenReturn(entities);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.removeProxy(entities)).thenReturn(entities);
 
-        // When
+		// When
 		Set<CompleteBean> actual = manager.initAndRemoveProxy(entities);
 
 		// Then

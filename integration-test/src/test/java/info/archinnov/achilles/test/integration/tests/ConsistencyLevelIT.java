@@ -18,8 +18,8 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
@@ -36,7 +36,6 @@ import org.junit.rules.ExpectedException;
 
 import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import com.datastax.driver.core.exceptions.UnavailableException;
 
 public class ConsistencyLevelIT {
 
@@ -128,8 +127,8 @@ public class ConsistencyLevelIT {
 
 		try {
 			entity = manager.persist(entity);
-            entity.setName("zeruioze");
-            manager.update(entity);
+			entity.setName("zeruioze");
+			manager.update(entity);
 		} catch (InvalidQueryException e) {
 			assertThat(e)
 					.hasMessage(
@@ -208,6 +207,5 @@ public class ConsistencyLevelIT {
 		assertThat(found.getName()).isEqualTo("name qzerferf");
 		logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
 	}
-
 
 }

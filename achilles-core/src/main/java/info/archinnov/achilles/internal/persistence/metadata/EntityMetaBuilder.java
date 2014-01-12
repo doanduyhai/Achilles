@@ -19,9 +19,9 @@ package info.archinnov.achilles.internal.persistence.metadata;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -70,36 +70,34 @@ public class EntityMetaBuilder {
 		meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
 		meta.setConsistencyLevels(consistencyLevels);
 
-		List<PropertyMeta> allMetasExceptId = new ArrayList(from(propertyMetas.values()).filter(excludeIdType)
+		List<PropertyMeta> allMetasExceptId = new ArrayList<>(from(propertyMetas.values()).filter(excludeIdType)
 				.toImmutableList());
 		meta.setAllMetasExceptId(allMetasExceptId);
 
-        List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList(from(propertyMetas.values()).filter(excludeIdAndCounterType)
-                                                                        .toImmutableList());
-        meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
+		List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>(from(propertyMetas.values()).filter(
+				excludeIdAndCounterType).toImmutableList());
+		meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
 
-        List<PropertyMeta> allMetasExceptCounters = new ArrayList(from(propertyMetas.values()).filter(excludeCounterType)
-                                                                               .toImmutableList());
-        meta.setAllMetasExceptCounters(allMetasExceptCounters);
-
+		List<PropertyMeta> allMetasExceptCounters = new ArrayList<>(from(propertyMetas.values()).filter(
+				excludeCounterType).toImmutableList());
+		meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
 		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;
 		meta.setClusteredEntity(clusteredEntity);
 
-
-		boolean clusteredCounter = allMetasExceptId.size()>0;
-        for(PropertyMeta pm: allMetasExceptId) {
-            if(!pm.isCounter()) {
-                clusteredCounter = false;
-                break;
-            }
-        }
+		boolean clusteredCounter = allMetasExceptId.size() > 0;
+		for (PropertyMeta pm : allMetasExceptId) {
+			if (!pm.isCounter()) {
+				clusteredCounter = false;
+				break;
+			}
+		}
 		meta.setClusteredCounter(clusteredCounter);
 		return meta;
 	}
 
 	private Map<Method, PropertyMeta> extractGetterMetas(Map<String, PropertyMeta> propertyMetas) {
-		Map<Method, PropertyMeta> getterMetas = new HashMap();
+		Map<Method, PropertyMeta> getterMetas = new HashMap<>();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			getterMetas.put(propertyMeta.getGetter(), propertyMeta);
 		}
@@ -107,7 +105,7 @@ public class EntityMetaBuilder {
 	}
 
 	private Map<Method, PropertyMeta> extractSetterMetas(Map<String, PropertyMeta> propertyMetas) {
-		Map<Method, PropertyMeta> setterMetas = new HashMap();
+		Map<Method, PropertyMeta> setterMetas = new HashMap<>();
 		for (PropertyMeta propertyMeta : propertyMetas.values()) {
 			setterMetas.put(propertyMeta.getSetter(), propertyMeta);
 		}

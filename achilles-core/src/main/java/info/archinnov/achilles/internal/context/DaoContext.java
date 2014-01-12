@@ -17,16 +17,14 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
-import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
-import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.*;
+import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.cache.CacheManager;
 import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
@@ -55,7 +53,6 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.base.Optional;
 import com.google.common.cache.Cache;
-import com.google.common.collect.Iterables;
 
 public class DaoContext {
 	private static final Logger log = LoggerFactory.getLogger(DaoContext.class);
@@ -65,19 +62,19 @@ public class DaoContext {
 	private Map<Class<?>, PreparedStatement> selectPSs;
 	private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
-	private Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueryMap;
+	private Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap;
 	private Session session;
 
 	private PreparedStatementBinder binder = new PreparedStatementBinder();
 	private CacheManager cacheManager = new CacheManager();
 	private StatementGenerator statementGenerator = new StatementGenerator();
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
+	private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
 	public DaoContext(Map<Class<?>, PreparedStatement> insertPSs,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-			Map<Class<?>, PreparedStatement> selectPSs, Map<Class<?>, Map<String, PreparedStatement>> removePSs,
+			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, Map<Class<?>, PreparedStatement> selectPSs,
+			Map<Class<?>, Map<String, PreparedStatement>> removePSs,
 			Map<CQLQueryType, PreparedStatement> counterQueryMap,
-			Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueryMap, Session session) {
+			Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap, Session session) {
 		this.insertPSs = insertPSs;
 		this.dynamicPSCache = dynamicPSCache;
 		this.selectPSs = selectPSs;
@@ -100,16 +97,17 @@ public class DaoContext {
 			Insert insert = pair.left;
 			Object[] boundValues = pair.right;
 			Insert.Options insertOptions = insert.using(timestamp(timestampO.get()));
-            boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			boundValues = ArrayUtils.add(boundValues, timestampO.get());
 
-            if (ttlO.isPresent()) {
-                insertOptions = insertOptions.and(ttl(ttlO.get()));
-                boundValues = ArrayUtils.add(boundValues, ttlO.get());
-            }
+			if (ttlO.isPresent()) {
+				insertOptions = insertOptions.and(ttl(ttlO.get()));
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+			}
 			context.pushStatement(new RegularStatementWrapper(insertOptions, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = insertPSs.get(entityClass);
-			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity(), writeLevel,ttlO);
+			BoundStatementWrapper bsWrapper = binder.bindForInsert(ps, entityMeta, context.getEntity(), writeLevel,
+					ttlO);
 			context.pushStatement(bsWrapper);
 		}
 	}
@@ -127,17 +125,17 @@ public class DaoContext {
 			final Update.Where where = pair.left;
 			Object[] boundValues = pair.right;
 			Update.Options updateOptions = where.using(timestamp(timestampO.get()));
-            boundValues = ArrayUtils.add(boundValues, timestampO.get());
+			boundValues = ArrayUtils.add(boundValues, timestampO.get());
 
-            if (ttlO.isPresent()) {
-                updateOptions = updateOptions.and(ttl(ttlO.get()));
-                boundValues = ArrayUtils.add(boundValues, ttlO.get());
-            }
+			if (ttlO.isPresent()) {
+				updateOptions = updateOptions.and(ttl(ttlO.get()));
+				boundValues = ArrayUtils.add(boundValues, ttlO.get());
+			}
 			context.pushStatement(new RegularStatementWrapper(updateOptions, boundValues, getCQLLevel(writeLevel)));
 		} else {
 			PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms);
-			BoundStatementWrapper bsWrapper = binder
-					.bindForUpdate(ps, entityMeta, pms, context.getEntity(), writeLevel, ttlO);
+			BoundStatementWrapper bsWrapper = binder.bindForUpdate(ps, entityMeta, pms, context.getEntity(),
+					writeLevel, ttlO);
 			context.pushStatement(bsWrapper);
 		}
 	}
@@ -224,7 +222,8 @@ public class DaoContext {
 				"Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'",
 				counterMeta, context, increment);
 		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, counterMeta);
-		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR).get(counterMeta.getPropertyName());
+		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(INCR)
+				.get(counterMeta.getPropertyName());
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(ps, meta,
 				context.getPrimaryKey(), increment, writeLevel);
 		context.pushCounterStatement(bsWrapper);
@@ -234,8 +233,8 @@ public class DaoContext {
 		log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
 				consistencyLevel);
 		EntityMeta entityMeta = context.getEntityMeta();
-		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL
-                                                                                                                 .name());
+		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT)
+				.get(SELECT_ALL.name());
 		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
 				consistencyLevel);
 		ResultSet resultSet = context.executeImmediate(bsWrapper);
@@ -243,23 +242,25 @@ public class DaoContext {
 		return returnFirstRowOrNull(resultSet.all());
 	}
 
-    public Long getClusteredCounterColumn(PersistenceContext context, PropertyMeta counterMeta,ConsistencyLevel consistencyLevel) {
-        log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
-                  consistencyLevel);
-        EntityMeta entityMeta = context.getEntityMeta();
-        final String counterColumnName = counterMeta.getPropertyName();
-        PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(counterColumnName);
-        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
-                                                                               consistencyLevel);
-        Row row = context.executeImmediate(bsWrapper).one();
-        Long counterValue = null;
-        if(row != null && !row.isNull(counterColumnName)) {
-            counterValue = row.getLong(counterColumnName);
-        }
-        return counterValue;
-    }
+	public Long getClusteredCounterColumn(PersistenceContext context, PropertyMeta counterMeta,
+			ConsistencyLevel consistencyLevel) {
+		log.debug("Get clustered counter for PersistenceContext '{}' and Consistency level '{}'", context,
+				consistencyLevel);
+		EntityMeta entityMeta = context.getEntityMeta();
+		final String counterColumnName = counterMeta.getPropertyName();
+		PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT)
+				.get(counterColumnName);
+		BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(ps, entityMeta, context.getPrimaryKey(),
+				consistencyLevel);
+		Row row = context.executeImmediate(bsWrapper).one();
+		Long counterValue = null;
+		if (row != null && !row.isNull(counterColumnName)) {
+			counterValue = row.getLong(counterColumnName);
+		}
+		return counterValue;
+	}
 
-	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta,Object primaryKey) {
+	public void bindForClusteredCounterDelete(PersistenceContext context, EntityMeta meta, Object primaryKey) {
 		log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
 		PreparedStatement ps = clusteredCounterQueryMap.get(meta.getEntityClass()).get(DELETE).get(DELETE_ALL.name());
 		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, meta);
@@ -314,6 +315,5 @@ public class DaoContext {
 	public Session getSession() {
 		return session;
 	}
-
 
 }

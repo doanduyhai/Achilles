@@ -16,17 +16,18 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata.transcoding;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.MAP;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-
-import java.util.Map;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
-import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+
+import java.util.Map;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableMap;
 
 public class MapTranscoderTest {
 
@@ -36,7 +37,7 @@ public class MapTranscoderTest {
 	public void should_encode() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
-		Map actual = transcoder.encode(pm, ImmutableMap.of(1, "value"));
+		Map<Object, Object> actual = transcoder.encode(pm, ImmutableMap.of(1, "value"));
 
 		assertThat(actual).containsKey(1);
 		assertThat(actual).containsValue("value");
@@ -60,7 +61,7 @@ public class MapTranscoderTest {
 	public void should_decode() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(Integer.class, String.class).type(SIMPLE).build();
 
-		Map actual = transcoder.decode(pm, ImmutableMap.of(1, "value"));
+		Map<Object, Object> actual = transcoder.decode(pm, ImmutableMap.of(1, "value"));
 
 		assertThat(actual).containsKey(1);
 		assertThat(actual).containsValue("value");

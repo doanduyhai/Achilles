@@ -20,20 +20,20 @@ import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.iterator.SliceQueryIterator;
-import info.archinnov.achilles.query.slice.SliceQuery;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.iterator.SliceQueryIterator;
+import info.archinnov.achilles.query.slice.CQLSliceQuery;
+import info.archinnov.achilles.query.slice.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 import java.util.Arrays;
@@ -110,8 +110,8 @@ public class SliceQueryExecutorTest {
 		when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
 		when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>> asList(Long.class, String.class));
 
-		sliceQuery = new SliceQuery(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom,
-				clusteringsTo, ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
+		sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom, clusteringsTo,
+				ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
 
 		Whitebox.setInternalState(executor, StatementGenerator.class, generator);
 		Whitebox.setInternalState(executor, PersistenceContextFactory.class, contextFactory);
@@ -126,7 +126,7 @@ public class SliceQueryExecutorTest {
 		Row row = mock(Row.class);
 		List<Row> rows = Arrays.asList(row);
 
-		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit),eq(batchSize))).thenReturn(regularWrapper);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit), eq(batchSize))).thenReturn(regularWrapper);
 		when(daoContext.execute(regularWrapper).all()).thenReturn(rows);
 
 		when(meta.instanciate()).thenReturn(entity);
@@ -136,14 +136,14 @@ public class SliceQueryExecutorTest {
 		List<ClusteredEntity> actual = executor.get(sliceQuery);
 
 		assertThat(actual).containsOnly(entity);
-        verify(meta).intercept(entity, Event.POST_LOAD);
+		verify(meta).intercept(entity, Event.POST_LOAD);
 		verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
 	}
 
 	@Test
 	public void should_create_iterator_for_clustered_entities() throws Exception {
 		RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
-		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit),eq(batchSize))).thenReturn(regularWrapper);
+		when(generator.generateSelectSliceQuery(anySliceQuery(), eq(limit), eq(batchSize))).thenReturn(regularWrapper);
 		when(daoContext.execute(regularWrapper).iterator()).thenReturn(iterator);
 
 		when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
@@ -158,9 +158,8 @@ public class SliceQueryExecutorTest {
 
 	@Test
 	public void should_remove_clustered_entities() throws Exception {
-		sliceQuery = new SliceQuery(ClusteredEntity.class, meta, partitionComponents,
-				Arrays.<Object> asList(), Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit,
-				batchSize, false);
+		sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta, partitionComponents, Arrays.<Object> asList(),
+				Arrays.<Object> asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, false);
 
 		RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
 		when(generator.generateRemoveSliceQuery(anySliceQuery())).thenReturn(regularWrapper);

@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.proxy.EntityInterceptorBuilder;
+import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.Factory;
@@ -42,7 +42,7 @@ public class EntityProxifier {
 
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
-    private ObjectInstantiator instantiator = new ObjectInstantiator();
+	private ObjectInstantiator instantiator = new ObjectInstantiator();
 
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> deriveBaseClass(Object entity) {
@@ -57,35 +57,37 @@ public class EntityProxifier {
 		return baseClass;
 	}
 
-    public <T> T buildProxyWithAllFieldsLoadedExceptCounters(T entity, PersistenceContext context) {
-        return buildProxy(entity, context, context.getAllGettersExceptCounters());
-    }
+	public <T> T buildProxyWithAllFieldsLoadedExceptCounters(T entity, PersistenceContext context) {
+		return buildProxy(entity, context, context.getAllGettersExceptCounters());
+	}
 
-    public <T> T buildProxyWithNoFieldLoaded(T entity, PersistenceContext context) {
-        return buildProxy(entity, context, new HashSet<Method>());
-    }
+	public <T> T buildProxyWithNoFieldLoaded(T entity, PersistenceContext context) {
+		return buildProxy(entity, context, new HashSet<Method>());
+	}
 
-    public <T> T buildProxy(T entity, PersistenceContext context, Set<Method> alreadyLoaded) {
+	public <T> T buildProxy(T entity, PersistenceContext context, Set<Method> alreadyLoaded) {
 
-        if (entity == null) {
-            return null;
-        }
+		if (entity == null) {
+			return null;
+		}
 
-        log.debug("Build Cglib proxy for entity {} ", entity);
+		log.debug("Build Cglib proxy for entity {} ", entity);
 
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(entity.getClass());
-        enhancer.setInterfaces(new Class[] { Serializable.class });
-        enhancer.setClassLoader(this.getClass().getClassLoader());
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(entity.getClass());
+		enhancer.setInterfaces(new Class[] { Serializable.class });
+		enhancer.setClassLoader(this.getClass().getClassLoader());
 
-        enhancer.setCallbackTypes(new Class[]{MethodInterceptor.class});
-        enhancer.setUseFactory(true);
-        final Class proxyClass = enhancer.createClass();
-        T instance =  (T)instantiator.instantiate(proxyClass);
+		enhancer.setCallbackTypes(new Class[] { MethodInterceptor.class });
+		enhancer.setUseFactory(true);
+		final Class<?> proxyClass = enhancer.createClass();
 
-        ((Factory)instance).setCallbacks(new Callback[]{buildInterceptor(context, entity, alreadyLoaded)});
-        return instance;
-    }
+		@SuppressWarnings("unchecked")
+		T instance = (T) instantiator.instantiate(proxyClass);
+
+		((Factory) instance).setCallbacks(new Callback[] { buildInterceptor(context, entity, alreadyLoaded) });
+		return instance;
+	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T getRealObject(T proxy) {
@@ -121,11 +123,11 @@ public class EntityProxifier {
 		}
 	}
 
-    public void ensureNotProxy(Object rawEntity) {
-        if (isProxy(rawEntity)) {
-            throw new IllegalStateException("Then entity is already in 'managed' state.");
-        }
-    }
+	public void ensureNotProxy(Object rawEntity) {
+		if (isProxy(rawEntity)) {
+			throw new IllegalStateException("Then entity is already in 'managed' state.");
+		}
+	}
 
 	public <T> T removeProxy(T proxy) {
 		log.debug("Unwrapping object {} ", proxy);
@@ -152,7 +154,7 @@ public class EntityProxifier {
 	}
 
 	public <T> Collection<T> removeProxy(Collection<T> proxies) {
-		Collection<T> result = new ArrayList();
+		Collection<T> result = new ArrayList<>();
 		for (T proxy : proxies) {
 			result.add(removeProxy(proxy));
 		}
@@ -160,7 +162,7 @@ public class EntityProxifier {
 	}
 
 	public <T> List<T> removeProxy(List<T> proxies) {
-		List<T> result = new ArrayList();
+		List<T> result = new ArrayList<>();
 		for (T proxy : proxies) {
 			result.add(this.removeProxy(proxy));
 		}
@@ -169,7 +171,7 @@ public class EntityProxifier {
 	}
 
 	public <T> Set<T> removeProxy(Set<T> proxies) {
-		Set<T> result = new HashSet();
+		Set<T> result = new HashSet<>();
 		for (T proxy : proxies) {
 			result.add(this.removeProxy(proxy));
 		}
@@ -177,8 +179,8 @@ public class EntityProxifier {
 		return result;
 	}
 
-    public <T> EntityInterceptor<T> buildInterceptor(PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
-        return new EntityInterceptorBuilder(context, entity).alreadyLoaded(alreadyLoaded).build();
-    }
+	public <T> EntityInterceptor<T> buildInterceptor(PersistenceContext context, T entity, Set<Method> alreadyLoaded) {
+		return new EntityInterceptorBuilder<>(context, entity).alreadyLoaded(alreadyLoaded).build();
+	}
 
 }

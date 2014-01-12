@@ -15,7 +15,7 @@ public class PropertyParsingContextTest {
         PropertyParsingContext context = new PropertyParsingContext(null,null);
 
         //When
-        context.isEmbeddedId(true);
+        context.setEmbeddedId(true);
 
         //Then
         assertThat(context.isEmbeddedId()).isTrue();

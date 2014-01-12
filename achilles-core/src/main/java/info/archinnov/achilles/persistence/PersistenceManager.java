@@ -18,6 +18,7 @@ package info.archinnov.achilles.persistence;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -26,7 +27,7 @@ import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQueryBuilder;
@@ -35,7 +36,6 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.List;
 import java.util.Map;
@@ -77,13 +77,12 @@ public class PersistenceManager {
 	 * 
 	 * @param entity
 	 *            Entity to be persisted
-     * @return proxified entity
+	 * @return proxified entity
 	 */
 	public <T> T persist(T entity) {
 		log.debug("Persisting entity '{}'", entity);
 		return persist(entity, noOptions());
 	}
-
 
 	/**
 	 * Persist an entity with the given options.
@@ -92,7 +91,7 @@ public class PersistenceManager {
 	 *            Entity to be persisted
 	 * @param options
 	 *            options for consistency level, ttl and timestamp
-     * @return proxified entity
+	 * @return proxified entity
 	 */
 	public <T> T persist(final T entity, Options options) {
 		if (log.isDebugEnabled())
@@ -103,14 +102,14 @@ public class PersistenceManager {
 		if (options.getTtl().isPresent()) {
 			entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 		}
-        proxifier.ensureNotProxy(entity);
+		proxifier.ensureNotProxy(entity);
 		PersistenceContext context = initPersistenceContext(entity, options);
 		return context.persist(entity);
 	}
 
 	/**
 	 * Update a "managed" entity
-	 *
+	 * 
 	 * @param entity
 	 *            Managed entity to be updated
 	 */
@@ -121,7 +120,7 @@ public class PersistenceManager {
 	}
 
 	/**
-     * Update a "managed" entity
+	 * Update a "managed" entity
 	 * 
 	 * @param entity
 	 *            Managed entity to be updated
@@ -129,15 +128,15 @@ public class PersistenceManager {
 	 *            options for consistency level, ttl and timestamp
 	 */
 	public void update(Object entity, Options options) {
-        proxifier.ensureProxy(entity);
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Updating entity '{}' with options {} ", realObject, options);
-        }
-        entityValidator.validateEntity(realObject, entityMetaMap);
-        if (options.getTtl().isPresent()) {
-            entityValidator.validateNotClusteredCounter(realObject, entityMetaMap);
-        }
+		proxifier.ensureProxy(entity);
+		Object realObject = proxifier.getRealObject(entity);
+		if (log.isDebugEnabled()) {
+			log.debug("Updating entity '{}' with options {} ", realObject, options);
+		}
+		entityValidator.validateEntity(realObject, entityMetaMap);
+		if (options.getTtl().isPresent()) {
+			entityValidator.validateNotClusteredCounter(realObject, entityMetaMap);
+		}
 		PersistenceContext context = initPersistenceContext(realObject, options);
 		context.update(entity);
 	}
@@ -179,14 +178,14 @@ public class PersistenceManager {
 	 * 
 	 * @param entity
 	 *            Entity to be removed
-     * @param options
-     *            options for consistency level and timestamp
+	 * @param options
+	 *            options for consistency level and timestamp
 	 */
 	public void remove(final Object entity, Options options) {
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity '{}' with options {}", realObject, options);
-        }
+		Object realObject = proxifier.getRealObject(entity);
+		if (log.isDebugEnabled()) {
+			log.debug("Removing entity '{}' with options {}", realObject, options);
+		}
 
 		entityValidator.validateEntity(realObject, entityMetaMap);
 		PersistenceContext context = initPersistenceContext(realObject, options);
@@ -254,9 +253,10 @@ public class PersistenceManager {
 	}
 
 	/**
-	 * Create a proxy for the entity. An new empty entity will be created, populated with
-     * the provided primary key and then proxified. This method never returns null
-     * Use this method to perform direct update without read-before-write
+	 * Create a proxy for the entity. An new empty entity will be created,
+	 * populated with the provided primary key and then proxified. This method
+	 * never returns null Use this method to perform direct update without
+	 * read-before-write
 	 * 
 	 * @param entityClass
 	 *            Entity type
@@ -271,9 +271,10 @@ public class PersistenceManager {
 	}
 
 	/**
-     * Create a proxy for the entity. An new empty entity will be created, populated with
-     * the provided primary key and then proxified. This method never returns null
-     * Use this method to perform direct update without read-before-write
+	 * Create a proxy for the entity. An new empty entity will be created,
+	 * populated with the provided primary key and then proxified. This method
+	 * never returns null Use this method to perform direct update without
+	 * read-before-write
 	 * 
 	 * @param entityClass
 	 *            Entity type
@@ -326,9 +327,9 @@ public class PersistenceManager {
 		if (log.isDebugEnabled())
 			log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
 
-        proxifier.ensureProxy(entity);
-        Object realObject = proxifier.getRealObject(entity);
-        entityValidator.validateEntity(realObject, entityMetaMap);
+		proxifier.ensureProxy(entity);
+		Object realObject = proxifier.getRealObject(entity);
+		entityValidator.validateEntity(realObject, entityMetaMap);
 		PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(readLevel));
 		context.refresh(entity);
 	}
@@ -347,7 +348,7 @@ public class PersistenceManager {
 			log.debug("Force lazy fields initialization for entity {}", proxifier.removeProxy(entity));
 		}
 		proxifier.ensureProxy(entity);
-        T realObject = proxifier.getRealObject(entity);
+		T realObject = proxifier.getRealObject(entity);
 		PersistenceContext context = initPersistenceContext(realObject, noOptions());
 		return context.initialize(entity);
 	}
@@ -407,7 +408,8 @@ public class PersistenceManager {
 	}
 
 	/**
-	 * Remove the proxy of a 'managed' entity and return the underlying "raw" entity
+	 * Remove the proxy of a 'managed' entity and return the underlying "raw"
+	 * entity
 	 * 
 	 * If the argument is not a proxy objet, return itself <br/>
 	 * Else, return the target object behind the proxy
@@ -424,7 +426,8 @@ public class PersistenceManager {
 	}
 
 	/**
-	 * Remove the proxy of a list of 'managed' entities and return the underlying "raw" entities
+	 * Remove the proxy of a list of 'managed' entities and return the
+	 * underlying "raw" entities
 	 * 
 	 * See {@link #removeProxy}
 	 * 
@@ -433,13 +436,14 @@ public class PersistenceManager {
 	 * @return real object list
 	 */
 	public <T> List<T> removeProxy(List<T> proxies) {
-        log.debug("Removing proxy for a list of entities {}", proxies);
+		log.debug("Removing proxy for a list of entities {}", proxies);
 
-        return proxifier.removeProxy(proxies);
+		return proxifier.removeProxy(proxies);
 	}
 
 	/**
-	 * Remove the proxy of a set of 'managed' entities return the underlying "raw" entities
+	 * Remove the proxy of a set of 'managed' entities return the underlying
+	 * "raw" entities
 	 * 
 	 * See {@link #removeProxy}
 	 * 
@@ -459,7 +463,7 @@ public class PersistenceManager {
 		Validator.validateTrue(meta.isClusteredEntity(),
 				"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
 				meta.getClassName());
-		return new SliceQueryBuilder(sliceQueryExecutor, entityClass, meta);
+		return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
 	}
 
 	/**
@@ -512,7 +516,7 @@ public class PersistenceManager {
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-		return new TypedQueryBuilder(entityClass, daoContext, queryString, meta, contextFactory, true,
+		return new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, true,
 				normalizeQuery, boundValues);
 	}
 
@@ -577,7 +581,7 @@ public class PersistenceManager {
 
 		EntityMeta meta = entityMetaMap.get(entityClass);
 		typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-		return new TypedQueryBuilder(entityClass, daoContext, queryString, meta, contextFactory, false, true,
+		return new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
 				boundValues);
 	}
 

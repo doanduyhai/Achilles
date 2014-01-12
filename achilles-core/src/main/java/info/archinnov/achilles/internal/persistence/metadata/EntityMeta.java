@@ -21,8 +21,8 @@ import static info.archinnov.achilles.internal.persistence.metadata.PropertyType
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Method;
@@ -59,14 +59,13 @@ public class EntityMeta {
 	private String tableName;
 	private Class<?> idClass;
 	private Map<String, PropertyMeta> propertyMetas;
-    private List<PropertyMeta> allMetasExceptCounters;
-    private List<PropertyMeta> allMetasExceptIdAndCounters;
+	private List<PropertyMeta> allMetasExceptCounters;
+	private List<PropertyMeta> allMetasExceptIdAndCounters;
 	private PropertyMeta idMeta;
 	private Map<Method, PropertyMeta> getterMetas;
 	private Map<Method, PropertyMeta> setterMetas;
 	private boolean clusteredEntity = false;
 	private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
-	private PropertyMeta firstMeta;
 	private List<PropertyMeta> allMetasExceptId;
 	private boolean clusteredCounter = false;
 	private List<Interceptor<?>> interceptors = new ArrayList<>();
@@ -83,16 +82,17 @@ public class EntityMeta {
 		return interceptors;
 	}
 
-
-    public void intercept(Object entity, Event event) {
-        List<Interceptor<?>> interceptors = getInterceptorsForEvent(event);
-        if (interceptors.size() > 0) {
-            for (Interceptor interceptor : interceptors) {
-                interceptor.onEvent(entity);
-            }
-            Validator.validateNotNull(getPrimaryKey(entity),"The primary key should not be null after intercepting the event '%s'",event);
-        }
-    }
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void intercept(Object entity, Event event) {
+		List<Interceptor<?>> interceptors = getInterceptorsForEvent(event);
+		if (interceptors.size() > 0) {
+			for (Interceptor interceptor : interceptors) {
+				interceptor.onEvent(entity);
+			}
+			Validator.validateNotNull(getPrimaryKey(entity),
+					"The primary key should not be null after intercepting the event '%s'", event);
+		}
+	}
 
 	protected List<Interceptor<?>> getInterceptorsForEvent(final Event event) {
 		return FluentIterable.from(interceptors).filter(getFilterForEvent(event)).toImmutableList();
@@ -107,7 +107,6 @@ public class EntityMeta {
 		};
 	}
 
-
 	public Object getPartitionKey(Object compoundKey) {
 		return idMeta.getPartitionKey(compoundKey);
 	}
@@ -120,8 +119,6 @@ public class EntityMeta {
 	public boolean hasEmbeddedId() {
 		return idMeta.isEmbeddedId();
 	}
-
-
 
 	// ////////// Getters & Setters
 	@SuppressWarnings("unchecked")
@@ -215,14 +212,12 @@ public class EntityMeta {
 	}
 
 	public List<PropertyMeta> getAllMetas() {
-		return new ArrayList(propertyMetas.values());
+		return new ArrayList<>(propertyMetas.values());
 	}
 
-
-    public List<PropertyMeta> getAllCounterMetas() {
-        return from(propertyMetas.values()).filter(counterType)
-                .toImmutableList();
-    }
+	public List<PropertyMeta> getAllCounterMetas() {
+		return from(propertyMetas.values()).filter(counterType).toImmutableList();
+	}
 
 	public List<PropertyMeta> getAllMetasExceptId() {
 		return this.allMetasExceptId;
@@ -244,39 +239,39 @@ public class EntityMeta {
 		return propertyMetas.size() == 1;
 	}
 
-    public List<PropertyMeta> getAllMetasExceptIdAndCounters() {
-        return allMetasExceptIdAndCounters;
-    }
+	public List<PropertyMeta> getAllMetasExceptIdAndCounters() {
+		return allMetasExceptIdAndCounters;
+	}
 
-    public void setAllMetasExceptIdAndCounters(List<PropertyMeta> allMetasExceptIdAndCounters) {
-        this.allMetasExceptIdAndCounters = allMetasExceptIdAndCounters;
-    }
+	public void setAllMetasExceptIdAndCounters(List<PropertyMeta> allMetasExceptIdAndCounters) {
+		this.allMetasExceptIdAndCounters = allMetasExceptIdAndCounters;
+	}
 
-    public List<PropertyMeta> getAllMetasExceptCounters() {
-        return allMetasExceptCounters;
-    }
+	public List<PropertyMeta> getAllMetasExceptCounters() {
+		return allMetasExceptCounters;
+	}
 
-    public void setAllMetasExceptCounters(List<PropertyMeta> allMetasExceptCounters) {
-        this.allMetasExceptCounters = allMetasExceptCounters;
-    }
+	public void setAllMetasExceptCounters(List<PropertyMeta> allMetasExceptCounters) {
+		this.allMetasExceptCounters = allMetasExceptCounters;
+	}
 
-    public List<PropertyMeta> getColumnsMetaToInsert() {
-        if(clusteredCounter) {
-           return allMetasExceptId;
-        } else {
-           return allMetasExceptIdAndCounters;
-        }
-    }
+	public List<PropertyMeta> getColumnsMetaToInsert() {
+		if (clusteredCounter) {
+			return allMetasExceptId;
+		} else {
+			return allMetasExceptIdAndCounters;
+		}
+	}
 
-    public List<PropertyMeta> getColumnsMetaToLoad() {
-        if(clusteredCounter) {
-            return new ArrayList(propertyMetas.values());
-        } else {
-            return allMetasExceptCounters;
-        }
-    }
+	public List<PropertyMeta> getColumnsMetaToLoad() {
+		if (clusteredCounter) {
+			return new ArrayList<>(propertyMetas.values());
+		} else {
+			return allMetasExceptCounters;
+		}
+	}
 
-    @Override
+	@Override
 	public String toString() {
 
 		return Objects.toStringHelper(this.getClass()).add("className", className)

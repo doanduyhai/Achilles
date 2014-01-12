@@ -11,7 +11,6 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -25,7 +24,6 @@ import org.apache.cassandra.config.EncryptionOptions.ServerEncryptionOptions.Int
 import org.apache.cassandra.config.SeedProviderDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 
@@ -92,7 +90,6 @@ public class CassandraConfig {
 		config.dynamic_snitch_reset_interval_in_ms = 600000;
 		config.dynamic_snitch_badness_threshold = 0.1;
 		config.request_scheduler = org.apache.cassandra.scheduler.NoScheduler.class.getName();
-		config.index_interval = 128;
 		config.server_encryption_options.internode_encryption = InternodeEncryption.none;
 		config.server_encryption_options.keystore_password = "cassandra";
 		config.server_encryption_options.truststore_password = "cassandra";
@@ -151,7 +148,7 @@ public class CassandraConfig {
 		TypeDescription seedDesc = new TypeDescription(SeedProviderDef.class);
 		seedDesc.putMapPropertyType("parameters", String.class, String.class);
 		constructor.addTypeDescription(seedDesc);
-		Yaml yaml = new Yaml(new Loader(constructor));
+		Yaml yaml = new Yaml(constructor);
 		return yaml;
 	}
 

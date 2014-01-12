@@ -17,20 +17,19 @@
 package info.archinnov.achilles.internal.validation;
 
 import static java.lang.String.format;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Map;
-import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+
 public class Validator {
-    private static ObjectInstantiator instantiator = new ObjectInstantiator();
+	private static ObjectInstantiator instantiator = new ObjectInstantiator();
 
 	public static void validateNotBlank(String arg, String message, Object... args) {
 		if (StringUtils.isBlank(arg)) {
@@ -69,7 +68,6 @@ public class Validator {
 		}
 	}
 
-
 	public static void validateRegExp(String arg, String regexp, String label) {
 		validateNotBlank(arg, "The text value '%s' should not be blank", label);
 		if (!Pattern.matches(regexp, arg)) {
@@ -82,7 +80,7 @@ public class Validator {
 		String canonicalName = arg.getCanonicalName();
 
 		try {
-            instantiator.instantiate(arg);
+			instantiator.instantiate(arg);
 		} catch (NoClassDefFoundError | InstantiationError e) {
 			throw new AchillesBeanMappingException(
 					format("Cannot instantiate the class '%s'. Please ensure the class is not an abstract class, an interface, an array class, a primitive type, or void and have a nullary (default) constructor and is declared public",

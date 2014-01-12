@@ -1,7 +1,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
-import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -15,7 +14,6 @@ import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,28 +45,28 @@ public class EntityUpdaterTest {
 	@Mock
 	private PersistenceContext context;
 
-    @Mock
-    private PropertyMeta pm;
+	@Mock
+	private PropertyMeta pm;
 
-    @Mock
-    private EntityMeta meta;
+	@Mock
+	private EntityMeta meta;
 
-    @Captor
-    private ArgumentCaptor<List<PropertyMeta>> pmCaptor;
+	@Captor
+	private ArgumentCaptor<List<PropertyMeta>> pmCaptor;
 
-    private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
+	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-    private List<PropertyMeta> allMetas = new ArrayList();
+	private List<PropertyMeta> allMetas = new ArrayList<>();
 
-	private List<PropertyMeta> allCounterMetas = new ArrayList();
+	private List<PropertyMeta> allCounterMetas = new ArrayList<>();
 
-	private Map<Method, PropertyMeta> dirtyMap = new HashMap();
+	private Map<Method, PropertyMeta> dirtyMap = new HashMap<>();
 
 	@Before
 	public void setUp() {
 
 		when(context.getEntity()).thenReturn(entity);
-		when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
 		when(context.getEntityMeta()).thenReturn(meta);
 
 		allMetas.clear();
@@ -81,50 +79,48 @@ public class EntityUpdaterTest {
 		when(proxifier.getRealObject(entity)).thenReturn(entity);
 		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
 		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
-        when(meta.getAllCounterMetas()).thenReturn(allCounterMetas);
+		when(meta.getAllCounterMetas()).thenReturn(allCounterMetas);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
 				.accessors().build();
-        dirtyMap.put(pm.getGetter(),pm);
-        when(context.isClusteredCounter()).thenReturn(false);
+		dirtyMap.put(pm.getGetter(), pm);
+		when(context.isClusteredCounter()).thenReturn(false);
 
 		entityUpdater.update(context, entity);
 
 		verify(context).setEntity(entity);
-        verify(context).pushUpdateStatement(pmCaptor.capture());
+		verify(context).pushUpdateStatement(pmCaptor.capture());
 
-        assertThat(pmCaptor.getValue()).containsOnly(pm);
+		assertThat(pmCaptor.getValue()).containsOnly(pm);
 
-        verify(counterPersister).persistCounters(context,allCounterMetas);
+		verify(counterPersister).persistCounters(context, allCounterMetas);
 		verify(interceptor).setContext(context);
 		verify(interceptor).setTarget(entity);
 
 	}
 
+	@Test
+	public void should_update_proxified_clustered_counter_entity() throws Exception {
+		when(proxifier.isProxy(entity)).thenReturn(true);
+		when(proxifier.getRealObject(entity)).thenReturn(entity);
+		when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
+		when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 
-    @Test
-    public void should_update_proxified_clustered_counter_entity() throws Exception {
-        when(proxifier.isProxy(entity)).thenReturn(true);
-        when(proxifier.getRealObject(entity)).thenReturn(entity);
-        when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
-        when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
+		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+				.accessors().build();
+		dirtyMap.put(pm.getGetter(), pm);
+		when(context.isClusteredCounter()).thenReturn(true);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
-                                                 .accessors().build();
-        dirtyMap.put(pm.getGetter(),pm);
-        when(context.isClusteredCounter()).thenReturn(true);
+		entityUpdater.update(context, entity);
 
+		verify(context).setEntity(entity);
+		verify(context).pushUpdateStatement(pmCaptor.capture());
 
-        entityUpdater.update(context, entity);
+		assertThat(pmCaptor.getValue()).containsOnly(pm);
 
-        verify(context).setEntity(entity);
-        verify(context).pushUpdateStatement(pmCaptor.capture());
+		verify(counterPersister).persistClusteredCounters(context);
+		verify(interceptor).setContext(context);
+		verify(interceptor).setTarget(entity);
 
-        assertThat(pmCaptor.getValue()).containsOnly(pm);
-
-        verify(counterPersister).persistClusteredCounters(context);
-        verify(interceptor).setContext(context);
-        verify(interceptor).setTarget(entity);
-
-    }
+	}
 }

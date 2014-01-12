@@ -18,9 +18,9 @@ package info.archinnov.achilles.internal.persistence.metadata;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
 import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Field;
@@ -62,7 +62,7 @@ public class PropertyMeta {
 	private Class<?> valueClass;
 	private Method getter;
 	private Method setter;
-    private Field field;
+	private Field field;
 	private CounterProperties counterProperties;
 	private EmbeddedIdProperties embeddedIdProperties;
 	private IndexProperties indexProperties;
@@ -71,18 +71,18 @@ public class PropertyMeta {
 	private DataTranscoder transcoder;
 	private ReflectionInvoker invoker = new ReflectionInvoker();
 
-    public List<Field> getComponentFields() {
-        log.trace("Get component fields");
-        List<Field> compFields = new ArrayList();
-        if (embeddedIdProperties != null) {
-            compFields = embeddedIdProperties.getComponentFields();
-        }
-        return compFields;
-    }
+	public List<Field> getComponentFields() {
+		log.trace("Get component fields");
+		List<Field> compFields = new ArrayList<>();
+		if (embeddedIdProperties != null) {
+			compFields = embeddedIdProperties.getComponentFields();
+		}
+		return compFields;
+	}
 
 	public List<Method> getComponentGetters() {
 		log.trace("Get component getters");
-		List<Method> compGetters = new ArrayList<Method>();
+		List<Method> compGetters = new ArrayList<>();
 		if (embeddedIdProperties != null) {
 			compGetters = embeddedIdProperties.getComponentGetters();
 		}
@@ -131,15 +131,6 @@ public class PropertyMeta {
 			componentName = embeddedIdProperties.getVaryingComponentNameForQuery(fixedComponentsSize);
 
 		return componentName;
-	}
-
-	public Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
-		log.trace("Get varying component class for CQL query");
-		Class<?> componentClass = null;
-		if (embeddedIdProperties != null)
-			componentClass = embeddedIdProperties.getVaryingComponentClassForQuery(fixedComponentsSize);
-
-		return componentClass;
 	}
 
 	public List<String> getCQLComponentNames() {
@@ -191,11 +182,11 @@ public class PropertyMeta {
 		}
 	}
 
-    public List<Field> getPartitionComponentFields() {
-        log.trace("Get partition key component fields");
-        return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentFields() : Arrays
-                .<Field>asList();
-    }
+	public List<Field> getPartitionComponentFields() {
+		log.trace("Get partition key component fields");
+		return embeddedIdProperties != null ? embeddedIdProperties.getPartitionComponentFields() : Arrays
+				.<Field> asList();
+	}
 
 	public List<Object> extractClusteringComponents(List<Object> components) {
 		log.trace("Extract clustering components");
@@ -284,36 +275,36 @@ public class PropertyMeta {
 	}
 
 	public Object getAndEncodeValueForCassandra(Object entity) {
-        Object value = getValueFromField(entity);
-        Object encoded = null;
-        if(value != null) {
-            switch (type) {
-                case SIMPLE:
-                    encoded = transcoder.encode(this,value);
-                    break;
-                case LIST:
-                    encoded = transcoder.encode(this,(List<?>)value);
-                    break;
-                case SET:
-                    encoded = transcoder.encode(this,(Set<?>)value);
-                    break;
-                case MAP:
-                    encoded = transcoder.encode(this,(Map<?,?>)value);
-                    break;
-                case COUNTER:
-                    encoded= ((InternalCounterImpl)value).getInternalCounterDelta();
-                    break;
-                default:
-                    throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
-                                                        + propertyName + "' of type '" + type.name() + "'");
-            }
-        }
+		Object value = getValueFromField(entity);
+		Object encoded = null;
+		if (value != null) {
+			switch (type) {
+			case SIMPLE:
+				encoded = transcoder.encode(this, value);
+				break;
+			case LIST:
+				encoded = transcoder.encode(this, (List<?>) value);
+				break;
+			case SET:
+				encoded = transcoder.encode(this, (Set<?>) value);
+				break;
+			case MAP:
+				encoded = transcoder.encode(this, (Map<?, ?>) value);
+				break;
+			case COUNTER:
+				encoded = ((InternalCounterImpl) value).getInternalCounterDelta();
+				break;
+			default:
+				throw new AchillesException("Cannot encode value '" + value + "' for Cassandra for property '"
+						+ propertyName + "' of type '" + type.name() + "'");
+			}
+		}
 		return encoded;
 	}
 
-    public Object encode(Object entityValue) {
-        return entityValue == null ? null : transcoder.encode(this, entityValue);
-    }
+	public Object encode(Object entityValue) {
+		return entityValue == null ? null : transcoder.encode(this, entityValue);
+	}
 
 	public Object encodeKey(Object entityValue) {
 		return entityValue == null ? null : transcoder.encodeKey(this, entityValue);
@@ -379,9 +370,9 @@ public class PropertyMeta {
 		return invoker.getValueFromField(target, field);
 	}
 
-    public Object invokeGetter(Object target) {
-        return invoker.getValueFromField(target, getter);
-    }
+	public Object invokeGetter(Object target) {
+		return invoker.getValueFromField(target, getter);
+	}
 
 	public <T> List<T> getListValueFromField(Object target) {
 		return invoker.getListValueFromField(target, field);
@@ -458,15 +449,15 @@ public class PropertyMeta {
 		this.setter = setter;
 	}
 
-    public Field getField() {
-        return field;
-    }
+	public Field getField() {
+		return field;
+	}
 
-    public void setField(Field field) {
-        this.field = field;
-    }
+	public void setField(Field field) {
+		this.field = field;
+	}
 
-    public EmbeddedIdProperties getEmbeddedIdProperties() {
+	public EmbeddedIdProperties getEmbeddedIdProperties() {
 		return embeddedIdProperties;
 	}
 

@@ -17,6 +17,11 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
+import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,16 +31,13 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 
 public class DirtyCheckIT {
 

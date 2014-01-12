@@ -46,8 +46,9 @@ public class StatementCacheKey {
 		return fields;
 	}
 
-	public Class<?> getEntityClass() {
-		return entityClass;
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> getEntityClass() {
+		return (Class<T>) entityClass;
 	}
 
 	@Override

@@ -17,8 +17,12 @@
 package info.archinnov.achilles.internal.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -26,16 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MapEntryWrapperTest {
@@ -61,13 +61,13 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_mark_dirty_on_value_set() throws Exception {
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		Map<Object, Object> map = new HashMap<>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
-		Entry<Integer, String> mapEntry = map.entrySet().iterator().next();
+		Entry<Object, Object> mapEntry = map.entrySet().iterator().next();
 
-		MapEntryWrapper mapEntryWrapper = new MapEntryWrapper((Entry) mapEntry);
+		MapEntryWrapper mapEntryWrapper = new MapEntryWrapper(mapEntry);
 		mapEntryWrapper.setProxifier(proxifier);
 		mapEntryWrapper.setDirtyMap(dirtyMap);
 		mapEntryWrapper.setSetter(setter);
@@ -81,11 +81,11 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_equal() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 		wrapper1.setProxifier(proxifier);
 		wrapper1.setPropertyMeta(propertyMeta);
 		wrapper2.setProxifier(proxifier);
@@ -98,11 +98,11 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_not_equal_when_values_differ() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, "df");
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, "df");
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		wrapper1.setProxifier(proxifier);
 		wrapper1.setPropertyMeta(propertyMeta);
@@ -117,11 +117,11 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_not_equal_when_one_value_null() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "csdf");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, null);
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, null);
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		wrapper1.setProxifier(proxifier);
 		wrapper1.setPropertyMeta(propertyMeta);
@@ -134,11 +134,11 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_equal_compare_key_when_both_values_null() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, null);
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, null);
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, null);
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, null);
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		wrapper1.setProxifier(proxifier);
 		wrapper1.setPropertyMeta(propertyMeta);
@@ -151,11 +151,11 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_not_equal_when_keys_differ() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, null);
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, null);
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(1, null);
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, null);
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		wrapper1.setProxifier(proxifier);
 		wrapper1.setPropertyMeta(propertyMeta);
@@ -168,33 +168,33 @@ public class MapEntryWrapperTest {
 
 	@Test
 	public void should_same_hashcode_when_same_keys_and_values() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "abc");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, "abc");
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "abc");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, "abc");
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		assertThat(wrapper1.hashCode()).isEqualTo(wrapper2.hashCode());
 	}
 
 	@Test
 	public void should_different_hashcode_when_values_differ() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(4, "abc");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, null);
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(4, "abc");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, null);
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		assertThat(wrapper1.hashCode()).isNotEqualTo(wrapper2.hashCode());
 	}
 
 	@Test
 	public void should_different_hashcode_when_keys_differ() throws Exception {
-		Entry<Integer, String> entry1 = new AbstractMap.SimpleEntry<Integer, String>(1, "abc");
-		Entry<Integer, String> entry2 = new AbstractMap.SimpleEntry<Integer, String>(4, "abc");
+		Entry<Object, Object> entry1 = new AbstractMap.SimpleEntry<Object, Object>(1, "abc");
+		Entry<Object, Object> entry2 = new AbstractMap.SimpleEntry<Object, Object>(4, "abc");
 
-		MapEntryWrapper wrapper1 = new MapEntryWrapper((Entry) entry1);
-		MapEntryWrapper wrapper2 = new MapEntryWrapper((Entry) entry2);
+		MapEntryWrapper wrapper1 = new MapEntryWrapper(entry1);
+		MapEntryWrapper wrapper2 = new MapEntryWrapper(entry2);
 
 		assertThat(wrapper1.hashCode()).isNotEqualTo(wrapper2.hashCode());
 	}

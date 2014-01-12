@@ -17,8 +17,10 @@
 package info.archinnov.achilles.internal.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,14 +29,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ListWrapperTest {
@@ -150,6 +150,7 @@ public class ListWrapperTest {
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_get_target() throws Exception {
 		ArrayList<String> target = new ArrayList<String>();
@@ -158,6 +159,7 @@ public class ListWrapperTest {
 		assertThat((List) listWrapper.getTarget()).isSameAs(target);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ListWrapper prepareListWrapper(List<String> target) {
 		ListWrapper listWrapper = new ListWrapper((List) target);
 		listWrapper.setDirtyMap(dirtyMap);

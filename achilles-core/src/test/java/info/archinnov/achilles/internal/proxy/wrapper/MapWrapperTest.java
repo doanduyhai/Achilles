@@ -17,10 +17,12 @@
 package info.archinnov.achilles.internal.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -31,16 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MapWrapperTest {
@@ -89,6 +87,7 @@ public class MapWrapperTest {
 		assertThat(wrapper.containsValue("FR")).isTrue();
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_not_be_empty_and_get_size() throws Exception {
 		Map<Integer, String> target = prepareMap();
@@ -272,6 +271,7 @@ public class MapWrapperTest {
 		return map;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private MapWrapper prepareMapWrapper(Map<Integer, String> target) {
 		MapWrapper wrapper = new MapWrapper((Map) target);
 		wrapper.setDirtyMap(dirtyMap);

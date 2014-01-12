@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
-import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.*;
+import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
@@ -38,33 +38,33 @@ public class PreparedStatementBinder {
 	private static final Logger log = LoggerFactory.getLogger(PreparedStatementBinder.class);
 
 	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity,
-			ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
+			ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for insert of entity {}", ps.getQueryString(), entity);
-		List<Object> values = new ArrayList();
+		List<Object> values = new ArrayList<>();
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
 		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
 
-		List<PropertyMeta> fieldMetas = new ArrayList(entityMeta.getColumnsMetaToInsert());
+		List<PropertyMeta> fieldMetas = new ArrayList<>(entityMeta.getColumnsMetaToInsert());
 
 		for (PropertyMeta pm : fieldMetas) {
-            Object value = pm.getAndEncodeValueForCassandra(entity);
+			Object value = pm.getAndEncodeValueForCassandra(entity);
 			values.add(value);
 		}
 
-        // TTL or default value 0
-        values.add(ttlO.or(0));
-        BoundStatement bs = ps.bind(values.toArray());
+		// TTL or default value 0
+		values.add(ttlO.or(0));
+		BoundStatement bs = ps.bind(values.toArray());
 		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
 	}
 
 	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
-			Object entity, ConsistencyLevel consistencyLevel,Optional<Integer> ttlO) {
+			Object entity, ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
 		log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
-		List<Object> values = new ArrayList();
-        // TTL or default value 0
-        values.add(ttlO.or(0));
+		List<Object> values = new ArrayList<>();
+		// TTL or default value 0
+		values.add(ttlO.or(0));
 		for (PropertyMeta pm : pms) {
-            Object value = pm.getAndEncodeValueForCassandra(entity);
+			Object value = pm.getAndEncodeValueForCassandra(entity);
 			values.add(value);
 		}
 		Object primaryKey = entityMeta.getPrimaryKey(entity);
@@ -149,7 +149,7 @@ public class PreparedStatementBinder {
 	}
 
 	private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta) {
-		List<Object> values = new ArrayList();
+		List<Object> values = new ArrayList<>();
 		if (idMeta.isEmbeddedId()) {
 			values.addAll(idMeta.encodeToComponents(primaryKey));
 		} else {

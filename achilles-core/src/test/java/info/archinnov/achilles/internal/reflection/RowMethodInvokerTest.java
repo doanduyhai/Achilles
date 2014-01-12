@@ -16,11 +16,11 @@
  */
 package info.archinnov.achilles.internal.reflection;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,13 +74,14 @@ public class RowMethodInvokerTest {
 		compClasses = new ArrayList<Class<?>>();
 
 		when(pm.getPropertyName()).thenReturn("property");
-		when((Class) pm.getKeyClass()).thenReturn(Integer.class);
-		when((Class) pm.getValueClass()).thenReturn(String.class);
+		when(pm.<Integer> getKeyClass()).thenReturn(Integer.class);
+		when(pm.<String> getValueClass()).thenReturn(String.class);
 		when(row.isNull("property")).thenReturn(false);
 		when(pm.getComponentNames()).thenReturn(compNames);
 		when(pm.getComponentClasses()).thenReturn(compClasses);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_get_list_value_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.LIST);
@@ -98,6 +99,7 @@ public class RowMethodInvokerTest {
 		assertThat(invoker.invokeOnRowForFields(null, pm)).isNull();
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_get_set_value_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.SET);
@@ -111,6 +113,7 @@ public class RowMethodInvokerTest {
 		assertThat((Set) actual).containsAll(set);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_get_map_value_from_row() throws Exception {
 		when(pm.type()).thenReturn(PropertyType.MAP);

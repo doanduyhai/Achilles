@@ -17,17 +17,15 @@
 package info.archinnov.achilles.query.slice;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
-
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import info.archinnov.achilles.type.Pair;
 
 import com.datastax.driver.core.querybuilder.Ordering;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -99,10 +97,6 @@ public class CQLSliceQuery<T> {
 
 	public String getVaryingComponentName() {
 		return sliceQuery.getIdMeta().getVaryingComponentNameForQuery(fixedComponents.size());
-	}
-
-	public Class<?> getVaryingComponentClass() {
-		return sliceQuery.getIdMeta().getVaryingComponentClassForQuery(fixedComponents.size());
 	}
 
 	public EntityMeta getMeta() {

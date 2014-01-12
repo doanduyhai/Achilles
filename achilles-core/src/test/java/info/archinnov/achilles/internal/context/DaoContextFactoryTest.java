@@ -76,8 +76,8 @@ public class DaoContextFactoryTest {
 	@Mock
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
-    @Mock
-	private Map<CQLQueryType, Map<String,PreparedStatement>> clusteredCounterQueryMap;
+	@Mock
+	private Map<CQLQueryType, Map<String, PreparedStatement>> clusteredCounterQueryMap;
 
 	@Before
 	public void setUp() {
@@ -130,16 +130,17 @@ public class DaoContextFactoryTest {
 		// When
 		when(queryGenerator.prepareClusteredCounterQueryMap(session, entityMeta)).thenReturn(clusteredCounterQueryMap);
 
-		Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>> function = builder
+		Function<EntityMeta, Map<CQLQueryType, Map<String, PreparedStatement>>> function = builder
 				.getClusteredCounterTransformer(session);
 
-		ImmutableList<Map<CQLQueryType, Map<String,PreparedStatement>>> result = FluentIterable.from(Arrays.asList(entityMeta))
-				.transform(function).toImmutableList();
+		ImmutableList<Map<CQLQueryType, Map<String, PreparedStatement>>> result = FluentIterable
+				.from(Arrays.asList(entityMeta)).transform(function).toImmutableList();
 
 		// Then
 		assertThat(result.get(0)).isSameAs(clusteredCounterQueryMap);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_dao_context_with_counter() throws Exception {
 		// Given
@@ -162,8 +163,8 @@ public class DaoContextFactoryTest {
 		// Then
 		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs")).containsValue(
 				insertPS);
-		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs"))
-				.containsValue(selectEagerPS);
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs")).containsValue(
+				selectEagerPS);
 		assertThat((Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual, "removePSs"))
 				.containsKey(CompleteBean.class);
 
@@ -174,10 +175,11 @@ public class DaoContextFactoryTest {
 				.isSameAs(counterQueryMap);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void should_build_dao_context_without_counter() throws Exception {
 		// Given
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap();
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
 		EntityMeta meta = new EntityMeta();
 		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
 				.type(PropertyType.SIMPLE).build();
@@ -195,8 +197,8 @@ public class DaoContextFactoryTest {
 		// Then
 		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "insertPSs")).containsValue(
 				insertPS);
-		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs"))
-				.containsValue(selectEagerPS);
+		assertThat((Map<Class<?>, PreparedStatement>) Whitebox.getInternalState(actual, "selectPSs")).containsValue(
+				selectEagerPS);
 		assertThat((Map<Class<?>, Map<String, PreparedStatement>>) Whitebox.getInternalState(actual, "removePSs"))
 				.containsKey(CompleteBean.class);
 

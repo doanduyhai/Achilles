@@ -17,8 +17,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static com.google.common.collect.Maps.filterValues;
-import static com.google.common.collect.Maps.transformValues;
+import static com.google.common.collect.Maps.*;
 import static info.archinnov.achilles.internal.persistence.metadata.EntityMeta.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
@@ -30,6 +29,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Function;
@@ -37,24 +37,25 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableMap;
 
 public class DaoContextFactory {
-    private static final Logger log  = LoggerFactory.getLogger(DaoContextFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(DaoContextFactory.class);
 
-    private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
+	private static final Integer PREPARED_STATEMENT_LRU_CACHE_SIZE = 5000;
 	private PreparedStatementGenerator queryGenerator = new PreparedStatementGenerator();
 
 	public DaoContext build(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
-        log.debug("Build DaoContext");
+		log.debug("Build DaoContext");
 
-		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap(transformValues(
-                filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
+		Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<>(transformValues(
+				filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
 
-		Map<Class<?>, PreparedStatement> selectPSMap = new HashMap(transformValues(entityMetaMap, getSelectPSTransformer(session)));
+		Map<Class<?>, PreparedStatement> selectPSMap = new HashMap<>(transformValues(entityMetaMap,
+				getSelectPSTransformer(session)));
 
-		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap(transformValues(filterValues(entityMetaMap,
-                EXCLUDE_CLUSTERED_COUNTER_FILTER), getRemovePSTransformer(session)));
+		Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<>(transformValues(
+				filterValues(entityMetaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getRemovePSTransformer(session)));
 
-		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = newBuilder()
-				.maximumSize(PREPARED_STATEMENT_LRU_CACHE_SIZE).build();
+		Cache<StatementCacheKey, PreparedStatement> dynamicPSCache = newBuilder().maximumSize(
+				PREPARED_STATEMENT_LRU_CACHE_SIZE).build();
 
 		Map<CQLQueryType, PreparedStatement> counterQueryMap;
 		if (hasSimpleCounter) {
@@ -63,9 +64,9 @@ public class DaoContextFactory {
 			counterQueryMap = ImmutableMap.of();
 		}
 
-		Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueriesMap = new HashMap(
+		Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueriesMap = new HashMap<>(
 				transformValues(filterValues(entityMetaMap, CLUSTERED_COUNTER_FILTER),
-                                getClusteredCounterTransformer(session)));
+						getClusteredCounterTransformer(session)));
 
 		return new DaoContext(insertPSMap, dynamicPSCache, selectPSMap, removePSMap, counterQueryMap,
 				clusteredCounterQueriesMap, session);
@@ -98,10 +99,11 @@ public class DaoContextFactory {
 		};
 	}
 
-	Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>> getClusteredCounterTransformer(final Session session) {
-		return new Function<EntityMeta, Map<CQLQueryType, Map<String,PreparedStatement>>>() {
+	Function<EntityMeta, Map<CQLQueryType, Map<String, PreparedStatement>>> getClusteredCounterTransformer(
+			final Session session) {
+		return new Function<EntityMeta, Map<CQLQueryType, Map<String, PreparedStatement>>>() {
 			@Override
-			public Map<CQLQueryType, Map<String,PreparedStatement>> apply(EntityMeta meta) {
+			public Map<CQLQueryType, Map<String, PreparedStatement>> apply(EntityMeta meta) {
 				return queryGenerator.prepareClusteredCounterQueryMap(session, meta);
 			}
 		};

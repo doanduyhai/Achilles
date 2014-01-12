@@ -21,8 +21,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 import java.util.Arrays;
@@ -227,20 +227,6 @@ public class CQLSliceQueryTest {
 		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
 
 		assertThat(cqlSliceQuery.getVaryingComponentName()).isEqualTo("name");
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Test
-	public void should_get_varying_component_class() throws Exception {
-		when(sliceQuery.getOrdering()).thenReturn(ASCENDING);
-		when(sliceQuery.getClusteringsFrom()).thenReturn(Arrays.<Object> asList(11L, 2));
-		when(sliceQuery.getClusteringsTo()).thenReturn(Arrays.<Object> asList(11L, 3));
-
-		when(sliceQuery.getIdMeta().getVaryingComponentClassForQuery(1)).thenReturn((Class) Integer.class);
-
-		cqlSliceQuery = new CQLSliceQuery<ClusteredEntity>(sliceQuery, EACH_QUORUM);
-
-		assertThat(cqlSliceQuery.getVaryingComponentClass()).isSameAs((Class) Integer.class);
 	}
 
 	@Test

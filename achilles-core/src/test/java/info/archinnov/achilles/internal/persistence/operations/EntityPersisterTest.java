@@ -17,8 +17,6 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
@@ -26,7 +24,6 @@ import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 
 import java.util.List;
 
-import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,77 +46,73 @@ public class EntityPersisterTest {
 	private PersistenceContext context;
 
 	@Mock
-    private CounterPersister counterPersister;
+	private CounterPersister counterPersister;
 
-    @Mock
+	@Mock
 	private EntityMeta entityMeta;
 
-    @Mock
-    private PropertyMeta counterMeta;
-
-	private Long primaryKey = RandomUtils.nextLong();
+	@Mock
+	private PropertyMeta counterMeta;
 
 	private Object entity = new Object();
 
-
-
-    @Before
-    public void setUp() {
-        when(context.getEntityMeta()).thenReturn(entityMeta);
-        when(context.getEntity()).thenReturn(entity);
-    }
+	@Before
+	public void setUp() {
+		when(context.getEntityMeta()).thenReturn(entityMeta);
+		when(context.getEntity()).thenReturn(entity);
+	}
 
 	@Test
 	public void should_persist() throws Exception {
-        // Given
+		// Given
 		when(entityMeta.isClusteredCounter()).thenReturn(false);
-        final List<PropertyMeta> counterMetas = asList(counterMeta);
-        when(entityMeta.getAllCounterMetas()).thenReturn(counterMetas);
+		final List<PropertyMeta> counterMetas = asList(counterMeta);
+		when(entityMeta.getAllCounterMetas()).thenReturn(counterMetas);
 
-        // When
+		// When
 		persister.persist(context);
 
-        // Then
-        verify(context).pushInsertStatement();
-        verify(counterPersister).persistCounters(context,counterMetas);
+		// Then
+		verify(context).pushInsertStatement();
+		verify(counterPersister).persistCounters(context, counterMetas);
 	}
 
 	@Test
 	public void should_persist_clustered_counter() throws Exception {
-        // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
+		// Given
+		when(entityMeta.isClusteredCounter()).thenReturn(true);
+		when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
 
-        // When
-        persister.persist(context);
+		// When
+		persister.persist(context);
 
-        // Then
-        verify(counterPersister).persistClusteredCounters(context);
-    }
+		// Then
+		verify(counterPersister).persistClusteredCounters(context);
+	}
 
 	@Test
 	public void should_remove() throws Exception {
-        // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(false);
-        when(entityMeta.getTableName()).thenReturn("table");
+		// Given
+		when(entityMeta.isClusteredCounter()).thenReturn(false);
+		when(entityMeta.getTableName()).thenReturn("table");
 
-        // When
+		// When
 		persister.remove(context);
 
-        // Then
-        verify(context).bindForRemoval("table");
-        verify(counterPersister).removeRelatedCounters(context);
+		// Then
+		verify(context).bindForRemoval("table");
+		verify(counterPersister).removeRelatedCounters(context);
 	}
 
-    @Test
-    public void should_remove_clustered_counter() throws Exception {
-        // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
+	@Test
+	public void should_remove_clustered_counter() throws Exception {
+		// Given
+		when(entityMeta.isClusteredCounter()).thenReturn(true);
 
-        // When
-        persister.remove(context);
+		// When
+		persister.remove(context);
 
-        // Then
-        verify(context).bindForClusteredCounterRemoval();
-    }
+		// Then
+		verify(context).bindForClusteredCounterRemoval();
+	}
 }

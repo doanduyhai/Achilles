@@ -16,14 +16,14 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 
 import java.util.ArrayList;
@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,12 +77,12 @@ public class TypedQueryBuilder<T> {
 	 */
 	public List<T> get() {
 		log.debug("Get results for typed query {}", normalizedQuery);
-		List<T> result = new ArrayList();
+		List<T> result = new ArrayList<>();
 		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues)).all();
 		for (Row row : rows) {
 			T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
 			if (entity != null) {
-                meta.intercept(entity, Event.POST_LOAD);
+				meta.intercept(entity, Event.POST_LOAD);
 				if (managed) {
 					entity = buildProxy(entity);
 				}
@@ -108,7 +107,7 @@ public class TypedQueryBuilder<T> {
 		Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, boundValues)).one();
 		if (row != null) {
 			entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
-            meta.intercept(entity, Event.POST_LOAD);
+			meta.intercept(entity, Event.POST_LOAD);
 			if (entity != null && managed) {
 				entity = buildProxy(entity);
 			}
@@ -117,7 +116,7 @@ public class TypedQueryBuilder<T> {
 	}
 
 	private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
-		Map<String, PropertyMeta> propertiesMap = new HashMap();
+		Map<String, PropertyMeta> propertiesMap = new HashMap<>();
 		for (Entry<String, PropertyMeta> entry : meta.getPropertyMetas().entrySet()) {
 			String propertyName = entry.getKey().toLowerCase();
 			propertiesMap.put(propertyName, entry.getValue());

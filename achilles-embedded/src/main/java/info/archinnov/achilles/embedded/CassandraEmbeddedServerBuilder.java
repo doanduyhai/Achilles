@@ -1,24 +1,9 @@
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_CONFIG_FILE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.interceptor.Interceptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -292,7 +277,7 @@ public class CassandraEmbeddedServerBuilder {
 	}
 
 	private Map<String, Object> buildConfigMap() {
-		Map<String, Object> config = new HashMap();
+		Map<String, Object> config = new HashMap<>();
 		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
 		config.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
 

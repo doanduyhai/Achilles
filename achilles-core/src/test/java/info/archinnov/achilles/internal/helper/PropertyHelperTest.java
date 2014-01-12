@@ -17,11 +17,18 @@
 package info.archinnov.achilles.internal.helper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.annotations.Consistency;
+import info.archinnov.achilles.annotations.Index;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,12 +36,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.annotations.Consistency;
-import info.archinnov.achilles.annotations.Index;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyHelperTest {
@@ -64,6 +65,7 @@ public class PropertyHelperTest {
 		assertThat(infered).isEqualTo(String.class);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void should_infer_parameterized_value_class_from_list() throws Exception {
 		@SuppressWarnings("unused")
@@ -73,7 +75,7 @@ public class PropertyHelperTest {
 
 		Type type = Test.class.getDeclaredField("friends").getGenericType();
 
-		Class<Class> infered = helper.inferValueClassForListOrSet(type, Test.class);
+		Class infered = helper.inferValueClassForListOrSet(type, Test.class);
 
 		assertThat(infered).isEqualTo(Class.class);
 	}
@@ -95,7 +97,6 @@ public class PropertyHelperTest {
 
 	}
 
-
 	@Test
 	public void should_find_index() throws Exception {
 		class Test {
@@ -105,7 +106,7 @@ public class PropertyHelperTest {
 
 		Field field = Test.class.getDeclaredField("name");
 
-		assertThat(helper.getIndexName(field)!=null).isTrue();
+		assertThat(helper.getIndexName(field) != null).isTrue();
 	}
 
 	@Test
@@ -130,20 +131,21 @@ public class PropertyHelperTest {
 		assertThat(PropertyHelper.isSupportedType(Long.class)).isTrue();
 	}
 
-    @Test
-    public void should_infer_entity_class_from_interceptor() throws Exception {
-        assertThat(helper.inferEntityClassFromInterceptor(longInterceptor)).isEqualTo((Class)Long.class);
-    }
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void should_infer_entity_class_from_interceptor() throws Exception {
+		assertThat(helper.inferEntityClassFromInterceptor(longInterceptor)).isEqualTo((Class) Long.class);
+	}
 
-    private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
-        @Override
-        public void onEvent(Long entity) {
+	private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
+		@Override
+		public void onEvent(Long entity) {
 
-        }
+		}
 
-        @Override
-        public List<Event> events() {
-            return null;
-        }
-    };
+		@Override
+		public List<Event> events() {
+			return null;
+		}
+	};
 }

@@ -16,26 +16,29 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata;
 
+import info.archinnov.achilles.internal.validation.Validator;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Objects;
-import info.archinnov.achilles.internal.validation.Validator;
 
 public class EmbeddedIdProperties extends AbstractComponentProperties {
 
-    private static final Logger log  = LoggerFactory.getLogger(EmbeddedIdProperties.class);
+	private static final Logger log = LoggerFactory.getLogger(EmbeddedIdProperties.class);
 
-    private final PartitionComponents partitionComponents;
+	private final PartitionComponents partitionComponents;
 	private final ClusteringComponents clusteringComponents;
 	private final List<String> timeUUIDComponents;
 
 	public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents,
-			List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields,List<Method> componentGetters,
-			List<Method> componentSetters, List<String> timeUUIDComponents) {
-		super(componentClasses, componentNames, componentFields,componentGetters, componentSetters);
+			List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields,
+			List<Method> componentGetters, List<Method> componentSetters, List<String> timeUUIDComponents) {
+		super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
 		this.partitionComponents = partitionComponents;
 		this.clusteringComponents = clusteringComponents;
 		this.timeUUIDComponents = timeUUIDComponents;
@@ -50,19 +53,11 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	String getVaryingComponentNameForQuery(int fixedComponentsSize) {
-        log.trace("Get varying component name for query");
+		log.trace("Get varying component name for query");
 		if (fixedComponentsSize > 0)
 			return getComponentNames().get(fixedComponentsSize);
 		else
 			return getClusteringComponentNames().get(0);
-	}
-
-	Class<?> getVaryingComponentClassForQuery(int fixedComponentsSize) {
-        log.trace("Get varying component class for query");
-		if (fixedComponentsSize > 0)
-			return getComponentClasses().get(fixedComponentsSize);
-		else
-			return getClusteringComponentClasses().get(0);
 	}
 
 	public boolean isCompositePartitionKey() {
@@ -101,9 +96,9 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 		return partitionComponents.getComponentClasses();
 	}
 
-    public List<Field> getPartitionComponentFields() {
-        return partitionComponents.getComponentFields();
-    }
+	public List<Field> getPartitionComponentFields() {
+		return partitionComponents.getComponentFields();
+	}
 
 	public List<Method> getPartitionComponentSetters() {
 		return partitionComponents.getComponentSetters();
@@ -122,7 +117,7 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	List<Object> extractPartitionComponents(List<Object> components) {
-        log.trace("Extract partition key components from {}",components);
+		log.trace("Extract partition key components from {}", components);
 		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
@@ -131,8 +126,8 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 	}
 
 	List<Object> extractClusteringComponents(List<Object> components) {
-        log.trace("Extract clustering components from {}",components);
-        int partitionComponentsCount = partitionComponents.getComponentClasses().size();
+		log.trace("Extract clustering components from {}", components);
+		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
 
 		Validator.validateTrue(components.size() >= partitionComponentsCount,
 				"Cannot extract clustering components from components list '%s'", components);

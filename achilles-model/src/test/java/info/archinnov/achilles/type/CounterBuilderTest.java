@@ -30,31 +30,27 @@ public class CounterBuilderTest {
 
 	@Test
 	public void should_incr() throws Exception {
-		Counter counter =  CounterBuilder.incr();
+		Counter counter = CounterBuilder.incr();
 		assertThat(counter.get()).isEqualTo(1L);
 	}
 
 	@Test
 	public void should_incr_n() throws Exception {
-        Counter counter =  CounterBuilder.incr(10L);
+		Counter counter = CounterBuilder.incr(10L);
 		assertThat(counter.get()).isEqualTo(10L);
 	}
 
 	@Test
 	public void should_decr() throws Exception {
-        Counter counter =  CounterBuilder.decr();
+		Counter counter = CounterBuilder.decr();
 		assertThat(counter.get()).isEqualTo(-1L);
 	}
 
 	@Test
 	public void should_decr_n() throws Exception {
-        Counter counter =  CounterBuilder.decr(10L);
+		Counter counter = CounterBuilder.decr(10L);
 		assertThat(counter.get()).isEqualTo(-10L);
 	}
-
-
-
-
 
 	@Test
 	public void should_be_able_to_serialize_and_deserialize_counter_impl() throws Exception {
@@ -69,5 +65,51 @@ public class CounterBuilderTest {
 		assertThat(deserialized.get()).isEqualTo(11L);
 
 		assertThat(mapper.writeValueAsString(CounterBuilder.incr(0))).isEqualTo("\"0\"");
+	}
+
+	@Test
+	public void should_be_able_to_serialize_and_deserialize_null_counter() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		Counter counter = new TestCounter();
+
+		String serialized = mapper.writeValueAsString(counter);
+		assertThat(serialized).isEqualTo("");
+		serialized = mapper.writeValueAsString(null);
+		assertThat(serialized).isEqualTo("null");
+
+		Counter deserialized = mapper.readValue("null", Counter.class);
+		assertThat(deserialized).isNull();
+
+	}
+
+	private static class TestCounter implements Counter {
+
+		private Long value;
+
+		@Override
+		public Long get() {
+			return value;
+		}
+
+		@Override
+		public void incr() {
+			value++;
+		}
+
+		@Override
+		public void incr(long increment) {
+			value += increment;
+		}
+
+		@Override
+		public void decr() {
+			value--;
+		}
+
+		@Override
+		public void decr(long decrement) {
+			value -= decrement;
+		}
+
 	}
 }

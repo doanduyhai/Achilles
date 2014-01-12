@@ -16,13 +16,9 @@
  */
 package info.archinnov.achilles.internal.persistence.metadata;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.EMBEDDED_ID;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.interceptor.Event.*;
+import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
@@ -50,8 +46,8 @@ public class EntityMetaTest {
 		propertyMetas.put("name", null);
 		propertyMetas.put("age", null);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE)
-				.consistencyLevels(Pair.create(ALL, ALL)).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.SIMPLE).consistencyLevels(Pair.create(ALL, ALL)).build();
 
 		EntityMeta entityMeta = new EntityMeta();
 		entityMeta.setClassName("className");
@@ -122,7 +118,8 @@ public class EntityMetaTest {
 	@Test
 	public void should_return_false_for_is_clustered_counter_if_value_less() throws Exception {
 		EntityMeta entityMeta = new EntityMeta();
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.ID).build();
 
 		entityMeta.setClusteredEntity(false);
 		entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
@@ -133,7 +130,8 @@ public class EntityMetaTest {
 	@Test
 	public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception {
 		EntityMeta entityMeta = new EntityMeta();
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.ID).build();
 
 		PropertyMeta nameMeta = PropertyMetaTestBuilder
 		//
@@ -144,12 +142,12 @@ public class EntityMetaTest {
 		assertThat(entityMeta.isClusteredCounter()).isFalse();
 	}
 
-
 	@Test
 	public void should_return_true_when_value_less() throws Exception {
 		EntityMeta entityMeta = new EntityMeta();
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.ID).build();
 
 		entityMeta.setPropertyMetas(ImmutableMap.<String, PropertyMeta> of("idMeta", idMeta));
 
@@ -169,17 +167,17 @@ public class EntityMetaTest {
 
 	@Test
 	public void should_return_event_interceptors_for_specific_event() throws Exception {
-		//Given
-        EntityMeta entityMeta = new EntityMeta();
+		// Given
+		EntityMeta entityMeta = new EntityMeta();
 		Interceptor<String> postPersistInterceptor = createInterceptor(POST_PERSIST);
 		Interceptor<String> prePersistInterceptor = createInterceptor(PRE_PERSIST);
 
-        //When
+		// When
 		entityMeta.addInterceptor(postPersistInterceptor);
 		entityMeta.addInterceptor(prePersistInterceptor);
 
-        //Then
-        assertThat(entityMeta.getInterceptorsForEvent(POST_PERSIST)).containsExactly(postPersistInterceptor);
+		// Then
+		assertThat(entityMeta.getInterceptorsForEvent(POST_PERSIST)).containsExactly(postPersistInterceptor);
 		assertThat(entityMeta.getInterceptorsForEvent(PRE_PERSIST)).containsExactly(prePersistInterceptor);
 	}
 
@@ -188,12 +186,11 @@ public class EntityMetaTest {
 
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		EntityMeta entityMeta = new EntityMeta();
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType
-                                                                                                                    .EMBEDDED_ID).accessors()
-				.build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.EMBEDDED_ID).accessors().build();
 		idMeta.setInvoker(new ReflectionInvoker());
 		entityMeta.setIdMeta(idMeta);
-        entityMeta.addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
+		entityMeta.addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
 		entityMeta.addInterceptor(createInterceptorForCompleteBean(POST_PERSIST, 35L));
 
 		entityMeta.intercept(bean, PRE_PERSIST);
@@ -202,22 +199,22 @@ public class EntityMetaTest {
 		Assertions.assertThat(bean.getAge()).isEqualTo(35L);
 	}
 
-    private Interceptor<String> createInterceptor(final Event event) {
-        Interceptor<String> interceptor = new Interceptor<String>() {
+	private Interceptor<String> createInterceptor(final Event event) {
+		Interceptor<String> interceptor = new Interceptor<String>() {
 
-            @Override
-            public void onEvent(String entity) {
-            }
+			@Override
+			public void onEvent(String entity) {
+			}
 
-            @Override
-            public List<Event> events() {
-                List<Event> events = new ArrayList();
-                events.add(event);
-                return events;
-            }
-        };
-        return interceptor;
-    }
+			@Override
+			public List<Event> events() {
+				List<Event> events = new ArrayList<>();
+				events.add(event);
+				return events;
+			}
+		};
+		return interceptor;
+	}
 
 	private Interceptor<CompleteBean> createInterceptorForCompleteBean(final Event event, final long age) {
 		Interceptor<CompleteBean> interceptor = new Interceptor<CompleteBean>() {

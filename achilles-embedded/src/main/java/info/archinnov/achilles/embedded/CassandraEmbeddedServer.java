@@ -17,34 +17,15 @@
 package info.archinnov.achilles.embedded;
 
 import static com.datastax.driver.core.ProtocolOptions.Compression.SNAPPY;
-import static info.archinnov.achilles.embedded.CassandraConfig.cqlRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.storageRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.storageSslRandomPort;
-import static info.archinnov.achilles.embedded.CassandraConfig.thriftRandomPort;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_CONFIG_FILE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_FOLDERS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import static info.archinnov.achilles.embedded.CassandraConfig.*;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
-import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.validation.Validator;
 
 import java.io.File;
 import java.util.HashMap;
@@ -81,13 +62,13 @@ public class CassandraEmbeddedServer {
 
 	private static boolean embeddedServerStarted = false;
 
-	private static final Map<String, Boolean> KEYSPACE_BOOTSTRAP_MAP = new HashMap();
+	private static final Map<String, Boolean> KEYSPACE_BOOTSTRAP_MAP = new HashMap<>();
 
-	private static final Map<String, Session> SESSIONS_MAP = new HashMap();
+	private static final Map<String, Session> SESSIONS_MAP = new HashMap<>();
 
-	private static final Map<String, PersistenceManagerFactory> FACTORIES_MAP = new HashMap();
+	private static final Map<String, PersistenceManagerFactory> FACTORIES_MAP = new HashMap<>();
 
-	private static final Map<String, PersistenceManager> MANAGERS_MAP = new HashMap();
+	private static final Map<String, PersistenceManager> MANAGERS_MAP = new HashMap<>();
 
 	private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
@@ -184,6 +165,7 @@ public class CassandraEmbeddedServer {
 				.withReconnectionPolicy(Policies.defaultReconnectionPolicy()).build();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initialize(Map<String, Object> parameters) {
 
 		String keyspaceName = extractAndValidateKeyspaceName(parameters);
@@ -209,8 +191,7 @@ public class CassandraEmbeddedServer {
 		if (nativeSessionOnly) {
 			SESSIONS_MAP.put(keyspaceName, cluster.connect(keyspaceName));
 		} else {
-			List<Interceptor<?>> interceptors = (List<Interceptor<?>>) parameters
-					.get(EVENT_INTERCEPTORS);
+			List<Interceptor<?>> interceptors = (List<Interceptor<?>>) parameters.get(EVENT_INTERCEPTORS);
 			PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.builder().withCluster(cluster)
 					.withNativeSession(cluster.connect(keyspaceName)).withEntityPackages(entityPackages)
 					.withKeyspaceName(keyspaceName).withEventInterceptors(interceptors).forceTableCreation(true)

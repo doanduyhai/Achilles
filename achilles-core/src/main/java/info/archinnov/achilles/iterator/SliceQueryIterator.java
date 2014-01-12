@@ -16,25 +16,25 @@
  */
 package info.archinnov.achilles.iterator;
 
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 
 import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.Row;
 
 public class SliceQueryIterator<T> implements Iterator<T> {
 
-    private static final Logger log  = LoggerFactory.getLogger(SliceQueryIterator.class);
+	private static final Logger log = LoggerFactory.getLogger(SliceQueryIterator.class);
 
-    private PersistenceContext context;
+	private PersistenceContext context;
 	private Iterator<Row> iterator;
 	private EntityMeta meta;
 
@@ -49,27 +49,27 @@ public class SliceQueryIterator<T> implements Iterator<T> {
 
 	@Override
 	public boolean hasNext() {
-        final boolean hasNext = iterator.hasNext();
-        log.trace("Does iterator has more element ? {}",hasNext);
-        return hasNext;
+		final boolean hasNext = iterator.hasNext();
+		log.trace("Does iterator has more element ? {}", hasNext);
+		return hasNext;
 	}
 
 	@Override
 	public T next() {
-        log.trace("Fetch iterator next element");
-        T clusteredEntity = null;
-        Row row = iterator.next();
-        if(row != null) {
-            clusteredEntity = meta.instanciate();
-            if(context.isClusteredCounter()) {
-                mapper.setValuesToClusteredCounterEntity(row,meta,clusteredEntity);
-                mapper.setPropertyToEntity(row,meta.getIdMeta(),clusteredEntity);
-            } else {
-                mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
-            }
-            meta.intercept(clusteredEntity, Event.POST_LOAD);
-            clusteredEntity = proxify(clusteredEntity);
-        }
+		log.trace("Fetch iterator next element");
+		T clusteredEntity = null;
+		Row row = iterator.next();
+		if (row != null) {
+			clusteredEntity = meta.instanciate();
+			if (context.isClusteredCounter()) {
+				mapper.setValuesToClusteredCounterEntity(row, meta, clusteredEntity);
+				mapper.setPropertyToEntity(row, meta.getIdMeta(), clusteredEntity);
+			} else {
+				mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
+			}
+			meta.intercept(clusteredEntity, Event.POST_LOAD);
+			clusteredEntity = proxify(clusteredEntity);
+		}
 		return clusteredEntity;
 	}
 

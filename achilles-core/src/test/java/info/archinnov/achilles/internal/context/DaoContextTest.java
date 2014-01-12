@@ -18,19 +18,15 @@ package info.archinnov.achilles.internal.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static com.google.common.collect.ImmutableMap.of;
-import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
-import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
-import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.SELECT;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
+import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.cache.CacheManager;
 import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
@@ -81,9 +77,9 @@ import com.google.common.collect.Lists;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DaoContextTest {
-    private final Optional<Integer> ttlO = Optional.fromNullable(null);
+	private final Optional<Integer> ttlO = Optional.fromNullable(null);
 
-    @Rule
+	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@InjectMocks
@@ -107,7 +103,7 @@ public class DaoContextTest {
 	@Mock
 	private Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
-	private Map<Class<?>, Map<CQLQueryType, Map<String,PreparedStatement>>> clusteredCounterQueryMap = new HashMap();
+	private Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap = new HashMap<>();
 
 	@Mock
 	private Session session;
@@ -147,7 +143,7 @@ public class DaoContextTest {
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-    @Before
+	@Before
 	public void setUp() {
 		Whitebox.setInternalState(daoContext, PreparedStatementBinder.class, binder);
 		Whitebox.setInternalState(daoContext, CacheManager.class, cacheManager);
@@ -184,7 +180,7 @@ public class DaoContextTest {
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(null));
 		when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
 		when(binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO)).thenReturn(bsWrapper);
-		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
+		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
 
 		daoContext.pushInsertStatement(context);
 
@@ -202,7 +198,7 @@ public class DaoContextTest {
 		entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
 
 		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer>fromNullable(null));
+		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
 		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
@@ -279,8 +275,8 @@ public class DaoContextTest {
 		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
 		// When
-		when(context.getTtt()).thenReturn(Optional.<Integer>fromNullable(null));
-		when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(timestamp));
+		when(context.getTtt()).thenReturn(Optional.<Integer> fromNullable(null));
+		when(context.getTimestamp()).thenReturn(Optional.<Long> fromNullable(timestamp));
 		when(context.getEntity()).thenReturn(entity);
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 		when(statementGenerator.generateUpdateFields(entity, entityMeta, pms)).thenReturn(pair);
@@ -332,7 +328,7 @@ public class DaoContextTest {
 		when(removePSs.get(CompleteBean.class)).thenReturn(of("table", ps));
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 		when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(
-                bsWrapper);
+				bsWrapper);
 
 		daoContext.bindForRemoval(context, "table");
 
@@ -342,7 +338,7 @@ public class DaoContextTest {
 	@Test
 	public void should_exception_when_removal_ps_not_found_for_a_table() throws Exception {
 		when(removePSs.get(CompleteBean.class)).thenReturn(of("some_table", ps));
-		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(EACH_QUORUM));
+		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(EACH_QUORUM));
 		exception.expect(AchillesException.class);
 		exception.expectMessage("Cannot find prepared statement for deletion for table 'table'");
 
@@ -526,7 +522,8 @@ public class DaoContextTest {
 		// When
 		when(context.getTtt()).thenReturn(Optional.<Integer> absent());
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
-		clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of(INCR, of("count", ps)));
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(INCR, of("count", ps)));
 		when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, entity.getId(), 2L, EACH_QUORUM))
 				.thenReturn(bsWrapper);
 
@@ -536,15 +533,13 @@ public class DaoContextTest {
 		verify(context).pushCounterStatement(bsWrapper);
 	}
 
-
-
 	@Test
 	public void should_get_clustered_counter() throws Exception {
 		// Given
 		ResultSet resultSet = mock(ResultSet.class);
 		Row row = mock(Row.class);
-		clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (SELECT, of(SELECT_ALL.name(), ps)));
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(SELECT, of(SELECT_ALL.name(), ps)));
 
 		// When
 		when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
@@ -557,85 +552,80 @@ public class DaoContextTest {
 		assertThat(actual).isSameAs(row);
 	}
 
+	@Test
+	public void should_get_clustered_counter_column() throws Exception {
+		// Given
+		PropertyMeta counterMeta = mock(PropertyMeta.class);
+		when(counterMeta.getPropertyName()).thenReturn("counter");
 
-    @Test
-    public void should_get_clustered_counter_column() throws Exception {
-        // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
+		ResultSet resultSet = mock(ResultSet.class);
+		Row row = mock(Row.class);
+		when(resultSet.one()).thenReturn(row);
+		when(row.getLong("counter")).thenReturn(11L);
 
-        ResultSet resultSet = mock(ResultSet.class);
-        Row row = mock(Row.class);
-        when(resultSet.one()).thenReturn(row);
-        when(row.getLong("counter")).thenReturn(11L);
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(SELECT, of("counter", ps)));
 
-        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (SELECT, of("counter", ps)));
+		// When
+		when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+		when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
-        // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
-        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
+		// Then
+		Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
 
+		assertThat(actual).isEqualTo(11L);
+	}
 
-        // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
+	@Test
+	public void should_get_null_clustered_counter_column() throws Exception {
+		// Given
+		PropertyMeta counterMeta = mock(PropertyMeta.class);
+		when(counterMeta.getPropertyName()).thenReturn("counter");
 
-        assertThat(actual).isEqualTo(11L);
-    }
+		ResultSet resultSet = mock(ResultSet.class);
+		Row row = mock(Row.class);
+		when(resultSet.one()).thenReturn(row);
+		when(row.isNull("counter")).thenReturn(true);
 
-    @Test
-    public void should_get_null_clustered_counter_column() throws Exception {
-        // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(SELECT, of("counter", ps)));
 
-        ResultSet resultSet = mock(ResultSet.class);
-        Row row = mock(Row.class);
-        when(resultSet.one()).thenReturn(row);
-        when(row.isNull("counter")).thenReturn(true);
+		// When
+		when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+		when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
+		// Then
+		Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
 
-        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (SELECT, of("counter", ps)));
+		assertThat(actual).isNull();
+	}
 
-        // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
-        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
+	@Test
+	public void should_get_null_clustered_counter_column_when_not_found() throws Exception {
+		// Given
+		PropertyMeta counterMeta = mock(PropertyMeta.class);
+		when(counterMeta.getPropertyName()).thenReturn("counter");
 
+		ResultSet resultSet = mock(ResultSet.class);
 
-        // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(SELECT, of("counter", ps)));
 
-        assertThat(actual).isNull();
-    }
+		// When
+		when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+		when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
-    @Test
-    public void should_get_null_clustered_counter_column_when_not_found() throws Exception {
-        // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
+		// Then
+		Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
 
-        ResultSet resultSet = mock(ResultSet.class);
-
-        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (SELECT, of("counter", ps)));
-
-        // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
-        when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
-
-
-        // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta,EACH_QUORUM);
-
-        assertThat(actual).isNull();
-    }
+		assertThat(actual).isNull();
+	}
 
 	@Test
 	public void should_bind_clustered_counter_delete() throws Exception {
 		// Given
-		clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (DELETE, of(DELETE_ALL.name(), ps)));
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(DELETE, of(DELETE_ALL.name(), ps)));
 
 		// When
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(null));
@@ -650,10 +640,10 @@ public class DaoContextTest {
 	@Test
 	public void should_bind_clustered_counter_delete_with_runtime_consistency() throws Exception {
 		// Given
-        clusteredCounterQueryMap.put(CompleteBean.class,  ImmutableMap.<CQLQueryType,Map<String,PreparedStatement>>of
-                (DELETE, of(DELETE_ALL.name(), ps)));
+		clusteredCounterQueryMap.put(CompleteBean.class,
+				ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>> of(DELETE, of(DELETE_ALL.name(), ps)));
 
-        // When
+		// When
 		when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel> fromNullable(LOCAL_QUORUM));
 		when(binder.bindForClusteredCounterDelete(ps, entityMeta, 11L, LOCAL_QUORUM)).thenReturn(bsWrapper);
 

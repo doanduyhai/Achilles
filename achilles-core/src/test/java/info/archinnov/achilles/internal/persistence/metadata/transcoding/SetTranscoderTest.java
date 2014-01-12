@@ -19,13 +19,15 @@ package info.archinnov.achilles.internal.persistence.metadata.transcoding;
 import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-
-import java.util.Set;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
-import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+
+import java.util.Set;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 public class SetTranscoderTest {
 
@@ -35,7 +37,7 @@ public class SetTranscoderTest {
 	public void should_encode() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
-		Set actual = transcoder.encode(pm, Sets.newHashSet("value"));
+		Set<Object> actual = transcoder.encode(pm, Sets.newHashSet("value"));
 
 		assertThat(actual).containsExactly("value");
 	}
@@ -44,7 +46,7 @@ public class SetTranscoderTest {
 	public void should_decode() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
-		Set actual = transcoder.decode(pm, Sets.newHashSet("value"));
+		Set<Object> actual = transcoder.decode(pm, Sets.newHashSet("value"));
 
 		assertThat(actual).containsExactly("value");
 	}

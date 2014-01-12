@@ -20,8 +20,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
-import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
@@ -43,7 +42,6 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
-import com.google.common.collect.ImmutableMap;
 
 public class PreparedStatementGenerator {
 	private static final Logger log = LoggerFactory.getLogger(PreparedStatementGenerator.class);
@@ -58,7 +56,7 @@ public class PreparedStatementGenerator {
 			insert.value(pm.getPropertyName(), bindMarker());
 		}
 
-        insert.using(ttl(bindMarker()));
+		insert.using(ttl(bindMarker()));
 		return session.prepare(insert.getQueryString());
 	}
 
@@ -94,7 +92,7 @@ public class PreparedStatementGenerator {
 				assignments.and(set(pm.getPropertyName(), bindMarker()));
 			}
 		}
-		RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments,true);
+		RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments, true);
 		return session.prepare(statement.getQueryString());
 	}
 
@@ -145,7 +143,7 @@ public class PreparedStatementGenerator {
 		delete.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
 		delete.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
 
-		Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap();
+		Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap<>();
 		counterPSMap.put(INCR, session.prepare(incr.toString()));
 		counterPSMap.put(DECR, session.prepare(decr.toString()));
 		counterPSMap.put(SELECT, session.prepare(select.toString()));
@@ -154,39 +152,39 @@ public class PreparedStatementGenerator {
 		return counterPSMap;
 	}
 
-	public Map<CQLQueryType, Map<String,PreparedStatement>> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
+	public Map<CQLQueryType, Map<String, PreparedStatement>> prepareClusteredCounterQueryMap(Session session,
+			EntityMeta meta) {
 		PropertyMeta idMeta = meta.getIdMeta();
 		String tableName = meta.getTableName();
 
-        Map<CQLQueryType, Map<String,PreparedStatement>> clusteredCounterPSMap = new HashMap();
-        Map<String,PreparedStatement> incrStatementPerCounter = new HashMap();
-        Map<String,PreparedStatement> decrStatementPerCounter = new HashMap();
-        Map<String,PreparedStatement> selectStatementPerCounter = new HashMap();
+		Map<CQLQueryType, Map<String, PreparedStatement>> clusteredCounterPSMap = new HashMap<>();
+		Map<String, PreparedStatement> incrStatementPerCounter = new HashMap<>();
+		Map<String, PreparedStatement> decrStatementPerCounter = new HashMap<>();
+		Map<String, PreparedStatement> selectStatementPerCounter = new HashMap<>();
 
-        for(PropertyMeta counterMeta:meta.getAllCounterMetas()) {
-            String counterName = counterMeta.getPropertyName();
+		for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
+			String counterName = counterMeta.getPropertyName();
 
-            RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
-                    .with(incr(counterName, bindMarker())),false);
+			RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,
+					update(tableName).with(incr(counterName, bindMarker())), false);
 
-            RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,update(tableName)
-                    .with(decr(counterName, bindMarker())), false);
-            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName)
-                    .from(tableName));
+			RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,
+					update(tableName).with(decr(counterName, bindMarker())), false);
+			RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
 
-            incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
-            decrStatementPerCounter.put(counterName, session.prepare(decrementStatement));
-            selectStatementPerCounter.put(counterName,session.prepare(selectStatement));
-        }
-        clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
-        clusteredCounterPSMap.put(DECR, decrStatementPerCounter);
+			incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
+			decrStatementPerCounter.put(counterName, session.prepare(decrementStatement));
+			selectStatementPerCounter.put(counterName, session.prepare(selectStatement));
+		}
+		clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
+		clusteredCounterPSMap.put(DECR, decrStatementPerCounter);
 
-        RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select().from(tableName));
-        selectStatementPerCounter.put(SELECT_ALL.name(),session.prepare(selectStatement));
-        clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
+		RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select().from(tableName));
+		selectStatementPerCounter.put(SELECT_ALL.name(), session.prepare(selectStatement));
+		clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
 
-        RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
-        clusteredCounterPSMap.put(DELETE, of(DELETE_ALL.name(), session.prepare(deleteStatement)));
+		RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
+		clusteredCounterPSMap.put(DELETE, of(DELETE_ALL.name(), session.prepare(deleteStatement)));
 
 		return clusteredCounterPSMap;
 	}
@@ -232,9 +230,9 @@ public class PreparedStatementGenerator {
 		return statement;
 	}
 
-	private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update,boolean prepareTTL) {
-        Update.Where where = null;
-        if (idMeta.isEmbeddedId()) {
+	private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update, boolean prepareTTL) {
+		Update.Where where = null;
+		if (idMeta.isEmbeddedId()) {
 			int i = 0;
 			for (String clusteredId : idMeta.getComponentNames()) {
 				if (i == 0) {
@@ -245,15 +243,16 @@ public class PreparedStatementGenerator {
 				i++;
 			}
 		} else {
-            where = update.where(eq(idMeta.getPropertyName(), bindMarker()));
-			//statement = update.where(eq(idMeta.getPropertyName(), bindMarker())).using(ttl(bindMarker()));
+			where = update.where(eq(idMeta.getPropertyName(), bindMarker()));
+			// statement = update.where(eq(idMeta.getPropertyName(),
+			// bindMarker())).using(ttl(bindMarker()));
 		}
 
-        if(prepareTTL) {
-            return where.using(ttl(bindMarker()));
-        } else {
-            return where;
-        }
+		if (prepareTTL) {
+			return where.using(ttl(bindMarker()));
+		} else {
+			return where;
+		}
 	}
 
 	public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
@@ -262,7 +261,7 @@ public class PreparedStatementGenerator {
 
 		PropertyMeta idMeta = entityMeta.getIdMeta();
 
-		Map<String, PreparedStatement> removePSs = new HashMap();
+		Map<String, PreparedStatement> removePSs = new HashMap<>();
 
 		Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
 		RegularStatement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
@@ -288,6 +287,6 @@ public class PreparedStatementGenerator {
 		} else {
 			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
 		}
-        return mainStatement;
+		return mainStatement;
 	}
 }

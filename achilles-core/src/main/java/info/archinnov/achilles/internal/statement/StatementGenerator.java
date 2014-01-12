@@ -17,11 +17,10 @@
 package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static com.google.common.collect.FluentIterable.from;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class StatementGenerator {
 
 	private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
 
-	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit,int batchSize) {
+	public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit, int batchSize) {
 
 		log.trace("Generate SELECT statement for slice query");
 		EntityMeta meta = sliceQuery.getMeta();
@@ -56,7 +55,7 @@ public class StatementGenerator {
 		if (sliceQuery.getCQLOrdering() != null) {
 			select.orderBy(sliceQuery.getCQLOrdering());
 		}
-        select.setFetchSize(batchSize);
+		select.setFetchSize(batchSize);
 		return sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
 	}
 
@@ -96,12 +95,12 @@ public class StatementGenerator {
 		Insert insert = insertInto(entityMeta.getTableName());
 		final Object[] boundValuesForPK = generateInsertPrimaryKey(entity, idMeta, insert);
 
-		List<PropertyMeta> fieldMetas = new ArrayList(entityMeta.getColumnsMetaToInsert());
+		List<PropertyMeta> fieldMetas = new ArrayList<>(entityMeta.getColumnsMetaToInsert());
 
 		final Object[] boundValuesForColumns = new Object[fieldMetas.size()];
 		for (int i = 0; i < fieldMetas.size(); i++) {
 			PropertyMeta pm = fieldMetas.get(i);
-            Object value = pm.getAndEncodeValueForCassandra(entity);
+			Object value = pm.getAndEncodeValueForCassandra(entity);
 			insert.value(pm.getPropertyName(), value);
 			boundValuesForColumns[i] = value;
 		}

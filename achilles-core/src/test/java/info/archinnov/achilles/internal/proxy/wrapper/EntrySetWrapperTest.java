@@ -18,9 +18,14 @@ package info.archinnov.achilles.internal.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.AbstractMap;
@@ -32,19 +37,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntrySetWrapperTest {
@@ -64,14 +62,12 @@ public class EntrySetWrapperTest {
 
 	private EntityMeta entityMeta;
 
-	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-
 	@Before
 	public void setUp() throws Exception {
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder
-				.completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).accessors().build();
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+				.type(PropertyType.SIMPLE).accessors().build();
 
 		entityMeta = new EntityMeta();
 		entityMeta.setIdMeta(idMeta);
@@ -105,7 +101,6 @@ public class EntrySetWrapperTest {
 		assertThat(wrapper.contains(entry)).isTrue();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_return_true_on_containsAll() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -196,7 +191,6 @@ public class EntrySetWrapperTest {
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_not_mark_dirty_on_remove_all_not_matching() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -214,7 +208,6 @@ public class EntrySetWrapperTest {
 		verify(dirtyMap, never()).put(setter, propertyMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_retain_all() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -235,7 +228,6 @@ public class EntrySetWrapperTest {
 		verify(dirtyMap).put(setter, propertyMeta);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	public void should_retain_all_no_dirty_when_all_match() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -304,7 +296,6 @@ public class EntrySetWrapperTest {
 		wrapper.add(entry);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test(expected = UnsupportedOperationException.class)
 	public void should_exception_when_add_all() throws Exception {
 		Map<Object, Object> map = new HashMap<Object, Object>();

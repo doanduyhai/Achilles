@@ -17,11 +17,11 @@
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.persistence.PersistenceManagerFactory.*;
 import static org.apache.commons.lang.StringUtils.*;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +70,7 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 	private boolean forceTableCreation = false;
 
 	protected void initialize() {
-		Map<String, Object> configMap = new HashMap();
+		Map<String, Object> configMap = new HashMap<>();
 
 		fillEntityPackages(configMap);
 

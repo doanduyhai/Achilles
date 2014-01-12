@@ -101,7 +101,7 @@ public class PropertyParsingContext {
 		return embeddedId;
 	}
 
-	public void isEmbeddedId(boolean embeddedId) {
+	public void setEmbeddedId(boolean embeddedId) {
 		if (embeddedId) {
 			this.primaryKey = true;
 		}

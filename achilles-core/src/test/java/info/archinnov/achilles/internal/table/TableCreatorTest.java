@@ -21,6 +21,7 @@ import static info.archinnov.achilles.internal.persistence.metadata.PropertyType
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.persistence.metadata.ClusteringComponents;
 import info.archinnov.achilles.internal.persistence.metadata.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
@@ -28,7 +29,6 @@ import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
 import info.archinnov.achilles.internal.persistence.metadata.PartitionComponents;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
-import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -147,15 +147,15 @@ public class TableCreatorTest {
 		PropertyMeta idMeta = new PropertyMeta();
 		idMeta.setType(PropertyType.EMBEDDED_ID);
 		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class),
-				asList("id"), new ArrayList<Field>(),new ArrayList<Method>(), new ArrayList<Method>());
+				asList("id"), new ArrayList<Field>(), new ArrayList<Method>(), new ArrayList<Method>());
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class),
-				asList("name"), "name", null,null, null);
+				asList("name"), "name", null, null, null);
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
 				new ArrayList<Class<?>>(), asList("a", "b", "c"), new ArrayList<Field>(), new ArrayList<Method>(),
-                new ArrayList<Method>(), new ArrayList<String>());
+				new ArrayList<Method>(), new ArrayList<String>());
 		idMeta.setEmbeddedIdProperties(props);
 
-		Map<String, PropertyMeta> propertyMetas = new HashMap();
+		Map<String, PropertyMeta> propertyMetas = new HashMap<>();
 		PropertyMeta simpleMeta = new PropertyMeta();
 		simpleMeta.setType(SIMPLE);
 		Method getter = Bean.class.getDeclaredMethod("getName", (Class<?>[]) null);
@@ -258,7 +258,7 @@ public class TableCreatorTest {
 				.field("counterCol").build();
 
 		meta = new EntityMeta();
-		meta.setPropertyMetas(ImmutableMap.of("id",idMeta,"counter",counterColPM));
+		meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "counter", counterColPM));
 		meta.setAllMetasExceptCounters(asList(idMeta));
 		meta.setAllMetasExceptId(asList(counterColPM));
 		meta.setIdMeta(idMeta);

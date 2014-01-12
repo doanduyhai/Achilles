@@ -80,7 +80,7 @@ public class CacheManagerTest {
 
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat((Class) cacheKey.getEntityClass()).isSameAs(CompleteBean.class);
+		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.SELECT_FIELD);
 		assertThat(cacheKey.getFields()).containsExactly("name");
@@ -145,7 +145,7 @@ public class CacheManagerTest {
 
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat((Class) cacheKey.getEntityClass()).isSameAs(CompleteBean.class);
+		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
 		assertThat(cacheKey.getFields()).containsOnly("name", "age");
@@ -173,7 +173,7 @@ public class CacheManagerTest {
 
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat((Class) cacheKey.getEntityClass()).isSameAs(CompleteBean.class);
+		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
 		assertThat(cacheKey.getFields()).containsOnly("name", "age");

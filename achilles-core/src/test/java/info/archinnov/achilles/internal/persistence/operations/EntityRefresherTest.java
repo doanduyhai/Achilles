@@ -1,10 +1,10 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static org.mockito.Mockito.*;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -25,7 +25,6 @@ public class EntityRefresherTest {
 	@InjectMocks
 	private EntityRefresher refresher;
 
-
 	@Mock
 	private EntityProxifier proxifier;
 
@@ -44,8 +43,8 @@ public class EntityRefresherTest {
 	@Mock
 	private Set<Method> alreadyLoaded;
 
-    @Mock
-    private Set<Method> allGettersExceptCounters;
+	@Mock
+	private Set<Method> allGettersExceptCounters;
 
 	@Mock
 	private PersistenceContext context;
@@ -65,11 +64,12 @@ public class EntityRefresherTest {
 		when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
 		when(context.getEntityMeta()).thenReturn(entityMeta);
 		when(loader.load(context, CompleteBean.class)).thenReturn(bean);
-        when(context.getAllGettersExceptCounters()).thenReturn(allGettersExceptCounters);
+		when(context.getAllGettersExceptCounters()).thenReturn(allGettersExceptCounters);
 
 		refresher.refresh(bean, context);
 
 		verify(dirtyMap).clear();
+		verify(alreadyLoaded).clear();
 		verify(alreadyLoaded).addAll(allGettersExceptCounters);
 		verify(jpaEntityInterceptor).setTarget(bean);
 	}

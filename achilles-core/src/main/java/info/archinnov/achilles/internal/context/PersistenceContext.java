@@ -18,29 +18,22 @@ package info.archinnov.achilles.internal.context;
 
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
-import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
-import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
-import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.counterType;
+import static info.archinnov.achilles.interceptor.Event.*;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityInitializer;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
-import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -62,31 +55,31 @@ public class PersistenceContext {
 	private static final Logger log = LoggerFactory.getLogger(PersistenceContext.class);
 
 	protected AbstractFlushContext flushContext;
-    protected EntityInitializer initializer = new EntityInitializer();
-    protected EntityPersister persister = new EntityPersister();
-    protected EntityProxifier proxifier = new EntityProxifier();
-    protected EntityRefresher refresher = new EntityRefresher();
-    protected EntityLoader loader = new EntityLoader();
-    protected EntityUpdater updater = new EntityUpdater();
+	protected EntityInitializer initializer = new EntityInitializer();
+	protected EntityPersister persister = new EntityPersister();
+	protected EntityProxifier proxifier = new EntityProxifier();
+	protected EntityRefresher refresher = new EntityRefresher();
+	protected EntityLoader loader = new EntityLoader();
+	protected EntityUpdater updater = new EntityUpdater();
 
-    protected ConfigurationContext configContext;
-    protected Class<?> entityClass;
-    protected EntityMeta entityMeta;
-    protected Object entity;
-    protected Object primaryKey;
-    protected Object partitionKey;
+	protected ConfigurationContext configContext;
+	protected Class<?> entityClass;
+	protected EntityMeta entityMeta;
+	protected Object entity;
+	protected Object primaryKey;
+	protected Object partitionKey;
 
-    protected Options options = OptionsBuilder.noOptions();
+	protected Options options = OptionsBuilder.noOptions();
 
-    protected DaoContext daoContext;
+	protected DaoContext daoContext;
 
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
-    private Function<PropertyMeta,Method> metaToGetter = new Function<PropertyMeta, Method>() {
-        @Override
-        public Method apply(PropertyMeta meta) {
-            return meta.getGetter();
-        }
-    };
+	private ConsistencyOverrider overrider = new ConsistencyOverrider();
+	private Function<PropertyMeta, Method> metaToGetter = new Function<PropertyMeta, Method>() {
+		@Override
+		public Method apply(PropertyMeta meta) {
+			return meta.getGetter();
+		}
+	};
 
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
 			AbstractFlushContext flushContext, Class<?> entityClass, Object primaryKey, Options options) {
@@ -100,7 +93,7 @@ public class PersistenceContext {
 		this.flushContext = flushContext;
 		this.entityClass = entityClass;
 		this.primaryKey = primaryKey;
-		this.options = overrider.overrideRuntimeValueByBatchSetting(options,flushContext);
+		this.options = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
 	}
 
 	public PersistenceContext(EntityMeta entityMeta, ConfigurationContext configContext, DaoContext daoContext,
@@ -119,7 +112,7 @@ public class PersistenceContext {
 		this.daoContext = daoContext;
 		this.flushContext = flushContext;
 		this.entity = entity;
-		this.options = overrider.overrideRuntimeValueByBatchSetting(options,flushContext);
+		this.options = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
 	}
 
 	public PersistenceContext duplicate(Object entity) {
@@ -182,16 +175,15 @@ public class PersistenceContext {
 	}
 
 	public Row getClusteredCounter(ConsistencyLevel readLevel) {
-		log.trace("Get clustered counter value for entityMeta '{}' with consistency level '{}'", entityMeta,
-                  readLevel);
+		log.trace("Get clustered counter value for entityMeta '{}' with consistency level '{}'", entityMeta, readLevel);
 		return daoContext.getClusteredCounter(this, readLevel);
 	}
 
-    public Long getClusteredCounterColumn(PropertyMeta counterMeta,ConsistencyLevel readLevel) {
-        log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
-                  readLevel);
-        return daoContext.getClusteredCounterColumn(this, counterMeta,readLevel);
-    }
+	public Long getClusteredCounterColumn(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
+		log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
+				readLevel);
+		return daoContext.getClusteredCounterColumn(this, counterMeta, readLevel);
+	}
 
 	public void bindForClusteredCounterRemoval() {
 		daoContext.bindForClusteredCounterDelete(this, entityMeta, primaryKey);
@@ -205,54 +197,54 @@ public class PersistenceContext {
 		flushContext.pushStatement(statementWrapper);
 	}
 
-    public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
-        flushContext.pushCounterStatement(statementWrapper);
-    }
+	public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
+		flushContext.pushCounterStatement(statementWrapper);
+	}
 
 	public ResultSet executeImmediate(AbstractStatementWrapper bsWrapper) {
 		return flushContext.executeImmediate(bsWrapper);
 	}
 
 	public <T> T persist(T rawEntity) {
-        flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
-        persister.persist(this);
-        flush();
-        flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
-        return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
-    }
+		flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
+		persister.persist(this);
+		flush();
+		flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
+		return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
+	}
 
 	public void update(Object proxifiedEntity) {
-        flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
+		flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
 		updater.update(this, proxifiedEntity);
 		flush();
-        flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
+		flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
 	}
 
 	public void remove() {
-        flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
+		flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
 		persister.remove(this);
 		flush();
-        flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
+		flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
 	}
 
 	public <T> T find(Class<T> entityClass) {
 		T rawEntity = loader.load(this, entityClass);
-        T proxifiedEntity = null;
+		T proxifiedEntity = null;
 		if (rawEntity != null) {
-            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
-            proxifiedEntity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
-        }
+			flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
+			proxifiedEntity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
+		}
 		return proxifiedEntity;
 	}
 
 	public <T> T getProxy(Class<T> entityClass) {
-        T entity = loader.createEmptyEntity(this,entityClass);
-        return  proxifier.buildProxyWithNoFieldLoaded(entity, this);
+		T entity = loader.createEmptyEntity(this, entityClass);
+		return proxifier.buildProxyWithNoFieldLoaded(entity, this);
 	}
 
 	public void refresh(Object proxifiedEntity) throws AchillesStaleObjectStateException {
-		refresher.refresh(proxifiedEntity,this);
-        flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
+		refresher.refresh(proxifiedEntity, this);
+		flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
 	}
 
 	public <T> T initialize(T proxifiedEntity) {
@@ -282,9 +274,9 @@ public class PersistenceContext {
 		return this.entityMeta.isClusteredEntity();
 	}
 
-    public boolean isClusteredCounter() {
-        return this.entityMeta.isClusteredCounter();
-    }
+	public boolean isClusteredCounter() {
+		return this.entityMeta.isClusteredCounter();
+	}
 
 	public String getTableName() {
 		return entityMeta.getTableName();
@@ -358,17 +350,17 @@ public class PersistenceContext {
 		return options.getConsistencyLevel();
 	}
 
-    public Set<Method> getAllGetters() {
-        return new HashSet(from(entityMeta.getAllMetas()).transform(metaToGetter).toImmutableSet());
-    }
+	public Set<Method> getAllGetters() {
+		return new HashSet<>(from(entityMeta.getAllMetas()).transform(metaToGetter).toImmutableSet());
+	}
 
-    public Set<Method> getAllGettersExceptCounters() {
-        return new HashSet(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toImmutableSet());
-    }
+	public Set<Method> getAllGettersExceptCounters() {
+		return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toImmutableSet());
+	}
 
-    public List<PropertyMeta> getAllCountersMeta() {
-        return entityMeta.getAllCounterMetas();
-    }
+	public List<PropertyMeta> getAllCountersMeta() {
+		return entityMeta.getAllCounterMetas();
+	}
 
 	private void extractPartitionKey() {
 		if (entityMeta.hasEmbeddedId()) {

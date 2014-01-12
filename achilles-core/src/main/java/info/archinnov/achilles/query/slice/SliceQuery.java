@@ -16,15 +16,17 @@
  */
 package info.archinnov.achilles.query.slice;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OrderingMode;
-import info.archinnov.achilles.internal.validation.Validator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 
 public class SliceQuery<T> {
 	public static final int DEFAULT_LIMIT = 100;
@@ -44,9 +46,8 @@ public class SliceQuery<T> {
 	private boolean noComponent;
 
 	public SliceQuery(Class<T> entityClass, EntityMeta meta, List<Object> partitionComponents,
-                      List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering,
-                      BoundingMode bounding,
-                      ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet) {
+			List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering, BoundingMode bounding,
+			ConsistencyLevel consistencyLevel, int limit, int batchSize, boolean limitSet) {
 
 		this.limitSet = limitSet;
 		Validator.validateTrue(CollectionUtils.isNotEmpty(partitionComponents),
@@ -67,7 +68,7 @@ public class SliceQuery<T> {
 
 		this.clusteringsFrom = idMeta.encodeToComponents(componentsFrom);
 
-		List<Object> componentsTo = new ArrayList();
+		List<Object> componentsTo = new ArrayList<>();
 		componentsTo.addAll(partitionComponents);
 		componentsTo.addAll(clusteringsTo);
 

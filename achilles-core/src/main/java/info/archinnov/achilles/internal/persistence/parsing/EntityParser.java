@@ -17,24 +17,25 @@
 package info.archinnov.achilles.internal.persistence.parsing;
 
 import static info.archinnov.achilles.internal.persistence.metadata.EntityMetaBuilder.entityMetaBuilder;
-
-import java.lang.reflect.Field;
-import java.util.List;
-import info.archinnov.achilles.type.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.internal.helper.EntityIntrospector;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.persistence.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.persistence.parsing.validator.EntityParsingValidator;
-import info.archinnov.achilles.internal.helper.EntityIntrospector;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EntityParser {
 	private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
@@ -64,8 +65,7 @@ public class EntityParser {
 				propertyContext.setPrimaryKey(true);
 				idMeta = parser.parse(propertyContext);
 			} else if (filter.hasAnnotation(field, EmbeddedId.class)) {
-				context.setClusteredEntity(true);
-				propertyContext.isEmbeddedId(true);
+				propertyContext.setEmbeddedId(true);
 				idMeta = parser.parse(propertyContext);
 			} else if (filter.hasAnnotation(field, Column.class)) {
 				parser.parse(propertyContext);
