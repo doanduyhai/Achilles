@@ -34,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 
@@ -58,9 +59,9 @@ public class ConsistencyLevelIT {
 		bean.setId(id);
 		bean.setName("name");
 
-		expectedEx.expect(InvalidQueryException.class);
+		expectedEx.expect(DriverInternalError.class);
 		expectedEx
-				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+				.expectMessage("An unexpected error occured server side: java.lang.ClassCastException: org.apache.cassandra.locator.SimpleStrategy cannot be cast to org.apache.cassandra.locator.NetworkTopologyStrategy");
 
 		manager.persist(bean);
 	}
@@ -72,9 +73,9 @@ public class ConsistencyLevelIT {
 
 		manager.persist(bean);
 
-		expectedEx.expect(InvalidQueryException.class);
+		expectedEx.expect(DriverInternalError.class);
 		expectedEx
-				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+				.expectMessage("An unexpected error occured server side: java.lang.ClassCastException: org.apache.cassandra.locator.SimpleStrategy cannot be cast to org.apache.cassandra.locator.NetworkTopologyStrategy");
 
 		manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
 	}
@@ -87,7 +88,7 @@ public class ConsistencyLevelIT {
 		try {
 			manager.persist(bean);
 			manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
-		} catch (InvalidQueryException e) {
+		} catch (DriverInternalError e) {
 			// Should recover from exception
 		}
 		CompleteBean newBean = new CompleteBean();

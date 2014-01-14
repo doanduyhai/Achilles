@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
 
+import com.datastax.driver.core.exceptions.DriverInternalError;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
 import com.google.common.base.Optional;
@@ -80,9 +81,9 @@ public class ConsistencyLevelPriorityOrderingIT {
 		assertThatBatchContextHasBeenReset(batchEm);
 		assertThat(entity.getName()).isEqualTo("name");
 
-		expectedEx.expect(InvalidQueryException.class);
+		expectedEx.expect(DriverInternalError.class);
 		expectedEx
-				.expectMessage("consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+				.expectMessage("An unexpected error occured server side: java.lang.ClassCastException: org.apache.cassandra.locator.SimpleStrategy cannot be cast to org.apache.cassandra.locator.NetworkTopologyStrategy");
 		manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 	}
 

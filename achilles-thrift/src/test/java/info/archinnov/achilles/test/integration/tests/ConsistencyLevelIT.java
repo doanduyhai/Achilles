@@ -36,6 +36,7 @@ import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 import me.prettyprint.hector.api.exceptions.HInvalidRequestException;
+import me.prettyprint.hector.api.exceptions.HectorException;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.After;
@@ -50,9 +51,8 @@ public class ConsistencyLevelIT {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Rule
-	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.AFTER_TEST,
-			"CompleteBean", "Tweet", EntityWithLocalQuorumConsistency.TABLE_NAME,
-			EntityWithWriteOneAndReadLocalQuorumConsistency.TABLE_NAME);
+	public AchillesInternalThriftResource resource = new AchillesInternalThriftResource(Steps.BEFORE_TEST,
+			"CompleteBean", "Tweet");
 
 	private ThriftPersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
@@ -70,12 +70,10 @@ public class ConsistencyLevelIT {
 		bean.setId(id);
 		bean.setName("name");
 
-		expectedEx.expect(HInvalidRequestException.class);
-		expectedEx
-				.expectMessage("InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy))");
+		expectedEx.expect(HectorException.class);
+		expectedEx.expectMessage("All host pools marked down. Retry burden pushed out to client");
 
 		manager.persist(bean);
-		assertThatConsistencyLevelsAreReinitialized();
 	}
 
 	@Test
@@ -86,15 +84,9 @@ public class ConsistencyLevelIT {
 		manager.persist(bean);
 
 		expectedEx.expect(AchillesException.class);
-		expectedEx
-				.expectMessage("Error when loading entity type '"
-						+ EntityWithWriteOneAndReadLocalQuorumConsistency.class.getCanonicalName()
-						+ "' with key '"
-						+ id
-						+ "'. Cause : InvalidRequestException(why:consistency level LOCAL_QUORUM not compatible with replication strategy (org.apache.cassandra.locator.SimpleStrategy)");
+		// expectedEx.expectMessage("All host pools marked down. Retry burden pushed out to client");
 
 		manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
-		assertThatConsistencyLevelsAreReinitialized();
 	}
 
 	@Test
@@ -105,7 +97,7 @@ public class ConsistencyLevelIT {
 		try {
 			manager.persist(bean);
 			manager.find(EntityWithWriteOneAndReadLocalQuorumConsistency.class, id);
-		} catch (AchillesException e) {
+		} catch (HectorException e) {
 			// Should reinit consistency level to default
 		}
 		CompleteBean newBean = new CompleteBean();
