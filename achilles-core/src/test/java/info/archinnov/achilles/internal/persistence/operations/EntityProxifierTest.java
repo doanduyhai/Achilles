@@ -1,4 +1,5 @@
 package info.archinnov.achilles.internal.persistence.operations;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -6,12 +7,14 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
 import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,278 +34,290 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityProxifierTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    @InjectMocks
-    private EntityProxifier proxifier;
+	@InjectMocks
+	private EntityProxifier proxifier;
 
-    @Mock
-    private EntityInterceptor<CompleteBean> interceptor;
+	@Mock
+	private ObjectInstantiator instantiator;
 
-    @Mock
-    private PersistenceContext context;
+	@Mock
+	private EntityInterceptor<CompleteBean> interceptor;
 
-    @Mock
-    private EntityMeta entityMeta;
+	@Mock
+	private PersistenceContext context;
 
-    @Mock
-    private PropertyMeta idMeta;
+	@Mock
+	private EntityMeta entityMeta;
 
-    @Test
-    public void should_derive_base_class_from_transient() throws Exception {
-        assertThat(proxifier.<CompleteBean> deriveBaseClass(new CompleteBean())).isEqualTo(CompleteBean.class);
-    }
+	@Mock
+	private PropertyMeta idMeta;
 
-    @Test
-    public void should_derive_base_class() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(entity.getClass());
-        enhancer.setCallback(interceptor);
+	@Test
+	public void should_derive_base_class_from_transient() throws Exception {
+		assertThat(proxifier.<CompleteBean> deriveBaseClass(new CompleteBean())).isEqualTo(CompleteBean.class);
+	}
 
-        when(interceptor.getTarget()).thenReturn(entity);
+	@Test
+	public void should_derive_base_class() throws Exception {
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(1L).buid();
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(entity.getClass());
+		enhancer.setCallback(interceptor);
 
-        CompleteBean proxy = (CompleteBean) enhancer.create();
-        assertThat(proxifier.<CompleteBean> deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
-    }
+		when(interceptor.getTarget()).thenReturn(entity);
 
-    @Test
-    public void should_build_proxy_with_all_fields_loaded() throws Exception {
+		CompleteBean proxy = (CompleteBean) enhancer.create();
+		assertThat(proxifier.<CompleteBean> deriveBaseClass(proxy)).isEqualTo(CompleteBean.class);
+	}
 
-        long primaryKey = RandomUtils.nextLong();
+	@Test
+	public void should_build_proxy_with_all_fields_loaded() throws Exception {
 
-        CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
+		long primaryKey = RandomUtils.nextLong();
+		PropertyMeta pm = mock(PropertyMeta.class);
+		Object value = new Object();
 
-        proxifier = spy(proxifier);
+		CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
+		proxifier = spy(proxifier);
 
-        doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
-        when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
+		when(context.getEntityMeta()).thenReturn(entityMeta);
+		when(entityMeta.getIdMeta()).thenReturn(idMeta);
+		when(entityMeta.getAllMetas()).thenReturn(Arrays.asList(pm));
+		when(pm.getValueFromField(entity)).thenReturn(value);
+		when(instantiator.instantiate(Mockito.<Class<Factory>> any())).thenReturn(realProxy);
 
-        CompleteBean proxy = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);
+		Object proxy = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);
 
-        assertThat(proxy).isNotNull();
-        assertThat(proxy).isInstanceOf(Factory.class);
-        Factory factory = (Factory) proxy;
+		assertThat(proxy).isNotNull();
+		assertThat(proxy).isInstanceOf(Factory.class);
+		Factory factory = (Factory) proxy;
 
-        assertThat(factory.getCallbacks()).hasSize(1);
-        assertThat(factory.getCallback(0)).isInstanceOf(EntityInterceptor.class);
-    }
+		assertThat(factory.getCallbacks()).hasSize(1);
+		assertThat(factory.getCallback(0)).isInstanceOf(EntityInterceptor.class);
 
-    @Test
-    public void should_build_null_proxy() throws Exception {
-        assertThat(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(null, context)).isNull();
-    }
+		verify(pm).getValueFromField(entity);
+		verify(pm).setValueToField(realProxy, value);
+	}
 
-    @Test
-    public void should_get_real_object_from_proxy() throws Exception {
-        UserBean realObject = new UserBean();
-        when(interceptor.getTarget()).thenReturn(realObject);
+	@Test
+	public void should_build_null_proxy() throws Exception {
+		assertThat(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(null, context)).isNull();
+	}
 
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(UserBean.class);
-        enhancer.setCallback(interceptor);
-        UserBean proxy = (UserBean) enhancer.create();
+	@Test
+	public void should_get_real_object_from_proxy() throws Exception {
+		UserBean realObject = new UserBean();
+		when(interceptor.getTarget()).thenReturn(realObject);
 
-        UserBean actual = proxifier.getRealObject(proxy);
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(UserBean.class);
+		enhancer.setCallback(interceptor);
+		UserBean proxy = (UserBean) enhancer.create();
 
-        assertThat(actual).isSameAs(realObject);
-    }
+		UserBean actual = proxifier.getRealObject(proxy);
 
-    @Test
-    public void should_return_object_when_get_real_object_called_on_non_proxified_entity() throws Exception {
-        UserBean realObject = new UserBean();
+		assertThat(actual).isSameAs(realObject);
+	}
 
-        UserBean actual = proxifier.getRealObject(realObject);
-        assertThat(actual).isSameAs(realObject);
+	@Test
+	public void should_return_object_when_get_real_object_called_on_non_proxified_entity() throws Exception {
+		UserBean realObject = new UserBean();
 
-    }
+		UserBean actual = proxifier.getRealObject(realObject);
+		assertThat(actual).isSameAs(realObject);
 
-    @Test
-    public void should_proxy_true() throws Exception {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(CompleteBean.class);
-        enhancer.setCallback(NoOp.INSTANCE);
+	}
 
-        CompleteBean proxy = (CompleteBean) enhancer.create();
+	@Test
+	public void should_proxy_true() throws Exception {
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(NoOp.INSTANCE);
 
-        assertThat(proxifier.isProxy(proxy)).isTrue();
-    }
+		CompleteBean proxy = (CompleteBean) enhancer.create();
 
-    @Test
-    public void should_proxy_false() throws Exception {
-        CompleteBean bean = CompleteBeanTestBuilder.builder().id(1L).buid();
-        assertThat(proxifier.isProxy(bean)).isFalse();
-    }
+		assertThat(proxifier.isProxy(proxy)).isTrue();
+	}
 
-    @Test
-    public void should_get_interceptor_from_proxy() throws Exception {
+	@Test
+	public void should_proxy_false() throws Exception {
+		CompleteBean bean = CompleteBeanTestBuilder.builder().id(1L).buid();
+		assertThat(proxifier.isProxy(bean)).isFalse();
+	}
 
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(CompleteBean.class);
-        enhancer.setCallback(interceptor);
-        CompleteBean proxy = (CompleteBean) enhancer.create();
+	@Test
+	public void should_get_interceptor_from_proxy() throws Exception {
 
-        EntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(CompleteBean.class);
+		enhancer.setCallback(interceptor);
+		CompleteBean proxy = (CompleteBean) enhancer.create();
 
-        assertThat(actual).isSameAs(interceptor);
-    }
+		EntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
 
-    @Test
-    public void should_ensure_proxy() throws Exception {
-        proxifier.ensureProxy(realProxy);
-    }
+		assertThat(actual).isSameAs(interceptor);
+	}
 
-    @Test
-    public void should_exception_when_not_proxy() throws Exception {
-        CompleteBean proxy = new CompleteBean();
+	@Test
+	public void should_ensure_proxy() throws Exception {
+		proxifier.ensureProxy(realProxy);
+	}
 
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("The entity '" + proxy + "' is not in 'managed' state.");
-        proxifier.ensureProxy(proxy);
-    }
+	@Test
+	public void should_exception_when_not_proxy() throws Exception {
+		CompleteBean proxy = new CompleteBean();
 
-    @Test
-    public void should_ensure_not_proxy() throws Exception {
-        proxifier.ensureNotProxy(new CompleteBean());
-    }
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage("The entity '" + proxy + "' is not in 'managed' state.");
+		proxifier.ensureProxy(proxy);
+	}
 
-    @Test
-    public void should_exception_when_proxy() throws Exception {
+	@Test
+	public void should_ensure_not_proxy() throws Exception {
+		proxifier.ensureNotProxy(new CompleteBean());
+	}
 
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Then entity is already in 'managed' state");
-        proxifier.ensureNotProxy(realProxy);
-    }
+	@Test
+	public void should_exception_when_proxy() throws Exception {
 
-    @Test
-    public void should_return_null_when_unproxying_null() throws Exception {
-        assertThat(proxifier.removeProxy((Object) null)).isNull();
-    }
+		exception.expect(IllegalStateException.class);
+		exception.expectMessage("Then entity is already in 'managed' state");
+		proxifier.ensureNotProxy(realProxy);
+	}
 
-    @Test
-    public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity() throws Exception {
-        CompleteBean realObject = new CompleteBean();
+	@Test
+	public void should_return_null_when_unproxying_null() throws Exception {
+		assertThat(proxifier.removeProxy((Object) null)).isNull();
+	}
 
-        CompleteBean actual = proxifier.removeProxy(realObject);
+	@Test
+	public void should_return_same_entity_when_calling_unproxy_on_non_proxified_entity() throws Exception {
+		CompleteBean realObject = new CompleteBean();
 
-        assertThat(actual).isSameAs(realObject);
-    }
+		CompleteBean actual = proxifier.removeProxy(realObject);
 
-    @Test
-    public void should_unproxy_entity() throws Exception {
-        when(interceptor.getTarget()).thenReturn(realProxy);
+		assertThat(actual).isSameAs(realObject);
+	}
 
-        Factory actual = proxifier.removeProxy(realProxy);
+	@Test
+	public void should_unproxy_entity() throws Exception {
+		when(interceptor.getTarget()).thenReturn(realProxy);
 
-        assertThat(actual).isSameAs(realProxy);
-    }
+		Factory actual = proxifier.removeProxy(realProxy);
 
-    @Test
-    public void should_unproxy_real_entryset() throws Exception {
-        Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
-        CompleteBean completeBean = new CompleteBean();
-        map.put(1, completeBean);
-        Map.Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
+		assertThat(actual).isSameAs(realProxy);
+	}
 
-        when(proxifier.isProxy(completeBean)).thenReturn(false);
+	@Test
+	public void should_unproxy_real_entryset() throws Exception {
+		Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
+		CompleteBean completeBean = new CompleteBean();
+		map.put(1, completeBean);
+		Map.Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
 
-        Map.Entry<Integer, CompleteBean> actual = proxifier.removeProxy(entry);
-        assertThat(actual).isSameAs(entry);
-        assertThat(actual.getValue()).isSameAs(completeBean);
-    }
+		when(proxifier.isProxy(completeBean)).thenReturn(false);
 
-    @Test
-    public void should_unproxy_entryset_containing_proxy() throws Exception {
-        Map<Integer, Factory> map = new HashMap<Integer, Factory>();
-        map.put(1, realProxy);
-        Map.Entry<Integer, Factory> entry = map.entrySet().iterator().next();
+		Map.Entry<Integer, CompleteBean> actual = proxifier.removeProxy(entry);
+		assertThat(actual).isSameAs(entry);
+		assertThat(actual.getValue()).isSameAs(completeBean);
+	}
 
-        when(interceptor.getTarget()).thenReturn(realProxy);
+	@Test
+	public void should_unproxy_entryset_containing_proxy() throws Exception {
+		Map<Integer, Factory> map = new HashMap<Integer, Factory>();
+		map.put(1, realProxy);
+		Map.Entry<Integer, Factory> entry = map.entrySet().iterator().next();
 
-        Map.Entry<Integer, Factory> actual = proxifier.removeProxy(entry);
-        assertThat(actual).isSameAs(entry);
-        assertThat(actual.getValue()).isSameAs(realProxy);
-    }
+		when(interceptor.getTarget()).thenReturn(realProxy);
 
-    @Test
-    public void should_unproxy_collection_of_entities() throws Exception {
-        Collection<Factory> proxies = new ArrayList<Factory>();
-        proxies.add(realProxy);
+		Map.Entry<Integer, Factory> actual = proxifier.removeProxy(entry);
+		assertThat(actual).isSameAs(entry);
+		assertThat(actual.getValue()).isSameAs(realProxy);
+	}
 
-        when(interceptor.getTarget()).thenReturn(realProxy);
+	@Test
+	public void should_unproxy_collection_of_entities() throws Exception {
+		Collection<Factory> proxies = new ArrayList<Factory>();
+		proxies.add(realProxy);
 
-        Collection<Factory> actual = proxifier.removeProxy(proxies);
+		when(interceptor.getTarget()).thenReturn(realProxy);
 
-        assertThat(actual).containsExactly(realProxy);
-    }
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
-    @Test
-    public void should_unproxy_list_of_entities() throws Exception {
-        List<Factory> proxies = new ArrayList<Factory>();
-        proxies.add(realProxy);
+		assertThat(actual).containsExactly(realProxy);
+	}
 
-        when(interceptor.getTarget()).thenReturn(realProxy);
+	@Test
+	public void should_unproxy_list_of_entities() throws Exception {
+		List<Factory> proxies = new ArrayList<Factory>();
+		proxies.add(realProxy);
 
-        Collection<Factory> actual = proxifier.removeProxy(proxies);
+		when(interceptor.getTarget()).thenReturn(realProxy);
 
-        assertThat(actual).containsExactly(realProxy);
-    }
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
-    @Test
-    public void should_unproxy_set_of_entities() throws Exception {
-        Set<Factory> proxies = new HashSet<Factory>();
-        proxies.add(realProxy);
+		assertThat(actual).containsExactly(realProxy);
+	}
 
-        when(interceptor.getTarget()).thenReturn(realProxy);
+	@Test
+	public void should_unproxy_set_of_entities() throws Exception {
+		Set<Factory> proxies = new HashSet<Factory>();
+		proxies.add(realProxy);
 
-        Collection<Factory> actual = proxifier.removeProxy(proxies);
+		when(interceptor.getTarget()).thenReturn(realProxy);
 
-        assertThat(actual).containsExactly(realProxy);
-    }
+		Collection<Factory> actual = proxifier.removeProxy(proxies);
 
-    private Factory realProxy = new Factory() {
+		assertThat(actual).containsExactly(realProxy);
+	}
 
-        @Override
-        public Object newInstance(Callback callback) {
-            return null;
-        }
+	private Factory realProxy = new Factory() {
 
-        @Override
-        public Object newInstance(Callback[] callbacks) {
-            return null;
-        }
+		@Override
+		public Object newInstance(Callback callback) {
+			return null;
+		}
 
-        @SuppressWarnings("rawtypes")
-        @Override
-        public Object newInstance(Class[] types, Object[] args, Callback[] callbacks) {
-            return null;
-        }
+		@Override
+		public Object newInstance(Callback[] callbacks) {
+			return null;
+		}
 
-        @Override
-        public Callback getCallback(int index) {
-            return interceptor;
-        }
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Object newInstance(Class[] types, Object[] args, Callback[] callbacks) {
+			return null;
+		}
 
-        @Override
-        public void setCallback(int index, Callback callback) {
+		@Override
+		public Callback getCallback(int index) {
+			return interceptor;
+		}
 
-        }
+		@Override
+		public void setCallback(int index, Callback callback) {
 
-        @Override
-        public void setCallbacks(Callback[] callbacks) {
+		}
 
-        }
+		@Override
+		public void setCallbacks(Callback[] callbacks) {
 
-        @Override
-        public Callback[] getCallbacks() {
-            return new Callback[] { interceptor };
-        }
+		}
 
-    };
+		@Override
+		public Callback[] getCallbacks() {
+			return new Callback[] { interceptor };
+		}
+
+	};
 }

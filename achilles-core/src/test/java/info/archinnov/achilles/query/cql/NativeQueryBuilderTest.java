@@ -22,10 +22,10 @@ import static org.mockito.Mockito.when;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,10 +68,10 @@ public class NativeQueryBuilderTest {
 		List<Row> rows = Arrays.asList(row);
 		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		List<TypedMap> result = new ArrayList<>();
 		when(mapper.mapRows(rows)).thenReturn(result);
 
-		List<Map<String, Object>> actual = query.get();
+		List<TypedMap> actual = query.get();
 
 		assertThat(actual).isSameAs(result);
 	}
@@ -82,12 +82,12 @@ public class NativeQueryBuilderTest {
 		List<Row> rows = Arrays.asList(row);
 		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-		Map<String, Object> line = new LinkedHashMap<String, Object>();
+		List<TypedMap> result = new ArrayList<>();
+		TypedMap line = new TypedMap();
 		result.add(line);
 		when(mapper.mapRows(rows)).thenReturn(result);
 
-		Map<String, Object> actual = query.first();
+		TypedMap actual = query.first();
 		assertThat(actual).isSameAs(line);
 	}
 
@@ -97,7 +97,7 @@ public class NativeQueryBuilderTest {
 		List<Row> rows = Arrays.asList(row);
 		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		List<TypedMap> result = new ArrayList<>();
 		when(mapper.mapRows(rows)).thenReturn(result);
 
 		Map<String, Object> actual = query.first();

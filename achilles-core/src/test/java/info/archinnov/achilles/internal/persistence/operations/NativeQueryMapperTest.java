@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -73,13 +74,13 @@ public class NativeQueryMapperTest {
 		when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "id")).thenReturn(id);
 		when(cqlRowInvoker.invokeOnRowForType(row, String.class, "name")).thenReturn(name);
 
-		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
+		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		verify(cqlRowInvoker).invokeOnRowForType(row, Long.class, "id");
 		verify(cqlRowInvoker).invokeOnRowForType(row, String.class, "name");
 
 		assertThat(result).hasSize(1);
-		Map<String, Object> line = result.get(0);
+		TypedMap line = result.get(0);
 
 		assertThat(line).hasSize(2);
 		assertThat(line.get("id")).isEqualTo(id);
@@ -96,10 +97,10 @@ public class NativeQueryMapperTest {
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(row.getList("friends", String.class)).thenReturn(friends);
 
-		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
+		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
-		Map<String, Object> line = result.get(0);
+		TypedMap line = result.get(0);
 
 		assertThat(line).hasSize(1);
 		assertThat(line.get("friends")).isSameAs(friends);
@@ -114,10 +115,10 @@ public class NativeQueryMapperTest {
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(row.getSet("followers", String.class)).thenReturn(followers);
-		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
+		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
-		Map<String, Object> line = result.get(0);
+		TypedMap line = result.get(0);
 
 		assertThat(line).hasSize(1);
 		assertThat(line.get("followers")).isSameAs(followers);
@@ -133,10 +134,10 @@ public class NativeQueryMapperTest {
 
 		when(row.getColumnDefinitions()).thenReturn(columnDefs);
 		when(row.getMap("preferences", BigInteger.class, String.class)).thenReturn(preferences);
-		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
+		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 
 		assertThat(result).hasSize(1);
-		Map<String, Object> line = result.get(0);
+		TypedMap line = result.get(0);
 
 		assertThat(line).hasSize(1);
 		assertThat(line.get("preferences")).isSameAs(preferences);
@@ -148,7 +149,7 @@ public class NativeQueryMapperTest {
 
 		when(row.getColumnDefinitions()).thenReturn(null);
 
-		List<Map<String, Object>> result = mapper.mapRows(Arrays.asList(row));
+		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
 		assertThat(result).isEmpty();
 
 		verifyZeroInteractions(cqlRowInvoker);
@@ -156,7 +157,7 @@ public class NativeQueryMapperTest {
 
 	@Test
 	public void should_return_empty_list_when_no_row() throws Exception {
-		List<Map<String, Object>> result = mapper.mapRows(new ArrayList<Row>());
+		List<TypedMap> result = mapper.mapRows(new ArrayList<Row>());
 		assertThat(result).isEmpty();
 
 		verifyZeroInteractions(cqlRowInvoker);

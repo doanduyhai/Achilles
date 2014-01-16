@@ -17,23 +17,30 @@
 
 package info.archinnov.achilles.type;
 
-import java.util.LinkedHashMap;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-public class TypedMap extends LinkedHashMap<String, Object> {
+import org.junit.Test;
 
-	private static final long serialVersionUID = 1L;
+public class TypedMapTest {
 
-	@SuppressWarnings("unchecked")
-	public <T> T getTyped(String key) {
-		return (T) super.get(key);
+	@Test
+	public void should_get_typed() throws Exception {
+		TypedMap map = new TypedMap();
+		map.put("key", CounterBuilder.incr(10L));
+
+		Counter counter = map.<Counter> getTyped("key");
+
+		assertThat(counter).isNotNull();
+		assertThat(counter.get()).isEqualTo(10L);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T getTypedOr(String key, T defaultValue) {
-		if (super.containsKey(key)) {
-			return (T) super.get(key);
-		} else {
-			return defaultValue;
-		}
+	@Test
+	public void should_get_typed_or_default() throws Exception {
+		TypedMap map = new TypedMap();
+
+		Counter counter = map.<Counter> getTypedOr("key", CounterBuilder.incr(10L));
+
+		assertThat(counter).isNotNull();
+		assertThat(counter.get()).isEqualTo(10L);
 	}
 }

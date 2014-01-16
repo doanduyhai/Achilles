@@ -284,7 +284,7 @@ public class EntityInterceptorTest {
 		assertThat(dirtyMap).containsValue(pm);
 		assertThat(actual).isNull();
 
-		verify(pm).setValueToField(target, rawValue);
+		verify(pm, times(2)).setValueToField(target, rawValue);
 	}
 
 	@Test

@@ -17,9 +17,9 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,9 +38,9 @@ public class NativeQueryMapper {
 
 	private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
 
-	public List<Map<String, Object>> mapRows(List<Row> rows) {
+	public List<TypedMap> mapRows(List<Row> rows) {
 		log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
-		List<Map<String, Object>> result = new ArrayList<>();
+		List<TypedMap> result = new ArrayList<>();
 		if (!rows.isEmpty()) {
 			for (Row row : rows) {
 				mapRow(result, row);
@@ -49,11 +49,11 @@ public class NativeQueryMapper {
 		return result;
 	}
 
-	private void mapRow(List<Map<String, Object>> result, Row row) {
+	private void mapRow(List<TypedMap> result, Row row) {
 		log.trace("Map CQL row to a map of <ColumnName,Value>");
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
 		if (columnDefinitions != null) {
-			Map<String, Object> line = new LinkedHashMap<String, Object>();
+			TypedMap line = new TypedMap();
 			for (Definition column : columnDefinitions) {
 				mapColumn(row, line, column);
 			}

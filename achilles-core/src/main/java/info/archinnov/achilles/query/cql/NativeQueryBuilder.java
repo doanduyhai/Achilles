@@ -19,9 +19,9 @@ package info.archinnov.achilles.query.cql;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +50,9 @@ public class NativeQueryBuilder {
 	 * backed by a LinkedHashMap and thus preserves the columns order as they
 	 * were declared in the native query
 	 * 
-	 * @return List<Map<String,Object>>
+	 * @return List<TypedMap>
 	 */
-	public List<Map<String, Object>> get() {
+	public List<TypedMap> get() {
 		log.debug("Get results for native query {}", queryString);
 		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
 		return mapper.mapRows(rows);
@@ -63,12 +63,12 @@ public class NativeQueryBuilder {
 	 * value) of each row. The map is backed by a LinkedHashMap and thus
 	 * preserves the columns order as they were declared in the native query
 	 * 
-	 * @return Map<String,Object>
+	 * @return TypedMap
 	 */
-	public Map<String, Object> first() {
+	public TypedMap first() {
 		log.debug("Get first result for native query {}", queryString);
 		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
-		List<Map<String, Object>> result = mapper.mapRows(rows);
+		List<TypedMap> result = mapper.mapRows(rows);
 		if (result.isEmpty())
 			return null;
 		else

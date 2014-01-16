@@ -19,9 +19,9 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
@@ -31,6 +31,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.Date;
 import java.util.List;
@@ -70,27 +71,27 @@ public class QueryIT {
 		String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
 				+ entity1.getId() + "," + entity2.getId() + ")";
 
-		List<Map<String, Object>> actual = manager.nativeQuery(nativeQuery).get();
+		List<TypedMap> actual = manager.nativeQuery(nativeQuery).get();
 
 		assertThat(actual).hasSize(2);
 
-		Map<String, Object> row1 = actual.get(0);
-		Map<String, Object> row2 = actual.get(1);
+		TypedMap row1 = actual.get(0);
+		TypedMap row2 = actual.get(1);
 
 		assertThat(row1.get("name")).isEqualTo("DuyHai");
 		assertThat(row1.get("age_in_years")).isEqualTo(35L);
-		assertThat((List<String>) row1.get("friends")).containsExactly("foo", "bar");
-		assertThat((Set<String>) row1.get("followers")).contains("George", "Paul");
-		Map<Integer, String> preferences1 = (Map<Integer, String>) row1.get("preferences");
+		assertThat(row1.<List<String>> getTyped("friends")).containsExactly("foo", "bar");
+		assertThat(row1.<Set<String>> getTyped("followers")).contains("George", "Paul");
+		Map<Integer, String> preferences1 = row1.<Map<Integer, String>> getTyped("preferences");
 		assertThat(preferences1.get(1)).isEqualTo("FR");
 		assertThat(preferences1.get(2)).isEqualTo("Paris");
 		assertThat(preferences1.get(3)).isEqualTo("75014");
 
 		assertThat(row2.get("name")).isEqualTo("John DOO");
 		assertThat(row2.get("age_in_years")).isEqualTo(35L);
-		assertThat((List<String>) row2.get("friends")).containsExactly("qux", "twix");
-		assertThat((Set<String>) row2.get("followers")).contains("Isaac", "Lara");
-		Map<Integer, String> preferences2 = (Map<Integer, String>) row2.get("preferences");
+		assertThat(row2.<List<String>> getTyped("friends")).containsExactly("qux", "twix");
+		assertThat(row2.<Set<String>> getTyped("followers")).contains("Isaac", "Lara");
+		Map<Integer, String> preferences2 = row2.<Map<Integer, String>> getTyped("preferences");
 		assertThat(preferences2.get(1)).isEqualTo("US");
 		assertThat(preferences2.get(2)).isEqualTo("NewYork");
 	}
@@ -102,11 +103,11 @@ public class QueryIT {
 
 		String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
 
-		List<Map<String, Object>> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
+		List<TypedMap> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
 
 		assertThat(actual).hasSize(1);
 
-		Map<String, Object> row = actual.get(0);
+		TypedMap row = actual.get(0);
 
 		assertThat(row.get("name")).isEqualTo("DuyHai");
 	}
@@ -493,11 +494,11 @@ public class QueryIT {
 		assertThat(target1.getPreferences()).isNull();
 		assertThat(target1.getWelcomeTweet()).isNull();
 
-        assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
-        assertThat(actual.getId()).isEqualTo(entity.getId());
-        assertThat(actual.getName()).isEqualTo(entity.getName());
-        assertThat(actual.getFriends()).containsAll(entity.getFriends());
-        assertThat(actual.getVersion().get()).isEqualTo(15L);
+		assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
+		assertThat(actual.getId()).isEqualTo(entity.getId());
+		assertThat(actual.getName()).isEqualTo(entity.getName());
+		assertThat(actual.getFriends()).containsAll(entity.getFriends());
+		assertThat(actual.getVersion().get()).isEqualTo(15L);
 
 	}
 
