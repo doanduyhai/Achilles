@@ -300,8 +300,8 @@ public class EntityInterceptorTest {
 		assertThat(actual).isNull();
 		InternalCounterImpl counter = (InternalCounterImpl) target.getCount();
 
-		assertThat(counter.get()).isEqualTo(0L);
-		assertThat(counter.getInternalCounterDelta()).isEqualTo(0);
+		assertThat(counter.get()).isNull();
+		assertThat(counter.getInternalCounterDelta()).isNull();
 
 		verify(counterLoader).loadClusteredCounterColumn(context, target, propertyMeta);
 	}

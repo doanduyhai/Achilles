@@ -27,7 +27,6 @@ import info.archinnov.achilles.internal.proxy.wrapper.builder.SetWrapperBuilder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.Counter;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +38,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializable {
 
 	private static final transient Logger log = LoggerFactory.getLogger(EntityInterceptor.class);
 
@@ -77,8 +74,9 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 		if (this.getterMetas.containsKey(method)) {
 			result = interceptGetter(method);
 		} else if (this.setterMetas.containsKey(method)) {
-			interceptSetter(method, args);
+			interceptSetter(method, obj, args);
 		} else {
+			proxy.invokeSuper(obj, args);
 			result = proxy.invoke(target, args);
 		}
 		return result;
@@ -154,7 +152,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 		return result;
 	}
 
-	private void interceptSetter(Method method, Object[] args) throws Throwable {
+	private void interceptSetter(Method method, Object obj, Object[] args) throws Throwable {
 		PropertyMeta propertyMeta = this.setterMetas.get(method);
 
 		switch (propertyMeta.type()) {
@@ -172,11 +170,12 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 		if (args.length > 0) {
 			value = args[0];
 		}
+		propertyMeta.setValueToField(obj, value);
 		propertyMeta.setValueToField(target, value);
 	}
 
+	@Override
 	public Object writeReplace() {
-		System.out.println("Write replace called");
 		return this.target;
 	}
 
@@ -235,5 +234,4 @@ public class EntityInterceptor<T> implements MethodInterceptor, Serializable {
 	private PropertyMeta getPropertyMetaByProperty(Method method) {
 		return getterMetas.get(method);
 	}
-
 }

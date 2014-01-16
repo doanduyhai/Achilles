@@ -17,6 +17,8 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.proxy.EntityInterceptorBuilder;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
@@ -77,13 +79,19 @@ public class EntityProxifier {
 		enhancer.setSuperclass(entity.getClass());
 		enhancer.setInterfaces(new Class[] { Serializable.class });
 		enhancer.setClassLoader(this.getClass().getClassLoader());
-
+		enhancer.setUseCache(true);
 		enhancer.setCallbackTypes(new Class[] { MethodInterceptor.class });
 		enhancer.setUseFactory(true);
 		final Class<?> proxyClass = enhancer.createClass();
 
 		@SuppressWarnings("unchecked")
 		T instance = (T) instantiator.instantiate(proxyClass);
+
+		EntityMeta meta = context.getEntityMeta();
+		for (PropertyMeta pm : meta.getAllMetas()) {
+			Object value = pm.getValueFromField(entity);
+			pm.setValueToField(instance, value);
+		}
 
 		((Factory) instance).setCallbacks(new Callback[] { buildInterceptor(context, entity, alreadyLoaded) });
 		return instance;
