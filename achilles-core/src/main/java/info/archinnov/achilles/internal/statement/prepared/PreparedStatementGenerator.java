@@ -53,10 +53,11 @@ public class PreparedStatementGenerator {
 		prepareInsertPrimaryKey(idMeta, insert);
 
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
-			insert.value(pm.getPropertyName(), bindMarker());
+			String property = pm.getPropertyName();
+			insert.value(property, bindMarker(property));
 		}
 
-		insert.using(ttl(bindMarker()));
+		insert.using(ttl(bindMarker("ttl")));
 		return session.prepare(insert.getQueryString());
 	}
 
@@ -86,10 +87,11 @@ public class PreparedStatementGenerator {
 		Assignments assignments = null;
 		for (int i = 0; i < pms.size(); i++) {
 			PropertyMeta pm = pms.get(i);
+			String property = pm.getPropertyName();
 			if (i == 0) {
-				assignments = update.with(set(pm.getPropertyName(), bindMarker()));
+				assignments = update.with(set(property, bindMarker(property)));
 			} else {
-				assignments.and(set(pm.getPropertyName(), bindMarker()));
+				assignments.and(set(property, bindMarker(property)));
 			}
 		}
 		RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments, true);
@@ -166,10 +168,10 @@ public class PreparedStatementGenerator {
 			String counterName = counterMeta.getPropertyName();
 
 			RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,
-					update(tableName).with(incr(counterName, bindMarker())), false);
+					update(tableName).with(incr(counterName, bindMarker(counterName))), false);
 
 			RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,
-					update(tableName).with(decr(counterName, bindMarker())), false);
+					update(tableName).with(decr(counterName, bindMarker(counterName))), false);
 			RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
 
 			incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
@@ -203,10 +205,11 @@ public class PreparedStatementGenerator {
 	private void prepareInsertPrimaryKey(PropertyMeta idMeta, Insert insert) {
 		if (idMeta.isEmbeddedId()) {
 			for (String component : idMeta.getComponentNames()) {
-				insert.value(component, bindMarker());
+				insert.value(component, bindMarker(component));
 			}
 		} else {
-			insert.value(idMeta.getPropertyName(), bindMarker());
+			String idName = idMeta.getPropertyName();
+			insert.value(idName, bindMarker(idName));
 		}
 	}
 
@@ -217,15 +220,16 @@ public class PreparedStatementGenerator {
 			int i = 0;
 			for (String clusteredId : idMeta.getComponentNames()) {
 				if (i == 0) {
-					where = from.where(eq(clusteredId, bindMarker()));
+					where = from.where(eq(clusteredId, bindMarker(clusteredId)));
 				} else {
-					where.and(eq(clusteredId, bindMarker()));
+					where.and(eq(clusteredId, bindMarker(clusteredId)));
 				}
 				i++;
 			}
 			statement = where;
 		} else {
-			statement = from.where(eq(idMeta.getPropertyName(), bindMarker()));
+			String idName = idMeta.getPropertyName();
+			statement = from.where(eq(idName, bindMarker(idName)));
 		}
 		return statement;
 	}
@@ -236,20 +240,19 @@ public class PreparedStatementGenerator {
 			int i = 0;
 			for (String clusteredId : idMeta.getComponentNames()) {
 				if (i == 0) {
-					where = update.where(eq(clusteredId, bindMarker()));
+					where = update.where(eq(clusteredId, bindMarker(clusteredId)));
 				} else {
-					where.and(eq(clusteredId, bindMarker()));
+					where.and(eq(clusteredId, bindMarker(clusteredId)));
 				}
 				i++;
 			}
 		} else {
-			where = update.where(eq(idMeta.getPropertyName(), bindMarker()));
-			// statement = update.where(eq(idMeta.getPropertyName(),
-			// bindMarker())).using(ttl(bindMarker()));
+			String idName = idMeta.getPropertyName();
+			where = update.where(eq(idName, bindMarker(idName)));
 		}
 
 		if (prepareTTL) {
-			return where.using(ttl(bindMarker()));
+			return where.using(ttl(bindMarker("ttl")));
 		} else {
 			return where;
 		}
@@ -277,15 +280,16 @@ public class PreparedStatementGenerator {
 			int i = 0;
 			for (String clusteredId : idMeta.getComponentNames()) {
 				if (i == 0) {
-					where = mainFrom.where(eq(clusteredId, bindMarker()));
+					where = mainFrom.where(eq(clusteredId, bindMarker(clusteredId)));
 				} else {
-					where.and(eq(clusteredId, bindMarker()));
+					where.and(eq(clusteredId, bindMarker(clusteredId)));
 				}
 				i++;
 			}
 			mainStatement = where;
 		} else {
-			mainStatement = mainFrom.where(eq(idMeta.getPropertyName(), bindMarker()));
+			String idName = idMeta.getPropertyName();
+			mainStatement = mainFrom.where(eq(idName, bindMarker(idName)));
 		}
 		return mainStatement;
 	}

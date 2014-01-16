@@ -548,8 +548,9 @@ public class PersistenceManager {
 		Validator.validateNotNull(indexCondition.getIndexRelation(),
 				"Index relation for index condition '%s' should be provided", indexCondition);
 
+		String indexColumnName = indexCondition.getColumnName();
 		final Select.Where query = QueryBuilder.select().from(entityMeta.getTableName())
-				.where(QueryBuilder.eq(indexCondition.getColumnName(), bindMarker()));
+				.where(QueryBuilder.eq(indexColumnName, bindMarker(indexColumnName)));
 		return typedQueryInternal(entityClass, query.getQueryString(), false, indexCondition.getColumnValue());
 	}
 

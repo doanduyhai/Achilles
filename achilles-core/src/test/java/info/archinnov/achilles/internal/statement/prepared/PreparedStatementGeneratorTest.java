@@ -86,7 +86,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (?,?) USING TTL ?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (:id,:name) USING TTL :ttl;");
 	}
 
 	@Test
@@ -108,7 +108,8 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareInsertPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,a,b,name) VALUES (?,?,?,?) USING TTL ?;");
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"INSERT INTO table(id,a,b,name) VALUES (:id,:a,:b,:name) USING TTL :ttl;");
 	}
 
 	@Test
@@ -128,7 +129,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
 	}
 
 	@Test
@@ -147,7 +148,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b FROM table WHERE id=:id AND a=:a AND b=:b;");
 	}
 
 	@Test
@@ -169,7 +170,8 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).isSameAs(ps);
 
-		assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL ? SET name=?,age=? WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo(
+				"UPDATE table USING TTL :ttl SET name=:name,age=:age WHERE id=:id;");
 	}
 
 	@Test
@@ -193,7 +195,7 @@ public class PreparedStatementGeneratorTest {
 		assertThat(actual).isSameAs(ps);
 
 		assertThat(queryCaptor.getValue()).isEqualTo(
-				"UPDATE table USING TTL ? SET name=?,age=? WHERE id=? AND a=? AND b=?;");
+				"UPDATE table USING TTL :ttl SET name=:name,age=:age WHERE id=:id AND a=:a AND b=:b;");
 	}
 
 	@Test
@@ -231,7 +233,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareSelectPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
 	}
 
 	@Test
@@ -253,7 +255,7 @@ public class PreparedStatementGeneratorTest {
 		PreparedStatement actual = generator.prepareSelectPS(session, meta);
 
 		assertThat(actual).isSameAs(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b,name FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b,name FROM table WHERE id=:id AND a=:a AND b=:b;");
 	}
 
 	@Test
@@ -274,7 +276,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=:id;");
 	}
 
 	@Test
@@ -295,7 +297,7 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=? AND a=? AND b=?;");
+		assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=:id AND a=:a AND b=:b;");
 	}
 
 	@Test
@@ -317,7 +319,7 @@ public class PreparedStatementGeneratorTest {
 		assertThat(actual).hasSize(1);
 		assertThat(actual).containsKey("table");
 		assertThat(actual).containsValue(ps);
-		assertThat(queryCaptor.getAllValues()).containsOnly("DELETE  FROM table WHERE id=?;");
+		assertThat(queryCaptor.getAllValues()).containsOnly("DELETE  FROM table WHERE id=:id;");
 	}
 
 	@Test
@@ -386,11 +388,11 @@ public class PreparedStatementGeneratorTest {
 
 		assertThat(regularStatements).hasSize(5);
 		assertThat(regularStatements.get(0).getQueryString()).isEqualTo(
-				"UPDATE counterTable SET count=count+? WHERE " + "id=?;");
+				"UPDATE counterTable SET count=count+:count WHERE " + "id=:id;");
 		assertThat(regularStatements.get(1).getQueryString()).isEqualTo(
-				"UPDATE counterTable SET count=count-? WHERE id=?;");
-		assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=?;");
-		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=?;");
-		assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=?;");
+				"UPDATE counterTable SET count=count-:count WHERE id=:id;");
+		assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=:id;");
+		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=:id;");
+		assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=:id;");
 	}
 }

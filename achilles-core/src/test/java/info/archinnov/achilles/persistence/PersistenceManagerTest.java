@@ -627,6 +627,7 @@ public class PersistenceManagerTest {
 
 		// Then
 		assertThat(Whitebox.<Object[]> getInternalState(typedQueryBuilder, "boundValues")).contains("value");
-		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=?;", meta);
+		verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=:column;",
+				meta);
 	}
 }

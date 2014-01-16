@@ -343,8 +343,8 @@ public class QueryIT {
 		manager.persist(entity1);
 		manager.persist(entity2);
 
-		String queryString = "SELECT * FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
+		String queryString = "SELECT * FROM CompleteBean LIMIT :lim";
+		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
 
 		assertThat(actual).hasSize(2);
 
