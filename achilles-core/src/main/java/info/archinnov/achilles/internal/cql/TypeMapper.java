@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internal.cql;
 
 import static com.datastax.driver.core.DataType.Name.*;
-import info.archinnov.achilles.internal.persistence.metadata.InternalTimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.helper.PropertyHelper;
 import info.archinnov.achilles.type.Counter;

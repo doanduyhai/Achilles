@@ -33,6 +33,13 @@
             <scope>provided</scope>
         </dependency>
 
+		<!-- Bean Validation -->
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+		    <scope>provided</scope>
+		</dependency>
+			
         <!-- Utils -->
         <dependency>
             <groupId>commons-io</groupId>

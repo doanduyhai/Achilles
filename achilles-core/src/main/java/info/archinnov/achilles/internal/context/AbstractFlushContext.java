@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 

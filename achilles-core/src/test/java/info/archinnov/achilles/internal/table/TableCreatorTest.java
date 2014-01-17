@@ -17,18 +17,18 @@
 package info.archinnov.achilles.internal.table;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
-import info.archinnov.achilles.internal.persistence.metadata.ClusteringComponents;
-import info.archinnov.achilles.internal.persistence.metadata.EmbeddedIdProperties;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
-import info.archinnov.achilles.internal.persistence.metadata.PartitionComponents;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
+import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
+import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;

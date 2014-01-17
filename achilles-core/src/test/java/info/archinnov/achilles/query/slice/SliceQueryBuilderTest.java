@@ -29,9 +29,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;

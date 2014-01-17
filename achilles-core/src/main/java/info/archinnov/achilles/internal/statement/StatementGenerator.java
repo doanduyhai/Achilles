@@ -17,8 +17,8 @@
 package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.type.Pair;

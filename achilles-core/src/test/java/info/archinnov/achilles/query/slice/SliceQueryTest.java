@@ -26,9 +26,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.query.slice.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.type.BoundingMode;

@@ -17,10 +17,10 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.excludeCounterType;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
 import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.validation.Validator;
 

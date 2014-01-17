@@ -19,8 +19,8 @@ package info.archinnov.achilles.internal.reflection;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

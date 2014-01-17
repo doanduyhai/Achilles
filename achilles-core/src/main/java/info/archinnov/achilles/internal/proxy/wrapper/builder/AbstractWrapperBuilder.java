@@ -19,7 +19,7 @@ package info.archinnov.achilles.internal.proxy.wrapper.builder;
 import java.lang.reflect.Method;
 import java.util.Map;
 import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.wrapper.AbstractWrapper;
 
 @SuppressWarnings("unchecked")

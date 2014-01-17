@@ -18,13 +18,13 @@ package info.archinnov.achilles.internal.table;
 
 import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.valueClass;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;

@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -24,9 +24,9 @@ import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;

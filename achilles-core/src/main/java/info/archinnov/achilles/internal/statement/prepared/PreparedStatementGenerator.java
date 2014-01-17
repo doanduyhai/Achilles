@@ -22,8 +22,8 @@ import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 
 import java.util.HashMap;
 import java.util.List;

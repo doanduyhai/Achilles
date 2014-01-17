@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

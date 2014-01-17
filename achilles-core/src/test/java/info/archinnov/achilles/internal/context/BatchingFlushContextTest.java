@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 import java.util.List;
 import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.interceptor.EventHolder;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;

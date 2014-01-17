@@ -16,10 +16,10 @@
  */
 package info.archinnov.achilles.internal.reflection;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;

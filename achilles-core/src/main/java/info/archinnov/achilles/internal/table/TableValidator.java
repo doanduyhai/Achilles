@@ -20,9 +20,9 @@ import static com.datastax.driver.core.DataType.counter;
 import static com.datastax.driver.core.DataType.text;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.InternalTimeUUID;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.Collection;

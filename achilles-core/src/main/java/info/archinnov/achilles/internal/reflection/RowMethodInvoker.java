@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.reflection;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.*;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.ArrayList;

@@ -17,7 +17,7 @@
 package info.archinnov.achilles.internal.proxy;
 
 import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.InternalCounterBuilder;

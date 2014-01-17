@@ -20,8 +20,8 @@ import static com.datastax.driver.core.DataType.Name.*;
 import static info.archinnov.achilles.internal.cql.TypeMapper.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.persistence.metadata.InternalTimeUUID;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 

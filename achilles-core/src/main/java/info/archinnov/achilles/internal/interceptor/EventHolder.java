@@ -1,7 +1,7 @@
 package info.archinnov.achilles.internal.interceptor;
 
 import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 
 public class EventHolder {
 

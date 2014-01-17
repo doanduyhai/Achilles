@@ -17,10 +17,10 @@
 package info.archinnov.achilles.internal.table;
 
 import static info.archinnov.achilles.counter.AchillesCounter.*;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
-import info.archinnov.achilles.internal.persistence.metadata.InternalTimeUUID;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.internal.validation.Validator;

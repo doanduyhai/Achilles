@@ -18,9 +18,9 @@ package info.archinnov.achilles.internal.context;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static com.google.common.collect.Maps.*;
-import static info.archinnov.achilles.internal.persistence.metadata.EntityMeta.*;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.*;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 

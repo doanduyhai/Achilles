@@ -16,7 +16,7 @@
  */
 package info.archinnov.achilles.internal.reflection;
 
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
 

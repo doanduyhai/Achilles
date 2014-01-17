@@ -16,16 +16,16 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
-import static info.archinnov.achilles.internal.persistence.metadata.PropertyType.*;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;

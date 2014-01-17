@@ -63,6 +63,7 @@
 		<commons.collections.version>3.2.1</commons.collections.version>
 		<reflections.version>0.9.9-RC1</reflections.version>
 		<guava.version>13.0</guava.version>
+		<validator.version>5.0.2.Final</validator.version>
 		<slf4j.version>1.7.2</slf4j.version>
 
 		<fest.assert.version>2.0M8</fest.assert.version>
@@ -195,6 +196,13 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-context</artifactId>
 				<version>${spring.version}</version>
+			</dependency>
+			
+			<!-- Bean Validation -->
+			<dependency>
+			    <groupId>org.hibernate</groupId>
+			    <artifactId>hibernate-validator</artifactId>
+			    <version>${validator.version}</version>
 			</dependency>
 
 			<!-- Utils -->

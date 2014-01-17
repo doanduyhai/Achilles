@@ -17,8 +17,8 @@
 package info.archinnov.achilles.internal.table;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
-import info.archinnov.achilles.internal.persistence.metadata.PropertyType;
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.test.mapping.entity.UserBean;
 import info.archinnov.achilles.type.Counter;
 

@@ -20,7 +20,7 @@ import static com.datastax.driver.core.DataType.Name.COUNTER;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
 import static info.archinnov.achilles.internal.table.TableCreator.ACHILLES_DDL_SCRIPT;
 import static info.archinnov.achilles.internal.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
-import info.archinnov.achilles.internal.persistence.metadata.IndexProperties;
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
 import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.internal.validation.Validator;
 

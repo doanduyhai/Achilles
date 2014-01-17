@@ -24,8 +24,8 @@ import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.SchemaContext;
-import info.archinnov.achilles.internal.persistence.discovery.AchillesBootstrapper;
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.type.Pair;
 

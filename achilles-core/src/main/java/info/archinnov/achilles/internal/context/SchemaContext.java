@@ -17,7 +17,7 @@
 
 package info.archinnov.achilles.internal.context;
 
-import info.archinnov.achilles.internal.persistence.metadata.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.table.TableCreator;
 import info.archinnov.achilles.internal.table.TableValidator;
 
