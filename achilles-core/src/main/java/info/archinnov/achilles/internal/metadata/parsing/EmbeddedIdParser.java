@@ -17,9 +17,15 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.reflections.ReflectionUtils.getAllConstructors;
-import static org.reflections.ReflectionUtils.getFields;
-import static org.reflections.ReflectionUtils.withParametersCount;
+import static org.reflections.ReflectionUtils.*;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Order;
+import info.archinnov.achilles.annotations.PartitionKey;
+import info.archinnov.achilles.annotations.TimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
+import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
+import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator;
+import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -30,22 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Order;
-import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.annotations.TimeUUID;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
-import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator;
-import info.archinnov.achilles.internal.helper.PropertyHelper;
-import info.archinnov.achilles.internal.validation.Validator;
 
 public class EmbeddedIdParser {
 
-	private static final Logger log = LoggerFactory.getLogger(PropertyHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(EmbeddedIdParser.class);
 	protected EntityIntrospector entityIntrospector = new EntityIntrospector();
 
 	private PropertyFilter filter = new PropertyFilter();
@@ -59,15 +57,14 @@ public class EmbeddedIdParser {
 		Integer reversedField = extractReversedClusteredKey(embeddedIdClass);
 		validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
 		validateReversedClusteredKey(components, reversedField, embeddedIdClass.getCanonicalName());
-		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField
-        );
+		EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField);
 
 		log.trace("Built embeddedId properties : {}", embeddedIdProperties);
 		return embeddedIdProperties;
 	}
 
 	private Map<Integer, Field> extractComponentsOrdering(Class<?> embeddedIdClass) {
-        log.trace("Extract components ordering from embedded id class {} ", embeddedIdClass.getCanonicalName());
+		log.trace("Extract components ordering from embedded id class {} ", embeddedIdClass.getCanonicalName());
 
 		String embeddedIdClassName = embeddedIdClass.getCanonicalName();
 		Map<Integer, Field> components = new TreeMap<Integer, Field>();
@@ -96,9 +93,10 @@ public class EmbeddedIdParser {
 	}
 
 	private Integer extractReversedClusteredKey(Class<?> embeddedIdClass) {
-        log.debug("Extract reversed clustering component from embedded id class {} ", embeddedIdClass.getCanonicalName());
+		log.debug("Extract reversed clustering component from embedded id class {} ",
+				embeddedIdClass.getCanonicalName());
 
-        @SuppressWarnings("unchecked")
+		@SuppressWarnings("unchecked")
 		Set<Field> candidateFields = getFields(embeddedIdClass, ReflectionUtils.<Field> withAnnotation(Order.class));
 		List<Integer> reversedFields = new LinkedList<Integer>();
 		for (Field candidateField : candidateFields) {
@@ -116,13 +114,13 @@ public class EmbeddedIdParser {
 
 	private int validateNoDuplicateOrderAndType(String embeddedIdClassName, Set<Integer> orders, int orderSum,
 			int order, Class<?> componentType) {
-        log.debug("Validate type and component ordering for embedded id class {} ", embeddedIdClassName);
+		log.debug("Validate type and component ordering for embedded id class {} ", embeddedIdClassName);
 		Validator.validateBeanMappingTrue(orders.add(order), "The order '%s' is duplicated in @EmbeddedId class '%s'",
 				order, embeddedIdClassName);
 
 		orderSum += order;
 
-		PropertyParsingValidator.validateAllowedTypes(componentType, PropertyHelper.allowedTypes, "The class '"
+		PropertyParsingValidator.validateAllowedTypes(componentType, PropertyParser.allowedTypes, "The class '"
 				+ componentType.getCanonicalName() + "' is not a valid component type for the @EmbeddedId class '"
 				+ embeddedIdClassName + "'");
 		return orderSum;
@@ -182,9 +180,9 @@ public class EmbeddedIdParser {
 	}
 
 	private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
-                                                     Integer reversedField) {
+			Integer reversedField) {
 
-        log.debug("Build components meta data for embedded id class {}",embeddedIdClass.getCanonicalName());
+		log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
 		EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
 		EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder = new EmbeddedIdPropertiesBuilder();
@@ -207,9 +205,9 @@ public class EmbeddedIdParser {
 	private boolean buildPartitionAndClusteringKeys(Class<?> embeddedIdClass, Map<Integer, Field> components,
 			Integer reversedField, EmbeddedIdPropertiesBuilder partitionKeysBuilder,
 			EmbeddedIdPropertiesBuilder clusteringKeysBuilder, EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
-        log.debug("Build Components meta data for embedded id class {}",embeddedIdClass.getCanonicalName());
+		log.debug("Build Components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
 
-        boolean hasPartitionKeyAnnotation = false;
+		boolean hasPartitionKeyAnnotation = false;
 		for (Integer order : components.keySet()) {
 			Field compositeKeyField = components.get(order);
 			Class<?> componentClass = compositeKeyField.getType();
@@ -226,8 +224,8 @@ public class EmbeddedIdParser {
 
 			embeddedIdPropertiesBuilder.addComponentName(componentName);
 			embeddedIdPropertiesBuilder.addComponentClass(componentClass);
-            embeddedIdPropertiesBuilder.addComponentField(compositeKeyField);
-            embeddedIdPropertiesBuilder.addComponentGetter(componentGetter);
+			embeddedIdPropertiesBuilder.addComponentField(compositeKeyField);
+			embeddedIdPropertiesBuilder.addComponentGetter(componentGetter);
 			embeddedIdPropertiesBuilder.addComponentSetter(componentSetter);
 
 			if (filter.hasAnnotation(compositeKeyField, TimeUUID.class)) {

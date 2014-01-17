@@ -19,17 +19,17 @@ package info.archinnov.achilles.internal.metadata.discovery;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.DaoContextFactory;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.SchemaContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityParser;
+import info.archinnov.achilles.internal.metadata.parsing.PropertyParser;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.internal.helper.PropertyHelper;
-import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ public class AchillesBootstrapper {
 
 	private EntityParser entityParser = new EntityParser();
 	private DaoContextFactory daoContextFactory = new DaoContextFactory();
-    private PropertyHelper propertyHelper = new PropertyHelper();
+	private PropertyParser propertyParser = new PropertyParser();
 
 	public List<Class<?>> discoverEntities(List<String> packageNames) {
 		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
@@ -65,7 +65,7 @@ public class AchillesBootstrapper {
 
 	public Pair<Map<Class<?>, EntityMeta>, Boolean> buildMetaDatas(ConfigurationContext configContext,
 			List<Class<?>> entities) {
-        log.debug("Build meta data for candidate entities");
+		log.debug("Build meta data for candidate entities");
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
 		boolean hasSimpleCounter = false;
 		for (Class<?> entityClass : entities) {
@@ -78,7 +78,7 @@ public class AchillesBootstrapper {
 	}
 
 	public void validateOrCreateTables(SchemaContext schemaContext) {
-        log.debug("Start schema validation/creation");
+		log.debug("Start schema validation/creation");
 		Map<String, TableMetadata> tableMetaDatas = schemaContext.fetchTableMetaData();
 
 		for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
@@ -101,19 +101,18 @@ public class AchillesBootstrapper {
 		}
 	}
 
-	public DaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap,
-			boolean hasSimpleCounter) {
-        log.debug("Build DaoContext");
+	public DaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
+		log.debug("Build DaoContext");
 		return daoContextFactory.build(session, entityMetaMap, hasSimpleCounter);
 	}
 
-    public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>,
-            EntityMeta> entityMetaMap) {
-        for (Interceptor<?> interceptor : interceptors) {
-            Class<?> entityClass = propertyHelper.inferEntityClassFromInterceptor(interceptor);
-            EntityMeta entityMeta = entityMetaMap.get(entityClass);
-            Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found", entityClass.getCanonicalName());
-            entityMeta.addInterceptor(interceptor);
-        }
-    }
+	public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>, EntityMeta> entityMetaMap) {
+		for (Interceptor<?> interceptor : interceptors) {
+			Class<?> entityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
+			EntityMeta entityMeta = entityMetaMap.get(entityClass);
+			Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
+					entityClass.getCanonicalName());
+			entityMeta.addInterceptor(interceptor);
+		}
+	}
 }

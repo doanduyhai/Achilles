@@ -18,23 +18,14 @@ package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaBuilder.factory;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import info.archinnov.achilles.type.Pair;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.metadata.holder.CounterProperties;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
@@ -42,19 +33,174 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator;
-import info.archinnov.achilles.internal.helper.PropertyHelper;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
-import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.Pair;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PropertyParser {
 	private static final Logger log = LoggerFactory.getLogger(PropertyFilter.class);
 
-	private PropertyHelper propertyHelper = new PropertyHelper();
+	public static Set<Class<?>> allowedTypes = new HashSet<Class<?>>();
+
+	static {
+		// Bytes
+		allowedTypes.add(byte[].class);
+		allowedTypes.add(ByteBuffer.class);
+
+		// Boolean
+		allowedTypes.add(Boolean.class);
+		allowedTypes.add(boolean.class);
+
+		// Date
+		allowedTypes.add(Date.class);
+
+		// Double
+		allowedTypes.add(Double.class);
+		allowedTypes.add(double.class);
+
+		// Char
+		allowedTypes.add(Character.class);
+
+		// Float
+		allowedTypes.add(Float.class);
+		allowedTypes.add(float.class);
+
+		// Integer
+		allowedTypes.add(BigInteger.class);
+		allowedTypes.add(Integer.class);
+		allowedTypes.add(int.class);
+
+		// Long
+		allowedTypes.add(Long.class);
+		allowedTypes.add(long.class);
+
+		// Short
+		allowedTypes.add(Short.class);
+		allowedTypes.add(short.class);
+
+		// String
+		allowedTypes.add(String.class);
+
+		// UUID
+		allowedTypes.add(UUID.class);
+	}
+
 	private EmbeddedIdParser compoundKeyParser = new EmbeddedIdParser();
 	private EntityIntrospector entityIntrospector = new EntityIntrospector();
 	private PropertyParsingValidator validator = new PropertyParsingValidator();
 	private PropertyFilter filter = new PropertyFilter();
+
+	public <T> Class<T> inferValueClassForListOrSet(Type genericType, Class<?> entityClass) {
+		log.debug("Infer parameterized value class for collection type {} of entity class {} ", genericType.toString(),
+				entityClass.getCanonicalName());
+
+		Class<T> valueClass;
+		if (genericType instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType) genericType;
+			Type[] actualTypeArguments = pt.getActualTypeArguments();
+			if (actualTypeArguments.length > 0) {
+				Type type = actualTypeArguments[actualTypeArguments.length - 1];
+				valueClass = getClassFromType(type);
+			} else {
+				throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+						+ "' of the entity '" + entityClass.getCanonicalName() + "' should be parameterized");
+			}
+		} else {
+			throw new AchillesBeanMappingException("The type '" + genericType.getClass().getCanonicalName()
+					+ "' of the entity '" + entityClass.getCanonicalName() + "' should be parameterized");
+		}
+
+		log.trace("Inferred value class : {}", valueClass.getCanonicalName());
+
+		return valueClass;
+	}
+
+	public static String getIndexName(Field field) {
+		log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
+		String indexName = null;
+		Index index = field.getAnnotation(Index.class);
+		if (index != null) {
+			indexName = index.name();
+		}
+		return indexName;
+	}
+
+	public boolean hasConsistencyAnnotation(Field field) {
+		log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
+
+		boolean consistency = false;
+		if (field.getAnnotation(Consistency.class) != null) {
+			consistency = true;
+		}
+		return consistency;
+	}
+
+	public static <T> boolean isSupportedType(Class<T> valueClass) {
+		return allowedTypes.contains(valueClass);
+	}
+
+	public Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
+			Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
+		log.debug("Find consistency configuration for field {} of class {}", field.getName(), field.getDeclaringClass()
+				.getCanonicalName());
+
+		Consistency clevel = field.getAnnotation(Consistency.class);
+
+		ConsistencyLevel defaultGlobalRead = defaultConsistencyLevels.left;
+		ConsistencyLevel defaultGlobalWrite = defaultConsistencyLevels.right;
+
+		if (clevel != null) {
+			defaultGlobalRead = clevel.read();
+			defaultGlobalWrite = clevel.write();
+		}
+
+		log.trace("Found consistency levels : {} / {}", defaultGlobalRead, defaultGlobalWrite);
+		return Pair.create(defaultGlobalRead, defaultGlobalWrite);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> Class<T> getClassFromType(Type type) {
+		log.debug("Infer class from type {}", type);
+		if (type instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) type;
+			return (Class<T>) parameterizedType.getRawType();
+		} else if (type instanceof Class) {
+			return (Class<T>) type;
+		} else {
+			throw new IllegalArgumentException("Cannot determine java class of type '" + type + "'");
+		}
+	}
+
+	public Class<?> inferEntityClassFromInterceptor(Interceptor<?> interceptor) {
+		for (Type type : interceptor.getClass().getGenericInterfaces()) {
+			if (type instanceof ParameterizedType) {
+				final ParameterizedType parameterizedType = (ParameterizedType) type;
+				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+				return getClassFromType(actualTypeArguments[0]);
+			}
+		}
+		return null;
+	}
 
 	public PropertyMeta parse(PropertyParsingContext context) {
 		log.debug("Parsing property {} of entity class {}", context.getCurrentPropertyName(), context
@@ -62,7 +208,7 @@ public class PropertyParser {
 
 		Field field = context.getCurrentField();
 		inferPropertyName(context);
-		context.setCustomConsistencyLevels(propertyHelper.hasConsistencyAnnotation(context.getCurrentField()));
+		context.setCustomConsistencyLevels(hasConsistencyAnnotation(context.getCurrentField()));
 
 		validator.validateNoDuplicate(context);
 		validator.validateIndexIfSet(context);
@@ -84,8 +230,8 @@ public class PropertyParser {
 			propertyMeta = parseId(context);
 		} else {
 			propertyMeta = parseSimpleProperty(context);
-			String indexName = propertyHelper.getIndexName(field);
-			if(indexName!=null){
+			String indexName = getIndexName(field);
+			if (indexName != null) {
 				propertyMeta.setIndexProperties(new IndexProperties(indexName));
 			}
 		}
@@ -122,9 +268,8 @@ public class PropertyParser {
 		EmbeddedIdProperties embeddedIdProperties = extractEmbeddedIdProperties(field.getType());
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(propertyName).embeddedIdProperties(embeddedIdProperties)
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-                .field(field).consistencyLevels(context.getCurrentConsistencyLevels())
-                .build(Void.class, field.getType());
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
+				.consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
 
 		log.trace("Built embedded id property meta for property {} of entity class {} : {}",
 				propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
@@ -145,8 +290,8 @@ public class PropertyParser {
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-				.consistencyLevels(context.getCurrentConsistencyLevels())
-                .field(field).timeuuid(timeUUID).build(Void.class, field.getType());
+				.consistencyLevels(context.getCurrentConsistencyLevels()).field(field).timeuuid(timeUUID)
+				.build(Void.class, field.getType());
 
 		log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), propertyMeta);
@@ -168,9 +313,9 @@ public class PropertyParser {
 
 		PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
-				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
-                .field(field).counterProperties(counterProperties)
-                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
+				.entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
+				.counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels())
+				.build(Void.class, field.getType());
 
 		context.hasSimpleCounterType();
 		context.getCounterMetas().add(propertyMeta);
@@ -193,7 +338,7 @@ public class PropertyParser {
 		boolean timeUUID = isTimeUUID(context, field);
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
-		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
+		valueClass = inferValueClassForListOrSet(genericType, entityClass);
 
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = LIST;
@@ -201,8 +346,8 @@ public class PropertyParser {
 		PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
-                .field(field).timeuuid(timeUUID).build(Void.class, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
+				.timeuuid(timeUUID).build(Void.class, valueClass);
 
 		log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), listMeta);
@@ -222,15 +367,15 @@ public class PropertyParser {
 		Class<V> valueClass;
 		Type genericType = field.getGenericType();
 
-		valueClass = propertyHelper.inferValueClassForListOrSet(genericType, entityClass);
+		valueClass = inferValueClassForListOrSet(genericType, entityClass);
 		Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
 		PropertyType type = SET;
 
 		PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
-                .field(field).timeuuid(timeUUID).build(Void.class, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
+				.timeuuid(timeUUID).build(Void.class, valueClass);
 
 		log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
 				context.getCurrentEntityClass().getCanonicalName(), setMeta);
@@ -258,8 +403,8 @@ public class PropertyParser {
 		PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
 				.propertyName(context.getCurrentPropertyName())
 				.entityClassName(context.getCurrentEntityClass().getCanonicalName())
-				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors)
-                .field(field).timeuuid(timeUUID).build(keyClass, valueClass);
+				.consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
+				.timeuuid(timeUUID).build(keyClass, valueClass);
 
 		log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context
 				.getCurrentEntityClass().getCanonicalName(), mapMeta);
@@ -290,8 +435,8 @@ public class PropertyParser {
 		ParameterizedType pt = (ParameterizedType) genericType;
 		Type[] actualTypeArguments = pt.getActualTypeArguments();
 
-		Class<K> keyClass = propertyHelper.getClassFromType(actualTypeArguments[0]);
-		Class<V> valueClass = propertyHelper.getClassFromType(actualTypeArguments[1]);
+		Class<K> keyClass = getClassFromType(actualTypeArguments[0]);
+		Class<V> valueClass = getClassFromType(actualTypeArguments[1]);
 
 		return Pair.create(keyClass, valueClass);
 	}
@@ -309,8 +454,8 @@ public class PropertyParser {
 	private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context, PropertyMeta propertyMeta) {
 
 		log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
-		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = propertyHelper.findConsistencyLevels(
-				context.getCurrentField(), context.getDefaultConsistencyLevels());
+		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = findConsistencyLevels(context.getCurrentField(),
+				context.getDefaultConsistencyLevels());
 
 		validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 
@@ -328,6 +473,5 @@ public class PropertyParser {
 		}
 		return timeUUID;
 	}
-
 
 }

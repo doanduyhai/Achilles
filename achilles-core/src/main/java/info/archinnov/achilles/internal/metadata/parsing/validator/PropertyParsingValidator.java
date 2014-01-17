@@ -17,20 +17,20 @@
 package info.archinnov.achilles.internal.metadata.parsing.validator;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.internal.metadata.parsing.PropertyParser;
+import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
-import info.archinnov.achilles.type.Pair;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
-import info.archinnov.achilles.internal.helper.PropertyHelper;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.internal.validation.Validator;
 
 public class PropertyParsingValidator {
 	private static final Logger log = LoggerFactory.getLogger(PropertyParsingValidator.class);
@@ -85,10 +85,9 @@ public class PropertyParsingValidator {
 		String className = context.getCurrentEntityClass().getCanonicalName();
 		log.debug("Validate that this property {} of entity class {} has a properly set index parameter, if set",
 				fieldName, className);
-		PropertyHelper propertyHelper = new PropertyHelper();
-		if (propertyHelper.getIndexName(context.getCurrentField()) != null) {
+		if (PropertyParser.getIndexName(context.getCurrentField()) != null) {
 
-			Validator.validateBeanMappingTrue(PropertyHelper.isSupportedType(context.getCurrentField().getType()),
+			Validator.validateBeanMappingTrue(PropertyParser.isSupportedType(context.getCurrentField().getType()),
 					"Property '%s' of entity '%s' cannot be indexed because the type '%s' is not supported", fieldName,
 					className, context.getCurrentField().getType().getCanonicalName());
 			Validator.validateBeanMappingFalse(context.isEmbeddedId(),
@@ -102,7 +101,7 @@ public class PropertyParsingValidator {
 	}
 
 	public static void validateAllowedTypes(Class<?> type, Set<Class<?>> allowedTypes, String message) {
-        log.debug("Validate that type {} is supported",type);
+		log.debug("Validate that type {} is supported", type);
 		if (!allowedTypes.contains(type) && !type.isEnum()) {
 			throw new AchillesBeanMappingException(message);
 		}

@@ -25,19 +25,22 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.metadata.parsing.PropertyParser;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +51,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,6 +61,12 @@ public class PropertyParserTest {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	private PropertyParser parser = new PropertyParser();
+
+	@Mock
+	private ReflectionInvoker invoker;
+
+	@Mock
+	private List<Method> componentGetters;
 
 	private EntityParsingContext entityContext;
 	private ConfigurationContext configContext;
@@ -528,6 +538,104 @@ public class PropertyParserTest {
 		assertThat(meta.getSetter().getName()).isEqualTo("setMap");
 		assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
 	}
+
+	@Test
+	public void should_infer_value_class_from_list() throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			private List<String> friends;
+		}
+
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
+
+		Class<String> infered = parser.inferValueClassForListOrSet(type, Test.class);
+
+		assertThat(infered).isEqualTo(String.class);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Test
+	public void should_infer_parameterized_value_class_from_list() throws Exception {
+		@SuppressWarnings("unused")
+		class Test {
+			private List<Class<Void>> friends;
+		}
+
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
+
+		Class infered = parser.inferValueClassForListOrSet(type, Test.class);
+
+		assertThat(infered).isEqualTo(Class.class);
+	}
+
+	@Test
+	public void should_exception_when_infering_value_type_from_raw_list() throws Exception {
+		@SuppressWarnings({ "rawtypes", "unused" })
+		class Test {
+			private List friends;
+		}
+
+		Type type = Test.class.getDeclaredField("friends").getGenericType();
+
+		expectedEx.expect(AchillesBeanMappingException.class);
+		expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
+				+ "' of the entity 'null' should be parameterized");
+
+		parser.inferValueClassForListOrSet(type, Test.class);
+
+	}
+
+	@Test
+	public void should_find_index() throws Exception {
+		class Test {
+			@Index
+			private String name;
+		}
+
+		Field field = Test.class.getDeclaredField("name");
+
+		assertThat(PropertyParser.getIndexName(field) != null).isTrue();
+	}
+
+	@Test
+	public void should_check_consistency_annotation() throws Exception {
+		class Test {
+			@Consistency
+			private String consistency;
+		}
+
+		Field field = Test.class.getDeclaredField("consistency");
+
+		assertThat(parser.hasConsistencyAnnotation(field)).isTrue();
+	}
+
+	@Test
+	public void should_not_find_counter_if_not_long_type() throws Exception {
+
+	}
+
+	@Test
+	public void should_return_true_when_type_supported() throws Exception {
+		assertThat(PropertyParser.isSupportedType(Long.class)).isTrue();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void should_infer_entity_class_from_interceptor() throws Exception {
+		assertThat(parser.inferEntityClassFromInterceptor(longInterceptor)).isEqualTo((Class) Long.class);
+	}
+
+	private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
+		@Override
+		public void onEvent(Long entity) {
+
+		}
+
+		@Override
+		public List<Event> events() {
+			return null;
+		}
+	};
 
 	private <T> PropertyParsingContext newContext(Class<T> entityClass, Field field) {
 		entityContext = new EntityParsingContext(configContext, entityClass);

@@ -17,9 +17,9 @@
 package info.archinnov.achilles.internal.cql;
 
 import static com.datastax.driver.core.DataType.Name.*;
-import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
+import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedType;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.helper.PropertyHelper;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.type.Counter;
 
 import java.lang.reflect.Method;
@@ -151,7 +151,7 @@ public class TypeMapper {
 	}
 
 	public static Class<?> toCompatibleJavaType(Class<?> originalClass) {
-		if (PropertyHelper.isSupportedType(originalClass)) {
+		if (isSupportedType(originalClass)) {
 			return originalClass;
 		} else {
 			return String.class;
