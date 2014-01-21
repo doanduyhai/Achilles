@@ -18,22 +18,39 @@
 package info.archinnov.achilles.type;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class TypedMap extends LinkedHashMap<String, Object> {
 
 	private static final long serialVersionUID = 1L;
 
-	@SuppressWarnings("unchecked")
-	public <T> T getTyped(String key) {
-		return (T) super.get(key);
+	public static TypedMap fromMap(Map<String, Object> source) {
+		TypedMap typedMap = new TypedMap();
+		typedMap.addAll(source);
+		return typedMap;
 	}
 
 	@SuppressWarnings("unchecked")
+	public <T> T getTyped(String key) {
+		T value = null;
+		if (super.containsKey(key) && super.get(key) != null) {
+			value = (T) super.get(key);
+			return value;
+		}
+		return value;
+	}
+
 	public <T> T getTypedOr(String key, T defaultValue) {
 		if (super.containsKey(key)) {
-			return (T) super.get(key);
+			return getTyped(key);
 		} else {
 			return defaultValue;
+		}
+	}
+
+	private void addAll(Map<String, Object> source) {
+		for (Map.Entry<String, Object> entry : source.entrySet()) {
+			super.put(entry.getKey(), entry.getValue());
 		}
 	}
 }

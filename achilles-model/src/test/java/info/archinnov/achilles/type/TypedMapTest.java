@@ -19,12 +19,15 @@ package info.archinnov.achilles.type;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 
 public class TypedMapTest {
 
 	@Test
-	public void should_get_typed() throws Exception {
+	public void should_get_typed_when_present() throws Exception {
 		TypedMap map = new TypedMap();
 		map.put("key", CounterBuilder.incr(10L));
 
@@ -35,12 +38,54 @@ public class TypedMapTest {
 	}
 
 	@Test
+	public void should_not_get_typed_when_absent() throws Exception {
+		TypedMap map = new TypedMap();
+
+		Counter counter = map.<Counter> getTyped("key");
+
+		assertThat(counter).isNull();
+	}
+
+	@Test
+	public void should_return_null_when_null_value() throws Exception {
+		TypedMap map = new TypedMap();
+		map.put("key", null);
+		Counter counter = map.<Counter> getTyped("key");
+
+		assertThat(counter).isNull();
+	}
+
+	@Test
 	public void should_get_typed_or_default() throws Exception {
+		TypedMap map = new TypedMap();
+		map.put("key", CounterBuilder.incr(11L));
+
+		Counter counter = map.<Counter> getTypedOr("key", CounterBuilder.incr(10L));
+
+		assertThat(counter).isNotNull();
+		assertThat(counter.get()).isEqualTo(11L);
+	}
+
+	@Test
+	public void should_return_default() throws Exception {
 		TypedMap map = new TypedMap();
 
 		Counter counter = map.<Counter> getTypedOr("key", CounterBuilder.incr(10L));
 
 		assertThat(counter).isNotNull();
 		assertThat(counter.get()).isEqualTo(10L);
+	}
+
+	@Test
+	public void should_build_typed_map_from_source() throws Exception {
+		Map<String, Object> source = new HashMap<>();
+		source.put("string", "value");
+		source.put("int", 10);
+
+		TypedMap typedMap = TypedMap.fromMap(source);
+
+		assertThat(typedMap.<String> getTyped("string")).isInstanceOf(String.class);
+		assertThat(typedMap.<Integer> getTyped("int")).isInstanceOf(Integer.class);
+
 	}
 }

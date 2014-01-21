@@ -17,37 +17,14 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,11 +51,11 @@ public class ArgumentExtractor {
 
 	private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
 
-	public List<String> initEntityPackages(Map<String, Object> configurationMap) {
+	public List<String> initEntityPackages(TypedMap configurationMap) {
 		log.trace("Extract entity packages from configuration map");
 
 		List<String> entityPackages = new ArrayList<String>();
-		String entityPackagesParameter = (String) configurationMap.get(ENTITY_PACKAGES_PARAM);
+		String entityPackagesParameter = configurationMap.getTyped(ENTITY_PACKAGES_PARAM);
 		if (StringUtils.isNotBlank(entityPackagesParameter)) {
 			entityPackages = Arrays.asList(StringUtils.split(entityPackagesParameter, ","));
 		}
@@ -86,7 +63,7 @@ public class ArgumentExtractor {
 		return entityPackages;
 	}
 
-	public ConfigurationContext initConfigContext(Map<String, Object> configurationMap) {
+	public ConfigurationContext initConfigContext(TypedMap configurationMap) {
 		log.trace("Build ConfigurationContext from configuration map");
 
 		ConfigurationContext configContext = new ConfigurationContext();
@@ -97,10 +74,10 @@ public class ArgumentExtractor {
 		return configContext;
 	}
 
-	boolean initForceTableCreation(Map<String, Object> configurationMap) {
+	boolean initForceTableCreation(TypedMap configurationMap) {
 		log.trace("Extract 'force table creation' from configuration map");
 
-		Boolean forceColumnFamilyCreation = (Boolean) configurationMap.get(FORCE_TABLE_CREATION_PARAM);
+		Boolean forceColumnFamilyCreation = configurationMap.getTyped(FORCE_TABLE_CREATION_PARAM);
 		if (forceColumnFamilyCreation != null) {
 			return forceColumnFamilyCreation;
 		} else {
@@ -108,13 +85,12 @@ public class ArgumentExtractor {
 		}
 	}
 
-	ObjectMapperFactory initObjectMapperFactory(Map<String, Object> configurationMap) {
+	ObjectMapperFactory initObjectMapperFactory(TypedMap configurationMap) {
 		log.trace("Extract object mapper factory from configuration map");
 
-		ObjectMapperFactory objectMapperFactory = (ObjectMapperFactory) configurationMap
-				.get(OBJECT_MAPPER_FACTORY_PARAM);
+		ObjectMapperFactory objectMapperFactory = configurationMap.getTyped(OBJECT_MAPPER_FACTORY_PARAM);
 		if (objectMapperFactory == null) {
-			ObjectMapper mapper = (ObjectMapper) configurationMap.get(OBJECT_MAPPER_PARAM);
+			ObjectMapper mapper = configurationMap.getTyped(OBJECT_MAPPER_PARAM);
 			if (mapper != null) {
 				objectMapperFactory = factoryFromMapper(mapper);
 			} else {
@@ -134,92 +110,89 @@ public class ArgumentExtractor {
 		};
 	}
 
-	ConsistencyLevel initDefaultReadConsistencyLevel(Map<String, Object> configMap) {
+	ConsistencyLevel initDefaultReadConsistencyLevel(TypedMap configMap) {
 		log.trace("Extract default read Consistency level from configuration map");
 
-		String defaultReadLevel = (String) configMap.get(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
+		String defaultReadLevel = configMap.getTyped(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
 	}
 
-	ConsistencyLevel initDefaultWriteConsistencyLevel(Map<String, Object> configMap) {
+	ConsistencyLevel initDefaultWriteConsistencyLevel(TypedMap configMap) {
 		log.trace("Extract default write Consistency level from configuration map");
 
-		String defaultWriteLevel = (String) configMap.get(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
+		String defaultWriteLevel = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
 		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
 	}
 
-	public Map<String, ConsistencyLevel> initReadConsistencyMap(Map<String, Object> configMap) {
+	public Map<String, ConsistencyLevel> initReadConsistencyMap(TypedMap configMap) {
 		log.trace("Extract read Consistency level map from configuration map");
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> readConsistencyMap = (Map<String, String>) configMap.get(CONSISTENCY_LEVEL_READ_MAP_PARAM);
+		Map<String, String> readConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_READ_MAP_PARAM);
 
 		return parseConsistencyLevelMap(readConsistencyMap);
 	}
 
-	public Map<String, ConsistencyLevel> initWriteConsistencyMap(Map<String, Object> configMap) {
+	public Map<String, ConsistencyLevel> initWriteConsistencyMap(TypedMap configMap) {
 		log.trace("Extract write Consistency level map from configuration map");
 
-		@SuppressWarnings("unchecked")
-		Map<String, String> writeConsistencyMap = (Map<String, String>) configMap
-				.get(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
+		Map<String, String> writeConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
 
-	public Cluster initCluster(Map<String, Object> configurationMap) {
+	public Cluster initCluster(TypedMap configurationMap) {
 		log.trace("Extract or init cluster from configuration map");
 
-		Cluster cluster = (Cluster) configurationMap.get(CLUSTER_PARAM);
+		Cluster cluster = configurationMap.getTyped(CLUSTER_PARAM);
 		if (cluster == null) {
-			String contactPoints = (String) configurationMap.get(CONNECTION_CONTACT_POINTS_PARAM);
-			Integer port = (Integer) configurationMap.get(CONNECTION_CQL_PORT_PARAM);
+			String contactPoints = configurationMap.getTyped(CONNECTION_CONTACT_POINTS_PARAM);
+			Integer port = configurationMap.getTyped(CONNECTION_CQL_PORT_PARAM);
 
 			ProtocolOptions.Compression compression = ProtocolOptions.Compression.SNAPPY;
 			if (configurationMap.containsKey(COMPRESSION_TYPE)) {
-				compression = (ProtocolOptions.Compression) configurationMap.get(COMPRESSION_TYPE);
+				compression = configurationMap.getTyped(COMPRESSION_TYPE);
 			}
 
 			RetryPolicy retryPolicy = Policies.defaultRetryPolicy();
 			if (configurationMap.containsKey(RETRY_POLICY)) {
-				retryPolicy = (RetryPolicy) configurationMap.get(RETRY_POLICY);
+				retryPolicy = configurationMap.getTyped(RETRY_POLICY);
 			}
 
 			LoadBalancingPolicy loadBalancingPolicy = Policies.defaultLoadBalancingPolicy();
 			if (configurationMap.containsKey(LOAD_BALANCING_POLICY)) {
-				loadBalancingPolicy = (LoadBalancingPolicy) configurationMap.get(LOAD_BALANCING_POLICY);
+				loadBalancingPolicy = configurationMap.getTyped(LOAD_BALANCING_POLICY);
 			}
 
 			ReconnectionPolicy reconnectionPolicy = Policies.defaultReconnectionPolicy();
 			if (configurationMap.containsKey(RECONNECTION_POLICY)) {
-				reconnectionPolicy = (ReconnectionPolicy) configurationMap.get(RECONNECTION_POLICY);
+				reconnectionPolicy = configurationMap.getTyped(RECONNECTION_POLICY);
 			}
 
 			String username = null;
 			String password = null;
 			if (configurationMap.containsKey(USERNAME) && configurationMap.containsKey(PASSWORD)) {
-				username = (String) configurationMap.get(USERNAME);
-				password = (String) configurationMap.get(PASSWORD);
+				username = configurationMap.getTyped(USERNAME);
+				password = configurationMap.getTyped(PASSWORD);
 			}
 
 			boolean disableJmx = false;
 			if (configurationMap.containsKey(DISABLE_JMX)) {
-				disableJmx = (Boolean) configurationMap.get(DISABLE_JMX);
+				disableJmx = configurationMap.getTyped(DISABLE_JMX);
 			}
 
 			boolean disableMetrics = false;
 			if (configurationMap.containsKey(DISABLE_METRICS)) {
-				disableMetrics = (Boolean) configurationMap.get(DISABLE_METRICS);
+				disableMetrics = configurationMap.getTyped(DISABLE_METRICS);
 			}
 
 			boolean sslEnabled = false;
 			if (configurationMap.containsKey(SSL_ENABLED)) {
-				sslEnabled = (Boolean) configurationMap.get(SSL_ENABLED);
+				sslEnabled = configurationMap.getTyped(SSL_ENABLED);
 			}
 
 			SSLOptions sslOptions = null;
 			if (configurationMap.containsKey(SSL_OPTIONS)) {
-				sslOptions = (SSLOptions) configurationMap.get(SSL_OPTIONS);
+				sslOptions = configurationMap.getTyped(SSL_OPTIONS);
 			}
 
 			Validator
@@ -256,11 +229,11 @@ public class ArgumentExtractor {
 		return cluster;
 	}
 
-	public Session initSession(Cluster cluster, Map<String, Object> configurationMap) {
+	public Session initSession(Cluster cluster, TypedMap configurationMap) {
 		log.trace("Extract or init Session from configuration map");
 
-		Session nativeSession = (Session) configurationMap.get(NATIVE_SESSION_PARAM);
-		String keyspace = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
+		Session nativeSession = configurationMap.getTyped(NATIVE_SESSION_PARAM);
+		String keyspace = configurationMap.getTyped(KEYSPACE_NAME_PARAM);
 		Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 
 		if (nativeSession == null) {
@@ -294,11 +267,9 @@ public class ArgumentExtractor {
 		return level;
 	}
 
-	public List<Interceptor<?>> initInterceptors(Map<String, Object> configurationMap) {
+	public List<Interceptor<?>> initInterceptors(TypedMap configurationMap) {
 
-		@SuppressWarnings("unchecked")
-		List<Interceptor<?>> interceptors = (List<Interceptor<?>>) configurationMap
-				.get(EVENT_INTERCEPTORS_PARAM);
+		List<Interceptor<?>> interceptors = configurationMap.getTyped(EVENT_INTERCEPTORS_PARAM);
 		if (interceptors == null) {
 			interceptors = new ArrayList<>();
 		}

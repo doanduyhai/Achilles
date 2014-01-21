@@ -16,47 +16,25 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
+import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.SchemaContext;
 import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +54,7 @@ public class PersistenceManagerFactory {
 	ConfigurationContext configContext;
 	DaoContext daoContext;
 	PersistenceContextFactory contextFactory;
-	Map<String, Object> configurationMap;
+	TypedMap configurationMap;
 
 	private ArgumentExtractor argumentExtractor = new ArgumentExtractor();
 	private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
@@ -93,11 +71,11 @@ public class PersistenceManagerFactory {
 				"Configuration map for PersistenceManagerFactory should not be null");
 		Validator.validateNotEmpty(configurationMap,
 				"Configuration map for PersistenceManagerFactory should not be empty");
-		this.configurationMap = configurationMap;
+		this.configurationMap = TypedMap.fromMap(configurationMap);
 	}
 
 	PersistenceManagerFactory bootstrap() {
-		final String keyspaceName = (String) configurationMap.get(KEYSPACE_NAME_PARAM);
+		final String keyspaceName = configurationMap.getTyped(KEYSPACE_NAME_PARAM);
 
 		log.info("Bootstrapping Achilles PersistenceManagerFactory for keyspace {}", keyspaceName);
 
@@ -105,24 +83,25 @@ public class PersistenceManagerFactory {
 		configContext = argumentExtractor.initConfigContext(configurationMap);
 		Cluster cluster = argumentExtractor.initCluster(configurationMap);
 		Session session = argumentExtractor.initSession(cluster, configurationMap);
-        List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
+		List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
 
 		List<Class<?>> candidateClasses = bootstrapper.discoverEntities(entityPackages);
 
 		boolean hasSimpleCounter = false;
-		if (StringUtils.isNotBlank((String) configurationMap.get(ENTITY_PACKAGES_PARAM))) {
-			Pair<Map<Class<?>, EntityMeta>, Boolean> pair = bootstrapper.buildMetaDatas(configContext, candidateClasses);
+		if (isNotBlank(configurationMap.<String> getTyped(ENTITY_PACKAGES_PARAM))) {
+			Pair<Map<Class<?>, EntityMeta>, Boolean> pair = bootstrapper
+					.buildMetaDatas(configContext, candidateClasses);
 			entityMetaMap = pair.left;
 			hasSimpleCounter = pair.right;
 		}
-        bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+		bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
 
-        SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
+		SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
 				keyspaceName, cluster, entityMetaMap, hasSimpleCounter);
-        bootstrapper.validateOrCreateTables(schemaContext);
+		bootstrapper.validateOrCreateTables(schemaContext);
 
-        daoContext = bootstrapper.buildDaoContext(session, entityMetaMap, hasSimpleCounter);
-        contextFactory = new PersistenceContextFactory(daoContext, configContext, entityMetaMap);
+		daoContext = bootstrapper.buildDaoContext(session, entityMetaMap, hasSimpleCounter);
+		contextFactory = new PersistenceContextFactory(daoContext, configContext, entityMetaMap);
 		registerShutdownHook(cluster);
 
 		return this;
@@ -156,11 +135,11 @@ public class PersistenceManagerFactory {
 
 	private void registerShutdownHook(final Cluster cluster) {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                cluster.shutdown();
-            }
-        });
+			@Override
+			public void run() {
+				cluster.shutdown();
+			}
+		});
 	}
 
 	public static class PersistenceManagerFactoryBuilder {
