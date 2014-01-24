@@ -16,6 +16,7 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing;
 
+import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedType;
 import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.annotations.Column;
@@ -41,6 +42,11 @@ import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,6 +82,31 @@ public class PropertyParserTest {
 		configContext = new ConfigurationContext();
 		configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
 		configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
+	}
+
+	@Test
+	public void should_determine_allowed_types() throws Exception {
+		assertThat(isSupportedType(byte.class)).isTrue();
+		assertThat(isSupportedType(Byte.class)).isTrue();
+		assertThat(isSupportedType(byte[].class)).isTrue();
+		assertThat(isSupportedType(ByteBuffer.class)).isTrue();
+		assertThat(isSupportedType(Boolean.class)).isTrue();
+		assertThat(isSupportedType(boolean.class)).isTrue();
+		assertThat(isSupportedType(Date.class)).isTrue();
+		assertThat(isSupportedType(Double.class)).isTrue();
+		assertThat(isSupportedType(double.class)).isTrue();
+		assertThat(isSupportedType(BigDecimal.class)).isTrue();
+		assertThat(isSupportedType(Float.class)).isTrue();
+		assertThat(isSupportedType(float.class)).isTrue();
+		assertThat(isSupportedType(InetAddress.class)).isTrue();
+		assertThat(isSupportedType(BigInteger.class)).isTrue();
+		assertThat(isSupportedType(Integer.class)).isTrue();
+		assertThat(isSupportedType(int.class)).isTrue();
+		assertThat(isSupportedType(Long.class)).isTrue();
+		assertThat(isSupportedType(long.class)).isTrue();
+		assertThat(isSupportedType(String.class)).isTrue();
+		assertThat(isSupportedType(UUID.class)).isTrue();
+		assertThat(isSupportedType(Object.class)).isFalse();
 	}
 
 	@Test

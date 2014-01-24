@@ -20,12 +20,6 @@
 		<level value="DEBUG" />
 	</logger>
 	
-	
-	<logger name="info.archinnov.achilles.embedded">
-		<level value="INFO" />
-	</logger>	
-	
-	
 	<logger name="info.archinnov.achilles">
 		<level value="INFO" />
 	</logger>

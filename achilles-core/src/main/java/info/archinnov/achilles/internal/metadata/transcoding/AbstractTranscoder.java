@@ -21,6 +21,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,7 +120,11 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 
 	Object encodeInternal(Class<?> sourceType, Object entityValue) {
 		log.trace("Encode {} to CQL type {}", entityValue, sourceType);
-		if (isSupportedType(sourceType)) {
+		if (byte.class.isAssignableFrom(sourceType) || Byte.class.isAssignableFrom(sourceType)) {
+			return ByteBuffer.wrap(new byte[] { (byte) entityValue });
+		} else if (byte[].class.isAssignableFrom(sourceType)) {
+			return ByteBuffer.wrap((byte[]) entityValue);
+		} else if (isSupportedType(sourceType)) {
 			return entityValue;
 		} else if (sourceType.isEnum()) {
 			return ((Enum<?>) entityValue).name();
@@ -131,7 +136,16 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	Object decodeInternal(Class<?> targetType, Object cassandraValue) {
 		log.trace("Decode {} from CQL type {}", cassandraValue, targetType);
-		if (isSupportedType(targetType)) {
+		if (byte.class.isAssignableFrom(targetType) || Byte.class.isAssignableFrom(targetType)) {
+			byte[] byteBuffer = readByteBuffer(cassandraValue);
+			if (byteBuffer.length < 1) {
+				throw new AchillesException("Error while decoding value '" + cassandraValue + "' to type '"
+						+ targetType.getCanonicalName() + "'");
+			}
+			return byteBuffer[0];
+		} else if (byte[].class.isAssignableFrom(targetType)) {
+			return readByteBuffer(cassandraValue);
+		} else if (isSupportedType(targetType)) {
 			return cassandraValue;
 		} else if (targetType.isEnum()) {
 			return Enum.valueOf((Class) targetType, (String) cassandraValue);
@@ -141,6 +155,13 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 			throw new AchillesException("Error while decoding value '" + cassandraValue + "' to type '"
 					+ targetType.getCanonicalName() + "'");
 		}
+	}
+
+	private byte[] readByteBuffer(Object cassandraValue) {
+		ByteBuffer byteBuffer = (ByteBuffer) cassandraValue;
+		byte[] bytes = new byte[byteBuffer.remaining()];
+		byteBuffer.get(bytes);
+		return bytes;
 	}
 
 	@Override

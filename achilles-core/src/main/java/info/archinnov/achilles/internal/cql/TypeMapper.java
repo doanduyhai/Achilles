@@ -45,27 +45,53 @@ public class TypeMapper {
 	private static final Map<Class<?>, Method> rowPropertyInvoker = new HashMap<Class<?>, Method>();
 
 	static {
-		java2CQL.put(String.class, TEXT);
-		java2CQL.put(Long.class, BIGINT);
-		java2CQL.put(long.class, BIGINT);
+		// Bytes
+		java2CQL.put(byte.class, BLOB);
+		java2CQL.put(Byte.class, BLOB);
+		java2CQL.put(byte[].class, BLOB);
 		java2CQL.put(ByteBuffer.class, BLOB);
+
+		// Boolean
 		java2CQL.put(Boolean.class, BOOLEAN);
 		java2CQL.put(boolean.class, BOOLEAN);
-		java2CQL.put(BigDecimal.class, DECIMAL);
+
+		// Date
+		java2CQL.put(Date.class, TIMESTAMP);
+		java2CQL.put(InternalTimeUUID.class, TIMEUUID);
+
+		// Double
 		java2CQL.put(Double.class, DOUBLE);
 		java2CQL.put(double.class, DOUBLE);
+
+		// Float
 		java2CQL.put(Float.class, FLOAT);
 		java2CQL.put(float.class, FLOAT);
+		java2CQL.put(BigDecimal.class, DECIMAL);
+
+		// InetAddress
 		java2CQL.put(InetAddress.class, INET);
+
+		// Integer
+		java2CQL.put(BigInteger.class, VARINT);
 		java2CQL.put(Integer.class, INT);
 		java2CQL.put(int.class, INT);
-		java2CQL.put(BigInteger.class, VARINT);
-		java2CQL.put(Date.class, TIMESTAMP);
+
+		// Long
+		java2CQL.put(Long.class, BIGINT);
+		java2CQL.put(long.class, BIGINT);
+
+		// String
+		java2CQL.put(String.class, TEXT);
+
+		// UUID
 		java2CQL.put(UUID.class, UUID);
-		java2CQL.put(InternalTimeUUID.class, TIMEUUID);
+
+		// Collections & Map
 		java2CQL.put(List.class, LIST);
 		java2CQL.put(Set.class, SET);
 		java2CQL.put(Map.class, MAP);
+
+		// Counter
 		java2CQL.put(Counter.class, COUNTER);
 
 		cql2Java.put(ASCII, String.class);
@@ -90,34 +116,46 @@ public class TypeMapper {
 		cql2Java.put(CUSTOM, ByteBuffer.class);
 
 		try {
+			// Bytes
+			rowPropertyInvoker.put(byte.class, Row.class.getDeclaredMethod("getBytes", String.class));
+			rowPropertyInvoker.put(Byte.class, Row.class.getDeclaredMethod("getBytes", String.class));
+			rowPropertyInvoker.put(byte[].class, Row.class.getDeclaredMethod("getBytes", String.class));
+			rowPropertyInvoker.put(ByteBuffer.class, Row.class.getDeclaredMethod("getBytes", String.class));
+
+			// Boolean
 			rowPropertyInvoker.put(Boolean.class, Row.class.getDeclaredMethod("getBool", String.class));
 			rowPropertyInvoker.put(boolean.class, Row.class.getDeclaredMethod("getBool", String.class));
 
-			rowPropertyInvoker.put(Integer.class, Row.class.getDeclaredMethod("getInt", String.class));
-			rowPropertyInvoker.put(int.class, Row.class.getDeclaredMethod("getInt", String.class));
-
-			rowPropertyInvoker.put(Long.class, Row.class.getDeclaredMethod("getLong", String.class));
-			rowPropertyInvoker.put(long.class, Row.class.getDeclaredMethod("getLong", String.class));
-
+			// Date
 			rowPropertyInvoker.put(Date.class, Row.class.getDeclaredMethod("getDate", String.class));
 
-			rowPropertyInvoker.put(Float.class, Row.class.getDeclaredMethod("getFloat", String.class));
-			rowPropertyInvoker.put(float.class, Row.class.getDeclaredMethod("getFloat", String.class));
-
+			// Double
 			rowPropertyInvoker.put(Double.class, Row.class.getDeclaredMethod("getDouble", String.class));
 			rowPropertyInvoker.put(double.class, Row.class.getDeclaredMethod("getDouble", String.class));
 
-			rowPropertyInvoker.put(ByteBuffer.class, Row.class.getDeclaredMethod("getBytes", String.class));
-
-			rowPropertyInvoker.put(String.class, Row.class.getDeclaredMethod("getString", String.class));
-
-			rowPropertyInvoker.put(BigInteger.class, Row.class.getDeclaredMethod("getVarint", String.class));
-
+			// Float
+			rowPropertyInvoker.put(Float.class, Row.class.getDeclaredMethod("getFloat", String.class));
+			rowPropertyInvoker.put(float.class, Row.class.getDeclaredMethod("getFloat", String.class));
 			rowPropertyInvoker.put(BigDecimal.class, Row.class.getDeclaredMethod("getDecimal", String.class));
 
-			rowPropertyInvoker.put(UUID.class, Row.class.getDeclaredMethod("getUUID", String.class));
-
+			// InetAddress
 			rowPropertyInvoker.put(InetAddress.class, Row.class.getDeclaredMethod("getInet", String.class));
+
+			// Integer
+			rowPropertyInvoker.put(BigInteger.class, Row.class.getDeclaredMethod("getVarint", String.class));
+			rowPropertyInvoker.put(Integer.class, Row.class.getDeclaredMethod("getInt", String.class));
+			rowPropertyInvoker.put(int.class, Row.class.getDeclaredMethod("getInt", String.class));
+
+			// Long
+			rowPropertyInvoker.put(Long.class, Row.class.getDeclaredMethod("getLong", String.class));
+			rowPropertyInvoker.put(long.class, Row.class.getDeclaredMethod("getLong", String.class));
+
+			// String
+			rowPropertyInvoker.put(String.class, Row.class.getDeclaredMethod("getString", String.class));
+
+			// UUID
+			rowPropertyInvoker.put(UUID.class, Row.class.getDeclaredMethod("getUUID", String.class));
+			rowPropertyInvoker.put(InternalTimeUUID.class, Row.class.getDeclaredMethod("getUUID", String.class));
 
 		} catch (Exception e) {
 			throw new AchillesException("Cannot find getter in '" + Row.class.getCanonicalName() + "' ", e);

@@ -177,6 +177,7 @@ public class QueryIT {
 		CompleteBean found2 = actual.get(1);
 
 		Factory factory1 = (Factory) found1;
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
@@ -185,6 +186,7 @@ public class QueryIT {
 		assertThat(target1.getWelcomeTweet()).isNull();
 
 		Factory factory2 = (Factory) found1;
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
@@ -261,6 +263,7 @@ public class QueryIT {
 		CompleteBean found2 = actual.get(1);
 
 		Factory factory1 = (Factory) found1;
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
@@ -272,6 +275,7 @@ public class QueryIT {
 		assertThat(target1.getWelcomeTweet()).isNull();
 
 		Factory factory2 = (Factory) found1;
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
 
 		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
@@ -484,6 +488,7 @@ public class QueryIT {
 		CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
 
 		Factory factory1 = (Factory) actual;
+		@SuppressWarnings("unchecked")
 		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
 
 		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();

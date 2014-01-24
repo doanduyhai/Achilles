@@ -142,11 +142,9 @@ public class EventInterceptorIT {
 		}
 	};
 
-	@SuppressWarnings("unchecked")
 	private List<Interceptor<CompleteBean>> interceptors = Arrays.asList(prePersist, postPersist, preUpdate,
 			postUpdate, preRemove, postLoad);
 
-	@SuppressWarnings("unchecked")
 	private List<Interceptor<CompleteBean>> postRemoveInterceptors = Arrays.asList(postRemove);
 
 	private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
@@ -160,7 +158,6 @@ public class EventInterceptorIT {
 			.withEntityPackages(CompleteBean.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace2")
 			.withEventInterceptors(postRemoveInterceptors).buildPersistenceManager();
 
-	@SuppressWarnings("unchecked")
 	private PersistenceManager manager3 = CassandraEmbeddedServerBuilder
 			.withEntityPackages(ClusteredEntity.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace3")
 			.withEventInterceptors(Arrays.asList(postLoadForClustered)).buildPersistenceManager();

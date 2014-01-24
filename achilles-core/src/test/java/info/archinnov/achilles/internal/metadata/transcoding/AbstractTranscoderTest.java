@@ -18,15 +18,22 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.UserBean;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,17 +44,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.metadata.transcoding.AbstractTranscoder;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.UserBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractTranscoderTest {
@@ -74,6 +73,36 @@ public class AbstractTranscoderTest {
 	}
 
 	@Test
+	public void should_encode_primitive_byte_type() throws Exception {
+
+		Object actual = transcoder.encodeInternal(byte.class, ((byte) 7));
+
+		assertThat(actual).isInstanceOf(ByteBuffer.class);
+		ByteBuffer byteBuffer = (ByteBuffer) actual;
+		assertThat(byteBuffer.array()[0]).isEqualTo((byte) 7);
+	}
+
+	@Test
+	public void should_encode_object_byte_type() throws Exception {
+
+		Object actual = transcoder.encodeInternal(Byte.class, new Byte((byte) 7));
+
+		assertThat(actual).isInstanceOf(ByteBuffer.class);
+		ByteBuffer byteBuffer = (ByteBuffer) actual;
+		assertThat(byteBuffer.array()[0]).isEqualTo((byte) 7);
+	}
+
+	@Test
+	public void should_encode_byte_array_type() throws Exception {
+
+		Object actual = transcoder.encodeInternal(byte[].class, new byte[] { (byte) 7 });
+
+		assertThat(actual).isInstanceOf(ByteBuffer.class);
+		ByteBuffer byteBuffer = (ByteBuffer) actual;
+		assertThat(byteBuffer.array()[0]).isEqualTo((byte) 7);
+	}
+
+	@Test
 	public void should_encode_supported_type() throws Exception {
 
 		Object actual = transcoder.encodeInternal(String.class, "value");
@@ -95,6 +124,44 @@ public class AbstractTranscoderTest {
 		Object actual = transcoder.encodeInternal(UserBean.class, bean);
 
 		assertThat(actual).isEqualTo("json_bean");
+	}
+
+	@Test
+	public void should_decode_primitive_byte_type() throws Exception {
+		// Given
+		ByteBuffer cassandraValue = ByteBuffer.wrap(new byte[] { (byte) 7 });
+
+		// When
+		Object actual = transcoder.decodeInternal(byte.class, cassandraValue);
+
+		// Then
+		assertThat(actual).isInstanceOf(Byte.class).isEqualTo((byte) 7);
+	}
+
+	@Test
+	public void should_decode_object_byte_type() throws Exception {
+		// Given
+		ByteBuffer cassandraValue = ByteBuffer.wrap(new byte[] { (byte) 7 });
+
+		// When
+		Object actual = transcoder.decodeInternal(Byte.class, cassandraValue);
+
+		// Then
+		assertThat(actual).isInstanceOf(Byte.class).isEqualTo((byte) 7);
+	}
+
+	@Test
+	public void should_decode_byte_array_type() throws Exception {
+		// Given
+		ByteBuffer cassandraValue = ByteBuffer.wrap(new byte[] { (byte) 7 });
+
+		// When
+		Object actual = transcoder.decodeInternal(byte[].class, cassandraValue);
+
+		// Then
+		assertThat(actual).isInstanceOf(byte[].class);
+		byte[] byteArray = (byte[]) actual;
+		assertThat(byteArray[0]).isEqualTo((byte) 7);
 	}
 
 	@Test

@@ -42,7 +42,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashSet;
@@ -62,6 +64,8 @@ public class PropertyParser {
 
 	static {
 		// Bytes
+		allowedTypes.add(byte.class);
+		allowedTypes.add(Byte.class);
 		allowedTypes.add(byte[].class);
 		allowedTypes.add(ByteBuffer.class);
 
@@ -76,12 +80,13 @@ public class PropertyParser {
 		allowedTypes.add(Double.class);
 		allowedTypes.add(double.class);
 
-		// Char
-		allowedTypes.add(Character.class);
-
 		// Float
+		allowedTypes.add(BigDecimal.class);
 		allowedTypes.add(Float.class);
 		allowedTypes.add(float.class);
+
+		// InetAddress
+		allowedTypes.add(InetAddress.class);
 
 		// Integer
 		allowedTypes.add(BigInteger.class);
@@ -91,10 +96,6 @@ public class PropertyParser {
 		// Long
 		allowedTypes.add(Long.class);
 		allowedTypes.add(long.class);
-
-		// Short
-		allowedTypes.add(Short.class);
-		allowedTypes.add(short.class);
 
 		// String
 		allowedTypes.add(String.class);
