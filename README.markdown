@@ -74,6 +74,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
-[Documentation]: https://github.com/doanduyhai/Achilles/documentation/versions
+[Documentation]: https://github.com/doanduyhai/Achilles/tree/master/documentation/versions
 [Datastax Java Driver]: https://github.com/datastax/java-driver
 [mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
