@@ -16,17 +16,17 @@
  */
 package info.archinnov.achilles.junit;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.lang.StringUtils;
-import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.TypedMap;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.datastax.driver.core.Session;
 
 public class AchillesResource extends AchillesTestResource {
 
@@ -38,33 +38,12 @@ public class AchillesResource extends AchillesTestResource {
 
 	private final Session session;
 
-
-	AchillesResource(String keyspaceName,String entityPackages, String... tables) {
+	AchillesResource(String keyspaceName, String entityPackages, String... tables) {
 		super(tables);
 
-        String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-
-        Map<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
-				 KEYSPACE_NAME, keyspaceToUse,KEYSPACE_DURABLE_WRITE, false);
-
-        config = addEntityPackagesIfNeeded(entityPackages, config);
-
-        server = new CassandraEmbeddedServer(config);
-		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-	}
-
-    AchillesResource(String keyspaceName,String entityPackages, Steps cleanUpSteps, String... tables) {
-		super(cleanUpSteps, tables);
-
-        String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-
-        Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
-		Map<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, true,
-				KEYSPACE_NAME, keyspaceToUse, KEYSPACE_DURABLE_WRITE, false);
-
-        config = addEntityPackagesIfNeeded(entityPackages, config);
+		String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
+				: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+		TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
 
 		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -72,15 +51,39 @@ public class AchillesResource extends AchillesTestResource {
 		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
 	}
 
-    private Map<String, Object> addEntityPackagesIfNeeded(String entityPackages, Map<String, Object> config) {
-        if(StringUtils.isNotBlank(entityPackages)) {
-            final Map<String, Object> newConfig = new HashMap<String, Object>();
-            newConfig.putAll(config);
-            newConfig.put(ENTITY_PACKAGES,entityPackages);
-            config = newConfig;
-        }
-        return config;
-    }
+	AchillesResource(String keyspaceName, String entityPackages, Steps cleanUpSteps, String... tables) {
+		super(cleanUpSteps, tables);
+
+		String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
+				: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+
+		Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
+		TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
+
+		server = new CassandraEmbeddedServer(config);
+		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+	}
+
+	private TypedMap buildConfigMap(String entityPackages, String keyspaceToUse) {
+		TypedMap config = new TypedMap();
+		config.put(CLEAN_CASSANDRA_DATA_FILES, true);
+		config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
+		config.put(KEYSPACE_DURABLE_WRITE, false);
+		config = addEntityPackagesIfNeeded(entityPackages, config);
+		return config;
+	}
+
+	private TypedMap addEntityPackagesIfNeeded(String entityPackages, TypedMap config) {
+		if (StringUtils.isNotBlank(entityPackages)) {
+			final TypedMap newConfig = new TypedMap();
+			newConfig.putAll(config);
+			newConfig.put(ENTITY_PACKAGES_PARAM, entityPackages);
+			config = newConfig;
+		}
+		return config;
+	}
 
 	/**
 	 * Return a singleton PersistenceManagerFactory

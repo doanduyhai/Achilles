@@ -8,7 +8,9 @@
 
 package info.archinnov.achilles.embedded;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
+import info.archinnov.achilles.type.TypedMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,15 +36,15 @@ public class CassandraConfig {
 	private Map<String, Object> parameters;
 	private Config config = new Config();
 
-	public CassandraConfig(Map<String, Object> parameters) {
+	public CassandraConfig(TypedMap parameters) {
 		this.parameters = parameters;
-		config.cluster_name = (String) parameters.get(CLUSTER_NAME);
-		this.configFile = new File((String) parameters.get(CONFIG_YAML_FILE));
+		config.cluster_name = parameters.getTyped(CLUSTER_NAME_PARAM);
+		this.configFile = new File(parameters.<String> getTyped(CONFIG_YAML_FILE));
 
-		config.rpc_port = (Integer) parameters.get(CASSANDRA_THRIFT_PORT);
-		config.native_transport_port = (Integer) parameters.get(CASSANDRA_CQL_PORT);
-		config.storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_PORT);
-		config.ssl_storage_port = (Integer) parameters.get(CASSANDRA_STORAGE_SSL_PORT);
+		config.rpc_port = parameters.getTyped(CASSANDRA_THRIFT_PORT);
+		config.native_transport_port = parameters.getTyped(CASSANDRA_CQL_PORT);
+		config.storage_port = parameters.getTyped(CASSANDRA_STORAGE_PORT);
+		config.ssl_storage_port = parameters.getTyped(CASSANDRA_STORAGE_SSL_PORT);
 
 		config.hinted_handoff_enabled = true;
 		config.max_hint_window_in_ms = 10800000; // 3 hours

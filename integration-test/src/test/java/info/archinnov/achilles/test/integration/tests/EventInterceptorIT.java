@@ -16,8 +16,10 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.interceptor.Event.*;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.interceptor.Event;
@@ -39,6 +41,7 @@ import org.junit.rules.ExpectedException;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableMap;
 
 public class EventInterceptorIT {
 	@Rule
@@ -149,18 +152,25 @@ public class EventInterceptorIT {
 
 	private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
 			.withEntityPackages(CompleteBean.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace1")
-			.withEventInterceptors(interceptors).buildPersistenceManagerFactory();
+			.withAchillesConfigParams(ImmutableMap.<String, Object> of(EVENT_INTERCEPTORS_PARAM, interceptors))
+			.buildPersistenceManagerFactory();
 
 	private PersistenceManager manager = pmf.createPersistenceManager();
 	private Session session = manager.getNativeSession();
 
 	private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
-			.withEntityPackages(CompleteBean.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace2")
-			.withEventInterceptors(postRemoveInterceptors).buildPersistenceManager();
+			.withEntityPackages(CompleteBean.class.getPackage().getName())
+			.withKeyspaceName("interceptor_keyspace2")
+			.withAchillesConfigParams(
+					ImmutableMap.<String, Object> of(EVENT_INTERCEPTORS_PARAM, postRemoveInterceptors))
+			.buildPersistenceManager();
 
 	private PersistenceManager manager3 = CassandraEmbeddedServerBuilder
-			.withEntityPackages(ClusteredEntity.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace3")
-			.withEventInterceptors(Arrays.asList(postLoadForClustered)).buildPersistenceManager();
+			.withEntityPackages(ClusteredEntity.class.getPackage().getName())
+			.withKeyspaceName("interceptor_keyspace3")
+			.withAchillesConfigParams(
+					ImmutableMap.<String, Object> of(EVENT_INTERCEPTORS_PARAM, asList(postLoadForClustered)))
+			.buildPersistenceManager();
 
 	@Test
 	public void should_apply_persist_interceptors() throws Exception {

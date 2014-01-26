@@ -28,8 +28,8 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityParser;
 import info.archinnov.achilles.internal.metadata.parsing.PropertyParser;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,8 +63,7 @@ public class AchillesBootstrapper {
 		return new ArrayList<>(candidateClasses);
 	}
 
-	public Pair<Map<Class<?>, EntityMeta>, Boolean> buildMetaDatas(ConfigurationContext configContext,
-			List<Class<?>> entities) {
+	public ParsingResult buildMetaDatas(ConfigurationContext configContext, List<Class<?>> entities) {
 		log.debug("Build meta data for candidate entities");
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
 		boolean hasSimpleCounter = false;
@@ -72,9 +71,14 @@ public class AchillesBootstrapper {
 			EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
 			EntityMeta entityMeta = entityParser.parseEntity(context);
 			entityMetaMap.put(entityClass, entityMeta);
-			hasSimpleCounter = context.hasSimpleCounter() || hasSimpleCounter;
+
+			hasSimpleCounter = hasSimpleCounter || context.hasSimpleCounter();
+			boolean shouldValidateBean = configContext.isClassConstrained(entityClass);
+			if (shouldValidateBean) {
+				configContext.addBeanValidationInterceptor(entityMeta);
+			}
 		}
-		return Pair.create(entityMetaMap, hasSimpleCounter);
+		return new ParsingResult(entityMetaMap, hasSimpleCounter);
 	}
 
 	public void validateOrCreateTables(SchemaContext schemaContext) {

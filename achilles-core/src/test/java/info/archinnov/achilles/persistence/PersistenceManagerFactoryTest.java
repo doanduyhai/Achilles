@@ -27,7 +27,7 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.SchemaContext;
 import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.type.Pair;
+import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.Arrays;
@@ -97,7 +97,7 @@ public class PersistenceManagerFactoryTest {
 		List<Class<?>> candidateClasses = Arrays.asList();
 		List<Interceptor<?>> interceptors = Arrays.asList();
 		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
-		Pair<Map<Class<?>, EntityMeta>, Boolean> pair = Pair.create(entityMetaMap, true);
+		ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
 
 		// When
 		when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
@@ -109,7 +109,7 @@ public class PersistenceManagerFactoryTest {
 		when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
 		when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
 		when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
-		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(pair);
+		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
 		when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
 		when(boostrapper.buildDaoContext(session, entityMetaMap, true)).thenReturn(daoContext);
 

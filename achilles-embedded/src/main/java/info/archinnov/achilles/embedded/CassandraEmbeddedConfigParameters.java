@@ -1,7 +1,8 @@
 package info.archinnov.achilles.embedded;
 
-import java.util.HashMap;
-import java.util.Map;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.type.TypedMap;
+
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -31,15 +32,7 @@ public class CassandraEmbeddedConfigParameters {
 
 	public static final String CASSANDRA_STORAGE_SSL_PORT = "storageSSLPort";
 
-	public static final String CLUSTER_NAME = "clusterName";
-
-	public static final String KEYSPACE_NAME = "keyspaceName";
-
-	public static final String EVENT_INTERCEPTORS = "eventInterceptors";
-
 	public static final String KEYSPACE_DURABLE_WRITE = "keyspaceDurableWrite";
-
-	public static final String ENTITY_PACKAGES = "entityPackages";
 
 	public static final String BUILD_NATIVE_SESSION_ONLY = "buildNativeSessionOnly";
 
@@ -73,16 +66,16 @@ public class CassandraEmbeddedConfigParameters {
 	 * Default values
 	 */
 
-	static Map<String, Object> mergeWithDefaultParameters(Map<String, Object> parameters) {
-		Map<String, Object> defaultParams = new HashMap<>();
+	static TypedMap mergeWithDefaultParameters(TypedMap parameters) {
+		TypedMap defaultParams = new TypedMap();
 		defaultParams.put(CLEAN_CASSANDRA_DATA_FILES, true);
 		defaultParams.put(CLEAN_CASSANDRA_CONFIG_FILE, true);
 		defaultParams.put(DATA_FILE_FOLDER, DEFAULT_ACHILLES_TEST_DATA_FOLDER);
 		defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
 		defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
 		defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
-		defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
-		defaultParams.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
+		defaultParams.put(ConfigurationParameters.CLUSTER_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
+		defaultParams.put(ConfigurationParameters.KEYSPACE_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
 		defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
 		defaultParams.put(BUILD_NATIVE_SESSION_ONLY, false);
 		defaultParams.putAll(parameters);

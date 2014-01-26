@@ -26,9 +26,9 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.SchemaContext;
 import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.Pair;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.HashMap;
@@ -89,10 +89,9 @@ public class PersistenceManagerFactory {
 
 		boolean hasSimpleCounter = false;
 		if (isNotBlank(configurationMap.<String> getTyped(ENTITY_PACKAGES_PARAM))) {
-			Pair<Map<Class<?>, EntityMeta>, Boolean> pair = bootstrapper
-					.buildMetaDatas(configContext, candidateClasses);
-			entityMetaMap = pair.left;
-			hasSimpleCounter = pair.right;
+			ParsingResult parsingResult = bootstrapper.buildMetaDatas(configContext, candidateClasses);
+			entityMetaMap = parsingResult.getMetaMap();
+			hasSimpleCounter = parsingResult.isHasSimpleCounter();
 		}
 		bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
 
@@ -144,7 +143,7 @@ public class PersistenceManagerFactory {
 
 	public static class PersistenceManagerFactoryBuilder {
 
-		private Map<String, Object> configMap = new HashMap<String, Object>();
+		private TypedMap configMap = new TypedMap();
 
 		private PersistenceManagerFactoryBuilder() {
 		}
@@ -419,17 +418,44 @@ public class PersistenceManagerFactory {
 		}
 
 		/**
-		 * Build a new PersistenceManagerFactory with provided parameters
+		 * Provide a list of event interceptors
+		 * 
+		 * @return PersistenceManagerFactoryBuilder
+		 */
+		public PersistenceManagerFactoryBuilder withEventInterceptors(List<Interceptor<?>> interceptors) {
+			configMap.put(EVENT_INTERCEPTORS_PARAM, interceptors);
+			return this;
+		}
+
+		/**
+		 * Activate Bean Validation (JSR303)
+		 * 
+		 * @return PersistenceManagerFactoryBuilder
+		 */
+		public PersistenceManagerFactoryBuilder enableBeanValidation(boolean enableBeanValidation) {
+			configMap.put(BEAN_VALIDATION_ENABLE, enableBeanValidation);
+			return this;
+		}
+
+		/**
+		 * Provide custom validator for Bean Validation (JSR303)
+		 * 
+		 * @return PersistenceManagerFactoryBuilder
+		 */
+		public PersistenceManagerFactoryBuilder withBeanValidator(javax.validation.Validator validator) {
+			if (validator != null) {
+				configMap.put(BEAN_VALIDATION_VALIDATOR, validator);
+			}
+			return this;
+		}
+
+		/**
+		 * Build a new PersistenceManagerFactory
 		 * 
 		 * @return PersistenceManagerFactory
 		 */
 		public PersistenceManagerFactory build() {
 			return new PersistenceManagerFactory(configMap).bootstrap();
-		}
-
-		public PersistenceManagerFactoryBuilder withEventInterceptors(List<Interceptor<?>> interceptors) {
-			configMap.put(EVENT_INTERCEPTORS_PARAM, interceptors);
-			return this;
 		}
 	}
 }

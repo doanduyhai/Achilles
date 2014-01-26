@@ -18,6 +18,8 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static javax.validation.Validation.buildDefaultValidatorFactory;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -32,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -71,6 +75,7 @@ public class ArgumentExtractor {
 		configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
 		configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
 		configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
+		configContext.setBeanValidator(initValidator(configurationMap));
 		return configContext;
 	}
 
@@ -195,6 +200,11 @@ public class ArgumentExtractor {
 				sslOptions = configurationMap.getTyped(SSL_OPTIONS);
 			}
 
+			String clusterName = null;
+			if (configurationMap.containsKey(CLUSTER_NAME_PARAM)) {
+				clusterName = configurationMap.getTyped(CLUSTER_NAME_PARAM);
+			}
+
 			Validator
 					.validateNotBlank(contactPoints, "%s property should be provided", CONNECTION_CONTACT_POINTS_PARAM);
 			Validator.validateNotNull(port, "%s property should be provided", CONNECTION_CQL_PORT_PARAM);
@@ -209,6 +219,9 @@ public class ArgumentExtractor {
 					.withCompression(compression).withRetryPolicy(retryPolicy)
 					.withLoadBalancingPolicy(loadBalancingPolicy).withReconnectionPolicy(reconnectionPolicy);
 
+			if (StringUtils.isNotBlank(clusterName)) {
+				clusterBuilder.withClusterName(clusterName);
+			}
 			if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
 				clusterBuilder.withCredentials(username, password);
 			}
@@ -267,13 +280,29 @@ public class ArgumentExtractor {
 		return level;
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<Interceptor<?>> initInterceptors(TypedMap configurationMap) {
 
-		List<Interceptor<?>> interceptors = configurationMap.getTyped(EVENT_INTERCEPTORS_PARAM);
+		List<Interceptor<?>> interceptors = (List<Interceptor<?>>) configurationMap.get(EVENT_INTERCEPTORS_PARAM);
 		if (interceptors == null) {
 			interceptors = new ArrayList<>();
 		}
 		return interceptors;
+	}
+
+	javax.validation.Validator initValidator(TypedMap configurationMap) {
+		if (configurationMap.containsKey(BEAN_VALIDATION_ENABLE)) {
+			Boolean enableBeanValidation = configurationMap.getTyped(BEAN_VALIDATION_ENABLE);
+			if (enableBeanValidation) {
+				try {
+					javax.validation.Validator defaultValidator = buildDefaultValidatorFactory().getValidator();
+					return configurationMap.getTypedOr(BEAN_VALIDATION_VALIDATOR, defaultValidator);
+				} catch (ValidationException vex) {
+					throw new AchillesException("Cannot bootstrap ValidatorFactory for Bean Validation (JSR 303)", vex);
+				}
+			}
+		}
+		return null;
 	}
 
 }

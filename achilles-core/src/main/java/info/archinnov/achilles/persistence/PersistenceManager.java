@@ -396,7 +396,7 @@ public class PersistenceManager {
 	 * 
 	 */
 	public <T> Set<T> initAndRemoveProxy(Set<T> entities) {
-		return unwrap(initialize(entities));
+		return removeProxy(initialize(entities));
 	}
 
 	/**
@@ -451,7 +451,7 @@ public class PersistenceManager {
 	 *            set of proxified entities
 	 * @return real object set
 	 */
-	public <T> Set<T> unwrap(Set<T> proxies) {
+	public <T> Set<T> removeProxy(Set<T> proxies) {
 		log.debug("Removing proxy for a set of entities {}", proxies);
 
 		return proxifier.removeProxy(proxies);

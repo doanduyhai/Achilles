@@ -1,13 +1,12 @@
 package info.archinnov.achilles.embedded;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
-import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.type.TypedMap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -45,7 +44,8 @@ public class CassandraEmbeddedServerBuilder {
 	private boolean durableWrite = true;
 
 	private boolean buildNativeSessionOnly = false;
-	private List<Interceptor<?>> eventsInterceptor = new ArrayList<Interceptor<?>>();
+
+	private Map<String, Object> achillesConfigParams = new HashMap<>();
 
 	private CassandraEmbeddedServerBuilder() {
 	}
@@ -59,6 +59,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param entityPackages
 	 *            entity packages to scan for @Entity annotation
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public static CassandraEmbeddedServerBuilder withEntityPackages(String entityPackages) {
 		return new CassandraEmbeddedServerBuilder(entityPackages);
@@ -67,6 +69,8 @@ public class CassandraEmbeddedServerBuilder {
 	/**
 	 * Bootstrap Achilles without entity packages. Only nativeQuery() and
 	 * nativeSession() are useful in this mode
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public static CassandraEmbeddedServerBuilder noEntityPackages() {
 		return new CassandraEmbeddedServerBuilder();
@@ -78,14 +82,11 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param dataFolder
 	 *            data folder for the embedded Cassandra server
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withDataFolder(String dataFolder) {
 		this.dataFileFolder = dataFolder;
-		return this;
-	}
-
-	public CassandraEmbeddedServerBuilder withEventInterceptors(List<? extends Interceptor<?>> eventInterceptors) {
-		this.eventsInterceptor.addAll(eventInterceptors);
 		return this;
 	}
 
@@ -95,7 +96,7 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param commitLogFolder
 	 *            commit log folder for the embedded Cassandra server
-	 * @return
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withCommitLogFolder(String commitLogFolder) {
 		this.commitLogFolder = commitLogFolder;
@@ -108,7 +109,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param savedCachesFolder
 	 *            saved caches folder for the embedded Cassandra server
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withSavedCachesFolder(String savedCachesFolder) {
 		this.savedCachesFolder = savedCachesFolder;
@@ -123,7 +125,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * @param configYamlFile
 	 *            path to 'cassandra.yaml' config file for the embedded
 	 *            Cassandra server
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withConfigYamlFile(String configYamlFile) {
 		this.configYamlFile = configYamlFile;
@@ -137,7 +140,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param cleanDataFilesAtStartup
 	 *            whether to clean all data files at startup or not
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder cleanDataFilesAtStartup(boolean cleanDataFilesAtStartup) {
 		this.cleanDataFiles = cleanDataFilesAtStartup;
@@ -150,7 +154,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param clusterName
 	 *            cluster name
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withClusterName(String clusterName) {
 		this.clusterName = clusterName;
@@ -163,7 +168,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param keyspaceName
 	 *            keyspace name
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withKeyspaceName(String keyspaceName) {
 		this.keyspaceName = keyspaceName;
@@ -176,7 +182,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param clqPort
 	 *            native transport port
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withCQLPort(int clqPort) {
 		this.cqlPort = clqPort;
@@ -189,7 +196,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param thriftPort
 	 *            rpc port
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withThriftPort(int thriftPort) {
 		this.thriftPort = thriftPort;
@@ -202,7 +210,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param storagePort
 	 *            storage port
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withStoragePort(int storagePort) {
 		this.storagePort = storagePort;
@@ -215,7 +224,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param storageSSLPort
 	 *            storage SSL port
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withStorageSSLPort(int storageSSLPort) {
 		this.storageSSLPort = storageSSLPort;
@@ -231,10 +241,25 @@ public class CassandraEmbeddedServerBuilder {
 	 * 
 	 * @param durableWrite
 	 *            whether to activate 'durable write' or not
-	 * @return
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
 	 */
 	public CassandraEmbeddedServerBuilder withDurableWrite(boolean durableWrite) {
 		this.durableWrite = durableWrite;
+		return this;
+	}
+
+	/**
+	 * Add Achilles configuration parameters
+	 * 
+	 * @param configParams
+	 *            Achilles configuration parameters
+	 * 
+	 * @return CassandraEmbeddedServerBuilder
+	 */
+	public CassandraEmbeddedServerBuilder withAchillesConfigParams(Map<String, Object> configParams) {
+		if (configParams != null && configParams.size() > 0)
+			this.achillesConfigParams.putAll(configParams);
 		return this;
 	}
 
@@ -245,8 +270,8 @@ public class CassandraEmbeddedServerBuilder {
 	 */
 	public PersistenceManagerFactory buildPersistenceManagerFactory() {
 
-		Map<String, Object> parameters = buildConfigMap();
-		String keyspace = (String) parameters.get(KEYSPACE_NAME);
+		TypedMap parameters = buildConfigMap();
+		String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
 		final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
 		return embeddedServer.getPersistenceManagerFactory(keyspace);
 	}
@@ -257,8 +282,8 @@ public class CassandraEmbeddedServerBuilder {
 	 * @return PersistenceManager
 	 */
 	public PersistenceManager buildPersistenceManager() {
-		Map<String, Object> parameters = buildConfigMap();
-		String keyspace = (String) parameters.get(KEYSPACE_NAME);
+		TypedMap parameters = buildConfigMap();
+		String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
 		final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
 		return embeddedServer.getPersistenceManager(keyspace);
 	}
@@ -270,19 +295,19 @@ public class CassandraEmbeddedServerBuilder {
 	 */
 	public Session buildNativeSessionOnly() {
 		this.buildNativeSessionOnly = true;
-		Map<String, Object> parameters = buildConfigMap();
-		String keyspace = (String) parameters.get(KEYSPACE_NAME);
+		TypedMap parameters = buildConfigMap();
+		String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
 		final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
 		return embeddedServer.getNativeSession(keyspace);
 	}
 
-	private Map<String, Object> buildConfigMap() {
-		Map<String, Object> config = new HashMap<>();
+	private TypedMap buildConfigMap() {
+		TypedMap config = new TypedMap();
 		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
 		config.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
 
 		if (StringUtils.isNotBlank(entityPackages))
-			config.put(ENTITY_PACKAGES, entityPackages);
+			config.put(ENTITY_PACKAGES_PARAM, entityPackages);
 
 		if (StringUtils.isNotBlank(dataFileFolder))
 			config.put(DATA_FILE_FOLDER, dataFileFolder);
@@ -297,10 +322,10 @@ public class CassandraEmbeddedServerBuilder {
 			config.put(CONFIG_YAML_FILE, configYamlFile);
 
 		if (StringUtils.isNotBlank(clusterName))
-			config.put(CLUSTER_NAME, clusterName);
+			config.put(CLUSTER_NAME_PARAM, clusterName);
 
 		if (StringUtils.isNotBlank(keyspaceName))
-			config.put(KEYSPACE_NAME, keyspaceName);
+			config.put(KEYSPACE_NAME_PARAM, keyspaceName);
 
 		if (cqlPort > 0)
 			config.put(CASSANDRA_CQL_PORT, cqlPort);
@@ -313,14 +338,13 @@ public class CassandraEmbeddedServerBuilder {
 
 		if (storageSSLPort > 0)
 			config.put(CASSANDRA_STORAGE_SSL_PORT, storageSSLPort);
-		if (eventsInterceptor.size() > 0) {
-			config.put(EVENT_INTERCEPTORS, eventsInterceptor);
-		}
 
 		config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
 		config.put(BUILD_NATIVE_SESSION_ONLY, buildNativeSessionOnly);
 
-		Map<String, Object> parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(config);
+		config.putAll(achillesConfigParams);
+
+		TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(config);
 		return parameters;
 	}
 }

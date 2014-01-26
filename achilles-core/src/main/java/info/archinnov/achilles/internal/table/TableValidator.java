@@ -16,8 +16,7 @@
  */
 package info.archinnov.achilles.internal.table;
 
-import static com.datastax.driver.core.DataType.counter;
-import static com.datastax.driver.core.DataType.text;
+import static com.datastax.driver.core.DataType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -120,8 +119,8 @@ public class TableValidator {
 		Validator.validateTableTrue(counterValueColumn != null, "Cannot find column '%s' from table '%s'",
 				CQL_COUNTER_VALUE, CQL_COUNTER_TABLE);
 		Validator.validateTableTrue(counterValueColumn.getType().getName() == counterTypeName,
-		        "Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE,counterValueColumn.getType()
-		                .getName(), counterTypeName);
+				"Column '%s' of type '%s' should be of type '%s'", CQL_COUNTER_VALUE, counterValueColumn.getType()
+						.getName(), counterTypeName);
 	}
 
 	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
@@ -142,6 +141,14 @@ public class TableValidator {
 				"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it" + " is (or not)",
 				columnName, tableName);
 		Name realType = columnMetadata.getType().getName();
+
+		/*
+		 * See JIRA
+		 */
+		if (realType == Name.CUSTOM) {
+			realType = Name.BLOB;
+		}
+
 		Validator.validateTableTrue(expectedType == realType,
 				"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
 				realType, expectedType);

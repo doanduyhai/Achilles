@@ -33,6 +33,7 @@ public interface ConfigurationParameters {
 
 	String FORCE_TABLE_CREATION_PARAM = "achilles.ddl.force.table.creation";
 
+	String CLUSTER_NAME_PARAM = "achilles.cassandra.cluster.name";
 	String CLUSTER_PARAM = "achilles.cassandra.cluster";
 	String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
 	String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
@@ -48,6 +49,9 @@ public interface ConfigurationParameters {
 	String DISABLE_METRICS = "achilles.cassandra.disable.metrics";
 	String SSL_ENABLED = "achilles.cassandra.ssl.enabled";
 	String SSL_OPTIONS = "achilles.cassandra.ssl.options";
+
+	String BEAN_VALIDATION_ENABLE = "achilles.bean.validation.enable";
+	String BEAN_VALIDATION_VALIDATOR = "achilles.bean.validation.validator";
 
 	ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 }

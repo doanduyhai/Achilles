@@ -22,6 +22,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -33,12 +34,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Validator;
+
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
+import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -362,6 +366,53 @@ public class ArgumentExtractorTest {
 		assertThat(configContext.getObjectMapperFactory()).isSameAs(factory);
 		assertThat(configContext.getDefaultReadConsistencyLevel()).isEqualTo(ANY);
 		assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
+
+	}
+
+	@Test
+	public void should_return_default_validator() throws Exception {
+		// Given
+		TypedMap params = new TypedMap();
+		params.put(BEAN_VALIDATION_ENABLE, true);
+
+		// When
+		Validator defaultValidator = extractor.initValidator(params);
+
+		// Then
+		assertThat(defaultValidator).isNotNull().isInstanceOf(ValidatorImpl.class);
+	}
+
+	@Test
+	public void should_return_null_when_bean_validation_disabled() throws Exception {
+		// Given
+		TypedMap params = new TypedMap();
+		params.put(BEAN_VALIDATION_ENABLE, false);
+
+		assertThat(extractor.initValidator(params)).isNull();
+	}
+
+	@Test
+	public void should_return_null_when_bean_validation_not_configured() throws Exception {
+		// Given
+		TypedMap params = new TypedMap();
+
+		assertThat(extractor.initValidator(params)).isNull();
+	}
+
+	@Test
+	public void should_get_provided_custom_validator() throws Exception {
+		// Given
+		FakeValidator customValidator = new FakeValidator();
+		TypedMap params = new TypedMap();
+		params.put(BEAN_VALIDATION_ENABLE, true);
+		params.put(BEAN_VALIDATION_VALIDATOR, customValidator);
+
+		// When
+		Validator validator = extractor.initValidator(params);
+
+		// Then
+		assertThat(validator).isNotNull();
+		assertThat(validator).isSameAs(customValidator);
 
 	}
 }

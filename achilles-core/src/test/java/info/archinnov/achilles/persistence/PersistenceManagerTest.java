@@ -483,7 +483,7 @@ public class PersistenceManagerTest {
 		// When
 		when(proxifier.removeProxy(proxies)).thenReturn(proxies);
 
-		Set<CompleteBean> actual = manager.unwrap(proxies);
+		Set<CompleteBean> actual = manager.removeProxy(proxies);
 
 		// Then
 		assertThat(actual).isSameAs(proxies);

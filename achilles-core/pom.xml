@@ -35,9 +35,8 @@
 
 		<!-- Bean Validation -->
 		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate-validator</artifactId>
-		    <scope>provided</scope>
+		    <groupId>javax.validation</groupId>
+		    <artifactId>validation-api</artifactId>
 		</dependency>
 			
         <!-- Utils -->
@@ -129,9 +128,20 @@
                     <groupId>commons-codec</groupId>
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
+                <exclusion>
+                	<groupId>org.hibernate</groupId>
+                	<artifactId>hibernate-validator</artifactId>
+                </exclusion>
             </exclusions>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Hibernate validator -->
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+			<scope>test</scope>
+		</dependency>
 
     </dependencies>
 </project>

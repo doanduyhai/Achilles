@@ -16,15 +16,21 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
+
+import javax.validation.Validator;
 
 public class ConfigurationContext {
 	private boolean forceColumnFamilyCreation;
 
 	private ObjectMapperFactory objectMapperFactory;
-    private ConsistencyLevel defaultReadConsistencyLevel;
-    private ConsistencyLevel defaultWriteConsistencyLevel;
+	private ConsistencyLevel defaultReadConsistencyLevel;
+	private ConsistencyLevel defaultWriteConsistencyLevel;
+	private Validator beanValidator;
+	private DefaultBeanValidationInterceptor beanValidationInterceptor;
 
 	public boolean isForceColumnFamilyCreation() {
 		return forceColumnFamilyCreation;
@@ -42,19 +48,42 @@ public class ConfigurationContext {
 		this.objectMapperFactory = objectMapperFactory;
 	}
 
-    public ConsistencyLevel getDefaultReadConsistencyLevel() {
-        return defaultReadConsistencyLevel;
-    }
+	public ConsistencyLevel getDefaultReadConsistencyLevel() {
+		return defaultReadConsistencyLevel;
+	}
 
-    public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
-        this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
-    }
+	public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+		this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
+	}
 
-    public ConsistencyLevel getDefaultWriteConsistencyLevel() {
-        return defaultWriteConsistencyLevel;
-    }
+	public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+		return defaultWriteConsistencyLevel;
+	}
 
-    public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
-        this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
-    }
+	public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+		this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
+	}
+
+	public Validator getBeanValidator() {
+		return beanValidator;
+	}
+
+	public void setBeanValidator(Validator beanValidator) {
+		this.beanValidator = beanValidator;
+	}
+
+	public boolean isClassConstrained(Class<?> clazz) {
+		if (beanValidator != null) {
+			return beanValidator.getConstraintsForClass(clazz).isBeanConstrained();
+		} else {
+			return false;
+		}
+	}
+
+	public void addBeanValidationInterceptor(EntityMeta meta) {
+		if (beanValidationInterceptor == null) {
+			beanValidationInterceptor = new DefaultBeanValidationInterceptor(beanValidator);
+		}
+		meta.addInterceptor(beanValidationInterceptor);
+	}
 }

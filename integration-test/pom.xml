@@ -12,13 +12,20 @@
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+		</dependency>
+		
+		<!-- TEST -->		
+		<dependency>
 			<groupId>info.archinnov</groupId>
 			<artifactId>achilles-junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+			<scope>test</scope>
 		</dependency>		
 	</dependencies>
 </project>

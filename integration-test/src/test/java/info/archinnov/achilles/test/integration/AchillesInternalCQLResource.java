@@ -16,19 +16,22 @@
  */
 package info.archinnov.achilles.test.integration;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
-import org.apache.commons.lang.StringUtils;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
+import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.junit.AchillesTestResource;
+import info.archinnov.achilles.type.TypedMap;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
 
 public class AchillesInternalCQLResource extends AchillesTestResource {
 
-    private static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
+	private static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
 
 	private static final String ACHILLES_ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 
@@ -40,9 +43,9 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 
 	private final Session session;
 
-    private boolean cleanDataFiles = true;
+	private boolean cleanDataFiles = true;
 
-    /**
+	/**
 	 * Initialize a new embedded Cassandra server
 	 * 
 	 * @param tables
@@ -50,10 +53,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 	 */
 	public AchillesInternalCQLResource(String... tables) {
 		super(tables);
-        setCleanDataFiles();
-        final ImmutableMap<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles,
-				ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
-				KEYSPACE_DURABLE_WRITE, false);
+		final TypedMap config = buildConfigMap();
 
 		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -75,10 +75,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 	 */
 	public AchillesInternalCQLResource(Steps cleanUpSteps, String... tables) {
 		super(cleanUpSteps, tables);
-        setCleanDataFiles();
-		final ImmutableMap<String, Object> config = ImmutableMap.<String, Object> of(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles,
-				ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES, KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME,
-				KEYSPACE_DURABLE_WRITE, false);
+		final TypedMap config = buildConfigMap();
 
 		server = new CassandraEmbeddedServer(config);
 		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -122,10 +119,21 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
 		}
 	}
 
-    private void setCleanDataFiles() {
-        final String cleanDataFiles = System.getProperty(CLEAN_DATA_FILES_PROPERTY);
-        if(StringUtils.isNotBlank(cleanDataFiles)) {
-            this.cleanDataFiles = Boolean.parseBoolean(cleanDataFiles);
-        }
-    }
+	private TypedMap buildConfigMap() {
+		setCleanDataFiles();
+		final TypedMap config = new TypedMap();
+		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
+		config.put(ENTITY_PACKAGES_PARAM, ACHILLES_ENTITY_PACKAGES);
+		config.put(KEYSPACE_NAME_PARAM, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+		config.put(KEYSPACE_DURABLE_WRITE, false);
+		config.put(ConfigurationParameters.BEAN_VALIDATION_ENABLE, true);
+		return config;
+	}
+
+	private void setCleanDataFiles() {
+		final String cleanDataFiles = System.getProperty(CLEAN_DATA_FILES_PROPERTY);
+		if (StringUtils.isNotBlank(cleanDataFiles)) {
+			this.cleanDataFiles = Boolean.parseBoolean(cleanDataFiles);
+		}
+	}
 }
