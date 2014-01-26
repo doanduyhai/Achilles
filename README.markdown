@@ -15,6 +15,8 @@
 - Batch mode for atomic commits
 - Dirty check 
 - All new **Cassandra 2.0** features
+- Life cycle interceptors
+- Bean Validation (JSR-303)
 
 
 ## Installation #
@@ -25,7 +27,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1</version>
 	</dependency>
  ```
  
@@ -37,27 +39,28 @@
  4. Jackson asl, mapper & xc 1.9.3 
    
   
-# 5 minutes tutorial
+## 5 minutes tutorial
 
  To boostrap quickly with **Achilles**, you can check the **[5 minutes tutorial]**
 
-# Quick Reference
+## Quick Reference
 
  To be productive quickly with **Achilles**. Most of useful examples are given in the **[Quick Reference]**
  
-# Advanced tutorial
+## Advanced tutorial
 
  To get a deeper look on how you can use **Achilles**, check out the **[Twitter Demo]** application and read the **[Advanced Tutorial]** section
  
-# Documentation
+## Documentation
 
  All the documentation and tutorial is available in the **[Wiki]**
+ Versioned documentation is available at **[Documentation]**
 
-# Mailing list 
+## Mailing list 
 
  For any question, bug encountered, you can use the **[mailing list]** 
 
-# License
+## License
 Copyright 2012 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
@@ -71,5 +74,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [Twitter Demo]: https://github.com/doanduyhai/Achilles-Twitter-Demo
 [Advanced Tutorial]: https://github.com/doanduyhai/Achilles/wiki/Advanced-Tutorial:-Twitter-Demo
 [Wiki]: https://github.com/doanduyhai/Achilles/wiki
+[Documentation]: https://github.com/doanduyhai/Achilles/documentation/versions
 [Datastax Java Driver]: https://github.com/datastax/java-driver
 [mailing list]: https://groups.google.com/forum/?hl=fr#!forum/cassandra-achilles
