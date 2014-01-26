@@ -31,7 +31,6 @@ public class InternalCounterImpl implements Counter {
 		} else {
 			value = delta;
 		}
-
 		return value;
 	}
 

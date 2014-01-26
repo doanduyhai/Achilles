@@ -73,7 +73,7 @@ public class CounterBuilderTest {
 		Counter counter = new TestCounter();
 
 		String serialized = mapper.writeValueAsString(counter);
-		assertThat(serialized).isEqualTo("");
+		assertThat(serialized).isEqualTo("\"\"");
 		serialized = mapper.writeValueAsString(null);
 		assertThat(serialized).isEqualTo("null");
 

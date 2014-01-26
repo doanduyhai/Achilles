@@ -29,12 +29,14 @@ public final class CounterSerializer extends JsonSerializer<Counter> {
 
 	@Override
 	public void serialize(Counter value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+		String serializedValue = "";
 		if (value != null) {
 			Long counterValue = value.get();
 			if (counterValue != null) {
-				generator.writeString(counterValue.toString());
+				serializedValue = counterValue.toString();
 			}
 		}
+		generator.writeString(serializedValue);
 	}
 
 }

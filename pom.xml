@@ -90,7 +90,6 @@
         	<module>achilles-core</module>
 	        <module>achilles-embedded</module>
 	        <module>achilles-junit</module>
-	        <module>achilles-documentation</module>
 	        <module>integration-test</module>
     </modules>
 
