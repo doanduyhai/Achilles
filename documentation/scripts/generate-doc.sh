@@ -1,8 +1,13 @@
 #!/bin/bash
 
+#Define some variables
+
+BASEDIR=`pwd`
+NEXT_VERSION=`cat ${BASEDIR}/../pom.xml | grep '<version>.*SNAPSHOT' | sed 's/.*<version>\(.*\)-SNAPSHOT<\/version>/\1/'`
+
 #first, clean up all existing files
-rm $1/html/*.html 2>/dev/null
-rm -rf $1/target/
+rm $BASEDIR/html/*.html 2>/dev/null
+rm -rf $BASEDIR/target/
 
 echo ""
 echo ""
@@ -17,7 +22,7 @@ mkdir target
 echo ""
 echo ""
 echo "****************************************"
-echo "*        Cloning Achilles.wiki         *"
+echo "*  Cloning Achilles.wiki/NextRealease  *"
 echo "****************************************"
 echo ""
 echo ""
@@ -26,13 +31,15 @@ cd target
 mkdir html
 mkdir html/assets
 mkdir pdf
-cp $1/html/achilles.css html/
-cp $1/html/assets/* html/assets/
+cp $BASEDIR/html/achilles.css html/
 
-git clone https://github.com/doanduyhai/Achilles.wiki.git
+git clone -b NextRelease https://github.com/doanduyhai/Achilles.wiki.git
 
 #copy css to Achilles.wiki directory
-cp $1/html/achilles.css Achilles.wiki/
+cp $BASEDIR/html/achilles.css Achilles.wiki/
+
+#copy assets to target html assets directory
+cp $BASEDIR/target/Achilles.wiki/assets/* $BASEDIR/target/html/assets/
 
 
 
@@ -72,10 +79,9 @@ mv temp.md Presentation.md
 #transform absolute URLs into relative
 sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki\/([^#)]+)/\.\/\1\.html/g' *.md
 sed -i -r 's/https:\/\/github.com\/doanduyhai\/Achilles\/wiki/\.\/Presentation\.html/' index.md
+
 #replace all URL from Home.html to Presentation.html
 sed -i -r 's/Home\.html/Presentation\.html/g' *.md
-
-
 
 echo ""
 echo ""
@@ -85,11 +91,14 @@ echo "****************************************"
 echo ""
 echo ""
 #execute conversion using pandoc
-find . -name \*.md -type f -exec pandoc -R -c achilles.css -f markdown_github+raw_html -t html5 -o $1/target/html/{}.html {} \;
+find . -name \*.md -type f -exec pandoc -R -c achilles.css -f markdown_github+raw_html -t html5 -o $BASEDIR/target/html/{}.html {} \;
 
 #remove .md extension
-cd $1/target/html
+cd $BASEDIR/target/html
 rename "s/\.md\.html/\.html/" *.html
+
+#replace all resource URL to point to local assets
+sed -i -r 's/https:\/\/raw.github.com\/wiki\/doanduyhai\/Achilles\/assets\/(.+)/\.\/assets\/\1/' *.html
 
 
 echo ""
@@ -99,8 +108,21 @@ echo "*    Generating PDF documentation      *"
 echo "****************************************"
 echo ""
 echo ""
-cd $1/target/html
-pandoc -f html -o $1/target/pdf/Achilles-documentation.pdf `grep -Po 'a href="\./[^.]+\.html' index.html | sed 's/a href="\.\///' | uniq`
+cd $BASEDIR/target/html
+pandoc -f html -o $BASEDIR/target/pdf/Achilles-documentation.pdf `grep -Po 'a href="\./[^.]+\.html' index.html | sed 's/a href="\.\///' | uniq`
+
+cd $BASEDIR/target
+
+echo ""
+echo ""
+echo "***************************************************"
+echo "* Creating zipped documentation for version $NEXT_VERSION *"
+echo "***************************************************"
+echo ""
+echo ""
 
 
+zip -9 -r achilles-"$NEXT_VERSION"-documentation.zip html/ pdf/ 1>/dev/null
+
+mv achilles-"$NEXT_VERSION"-documentation.zip $BASEDIR/versions
 
