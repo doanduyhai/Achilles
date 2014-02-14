@@ -350,11 +350,11 @@ public class PersistenceContext {
 	}
 
 	public Set<Method> getAllGetters() {
-		return new HashSet<>(from(entityMeta.getAllMetas()).transform(metaToGetter).toImmutableSet());
+		return new HashSet<>(from(entityMeta.getAllMetas()).transform(metaToGetter).toList());
 	}
 
 	public Set<Method> getAllGettersExceptCounters() {
-		return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toImmutableSet());
+		return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toList());
 	}
 
 	public List<PropertyMeta> getAllCountersMeta() {

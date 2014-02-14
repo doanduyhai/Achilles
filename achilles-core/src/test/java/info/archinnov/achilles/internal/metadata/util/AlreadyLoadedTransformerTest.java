@@ -15,22 +15,23 @@
  */
 package info.archinnov.achilles.internal.metadata.util;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import com.google.common.collect.FluentIterable;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.metadata.util.AlreadyLoadedTransformer;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AlreadyLoadedTransformerTest {
@@ -46,7 +47,7 @@ public class AlreadyLoadedTransformerTest {
 		getterMetas.put(pm1.getGetter(), pm1);
 
 		List<PropertyMeta> list = FluentIterable.from(Arrays.asList(pm1.getGetter())).transform(transformer)
-				.toImmutableList();
+				.toList();
 
 		assertThat(list).containsExactly(pm1);
 	}

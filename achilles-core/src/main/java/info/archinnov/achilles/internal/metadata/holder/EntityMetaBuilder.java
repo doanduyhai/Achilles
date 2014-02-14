@@ -15,13 +15,6 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
-import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +24,16 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Pair;
+
+import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdAndCounterType;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdType;
+import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
 
 public class EntityMetaBuilder {
 	private static final Logger log = LoggerFactory.getLogger(EntityMetaBuilder.class);
@@ -70,15 +73,15 @@ public class EntityMetaBuilder {
 		meta.setConsistencyLevels(consistencyLevels);
 
 		List<PropertyMeta> allMetasExceptId = new ArrayList<>(from(propertyMetas.values()).filter(excludeIdType)
-				.toImmutableList());
+				.toList());
 		meta.setAllMetasExceptId(allMetasExceptId);
 
 		List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>(from(propertyMetas.values()).filter(
-				excludeIdAndCounterType).toImmutableList());
+				excludeIdAndCounterType).toList());
 		meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
 
 		List<PropertyMeta> allMetasExceptCounters = new ArrayList<>(from(propertyMetas.values()).filter(
-				excludeCounterType).toImmutableList());
+				excludeCounterType).toList());
 		meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
 		boolean clusteredEntity = idMeta.isEmbeddedId() && idMeta.getClusteringComponentClasses().size() > 0;

@@ -94,7 +94,7 @@ public class EntityMeta {
 	}
 
 	protected List<Interceptor<?>> getInterceptorsForEvent(final Event event) {
-		return FluentIterable.from(interceptors).filter(getFilterForEvent(event)).toImmutableList();
+		return FluentIterable.from(interceptors).filter(getFilterForEvent(event)).toList();
 
 	}
 
@@ -215,7 +215,7 @@ public class EntityMeta {
 	}
 
 	public List<PropertyMeta> getAllCounterMetas() {
-		return from(propertyMetas.values()).filter(counterType).toImmutableList();
+		return from(propertyMetas.values()).filter(counterType).toList();
 	}
 
 	public List<PropertyMeta> getAllMetasExceptId() {

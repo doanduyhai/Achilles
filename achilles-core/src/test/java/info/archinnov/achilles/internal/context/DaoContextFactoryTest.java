@@ -15,17 +15,6 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
-import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +34,18 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
+import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DaoContextFactoryTest {
@@ -90,7 +91,7 @@ public class DaoContextFactoryTest {
 
 		Function<EntityMeta, PreparedStatement> function = builder.getInsertPSTransformer(session);
 		ImmutableList<PreparedStatement> result = FluentIterable.from(Arrays.asList(entityMeta)).transform(function)
-				.toImmutableList();
+				.toList();
 
 		// Then
 		assertThat(result).containsOnly(insertPS);
@@ -103,7 +104,7 @@ public class DaoContextFactoryTest {
 
 		Function<EntityMeta, PreparedStatement> function = builder.getSelectPSTransformer(session);
 		ImmutableList<PreparedStatement> result = FluentIterable.from(Arrays.asList(entityMeta)).transform(function)
-				.toImmutableList();
+				.toList();
 
 		// Then
 		assertThat(result).containsOnly(selectEagerPS);
@@ -117,7 +118,7 @@ public class DaoContextFactoryTest {
 
 		Function<EntityMeta, Map<String, PreparedStatement>> function = builder.getRemovePSTransformer(session);
 		ImmutableList<Map<String, PreparedStatement>> result = FluentIterable.from(Arrays.asList(entityMeta))
-				.transform(function).toImmutableList();
+				.transform(function).toList();
 
 		// Then
 		assertThat(result.get(0)).isSameAs(removePSs);
@@ -133,7 +134,7 @@ public class DaoContextFactoryTest {
 				.getClusteredCounterTransformer(session);
 
 		ImmutableList<Map<CQLQueryType, Map<String, PreparedStatement>>> result = FluentIterable
-				.from(Arrays.asList(entityMeta)).transform(function).toImmutableList();
+				.from(Arrays.asList(entityMeta)).transform(function).toList();
 
 		// Then
 		assertThat(result.get(0)).isSameAs(clusteredCounterQueryMap);
