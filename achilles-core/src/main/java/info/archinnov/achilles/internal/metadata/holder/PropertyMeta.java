@@ -134,7 +134,7 @@ public class PropertyMeta {
 
 	public List<String> getCQLComponentNames() {
 		log.trace("Get CQL component names");
-		return FluentIterable.from(getComponentNames()).transform(toLowerCase).toImmutableList();
+		return FluentIterable.from(getComponentNames()).transform(toLowerCase).toList();
 	}
 
 	public List<String> getClusteringComponentNames() {

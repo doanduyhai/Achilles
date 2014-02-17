@@ -15,14 +15,6 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
-import info.archinnov.achilles.internal.validation.Validator;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +24,15 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.validation.Validator;
+
+import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
 
 public class EntityUpdater {
 
@@ -59,7 +60,7 @@ public class EntityUpdater {
 		EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
 		Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
 		List<PropertyMeta> sortedDirtyNonCounterMetas = new ArrayList<>(from(dirtyMap.values()).filter(
-				excludeCounterType).toImmutableList());
+				excludeCounterType).toList());
 		if (sortedDirtyNonCounterMetas.size() > 0) {
 			Collections.sort(sortedDirtyNonCounterMetas, comparator);
 			context.pushUpdateStatement(sortedDirtyNonCounterMetas);
