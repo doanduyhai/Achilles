@@ -120,19 +120,8 @@ public class MapWrapperTest {
 		verifyZeroInteractions(dirtyMap);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void should_exception_on_add_new_entry_in_entrySet() throws Exception {
-		Map<Integer, String> target = prepareMap();
-		MapWrapper wrapper = prepareMapWrapper(target);
-
-		Set<Entry<Object, Object>> entrySet = wrapper.entrySet();
-
-		Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
-		entrySet.add(entry);
-	}
-
 	@Test
-	public void should_mark_dirty_on_remove_from_entrySet() throws Exception {
+	public void should_not_mark_dirty_on_remove_from_entrySet() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -142,7 +131,7 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -159,7 +148,7 @@ public class MapWrapperTest {
 	}
 
 	@Test
-	public void should_mark_dirty_on_set_value_from_entry() throws Exception {
+	public void should_not_mark_dirty_on_set_value_from_entry() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -167,11 +156,11 @@ public class MapWrapperTest {
 
 		entrySet.iterator().next().setValue("sdfsd");
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
-	public void should_mark_dirty_on_remove_from_keySet() throws Exception {
+	public void should_not_mark_dirty_on_remove_from_keySet() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -179,11 +168,11 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy(1)).thenReturn(1);
 		keySet.remove(1);
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
-	public void should_mark_dirty_on_remove_from_keySet_iterator() throws Exception {
+	public void should_not_mark_dirty_on_remove_from_keySet_iterator() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -191,7 +180,7 @@ public class MapWrapperTest {
 		keyIterator.next();
 		keyIterator.remove();
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
@@ -239,7 +228,7 @@ public class MapWrapperTest {
 	}
 
 	@Test
-	public void should_mark_dirty_on_collection_remove() throws Exception {
+	public void should_not_mark_dirty_on_collection_remove() throws Exception {
 		Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
@@ -247,7 +236,7 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	public void should_not_mark_dirty_on_collection_remove_non_existing() throws Exception {
@@ -278,5 +267,10 @@ public class MapWrapperTest {
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setProxifier(proxifier);
 		return wrapper;
+	}
+
+	@Test
+	public void testEntrySet() throws Exception {
+
 	}
 }

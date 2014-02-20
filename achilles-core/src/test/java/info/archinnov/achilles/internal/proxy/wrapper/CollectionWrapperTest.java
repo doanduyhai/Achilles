@@ -16,9 +16,14 @@
 package info.archinnov.achilles.internal.proxy.wrapper;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,19 +32,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CollectionWrapperTest {
@@ -104,7 +103,7 @@ public class CollectionWrapperTest {
 
 		wrapper.setProxifier(proxifier);
 
-		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.addAll(list);
 
@@ -218,7 +217,7 @@ public class CollectionWrapperTest {
 		wrapper.setProxifier(proxifier);
 
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.removeAll(list);
 
@@ -256,7 +255,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "c");
-		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 
@@ -277,7 +276,7 @@ public class CollectionWrapperTest {
 		ListWrapper wrapper = prepareListWrapper(target);
 		wrapper.setProxifier(proxifier);
 		Collection<String> list = Arrays.asList("a", "b", "c");
-		when(proxifier.removeProxy(Mockito.<Collection<String>>any())).thenReturn(list);
+		when(proxifier.removeProxy(Mockito.<Collection<String>> any())).thenReturn(list);
 
 		wrapper.retainAll(list);
 
@@ -290,7 +289,7 @@ public class CollectionWrapperTest {
 	}
 
 	@Test
-	public void should_mark_dirty_on_iterator_remove() throws Exception {
+	public void should_not_mark_dirty_on_iterator_remove() throws Exception {
 		ArrayList<Object> target = new ArrayList<Object>();
 		target.add("a");
 		target.add("b");
@@ -299,12 +298,10 @@ public class CollectionWrapperTest {
 
 		Iterator<Object> iteratorWrapper = wrapper.iterator();
 
-		assertThat(iteratorWrapper).isInstanceOf(IteratorWrapper.class);
-
 		iteratorWrapper.next();
 		iteratorWrapper.remove();
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test

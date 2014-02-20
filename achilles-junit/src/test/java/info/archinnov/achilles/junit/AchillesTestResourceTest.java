@@ -16,11 +16,15 @@
 package info.archinnov.achilles.junit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AchillesTestResourceTest {
@@ -87,4 +91,19 @@ public class AchillesTestResourceTest {
 		assertThat(witness.toString()).isEmpty();
 	}
 
+	@Test
+	public void should_test() throws Exception {
+
+		Map<Integer, String> map = new HashMap<>();
+		map.put(1, "a");
+		map.put(2, "b");
+		map.put(3, "c");
+		map.put(4, "d");
+
+		System.out.println(map);
+
+		new HashSet<Integer>(map.keySet()).remove(1);
+
+		System.out.println(map);
+	}
 }

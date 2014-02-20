@@ -121,32 +121,30 @@ public class ListWrapperTest {
 	}
 
 	@Test
-	public void should_mark_dirty_on_list_iterator_add() throws Exception {
+	public void should_not_mark_dirty_on_list_iterator_add() throws Exception {
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
 		ListIterator<Object> listIteratorWrapper = prepareListWrapper(target).listIterator();
 
-		assertThat(listIteratorWrapper).isInstanceOf(ListIteratorWrapper.class);
 		when(proxifier.removeProxy("c")).thenReturn("c");
 		listIteratorWrapper.add("c");
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@Test
-	public void should_mark_dirty_on_sub_list_add() throws Exception {
+	public void should_not_mark_dirty_on_sub_list_add() throws Exception {
 		ArrayList<String> target = new ArrayList<String>();
 		target.add("a");
 		target.add("b");
 		target.add("c");
 		List<Object> subListWrapper = prepareListWrapper(target).subList(0, 1);
 
-		assertThat(subListWrapper).isInstanceOf(ListWrapper.class);
 		when(proxifier.removeProxy("d")).thenReturn("d");
 		subListWrapper.add("d");
 
-		verify(dirtyMap).put(setter, propertyMeta);
+		verifyZeroInteractions(dirtyMap);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

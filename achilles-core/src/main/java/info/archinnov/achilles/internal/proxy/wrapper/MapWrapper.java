@@ -15,15 +15,15 @@
  */
 package info.archinnov.achilles.internal.proxy.wrapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.EntrySetWrapperBuilder;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.KeySetWrapperBuilder;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.ValueCollectionWrapperBuilder;
 
 public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	private static final Logger log = LoggerFactory.getLogger(MapWrapper.class);
@@ -57,16 +57,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Set<Entry<Object, Object>> entrySet() {
-		Set<Entry<Object, Object>> targetEntrySet = this.target.entrySet();
-		if (targetEntrySet.size() > 0) {
-			log.trace("Build map entry wrapper for map property {} of entity class {}", propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-
-			EntrySetWrapper wrapperSet = EntrySetWrapperBuilder.builder(context, targetEntrySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta(propertyMeta).build();
-			targetEntrySet = wrapperSet;
-		}
-		return targetEntrySet;
+		return new HashSet<>(this.target.entrySet());
 	}
 
 	@Override
@@ -83,16 +74,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Set<Object> keySet() {
-		Set<Object> keySet = this.target.keySet();
-		if (keySet.size() > 0) {
-			log.trace("Build key set wrapper for map property {} of entity class {}", propertyMeta.getPropertyName(),
-					propertyMeta.getEntityClassName());
-
-			KeySetWrapper keySetWrapper = KeySetWrapperBuilder.builder(context, keySet).dirtyMap(dirtyMap)
-					.setter(setter).propertyMeta(propertyMeta).build();
-			keySet = keySetWrapper;
-		}
-		return keySet;
+		return new HashSet<>(this.target.keySet());
 	}
 
 	@Override
@@ -137,18 +119,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Collection<Object> values() {
-		Collection<Object> values = this.target.values();
-
-		if (values.size() > 0) {
-			log.trace("Build values collection wrapper for map property {} of entity class {}",
-					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-
-			ValueCollectionWrapper collectionWrapper = ValueCollectionWrapperBuilder
-					.builder(context, values).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-					.build();
-			values = collectionWrapper;
-		}
-		return values;
+		return new ArrayList<>(this.target.values());
 	}
 
 	public Map<Object, Object> getTarget() {

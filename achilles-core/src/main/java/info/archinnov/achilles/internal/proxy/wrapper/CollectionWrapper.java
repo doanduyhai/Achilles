@@ -15,11 +15,12 @@
  */
 package info.archinnov.achilles.internal.proxy.wrapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.IteratorWrapperBuilder;
 
 public class CollectionWrapper extends AbstractWrapper implements Collection<Object> {
 	private static final Logger log = LoggerFactory.getLogger(CollectionWrapper.class);
@@ -82,8 +83,7 @@ public class CollectionWrapper extends AbstractWrapper implements Collection<Obj
 		log.trace("Build iterator wrapper for collection property {} of entity class {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		return IteratorWrapperBuilder.builder(context, this.target.iterator())
-				.dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta).build();
+		return new ArrayList<>(this.target).iterator();
 	}
 
 	@Override

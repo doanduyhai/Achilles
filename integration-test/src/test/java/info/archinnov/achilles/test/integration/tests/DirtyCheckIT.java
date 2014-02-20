@@ -164,7 +164,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_sub_list_remove() throws Exception {
+	public void should_not_dirty_check_list_element_sub_list_remove() throws Exception {
 		bean.getFriends().subList(0, 1).remove(0);
 
 		manager.update(bean);
@@ -172,8 +172,8 @@ public class DirtyCheckIT {
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
-		assertThat(friends).hasSize(1);
-		assertThat(friends.get(0)).isEqualTo("bar");
+		assertThat(friends).hasSize(2);
+		assertThat(friends).contains("foo", "bar");
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_list_element_iterator_remove() throws Exception {
+	public void should_not_dirty_check_list_element_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().iterator();
 
 		iter.next();
@@ -201,12 +201,12 @@ public class DirtyCheckIT {
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
-		assertThat(friends).hasSize(1);
-		assertThat(friends.get(0)).isEqualTo("bar");
+		assertThat(friends).hasSize(2);
+		assertThat(friends).contains("foo", "bar");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_remove() throws Exception {
+	public void should_not_dirty_check_list_element_list_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
@@ -217,24 +217,22 @@ public class DirtyCheckIT {
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
-		assertThat(friends).hasSize(1);
-		assertThat(friends.get(0)).isEqualTo("bar");
+		assertThat(friends).hasSize(2);
+		assertThat(friends).contains("foo", "bar");
 	}
 
 	@Test
-	public void should_dirty_check_list_element_list_iterator_set() throws Exception {
+	public void should_not_dirty_check_list_element_list_iterator_set() throws Exception {
 		ListIterator<String> iter = bean.getFriends().listIterator();
 
 		iter.next();
 		iter.set("qux");
 
-		manager.update(bean);
-
 		Row row = session.execute("select friends from CompleteBean where id=" + bean.getId()).one();
 		List<String> friends = row.getList("friends", String.class);
 
 		assertThat(friends).hasSize(2);
-		assertThat(friends.get(0)).isEqualTo("qux");
+		assertThat(friends).contains("foo", "bar");
 	}
 
 	@Test
@@ -283,7 +281,7 @@ public class DirtyCheckIT {
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_remove() throws Exception {
+	public void should_not_dirty_check_map_keyset_remove() throws Exception {
 		bean.getPreferences().keySet().remove(1);
 
 		manager.update(bean);
@@ -291,14 +289,15 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
 
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_remove_all() throws Exception {
+	public void should_not_dirty_check_map_keyset_remove_all() throws Exception {
 		bean.getPreferences().keySet().removeAll(Arrays.asList(1, 2, 5));
 
 		manager.update(bean);
@@ -306,13 +305,15 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(1);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
 
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_retain_all() throws Exception {
+	public void should_not_dirty_check_map_keyset_retain_all() throws Exception {
 		bean.getPreferences().keySet().retainAll(Arrays.asList(1, 3));
 
 		manager.update(bean);
@@ -320,14 +321,14 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
 		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
-
 	}
 
 	@Test
-	public void should_dirty_check_map_keyset_iterator_remove() throws Exception {
+	public void should_not_dirty_check_map_keyset_iterator_remove() throws Exception {
 		Iterator<Integer> iter = bean.getPreferences().keySet().iterator();
 
 		iter.next();
@@ -338,14 +339,14 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
-
 	}
 
 	@Test
-	public void should_dirty_check_map_valueset_remove() throws Exception {
+	public void should_not_dirty_check_map_valueset_remove() throws Exception {
 		bean.getPreferences().values().remove("FR");
 
 		manager.update(bean);
@@ -353,13 +354,14 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
 	}
 
 	@Test
-	public void should_dirty_check_map_valueset_remove_all() throws Exception {
+	public void should_not_dirty_check_map_valueset_remove_all() throws Exception {
 		bean.getPreferences().values().removeAll(Arrays.asList("FR", "Paris", "test"));
 
 		manager.update(bean);
@@ -367,7 +369,9 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(1);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
 	}
 
@@ -380,13 +384,14 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
 		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
+		assertThat(preferences.get(3)).isEqualTo("75014");
 	}
 
 	@Test
-	public void should_dirty_check_map_valueset_iterator_remove() throws Exception {
+	public void should_not_dirty_check_map_valueset_iterator_remove() throws Exception {
 		Iterator<String> iter = bean.getPreferences().values().iterator();
 
 		iter.next();
@@ -397,34 +402,35 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
-
 	}
 
 	@Test
-	public void should_dirty_check_map_entrySet_remove_entry() throws Exception {
+	public void should_not_dirty_check_map_entrySet_remove_entry() throws Exception {
 
 		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
 		Entry<Integer, String> entry = entrySet.iterator().next();
 
 		entrySet.remove(entry);
+		entry.setValue("test");
 
 		manager.update(bean);
 
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(2);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
 		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
-
 	}
 
 	@Test
-	public void should_dirty_check_map_entrySet_remove_all_entry() throws Exception {
+	public void should_not_dirty_check_map_entrySet_remove_all_entry() throws Exception {
 
 		Set<Entry<Integer, String>> entrySet = bean.getPreferences().entrySet();
 
@@ -440,7 +446,9 @@ public class DirtyCheckIT {
 		Row row = session.execute("select preferences from CompleteBean where id=" + bean.getId()).one();
 		Map<Integer, String> preferences = row.getMap("preferences", Integer.class, String.class);
 
-		assertThat(preferences).hasSize(1);
+		assertThat(preferences).hasSize(3);
+		assertThat(preferences.get(1)).isEqualTo("FR");
+		assertThat(preferences.get(2)).isEqualTo("Paris");
 		assertThat(preferences.get(3)).isEqualTo("75014");
 	}
 
@@ -454,31 +462,5 @@ public class DirtyCheckIT {
 		Object reloadedName = row.getString("name");
 
 		assertThat(reloadedName).isEqualTo("another_name");
-	}
-
-	@Test
-	public void should_dirty_check_lazy_simple_property() throws Exception {
-		bean.setLabel("label");
-
-		manager.update(bean);
-
-		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
-		Object reloadedLabel = row.getString("label");
-
-		assertThat(reloadedLabel).isEqualTo("label");
-	}
-
-	@Test
-	public void should_dirty_check_lazy_simple_property_after_loading() throws Exception {
-		assertThat(bean.getLabel()).isNull();
-
-		bean.setLabel("label");
-
-		manager.update(bean);
-
-		Row row = session.execute("select label from CompleteBean where id=" + bean.getId()).one();
-		Object reloadedLabel = row.getString("label");
-
-		assertThat(reloadedLabel).isEqualTo("label");
 	}
 }

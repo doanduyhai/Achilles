@@ -15,13 +15,13 @@
  */
 package info.archinnov.achilles.internal.proxy.wrapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.ListIteratorWrapperBuilder;
-import info.archinnov.achilles.internal.proxy.wrapper.builder.ListWrapperBuilder;
 
 public class ListWrapper extends CollectionWrapper implements List<Object> {
 	private static final Logger log = LoggerFactory.getLogger(ListWrapper.class);
@@ -68,26 +68,12 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public ListIterator<Object> listIterator() {
-		ListIterator<Object> target = ((List<Object>) super.target).listIterator();
-
-		log.trace("Build iterator wrapper for list property {} of entity class {}", propertyMeta.getPropertyName(),
-				propertyMeta.getEntityClassName());
-
-		return ListIteratorWrapperBuilder
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
+		return new ArrayList<>(super.target).listIterator();
 	}
 
 	@Override
 	public ListIterator<Object> listIterator(int index) {
-		ListIterator<Object> target = ((List<Object>) super.target).listIterator(index);
-
-		log.trace("Build iterator wrapper for list property {} of entity class {} at index {}",
-				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), index);
-
-		return ListIteratorWrapperBuilder
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
+		return new ArrayList<>(super.target).listIterator(index);
 	}
 
 	@Override
@@ -112,14 +98,7 @@ public class ListWrapper extends CollectionWrapper implements List<Object> {
 
 	@Override
 	public List<Object> subList(int from, int to) {
-		List<Object> target = ((List<Object>) super.target).subList(from, to);
-
-		log.trace("Build sublist wrapper for list property {} of entity class {} between index {} and {}",
-				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), from, to);
-
-		return ListWrapperBuilder
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
-				.build();
+		return new ArrayList<>(super.target).subList(from, to);
 	}
 
 	@Override
