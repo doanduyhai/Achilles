@@ -16,11 +16,13 @@
 
 package info.archinnov.achilles.embedded;
 
-import info.archinnov.achilles.configuration.ConfigurationParameters;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.Set;
 
+import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableSet;
 
 public class CassandraEmbeddedConfigParameters {
@@ -90,9 +92,13 @@ public class CassandraEmbeddedConfigParameters {
 		defaultParams.put(COMMIT_LOG_FOLDER, DEFAULT_ACHILLES_TEST_COMMIT_LOG_FOLDER);
 		defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
 		defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
-		defaultParams.put(ConfigurationParameters.CLUSTER_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
-		defaultParams.put(ConfigurationParameters.KEYSPACE_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
+		defaultParams.put(CLUSTER_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
+		defaultParams.put(KEYSPACE_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
 		defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
+		defaultParams.put(COMPRESSION_TYPE, Compression.SNAPPY);
+		defaultParams.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
+		defaultParams.put(RETRY_POLICY, Policies.defaultRetryPolicy());
+		defaultParams.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
 		defaultParams.put(BUILD_NATIVE_SESSION_ONLY, false);
 		defaultParams.putAll(parameters);
 

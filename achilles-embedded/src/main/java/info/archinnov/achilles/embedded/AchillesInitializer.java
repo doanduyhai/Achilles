@@ -16,8 +16,7 @@
 
 package info.archinnov.achilles.embedded;
 
-import static com.datastax.driver.core.ProtocolOptions.Compression.SNAPPY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
@@ -32,9 +31,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.policies.Policies;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
+import com.datastax.driver.core.policies.ReconnectionPolicy;
+import com.datastax.driver.core.policies.RetryPolicy;
 
 public class AchillesInitializer {
 
@@ -68,8 +70,7 @@ public class AchillesInitializer {
 			cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
 		}
 
-		String clusterName = parameters.getTyped(ConfigurationParameters.CLUSTER_NAME_PARAM);
-		Cluster cluster = createCluster(hostname, cqlPort, clusterName);
+		Cluster cluster = createCluster(hostname, cqlPort, parameters);
 		createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
 
 		if (nativeSessionOnly) {
@@ -104,11 +105,16 @@ public class AchillesInitializer {
 		return keyspaceName;
 	}
 
-	private Cluster createCluster(String host, int cqlPort, String clusterName) {
+	private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
+		String clusterName = parameters.getTyped(CLUSTER_NAME_PARAM);
+		Compression compression = parameters.getTyped(COMPRESSION_TYPE);
+		LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
+		RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
+		ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
+
 		return Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
-				.withCompression(SNAPPY).withLoadBalancingPolicy(Policies.defaultLoadBalancingPolicy())
-				.withRetryPolicy(Policies.defaultRetryPolicy())
-				.withReconnectionPolicy(Policies.defaultReconnectionPolicy()).build();
+				.withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
+				.withReconnectionPolicy(reconnectionPolicy).build();
 	}
 
 	private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {
