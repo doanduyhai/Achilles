@@ -18,6 +18,8 @@ package info.archinnov.achilles.internal.statement.prepared;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
@@ -72,6 +74,57 @@ public class PreparedStatementBinder {
 
 		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
 	}
+
+    public BoundStatementWrapper bindForCollectionAndMapUpdate(PreparedStatement ps, EntityMeta entityMeta, Object entity,
+            DirtyCheckChangeSet changeSet,
+            ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
+        log.trace("Bind prepared statement {} for collection/map update of entity {}", ps.getQueryString(), entity);
+        List<Object> values = new ArrayList<>();
+        final CollectionAndMapChangeType changeType = changeSet.getChangeType();
+        // TTL or default value 0
+        values.add(ttlO.or(0));
+        switch (changeType) {
+            case ASSIGN_VALUE_TO_LIST:
+                values.add(changeSet.getEncodedListChanges());
+                break;
+            case ASSIGN_VALUE_TO_SET:
+                values.add(changeSet.getEncodedSetChanges());
+                break;
+            case ASSIGN_VALUE_TO_MAP:
+                values.add(changeSet.getEncodedMapChanges());
+                break;
+            case REMOVE_COLLECTION_OR_MAP:
+                values.add(null);
+                break;
+            case ADD_TO_SET:
+            case REMOVE_FROM_SET:
+                values.add(changeSet.getEncodedSetChanges());
+                break;
+            case APPEND_TO_LIST:
+            case PREPEND_TO_LIST:
+            case REMOVE_FROM_LIST:
+                values.add(changeSet.getEncodedListChanges());
+                break;
+            case SET_TO_LIST_AT_INDEX:
+                throw new IllegalStateException("Cannot bind statement to set element at index for list");
+            case REMOVE_FROM_LIST_AT_INDEX:
+                throw new IllegalStateException("Cannot bind statement to remove element at index for list");
+            case ADD_TO_MAP:
+                values.add(changeSet.getEncodedMapChanges());
+                break;
+            case REMOVE_FROM_MAP:
+                values.add(changeSet.getEncodedMapChanges().keySet().iterator().next());
+                values.add(null);
+                break;
+        }
+
+        Object primaryKey = entityMeta.getPrimaryKey(entity);
+        values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
+        BoundStatement bs = ps.bind(values.toArray());
+
+        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
+    }
+
 
 	public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PreparedStatement ps, EntityMeta entityMeta,
 			Object primaryKey, ConsistencyLevel consistencyLevel) {

@@ -23,6 +23,8 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
+import info.archinnov.achilles.internal.proxy.dirtycheck.SimpleDirtyChecker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -76,7 +78,7 @@ public class EntityUpdaterTest {
 
 	private List<PropertyMeta> allCounterMetas = new ArrayList<>();
 
-	private Map<Method, PropertyMeta> dirtyMap = new HashMap<>();
+	private Map<Method, DirtyChecker> dirtyMap = new HashMap<>();
 
 	@Before
 	public void setUp() {
@@ -99,7 +101,8 @@ public class EntityUpdaterTest {
 
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
 				.accessors().build();
-		dirtyMap.put(pm.getGetter(), pm);
+        DirtyChecker dirtyChecker = new SimpleDirtyChecker(pm);
+		dirtyMap.put(pm.getGetter(), dirtyChecker);
 		when(context.isClusteredCounter()).thenReturn(false);
 
 		entityUpdater.update(context, entity);
@@ -124,7 +127,8 @@ public class EntityUpdaterTest {
 
 		PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
 				.accessors().build();
-		dirtyMap.put(pm.getGetter(), pm);
+        DirtyChecker dirtyChecker = new SimpleDirtyChecker(pm);
+		dirtyMap.put(pm.getGetter(), dirtyChecker);
 		when(context.isClusteredCounter()).thenReturn(true);
 
 		entityUpdater.update(context, entity);

@@ -21,13 +21,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -36,15 +37,12 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 public class ListWrapperBuilderTest {
 
 	@Mock
-	private Map<Method, PropertyMeta> dirtyMap;
+	private Map<Method, DirtyChecker> dirtyMap;
 
 	private Method setter;
 
 	@Mock
 	private PropertyMeta propertyMeta;
-
-	@Mock
-	private PersistenceContext context;
 
 	@Before
 	public void setUp() throws Exception {
@@ -56,14 +54,13 @@ public class ListWrapperBuilderTest {
 		List<Object> target = new ArrayList<Object>();
 		ListWrapper wrapper = ListWrapperBuilder
 				//
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(target);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

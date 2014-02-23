@@ -35,6 +35,7 @@ import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
 import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -94,6 +95,9 @@ public class PersistenceContextTest {
 
 	@Mock
 	private ReflectionInvoker invoker;
+
+    @Mock
+    private DirtyCheckChangeSet changeSet;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private EntityMeta meta;
@@ -199,12 +203,19 @@ public class PersistenceContextTest {
 	}
 
 	@Test
-	public void should_bind_for_update() throws Exception {
+	public void should_push_for_update() throws Exception {
 		List<PropertyMeta> pms = Arrays.asList();
 		context.pushUpdateStatement(pms);
 
 		verify(daoContext).pushUpdateStatement(context, pms);
 	}
+
+    @Test
+    public void should_push_for_collection_and_map_update() throws Exception {
+        context.pushCollectionAndMapUpdateStatements(changeSet);
+
+        verify(daoContext).pushCollectionAndMapUpdateStatement(context, changeSet);
+    }
 
 	@Test
 	public void should_bind_for_removal() throws Exception {

@@ -16,8 +16,11 @@
 package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.type.Pair;
@@ -130,6 +133,59 @@ public class StatementGenerator {
 		final Object[] boundValues = ArrayUtils.addAll(boundValuesForColumns, pair.right);
 		return Pair.create(pair.left, boundValues);
 	}
+
+    public Pair<Update.Where,Object[]> generateCollectionAndMapUpdateOperation(DirtyCheckChangeSet changeSet, Object entity,EntityMeta meta) {
+
+        final Assignments with = update(meta.getTableName()).with();
+        final CollectionAndMapChangeType operationType = changeSet.getChangeType();
+
+        Object[] boundValueForColumn = new Object[1];
+        switch(operationType) {
+            case ASSIGN_VALUE_TO_LIST:
+                boundValueForColumn = changeSet.generateUpdateForAssignValueToList(with, false);
+                break;
+            case ASSIGN_VALUE_TO_SET:
+                boundValueForColumn = changeSet.generateUpdateForAssignValueToSet(with, false);
+                break;
+            case ASSIGN_VALUE_TO_MAP:
+                boundValueForColumn = changeSet.generateUpdateForAssignValueToMap(with, false);
+                break;
+            case REMOVE_COLLECTION_OR_MAP:
+                boundValueForColumn = changeSet.generateUpdateForRemoveAll(with, false);
+                break;
+            case ADD_TO_SET:
+                boundValueForColumn = changeSet.generateUpdateForAddedElements(with, false);
+                break;
+            case REMOVE_FROM_SET:
+                boundValueForColumn = changeSet.generateUpdateForRemovedElements(with, false);
+                break;
+            case APPEND_TO_LIST:
+                boundValueForColumn = changeSet.generateUpdateForAppendedElements(with, false);
+                break;
+            case PREPEND_TO_LIST:
+                boundValueForColumn = changeSet.generateUpdateForPrependedElements(with, false);
+                break;
+            case REMOVE_FROM_LIST:
+                boundValueForColumn = changeSet.generateUpdateForRemoveListElements(with, false);
+                break;
+            case SET_TO_LIST_AT_INDEX:
+                boundValueForColumn = changeSet.generateUpdateForSetAtIndexElement(with);
+                break;
+            case REMOVE_FROM_LIST_AT_INDEX:
+                boundValueForColumn = changeSet.generateUpdateForRemovedAtIndexElement(with);
+                break;
+            case ADD_TO_MAP:
+                boundValueForColumn = changeSet.generateUpdateForAddedEntries(with, false);
+                break;
+            case REMOVE_FROM_MAP:
+                boundValueForColumn = changeSet.generateUpdateForRemovedKey(with, false);
+                break;
+        }
+
+        final Pair<Update.Where, Object[]> pair = generateWhereClauseForUpdate(entity,meta.getIdMeta(), with);
+        final Object[] boundValues = ArrayUtils.addAll(boundValueForColumn, pair.right);
+        return Pair.create(pair.left, boundValues);
+    }
 
 	private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,
 			Assignments update) {

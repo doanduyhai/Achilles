@@ -17,22 +17,22 @@ package info.archinnov.achilles.internal.proxy.wrapper;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 
 public abstract class AbstractWrapper {
-	protected Map<Method, PropertyMeta> dirtyMap;
+	protected Map<Method, DirtyChecker> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta propertyMeta;
 	protected EntityProxifier proxifier = new EntityProxifier();
-	protected PersistenceContext context;
 
-	public Map<Method, PropertyMeta> getDirtyMap() {
+
+	public Map<Method, DirtyChecker> getDirtyMap() {
 		return dirtyMap;
 	}
 
-	public void setDirtyMap(Map<Method, PropertyMeta> dirtyMap) {
+	public void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
 		this.dirtyMap = dirtyMap;
 	}
 
@@ -44,17 +44,9 @@ public abstract class AbstractWrapper {
 		this.propertyMeta = propertyMeta;
 	}
 
-	protected void markDirty() {
-		if (!dirtyMap.containsKey(setter)) {
-			dirtyMap.put(setter, propertyMeta);
-		}
-	}
-
-	public void setContext(PersistenceContext context) {
-		this.context = context;
-	}
-
     void setProxifier(EntityProxifier proxifier) {
         this.proxifier = proxifier;
     }
+
+    protected abstract DirtyChecker getDirtyChecker();
 }

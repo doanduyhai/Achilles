@@ -17,18 +17,18 @@ package info.archinnov.achilles.internal.proxy.wrapper.builder;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.proxy.wrapper.AbstractWrapper;
 
 @SuppressWarnings("unchecked")
 public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>> {
-	private Map<Method, PropertyMeta> dirtyMap;
+	private Map<Method, DirtyChecker> dirtyMap;
 	private Method setter;
 	private PropertyMeta propertyMeta;
-	protected PersistenceContext context;
 
-	public T dirtyMap(Map<Method, PropertyMeta> dirtyMap) {
+	public T dirtyMap(Map<Method, DirtyChecker> dirtyMap) {
 		this.dirtyMap = dirtyMap;
 		return (T) this;
 	}
@@ -43,15 +43,9 @@ public abstract class AbstractWrapperBuilder<T extends AbstractWrapperBuilder<T>
 		return (T) this;
 	}
 
-	public T context(PersistenceContext context) {
-		this.context = context;
-		return (T) this;
-	}
-
 	public void build(AbstractWrapper wrapper) {
 		wrapper.setDirtyMap(dirtyMap);
 		wrapper.setSetter(setter);
 		wrapper.setPropertyMeta(propertyMeta);
-		wrapper.setContext(context);
 	}
 }

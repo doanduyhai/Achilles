@@ -20,8 +20,8 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -54,7 +54,7 @@ public class EntityRefresherTest {
 	private EntityInterceptor<CompleteBean> jpaEntityInterceptor;
 
 	@Mock
-	private Map<Method, PropertyMeta> dirtyMap;
+	private Map<Method, DirtyChecker> dirtyMap;
 
 	@Mock
 	private Set<Method> alreadyLoaded;

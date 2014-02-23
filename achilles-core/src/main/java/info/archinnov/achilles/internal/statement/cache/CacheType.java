@@ -16,5 +16,18 @@
 package info.archinnov.achilles.internal.statement.cache;
 
 public enum CacheType {
-	SELECT_FIELD, UPDATE_FIELDS
-}
+    ASSIGN_VALUE_TO_LIST,
+    ASSIGN_VALUE_TO_SET,
+    ASSIGN_VALUE_TO_MAP,
+    REMOVE_COLLECTION_OR_MAP,
+    ADD_TO_SET,
+    REMOVE_FROM_SET,
+    APPEND_TO_LIST,
+    PREPEND_TO_LIST,
+    REMOVE_FROM_LIST,
+    SET_TO_LIST_AT_INDEX,
+    REMOVE_FROM_LIST_AT_INDEX,
+    ADD_TO_MAP,
+    REMOVE_FROM_MAP,
+    SELECT_FIELD, UPDATE_FIELDS;
+    }

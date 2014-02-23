@@ -93,7 +93,7 @@ public class PersistenceContextFactoryTest {
 		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
-		assertThat(actual.getTtt().get()).isEqualTo(95);
+		assertThat(actual.getTtl().get()).isEqualTo(95);
 	}
 
 	@Test
@@ -111,7 +111,7 @@ public class PersistenceContextFactoryTest {
 		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
-		assertThat(actual.getTtt()).isSameAs(PersistenceContextFactory.NO_TTL);
+		assertThat(actual.getTtl()).isSameAs(PersistenceContextFactory.NO_TTL);
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class PersistenceContextFactoryTest {
 		assertThat(context.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(context.getEntityMeta()).isSameAs(meta);
 		assertThat(context.getIdMeta()).isSameAs(idMeta);
-		assertThat(context.getTtt().get()).isEqualTo(98);
+		assertThat(context.getTtl().get()).isEqualTo(98);
 	}
 
 	@Test
@@ -142,6 +142,6 @@ public class PersistenceContextFactoryTest {
 		assertThat(actual.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
 		assertThat(actual.getEntityMeta()).isSameAs(meta);
 		assertThat(actual.getIdMeta()).isSameAs(idMeta);
-		assertThat(actual.getTtt().isPresent()).isFalse();
+		assertThat(actual.getTtl().isPresent()).isFalse();
 	}
 }

@@ -28,6 +28,7 @@ import info.archinnov.achilles.internal.persistence.operations.EntityPersister;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityRefresher;
 import info.archinnov.achilles.internal.persistence.operations.EntityUpdater;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -136,6 +137,10 @@ public class PersistenceContext {
 	public void pushUpdateStatement(List<PropertyMeta> pms) {
 		daoContext.pushUpdateStatement(this, pms);
 	}
+
+    public void pushCollectionAndMapUpdateStatements(DirtyCheckChangeSet changeSet) {
+        daoContext.pushCollectionAndMapUpdateStatement(this, changeSet);
+    }
 
 	public void bindForRemoval(String tableName) {
 		daoContext.bindForRemoval(this, tableName);
@@ -337,7 +342,7 @@ public class PersistenceContext {
 		this.entityMeta = entityMeta;
 	}
 
-	public Optional<Integer> getTtt() {
+	public Optional<Integer> getTtl() {
 		return options.getTtl();
 	}
 

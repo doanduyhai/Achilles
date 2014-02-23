@@ -18,51 +18,50 @@ package info.archinnov.achilles.internal.proxy.wrapper.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.wrapper.SetWrapper;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SetWrapperBuilderTest {
-
 	@Mock
-	private Map<Method, PropertyMeta> dirtyMap;
+	private Map<Method, DirtyChecker> dirtyMap;
 
 	private Method setter;
-
-	@Mock
-	private PersistenceContext context;
 
 	@Mock
 	private PropertyMeta propertyMeta;
 
 	@Before
 	public void setUp() throws Exception {
-		setter = CompleteBean.class.getDeclaredMethod("setFollowers", Set.class);
+		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 	}
 
 	@Test
 	public void should_build() throws Exception {
-		Set<Object> target = new HashSet<Object>();
+		Set<Object> target = new HashSet<>();
 		SetWrapper wrapper = SetWrapperBuilder
-				.builder(context, target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
+				//
+				.builder(target).dirtyMap(dirtyMap).setter(setter).propertyMeta(propertyMeta)
 				.build();
 
 		assertThat(wrapper.getTarget()).isSameAs(target);
 		assertThat(wrapper.getDirtyMap()).isSameAs(dirtyMap);
 		assertThat(Whitebox.getInternalState(wrapper, "setter")).isSameAs(setter);
 		assertThat(Whitebox.getInternalState(wrapper, "propertyMeta")).isSameAs(propertyMeta);
-		assertThat(Whitebox.getInternalState(wrapper, "context")).isSameAs(context);
 
 	}
 }

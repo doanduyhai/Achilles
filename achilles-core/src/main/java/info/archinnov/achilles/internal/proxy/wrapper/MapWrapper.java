@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 		if (this.target.size() > 0) {
 			log.trace("Mark map property {} of entity class {} dirty upon all elements clearance",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
-			this.markDirty();
+			getDirtyChecker().removeAllElements();
 		}
 		this.target.clear();
 
@@ -82,34 +83,41 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 		log.trace("Mark map property {} of entity class {} dirty upon new value {} addition for key {}",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), value, key);
 
-		Object result = this.target.put(key, proxifier.removeProxy(value));
-		this.markDirty();
+        final Object element = proxifier.removeProxy(value);
+        Object result = this.target.put(key, element);
+        HashMap<Object, Object> entries = new HashMap<>();
+        entries.put(key,value);
+        getDirtyChecker().addElements(entries);
 		return result;
 	}
 
 	@Override
-	public void putAll(Map<?, ?> m) {
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		for (Entry<?, ?> entry : m.entrySet()) {
-			map.put(entry.getKey(), proxifier.removeProxy(entry.getValue()));
+	public void putAll(Map<?, ?> map) {
+		Map<Object, Object> encodedMap = new HashMap<Object, Object>();
+		for (Entry<?, ?> entry : map.entrySet()) {
+            final Object element = proxifier.removeProxy(entry.getValue());
+            final Object key = entry.getKey();
+            encodedMap.put(key, element);
 		}
+        if(encodedMap.size()>0) {
+            getDirtyChecker().addElements(encodedMap);
+        }
 
-		log.trace("Mark map property {} of entity class {} dirty upon new key/value pairs addition",
+		log.trace("Mark encodedMap property {} of entity class {} dirty upon new key/value pairs addition",
 				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
 
-		this.target.putAll(map);
-		this.markDirty();
+		this.target.putAll(encodedMap);
 	}
 
 	@Override
 	public Object remove(Object key) {
-		Object unwrap = proxifier.removeProxy(key);
-		if (this.target.containsKey(unwrap)) {
+		Object element = proxifier.removeProxy(key);
+		if (this.target.containsKey(element)) {
 			log.trace("Mark map property {} of entity class {} dirty upon removal of value havo,g key {}",
 					propertyMeta.getPropertyName(), propertyMeta.getEntityClassName(), key);
-			this.markDirty();
+            getDirtyChecker().removeMapEntry(key);
 		}
-		return this.target.remove(unwrap);
+		return this.target.remove(element);
 	}
 
 	@Override
@@ -125,4 +133,12 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 	public Map<Object, Object> getTarget() {
 		return target;
 	}
+
+    @Override
+    protected DirtyChecker getDirtyChecker() {
+        if(!dirtyMap.containsKey(setter)) {
+            dirtyMap.put(setter,new DirtyChecker(propertyMeta));
+        }
+        return dirtyMap.get(setter);
+    }
 }

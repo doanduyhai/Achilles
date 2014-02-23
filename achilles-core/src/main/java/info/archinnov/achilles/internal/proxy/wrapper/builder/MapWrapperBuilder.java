@@ -22,12 +22,11 @@ import info.archinnov.achilles.internal.proxy.wrapper.MapWrapper;
 public class MapWrapperBuilder extends AbstractWrapperBuilder<MapWrapperBuilder> {
 	private Map<Object, Object> target;
 
-	public static MapWrapperBuilder builder(PersistenceContext context, Map<Object, Object> target) {
-		return new MapWrapperBuilder(context, target);
+	public static MapWrapperBuilder builder(Map<Object, Object> target) {
+		return new MapWrapperBuilder(target);
 	}
 
-	public MapWrapperBuilder(PersistenceContext context, Map<Object, Object> target) {
-		super.context = context;
+	public MapWrapperBuilder(Map<Object, Object> target) {
 		this.target = target;
 	}
 

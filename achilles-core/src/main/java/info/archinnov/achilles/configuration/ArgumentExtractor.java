@@ -53,8 +53,9 @@ import com.datastax.driver.core.policies.RetryPolicy;
 public class ArgumentExtractor {
 
 	private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
+    private static final int DEFAULT_CACHE_SIZE = 5000;
 
-	public List<String> initEntityPackages(TypedMap configurationMap) {
+    public List<String> initEntityPackages(TypedMap configurationMap) {
 		log.trace("Extract entity packages from configuration map");
 
 		List<String> entityPackages = new ArrayList<String>();
@@ -257,7 +258,7 @@ public class ArgumentExtractor {
 	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
 		log.trace("Extract read Consistency level map from configuration map");
 
-		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
+		Map<String, ConsistencyLevel> map = new HashMap<>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
 			for (Entry<String, String> entry : consistencyLevelMap.entrySet()) {
 				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
@@ -290,8 +291,7 @@ public class ArgumentExtractor {
 	}
 
 	javax.validation.Validator initValidator(TypedMap configurationMap) {
-		if (configurationMap.containsKey(BEAN_VALIDATION_ENABLE)) {
-			Boolean enableBeanValidation = configurationMap.getTyped(BEAN_VALIDATION_ENABLE);
+			Boolean enableBeanValidation = configurationMap.getTypedOr(BEAN_VALIDATION_ENABLE, false);
 			if (enableBeanValidation) {
 				try {
 					javax.validation.Validator defaultValidator = buildDefaultValidatorFactory().getValidator();
@@ -300,8 +300,10 @@ public class ArgumentExtractor {
 					throw new AchillesException("Cannot bootstrap ValidatorFactory for Bean Validation (JSR 303)", vex);
 				}
 			}
-		}
 		return null;
 	}
 
+    public Integer initPreparedStatementsCacheSize(TypedMap configMap) {
+        return configMap.getTypedOr(PREPARED_STATEMENTS_CACHE_SIZE, DEFAULT_CACHE_SIZE);
+    }
 }

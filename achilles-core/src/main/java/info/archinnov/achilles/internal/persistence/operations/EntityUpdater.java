@@ -17,11 +17,17 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +38,9 @@ import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
+import static info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker.COLLECTION_AND_MAP_FIELD;
+import static info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker.EXTRACT_META;
+import static info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker.SIMPLE_FIELD;
 
 public class EntityUpdater {
 
@@ -42,6 +50,7 @@ public class EntityUpdater {
 
 	private CounterPersister counterPersister = new CounterPersister();
 	private EntityProxifier proxifier = new EntityProxifier();
+
 
 	public void update(PersistenceContext context, Object entity) {
 		log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
@@ -58,12 +67,12 @@ public class EntityUpdater {
 		context.setEntity(realObject);
 
 		EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
-		Map<Method, PropertyMeta> dirtyMap = interceptor.getDirtyMap();
-		List<PropertyMeta> sortedDirtyNonCounterMetas = new ArrayList<>(from(dirtyMap.values()).filter(
-				excludeCounterType).toList());
-		if (sortedDirtyNonCounterMetas.size() > 0) {
-			Collections.sort(sortedDirtyNonCounterMetas, comparator);
-			context.pushUpdateStatement(sortedDirtyNonCounterMetas);
+		Map<Method, DirtyChecker> dirtyMap = interceptor.getDirtyMap();
+		List<DirtyChecker> dirtyCheckers = new ArrayList<>(dirtyMap.values());
+
+		if (dirtyCheckers.size() > 0) {
+            pushDirtySimpleFields(context, dirtyCheckers);
+            pushCollectionAndMapUpdates(context, dirtyCheckers);
 			dirtyMap.clear();
 		}
 
@@ -76,7 +85,30 @@ public class EntityUpdater {
 		interceptor.setTarget(realObject);
 	}
 
-	public static class PropertyMetaComparator implements Comparator<PropertyMeta> {
+    private void pushCollectionAndMapUpdates(PersistenceContext context, List<DirtyChecker> dirtyCheckers) {
+        final List<DirtyChecker> collectionsAndMaps = from(dirtyCheckers)
+                .filter(COLLECTION_AND_MAP_FIELD)
+                .toList();
+
+        for(DirtyChecker dirtyChecker: collectionsAndMaps) {
+            for(DirtyCheckChangeSet changeSet: dirtyChecker.getChangeSets()) {
+                context.pushCollectionAndMapUpdateStatements(changeSet);
+            }
+        }
+    }
+
+    private void pushDirtySimpleFields(PersistenceContext context, List<DirtyChecker> dirtyCheckers) {
+        final List<PropertyMeta> sortedSimpleMetas = new ArrayList<>(from(dirtyCheckers)
+                .filter(SIMPLE_FIELD)
+                .transform(EXTRACT_META)
+                .toList());
+        if(sortedSimpleMetas.size()>0) {
+            Collections.sort(sortedSimpleMetas, comparator);
+            context.pushUpdateStatement(sortedSimpleMetas);
+        }
+    }
+
+    public static class PropertyMetaComparator implements Comparator<PropertyMeta> {
 		@Override
 		public int compare(PropertyMeta arg0, PropertyMeta arg1) {
 			return arg0.getPropertyName().compareTo(arg1.getPropertyName());

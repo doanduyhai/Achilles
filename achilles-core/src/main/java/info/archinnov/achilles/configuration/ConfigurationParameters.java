@@ -52,5 +52,7 @@ public interface ConfigurationParameters {
 	String BEAN_VALIDATION_ENABLE = "achilles.bean.validation.enable";
 	String BEAN_VALIDATION_VALIDATOR = "achilles.bean.validation.validator";
 
+    String PREPARED_STATEMENTS_CACHE_SIZE = "achilles.prepared.statements.cache.size";
+
 	ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 }

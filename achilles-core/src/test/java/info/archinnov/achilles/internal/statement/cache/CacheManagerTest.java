@@ -15,18 +15,23 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+
+import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,7 +85,6 @@ public class CacheManagerTest {
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
 		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.SELECT_FIELD);
 		assertThat(cacheKey.getFields()).containsExactly("name");
 	}
@@ -145,7 +149,6 @@ public class CacheManagerTest {
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
 		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
 		assertThat(cacheKey.getFields()).containsOnly("name", "age");
 	}
@@ -173,8 +176,52 @@ public class CacheManagerTest {
 		assertThat(actual).isSameAs(ps);
 		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
 		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getTableName()).isEqualTo("table");
 		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
 		assertThat(cacheKey.getFields()).containsOnly("name", "age");
 	}
+
+    @Test
+    public void should_prepare_message_for_collection_and_map_operation() throws Exception {
+        //Given
+        EntityMeta meta = mock(EntityMeta.class);
+        PropertyMeta pm = mock(PropertyMeta.class);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(pm, ADD_TO_SET);
+
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, (Set)Sets.newHashSet(pm),
+                CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(null);
+        when(generator.prepareCollectionAndMapUpdate(session, meta, pm, changeSet)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForCollectionAndMapOperation(session, cache, context, pm,changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        verify(cache).put(cacheKey,ps);
+    }
+
+    @Test
+    public void should_get_collection_and_map_operation_from_cache() throws Exception {
+        //Given
+        EntityMeta meta = mock(EntityMeta.class);
+        PropertyMeta pm = mock(PropertyMeta.class);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(pm, ADD_TO_SET);
+
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, (Set)Sets.newHashSet(pm),
+                CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForCollectionAndMapOperation(session, cache, context, pm,
+                changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        verify(cache,never()).put(cacheKey,ps);
+        verifyZeroInteractions(generator);
+    }
 }

@@ -18,6 +18,8 @@ package info.archinnov.achilles.internal.statement.cache;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 
 import java.util.HashSet;
@@ -53,8 +55,8 @@ public class CacheManager {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
-		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD, entityMeta.getTableName(),
-				clusteredFields, entityClass);
+		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD,
+                clusteredFields, entityClass);
 		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
 		if (ps == null) {
 			ps = generator.prepareSelectFieldPS(session, entityMeta, pm);
@@ -72,7 +74,7 @@ public class CacheManager {
 		Class<?> entityClass = context.getEntityClass();
 		EntityMeta entityMeta = context.getEntityMeta();
 		Set<String> fields = new HashSet<String>(Collections2.transform(pms, propertyExtractor));
-		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.UPDATE_FIELDS, entityMeta.getTableName(), fields,
+		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.UPDATE_FIELDS, fields,
 				entityClass);
 		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
 		if (ps == null) {
@@ -82,9 +84,27 @@ public class CacheManager {
 		return ps;
 	}
 
+    public PreparedStatement getCacheForCollectionAndMapOperation(Session session,
+            Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context,
+            PropertyMeta pm, DirtyCheckChangeSet changeSet) {
+        final Class<Object> entityClass = context.getEntityClass();
+        CollectionAndMapChangeType changeType = changeSet.getChangeType();
+        log.trace("Get cache for operation {} on entity class {} and property {}",changeType.name(),
+                entityClass,pm.getPropertyName());
+
+        StatementCacheKey cacheKey = new StatementCacheKey(changeType.cacheType(), (Set)Sets.newHashSet(pm),
+                entityClass);
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if(ps == null) {
+            ps = generator.prepareCollectionAndMapUpdate(session, context.getEntityMeta(), pm, changeSet);
+            dynamicPSCache.put(cacheKey,ps);
+        }
+        return ps;
+    }
+
 	private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta pm) {
 		if (pm.isEmbeddedId()) {
-			return new HashSet<String>(pm.getComponentNames());
+			return new HashSet<>(pm.getComponentNames());
 		} else {
 			return Sets.newHashSet(pm.getPropertyName());
 		}

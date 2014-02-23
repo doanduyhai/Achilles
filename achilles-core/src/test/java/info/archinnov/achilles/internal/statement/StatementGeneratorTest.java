@@ -15,18 +15,36 @@
  */
 package info.archinnov.achilles.internal.statement;
 
+import static com.datastax.driver.core.querybuilder.Update.Assignments;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.PREPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
+import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
+import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
+
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -75,6 +93,9 @@ public class StatementGeneratorTest {
 
 	@Mock
 	private RegularStatementWrapper statementWrapper;
+
+    @Mock
+    private DirtyCheckChangeSet dirtyCheckChangeSet;
 
 	@Captor
 	private ArgumentCaptor<RegularStatement> statementCaptor;
@@ -142,7 +163,7 @@ public class StatementGeneratorTest {
         when(idMeta.encode(primaryKey)).thenReturn(primaryKey);
         when(idMeta.getPropertyName()).thenReturn("id");
 
-        when(meta.getColumnsMetaToInsert()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getColumnsMetaToInsert()).thenReturn(asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
         when(nameMeta.getAndEncodeValueForCassandra(entity)).thenReturn(myName);
@@ -152,7 +173,7 @@ public class StatementGeneratorTest {
 
         //Then
         assertThat(pair.left.getQueryString()).isEqualTo("INSERT INTO table(id,name) VALUES (" + primaryKey + ",?);");
-        assertThat(Arrays.asList(pair.right)).containsExactly(primaryKey, myName);
+        assertThat(asList(pair.right)).containsExactly(primaryKey, myName);
     }
 
     @Test
@@ -173,10 +194,10 @@ public class StatementGeneratorTest {
 
         when(idMeta.isEmbeddedId()).thenReturn(true);
         when(idMeta.getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id","type"));
+        when(idMeta.getComponentNames()).thenReturn(asList("id", "type"));
         when(idMeta.encodeToComponents(primaryKey)).thenReturn(Arrays.<Object>asList(id,type));
 
-        when(meta.getColumnsMetaToInsert()).thenReturn(Arrays.asList(nameMeta));
+        when(meta.getColumnsMetaToInsert()).thenReturn(asList(nameMeta));
 
         when(nameMeta.type()).thenReturn(PropertyType.SIMPLE);
         when(nameMeta.getAndEncodeValueForCassandra(entity)).thenReturn(myName);
@@ -186,7 +207,7 @@ public class StatementGeneratorTest {
 
         //Then
         assertThat(pair.left.getQueryString()).isEqualTo("INSERT INTO table(id,type,name) VALUES ("+id+",?,?);");
-        assertThat(Arrays.asList(pair.right)).containsExactly(id,type,myName);
+        assertThat(asList(pair.right)).containsExactly(id,type,myName);
     }
 
 	@Test
@@ -223,19 +244,19 @@ public class StatementGeneratorTest {
 
 	@Test
 	public void should_generate_update_for_simple_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
 				.type(ID).invoker(invoker).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").accessors()
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").accessors()
 				.type(SIMPLE).invoker(invoker).build();
 
-		PropertyMeta friendsMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("friends")
+		PropertyMeta friendsMeta = completeBean(Void.class, String.class).field("friends")
 				.accessors().type(LIST).invoker(invoker).build();
 
-		PropertyMeta followersMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("followers")
+		PropertyMeta followersMeta = completeBean(Void.class, String.class).field("followers")
 				.accessors().type(SET).invoker(invoker).build();
 
-		PropertyMeta preferencesMeta = PropertyMetaTestBuilder.completeBean(Integer.class, String.class)
+		PropertyMeta preferencesMeta = completeBean(Integer.class, String.class)
 				.field("preferences").accessors().type(MAP).invoker(invoker).build();
 
 		EntityMeta meta = new EntityMeta();
@@ -247,7 +268,7 @@ public class StatementGeneratorTest {
 		Long id = RandomUtils.nextLong();
 		Long age = RandomUtils.nextLong();
 
-		List<String> friends = Arrays.asList("foo", "bar");
+		List<String> friends = asList("foo", "bar");
 
 		Set<String> followers = new TreeSet<>();
 		followers.add("john");
@@ -255,11 +276,11 @@ public class StatementGeneratorTest {
 
 		Map<Integer, String> preferences = ImmutableMap.of(1, "FR", 2, "Paris");
 
-		CompleteBean entity = CompleteBeanTestBuilder.builder().id(id).age(age).addFriends(friends)
+		CompleteBean entity = builder().id(id).age(age).addFriends(friends)
 				.addFollowers(followers).addPreferences(preferences).buid();
 
 		Pair<Where, Object[]> pair = generator.generateUpdateFields(entity, meta,
-				Arrays.asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
+				asList(ageMeta, friendsMeta, followersMeta, preferencesMeta));
 
 		assertThat(pair.left.getQueryString()).isEqualTo(
 				"UPDATE table SET age=" + age + ",friends=?,followers=?,preferences=? WHERE id=" + id + ";");
@@ -296,7 +317,7 @@ public class StatementGeneratorTest {
 		entity.setId(embeddedKey);
 		entity.setValue("value");
 
-		Pair<Where, Object[]> pair = generator.generateUpdateFields(entity, meta, Arrays.asList(valueMeta));
+		Pair<Where, Object[]> pair = generator.generateUpdateFields(entity, meta, asList(valueMeta));
 
 		assertThat(pair.left.getQueryString())
 				.isEqualTo("UPDATE table SET value=? WHERE id=" + userId + " AND name=?;");
@@ -304,32 +325,372 @@ public class StatementGeneratorTest {
 
 	}
 
+    @Test
+    public void should_generate_remove_all_to_collection_and_map_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_COLLECTION_OR_MAP);
+        when(dirtyCheckChangeSet.generateUpdateForRemoveAll(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_assign_value_to_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_SET);
+        when(dirtyCheckChangeSet.generateUpdateForAssignValueToSet(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_assign_value_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_LIST);
+        when(dirtyCheckChangeSet.generateUpdateForAssignValueToList(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_assign_value_to_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_MAP);
+        when(dirtyCheckChangeSet.generateUpdateForAssignValueToMap(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_add_element_to_set_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(ADD_TO_SET);
+        when(dirtyCheckChangeSet.generateUpdateForAddedElements(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_remove_element_from_set_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_SET);
+        when(dirtyCheckChangeSet.generateUpdateForRemovedElements(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_append_element_to_list_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(APPEND_TO_LIST);
+        when(dirtyCheckChangeSet.generateUpdateForAppendedElements(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_prepend_element_to_list_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(PREPEND_TO_LIST);
+        when(dirtyCheckChangeSet.generateUpdateForPrependedElements(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_remove_element_from_list_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST);
+        when(dirtyCheckChangeSet.generateUpdateForRemoveListElements(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_set_element_at_index_to_list_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
+        when(dirtyCheckChangeSet.generateUpdateForSetAtIndexElement(any(Assignments.class))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_remove_element_at_index_to_list_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
+        when(dirtyCheckChangeSet.generateUpdateForRemovedAtIndexElement(any(Assignments.class))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_add_entries_to_map_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(ADD_TO_MAP);
+        when(dirtyCheckChangeSet.generateUpdateForAddedEntries(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
+    @Test
+    public void should_generate_remove_entry_from_map_update() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
+                .type(ID).invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
+        meta.setIdMeta(idMeta);
+
+        Long id = RandomUtils.nextLong();
+        Object[] boundValues = new Object[]{"whatever"};
+        CompleteBean entity = builder().id(id).buid();
+
+        when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_MAP);
+        when(dirtyCheckChangeSet.generateUpdateForRemovedKey(any(Assignments.class), eq(false))).thenReturn(boundValues);
+
+        //When
+        final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(dirtyCheckChangeSet, entity, meta);
+
+        //Then
+        assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id="+id+";");
+        assertThat(pair.right[0]).isEqualTo("whatever");
+    }
+
 	private EntityMeta prepareEntityMeta(String... componentNames) throws Exception {
 		PropertyMeta idMeta;
 		if (componentNames.length > 1) {
-			idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
+			idMeta = completeBean(Void.class, EmbeddedKey.class).field("id")
 					.compNames(componentNames).type(PropertyType.EMBEDDED_ID).build();
 		} else {
-			idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field(componentNames[0]).type(ID)
+			idMeta = completeBean(Void.class, Long.class).field(componentNames[0]).type(ID)
 					.build();
 		}
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE)
+		PropertyMeta ageMeta = completeBean(Void.class, Long.class).field("age").type(SIMPLE)
 				.build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+		PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name")
 				.type(SIMPLE).build();
 
-		PropertyMeta labelMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("label")
+		PropertyMeta labelMeta = completeBean(Void.class, String.class).field("label")
 				.type(SIMPLE).build();
 
 		EntityMeta meta = new EntityMeta();
 		meta.setTableName("table");
-		meta.setAllMetasExceptCounters(Arrays.asList(idMeta, ageMeta, nameMeta, labelMeta));
-		meta.setAllMetasExceptId(Arrays.asList(ageMeta, nameMeta, labelMeta));
-		meta.setAllMetasExceptIdAndCounters(Arrays.asList(ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptCounters(asList(idMeta, ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptId(asList(ageMeta, nameMeta, labelMeta));
+		meta.setAllMetasExceptIdAndCounters(asList(ageMeta, nameMeta, labelMeta));
 		meta.setIdMeta(idMeta);
 
 		return meta;
 	}
+
+
 }

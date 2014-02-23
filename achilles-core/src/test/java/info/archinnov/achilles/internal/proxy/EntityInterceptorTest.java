@@ -15,15 +15,26 @@
  */
 package info.archinnov.achilles.internal.proxy;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+
+import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.InternalCounterImpl;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.MapWrapper;
 import info.archinnov.achilles.internal.proxy.wrapper.SetWrapper;
@@ -35,8 +46,10 @@ import info.archinnov.achilles.type.Counter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -86,7 +99,7 @@ public class EntityInterceptorTest {
 	private Map<Method, PropertyMeta> getterMetas = new HashMap<>();
 	private Map<Method, PropertyMeta> setterMetas = new HashMap<>();
 	private Set<Method> alreadyLoaded = new HashSet<Method>();
-	private Map<Method, PropertyMeta> dirtyMap = new HashMap<>();
+	private Map<Method, DirtyChecker> dirtyMap = new HashMap<>();
 	private CompleteBean target;
 	private Long key = RandomUtils.nextLong();
 	private Object rawValue = "raw";
@@ -121,7 +134,23 @@ public class EntityInterceptorTest {
 		Whitebox.setInternalState(interceptor, "invoker", invoker);
 	}
 
-	@Test
+    @Test
+    public void should_delegate_method_call_to_the_target() throws Throwable {
+        //Given
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name").accessors()
+                .type(PropertyType.SIMPLE).build();
+        MethodProxy proxy = mock(MethodProxy.class);
+        when(proxy.invoke(target, args)).thenReturn("name");
+
+        //When
+        Object name = interceptor.intercept(target, propertyMeta.getGetter(), args, proxy);
+
+        //Then
+        assertThat(name).isEqualTo("name");
+        verify(proxy).invokeSuper(target,args);
+    }
+
+    @Test
 	public void should_return_key_when_invoking_id_getter() throws Throwable {
 		PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().build();
 
@@ -256,6 +285,7 @@ public class EntityInterceptorTest {
 	public void should_exception_when_calling_setter_on_counter() throws Throwable {
 		PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).field("count").accessors()
 				.type(PropertyType.COUNTER).build();
+        args = new Object[]{null};
 
 		// No setter, use getter to simulate setter
 		setterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -278,13 +308,186 @@ public class EntityInterceptorTest {
 		Object actual = interceptor.intercept(target, method, new Object[] { rawValue }, proxy);
 
 		// Then
-		assertThat(alreadyLoaded).isEmpty();
-		assertThat(dirtyMap).containsKey(method);
-		assertThat(dirtyMap).containsValue(pm);
-		assertThat(actual).isNull();
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        assertThat(dirtyChecker.isSimpleField()).isTrue();
 
 		verify(pm, times(2)).setValueToField(target, rawValue);
 	}
+
+    @Test
+    public void should_set_list_value() throws Throwable {
+        // Given
+        List<Object> list = asList();
+        Method method = CompleteBean.class.getDeclaredMethod("getFriends");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.LIST);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { list }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_LIST);
+        assertThat(changeSet.getRawListChanges()).isSameAs(list);
+
+        verify(pm, times(2)).setValueToField(target, list);
+    }
+
+    @Test
+    public void should_set_list_value_to_null() throws Throwable {
+        // Given
+        List<Object> list = null;
+        Method method = CompleteBean.class.getDeclaredMethod("getFriends");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.LIST);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { list }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
+        assertThat(changeSet.getRawListChanges()).isEmpty();
+
+        verify(pm, times(2)).setValueToField(target, list);
+    }
+
+    @Test
+    public void should_set_set_value() throws Throwable {
+        // Given
+        Set<Object> set = newHashSet();
+        Method method = CompleteBean.class.getDeclaredMethod("getFollowers");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.SET);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { set }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_SET);
+        assertThat(changeSet.getRawSetChanges()).isSameAs(set);
+
+        verify(pm, times(2)).setValueToField(target, set);
+    }
+
+    @Test
+    public void should_set_set_value_to_null() throws Throwable {
+        // Given
+        Set<Object> set = null;
+        Method method = CompleteBean.class.getDeclaredMethod("getFollowers");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.SET);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { set }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
+        assertThat(changeSet.getRawSetChanges()).isEmpty();
+
+        verify(pm, times(2)).setValueToField(target, set);
+    }
+
+
+
+    @Test
+    public void should_set_map_value() throws Throwable {
+        // Given
+        Map<Object,Object> map = new HashMap<>();
+        Method method = CompleteBean.class.getDeclaredMethod("getPreferences");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.MAP);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { map }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_MAP);
+        assertThat(changeSet.getRawMapChanges()).isSameAs(map);
+
+        verify(pm, times(2)).setValueToField(target, map);
+    }
+
+    @Test
+    public void should_set_map_value_to_null() throws Throwable {
+        // Given
+        Map<Object,Object> map = null;
+        Method method = CompleteBean.class.getDeclaredMethod("getPreferences");
+
+        setterMetas.put(method, pm);
+        when(pm.type()).thenReturn(PropertyType.SET);
+
+        // When
+        Object actual = interceptor.intercept(target, method, new Object[] { map }, proxy);
+
+        // Then
+        assertThat(actual).isNull();
+        assertThat(alreadyLoaded).isEmpty();
+        assertThat(dirtyMap).containsKey(method);
+        DirtyChecker dirtyChecker = dirtyMap.get(method);
+
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
+        List<DirtyCheckChangeSet> changeSets = dirtyChecker.getChangeSets();
+        assertThat(changeSets).hasSize(1);
+        DirtyCheckChangeSet changeSet = changeSets.get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
+        assertThat(changeSet.getRawMapChanges()).isEmpty();
+
+        verify(pm, times(2)).setValueToField(target, map);
+    }
 
 	@Test
 	public void should_load_clustered_counter() throws Throwable {

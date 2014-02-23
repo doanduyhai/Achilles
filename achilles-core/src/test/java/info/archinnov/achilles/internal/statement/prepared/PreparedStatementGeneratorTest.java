@@ -19,6 +19,16 @@ import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.PREPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -33,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,6 +57,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementGeneratorTest {
@@ -394,4 +406,209 @@ public class PreparedStatementGeneratorTest {
 		assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=:id;");
 		assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=:id;");
 	}
+
+    @Test
+    public void should_prepare_statement_to_remove_all_collection_and_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta setMeta = completeBean(Void.class,String.class).field("followers").type(SET).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, REMOVE_COLLECTION_OR_MAP);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, setMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET followers=:followers WHERE id=:id;");
+
+    }
+
+    @Test
+    public void should_prepare_statement_to_add_elements_to_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta setMeta = completeBean(Void.class,String.class).field("followers").type(SET).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, ADD_TO_SET);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, setMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET followers=followers+:followers WHERE id=:id;");
+
+    }
+
+    @Test
+    public void should_prepare_statement_to_remove_elements_from_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta setMeta = completeBean(Void.class,String.class).field("followers").type(SET).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, REMOVE_FROM_SET);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, setMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET followers=followers-:followers WHERE id=:id;");
+
+    }
+
+    @Test
+    public void should_prepare_statement_to_append_elements_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta listMeta = completeBean(Void.class,String.class).field("friends").type(LIST).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, APPEND_TO_LIST);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, listMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET friends=friends+:friends WHERE id=:id;");
+    }
+
+    @Test
+    public void should_prepare_statement_to_prepend_elements_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta listMeta = completeBean(Void.class,String.class).field("friends").type(LIST).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, PREPEND_TO_LIST);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, listMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET friends=:friends+friends WHERE id=:id;");
+    }
+
+    @Test
+    public void should_prepare_statement_to_remove_elements_from_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta listMeta = completeBean(Void.class,String.class).field("friends").type(LIST).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, REMOVE_FROM_LIST);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, listMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET friends=friends-:friends WHERE id=:id;");
+    }
+
+
+    @Test(expected = IllegalStateException.class)
+    public void should_not_prepare_statement_to_set_element_at_index_from_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta listMeta = completeBean(Void.class,String.class).field("friends").type(LIST).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, SET_TO_LIST_AT_INDEX);
+
+        //When
+        generator.prepareCollectionAndMapUpdate(session, meta, listMeta, changeSet);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void should_not_prepare_statement_to_remove_element_at_index_from_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta listMeta = completeBean(Void.class,String.class).field("friends").type(LIST).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, REMOVE_FROM_LIST_AT_INDEX);
+
+        //When
+        generator.prepareCollectionAndMapUpdate(session, meta, listMeta, changeSet);
+    }
+
+    @Test
+    public void should_prepare_statement_to_add_entries_to_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta mapMeta = completeBean(Integer.class,String.class).field("preferences").type(MAP).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "preferences", mapMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(mapMeta, ADD_TO_MAP);
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, mapMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET preferences=preferences+:preferences WHERE id=:id;");
+    }
+
+    @Test
+    public void should_prepare_statement_to_remove_entry_from_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta mapMeta = completeBean(Integer.class,String.class).field("preferences").type(MAP).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setIdMeta(idMeta);
+        meta.setTableName("table");
+        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "preferences", mapMeta));
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
+        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(mapMeta, REMOVE_FROM_MAP);
+        Whitebox.setInternalState(changeSet,"mapChanges",ImmutableMap.of(1,"a"));
+
+        //When
+        final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, mapMeta, changeSet);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(regularStatementCaptor.getValue().getQueryString())
+                .isEqualTo("UPDATE table USING TTL :ttl SET preferences[:key]=:nullValue WHERE id=:id;");
+    }
 }

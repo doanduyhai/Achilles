@@ -15,12 +15,18 @@
  */
 package info.archinnov.achilles.internal.proxy.wrapper;
 
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.data.MapEntry.entry;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import java.lang.reflect.Method;
@@ -41,8 +47,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MapWrapperTest {
-	@Mock
-	private Map<Method, PropertyMeta> dirtyMap;
+
+    private Map<Method, DirtyChecker> dirtyMap;
 
 	private Method setter;
 
@@ -59,6 +65,7 @@ public class MapWrapperTest {
 	public void setUp() throws Exception {
 		setter = CompleteBean.class.getDeclaredMethod("setFriends", List.class);
 		when(propertyMeta.type()).thenReturn(PropertyType.MAP);
+        dirtyMap = new HashMap<>();
 	}
 
 	@Test
@@ -86,7 +93,6 @@ public class MapWrapperTest {
 		assertThat(wrapper.containsValue("FR")).isTrue();
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void should_not_be_empty_and_get_size() throws Exception {
 		Map<Integer, String> target = prepareMap();
@@ -94,7 +100,6 @@ public class MapWrapperTest {
 
 		assertThat(wrapper.isEmpty()).isFalse();
 		assertThat(wrapper.size()).isEqualTo(3);
-		assertThat((Map) wrapper.getTarget()).isSameAs(target);
 	}
 
 	@Test
@@ -106,7 +111,12 @@ public class MapWrapperTest {
 
 		assertThat(target).isEmpty();
 
-		verify(dirtyMap).put(setter, propertyMeta);
+        DirtyChecker dirtyChecker = dirtyMap.get(setter);
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+        assertThat(changeSet.getRawMapChanges()).isEmpty();
 	}
 
 	@Test
@@ -117,7 +127,7 @@ public class MapWrapperTest {
 
 		wrapper.clear();
 
-		verifyZeroInteractions(dirtyMap);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -131,7 +141,7 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy((Object) entry)).thenReturn(entry);
 		entrySet.remove(entry);
 
-		verifyZeroInteractions(dirtyMap);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -144,7 +154,7 @@ public class MapWrapperTest {
 		Entry<Object, Object> entry = new AbstractMap.SimpleEntry<Object, Object>(4, "csdf");
 		entrySet.remove(entry);
 
-		verify(dirtyMap, never()).put(setter, propertyMeta);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -156,7 +166,7 @@ public class MapWrapperTest {
 
 		entrySet.iterator().next().setValue("sdfsd");
 
-		verifyZeroInteractions(dirtyMap);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -168,7 +178,7 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy(1)).thenReturn(1);
 		keySet.remove(1);
 
-		verifyZeroInteractions(dirtyMap);
+        assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -180,7 +190,7 @@ public class MapWrapperTest {
 		keyIterator.next();
 		keyIterator.remove();
 
-		verifyZeroInteractions(dirtyMap);
+        assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -190,21 +200,41 @@ public class MapWrapperTest {
 
 		wrapper.put(4, "sdfs");
 
-		verify(dirtyMap).put(setter, propertyMeta);
-	}
+        DirtyChecker dirtyChecker = dirtyMap.get(setter);
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(ADD_TO_MAP);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+
+        assertThat(changeSet.getRawMapChanges()).hasSize(1).containsKey(4)
+                .containsValue("sdfs");
+    }
 
 	@Test
 	public void should_mark_dirty_on_put_all() throws Exception {
-		Map<Integer, String> target = prepareMap();
+		// Given
+        Map<Integer, String> target = prepareMap();
 		MapWrapper wrapper = prepareMapWrapper(target);
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 
+        when(proxifier.removeProxy("FR")).thenReturn("FR");
+        when(proxifier.removeProxy("Paris")).thenReturn("Paris");
+
+        // When
 		wrapper.putAll(map);
 
-		verify(dirtyMap).put(setter, propertyMeta);
+        // Then
+        DirtyChecker dirtyChecker = dirtyMap.get(setter);
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(ADD_TO_MAP);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+
+        assertThat(changeSet.getRawMapChanges()).hasSize(2)
+                .contains(entry(1, "FR"),entry(2,"Paris"));
 	}
 
 	@Test
@@ -214,7 +244,14 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy(1)).thenReturn(1);
 		wrapper.remove(1);
 
-		verify(dirtyMap).put(setter, propertyMeta);
+        DirtyChecker dirtyChecker = dirtyMap.get(setter);
+        assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(propertyMeta);
+        DirtyCheckChangeSet changeSet = dirtyChecker.getChangeSets().get(0);
+        assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_FROM_MAP);
+        assertThat(changeSet.getPropertyMeta()).isEqualTo(propertyMeta);
+
+        assertThat(changeSet.getRawMapChanges()).hasSize(1)
+                .contains(entry(1, null));
 	}
 
 	@Test
@@ -224,7 +261,7 @@ public class MapWrapperTest {
 
 		wrapper.remove(10);
 
-		verify(dirtyMap, never()).put(setter, propertyMeta);
+		assertThat(dirtyMap).isEmpty();
 	}
 
 	@Test
@@ -236,7 +273,7 @@ public class MapWrapperTest {
 		when(proxifier.removeProxy("FR")).thenReturn("FR");
 		collectionWrapper.remove("FR");
 
-		verifyZeroInteractions(dirtyMap);
+        assertThat(dirtyMap).isEmpty();
 	}
 
 	public void should_not_mark_dirty_on_collection_remove_non_existing() throws Exception {
@@ -247,11 +284,11 @@ public class MapWrapperTest {
 
 		collectionWrapper.remove("sdfsdf");
 
-		verify(dirtyMap, never()).put(setter, propertyMeta);
+        assertThat(dirtyMap).isEmpty();
 	}
 
 	private Map<Integer, String> prepareMap() {
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		Map<Integer, String> map = new HashMap<>();
 		map.put(1, "FR");
 		map.put(2, "Paris");
 		map.put(3, "75014");
@@ -259,7 +296,6 @@ public class MapWrapperTest {
 		return map;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private MapWrapper prepareMapWrapper(Map<Integer, String> target) {
 		MapWrapper wrapper = new MapWrapper((Map) target);
 		wrapper.setDirtyMap(dirtyMap);
@@ -267,10 +303,5 @@ public class MapWrapperTest {
 		wrapper.setPropertyMeta(propertyMeta);
 		wrapper.setProxifier(proxifier);
 		return wrapper;
-	}
-
-	@Test
-	public void testEntrySet() throws Exception {
-
 	}
 }

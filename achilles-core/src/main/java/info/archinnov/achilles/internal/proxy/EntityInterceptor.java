@@ -20,6 +20,8 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CounterLoader;
 import info.archinnov.achilles.internal.persistence.operations.EntityLoader;
 import info.archinnov.achilles.internal.persistence.operations.InternalCounterBuilder;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
+import info.archinnov.achilles.internal.proxy.dirtycheck.SimpleDirtyChecker;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.ListWrapperBuilder;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.MapWrapperBuilder;
 import info.archinnov.achilles.internal.proxy.wrapper.builder.SetWrapperBuilder;
@@ -51,7 +53,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 	private transient Method idSetter;
 	private transient Map<Method, PropertyMeta> getterMetas;
 	private transient Map<Method, PropertyMeta> setterMetas;
-	private transient Map<Method, PropertyMeta> dirtyMap;
+	private transient Map<Method, DirtyChecker> dirtyMap;
 	private transient Set<Method> alreadyLoaded;
 	private transient PersistenceContext context;
 
@@ -115,7 +117,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 
 				@SuppressWarnings("unchecked")
 				List<Object> list = (List<Object>) rawValue;
-				result = ListWrapperBuilder.builder(context, list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+				result = ListWrapperBuilder.builder(list).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
 						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
 			}
 			break;
@@ -126,7 +128,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 
 				@SuppressWarnings("unchecked")
 				Set<Object> set = (Set<Object>) rawValue;
-				result = SetWrapperBuilder.builder(context, set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+				result = SetWrapperBuilder.builder(set).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
 						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
 			}
 			break;
@@ -137,7 +139,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 
 				@SuppressWarnings("unchecked")
 				Map<Object, Object> map = (Map<Object, Object>) rawValue;
-				result = MapWrapperBuilder.builder(context, map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
+				result = MapWrapperBuilder.builder(map).dirtyMap(dirtyMap).setter(propertyMeta.getSetter())
 						.propertyMeta(this.getPropertyMetaByProperty(method)).build();
 			}
 			break;
@@ -154,17 +156,37 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 	private void interceptSetter(Method method, Object obj, Object[] args) throws Throwable {
 		PropertyMeta propertyMeta = this.setterMetas.get(method);
 
+        DirtyChecker dirtyChecker = null;
+        boolean removeField = false;
+        if(args[0] == null) {
+            removeField = true;
+        }
 		switch (propertyMeta.type()) {
-		case COUNTER:
-			throw new UnsupportedOperationException(
-					"Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
-		default:
-			break;
+            case SIMPLE:
+                dirtyChecker = new SimpleDirtyChecker(propertyMeta);
+                break;
+            case SET:
+                dirtyChecker = new DirtyChecker(propertyMeta);
+                if(removeField) dirtyChecker.removeAllElements(); else dirtyChecker.assignValue((Set) args[0]);
+                break;
+            case LIST:
+                dirtyChecker = new DirtyChecker(propertyMeta);
+                if(removeField) dirtyChecker.removeAllElements(); else dirtyChecker.assignValue((List) args[0]);
+                break;
+            case MAP:
+                dirtyChecker = new DirtyChecker(propertyMeta);
+                if(removeField) dirtyChecker.removeAllElements(); else dirtyChecker.assignValue((Map) args[0]);
+                break;
+            case COUNTER:
+                throw new UnsupportedOperationException(
+                        "Cannot set value directly to a Counter type. Please call the getter first to get handle on the wrapper");
+            default:
+                break;
 		}
 
 		log.trace("Flagging property {}", propertyMeta.getPropertyName());
 
-		dirtyMap.put(method, propertyMeta);
+		dirtyMap.put(method, dirtyChecker);
 		Object value = null;
 		if (args.length > 0) {
 			value = args[0];
@@ -178,7 +200,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 		return this.target;
 	}
 
-	public Map<Method, PropertyMeta> getDirtyMap() {
+	public Map<Method, DirtyChecker> getDirtyMap() {
 		return dirtyMap;
 	}
 
@@ -214,7 +236,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
 		this.setterMetas = setterMetas;
 	}
 
-	void setDirtyMap(Map<Method, PropertyMeta> dirtyMap) {
+	void setDirtyMap(Map<Method, DirtyChecker> dirtyMap) {
 		this.dirtyMap = dirtyMap;
 	}
 

@@ -19,11 +19,16 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.*;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.*;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
+
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.cache.CacheManager;
 import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
@@ -88,7 +93,7 @@ public class DaoContext {
 
 		EntityMeta entityMeta = context.getEntityMeta();
 		Class<?> entityClass = context.getEntityClass();
-		Optional<Integer> ttlO = context.getTtt();
+		Optional<Integer> ttlO = context.getTtl();
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, entityMeta);
 		if (timestampO.isPresent()) {
@@ -112,9 +117,9 @@ public class DaoContext {
 	}
 
 	public void pushUpdateStatement(PersistenceContext context, List<PropertyMeta> pms) {
-		log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context, pms);
+		log.debug("Push update statement for PersistenceContext '{}' and properties '{}'", context, pms);
 		EntityMeta entityMeta = context.getEntityMeta();
-		Optional<Integer> ttlO = context.getTtt();
+		Optional<Integer> ttlO = context.getTtl();
 		Optional<Long> timestampO = context.getTimestamp();
 		ConsistencyLevel writeLevel = overrider.getWriteLevel(context, entityMeta);
 		if (timestampO.isPresent()) {
@@ -138,6 +143,40 @@ public class DaoContext {
 			context.pushStatement(bsWrapper);
 		}
 	}
+
+    public void pushCollectionAndMapUpdateStatement(PersistenceContext context,DirtyCheckChangeSet changeSet) {
+        final CollectionAndMapChangeType changeType = changeSet.getChangeType();
+        final PropertyMeta propertyMeta = changeSet.getPropertyMeta();
+        log.debug("Push update statement for PersistenceContext '{}' and property '{}'", context, propertyMeta);
+        EntityMeta entityMeta = context.getEntityMeta();
+        Optional<Integer> ttlO = context.getTtl();
+        Optional<Long> timestampO = context.getTimestamp();
+        ConsistencyLevel writeLevel = overrider.getWriteLevel(context, entityMeta);
+        if (timestampO.isPresent()) {
+            final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, context.getEntity(),
+                    entityMeta);
+
+            final Update.Where where = pair.left;
+            Object[] boundValues = pair.right;
+            Update.Options updateOptions = where.using(timestamp(timestampO.get()));
+            boundValues = ArrayUtils.add(boundValues, timestampO.get());
+
+            if (ttlO.isPresent()) {
+                updateOptions = updateOptions.and(ttl(ttlO.get()));
+                boundValues = ArrayUtils.add(boundValues, ttlO.get());
+            }
+            context.pushStatement(new RegularStatementWrapper(updateOptions, boundValues, getCQLLevel(writeLevel)));
+        } else if (changeType == SET_TO_LIST_AT_INDEX || changeType == REMOVE_FROM_LIST_AT_INDEX) {
+            final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, context.getEntity(),
+                    entityMeta);
+            context.pushStatement(new RegularStatementWrapper(pair.left, pair.right, getCQLLevel(writeLevel)));
+        } else {
+            PreparedStatement ps = cacheManager.getCacheForCollectionAndMapOperation(session, dynamicPSCache, context, propertyMeta, changeSet);
+            BoundStatementWrapper bsWrapper = binder.bindForCollectionAndMapUpdate(ps, entityMeta, context.getEntity(),
+                    changeSet,writeLevel, ttlO);
+            context.pushStatement(bsWrapper);
+        }
+    }
 
 	public Row loadProperty(PersistenceContext context, PropertyMeta pm) {
 		log.debug("Load property '{}' for PersistenceContext '{}'", pm, context);

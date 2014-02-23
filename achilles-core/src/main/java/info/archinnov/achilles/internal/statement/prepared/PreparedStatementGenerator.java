@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -292,4 +294,48 @@ public class PreparedStatementGenerator {
 		}
 		return mainStatement;
 	}
+
+    public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, PropertyMeta pm, DirtyCheckChangeSet changeSet) {
+
+        final Assignments with = update(meta.getTableName()).with();
+        CollectionAndMapChangeType changeType = changeSet.getChangeType();
+
+        switch(changeType) {
+            case ASSIGN_VALUE_TO_LIST:
+            case ASSIGN_VALUE_TO_SET:
+            case ASSIGN_VALUE_TO_MAP:
+            case REMOVE_COLLECTION_OR_MAP:
+                changeSet.generateUpdateForRemoveAll(with,true);
+                break;
+            case ADD_TO_SET:
+                changeSet.generateUpdateForAddedElements(with,true);
+                break;
+            case REMOVE_FROM_SET:
+                changeSet.generateUpdateForRemovedElements(with,true);
+                break;
+            case APPEND_TO_LIST:
+                changeSet.generateUpdateForAppendedElements(with,true);
+                break;
+            case PREPEND_TO_LIST:
+                changeSet.generateUpdateForPrependedElements(with,true);
+                break;
+            case REMOVE_FROM_LIST:
+                changeSet.generateUpdateForRemoveListElements(with,true);
+                break;
+            case SET_TO_LIST_AT_INDEX:
+                throw new IllegalStateException("Cannot prepare statement to set element at index for list");
+            case REMOVE_FROM_LIST_AT_INDEX:
+                throw new IllegalStateException("Cannot prepare statement to remove element at index for list");
+            case ADD_TO_MAP:
+                changeSet.generateUpdateForAddedEntries(with,true);
+                break;
+            case REMOVE_FROM_MAP:
+                changeSet.generateUpdateForRemovedKey(with,true);
+                break;
+        }
+
+        final RegularStatement regularStatement = prepareWhereClauseForUpdate(meta.getIdMeta(), with, true);
+        final PreparedStatement preparedStatement = session.prepare(regularStatement);
+        return preparedStatement;
+    }
 }

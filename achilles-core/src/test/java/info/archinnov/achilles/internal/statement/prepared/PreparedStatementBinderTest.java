@@ -16,6 +16,19 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.PREPEND_TO_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
+import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static java.util.Arrays.asList;
@@ -25,6 +38,7 @@ import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -75,6 +89,9 @@ public class PreparedStatementBinderTest {
 	@Mock
 	private ObjectMapper objectMapper;
 
+    @Mock
+    private DirtyCheckChangeSet changeSet;
+
 	private EntityMeta entityMeta;
 
 	private CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
@@ -111,7 +128,7 @@ public class PreparedStatementBinderTest {
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
 		when(transcoder.encode(ageMeta, age)).thenReturn(age);
 
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
+		when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
@@ -144,7 +161,7 @@ public class PreparedStatementBinderTest {
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
 		when(transcoder.encode(eq(ageMeta), any())).thenReturn(null);
 
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
+		when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
@@ -194,7 +211,7 @@ public class PreparedStatementBinderTest {
 		when(transcoder.encode(followersMeta, followers)).thenReturn(followers);
 		when(transcoder.encode(preferencesMeta, preferences)).thenReturn(preferences);
 
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
+		when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO);
 
@@ -211,7 +228,7 @@ public class PreparedStatementBinderTest {
 
 		when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
 
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
+		when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, primaryKey, ALL);
 
@@ -244,7 +261,7 @@ public class PreparedStatementBinderTest {
 		when(transcoder.encode(nameMeta, name)).thenReturn(name);
 		when(transcoder.encode(ageMeta, age)).thenReturn(age);
 
-		when(ps.bind(Matchers.<Object> anyVararg())).thenReturn(bs);
+		when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
 		BoundStatementWrapper actual = binder.bindForUpdate(ps, entityMeta, asList(nameMeta, ageMeta), entity, ALL,
 				ttlO);
@@ -389,4 +406,310 @@ public class PreparedStatementBinderTest {
 
 		assertThat(asList(actual.getValues())).containsExactly(primaryKey);
 	}
+
+    @Test
+    public void should_bind_for_remove_all_from_collection_and_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        when(changeSet.getChangeType()).thenReturn(REMOVE_COLLECTION_OR_MAP);
+        when(ps.bind(0,null,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,null,primaryKey);
+    }
+    @Test
+    public void should_bind_for_assign_value_to_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Set<Object> values = Sets.<Object>newHashSet("whatever");
+        when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_SET);
+        when(changeSet.getEncodedSetChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_assign_value_to_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Map<Object,Object> values = ImmutableMap.<Object,Object>of(1,"whatever");
+        when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_MAP);
+        when(changeSet.getEncodedMapChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_assign_value_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final List<Object> values = Arrays.<Object>asList("whatever");
+        when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_LIST);
+        when(changeSet.getEncodedListChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_add_element_to_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Set<Object> values = Sets.<Object>newHashSet("whatever");
+        when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
+        when(changeSet.getEncodedSetChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_remove_element_from_set() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Set<Object> values = Sets.<Object>newHashSet("whatever");
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_SET);
+        when(changeSet.getEncodedSetChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_append_element_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final List<Object> values = Arrays.<Object>asList("whatever");
+        when(changeSet.getChangeType()).thenReturn(APPEND_TO_LIST);
+        when(changeSet.getEncodedListChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_prepend_element_to_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final List<Object> values = Arrays.<Object>asList("whatever");
+        when(changeSet.getChangeType()).thenReturn(PREPEND_TO_LIST);
+        when(changeSet.getEncodedListChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_remove_element_from_list() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final List<Object> values = Arrays.<Object>asList("whatever");
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST);
+        when(changeSet.getEncodedListChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void should_bind_for_set_element_at_index_to_list() throws Exception {
+        when(changeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
+        binder.bindForCollectionAndMapUpdate(ps, entityMeta, entity, changeSet, ALL, ttlO);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void should_bind_for_remove_element_at_index_to_list() throws Exception {
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
+        binder.bindForCollectionAndMapUpdate(ps, entityMeta, entity, changeSet, ALL, ttlO);
+    }
+
+    @Test
+    public void should_bind_for_add_elements_to_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Map<Object,Object> values = ImmutableMap.<Object,Object>of(1,"whatever");
+        when(changeSet.getChangeType()).thenReturn(ADD_TO_MAP);
+        when(changeSet.getEncodedMapChanges()).thenReturn(values);
+        when(ps.bind(0,values,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,values,primaryKey);
+    }
+
+    @Test
+    public void should_bind_for_remove_entry_from_map() throws Exception {
+        //Given
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID)
+                .invoker(invoker).build();
+
+        EntityMeta meta = new EntityMeta();
+        meta.setClassName("CompleteBean");
+        meta.setIdMeta(idMeta);
+        Long primaryKey = RandomUtils.nextLong();
+
+        when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
+        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
+        final Map<Object,Object> values = ImmutableMap.<Object,Object>of(1,"whatever");
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_MAP);
+        when(changeSet.getEncodedMapChanges()).thenReturn(values);
+        when(ps.bind(0,1,null,primaryKey)).thenReturn(bs);
+
+
+        //When
+        final BoundStatementWrapper actual = binder.bindForCollectionAndMapUpdate(ps, meta, entity, changeSet, ALL, ttlO);
+
+        //Then
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        assertThat(asList(actual.getValues())).containsExactly(0,1,null,primaryKey);
+    }
 }

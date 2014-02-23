@@ -309,7 +309,7 @@ public class PropertyMeta {
 		return entityValue == null ? null : transcoder.encodeKey(this, entityValue);
 	}
 
-	public <T> Object encode(List<T> entityValue) {
+	public <T> List<Object> encode(List<T> entityValue) {
 		return entityValue == null ? null : transcoder.encode(this, entityValue);
 	}
 

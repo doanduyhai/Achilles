@@ -22,12 +22,11 @@ import info.archinnov.achilles.internal.proxy.wrapper.ListWrapper;
 public class ListWrapperBuilder extends AbstractWrapperBuilder<ListWrapperBuilder> {
 	private List<Object> target;
 
-	public static ListWrapperBuilder builder(PersistenceContext context, List<Object> target) {
-		return new ListWrapperBuilder(context, target);
+	public static ListWrapperBuilder builder(List<Object> target) {
+		return new ListWrapperBuilder(target);
 	}
 
-	public ListWrapperBuilder(PersistenceContext context, List<Object> target) {
-		super.context = context;
+	public ListWrapperBuilder(List<Object> target) {
 		this.target = target;
 	}
 

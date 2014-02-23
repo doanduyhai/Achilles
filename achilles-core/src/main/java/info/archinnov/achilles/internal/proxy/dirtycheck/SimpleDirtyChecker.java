@@ -13,27 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.internal.proxy.wrapper.builder;
 
-import java.util.Set;
+package info.archinnov.achilles.internal.proxy.dirtycheck;
 
-import info.archinnov.achilles.internal.proxy.wrapper.SetWrapper;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 
-public class SetWrapperBuilder extends AbstractWrapperBuilder<SetWrapperBuilder> {
-	private Set<Object> target;
+public class SimpleDirtyChecker extends DirtyChecker{
 
-	public static SetWrapperBuilder builder(Set<Object> target) {
-		return new SetWrapperBuilder(target);
-	}
+    public SimpleDirtyChecker(PropertyMeta propertyMeta) {
+        super(propertyMeta);
+    }
 
-	public SetWrapperBuilder(Set<Object> target) {
-		this.target = target;
-	}
-
-	public SetWrapper build() {
-		SetWrapper setWrapper = new SetWrapper(this.target);
-		super.build(setWrapper);
-		return setWrapper;
-	}
-
+    public boolean isSimpleField() {
+        return true;
+    }
 }
