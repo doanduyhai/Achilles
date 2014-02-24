@@ -50,12 +50,12 @@ public abstract class AbstractFlushContext {
 	protected void executeBatch(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers) {
 		if (statementWrappers.size() > 1) {
 			BatchStatement batch = new BatchStatement(batchType);
-			AbstractStatementWrapper.writeDMLStartBatch();
+			AbstractStatementWrapper.writeDMLStartBatch(batchType);
 			for (AbstractStatementWrapper statementWrapper : statementWrappers) {
 				batch.add(statementWrapper.getStatement());
 				statementWrapper.logDMLStatement("\t");
 			}
-			AbstractStatementWrapper.writeDMLEndBatch(consistencyLevel);
+			AbstractStatementWrapper.writeDMLEndBatch(batchType,consistencyLevel);
 			if (consistencyLevel != null) {
 				batch.setConsistencyLevel(getCQLLevel(consistencyLevel));
 			}

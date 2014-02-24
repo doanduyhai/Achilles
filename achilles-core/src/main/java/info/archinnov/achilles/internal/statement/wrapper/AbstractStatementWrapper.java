@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import com.datastax.driver.core.BatchStatement;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 import java.util.Arrays;
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
 
 public abstract class AbstractStatementWrapper {
 	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
@@ -49,15 +52,37 @@ public abstract class AbstractStatementWrapper {
 
 	public abstract void logDMLStatement(String indentation);
 
-	public static void writeDMLStartBatch() {
+	public static void writeDMLStartBatch(BatchStatement.Type batchType) {
 		if (dmlLogger.isDebugEnabled()) {
-			dmlLogger.debug("******BATCH START******");
+            if(batchType == LOGGED) {
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+                dmlLogger.debug("****** BATCH LOGGED START ******");
+                dmlLogger.debug("");
+            }
+            else {
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+                dmlLogger.debug("****** BATCH UNLOGGED START ******");
+                dmlLogger.debug("");
+            }
 		}
 	}
 
-	public static void writeDMLEndBatch(ConsistencyLevel consistencyLevel) {
+	public static void writeDMLEndBatch(BatchStatement.Type batchType, ConsistencyLevel consistencyLevel) {
 		if (dmlLogger.isDebugEnabled()) {
-			dmlLogger.debug("******BATCH END with CONSISTENCY LEVEL [{}] ******", consistencyLevel);
+            if(batchType == LOGGED)       {
+                dmlLogger.debug("");
+                dmlLogger.debug("  ****** BATCH LOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel!=null ? consistencyLevel:"DEFAULT");
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+            }
+            else {
+                dmlLogger.debug("");
+                dmlLogger.debug("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel!=null ? consistencyLevel:"DEFAULT");
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+            }
 		}
 	}
 
