@@ -20,34 +20,30 @@ import java.lang.reflect.Field;
 
 public class FieldAccessor {
 
-	@SuppressWarnings("unchecked")
-	public <T> T getValueFromField(Field field, Object instance) throws IllegalAccessException {
-		T result = null;
-		if (instance != null) {
-			boolean isAccessible = field.isAccessible();
-			if (!isAccessible) {
-				field.setAccessible(true);
-			}
-			result = (T) field.get(instance);
-			if (!isAccessible) {
-				field.setAccessible(false);
-			}
-		}
+    @SuppressWarnings("unchecked")
+    public <T> T getValueFromField(Field field, Object instance) throws IllegalAccessException {
+        T result = null;
+        if (instance != null) {
+            makeFieldAccessibleIfNeeded(field);
+            result = (T) field.get(instance);
+        }
 
-		return result;
+        return result;
 
-	}
+    }
 
-	public void setValueToField(Field field, Object instance, Object value) throws IllegalAccessException {
-		if (instance != null) {
-			boolean isAccessible = field.isAccessible();
-			if (!isAccessible) {
-				field.setAccessible(true);
-			}
-			field.set(instance, value);
-			if (!isAccessible) {
-				field.setAccessible(false);
-			}
-		}
-	}
+    public void setValueToField(Field field, Object instance, Object value) throws IllegalAccessException {
+        if (instance != null) {
+            makeFieldAccessibleIfNeeded(field);
+            field.set(instance, value);
+        }
+    }
+
+    private void makeFieldAccessibleIfNeeded(Field field) {
+        if (!field.isAccessible()) {
+            synchronized (field) {
+                field.setAccessible(true);
+            }
+        }
+    }
 }
