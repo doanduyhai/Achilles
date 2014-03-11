@@ -16,67 +16,73 @@
 
 package info.archinnov.achilles.internal.context;
 
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.table.TableCreator;
-import info.archinnov.achilles.internal.table.TableValidator;
-
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
+import info.archinnov.achilles.internal.table.TableCreator;
+import info.archinnov.achilles.internal.table.TableValidator;
 
 public class SchemaContext {
-	private boolean forceColumnFamilyCreation;
-	private Cluster cluster;
-	private Session session;
-	private String keyspaceName;
-	private Map<Class<?>, EntityMeta> entityMetaMap;
-	private boolean hasCounter;
-	private TableCreator tableCreator = new TableCreator();
-	private TableValidator tableValidator = new TableValidator();
+    private boolean forceColumnFamilyCreation;
 
-	public SchemaContext(boolean forceColumnFamilyCreation, Session session, String keyspaceName, Cluster cluster,
-			Map<Class<?>, EntityMeta> entityMetaMap, boolean hasCounter) {
-		this.forceColumnFamilyCreation = forceColumnFamilyCreation;
-		this.session = session;
-		this.keyspaceName = keyspaceName;
-		this.cluster = cluster;
-		this.entityMetaMap = entityMetaMap;
-		this.hasCounter = hasCounter;
-	}
+    private Cluster cluster;
 
-	public Session getSession() {
-		return session;
-	}
+    private Session session;
 
-	public boolean hasSimpleCounter() {
-		return hasCounter;
-	}
+    private String keyspaceName;
 
-	public Set<Entry<Class<?>, EntityMeta>> entityMetaEntrySet() {
-		return entityMetaMap.entrySet();
-	}
+    private Map<Class<?>, EntityMeta> entityMetaMap;
 
-	public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetaData) {
-		tableValidator.validateForEntity(entityMeta, tableMetaData);
-	}
+    private boolean hasCounter;
 
-	public void validateAchillesCounter() {
-		tableValidator.validateAchillesCounter(cluster.getMetadata().getKeyspace(keyspaceName), keyspaceName);
-	}
+    private TableCreator tableCreator = new TableCreator();
 
-	public Map<String, TableMetadata> fetchTableMetaData() {
-		return tableCreator.fetchTableMetaData(cluster.getMetadata().getKeyspace(keyspaceName), keyspaceName);
-	}
+    private TableValidator tableValidator = new TableValidator();
 
-	public void createTableForEntity(EntityMeta entityMeta) {
-		tableCreator.createTableForEntity(session, entityMeta, forceColumnFamilyCreation);
-	}
+    public SchemaContext(boolean forceColumnFamilyCreation, Session session, String keyspaceName, Cluster cluster,
+                         ParsingResult parsingResult) {
+        this.forceColumnFamilyCreation = forceColumnFamilyCreation;
+        this.session = session;
+        this.keyspaceName = keyspaceName;
+        this.cluster = cluster;
+        this.entityMetaMap = parsingResult.getMetaMap();
+        this.hasCounter = parsingResult.hasSimpleCounter();
+    }
 
-	public void createTableForCounter() {
-		tableCreator.createTableForCounter(session, forceColumnFamilyCreation);
-	}
+    public Session getSession() {
+        return session;
+    }
+
+    public boolean hasSimpleCounter() {
+        return hasCounter;
+    }
+
+    public Set<Entry<Class<?>, EntityMeta>> entityMetaEntrySet() {
+        return entityMetaMap.entrySet();
+    }
+
+    public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetaData) {
+        tableValidator.validateForEntity(entityMeta, tableMetaData);
+    }
+
+    public void validateAchillesCounter() {
+        tableValidator.validateAchillesCounter(cluster.getMetadata().getKeyspace(keyspaceName), keyspaceName);
+    }
+
+    public Map<String, TableMetadata> fetchTableMetaData() {
+        return tableCreator.fetchTableMetaData(cluster.getMetadata().getKeyspace(keyspaceName), keyspaceName);
+    }
+
+    public void createTableForEntity(EntityMeta entityMeta) {
+        tableCreator.createTableForEntity(session, entityMeta, forceColumnFamilyCreation);
+    }
+
+    public void createTableForCounter() {
+        tableCreator.createTableForCounter(session, forceColumnFamilyCreation);
+    }
 }

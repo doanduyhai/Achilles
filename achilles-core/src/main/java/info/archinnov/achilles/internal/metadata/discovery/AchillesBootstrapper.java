@@ -17,6 +17,19 @@
 package info.archinnov.achilles.internal.metadata.discovery;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -30,92 +43,80 @@ import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingCo
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.validation.Validator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-
 public class AchillesBootstrapper {
-	private static final Logger log = LoggerFactory.getLogger(AchillesBootstrapper.class);
+    private static final Logger log = LoggerFactory.getLogger(AchillesBootstrapper.class);
 
-	private EntityParser entityParser = new EntityParser();
-	private DaoContextFactory daoContextFactory = new DaoContextFactory();
-	private PropertyParser propertyParser = new PropertyParser();
+    private EntityParser entityParser = new EntityParser();
 
-	public List<Class<?>> discoverEntities(List<String> packageNames) {
-		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
+    private DaoContextFactory daoContextFactory = new DaoContextFactory();
 
-		Set<Class<?>> candidateClasses = new HashSet<>();
-		Reflections reflections = new Reflections(packageNames);
-		candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
-		return new ArrayList<>(candidateClasses);
-	}
+    private PropertyParser propertyParser = new PropertyParser();
 
-	public ParsingResult buildMetaDatas(ConfigurationContext configContext, List<Class<?>> entities) {
-		log.debug("Build meta data for candidate entities");
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
-		boolean hasSimpleCounter = false;
-		for (Class<?> entityClass : entities) {
-			EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
-			EntityMeta entityMeta = entityParser.parseEntity(context);
-			entityMetaMap.put(entityClass, entityMeta);
+    public List<Class<?>> discoverEntities(List<String> packageNames) {
+        log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
 
-			hasSimpleCounter = hasSimpleCounter || context.hasSimpleCounter();
-			boolean shouldValidateBean = configContext.isClassConstrained(entityClass);
-			if (shouldValidateBean) {
-				configContext.addBeanValidationInterceptor(entityMeta);
-			}
-		}
-		return new ParsingResult(entityMetaMap, hasSimpleCounter);
-	}
+        Set<Class<?>> candidateClasses = new HashSet<>();
+        Reflections reflections = new Reflections(packageNames);
+        candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
+        return new ArrayList<>(candidateClasses);
+    }
 
-	public void validateOrCreateTables(SchemaContext schemaContext) {
-		log.debug("Start schema validation/creation");
-		Map<String, TableMetadata> tableMetaDatas = schemaContext.fetchTableMetaData();
+    public ParsingResult buildMetaDatas(ConfigurationContext configContext, List<Class<?>> entities) {
+        log.debug("Build meta data for candidate entities");
+        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
+        boolean hasSimpleCounter = false;
+        for (Class<?> entityClass : entities) {
+            EntityParsingContext context = new EntityParsingContext(configContext, entityClass);
+            EntityMeta entityMeta = entityParser.parseEntity(context);
+            entityMetaMap.put(entityClass, entityMeta);
 
-		for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
-			EntityMeta entityMeta = entry.getValue();
-			String tableName = entityMeta.getTableName().toLowerCase();
+            hasSimpleCounter = hasSimpleCounter || context.hasSimpleCounter();
+            boolean shouldValidateBean = configContext.isClassConstrained(entityClass);
+            if (shouldValidateBean) {
+                configContext.addBeanValidationInterceptor(entityMeta);
+            }
+        }
+        return new ParsingResult(entityMetaMap, hasSimpleCounter);
+    }
 
-			if (tableMetaDatas.containsKey(tableName)) {
-				schemaContext.validateForEntity(entityMeta, tableMetaDatas.get(tableName));
-			} else {
-				schemaContext.createTableForEntity(entry.getValue());
-			}
-		}
+    public void validateOrCreateTables(SchemaContext schemaContext) {
+        log.debug("Start schema validation/creation");
+        Map<String, TableMetadata> tableMetaDatas = schemaContext.fetchTableMetaData();
 
-		if (schemaContext.hasSimpleCounter()) {
-			if (tableMetaDatas.containsKey(CQL_COUNTER_TABLE)) {
-				schemaContext.validateAchillesCounter();
-			} else {
-				schemaContext.createTableForCounter();
-			}
-		}
-	}
+        for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
+            EntityMeta entityMeta = entry.getValue();
+            String tableName = entityMeta.getTableName().toLowerCase();
 
-	public DaoContext buildDaoContext(Session session, Map<Class<?>, EntityMeta> entityMetaMap, boolean hasSimpleCounter) {
-		log.debug("Build DaoContext");
-		return daoContextFactory.build(session, entityMetaMap, hasSimpleCounter);
-	}
+            if (tableMetaDatas.containsKey(tableName)) {
+                schemaContext.validateForEntity(entityMeta, tableMetaDatas.get(tableName));
+            } else {
+                schemaContext.createTableForEntity(entry.getValue());
+            }
+        }
 
-	public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>, EntityMeta> entityMetaMap) {
-		for (Interceptor<?> interceptor : interceptors) {
-			Class<?> entityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
-			EntityMeta entityMeta = entityMetaMap.get(entityClass);
-			Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
-					entityClass.getCanonicalName());
-			entityMeta.addInterceptor(interceptor);
-		}
-	}
+        if (schemaContext.hasSimpleCounter()) {
+            if (tableMetaDatas.containsKey(CQL_COUNTER_TABLE)) {
+                schemaContext.validateAchillesCounter();
+            } else {
+                schemaContext.createTableForCounter();
+            }
+        }
+    }
+
+    public DaoContext buildDaoContext(Session session, ParsingResult parsingResult,
+                                      ConfigurationContext configContext) {
+        log.debug("Build DaoContext");
+        return daoContextFactory.create(session, parsingResult, configContext);
+    }
+
+    public void addInterceptorsToEntityMetas(List<Interceptor<?>> interceptors, Map<Class<?>,
+            EntityMeta> entityMetaMap) {
+        for (Interceptor<?> interceptor : interceptors) {
+            Class<?> entityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
+            EntityMeta entityMeta = entityMetaMap.get(entityClass);
+            Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
+                                              entityClass.getCanonicalName());
+            entityMeta.addInterceptor(interceptor);
+        }
+    }
 }

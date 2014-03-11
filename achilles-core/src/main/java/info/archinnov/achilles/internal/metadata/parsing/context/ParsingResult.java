@@ -16,26 +16,25 @@
 
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-
 import java.util.Map;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 
 public class ParsingResult {
 
-	private Map<Class<?>, EntityMeta> metaMap;
+    private Map<Class<?>, EntityMeta> metaMap;
 
-	private boolean hasSimpleCounter;
+    private boolean hasSimpleCounter;
 
-	public ParsingResult(Map<Class<?>, EntityMeta> metaMap, boolean hasSimpleCounter) {
-		this.metaMap = metaMap;
-		this.hasSimpleCounter = hasSimpleCounter;
-	}
+    public ParsingResult(Map<Class<?>, EntityMeta> metaMap, boolean hasSimpleCounter) {
+        this.metaMap = metaMap;
+        this.hasSimpleCounter = hasSimpleCounter;
+    }
 
-	public Map<Class<?>, EntityMeta> getMetaMap() {
-		return metaMap;
-	}
+    public Map<Class<?>, EntityMeta> getMetaMap() {
+        return metaMap;
+    }
 
-	public boolean isHasSimpleCounter() {
-		return hasSimpleCounter;
-	}
+    public boolean hasSimpleCounter() {
+        return hasSimpleCounter;
+    }
 }

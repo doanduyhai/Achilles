@@ -19,7 +19,24 @@ package info.archinnov.achilles.internal.metadata.discovery;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TableMetadata;
+import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -36,245 +53,230 @@ import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 import info.archinnov.achilles.test.sample.entity.Entity2;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
-import com.google.common.collect.ImmutableMap;
-
 @RunWith(MockitoJUnitRunner.class)
 public class AchillesBootstrapperTest {
 
-	private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
+    private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
 
-	@Mock
-	private EntityParser parser;
+    @Mock
+    private EntityParser parser;
 
-	@Mock
-	private DaoContextFactory factory;
+    @Mock
+    private DaoContextFactory factory;
 
-	@Mock
-	private ConfigurationContext configContext;
+    @Mock
+    private ConfigurationContext configContext;
 
-	@Mock
-	private SchemaContext schemaContext;
+    @Mock
+    private SchemaContext schemaContext;
 
-	@Mock
-	private EntityMeta meta;
+    @Mock
+    private EntityMeta meta;
 
-	@Mock
-	private TableMetadata tableMeta;
+    @Mock
+    private TableMetadata tableMeta;
 
-	@Mock
-	private Session session;
+    @Mock
+    private Session session;
 
-	@Captor
-	private ArgumentCaptor<EntityParsingContext> contextCaptor;
+    @Mock
+    private ParsingResult parsingResult;
 
-	@Before
-	public void setUp() {
+    @Captor
+    private ArgumentCaptor<EntityParsingContext> contextCaptor;
 
-		Whitebox.setInternalState(bootstrapper, EntityParser.class, parser);
-		Whitebox.setInternalState(bootstrapper, DaoContextFactory.class, factory);
-	}
+    @Before
+    public void setUp() {
 
-	@Test
-	public void should_find_entities_from_multiple_packages() throws Exception {
-		List<Class<?>> entities = bootstrapper.discoverEntities(Arrays.asList(
-				"info.archinnov.achilles.test.sample.entity", "info.archinnov.achilles.test.more.entity"));
+        Whitebox.setInternalState(bootstrapper, EntityParser.class, parser);
+        Whitebox.setInternalState(bootstrapper, DaoContextFactory.class, factory);
+    }
 
-		assertThat(entities).hasSize(3);
-		assertThat(entities).contains(Entity1.class);
-		assertThat(entities).contains(Entity2.class);
-		assertThat(entities).contains(Entity3.class);
-	}
+    @Test
+    public void should_find_entities_from_multiple_packages() throws Exception {
+        List<Class<?>> entities = bootstrapper.discoverEntities(Arrays.asList(
+                "info.archinnov.achilles.test.sample.entity", "info.archinnov.achilles.test.more.entity"));
 
-	@Test
-	public void should_find_entity_from_one_package() throws Exception {
-		List<Class<?>> entities = bootstrapper.discoverEntities(Arrays
-				.asList("info.archinnov.achilles.test.more.entity"));
-		assertThat(entities).hasSize(1);
-		assertThat(entities).contains(Entity3.class);
-	}
+        assertThat(entities).hasSize(3);
+        assertThat(entities).contains(Entity1.class);
+        assertThat(entities).contains(Entity2.class);
+        assertThat(entities).contains(Entity3.class);
+    }
 
-	@Test
-	public void should_build_meta_data_without_bean_validation() throws Exception {
-		// Given
-		List<Class<?>> entities = Arrays.<Class<?>> asList(UserBean.class);
+    @Test
+    public void should_find_entity_from_one_package() throws Exception {
+        List<Class<?>> entities = bootstrapper.discoverEntities(Arrays
+                                                                        .asList("info.archinnov.achilles.test.more" +
+                                                                                        ".entity"));
+        assertThat(entities).hasSize(1);
+        assertThat(entities).contains(Entity3.class);
+    }
 
-		// When
-		when(parser.parseEntity(any(EntityParsingContext.class))).thenReturn(meta);
-		when(configContext.isClassConstrained(UserBean.class)).thenReturn(false);
+    @Test
+    public void should_build_meta_data_without_bean_validation() throws Exception {
+        // Given
+        List<Class<?>> entities = Arrays.<Class<?>>asList(UserBean.class);
 
-		ParsingResult parsingResult = bootstrapper.buildMetaDatas(configContext, entities);
+        // When
+        when(parser.parseEntity(any(EntityParsingContext.class))).thenReturn(meta);
+        when(configContext.isClassConstrained(UserBean.class)).thenReturn(false);
 
-		assertThat(parsingResult.getMetaMap().get(UserBean.class)).isSameAs(meta);
-		assertThat(parsingResult.isHasSimpleCounter()).isFalse();
-		verify(configContext, never()).addBeanValidationInterceptor(meta);
-	}
+        ParsingResult parsingResult = bootstrapper.buildMetaDatas(configContext, entities);
 
-	@Test
-	public void should_build_meta_data_with_field_level_constrained_bean() throws Exception {
-		// Given
-		List<Class<?>> entities = Arrays.<Class<?>> asList(BeanWithFieldLevelConstraint.class);
-		when(parser.parseEntity(any(EntityParsingContext.class))).thenReturn(meta);
-		when(configContext.isClassConstrained(BeanWithFieldLevelConstraint.class)).thenReturn(true);
+        assertThat(parsingResult.getMetaMap().get(UserBean.class)).isSameAs(meta);
+        assertThat(parsingResult.hasSimpleCounter()).isFalse();
+        verify(configContext, never()).addBeanValidationInterceptor(meta);
+    }
 
-		// When
-		ParsingResult parsingResult = bootstrapper.buildMetaDatas(configContext, entities);
+    @Test
+    public void should_build_meta_data_with_field_level_constrained_bean() throws Exception {
+        // Given
+        List<Class<?>> entities = Arrays.<Class<?>>asList(BeanWithFieldLevelConstraint.class);
+        when(parser.parseEntity(any(EntityParsingContext.class))).thenReturn(meta);
+        when(configContext.isClassConstrained(BeanWithFieldLevelConstraint.class)).thenReturn(true);
 
-		// Then
-		assertThat(parsingResult.getMetaMap().get(BeanWithFieldLevelConstraint.class)).isSameAs(meta);
-		verify(configContext).addBeanValidationInterceptor(meta);
-	}
+        // When
+        ParsingResult parsingResult = bootstrapper.buildMetaDatas(configContext, entities);
 
-	@Test
-	public void should_validate_tables() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta> of(UserBean.class, meta);
-		Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata> of("userbean", tableMeta);
+        // Then
+        assertThat(parsingResult.getMetaMap().get(BeanWithFieldLevelConstraint.class)).isSameAs(meta);
+        verify(configContext).addBeanValidationInterceptor(meta);
+    }
 
-		// When
-		when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-		when(meta.getTableName()).thenReturn("UserBean");
-		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
-		when(schemaContext.hasSimpleCounter()).thenReturn(false);
+    @Test
+    public void should_validate_tables() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of("userbean", tableMeta);
 
-		bootstrapper.validateOrCreateTables(schemaContext);
+        // When
+        when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
+        when(meta.getTableName()).thenReturn("UserBean");
+        when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
+        when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
-		// Then
-		verify(schemaContext).validateForEntity(meta, tableMeta);
-	}
+        bootstrapper.validateOrCreateTables(schemaContext);
 
-	@Test
-	public void should_create_tables() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta> of(UserBean.class, meta);
-		Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata> of();
+        // Then
+        verify(schemaContext).validateForEntity(meta, tableMeta);
+    }
 
-		// When
-		when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-		when(meta.getTableName()).thenReturn("UserBean");
-		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
-		when(schemaContext.hasSimpleCounter()).thenReturn(false);
+    @Test
+    public void should_create_tables() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of();
 
-		bootstrapper.validateOrCreateTables(schemaContext);
+        // When
+        when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
+        when(meta.getTableName()).thenReturn("UserBean");
+        when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
+        when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
-		// Then
-		verify(schemaContext).createTableForEntity(meta);
-	}
+        bootstrapper.validateOrCreateTables(schemaContext);
 
-	@Test
-	public void should_validate_counter_table() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta> of(UserBean.class, meta);
-		Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata> of(CQL_COUNTER_TABLE,
-				tableMeta);
+        // Then
+        verify(schemaContext).createTableForEntity(meta);
+    }
 
-		// When
-		when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-		when(meta.getTableName()).thenReturn("UserBean");
-		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
-		when(schemaContext.hasSimpleCounter()).thenReturn(true);
+    @Test
+    public void should_validate_counter_table() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of(CQL_COUNTER_TABLE,
+                                                                                           tableMeta);
 
-		bootstrapper.validateOrCreateTables(schemaContext);
+        // When
+        when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
+        when(meta.getTableName()).thenReturn("UserBean");
+        when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
+        when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
-		// Then
-		verify(schemaContext).validateAchillesCounter();
-	}
+        bootstrapper.validateOrCreateTables(schemaContext);
 
-	@Test
-	public void should_create_counter_table() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta> of(UserBean.class, meta);
-		Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata> of();
+        // Then
+        verify(schemaContext).validateAchillesCounter();
+    }
 
-		// When
-		when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-		when(meta.getTableName()).thenReturn("UserBean");
-		when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
-		when(schemaContext.hasSimpleCounter()).thenReturn(true);
+    @Test
+    public void should_create_counter_table() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.of();
 
-		bootstrapper.validateOrCreateTables(schemaContext);
+        // When
+        when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
+        when(meta.getTableName()).thenReturn("UserBean");
+        when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
+        when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
-		// Then
-		verify(schemaContext).createTableForCounter();
-	}
+        bootstrapper.validateOrCreateTables(schemaContext);
 
-	@Test
-	public void should_build_dao_context() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta> of();
-		DaoContext daoContext = mock(DaoContext.class);
+        // Then
+        verify(schemaContext).createTableForCounter();
+    }
 
-		// When
-		when(factory.build(session, entityMetaMap, true)).thenReturn(daoContext);
+    @Test
+    public void should_build_dao_context() throws Exception {
+        // Given
+        DaoContext daoContext = mock(DaoContext.class);
+        when(factory.create(session, parsingResult, configContext)).thenReturn(daoContext);
 
-		DaoContext actual = bootstrapper.buildDaoContext(session, entityMetaMap, true);
+        // When
+        DaoContext actual = bootstrapper.buildDaoContext(session, parsingResult, configContext);
 
-		// Then
-		assertThat(actual).isSameAs(daoContext);
-	}
+        // Then
+        assertThat(actual).isSameAs(daoContext);
+    }
 
-	@Test
-	public void should_add_event_interceptors_to_entity_metas() throws Exception {
-		// Given
-		final EntityMeta metaString = new EntityMeta();
-		final EntityMeta metaLong = new EntityMeta();
-		final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>> asList(stringInterceptor1,
-				stringInterceptor2, longInterceptor);
-		final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta> of(String.class,
-				metaString, Long.class, metaLong);
+    @Test
+    public void should_add_event_interceptors_to_entity_metas() throws Exception {
+        // Given
+        final EntityMeta metaString = new EntityMeta();
+        final EntityMeta metaLong = new EntityMeta();
+        final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(stringInterceptor1,
+                                                                                stringInterceptor2, longInterceptor);
+        final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(String.class,
+                                                                                              metaString, Long.class, metaLong);
 
-		// When
-		bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+        // When
+        bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
 
-		// Then
-		assertThat(metaString.getInterceptors()).contains(stringInterceptor1, stringInterceptor2);
-		assertThat(metaLong.getInterceptors()).contains(longInterceptor);
-	}
+        // Then
+        assertThat(metaString.getInterceptors()).contains(stringInterceptor1, stringInterceptor2);
+        assertThat(metaLong.getInterceptors()).contains(longInterceptor);
+    }
 
-	private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {
-		@Override
-		public void onEvent(String entity) {
-		}
+    private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {
+        @Override
+        public void onEvent(String entity) {
+        }
 
-		@Override
-		public List<Event> events() {
-			return null;
-		}
-	};
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
 
-	private Interceptor<String> stringInterceptor2 = new Interceptor<String>() {
-		@Override
-		public void onEvent(String entity) {
-		}
+    private Interceptor<String> stringInterceptor2 = new Interceptor<String>() {
+        @Override
+        public void onEvent(String entity) {
+        }
 
-		@Override
-		public List<Event> events() {
-			return null;
-		}
-	};
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
 
-	private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
-		@Override
-		public void onEvent(Long entity) {
-		}
+    private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
+        @Override
+        public void onEvent(Long entity) {
+        }
 
-		@Override
-		public List<Event> events() {
-			return null;
-		}
-	};
+        @Override
+        public List<Event> events() {
+            return null;
+        }
+    };
 }

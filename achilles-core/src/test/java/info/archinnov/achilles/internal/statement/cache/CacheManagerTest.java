@@ -17,8 +17,23 @@ package info.archinnov.achilles.internal.statement.cache;
 
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -29,156 +44,140 @@ import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGene
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.google.common.cache.Cache;
-
 @RunWith(MockitoJUnitRunner.class)
 public class CacheManagerTest {
-	@InjectMocks
-	private CacheManager manager;
+    @InjectMocks
+    private CacheManager manager = new CacheManager(100);
 
-	@Mock
-	private PreparedStatementGenerator generator;
+    @Mock
+    private PreparedStatementGenerator generator;
 
-	@Mock
-	private Session session;
+    @Mock
+    private Session session;
 
-	@Mock
-	private Cache<StatementCacheKey, PreparedStatement> cache;
+    @Mock
+    private Cache<StatementCacheKey, PreparedStatement> cache;
 
-	@Mock
-	private PersistenceContext context;
+    @Mock
+    private PersistenceContext context;
 
-	@Mock
-	private PreparedStatement ps;
+    @Mock
+    private PreparedStatement ps;
 
-	@Captor
-	ArgumentCaptor<StatementCacheKey> cacheKeyCaptor;
+    @Captor
+    ArgumentCaptor<StatementCacheKey> cacheKeyCaptor;
 
-	@Test
-	public void should_get_cache_for_simple_field() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
+    @Test
+    public void should_get_cache_for_simple_field() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
-				.build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
+                                                 .build();
 
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
+        PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
 
-		assertThat(actual).isSameAs(ps);
-		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getType()).isEqualTo(CacheType.SELECT_FIELD);
-		assertThat(cacheKey.getFields()).containsExactly("name");
-	}
+        assertThat(actual).isSameAs(ps);
+        StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
+        assertThat(cacheKey.<CompleteBean>getEntityClass()).isSameAs(CompleteBean.class);
+        assertThat(cacheKey.getType()).isEqualTo(CacheType.SELECT_FIELD);
+        assertThat(cacheKey.getFields()).containsExactly("name");
+    }
 
-	@Test
-	public void should_get_cache_for_clustered_id() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
+    @Test
+    public void should_get_cache_for_clustered_id() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").compNames("id", "a", "b")
-				.type(PropertyType.EMBEDDED_ID).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").compNames("id", "a", "b")
+                                                 .type(PropertyType.EMBEDDED_ID).build();
 
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
+        PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
 
-		assertThat(actual).isSameAs(ps);
-		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat(cacheKey.getFields()).containsOnly("id", "a", "b");
-	}
+        assertThat(actual).isSameAs(ps);
+        StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
+        assertThat(cacheKey.getFields()).containsOnly("id", "a", "b");
+    }
 
-	@Test
-	public void should_generate_select_prepared_statement_when_not_found_in_cache() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
+    @Test
+    public void should_generate_select_prepared_statement_when_not_found_in_cache() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
 
-		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
-				.build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(PropertyType.SIMPLE)
+                                                 .build();
 
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
-		when(generator.prepareSelectFieldPS(session, meta, pm)).thenReturn(ps);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
+        when(generator.prepareSelectFieldPS(session, meta, pm)).thenReturn(ps);
 
-		PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
+        PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
 
-		assertThat(actual).isSameAs(ps);
-		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		verify(cache).put(cacheKey, ps);
-	}
+        assertThat(actual).isSameAs(ps);
+        StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
+        verify(cache).put(cacheKey, ps);
+    }
 
-	@Test
-	public void should_get_cache_for_fields_update() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
+    @Test
+    public void should_get_cache_for_fields_update() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                                                       .type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
-				.type(PropertyType.SIMPLE).build();
+        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
+                                                      .type(PropertyType.SIMPLE).build();
 
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
-		PreparedStatement actual = manager.getCacheForFieldsUpdate(session, cache, context,
-				Arrays.asList(nameMeta, ageMeta));
+        PreparedStatement actual = manager.getCacheForFieldsUpdate(session, cache, context,
+                                                                   Arrays.asList(nameMeta, ageMeta));
 
-		assertThat(actual).isSameAs(ps);
-		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
-		assertThat(cacheKey.getFields()).containsOnly("name", "age");
-	}
+        assertThat(actual).isSameAs(ps);
+        StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
+        assertThat(cacheKey.<CompleteBean>getEntityClass()).isSameAs(CompleteBean.class);
+        assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
+        assertThat(cacheKey.getFields()).containsOnly("name", "age");
+    }
 
-	@Test
-	public void should_generate_update_prepared_statement_when_not_found_in_cache() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setTableName("table");
+    @Test
+    public void should_generate_update_prepared_statement_when_not_found_in_cache() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                                                       .type(PropertyType.SIMPLE).build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
-				.type(PropertyType.SIMPLE).build();
+        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("age")
+                                                      .type(PropertyType.SIMPLE).build();
 
-		List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
+        List<PropertyMeta> pms = Arrays.asList(nameMeta, ageMeta);
 
-		when(context.<CompleteBean> getEntityClass()).thenReturn(CompleteBean.class);
-		when(context.getEntityMeta()).thenReturn(meta);
-		when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
-		when(generator.prepareUpdateFields(session, meta, pms)).thenReturn(ps);
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(null);
+        when(generator.prepareUpdateFields(session, meta, pms)).thenReturn(ps);
 
-		PreparedStatement actual = manager.getCacheForFieldsUpdate(session, cache, context, pms);
+        PreparedStatement actual = manager.getCacheForFieldsUpdate(session, cache, context, pms);
 
-		assertThat(actual).isSameAs(ps);
-		StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
-		assertThat(cacheKey.<CompleteBean> getEntityClass()).isSameAs(CompleteBean.class);
-		assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
-		assertThat(cacheKey.getFields()).containsOnly("name", "age");
-	}
+        assertThat(actual).isSameAs(ps);
+        StatementCacheKey cacheKey = cacheKeyCaptor.getValue();
+        assertThat(cacheKey.<CompleteBean>getEntityClass()).isSameAs(CompleteBean.class);
+        assertThat(cacheKey.getType()).isEqualTo(CacheType.UPDATE_FIELDS);
+        assertThat(cacheKey.getFields()).containsOnly("name", "age");
+    }
 
     @Test
     public void should_prepare_message_for_collection_and_map_operation() throws Exception {
@@ -189,17 +188,19 @@ public class CacheManagerTest {
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
-        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, (Set)Sets.newHashSet(pm),
-                CompleteBean.class);
+        when(pm.getPropertyName()).thenReturn("property");
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, Sets.newHashSet("property"),
+                                                           CompleteBean.class);
         when(cache.getIfPresent(cacheKey)).thenReturn(null);
         when(generator.prepareCollectionAndMapUpdate(session, meta, pm, changeSet)).thenReturn(ps);
 
         //When
-        final PreparedStatement actual = manager.getCacheForCollectionAndMapOperation(session, cache, context, pm,changeSet);
+        final PreparedStatement actual = manager
+                .getCacheForCollectionAndMapOperation(session, cache, context, pm, changeSet);
 
         //Then
         assertThat(actual).isSameAs(ps);
-        verify(cache).put(cacheKey,ps);
+        verify(cache).put(cacheKey, ps);
     }
 
     @Test
@@ -211,17 +212,18 @@ public class CacheManagerTest {
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
-        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, (Set)Sets.newHashSet(pm),
-                CompleteBean.class);
+        when(pm.getPropertyName()).thenReturn("property");
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.ADD_TO_SET, Sets.newHashSet("property"),
+                                                           CompleteBean.class);
         when(cache.getIfPresent(cacheKey)).thenReturn(ps);
 
         //When
         final PreparedStatement actual = manager.getCacheForCollectionAndMapOperation(session, cache, context, pm,
-                changeSet);
+                                                                                      changeSet);
 
         //Then
         assertThat(actual).isSameAs(ps);
-        verify(cache,never()).put(cacheKey,ps);
+        verify(cache, never()).put(cacheKey, ps);
         verifyZeroInteractions(generator);
     }
 }

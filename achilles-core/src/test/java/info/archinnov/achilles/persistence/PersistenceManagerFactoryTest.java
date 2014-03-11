@@ -15,9 +15,29 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -29,146 +49,126 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.type.TypedMap;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
-
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceManagerFactoryTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private PersistenceManagerFactory pmf;
+    private PersistenceManagerFactory pmf;
 
-	@Mock
-	private ConfigurationContext configContext;
+    @Mock
+    private ConfigurationContext configContext;
 
-	@Mock
-	private ArgumentExtractor argumentExtractor;
+    @Mock
+    private ArgumentExtractor argumentExtractor;
 
-	@Mock
-	private AchillesBootstrapper boostrapper;
+    @Mock
+    private AchillesBootstrapper boostrapper;
 
-	@Mock
-	private Cluster cluster;
+    @Mock
+    private Cluster cluster;
 
-	@Mock
-	private Session session;
+    @Mock
+    private Session session;
 
-	@Mock
-	private DaoContext daoContext;
+    @Mock
+    private DaoContext daoContext;
 
-	@Mock
-	private TypedMap configMap;
+    @Mock
+    private TypedMap configMap;
 
-	@Captor
-	private ArgumentCaptor<SchemaContext> contextCaptor;
+    @Captor
+    private ArgumentCaptor<SchemaContext> contextCaptor;
 
-	@Before
-	public void setUp() {
-		pmf = new PersistenceManagerFactory(ImmutableMap.<String, Object> of("test", "test"));
-		pmf.configurationMap = configMap;
-		Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
-		Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
-	}
+    @Before
+    public void setUp() {
+        pmf = new PersistenceManagerFactory(ImmutableMap.<String, Object>of("test", "test"));
+        pmf.configurationMap = configMap;
+        Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
+        Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
+    }
 
-	@Test
-	public void should_bootstrap_persistence_manager_factory() throws Exception {
-		// Given
-		List<String> entityPackages = Arrays.asList();
-		List<Class<?>> candidateClasses = Arrays.asList();
-		List<Interceptor<?>> interceptors = Arrays.asList();
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
-		ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
+    @Test
+    public void should_bootstrap_persistence_manager_factory() throws Exception {
+        // Given
+        List<String> entityPackages = Arrays.asList();
+        List<Class<?>> candidateClasses = Arrays.asList();
+        List<Interceptor<?>> interceptors = Arrays.asList();
+        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
+        ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
 
-		// When
-		when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
-		when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
-		when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
-		when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
-		when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
+        // When
+        when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
+        when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
+        when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
+        when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
+        when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
 
-		when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
-		when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
-		when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
-		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
-		when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
-		when(boostrapper.buildDaoContext(session, entityMetaMap, true)).thenReturn(daoContext);
+        when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
+        when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
+        when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
+        when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
+        when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
+        when(boostrapper.buildDaoContext(session, parsingResult, configContext)).thenReturn(daoContext);
 
-		pmf.bootstrap();
+        pmf.bootstrap();
 
-		// Then
-		assertThat(pmf.entityMetaMap).isSameAs(entityMetaMap);
-		assertThat(pmf.configContext).isSameAs(configContext);
-		assertThat(pmf.daoContext).isSameAs(daoContext);
-		PersistenceContextFactory contextFactory = Whitebox.getInternalState(pmf, PersistenceContextFactory.class);
-		assertThat(Whitebox.getInternalState(contextFactory, DaoContext.class)).isSameAs(daoContext);
-		assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
-		assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
+        // Then
+        assertThat(pmf.entityMetaMap).isSameAs(entityMetaMap);
+        assertThat(pmf.configContext).isSameAs(configContext);
+        assertThat(pmf.daoContext).isSameAs(daoContext);
+        PersistenceContextFactory contextFactory = Whitebox.getInternalState(pmf, PersistenceContextFactory.class);
+        assertThat(Whitebox.getInternalState(contextFactory, DaoContext.class)).isSameAs(daoContext);
+        assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
+        assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
 
-		verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
-		verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+        verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
+        verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
 
-		SchemaContext schemaContext = contextCaptor.getValue();
+        SchemaContext schemaContext = contextCaptor.getValue();
 
-		assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);
-		assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
-		assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
-		assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
-		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
-		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
-	}
+        assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);
+        assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
+        assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
+        assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
+        assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
+        assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
+    }
 
-	@Test
-	public void should_create_persistence_manager() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-		PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
+    @Test
+    public void should_create_persistence_manager() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+        PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
 
-		// When
-		pmf.entityMetaMap = entityMetaMap;
-		pmf.configContext = configContext;
-		pmf.daoContext = daoContext;
-		pmf.contextFactory = contextFactory;
+        // When
+        pmf.entityMetaMap = entityMetaMap;
+        pmf.configContext = configContext;
+        pmf.daoContext = daoContext;
+        pmf.contextFactory = contextFactory;
 
-		PersistenceManager manager = pmf.createPersistenceManager();
+        PersistenceManager manager = pmf.createPersistenceManager();
 
-		// Then
-		assertThat(manager).isNotNull();
-	}
+        // Then
+        assertThat(manager).isNotNull();
+    }
 
-	@Test
-	public void should_create_batching_persistence_manager() throws Exception {
-		// Given
-		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-		PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
+    @Test
+    public void should_create_batching_persistence_manager() throws Exception {
+        // Given
+        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+        PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
 
-		// When
-		pmf.entityMetaMap = entityMetaMap;
-		pmf.configContext = configContext;
-		pmf.daoContext = daoContext;
-		pmf.contextFactory = contextFactory;
+        // When
+        pmf.entityMetaMap = entityMetaMap;
+        pmf.configContext = configContext;
+        pmf.daoContext = daoContext;
+        pmf.contextFactory = contextFactory;
 
-		PersistenceManager manager = pmf.createBatchingPersistenceManager();
+        PersistenceManager manager = pmf.createBatchingPersistenceManager();
 
-		// Then
-		assertThat(manager).isNotNull();
-	}
+        // Then
+        assertThat(manager).isNotNull();
+    }
 }

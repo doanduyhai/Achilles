@@ -15,6 +15,18 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
+import com.google.common.base.Function;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheStats;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -22,91 +34,120 @@ import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapC
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.google.common.base.Function;
-import com.google.common.cache.Cache;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
-
 public class CacheManager {
-    private static final Logger log  = LoggerFactory.getLogger(CacheManager.class);
+    private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
+
+    private final int maxLRUSize;
+
+    public CacheManager(int maxLRUSize) {
+        this.maxLRUSize = maxLRUSize;
+    }
 
     private PreparedStatementGenerator generator = new PreparedStatementGenerator();
 
-	private Function<PropertyMeta, String> propertyExtractor = new Function<PropertyMeta, String>() {
-		@Override
-		public String apply(PropertyMeta pm) {
-			return pm.getPropertyName();
-		}
-	};
+    private Function<PropertyMeta, String> propertyExtractor = new Function<PropertyMeta, String>() {
+        @Override
+        public String apply(PropertyMeta pm) {
+            return pm.getPropertyName();
+        }
+    };
 
-	public PreparedStatement getCacheForFieldSelect(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context, PropertyMeta pm) {
+    public PreparedStatement getCacheForFieldSelect(Session session,
+                                                    Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
+                                                    PersistenceContext context, PropertyMeta pm) {
 
-        log.trace("Get cache for SELECT property {} from entity class {}",pm.getPropertyName(),pm.getEntityClassName());
+        log.trace("Get cache for SELECT property {} from entity class {}", pm.getPropertyName(), pm
+                .getEntityClassName());
 
-		Class<?> entityClass = context.getEntityClass();
-		EntityMeta entityMeta = context.getEntityMeta();
-		Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
-		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD,
-                clusteredFields, entityClass);
-		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
-		if (ps == null) {
-			ps = generator.prepareSelectFieldPS(session, entityMeta, pm);
-			dynamicPSCache.put(cacheKey, ps);
-		}
-		return ps;
-	}
-
-	public PreparedStatement getCacheForFieldsUpdate(Session session,
-			Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context,
-			List<PropertyMeta> pms) {
-
-        log.trace("Get cache for UPDATE properties {} from entity class {}",pms,context.getEntityClass());
-
-		Class<?> entityClass = context.getEntityClass();
-		EntityMeta entityMeta = context.getEntityMeta();
-		Set<String> fields = new HashSet<String>(Collections2.transform(pms, propertyExtractor));
-		StatementCacheKey cacheKey = new StatementCacheKey(CacheType.UPDATE_FIELDS, fields,
-				entityClass);
-		PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
-		if (ps == null) {
-			ps = generator.prepareUpdateFields(session, entityMeta, pms);
-			dynamicPSCache.put(cacheKey, ps);
-		}
-		return ps;
-	}
-
-    public PreparedStatement getCacheForCollectionAndMapOperation(Session session,
-            Cache<StatementCacheKey, PreparedStatement> dynamicPSCache, PersistenceContext context,
-            PropertyMeta pm, DirtyCheckChangeSet changeSet) {
-        final Class<Object> entityClass = context.getEntityClass();
-        CollectionAndMapChangeType changeType = changeSet.getChangeType();
-        log.trace("Get cache for operation {} on entity class {} and property {}",changeType.name(),
-                entityClass,pm.getPropertyName());
-
-        StatementCacheKey cacheKey = new StatementCacheKey(changeType.cacheType(), (Set)Sets.newHashSet(pm),
-                entityClass);
+        Class<?> entityClass = context.getEntityClass();
+        EntityMeta entityMeta = context.getEntityMeta();
+        Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD,
+                                                           clusteredFields, entityClass);
         PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
-        if(ps == null) {
-            ps = generator.prepareCollectionAndMapUpdate(session, context.getEntityMeta(), pm, changeSet);
-            dynamicPSCache.put(cacheKey,ps);
+        if (ps == null) {
+            ps = generator.prepareSelectFieldPS(session, entityMeta, pm);
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
         }
         return ps;
     }
 
-	private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta pm) {
-		if (pm.isEmbeddedId()) {
-			return new HashSet<>(pm.getComponentNames());
-		} else {
-			return Sets.newHashSet(pm.getPropertyName());
-		}
-	}
+    public PreparedStatement getCacheForFieldsUpdate(Session session,
+                                                     Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
+                                                     PersistenceContext context,
+                                                     List<PropertyMeta> pms) {
+
+        log.trace("Get cache for UPDATE properties {} from entity class {}", pms, context.getEntityClass());
+
+        Class<?> entityClass = context.getEntityClass();
+        EntityMeta entityMeta = context.getEntityMeta();
+        Set<String> fields = new HashSet<>(Collections2.transform(pms, propertyExtractor));
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.UPDATE_FIELDS, fields,
+                                                           entityClass);
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if (ps == null) {
+            ps = generator.prepareUpdateFields(session, entityMeta, pms);
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
+        }
+        return ps;
+    }
+
+    public PreparedStatement getCacheForCollectionAndMapOperation(Session session,
+                                                                  Cache<StatementCacheKey,
+                                                                          PreparedStatement> dynamicPSCache,
+                                                                  PersistenceContext context,
+                                                                  PropertyMeta pm, DirtyCheckChangeSet changeSet) {
+        final Class<Object> entityClass = context.getEntityClass();
+        CollectionAndMapChangeType changeType = changeSet.getChangeType();
+        log.trace("Get cache for operation {} on entity class {} and property {}", changeType.name(),
+                  entityClass, pm.getPropertyName());
+
+        StatementCacheKey cacheKey = new StatementCacheKey(changeType.cacheType(), Sets
+                .newHashSet(pm.getPropertyName()), entityClass);
+
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if (ps == null) {
+            ps = generator.prepareCollectionAndMapUpdate(session, context.getEntityMeta(), pm, changeSet);
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
+        }
+        return ps;
+    }
+
+    private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta pm) {
+        if (pm.isEmbeddedId()) {
+            return new HashSet<>(pm.getComponentNames());
+        } else {
+            return Sets.newHashSet(pm.getPropertyName());
+        }
+    }
+
+    private void displayCacheStatistics(Cache<StatementCacheKey, PreparedStatement> dynamicPSCache) {
+
+        long cacheSize = dynamicPSCache.size();
+        CacheStats cacheStats = dynamicPSCache.stats();
+
+        log.info("Total LRU cache size {}", cacheSize);
+        if (cacheSize > (maxLRUSize * 0.8)) {
+            log.warn("Warning, the LRU prepared statements cache is over 80% full");
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Cache statistics :");
+            log.debug("\t\t- hits count : {}", cacheStats.hitCount());
+            log.debug("\t\t- hits rate : {}", cacheStats.hitRate());
+            log.debug("\t\t- miss count : {}", cacheStats.missCount());
+            log.debug("\t\t- miss rate : {}", cacheStats.missRate());
+            log.debug("\t\t- eviction count : {}", cacheStats.evictionCount());
+            log.debug("\t\t- load count : {}", cacheStats.loadCount());
+            log.debug("\t\t- load success count : {}", cacheStats.loadSuccessCount());
+            log.debug("\t\t- load exception count : {}", cacheStats.loadExceptionCount());
+            log.debug("\t\t- total load time : {}", cacheStats.totalLoadTime());
+            log.debug("\t\t- average load penalty : {}", cacheStats.averageLoadPenalty());
+            log.debug("");
+            log.debug("");
+        }
+    }
 }

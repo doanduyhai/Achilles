@@ -15,74 +15,87 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import javax.validation.Validator;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import javax.validation.Validator;
-
 public class ConfigurationContext {
-	private boolean forceColumnFamilyCreation;
+    private boolean forceColumnFamilyCreation;
 
-	private ObjectMapperFactory objectMapperFactory;
-	private ConsistencyLevel defaultReadConsistencyLevel;
-	private ConsistencyLevel defaultWriteConsistencyLevel;
-	private Validator beanValidator;
-	private DefaultBeanValidationInterceptor beanValidationInterceptor;
+    private ObjectMapperFactory objectMapperFactory;
 
-	public boolean isForceColumnFamilyCreation() {
-		return forceColumnFamilyCreation;
-	}
+    private ConsistencyLevel defaultReadConsistencyLevel;
 
-	public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
-		this.forceColumnFamilyCreation = forceColumnFamilyCreation;
-	}
+    private ConsistencyLevel defaultWriteConsistencyLevel;
 
-	public ObjectMapperFactory getObjectMapperFactory() {
-		return objectMapperFactory;
-	}
+    private Validator beanValidator;
 
-	public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-		this.objectMapperFactory = objectMapperFactory;
-	}
+    private DefaultBeanValidationInterceptor beanValidationInterceptor;
 
-	public ConsistencyLevel getDefaultReadConsistencyLevel() {
-		return defaultReadConsistencyLevel;
-	}
+    private int preparedStatementLRUCacheSize = 5000;
 
-	public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
-		this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
-	}
+    public boolean isForceColumnFamilyCreation() {
+        return forceColumnFamilyCreation;
+    }
 
-	public ConsistencyLevel getDefaultWriteConsistencyLevel() {
-		return defaultWriteConsistencyLevel;
-	}
+    public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
+        this.forceColumnFamilyCreation = forceColumnFamilyCreation;
+    }
 
-	public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
-		this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
-	}
+    public ObjectMapperFactory getObjectMapperFactory() {
+        return objectMapperFactory;
+    }
 
-	public Validator getBeanValidator() {
-		return beanValidator;
-	}
+    public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
+        this.objectMapperFactory = objectMapperFactory;
+    }
 
-	public void setBeanValidator(Validator beanValidator) {
-		this.beanValidator = beanValidator;
-	}
+    public ConsistencyLevel getDefaultReadConsistencyLevel() {
+        return defaultReadConsistencyLevel;
+    }
 
-	public boolean isClassConstrained(Class<?> clazz) {
-		if (beanValidator != null) {
-			return beanValidator.getConstraintsForClass(clazz).isBeanConstrained();
-		} else {
-			return false;
-		}
-	}
+    public void setDefaultReadConsistencyLevel(ConsistencyLevel defaultReadConsistencyLevel) {
+        this.defaultReadConsistencyLevel = defaultReadConsistencyLevel;
+    }
 
-	public void addBeanValidationInterceptor(EntityMeta meta) {
-		if (beanValidationInterceptor == null) {
-			beanValidationInterceptor = new DefaultBeanValidationInterceptor(beanValidator);
-		}
-		meta.addInterceptor(beanValidationInterceptor);
-	}
+    public ConsistencyLevel getDefaultWriteConsistencyLevel() {
+        return defaultWriteConsistencyLevel;
+    }
+
+    public void setDefaultWriteConsistencyLevel(ConsistencyLevel defaultWriteConsistencyLevel) {
+        this.defaultWriteConsistencyLevel = defaultWriteConsistencyLevel;
+    }
+
+    public Validator getBeanValidator() {
+        return beanValidator;
+    }
+
+    public void setBeanValidator(Validator beanValidator) {
+        this.beanValidator = beanValidator;
+    }
+
+    public int getPreparedStatementLRUCacheSize() {
+        return preparedStatementLRUCacheSize;
+    }
+
+    public void setPreparedStatementLRUCacheSize(int preparedStatementLRUCacheSize) {
+        this.preparedStatementLRUCacheSize = preparedStatementLRUCacheSize;
+    }
+
+    public boolean isClassConstrained(Class<?> clazz) {
+        if (beanValidator != null) {
+            return beanValidator.getConstraintsForClass(clazz).isBeanConstrained();
+        } else {
+            return false;
+        }
+    }
+
+    public void addBeanValidationInterceptor(EntityMeta meta) {
+        if (beanValidationInterceptor == null) {
+            beanValidationInterceptor = new DefaultBeanValidationInterceptor(beanValidator);
+        }
+        meta.addInterceptor(beanValidationInterceptor);
+    }
 }

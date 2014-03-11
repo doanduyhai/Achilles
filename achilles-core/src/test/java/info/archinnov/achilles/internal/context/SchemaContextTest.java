@@ -17,16 +17,13 @@
 package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.table.TableCreator;
-import info.archinnov.achilles.internal.table.TableValidator;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,130 +31,134 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.Sets;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
+import info.archinnov.achilles.internal.table.TableCreator;
+import info.archinnov.achilles.internal.table.TableValidator;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SchemaContextTest {
 
-	private SchemaContext context;
+    private SchemaContext context;
 
-	@Mock
-	private Session session;
+    @Mock
+    private Session session;
 
-	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private Cluster cluster;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Cluster cluster;
 
-	@Mock
-	private Map<Class<?>, EntityMeta> entityMetaMap;
+    @Mock
+    private Map<Class<?>, EntityMeta> entityMetaMap;
 
-	@Mock
-	private TableCreator tableCreator;
+    @Mock
+    private TableCreator tableCreator;
 
-	@Mock
-	private TableValidator tableValidator;
+    @Mock
+    private TableValidator tableValidator;
 
-	private String keyspaceName = "keyspace";
 
-	@Before
-	public void setUp() {
-		context = new SchemaContext(true, session, keyspaceName, cluster, entityMetaMap, true);
-		Whitebox.setInternalState(context, TableCreator.class, tableCreator);
-		Whitebox.setInternalState(context, TableValidator.class, tableValidator);
-	}
+    private String keyspaceName = "keyspace";
 
-	@Test
-	public void should_get_session() throws Exception {
-		// Then
-		assertThat(context.getSession()).isSameAs(session);
-	}
+    @Before
+    public void setUp() {
+        context = new SchemaContext(true, session, keyspaceName, cluster, new ParsingResult(entityMetaMap, true));
+        Whitebox.setInternalState(context, TableCreator.class, tableCreator);
+        Whitebox.setInternalState(context, TableValidator.class, tableValidator);
+    }
 
-	@Test
-	public void should_has_counter() throws Exception {
-		// Then
-		assertThat(context.hasSimpleCounter()).isTrue();
-	}
+    @Test
+    public void should_get_session() throws Exception {
+        // Then
+        assertThat(context.getSession()).isSameAs(session);
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void should_return_entity_meta_entry_set() throws Exception {
-		// Given
-		Entry<Class<?>, EntityMeta> entry = mock(Entry.class);
+    @Test
+    public void should_has_counter() throws Exception {
+        // Then
+        assertThat(context.hasSimpleCounter()).isTrue();
+    }
 
-		// When
-		when(entityMetaMap.entrySet()).thenReturn(Sets.newHashSet(entry));
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_return_entity_meta_entry_set() throws Exception {
+        // Given
+        Entry<Class<?>, EntityMeta> entry = mock(Entry.class);
 
-		Set<Entry<Class<?>, EntityMeta>> actual = context.entityMetaEntrySet();
+        // When
+        when(entityMetaMap.entrySet()).thenReturn(Sets.newHashSet(entry));
 
-		// Then
-		assertThat(actual).containsOnly(entry);
-	}
+        Set<Entry<Class<?>, EntityMeta>> actual = context.entityMetaEntrySet();
 
-	@Test
-	public void should_validate_for_entity() throws Exception {
-		// Given
-		EntityMeta entityMeta = mock(EntityMeta.class);
-		TableMetadata tableMetaData = mock(TableMetadata.class);
+        // Then
+        assertThat(actual).containsOnly(entry);
+    }
 
-		// When
-		context.validateForEntity(entityMeta, tableMetaData);
+    @Test
+    public void should_validate_for_entity() throws Exception {
+        // Given
+        EntityMeta entityMeta = mock(EntityMeta.class);
+        TableMetadata tableMetaData = mock(TableMetadata.class);
 
-		// Then
-		verify(tableValidator).validateForEntity(entityMeta, tableMetaData);
-	}
+        // When
+        context.validateForEntity(entityMeta, tableMetaData);
 
-	@Test
-	public void should_validate_achilles_counter() throws Exception {
-		// Given
-		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+        // Then
+        verify(tableValidator).validateForEntity(entityMeta, tableMetaData);
+    }
 
-		// When
-		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
-		context.validateAchillesCounter();
+    @Test
+    public void should_validate_achilles_counter() throws Exception {
+        // Given
+        KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
 
-		// Then
-		verify(tableValidator).validateAchillesCounter(keyspaceMeta, keyspaceName);
-	}
+        // When
+        when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+        context.validateAchillesCounter();
 
-	@Test
-	public void should_fetch_table_metas() throws Exception {
-		// Given
-		Map<String, TableMetadata> expected = new HashMap<String, TableMetadata>();
-		KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+        // Then
+        verify(tableValidator).validateAchillesCounter(keyspaceMeta, keyspaceName);
+    }
 
-		// When
-		when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
-		when(tableCreator.fetchTableMetaData(keyspaceMeta, keyspaceName)).thenReturn(expected);
+    @Test
+    public void should_fetch_table_metas() throws Exception {
+        // Given
+        Map<String, TableMetadata> expected = new HashMap<String, TableMetadata>();
+        KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
 
-		Map<String, TableMetadata> actual = context.fetchTableMetaData();
+        // When
+        when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
+        when(tableCreator.fetchTableMetaData(keyspaceMeta, keyspaceName)).thenReturn(expected);
 
-		// Then
-		assertThat(actual).isSameAs(expected);
-	}
+        Map<String, TableMetadata> actual = context.fetchTableMetaData();
 
-	@Test
-	public void should_create_table_for_entity() throws Exception {
-		// Given
-		EntityMeta entityMeta = mock(EntityMeta.class);
+        // Then
+        assertThat(actual).isSameAs(expected);
+    }
 
-		// When
-		context.createTableForEntity(entityMeta);
+    @Test
+    public void should_create_table_for_entity() throws Exception {
+        // Given
+        EntityMeta entityMeta = mock(EntityMeta.class);
 
-		// Then
-		verify(tableCreator).createTableForEntity(session, entityMeta, true);
-	}
+        // When
+        context.createTableForEntity(entityMeta);
 
-	@Test
-	public void should_create_table_for_counter() throws Exception {
+        // Then
+        verify(tableCreator).createTableForEntity(session, entityMeta, true);
+    }
 
-		// When
-		context.createTableForCounter();
+    @Test
+    public void should_create_table_for_counter() throws Exception {
 
-		// Then
-		verify(tableCreator).createTableForCounter(session, true);
-	}
+        // When
+        context.createTableForCounter();
+
+        // Then
+        verify(tableCreator).createTableForCounter(session, true);
+    }
 }
