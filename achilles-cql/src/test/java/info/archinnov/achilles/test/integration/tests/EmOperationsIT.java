@@ -16,7 +16,16 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import info.archinnov.achilles.entity.manager.CQLPersistenceManager;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -27,20 +36,7 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.CounterBuilder;
-
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.cglib.proxy.Factory;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 
 public class EmOperationsIT {
 	@Rule
@@ -50,26 +46,29 @@ public class EmOperationsIT {
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean");
 
 	private CQLPersistenceManager manager = resource.getPersistenceManager();
+
 	private Session session = manager.getNativeSession();
 
-	@Test
-	public void should_test() throws Exception {
-
-	}
 
 	@Test
 	public void should_persist() throws Exception {
 
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
+		CompleteBean entity = CompleteBeanTestBuilder.builder()
+		                                             .randomId()
+		                                             .name("DuyHai")
+		                                             .age(35L)
+		                                             .addFriends("foo", "bar")
+		                                             .addFollowers("George", "Paul")
+		                                             .addPreference(1, "FR")
+		                                             .addPreference(2, "Paris")
+		                                             .addPreference(3, "75014")
+		                                             .version(CounterBuilder.incr(15L)).buid();
 
 		manager.persist(entity);
 
-		Row row = session
-				.execute(
-						"select name,age_in_years,friends,followers,preferences from completebean where id = "
-								+ entity.getId()).one();
+		Row row = session.execute("select name,age_in_years,friends,followers,preferences from completebean where id" +
+				                          " = "
+				                          + entity.getId()).one();
 
 		assertThat(row.getLong("age_in_years")).isEqualTo(35L);
 		assertThat(row.getList("friends", String.class)).containsExactly("foo", "bar");
@@ -109,8 +108,11 @@ public class EmOperationsIT {
 	@Test
 	public void should_overwrite_existing_values_on_persist() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai")
-				.addFriends("foo", "bar", "qux").addFollowers("John", "Helen").addPreference(1, "Paris")
-				.addPreference(2, "Ile de France").addPreference(3, "FRANCE").buid();
+		                                             .addFriends("foo", "bar", "qux").addFollowers("John",
+		                                                                                           "Helen")
+		                                             .addPreference(1, "Paris")
+		                                             .addPreference(2, "Ile de France").addPreference(3,
+		                                                                                              "FRANCE").buid();
 
 		manager.persist(entity);
 
@@ -166,8 +168,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_find_lazy_list() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
-				.addPreference(2, "New York").buid();
+		                                             .addFriends("bob", "alice").addFollowers("Billy", "Stephen",
+		                                                                                      "Jacky").addPreference
+						(1, "US")
+		                                             .addPreference(2, "New York").buid();
 
 		manager.persist(entity);
 
@@ -191,8 +195,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_merge_modifications() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
-				.addPreference(2, "New York").buid();
+		                                             .addFriends("bob", "alice").addFollowers("Billy", "Stephen",
+		                                                                                      "Jacky").addPreference
+						(1, "US")
+		                                             .addPreference(2, "New York").buid();
 		manager.persist(entity);
 
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
@@ -223,8 +229,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_remove_property_after_merge() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
-				.addPreference(2, "New York").buid();
+		                                             .addFriends("bob", "alice").addFollowers("Billy", "Stephen",
+		                                                                                      "Jacky").addPreference
+						(1, "US")
+		                                             .addPreference(2, "New York").buid();
 		manager.persist(entity);
 
 		CompleteBean found = manager.find(CompleteBean.class, entity.getId());
@@ -248,8 +256,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_exception_when_trying_to_modify_primary_key() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
-				.addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
-				.addPreference(2, "New York").buid();
+		                                             .addFriends("bob", "alice").addFollowers("Billy", "Stephen",
+		                                                                                      "Jacky").addPreference
+						(1, "US")
+		                                             .addPreference(2, "New York").buid();
 
 		entity = manager.merge(entity);
 
@@ -285,8 +295,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_remove() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		                                             .addFriends("foo", "bar").addFollowers("George",
+		                                                                                    "Paul").addPreference(1,
+		                                                                                                          "FR")
+		                                             .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		entity = manager.merge(entity);
 
@@ -301,8 +313,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_remove_by_id() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		                                             .addFriends("foo", "bar").addFollowers("George",
+		                                                                                    "Paul").addPreference(1,
+		                                                                                                          "FR")
+		                                             .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		entity = manager.merge(entity);
 
@@ -317,8 +331,10 @@ public class EmOperationsIT {
 	@Test(expected = IllegalStateException.class)
 	public void should_exception_when_removing_transient_entity() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		                                             .addFriends("foo", "bar").addFollowers("George",
+		                                                                                    "Paul").addPreference(1,
+		                                                                                                          "FR")
+		                                             .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		manager.remove(entity);
 	}
@@ -326,8 +342,10 @@ public class EmOperationsIT {
 	@Test
 	public void should_get_reference() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		                                             .addFriends("foo", "bar").addFollowers("George",
+		                                                                                    "Paul").addPreference(1,
+		                                                                                                          "FR")
+		                                             .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		manager.persist(entity);
 
@@ -372,8 +390,10 @@ public class EmOperationsIT {
 	public void should_refresh() throws Exception {
 
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
+		                                             .addFriends("foo", "bar").addFollowers("George",
+		                                                                                    "Paul").addPreference(1,
+		                                                                                                          "FR")
+		                                             .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
 		entity = manager.merge(entity);
 

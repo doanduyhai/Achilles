@@ -16,19 +16,24 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.ConsistencyLevel;
-
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.doCallRealMethod;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.codehaus.jackson.map.AnnotationIntrospector;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -42,8 +47,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArgumentExtractorTest {
@@ -118,15 +124,15 @@ public class ArgumentExtractorTest {
 				mapper.getDeserializationConfig().isEnabled(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES))
 				.isFalse();
 		Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector()
-				.allIntrospectors();
+		                                               .allIntrospectors();
 
 		assertThat(ais).hasSize(2);
 		Iterator<AnnotationIntrospector> iterator = ais.iterator();
 
 		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
+		                                            JaxbAnnotationIntrospector.class);
 		assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-				JaxbAnnotationIntrospector.class);
+		                                            JaxbAnnotationIntrospector.class);
 	}
 
 	@Test
@@ -223,5 +229,15 @@ public class ArgumentExtractorTest {
 		Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
 		assertThat(consistencyMap).isEmpty();
+	}
+
+	@Test
+	public void should_init_proxy_warm_up() throws Exception {
+		//Given
+		configMap.put(PROXIES_WARM_UP_DISABLED, true);
+		doCallRealMethod().when(extractor).initProxyWarmUp(configMap);
+
+		//Then
+		assertThat(extractor.initProxyWarmUp(configMap)).isTrue();
 	}
 }

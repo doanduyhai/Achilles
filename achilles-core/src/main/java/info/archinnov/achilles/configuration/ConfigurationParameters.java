@@ -32,5 +32,7 @@ public interface ConfigurationParameters {
 
 	String FORCE_CF_CREATION_PARAM = "achilles.ddl.force.column.family.creation";
 
+	String PROXIES_WARM_UP_DISABLED = "achilles.proxies.warm.up.disabled";
+
 	ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 }

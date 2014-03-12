@@ -20,12 +20,15 @@ import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.consistency.AchillesConsistencyLevelPolicy;
 import info.archinnov.achilles.context.ConfigurationContext;
+import info.archinnov.achilles.proxy.ProxyClassFactory;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CQLPersistenceManagerFactoryTest {
@@ -38,6 +41,14 @@ public class CQLPersistenceManagerFactoryTest {
 
 	@Mock
 	private AchillesConsistencyLevelPolicy policy;
+
+	@Mock
+	private ProxyClassFactory proxyClassFactory;
+
+	@Before
+	public void setUp() {
+		pmf.setProxyClassFactory(proxyClassFactory);
+	}
 
 	@Test
 	public void should_create_entity_manager() throws Exception {

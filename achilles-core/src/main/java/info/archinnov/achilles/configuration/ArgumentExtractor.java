@@ -17,20 +17,27 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import info.archinnov.achilles.json.DefaultObjectMapperFactory;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.type.ConsistencyLevel;
-
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_CF_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import info.archinnov.achilles.json.DefaultObjectMapperFactory;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 public abstract class ArgumentExtractor {
 
@@ -102,6 +109,14 @@ public abstract class ArgumentExtractor {
 		return parseConsistencyLevelMap(writeConsistencyMap);
 	}
 
+	public boolean initProxyWarmUp(Map<String, Object> configMap) {
+		boolean warmUp = true;
+		if (configMap.containsKey(PROXIES_WARM_UP_DISABLED)) {
+			warmUp = (Boolean) configMap.get(PROXIES_WARM_UP_DISABLED);
+		}
+		return warmUp;
+	}
+
 	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
 		Map<String, ConsistencyLevel> map = new HashMap<String, ConsistencyLevel>();
 		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
@@ -124,4 +139,6 @@ public abstract class ArgumentExtractor {
 		}
 		return level;
 	}
+
+
 }
