@@ -23,6 +23,7 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -64,6 +65,9 @@ public class EntityProxifierTest {
 
 	@Mock
 	private ObjectInstantiator instantiator;
+
+	@Mock
+	private ProxyClassFactory factory;
 
 	@Mock
 	private EntityInterceptor<CompleteBean> interceptor;
@@ -110,6 +114,7 @@ public class EntityProxifierTest {
 		when(entityMeta.getIdMeta()).thenReturn(idMeta);
 		when(entityMeta.getAllMetas()).thenReturn(Arrays.asList(pm));
 		when(pm.getValueFromField(entity)).thenReturn(value);
+		when(factory.createProxyClass(entity.getClass())).thenReturn((Class)entity.getClass());
 		when(instantiator.instantiate(Mockito.<Class<Factory>> any())).thenReturn(realProxy);
 
 		Object proxy = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);

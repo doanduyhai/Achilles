@@ -47,128 +47,137 @@ import info.archinnov.achilles.internal.context.SchemaContext;
 import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
+import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceManagerFactoryTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
-    private PersistenceManagerFactory pmf;
+	private PersistenceManagerFactory pmf;
 
-    @Mock
-    private ConfigurationContext configContext;
+	@Mock
+	private ConfigurationContext configContext;
 
-    @Mock
-    private ArgumentExtractor argumentExtractor;
+	@Mock
+	private ArgumentExtractor argumentExtractor;
 
-    @Mock
-    private AchillesBootstrapper boostrapper;
+	@Mock
+	private AchillesBootstrapper boostrapper;
 
-    @Mock
-    private Cluster cluster;
+	@Mock
+	private ProxyClassFactory proxyClassFactory;
 
-    @Mock
-    private Session session;
+	@Mock
+	private Cluster cluster;
 
-    @Mock
-    private DaoContext daoContext;
+	@Mock
+	private Session session;
 
-    @Mock
-    private TypedMap configMap;
+	@Mock
+	private DaoContext daoContext;
 
-    @Captor
-    private ArgumentCaptor<SchemaContext> contextCaptor;
+	@Mock
+	private TypedMap configMap;
 
-    @Before
-    public void setUp() {
-        pmf = new PersistenceManagerFactory(ImmutableMap.<String, Object>of("test", "test"));
-        pmf.configurationMap = configMap;
-        Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
-        Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
-    }
+	@Captor
+	private ArgumentCaptor<SchemaContext> contextCaptor;
 
-    @Test
-    public void should_bootstrap_persistence_manager_factory() throws Exception {
-        // Given
-        List<String> entityPackages = Arrays.asList();
-        List<Class<?>> candidateClasses = Arrays.asList();
-        List<Interceptor<?>> interceptors = Arrays.asList();
-        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
-        ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
+	@Before
+	public void setUp() {
+		pmf = new PersistenceManagerFactory(ImmutableMap.<String, Object>of("test", "test"));
+		pmf.configurationMap = configMap;
+		Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
+		Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
+		Whitebox.setInternalState(pmf, ProxyClassFactory.class, proxyClassFactory);
+	}
 
-        // When
-        when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
-        when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
-        when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
-        when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
-        when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
+	@Test
+	public void should_bootstrap_persistence_manager_factory() throws Exception {
+		// Given
+		List<String> entityPackages = Arrays.asList();
+		List<Class<?>> candidateClasses = Arrays.asList();
+		List<Interceptor<?>> interceptors = Arrays.asList();
+		Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(CompleteBean.class,
+		                                                                                new EntityMeta());
+		ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
 
-        when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
-        when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
-        when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
-        when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
-        when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
-        when(boostrapper.buildDaoContext(session, parsingResult, configContext)).thenReturn(daoContext);
+		// When
+		when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
+		when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
+		when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
+		when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
+		when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
+		when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);
 
-        pmf.bootstrap();
+		when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
+		when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
+		when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
+		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
+		when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
+		when(boostrapper.buildDaoContext(session, parsingResult, configContext)).thenReturn(daoContext);
 
-        // Then
-        assertThat(pmf.entityMetaMap).isSameAs(entityMetaMap);
-        assertThat(pmf.configContext).isSameAs(configContext);
-        assertThat(pmf.daoContext).isSameAs(daoContext);
-        PersistenceContextFactory contextFactory = Whitebox.getInternalState(pmf, PersistenceContextFactory.class);
-        assertThat(Whitebox.getInternalState(contextFactory, DaoContext.class)).isSameAs(daoContext);
-        assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
-        assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
+		pmf.bootstrap();
 
-        verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
-        verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+		// Then
+		assertThat(pmf.entityMetaMap).isSameAs(entityMetaMap);
+		assertThat(pmf.configContext).isSameAs(configContext);
+		assertThat(pmf.daoContext).isSameAs(daoContext);
+		PersistenceContextFactory contextFactory = Whitebox.getInternalState(pmf, PersistenceContextFactory.class);
+		assertThat(Whitebox.getInternalState(contextFactory, DaoContext.class)).isSameAs(daoContext);
+		assertThat(Whitebox.getInternalState(contextFactory, ConfigurationContext.class)).isSameAs(configContext);
+		assertThat(Whitebox.getInternalState(contextFactory, "entityMetaMap")).isSameAs(entityMetaMap);
 
-        SchemaContext schemaContext = contextCaptor.getValue();
+		verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
+		verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
+		verify(proxyClassFactory).createProxyClass(CompleteBean.class);
 
-        assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);
-        assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
-        assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
-        assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
-        assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
-        assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
-    }
+		SchemaContext schemaContext = contextCaptor.getValue();
 
-    @Test
-    public void should_create_persistence_manager() throws Exception {
-        // Given
-        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-        PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
+		assertThat(Whitebox.getInternalState(schemaContext, Cluster.class)).isSameAs(cluster);
+		assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
+		assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
+		assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
+		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
+		assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
+	}
 
-        // When
-        pmf.entityMetaMap = entityMetaMap;
-        pmf.configContext = configContext;
-        pmf.daoContext = daoContext;
-        pmf.contextFactory = contextFactory;
+	@Test
+	public void should_create_persistence_manager() throws Exception {
+		// Given
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
 
-        PersistenceManager manager = pmf.createPersistenceManager();
+		// When
+		pmf.entityMetaMap = entityMetaMap;
+		pmf.configContext = configContext;
+		pmf.daoContext = daoContext;
+		pmf.contextFactory = contextFactory;
 
-        // Then
-        assertThat(manager).isNotNull();
-    }
+		PersistenceManager manager = pmf.createPersistenceManager();
 
-    @Test
-    public void should_create_batching_persistence_manager() throws Exception {
-        // Given
-        Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
-        PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
+		// Then
+		assertThat(manager).isNotNull();
+	}
 
-        // When
-        pmf.entityMetaMap = entityMetaMap;
-        pmf.configContext = configContext;
-        pmf.daoContext = daoContext;
-        pmf.contextFactory = contextFactory;
+	@Test
+	public void should_create_batching_persistence_manager() throws Exception {
+		// Given
+		Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<Class<?>, EntityMeta>();
+		PersistenceContextFactory contextFactory = mock(PersistenceContextFactory.class);
 
-        PersistenceManager manager = pmf.createBatchingPersistenceManager();
+		// When
+		pmf.entityMetaMap = entityMetaMap;
+		pmf.configContext = configContext;
+		pmf.daoContext = daoContext;
+		pmf.contextFactory = contextFactory;
 
-        // Then
-        assertThat(manager).isNotNull();
-    }
+		PersistenceManager manager = pmf.createBatchingPersistenceManager();
+
+		// Then
+		assertThat(manager).isNotNull();
+	}
 }

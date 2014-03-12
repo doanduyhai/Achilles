@@ -20,6 +20,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.proxy.EntityInterceptorBuilder;
+import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 
 import java.io.Serializable;
@@ -44,6 +45,8 @@ public class EntityProxifier {
 	private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
 	private ObjectInstantiator instantiator = new ObjectInstantiator();
+
+	private ProxyClassFactory factory = new ProxyClassFactory();
 
 	@SuppressWarnings("unchecked")
 	public <T> Class<T> deriveBaseClass(Object entity) {
@@ -74,14 +77,7 @@ public class EntityProxifier {
 
 		log.debug("Build Cglib proxy for entity {} ", entity);
 
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(entity.getClass());
-		enhancer.setInterfaces(new Class[] { Serializable.class });
-		enhancer.setClassLoader(this.getClass().getClassLoader());
-		enhancer.setUseCache(true);
-		enhancer.setCallbackTypes(new Class[] { MethodInterceptor.class });
-		enhancer.setUseFactory(true);
-		final Class<?> proxyClass = enhancer.createClass();
+		Class<?> proxyClass = factory.createProxyClass(entity.getClass());
 
 		@SuppressWarnings("unchecked")
 		T instance = (T) instantiator.instantiate(proxyClass);
