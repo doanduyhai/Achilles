@@ -184,7 +184,7 @@ public class PersistenceManagerFactory {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				cluster.shutdown();
+                cluster.close();
 			}
 		});
 	}

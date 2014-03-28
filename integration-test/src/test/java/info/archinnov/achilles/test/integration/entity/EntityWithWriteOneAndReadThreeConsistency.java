@@ -16,8 +16,10 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.test.integration.entity.EntityWithLocalQuorumConsistency.TABLE_NAME;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadThreeConsistency
+        .TABLE_NAME;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
@@ -25,16 +27,28 @@ import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 
 @Entity(table = TABLE_NAME)
-@Consistency(read = LOCAL_QUORUM, write = LOCAL_QUORUM)
-public class EntityWithLocalQuorumConsistency {
+@Consistency(read = THREE, write = ONE)
+public class EntityWithWriteOneAndReadThreeConsistency {
 
-	public static final String TABLE_NAME = "consistency_test1";
+	public static final String TABLE_NAME = "consistency_test2";
 
 	@Id
 	private Long id;
 
 	@Column
-	private String name;
+	private String firstname;
+
+	@Column
+	private String lastname;
+
+	public EntityWithWriteOneAndReadThreeConsistency() {
+	}
+
+	public EntityWithWriteOneAndReadThreeConsistency(Long id, String firstname, String lastname) {
+		this.id = id;
+		this.firstname = firstname;
+		this.lastname = lastname;
+	}
 
 	public Long getId() {
 		return id;
@@ -44,11 +58,19 @@ public class EntityWithLocalQuorumConsistency {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getFirstname() {
+		return firstname;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
 	}
 }

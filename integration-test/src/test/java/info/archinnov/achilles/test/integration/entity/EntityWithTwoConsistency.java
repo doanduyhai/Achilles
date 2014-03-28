@@ -16,28 +16,24 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.test.integration.entity.EntityWithTwoConsistency.TABLE_NAME;
+import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.type.Counter;
 
-@Entity
-@Consistency(read = THREE, write = QUORUM)
-public class EntityWithConsistencyLevelOnClassAndField {
+@Entity(table = TABLE_NAME)
+@Consistency(read = TWO, write = TWO)
+public class EntityWithTwoConsistency {
+
+    public static final String TABLE_NAME = "consistency_test1";
 
     @Id
     private Long id;
 
     @Column
     private String name;
-
-    @Column
-    @Consistency(read = ONE, write = ONE)
-    private Counter count;
 
     public Long getId() {
         return id;
@@ -53,13 +49,5 @@ public class EntityWithConsistencyLevelOnClassAndField {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Counter getCount() {
-        return count;
-    }
-
-    public void setCount(Counter count) {
-        this.count = count;
     }
 }
