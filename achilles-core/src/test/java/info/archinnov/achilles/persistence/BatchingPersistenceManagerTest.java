@@ -15,82 +15,78 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.context.BatchingFlushContext;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
-
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.context.BatchingFlushContext;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.internal.context.DaoContext;
+import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.PersistenceContextFactory;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BatchingPersistenceManagerTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private BatchingPersistenceManager manager;
+    private BatchingPersistenceManager manager;
 
-	@Mock
-	private PersistenceContextFactory contextFactory;
+    @Mock
+    private PersistenceContextFactory contextFactory;
 
-	@Mock
-	private DaoContext daoContext;
+    @Mock
+    private DaoContext daoContext;
 
-	@Mock
-	private ConfigurationContext configContext;
+    @Mock
+    private ConfigurationContext configContext;
 
-	@Mock
-	private BatchingFlushContext flushContext;
+    @Mock
+    private BatchingFlushContext flushContext;
 
-	@Mock
-	private PersistenceManagerFactory pmf;
+    @Mock
+    private PersistenceManagerFactory pmf;
 
-	@Captor
-	private ArgumentCaptor<ConsistencyLevel> consistencyCaptor;
-
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+        when(configContext.isForceBatchStatementsOrdering()).thenReturn(true);
         manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext);
-		Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
-	}
+        Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
+    }
 
-	@Test
-	public void should_start_batch() throws Exception {
+    @Test
+    public void should_start_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
-		//When
+        //When
         manager.startBatch();
 
         //Then
         assertThat(manager.flushContext).isSameAs(newFlushContext);
 
-	}
+    }
 
-	@Test
-	public void should_start_batch_with_consistency_level() throws Exception {
+    @Test
+    public void should_start_batch_with_consistency_level() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
         when(flushContext.duplicateWithNoData(EACH_QUORUM)).thenReturn(newFlushContext);
@@ -98,12 +94,12 @@ public class BatchingPersistenceManagerTest {
         //When
         manager.startBatch(EACH_QUORUM);
 
-		//Then
+        //Then
         assertThat(manager.flushContext).isSameAs(newFlushContext);
-	}
+    }
 
-	@Test
-	public void should_end_batch() throws Exception {
+    @Test
+    public void should_end_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
@@ -112,13 +108,13 @@ public class BatchingPersistenceManagerTest {
         manager.endBatch();
 
         //Then
-		verify(flushContext).endBatch();
-		assertThat(manager.flushContext).isSameAs(newFlushContext);
-	}
+        verify(flushContext).endBatch();
+        assertThat(manager.flushContext).isSameAs(newFlushContext);
+    }
 
 
-	@Test
-	public void should_clean_batch() throws Exception {
+    @Test
+    public void should_clean_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
@@ -128,92 +124,92 @@ public class BatchingPersistenceManagerTest {
 
         //Then
         assertThat(manager.flushContext).isSameAs(newFlushContext);
-	}
+    }
 
-	@Test
-	public void should_exception_when_persist_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_persist_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
-	}
+        manager.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+    }
 
-	@Test
-	public void should_exception_when_merge_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_merge_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
-	}
+        manager.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+    }
 
-	@Test
-	public void should_exception_when_remove_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_remove_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
-	}
+        manager.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+    }
 
-	@Test
-	public void should_exception_when_find_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_find_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.find(CompleteBean.class, 11L, ONE);
-	}
+        manager.find(CompleteBean.class, 11L, ONE);
+    }
 
-	@Test
-	public void should_exception_when_getReference_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_getReference_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.getProxy(CompleteBean.class, 11L, ONE);
-	}
+        manager.getProxy(CompleteBean.class, 11L, ONE);
+    }
 
-	@Test
-	public void should_exception_when_refresh_with_consistency() throws Exception {
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+    @Test
+    public void should_exception_when_refresh_with_consistency() throws Exception {
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-		manager.refresh(new CompleteBean(), ONE);
-	}
+        manager.refresh(new CompleteBean(), ONE);
+    }
 
-	@Test
-	public void should_init_persistence_context_with_entity() throws Exception {
-		// Given
-		Object entity = new Object();
-		Options options = OptionsBuilder.noOptions();
-		PersistenceContext context = mock(PersistenceContext.class);
+    @Test
+    public void should_init_persistence_context_with_entity() throws Exception {
+        // Given
+        Object entity = new Object();
+        Options options = OptionsBuilder.noOptions();
+        PersistenceContext context = mock(PersistenceContext.class);
 
-		// When
-		when(contextFactory.newContextWithFlushContext(entity, options, flushContext)).thenReturn(context);
+        // When
+        when(contextFactory.newContextWithFlushContext(entity, options, flushContext)).thenReturn(context);
 
-		PersistenceContext actual = manager.initPersistenceContext(entity, options);
+        PersistenceContext actual = manager.initPersistenceContext(entity, options);
 
-		// Then
-		assertThat(actual).isSameAs(context);
-	}
+        // Then
+        assertThat(actual).isSameAs(context);
+    }
 
-	@Test
-	public void should_init_persistence_context_with_primary_key() throws Exception {
-		// Given
-		Object primaryKey = new Object();
-		Options options = OptionsBuilder.noOptions();
-		PersistenceContext context = mock(PersistenceContext.class);
+    @Test
+    public void should_init_persistence_context_with_primary_key() throws Exception {
+        // Given
+        Object primaryKey = new Object();
+        Options options = OptionsBuilder.noOptions();
+        PersistenceContext context = mock(PersistenceContext.class);
 
-		// When
-		when(contextFactory.newContextWithFlushContext(Object.class, primaryKey, options, flushContext)).thenReturn(
-				context);
+        // When
+        when(contextFactory.newContextWithFlushContext(Object.class, primaryKey, options, flushContext)).thenReturn(
+                context);
 
-		PersistenceContext actual = manager.initPersistenceContext(Object.class, primaryKey, options);
+        PersistenceContext actual = manager.initPersistenceContext(Object.class, primaryKey, options);
 
-		// Then
-		assertThat(actual).isSameAs(context);
-	}
+        // Then
+        assertThat(actual).isSameAs(context);
+    }
 }

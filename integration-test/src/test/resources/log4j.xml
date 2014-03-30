@@ -28,6 +28,10 @@
 	<logger name="org.apache.cassandra.cql3.QueryProcessor">
 		<level value="OFF"/>
 	</logger>
+
+	<logger name="org.apache.cassandra.db.Memtable">
+		<level value="OFF"/>
+	</logger>
 	<!-- ********************************************************* -->
 	<!-- Root Loggers                                              -->
 	<!-- ********************************************************* -->

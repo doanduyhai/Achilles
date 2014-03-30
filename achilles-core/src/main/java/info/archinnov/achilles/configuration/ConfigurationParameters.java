@@ -19,42 +19,44 @@ package info.archinnov.achilles.configuration;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 public interface ConfigurationParameters {
-	String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
+    String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
 
-	String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
-	String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
+    String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
+    String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
 
-	String CONSISTENCY_LEVEL_READ_DEFAULT_PARAM = "achilles.consistency.read.default";
-	String CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM = "achilles.consistency.write.default";
-	String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
-	String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
-	String EVENT_INTERCEPTORS_PARAM = "achilles.event.interceptors";
+    String CONSISTENCY_LEVEL_READ_DEFAULT_PARAM = "achilles.consistency.read.default";
+    String CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM = "achilles.consistency.write.default";
+    String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
+    String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
+    String EVENT_INTERCEPTORS_PARAM = "achilles.event.interceptors";
 
-	String FORCE_TABLE_CREATION_PARAM = "achilles.ddl.force.table.creation";
+    String FORCE_TABLE_CREATION_PARAM = "achilles.ddl.force.table.creation";
 
-	String CLUSTER_NAME_PARAM = "achilles.cassandra.cluster.name";
-	String CLUSTER_PARAM = "achilles.cassandra.cluster";
-	String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
-	String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
-	String CONNECTION_CQL_PORT_PARAM = "achilles.cassandra.connection.cql.port";
-	String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
-	String COMPRESSION_TYPE = "achilles.cassandra.compression.type";
-	String RETRY_POLICY = "achilles.cassandra.retry.policy";
-	String LOAD_BALANCING_POLICY = "achilles.cassandra.load.balancing.policy";
-	String RECONNECTION_POLICY = "achilles.cassandra.reconnection.policy";
-	String USERNAME = "achilles.cassandra.username";
-	String PASSWORD = "achilles.cassandra.password";
-	String DISABLE_JMX = "achilles.cassandra.disable.jmx";
-	String DISABLE_METRICS = "achilles.cassandra.disable.metrics";
-	String SSL_ENABLED = "achilles.cassandra.ssl.enabled";
-	String SSL_OPTIONS = "achilles.cassandra.ssl.options";
+    String CLUSTER_NAME_PARAM = "achilles.cassandra.cluster.name";
+    String CLUSTER_PARAM = "achilles.cassandra.cluster";
+    String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
+    String CONNECTION_CONTACT_POINTS_PARAM = "achilles.cassandra.connection.contactPoints";
+    String CONNECTION_CQL_PORT_PARAM = "achilles.cassandra.connection.cql.port";
+    String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
+    String COMPRESSION_TYPE = "achilles.cassandra.compression.type";
+    String RETRY_POLICY = "achilles.cassandra.retry.policy";
+    String LOAD_BALANCING_POLICY = "achilles.cassandra.load.balancing.policy";
+    String RECONNECTION_POLICY = "achilles.cassandra.reconnection.policy";
+    String USERNAME = "achilles.cassandra.username";
+    String PASSWORD = "achilles.cassandra.password";
+    String DISABLE_JMX = "achilles.cassandra.disable.jmx";
+    String DISABLE_METRICS = "achilles.cassandra.disable.metrics";
+    String SSL_ENABLED = "achilles.cassandra.ssl.enabled";
+    String SSL_OPTIONS = "achilles.cassandra.ssl.options";
 
-	String BEAN_VALIDATION_ENABLE = "achilles.bean.validation.enable";
-	String BEAN_VALIDATION_VALIDATOR = "achilles.bean.validation.validator";
+    String BEAN_VALIDATION_ENABLE = "achilles.bean.validation.enable";
+    String BEAN_VALIDATION_VALIDATOR = "achilles.bean.validation.validator";
 
-	String PREPARED_STATEMENTS_CACHE_SIZE = "achilles.prepared.statements.cache.size";
+    String PREPARED_STATEMENTS_CACHE_SIZE = "achilles.prepared.statements.cache.size";
 
-	String PROXIES_WARM_UP_DISABLED = "achilles.proxies.warm.up.disabled";
+    String PROXIES_WARM_UP_DISABLED = "achilles.proxies.warm.up.disabled";
 
-	ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
+    String FORCE_BATCH_STATEMENTS_ORDERING = "achilles.batch.force.statements.ordering";
+
+    ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 }

@@ -36,6 +36,8 @@ public class ConfigurationContext {
 
     private int preparedStatementLRUCacheSize = 5000;
 
+    private boolean forceBatchStatementsOrdering = true;
+
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
     }
@@ -82,6 +84,14 @@ public class ConfigurationContext {
 
     public void setPreparedStatementLRUCacheSize(int preparedStatementLRUCacheSize) {
         this.preparedStatementLRUCacheSize = preparedStatementLRUCacheSize;
+    }
+
+    public boolean isForceBatchStatementsOrdering() {
+        return forceBatchStatementsOrdering;
+    }
+
+    public void setForceBatchStatementsOrdering(boolean forceBatchStatementsOrdering) {
+        this.forceBatchStatementsOrdering = forceBatchStatementsOrdering;
     }
 
     public boolean isClassConstrained(Class<?> clazz) {

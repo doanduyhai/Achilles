@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.configuration;
 
+import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
@@ -29,6 +30,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.DISA
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
@@ -37,6 +39,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJE
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
@@ -166,15 +169,15 @@ public class ArgumentExtractorTest {
                 mapper.getDeserializationConfig().isEnabled(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES))
                 .isFalse();
         Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector()
-                                                       .allIntrospectors();
+                .allIntrospectors();
 
         assertThat(ais).hasSize(2);
         Iterator<AnnotationIntrospector> iterator = ais.iterator();
 
         assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-                                                    JaxbAnnotationIntrospector.class);
+                JaxbAnnotationIntrospector.class);
         assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-                                                    JaxbAnnotationIntrospector.class);
+                JaxbAnnotationIntrospector.class);
     }
 
     @Test
@@ -392,6 +395,10 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getObjectMapperFactory()).isSameAs(factory);
         assertThat(configContext.getDefaultReadConsistencyLevel()).isEqualTo(ANY);
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(configContext.getBeanValidator()).isNull();
+        assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_CACHE_SIZE);
+        assertThat(configContext.isForceBatchStatementsOrdering()).isTrue();
 
     }
 
@@ -452,5 +459,31 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(actual).isEqualTo(10);
+    }
+
+    @Test
+    public void should_init_proxy_warmup() throws Exception {
+        //Given
+        TypedMap params = new TypedMap();
+        params.put(PROXIES_WARM_UP_DISABLED, false);
+
+        //When
+        boolean actual = extractor.initProxyWarmUp(params);
+
+        //Then
+        assertThat(actual).isFalse();
+    }
+
+    @Test
+    public void should_init_force_batch_statements_ordering() throws Exception {
+        //Given
+        TypedMap params = new TypedMap();
+        params.put(FORCE_BATCH_STATEMENTS_ORDERING, true);
+
+        //When
+        boolean actual = extractor.initForceBatchStatementsOrdering(params);
+
+        //Then
+        assertThat(actual).isTrue();
     }
 }
