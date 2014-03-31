@@ -27,14 +27,14 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</dependency>
  ```
  
  For now, **Achilles** depends on the following libraries:
  
- 1. cassandra 2.0.3
- 2. cassandra-driver-core 2.0.0-rc2
+ 1. cassandra 2.0.6
+ 2. cassandra-driver-core 2.0.1
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson asl, mapper & xc 1.9.3 
    
