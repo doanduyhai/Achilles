@@ -91,7 +91,7 @@ public class AchillesBootstrapper {
     }
 
     public DaoContext buildDaoContext(Session session, ParsingResult parsingResult,
-                                      ConfigurationContext configContext) {
+            ConfigurationContext configContext) {
         log.debug("Build DaoContext");
         return daoContextFactory.create(session, parsingResult, configContext);
     }
@@ -102,7 +102,7 @@ public class AchillesBootstrapper {
             Class<?> entityClass = propertyParser.inferEntityClassFromInterceptor(interceptor);
             EntityMeta entityMeta = entityMetaMap.get(entityClass);
             Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
-                                              entityClass.getCanonicalName());
+                    entityClass.getCanonicalName());
             entityMeta.addInterceptor(interceptor);
         }
     }

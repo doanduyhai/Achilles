@@ -16,14 +16,40 @@
 package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_LRU_CACHE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
-import java.util.*;
-
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.validation.Validator;
 
 import org.hibernate.validator.internal.engine.ValidatorImpl;
@@ -97,14 +123,14 @@ public class ArgumentExtractorTest {
     public void should_init_entity_packages() throws Exception {
         configMap.put(ENTITY_PACKAGES, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
 
-        Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap, this.getClass().getClassLoader());
 
         assertThat(actual).containsOnly(Entity1.class, Entity2.class, Entity3.class);
     }
 
     @Test
     public void should_init_empty_entity_packages() throws Exception {
-        Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap, this.getClass().getClassLoader());
 
         assertThat(actual).isEmpty();
     }
@@ -113,14 +139,14 @@ public class ArgumentExtractorTest {
     public void should_init_entities_list() {
         configMap.put(ENTITIES_LIST, Arrays.asList(Entity1.class));
 
-        Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap, this.getClass().getClassLoader());
 
         assertThat(actual).contains(Entity1.class);
     }
 
     @Test
     public void should_init_empty_entities_list() {
-        Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap, this.getClass().getClassLoader());
 
         assertThat(actual).isEmpty();
     }
@@ -130,7 +156,7 @@ public class ArgumentExtractorTest {
         configMap.put(ENTITIES_LIST, Arrays.asList(Entity1.class));
         configMap.put(ENTITY_PACKAGES, "info.archinnov.achilles.test.more.entity");
 
-        Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap, this.getClass().getClassLoader());
 
         assertThat(actual).containsOnly(Entity1.class, Entity3.class);
     }
@@ -446,5 +472,18 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(strategy).isEqualTo(ALL_FIELDS);
+    }
+
+    @Test
+    public void should_init_osgi_classloader() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+        params.put(OSGI_CLASS_LOADER, this.getClass().getClassLoader());
+
+        //When
+        final ClassLoader actual = extractor.initOsgiClassLoader(params);
+
+        //Then
+        assertThat(actual).isSameAs(this.getClass().getClassLoader());
     }
 }

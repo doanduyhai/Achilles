@@ -161,7 +161,7 @@ public class AchillesBootstrapperTest {
         // Given
         Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
         Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of(CQL_COUNTER_TABLE,
-                                                                                           tableMeta);
+                tableMeta);
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
@@ -212,9 +212,9 @@ public class AchillesBootstrapperTest {
         final EntityMeta metaString = new EntityMeta();
         final EntityMeta metaLong = new EntityMeta();
         final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(stringInterceptor1,
-                                                                                stringInterceptor2, longInterceptor);
+                stringInterceptor2, longInterceptor);
         final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(String.class,
-                                                                                              metaString, Long.class, metaLong);
+                metaString, Long.class, metaLong);
 
         // When
         bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);

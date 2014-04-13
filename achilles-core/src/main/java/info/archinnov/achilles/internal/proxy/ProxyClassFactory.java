@@ -17,19 +17,20 @@
 package info.archinnov.achilles.internal.proxy;
 
 import java.io.Serializable;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
 public class ProxyClassFactory {
 
-	public Class<?> createProxyClass(Class<?> entityClass) {
-		Enhancer enhancer = new Enhancer();
-		enhancer.setSuperclass(entityClass);
-		enhancer.setInterfaces(new Class[]{Serializable.class});
-		enhancer.setClassLoader(this.getClass().getClassLoader());
-		enhancer.setUseCache(true);
-		enhancer.setCallbackTypes(new Class[]{MethodInterceptor.class});
-		enhancer.setUseFactory(true);
-		return enhancer.createClass();
-	}
+    public Class<?> createProxyClass(Class<?> entityClass, ConfigurationContext configContext) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(entityClass);
+        enhancer.setInterfaces(new Class[] { Serializable.class });
+        enhancer.setClassLoader(configContext.selectClassLoader(entityClass));
+        enhancer.setUseCache(true);
+        enhancer.setCallbackTypes(new Class[] { MethodInterceptor.class });
+        enhancer.setUseFactory(true);
+        return enhancer.createClass();
+    }
 }

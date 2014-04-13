@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -58,4 +59,6 @@ public interface PersistentStateHolder {
     public Set<Method> getAllGettersExceptCounters();
 
     public List<PropertyMeta> getAllCountersMeta();
+
+    public ConfigurationContext getConfigContext();
 }

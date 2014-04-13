@@ -226,6 +226,10 @@ public class PersistenceContext {
         public List<PropertyMeta> getAllCountersMeta() {
             return entityMeta.getAllCounterMetas();
         }
+
+        public ConfigurationContext getConfigContext() {
+            return configContext;
+        }
     }
 
     public class PersistenceManagerFacade extends StateHolderFacade implements PersistenceManagerOperations {

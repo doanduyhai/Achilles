@@ -72,7 +72,7 @@ public class EntityProxifier {
 
         log.debug("Build Cglib proxy for entity {} ", entity);
 
-        Class<?> proxyClass = factory.createProxyClass(entity.getClass());
+        Class<?> proxyClass = factory.createProxyClass(entity.getClass(), context.getConfigContext());
 
         @SuppressWarnings("unchecked")
         T instance = (T) instantiator.instantiate(proxyClass);

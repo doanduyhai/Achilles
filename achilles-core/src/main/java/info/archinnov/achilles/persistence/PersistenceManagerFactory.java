@@ -100,8 +100,9 @@ public class PersistenceManagerFactory {
 
         configContext = argumentExtractor.initConfigContext(configurationMap);
         Session session = argumentExtractor.initSession(cluster, configurationMap);
+        final ClassLoader classLoader = argumentExtractor.initOsgiClassLoader(configurationMap);
         List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
-        List<Class<?>> candidateClasses = argumentExtractor.initEntities(configurationMap);
+        List<Class<?>> candidateClasses = argumentExtractor.initEntities(configurationMap, classLoader);
 
         ParsingResult parsingResult = parseEntities(candidateClasses);
         this.entityMetaMap = parsingResult.getMetaMap();
@@ -121,17 +122,17 @@ public class PersistenceManagerFactory {
     }
 
 
-    private void warmUpProxies() {
-        if (argumentExtractor.initProxyWarmUp(configurationMap)) {
-            long start = System.nanoTime();
-            for (Class<?> clazz : entityMetaMap.keySet()) {
-                proxyClassFactory.createProxyClass(clazz);
-            }
-            long end = System.nanoTime();
-            long duration = (end - start) / 1000000;
-            log.info("Entity proxies warm up took {} millisecs for {} entities", duration, entityMetaMap.size());
-        }
-    }
+	private void warmUpProxies() {
+		if (argumentExtractor.initProxyWarmUp(configurationMap)) {
+			long start = System.nanoTime();
+			for (Class<?> clazz : entityMetaMap.keySet()) {
+				proxyClassFactory.createProxyClass(clazz, configContext);
+			}
+			long end = System.nanoTime();
+			long duration = (end - start) / 1000000;
+			log.info("Entity proxies warm up took {} millisecs for {} entities", duration, entityMetaMap.size());
+		}
+	}
 
     private ParsingResult parseEntities(List<Class<?>> candidateClasses) {
         return bootstrapper.buildMetaDatas(configContext, candidateClasses);

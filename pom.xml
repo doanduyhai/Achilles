@@ -73,6 +73,7 @@
         <junit.version>4.10</junit.version>
         <mockito.version>1.9.5</mockito.version>
         <powermock.version>1.5</powermock.version>
+        <felix.version>2.4.0</felix.version>
 
         <!-- Maven plugins -->
         <maven.compiler.version>2.4</maven.compiler.version>
@@ -291,6 +292,13 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
+            <!-- OSGI -->
+            <dependency>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${felix.version}</version>
+            </dependency>
+
             <!-- TEST -->
             <dependency>
                 <groupId>org.easytesting</groupId>
@@ -465,6 +473,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin}</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -135,7 +135,7 @@ public class EmbeddedIdParser {
     }
 
     private void validateConsistentPartitionKeys(Map<Integer, Field> componentsOrdering, String embeddedIdClassName) {
-        log.debug("Validate composite partiton key component ordering for @EmbeddedId class {} ", embeddedIdClassName);
+        log.debug("Validate composite partition key component ordering for @EmbeddedId class {} ", embeddedIdClassName);
         int orderSum = 0;
         int orderCount = 0;
         for (Integer order : componentsOrdering.keySet()) {
@@ -147,12 +147,10 @@ public class EmbeddedIdParser {
         }
 
         int check = (orderCount * (orderCount + 1)) / 2;
-        Validator.validateBeanMappingTrue(orderSum == check,
-                "The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
+        Validator.validateBeanMappingTrue(orderSum == check, "The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
     }
 
-    private void validateReversedClusteredKey(Map<Integer, Field> componentsOrdering, Integer reversedField,
-            String embeddedIdClassName) {
+    private void validateReversedClusteredKey(Map<Integer, Field> componentsOrdering, Integer reversedField, String embeddedIdClassName) {
         if (reversedField != null) {
             log.debug("Validate reversed clustered key component ordering for @EmbeddedId class {} ",
                     embeddedIdClassName);
@@ -164,11 +162,9 @@ public class EmbeddedIdParser {
                 }
             }
             if (lastPartitionKey > 0) {
-                Validator
-                        .validateBeanMappingTrue(
-                                reversedField.intValue() == lastPartitionKey + 1,
-                                "The reversed clustered key must be set after the last partition key for @EmbeddedId class '%s'",
-                                embeddedIdClassName);
+                Validator.validateBeanMappingTrue(reversedField.intValue() == lastPartitionKey + 1,
+                        "The reversed clustered key must be set after the last partition key for @EmbeddedId class '%s'",
+                        embeddedIdClassName);
             } else {
                 Validator.validateBeanMappingTrue(reversedField.intValue() == 2,
                         "The composite clustered key must be set at position 2 for @EmbeddedId class '%s'",

@@ -42,6 +42,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -76,6 +77,9 @@ public class EntityProxifierTest {
 
     @Mock
     private PersistenceContext.EntityFacade context;
+
+    @Mock
+    private ConfigurationContext configContext;
 
     @Mock
     private EntityMeta entityMeta;
@@ -116,7 +120,8 @@ public class EntityProxifierTest {
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
         when(entityMeta.getAllMetas()).thenReturn(Arrays.asList(pm));
         when(pm.getValueFromField(entity)).thenReturn(value);
-        when(factory.createProxyClass(entity.getClass())).thenReturn((Class) entity.getClass());
+        when(context.getConfigContext()).thenReturn(configContext);
+        when(factory.createProxyClass(entity.getClass(), configContext)).thenReturn((Class) entity.getClass());
         when(instantiator.instantiate(Mockito.<Class<Factory>>any())).thenReturn(realProxy);
 
         Object proxy = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);

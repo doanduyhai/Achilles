@@ -108,13 +108,15 @@ public class PersistenceManagerFactoryTest {
         Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(CompleteBean.class,
                 new EntityMeta());
         ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
+        final ClassLoader classLoader = this.getClass().getClassLoader();
 
         // When
         when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
         when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
         when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
         when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);
-        when(argumentExtractor.initEntities(configMap)).thenReturn(candidateClasses);
+        when(argumentExtractor.initOsgiClassLoader(configMap)).thenReturn(classLoader);
+        when(argumentExtractor.initEntities(configMap, classLoader)).thenReturn(candidateClasses);
 
         when(configMap.getTyped(ENTITY_PACKAGES)).thenReturn("packages");
         when(configMap.getTyped(KEYSPACE_NAME)).thenReturn("keyspace");
@@ -136,7 +138,7 @@ public class PersistenceManagerFactoryTest {
         verify(boostrapper).buildMetaDatas(configContext, candidateClasses);
         verify(boostrapper).validateOrCreateTables(contextCaptor.capture());
         verify(boostrapper).addInterceptorsToEntityMetas(interceptors, entityMetaMap);
-        verify(proxyClassFactory).createProxyClass(CompleteBean.class);
+        verify(proxyClassFactory).createProxyClass(CompleteBean.class, configContext);
 
         SchemaContext schemaContext = contextCaptor.getValue();
 

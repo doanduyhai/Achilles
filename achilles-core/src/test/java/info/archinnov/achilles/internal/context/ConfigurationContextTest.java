@@ -18,6 +18,9 @@ package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
+
 import javax.validation.Validator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,4 +80,46 @@ public class ConfigurationContextTest {
         assertThat(actual).isSameAs(mapper);
     }
 
+    @Test
+    public void should_select_classloader_from_entity() throws Exception {
+        //Given
+        ConfigurationContext context = new ConfigurationContext();
+
+        //When
+        final ClassLoader classLoader = context.selectClassLoader(CompleteBean.class);
+
+        //Then
+        assertThat(classLoader).isSameAs(this.getClass().getClassLoader());
+    }
+
+    @Test
+    public void should_select_classloader_from_osgi() throws Exception {
+        //Given
+        ConfigurationContext context = new ConfigurationContext();
+        final ClassLoader osgiClassLoader = new ClassLoader() {
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                return super.loadClass(name);
+            }
+        };
+        context.setOsgiClassLoader(osgiClassLoader);
+
+        //When
+        final ClassLoader classLoader = context.selectClassLoader(CompleteBean.class);
+
+        //Then
+        assertThat(classLoader).isSameAs(osgiClassLoader);
+    }
+
+    @Test
+    public void should_select_classloader_from_current() throws Exception {
+        //Given
+        ConfigurationContext context = new ConfigurationContext();
+
+        //When
+        final ClassLoader actual = context.selectClassLoader();
+
+        //Then
+        assertThat(actual).isSameAs(this.getClass().getClassLoader());
+    }	
 }

@@ -17,34 +17,42 @@
 package info.archinnov.achilles.internal.proxy;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import net.sf.cglib.proxy.Factory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyClassFactoryTest {
 
-	private ProxyClassFactory factory = new ProxyClassFactory();
+    private ProxyClassFactory factory = new ProxyClassFactory();
 
-	@Test
-	public void should_create_proxy_class() throws Exception {
-		//When
-		Class<?> proxyClass = factory.createProxyClass(CompleteBean.class);
+    @Mock
+    private ConfigurationContext configContext;
 
-		//Then
-		assertThat(CompleteBean.class.isAssignableFrom(proxyClass)).isTrue();
-		assertThat(Factory.class.isAssignableFrom(proxyClass)).isTrue();
-	}
+    @Test
+    public void should_create_proxy_class() throws Exception {
+        //When
+        when(configContext.selectClassLoader(CompleteBean.class)).thenReturn(CompleteBean.class.getClassLoader());
+        Class<?> proxyClass = factory.createProxyClass(CompleteBean.class, configContext);
 
-	@Test
-	public void should_reuse_created_proxy_class_from_cache() throws Exception {
-		//When
-		Class<?> proxyClass1 = factory.createProxyClass(CompleteBean.class);
-		Class<?> proxyClass2 = factory.createProxyClass(CompleteBean.class);
+        //Then
+        assertThat(CompleteBean.class.isAssignableFrom(proxyClass)).isTrue();
+        assertThat(Factory.class.isAssignableFrom(proxyClass)).isTrue();
+    }
 
-		//Then
-		assertThat(proxyClass1 == proxyClass2).isTrue();
-	}
+    @Test
+    public void should_reuse_created_proxy_class_from_cache() throws Exception {
+        //When
+        when(configContext.selectClassLoader(CompleteBean.class)).thenReturn(CompleteBean.class.getClassLoader());
+        Class<?> proxyClass1 = factory.createProxyClass(CompleteBean.class, configContext);
+        Class<?> proxyClass2 = factory.createProxyClass(CompleteBean.class, configContext);
+
+        //Then
+        assertThat(proxyClass1 == proxyClass2).isTrue();
+    }
 }
