@@ -15,109 +15,104 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import org.apache.commons.lang.StringUtils;
+import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
-import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.datastax.driver.core.Session;
-
 public class AchillesResource extends AchillesTestResource {
 
-	private final PersistenceManagerFactory pmf;
+    private PersistenceManagerFactory pmf;
 
-	private final PersistenceManager manager;
+    private PersistenceManager manager;
 
-	private final CassandraEmbeddedServer server;
+    private CassandraEmbeddedServer server;
 
-	private final Session session;
+    private Session session;
 
-	AchillesResource(String keyspaceName, String entityPackages, String... tables) {
-		super(tables);
+    private String keyspaceToUse;
 
-		String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
-				: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-		TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
+    AchillesResource(String keyspaceName, String entityPackages, String... tables) {
+        super(tables);
+        initResource(keyspaceName, entityPackages);
+    }
 
-		server = new CassandraEmbeddedServer(config);
-		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-	}
+    AchillesResource(String keyspaceName, String entityPackages, Steps cleanUpSteps, String... tables) {
+        super(cleanUpSteps, tables);
+        initResource(keyspaceName, entityPackages);
+    }
 
-	AchillesResource(String keyspaceName, String entityPackages, Steps cleanUpSteps, String... tables) {
-		super(cleanUpSteps, tables);
+    private void initResource(String keyspaceName, String entityPackages) {
+        keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
+                : DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+        TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
 
-		String keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
-				: DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+        server = new CassandraEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory(keyspaceToUse);
+        manager = server.getPersistenceManager(keyspaceToUse);
+        session = server.getNativeSession(keyspaceToUse);
+    }
 
-		Validator.validateNotBlank(entityPackages, "Entity packages should be provided");
-		TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
+    private TypedMap buildConfigMap(String entityPackages, String keyspaceToUse) {
+        TypedMap config = new TypedMap();
+        config.put(CLEAN_CASSANDRA_DATA_FILES, true);
+        config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
+        config.put(KEYSPACE_DURABLE_WRITE, false);
+        config = addEntityPackagesIfNeeded(entityPackages, config);
+        return config;
+    }
 
-		server = new CassandraEmbeddedServer(config);
-		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-	}
+    private TypedMap addEntityPackagesIfNeeded(String entityPackages, TypedMap config) {
+        if (StringUtils.isNotBlank(entityPackages)) {
+            final TypedMap newConfig = new TypedMap();
+            newConfig.putAll(config);
+            newConfig.put(ENTITY_PACKAGES_PARAM, entityPackages);
+            config = newConfig;
+        }
+        return config;
+    }
 
-	private TypedMap buildConfigMap(String entityPackages, String keyspaceToUse) {
-		TypedMap config = new TypedMap();
-		config.put(CLEAN_CASSANDRA_DATA_FILES, true);
-		config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
-		config.put(KEYSPACE_DURABLE_WRITE, false);
-		config = addEntityPackagesIfNeeded(entityPackages, config);
-		return config;
-	}
+    /**
+     * Return a singleton PersistenceManagerFactory
+     *
+     * @return PersistenceManagerFactory singleton
+     */
+    public PersistenceManagerFactory getPersistenceManagerFactory() {
+        return pmf;
+    }
 
-	private TypedMap addEntityPackagesIfNeeded(String entityPackages, TypedMap config) {
-		if (StringUtils.isNotBlank(entityPackages)) {
-			final TypedMap newConfig = new TypedMap();
-			newConfig.putAll(config);
-			newConfig.put(ENTITY_PACKAGES_PARAM, entityPackages);
-			config = newConfig;
-		}
-		return config;
-	}
+    /**
+     * Return a singleton PersistenceManager
+     *
+     * @return PersistenceManager singleton
+     */
+    public PersistenceManager getPersistenceManager() {
+        return manager;
+    }
 
-	/**
-	 * Return a singleton PersistenceManagerFactory
-	 * 
-	 * @return PersistenceManagerFactory singleton
-	 */
-	public PersistenceManagerFactory getPersistenceManagerFactory() {
-		return pmf;
-	}
+    /**
+     * Return a native CQL3 Session
+     *
+     * @return native CQL3 Session
+     */
+    public Session getNativeSession() {
+        return session;
+    }
 
-	/**
-	 * Return a singleton PersistenceManager
-	 * 
-	 * @return PersistenceManager singleton
-	 */
-	public PersistenceManager getPersistenceManager() {
-		return manager;
-	}
-
-	/**
-	 * Return a native CQL3 Session
-	 * 
-	 * @return native CQL3 Session
-	 */
-	public Session getNativeSession() {
-		return session;
-	}
-
-	@Override
-	protected void truncateTables() {
-		if (tables != null) {
-			for (String table : tables) {
-				server.truncateTable(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, table);
-			}
-		}
-	}
+    @Override
+    protected void truncateTables() {
+        if (tables != null) {
+            for (String table : tables) {
+                server.truncateTable(keyspaceToUse, table);
+            }
+        }
+    }
 
 }
