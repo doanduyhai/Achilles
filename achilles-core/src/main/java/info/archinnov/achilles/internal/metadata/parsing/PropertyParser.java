@@ -443,10 +443,7 @@ public class PropertyParser {
 
 	private EmbeddedIdProperties extractEmbeddedIdProperties(Class<?> keyClass) {
 		log.trace("Parsing compound key class", keyClass.getCanonicalName());
-		EmbeddedIdProperties embeddedIdProperties;
-
-		embeddedIdProperties = compoundKeyParser.parseEmbeddedId(keyClass);
-
+		EmbeddedIdProperties embeddedIdProperties = compoundKeyParser.parseEmbeddedId(keyClass);
 		log.trace("Built compound key properties", embeddedIdProperties);
 		return embeddedIdProperties;
 	}
