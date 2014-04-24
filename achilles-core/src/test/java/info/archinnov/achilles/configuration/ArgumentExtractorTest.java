@@ -132,14 +132,14 @@ public class ArgumentExtractorTest {
     public void should_init_entity_packages() throws Exception {
         configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
 
-		Collection<Class<?>> actual = extractor.initEnities(configMap);
+		Collection<Class<?>> actual = extractor.initEntities(configMap);
 
         assertThat(actual).containsOnly(Entity1.class, Entity2.class, Entity3.class);
     }
 
     @Test
     public void should_init_empty_entity_packages() throws Exception {
-		Collection<Class<?>> actual = extractor.initEnities(configMap);
+		Collection<Class<?>> actual = extractor.initEntities(configMap);
 
         assertThat(actual).isEmpty();
     }
@@ -148,14 +148,14 @@ public class ArgumentExtractorTest {
 	public void should_init_entities_list() {
 		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
 
-		Collection<Class<?>> actual = extractor.initEnities(configMap);
+		Collection<Class<?>> actual = extractor.initEntities(configMap);
 
 		assertThat(actual).contains(Entity1.class);
 	}
 
 	@Test
 	public void should_init_empty_entities_list() {
-		Collection<Class<?>> actual = extractor.initEnities(configMap);
+		Collection<Class<?>> actual = extractor.initEntities(configMap);
 
 		assertThat(actual).isEmpty();
 	}
@@ -165,7 +165,7 @@ public class ArgumentExtractorTest {
 		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
 		configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.more.entity");
 
-		Collection<Class<?>> actual = extractor.initEnities(configMap);
+		Collection<Class<?>> actual = extractor.initEntities(configMap);
 
 		assertThat(actual).containsOnly(Entity1.class, Entity3.class);
 	}

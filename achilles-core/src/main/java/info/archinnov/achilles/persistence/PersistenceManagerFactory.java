@@ -43,7 +43,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.RETR
 import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +112,7 @@ public class PersistenceManagerFactory {
 		Cluster cluster = argumentExtractor.initCluster(configurationMap);
 		Session session = argumentExtractor.initSession(cluster, configurationMap);
 		List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
-		List<Class<?>> candidateClasses = argumentExtractor.initEnities(configurationMap);
+		List<Class<?>> candidateClasses = argumentExtractor.initEntities(configurationMap);
 
 		ParsingResult parsingResult = parseEntities(candidateClasses);
 		this.entityMetaMap = parsingResult.getMetaMap();

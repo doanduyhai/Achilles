@@ -88,7 +88,7 @@ public class ArgumentExtractor {
 
 	static final int DEFAULT_CACHE_SIZE = 5000;
 
-	public List<Class<?>> initEnities(TypedMap configurationMap) {
+	public List<Class<?>> initEntities(TypedMap configurationMap) {
 		List<String> entityPackages = getEntityPackages(configurationMap);
 		List<Class<?>> entities = discoverEntities(entityPackages);
 
