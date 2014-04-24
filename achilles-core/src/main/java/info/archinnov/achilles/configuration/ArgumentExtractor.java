@@ -30,6 +30,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
@@ -50,13 +51,17 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.USER
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import javax.validation.ValidationException;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
@@ -67,6 +72,7 @@ import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -78,272 +84,294 @@ import info.archinnov.achilles.type.TypedMap;
 
 public class ArgumentExtractor {
 
-    private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
+	private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
 
-    static final int DEFAULT_CACHE_SIZE = 5000;
+	static final int DEFAULT_CACHE_SIZE = 5000;
 
-    public List<String> initEntityPackages(TypedMap configurationMap) {
-        log.trace("Extract entity packages from configuration map");
+	public List<Class<?>> initEnities(TypedMap configurationMap) {
+		List<String> entityPackages = getEntityPackages(configurationMap);
+		List<Class<?>> entities = discoverEntities(entityPackages);
 
-        List<String> entityPackages = new ArrayList<>();
-        String entityPackagesParameter = configurationMap.getTyped(ENTITY_PACKAGES_PARAM);
-        if (StringUtils.isNotBlank(entityPackagesParameter)) {
-            entityPackages = Arrays.asList(StringUtils.split(entityPackagesParameter, ","));
-        }
+		log.trace("Extract entities from configuration map");
 
-        return entityPackages;
-    }
+		List<Class<?>> entitiesFromList = configurationMap.getTypedOr(ENTITIES_LIST_PARAM, Collections.<Class<?>>emptyList());
+		entities.addAll(entitiesFromList);
+		return entities;
+	}
 
-    public ConfigurationContext initConfigContext(TypedMap configurationMap) {
-        log.trace("Build ConfigurationContext from configuration map");
+	private List<String> getEntityPackages(TypedMap configurationMap) {
+		log.trace("Extract entity packages from configuration map");
 
-        ConfigurationContext configContext = new ConfigurationContext();
-        configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
-        configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
-        configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
-        configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
-        configContext.setBeanValidator(initValidator(configurationMap));
-        configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
-        configContext.setForceBatchStatementsOrdering(initForceBatchStatementsOrdering(configurationMap));
-        return configContext;
-    }
+		List<String> entityPackages = new ArrayList<>();
+		String entityPackagesParameter = configurationMap.getTyped(ENTITY_PACKAGES_PARAM);
+		if (StringUtils.isNotBlank(entityPackagesParameter)) {
+			entityPackages = Arrays.asList(StringUtils.split(entityPackagesParameter, ","));
+		}
 
-    boolean initForceTableCreation(TypedMap configurationMap) {
-        log.trace("Extract 'force table creation' from configuration map");
+		return entityPackages;
+	}
 
-        Boolean forceColumnFamilyCreation = configurationMap.getTyped(FORCE_TABLE_CREATION_PARAM);
-        if (forceColumnFamilyCreation != null) {
-            return forceColumnFamilyCreation;
-        } else {
-            return false;
-        }
-    }
+	private List<Class<?>> discoverEntities(List<String> packageNames) {
+		log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
 
-    ObjectMapperFactory initObjectMapperFactory(TypedMap configurationMap) {
-        log.trace("Extract object mapper factory from configuration map");
+		Set<Class<?>> candidateClasses = new HashSet<>();
+		if (!packageNames.isEmpty()) {
+			Reflections reflections = new Reflections(packageNames);
+			candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
+		}
+		return new ArrayList<>(candidateClasses);
+	}
 
-        ObjectMapperFactory objectMapperFactory = configurationMap.getTyped(OBJECT_MAPPER_FACTORY_PARAM);
-        if (objectMapperFactory == null) {
-            ObjectMapper mapper = configurationMap.getTyped(OBJECT_MAPPER_PARAM);
-            if (mapper != null) {
-                objectMapperFactory = factoryFromMapper(mapper);
-            } else {
-                objectMapperFactory = new DefaultObjectMapperFactory();
-            }
-        }
+	public ConfigurationContext initConfigContext(TypedMap configurationMap) {
+		log.trace("Build ConfigurationContext from configuration map");
 
-        return objectMapperFactory;
-    }
+		ConfigurationContext configContext = new ConfigurationContext();
+		configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
+		configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
+		configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
+		configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
+		configContext.setBeanValidator(initValidator(configurationMap));
+		configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
+		configContext.setForceBatchStatementsOrdering(initForceBatchStatementsOrdering(configurationMap));
+		return configContext;
+	}
 
-    protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper) {
-        return new ObjectMapperFactory() {
-            @Override
-            public <T> ObjectMapper getMapper(Class<T> type) {
-                return mapper;
-            }
-        };
-    }
+	boolean initForceTableCreation(TypedMap configurationMap) {
+		log.trace("Extract 'force table creation' from configuration map");
 
-    ConsistencyLevel initDefaultReadConsistencyLevel(TypedMap configMap) {
-        log.trace("Extract default read Consistency level from configuration map");
+		Boolean forceColumnFamilyCreation = configurationMap.getTyped(FORCE_TABLE_CREATION_PARAM);
+		if (forceColumnFamilyCreation != null) {
+			return forceColumnFamilyCreation;
+		} else {
+			return false;
+		}
+	}
 
-        String defaultReadLevel = configMap.getTyped(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
-        return parseConsistencyLevelOrGetDefault(defaultReadLevel);
-    }
+	ObjectMapperFactory initObjectMapperFactory(TypedMap configurationMap) {
+		log.trace("Extract object mapper factory from configuration map");
 
-    ConsistencyLevel initDefaultWriteConsistencyLevel(TypedMap configMap) {
-        log.trace("Extract default write Consistency level from configuration map");
+		ObjectMapperFactory objectMapperFactory = configurationMap.getTyped(OBJECT_MAPPER_FACTORY_PARAM);
+		if (objectMapperFactory == null) {
+			ObjectMapper mapper = configurationMap.getTyped(OBJECT_MAPPER_PARAM);
+			if (mapper != null) {
+				objectMapperFactory = factoryFromMapper(mapper);
+			} else {
+				objectMapperFactory = new DefaultObjectMapperFactory();
+			}
+		}
 
-        String defaultWriteLevel = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
-        return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
-    }
+		return objectMapperFactory;
+	}
 
-    public Map<String, ConsistencyLevel> initReadConsistencyMap(TypedMap configMap) {
-        log.trace("Extract read Consistency level map from configuration map");
+	protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper) {
+		return new ObjectMapperFactory() {
+			@Override
+			public <T> ObjectMapper getMapper(Class<T> type) {
+				return mapper;
+			}
+		};
+	}
 
-        Map<String, String> readConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_READ_MAP_PARAM);
+	ConsistencyLevel initDefaultReadConsistencyLevel(TypedMap configMap) {
+		log.trace("Extract default read Consistency level from configuration map");
 
-        return parseConsistencyLevelMap(readConsistencyMap);
-    }
+		String defaultReadLevel = configMap.getTyped(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM);
+		return parseConsistencyLevelOrGetDefault(defaultReadLevel);
+	}
 
-    public Map<String, ConsistencyLevel> initWriteConsistencyMap(TypedMap configMap) {
-        log.trace("Extract write Consistency level map from configuration map");
+	ConsistencyLevel initDefaultWriteConsistencyLevel(TypedMap configMap) {
+		log.trace("Extract default write Consistency level from configuration map");
 
-        Map<String, String> writeConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
+		String defaultWriteLevel = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM);
+		return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
+	}
 
-        return parseConsistencyLevelMap(writeConsistencyMap);
-    }
+	public Map<String, ConsistencyLevel> initReadConsistencyMap(TypedMap configMap) {
+		log.trace("Extract read Consistency level map from configuration map");
 
-    public Cluster initCluster(TypedMap configurationMap) {
-        log.trace("Extract or init cluster from configuration map");
+		Map<String, String> readConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_READ_MAP_PARAM);
 
-        Cluster cluster = configurationMap.getTyped(CLUSTER_PARAM);
-        if (cluster == null) {
-            String contactPoints = configurationMap.getTyped(CONNECTION_CONTACT_POINTS_PARAM);
-            Integer port = configurationMap.getTyped(CONNECTION_CQL_PORT_PARAM);
+		return parseConsistencyLevelMap(readConsistencyMap);
+	}
 
-            ProtocolOptions.Compression compression = ProtocolOptions.Compression.SNAPPY;
-            if (configurationMap.containsKey(COMPRESSION_TYPE)) {
-                compression = configurationMap.getTyped(COMPRESSION_TYPE);
-            }
+	public Map<String, ConsistencyLevel> initWriteConsistencyMap(TypedMap configMap) {
+		log.trace("Extract write Consistency level map from configuration map");
 
-            RetryPolicy retryPolicy = Policies.defaultRetryPolicy();
-            if (configurationMap.containsKey(RETRY_POLICY)) {
-                retryPolicy = configurationMap.getTyped(RETRY_POLICY);
-            }
+		Map<String, String> writeConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
-            LoadBalancingPolicy loadBalancingPolicy = Policies.defaultLoadBalancingPolicy();
-            if (configurationMap.containsKey(LOAD_BALANCING_POLICY)) {
-                loadBalancingPolicy = configurationMap.getTyped(LOAD_BALANCING_POLICY);
-            }
+		return parseConsistencyLevelMap(writeConsistencyMap);
+	}
 
-            ReconnectionPolicy reconnectionPolicy = Policies.defaultReconnectionPolicy();
-            if (configurationMap.containsKey(RECONNECTION_POLICY)) {
-                reconnectionPolicy = configurationMap.getTyped(RECONNECTION_POLICY);
-            }
+	public Cluster initCluster(TypedMap configurationMap) {
+		log.trace("Extract or init cluster from configuration map");
 
-            String username = null;
-            String password = null;
-            if (configurationMap.containsKey(USERNAME) && configurationMap.containsKey(PASSWORD)) {
-                username = configurationMap.getTyped(USERNAME);
-                password = configurationMap.getTyped(PASSWORD);
-            }
+		Cluster cluster = configurationMap.getTyped(CLUSTER_PARAM);
+		if (cluster == null) {
+			String contactPoints = configurationMap.getTyped(CONNECTION_CONTACT_POINTS_PARAM);
+			Integer port = configurationMap.getTyped(CONNECTION_CQL_PORT_PARAM);
 
-            boolean disableJmx = false;
-            if (configurationMap.containsKey(DISABLE_JMX)) {
-                disableJmx = configurationMap.getTyped(DISABLE_JMX);
-            }
+			ProtocolOptions.Compression compression = ProtocolOptions.Compression.SNAPPY;
+			if (configurationMap.containsKey(COMPRESSION_TYPE)) {
+				compression = configurationMap.getTyped(COMPRESSION_TYPE);
+			}
 
-            boolean disableMetrics = false;
-            if (configurationMap.containsKey(DISABLE_METRICS)) {
-                disableMetrics = configurationMap.getTyped(DISABLE_METRICS);
-            }
+			RetryPolicy retryPolicy = Policies.defaultRetryPolicy();
+			if (configurationMap.containsKey(RETRY_POLICY)) {
+				retryPolicy = configurationMap.getTyped(RETRY_POLICY);
+			}
 
-            boolean sslEnabled = false;
-            if (configurationMap.containsKey(SSL_ENABLED)) {
-                sslEnabled = configurationMap.getTyped(SSL_ENABLED);
-            }
+			LoadBalancingPolicy loadBalancingPolicy = Policies.defaultLoadBalancingPolicy();
+			if (configurationMap.containsKey(LOAD_BALANCING_POLICY)) {
+				loadBalancingPolicy = configurationMap.getTyped(LOAD_BALANCING_POLICY);
+			}
 
-            SSLOptions sslOptions = null;
-            if (configurationMap.containsKey(SSL_OPTIONS)) {
-                sslOptions = configurationMap.getTyped(SSL_OPTIONS);
-            }
+			ReconnectionPolicy reconnectionPolicy = Policies.defaultReconnectionPolicy();
+			if (configurationMap.containsKey(RECONNECTION_POLICY)) {
+				reconnectionPolicy = configurationMap.getTyped(RECONNECTION_POLICY);
+			}
 
-            String clusterName = null;
-            if (configurationMap.containsKey(CLUSTER_NAME_PARAM)) {
-                clusterName = configurationMap.getTyped(CLUSTER_NAME_PARAM);
-            }
+			String username = null;
+			String password = null;
+			if (configurationMap.containsKey(USERNAME) && configurationMap.containsKey(PASSWORD)) {
+				username = configurationMap.getTyped(USERNAME);
+				password = configurationMap.getTyped(PASSWORD);
+			}
 
-            Validator
-                    .validateNotBlank(contactPoints, "%s property should be provided",
-                            CONNECTION_CONTACT_POINTS_PARAM);
-            Validator.validateNotNull(port, "%s property should be provided", CONNECTION_CQL_PORT_PARAM);
-            if (sslEnabled) {
-                Validator
-                        .validateNotNull(sslOptions, "%s property should be provided when SSL is enabled",
-                                SSL_OPTIONS);
-            }
+			boolean disableJmx = false;
+			if (configurationMap.containsKey(DISABLE_JMX)) {
+				disableJmx = configurationMap.getTyped(DISABLE_JMX);
+			}
 
-            String[] contactPointsList = StringUtils.split(contactPoints, ",");
+			boolean disableMetrics = false;
+			if (configurationMap.containsKey(DISABLE_METRICS)) {
+				disableMetrics = configurationMap.getTyped(DISABLE_METRICS);
+			}
 
-            Cluster.Builder clusterBuilder = Cluster.builder().addContactPoints(contactPointsList).withPort(port)
-                    .withCompression(compression).withRetryPolicy(retryPolicy)
-                    .withLoadBalancingPolicy(loadBalancingPolicy)
-                    .withReconnectionPolicy(reconnectionPolicy);
+			boolean sslEnabled = false;
+			if (configurationMap.containsKey(SSL_ENABLED)) {
+				sslEnabled = configurationMap.getTyped(SSL_ENABLED);
+			}
 
-            if (StringUtils.isNotBlank(clusterName)) {
-                clusterBuilder.withClusterName(clusterName);
-            }
-            if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-                clusterBuilder.withCredentials(username, password);
-            }
+			SSLOptions sslOptions = null;
+			if (configurationMap.containsKey(SSL_OPTIONS)) {
+				sslOptions = configurationMap.getTyped(SSL_OPTIONS);
+			}
 
-            if (disableJmx) {
-                clusterBuilder.withoutJMXReporting();
-            }
+			String clusterName = null;
+			if (configurationMap.containsKey(CLUSTER_NAME_PARAM)) {
+				clusterName = configurationMap.getTyped(CLUSTER_NAME_PARAM);
+			}
 
-            if (disableMetrics) {
-                clusterBuilder.withoutMetrics();
-            }
+			Validator
+					.validateNotBlank(contactPoints, "%s property should be provided",
+							CONNECTION_CONTACT_POINTS_PARAM);
+			Validator.validateNotNull(port, "%s property should be provided", CONNECTION_CQL_PORT_PARAM);
+			if (sslEnabled) {
+				Validator
+						.validateNotNull(sslOptions, "%s property should be provided when SSL is enabled",
+								SSL_OPTIONS);
+			}
 
-            if (sslEnabled) {
-                clusterBuilder.withSSL().withSSL(sslOptions);
-            }
-            cluster = clusterBuilder.build();
-        }
-        return cluster;
-    }
+			String[] contactPointsList = StringUtils.split(contactPoints, ",");
 
-    public Session initSession(Cluster cluster, TypedMap configurationMap) {
-        log.trace("Extract or init Session from configuration map");
+			Cluster.Builder clusterBuilder = Cluster.builder().addContactPoints(contactPointsList).withPort(port)
+					.withCompression(compression).withRetryPolicy(retryPolicy)
+					.withLoadBalancingPolicy(loadBalancingPolicy)
+					.withReconnectionPolicy(reconnectionPolicy);
 
-        Session nativeSession = configurationMap.getTyped(NATIVE_SESSION_PARAM);
-        String keyspace = configurationMap.getTyped(KEYSPACE_NAME_PARAM);
-        Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
+			if (StringUtils.isNotBlank(clusterName)) {
+				clusterBuilder.withClusterName(clusterName);
+			}
+			if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+				clusterBuilder.withCredentials(username, password);
+			}
 
-        if (nativeSession == null) {
-            nativeSession = cluster.connect(keyspace);
-        }
-        return nativeSession;
-    }
+			if (disableJmx) {
+				clusterBuilder.withoutJMXReporting();
+			}
 
-    private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
-        log.trace("Extract read Consistency level map from configuration map");
+			if (disableMetrics) {
+				clusterBuilder.withoutMetrics();
+			}
 
-        Map<String, ConsistencyLevel> map = new HashMap<>();
-        if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
-            for (Entry<String, String> entry : consistencyLevelMap.entrySet()) {
-                map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
-            }
-        }
+			if (sslEnabled) {
+				clusterBuilder.withSSL().withSSL(sslOptions);
+			}
+			cluster = clusterBuilder.build();
+		}
+		return cluster;
+	}
 
-        return map;
-    }
+	public Session initSession(Cluster cluster, TypedMap configurationMap) {
+		log.trace("Extract or init Session from configuration map");
 
-    private ConsistencyLevel parseConsistencyLevelOrGetDefault(String consistencyLevel) {
-        ConsistencyLevel level = DEFAULT_LEVEL;
-        if (StringUtils.isNotBlank(consistencyLevel)) {
-            try {
-                level = ConsistencyLevel.valueOf(consistencyLevel);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("'" + consistencyLevel + "' is not a valid Consistency Level");
-            }
-        }
-        return level;
-    }
+		Session nativeSession = configurationMap.getTyped(NATIVE_SESSION_PARAM);
+		String keyspace = configurationMap.getTyped(KEYSPACE_NAME_PARAM);
+		Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME_PARAM);
 
-    @SuppressWarnings("unchecked")
-    public List<Interceptor<?>> initInterceptors(TypedMap configurationMap) {
+		if (nativeSession == null) {
+			nativeSession = cluster.connect(keyspace);
+		}
+		return nativeSession;
+	}
 
-        List<Interceptor<?>> interceptors = (List<Interceptor<?>>) configurationMap.get(EVENT_INTERCEPTORS_PARAM);
-        if (interceptors == null) {
-            interceptors = new ArrayList<>();
-        }
-        return interceptors;
-    }
+	private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
+		log.trace("Extract read Consistency level map from configuration map");
 
-    javax.validation.Validator initValidator(TypedMap configurationMap) {
-        Boolean enableBeanValidation = configurationMap.getTypedOr(BEAN_VALIDATION_ENABLE, false);
-        if (enableBeanValidation) {
-            try {
-                javax.validation.Validator defaultValidator = buildDefaultValidatorFactory().getValidator();
-                return configurationMap.getTypedOr(BEAN_VALIDATION_VALIDATOR, defaultValidator);
-            } catch (ValidationException vex) {
-                throw new AchillesException("Cannot bootstrap ValidatorFactory for Bean Validation (JSR 303)", vex);
-            }
-        }
-        return null;
-    }
+		Map<String, ConsistencyLevel> map = new HashMap<>();
+		if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
+			for (Entry<String, String> entry : consistencyLevelMap.entrySet()) {
+				map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
+			}
+		}
 
-    public Integer initPreparedStatementsCacheSize(TypedMap configMap) {
-        return configMap.getTypedOr(PREPARED_STATEMENTS_CACHE_SIZE, DEFAULT_CACHE_SIZE);
-    }
+		return map;
+	}
 
-    public boolean initProxyWarmUp(TypedMap configMap) {
-        return configMap.getTypedOr(PROXIES_WARM_UP_DISABLED, true);
-    }
+	private ConsistencyLevel parseConsistencyLevelOrGetDefault(String consistencyLevel) {
+		ConsistencyLevel level = DEFAULT_LEVEL;
+		if (StringUtils.isNotBlank(consistencyLevel)) {
+			try {
+				level = ConsistencyLevel.valueOf(consistencyLevel);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("'" + consistencyLevel + "' is not a valid Consistency Level");
+			}
+		}
+		return level;
+	}
 
-    public boolean initForceBatchStatementsOrdering(TypedMap configMap) {
-        return configMap.getTypedOr(FORCE_BATCH_STATEMENTS_ORDERING, true);
-    }
+	@SuppressWarnings("unchecked")
+	public List<Interceptor<?>> initInterceptors(TypedMap configurationMap) {
+
+		List<Interceptor<?>> interceptors = (List<Interceptor<?>>) configurationMap.get(EVENT_INTERCEPTORS_PARAM);
+		if (interceptors == null) {
+			interceptors = new ArrayList<>();
+		}
+		return interceptors;
+	}
+
+	javax.validation.Validator initValidator(TypedMap configurationMap) {
+		Boolean enableBeanValidation = configurationMap.getTypedOr(BEAN_VALIDATION_ENABLE, false);
+		if (enableBeanValidation) {
+			try {
+				javax.validation.Validator defaultValidator = buildDefaultValidatorFactory().getValidator();
+				return configurationMap.getTypedOr(BEAN_VALIDATION_VALIDATOR, defaultValidator);
+			} catch (ValidationException vex) {
+				throw new AchillesException("Cannot bootstrap ValidatorFactory for Bean Validation (JSR 303)", vex);
+			}
+		}
+		return null;
+	}
+
+	public Integer initPreparedStatementsCacheSize(TypedMap configMap) {
+		return configMap.getTypedOr(PREPARED_STATEMENTS_CACHE_SIZE, DEFAULT_CACHE_SIZE);
+	}
+
+	public boolean initProxyWarmUp(TypedMap configMap) {
+		return configMap.getTypedOr(PROXIES_WARM_UP_DISABLED, true);
+	}
+
+	public boolean initForceBatchStatementsOrdering(TypedMap configMap) {
+		return configMap.getTypedOr(FORCE_BATCH_STATEMENTS_ORDERING, true);
+	}
 }

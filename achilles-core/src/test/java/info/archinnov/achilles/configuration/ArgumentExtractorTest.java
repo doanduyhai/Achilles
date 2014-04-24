@@ -28,6 +28,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
@@ -53,6 +54,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,6 +88,9 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.test.more.entity.Entity3;
+import info.archinnov.achilles.test.sample.entity.Entity1;
+import info.archinnov.achilles.test.sample.entity.Entity2;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
 
@@ -125,21 +130,47 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_entity_packages() throws Exception {
-        configMap.put(ENTITY_PACKAGES_PARAM, "my.package.entity,another.package.entity,third.package");
+        configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
 
-        List<String> actual = extractor.initEntityPackages(configMap);
+		Collection<Class<?>> actual = extractor.initEnities(configMap);
 
-        assertThat(actual).containsExactly("my.package.entity", "another.package.entity", "third.package");
+        assertThat(actual).containsOnly(Entity1.class, Entity2.class, Entity3.class);
     }
 
     @Test
     public void should_init_empty_entity_packages() throws Exception {
-        List<String> actual = extractor.initEntityPackages(configMap);
+		Collection<Class<?>> actual = extractor.initEnities(configMap);
 
         assertThat(actual).isEmpty();
     }
 
-    @Test
+	@Test
+	public void should_init_entities_list() {
+		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
+
+		Collection<Class<?>> actual = extractor.initEnities(configMap);
+
+		assertThat(actual).contains(Entity1.class);
+	}
+
+	@Test
+	public void should_init_empty_entities_list() {
+		Collection<Class<?>> actual = extractor.initEnities(configMap);
+
+		assertThat(actual).isEmpty();
+	}
+
+	@Test
+	public void should_init_from_packages_and_entities_list() {
+		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
+		configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.more.entity");
+
+		Collection<Class<?>> actual = extractor.initEnities(configMap);
+
+		assertThat(actual).containsOnly(Entity1.class, Entity3.class);
+	}
+
+	@Test
     public void should_init_forceCFCreation_to_default_value() throws Exception {
         boolean actual = extractor.initForceTableCreation(configMap);
 
