@@ -27,6 +27,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
@@ -108,13 +109,11 @@ public class PersistenceManagerFactory {
 
 		log.info("Bootstrapping Achilles PersistenceManagerFactory for keyspace {}", keyspaceName);
 
-		List<String> entityPackages = argumentExtractor.initEntityPackages(configurationMap);
 		configContext = argumentExtractor.initConfigContext(configurationMap);
 		Cluster cluster = argumentExtractor.initCluster(configurationMap);
 		Session session = argumentExtractor.initSession(cluster, configurationMap);
 		List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
-
-		List<Class<?>> candidateClasses = bootstrapper.discoverEntities(entityPackages);
+		List<Class<?>> candidateClasses = argumentExtractor.initEnities(configurationMap);
 
 		ParsingResult parsingResult = parseEntities(candidateClasses);
 		this.entityMetaMap = parsingResult.getMetaMap();
@@ -148,10 +147,7 @@ public class PersistenceManagerFactory {
 	}
 
 	private ParsingResult parseEntities(List<Class<?>> candidateClasses) {
-		if (isNotBlank(configurationMap.<String>getTyped(ENTITY_PACKAGES_PARAM))) {
-			return bootstrapper.buildMetaDatas(configContext, candidateClasses);
-		}
-		return new ParsingResult(new HashMap<Class<?>, EntityMeta>(), false);
+		return bootstrapper.buildMetaDatas(configContext, candidateClasses);
 	}
 
 	/**
@@ -223,6 +219,16 @@ public class PersistenceManagerFactory {
 		 */
 		public PersistenceManagerFactoryBuilder withEntityPackages(String entityPackages) {
 			configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+			return this;
+		}
+
+		/**
+		 * Define entities
+		 *
+		 * @return PersistenceManagerFactoryBuilder
+		 */
+		public PersistenceManagerFactoryBuilder withEntities(List<Class<?>> entities) {
+			configMap.put(ENTITIES_LIST_PARAM, entities);
 			return this;
 		}
 

@@ -47,11 +47,8 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityParser;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
-import info.archinnov.achilles.test.more.entity.Entity3;
 import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 import info.archinnov.achilles.test.parser.entity.UserBean;
-import info.archinnov.achilles.test.sample.entity.Entity1;
-import info.archinnov.achilles.test.sample.entity.Entity2;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AchillesBootstrapperTest {
@@ -87,29 +84,8 @@ public class AchillesBootstrapperTest {
 
     @Before
     public void setUp() {
-
         Whitebox.setInternalState(bootstrapper, EntityParser.class, parser);
         Whitebox.setInternalState(bootstrapper, DaoContextFactory.class, factory);
-    }
-
-    @Test
-    public void should_find_entities_from_multiple_packages() throws Exception {
-        List<Class<?>> entities = bootstrapper.discoverEntities(Arrays.asList(
-                "info.archinnov.achilles.test.sample.entity", "info.archinnov.achilles.test.more.entity"));
-
-        assertThat(entities).hasSize(3);
-        assertThat(entities).contains(Entity1.class);
-        assertThat(entities).contains(Entity2.class);
-        assertThat(entities).contains(Entity3.class);
-    }
-
-    @Test
-    public void should_find_entity_from_one_package() throws Exception {
-        List<Class<?>> entities = bootstrapper.discoverEntities(Arrays
-                                                                        .asList("info.archinnov.achilles.test.more" +
-                                                                                        ".entity"));
-        assertThat(entities).hasSize(1);
-        assertThat(entities).contains(Entity3.class);
     }
 
     @Test

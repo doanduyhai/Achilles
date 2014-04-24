@@ -17,20 +17,14 @@
 package info.archinnov.achilles.internal.metadata.discovery;
 
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import org.apache.commons.lang.StringUtils;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
-import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -51,15 +45,6 @@ public class AchillesBootstrapper {
     private DaoContextFactory daoContextFactory = new DaoContextFactory();
 
     private PropertyParser propertyParser = new PropertyParser();
-
-    public List<Class<?>> discoverEntities(List<String> packageNames) {
-        log.debug("Discovery of Achilles entity classes in packages {}", StringUtils.join(packageNames, ","));
-
-        Set<Class<?>> candidateClasses = new HashSet<>();
-        Reflections reflections = new Reflections(packageNames);
-        candidateClasses.addAll(reflections.getTypesAnnotatedWith(Entity.class));
-        return new ArrayList<>(candidateClasses);
-    }
 
     public ParsingResult buildMetaDatas(ConfigurationContext configContext, List<Class<?>> entities) {
         log.debug("Build meta data for candidate entities");

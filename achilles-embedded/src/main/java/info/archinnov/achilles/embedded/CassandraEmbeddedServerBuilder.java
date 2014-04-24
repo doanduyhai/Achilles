@@ -22,7 +22,10 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,6 +35,9 @@ import com.datastax.driver.core.Session;
 public class CassandraEmbeddedServerBuilder {
 
 	private String entityPackages;
+
+	private List<Class<?>>
+			entities = Collections.emptyList();
 
 	private String dataFileFolder;
 
@@ -70,6 +76,10 @@ public class CassandraEmbeddedServerBuilder {
 		this.entityPackages = entityPackages;
 	}
 
+	private CassandraEmbeddedServerBuilder(List<Class<?>> entities) {
+		this.entities = entities;
+	}
+
 	/**
 	 * Bootstrap Achilles with entity packages
 	 * 
@@ -80,6 +90,18 @@ public class CassandraEmbeddedServerBuilder {
 	 */
 	public static CassandraEmbeddedServerBuilder withEntityPackages(String entityPackages) {
 		return new CassandraEmbeddedServerBuilder(entityPackages);
+	}
+
+	/**
+	 * Bootstrap Achilles with entities list
+	 *
+	 * @param entities
+	 *            entities list
+	 *
+	 * @return CassandraEmbeddedServerBuilder
+	 */
+	public static CassandraEmbeddedServerBuilder withEntities(List<Class<?>> entities) {
+		return new CassandraEmbeddedServerBuilder(entities);
 	}
 
 	/**
@@ -321,6 +343,7 @@ public class CassandraEmbeddedServerBuilder {
 		TypedMap config = new TypedMap();
 		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
 		config.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
+		config.put(ENTITIES_LIST_PARAM, entities);
 
 		if (StringUtils.isNotBlank(entityPackages))
 			config.put(ENTITY_PACKAGES_PARAM, entityPackages);

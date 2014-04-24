@@ -98,7 +98,6 @@ public class PersistenceManagerFactoryTest {
 	@Test
 	public void should_bootstrap_persistence_manager_factory() throws Exception {
 		// Given
-		List<String> entityPackages = Arrays.asList();
 		List<Class<?>> candidateClasses = Arrays.asList();
 		List<Interceptor<?>> interceptors = Arrays.asList();
 		Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(CompleteBean.class,
@@ -106,14 +105,12 @@ public class PersistenceManagerFactoryTest {
 		ParsingResult parsingResult = new ParsingResult(entityMetaMap, true);
 
 		// When
-		when(argumentExtractor.initEntityPackages(configMap)).thenReturn(entityPackages);
 		when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
 		when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
 		when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
 		when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
 		when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);
 
-		when(boostrapper.discoverEntities(entityPackages)).thenReturn(candidateClasses);
 		when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
 		when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
 		when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);

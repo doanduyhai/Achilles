@@ -17,7 +17,6 @@
 package info.archinnov.achilles.embedded;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -48,5 +47,4 @@ public class CassandraEmbeddedServerBuilderTest {
         assertThat(factory1).isNotEqualTo(factory2);
         assertThat(factory1).isEqualTo(factory3);
     }
-
 }

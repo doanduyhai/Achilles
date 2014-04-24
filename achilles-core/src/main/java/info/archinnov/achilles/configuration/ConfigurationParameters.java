@@ -20,6 +20,7 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 
 public interface ConfigurationParameters {
     String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
+    String ENTITIES_LIST_PARAM = "achilles.entities.list";
 
     String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
     String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
