@@ -17,6 +17,8 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
+import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedNativeType;
+import static java.lang.String.format;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
@@ -48,6 +51,7 @@ public class EntityMeta {
             return !meta.isClusteredCounter();
         }
     };
+
 
     private ReflectionInvoker invoker = new ReflectionInvoker();
 
@@ -266,6 +270,28 @@ public class EntityMeta {
         } else {
             return allMetasExceptCounters;
         }
+    }
+
+    public Object[] encodeBoundValues(Object[] boundValues) {
+        Object[] encodedBoundValues = new Object[boundValues.length];
+        for (int i = 0; i < boundValues.length; i++) {
+            Object boundValue = boundValues[i];
+            if (boundValue != null && !isSupportedNativeType(boundValue.getClass())) {
+                final PropertyMeta propertyMeta = findPropertyMetaByType(boundValue.getClass());
+                encodedBoundValues[i] = propertyMeta.encode(boundValue);
+            } else {
+                encodedBoundValues[i] = boundValue;
+            }
+        }
+        return encodedBoundValues;
+    }
+
+    private PropertyMeta findPropertyMetaByType(Class<?> type) {
+        for (PropertyMeta meta : allMetasExceptCounters) {
+            if (meta.getValueClass().equals(type))
+                return meta;
+        }
+        throw new AchillesException(format("Cannot find matching property meta for the type %s", type));
     }
 
     @Override

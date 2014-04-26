@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.internal.metadata.transcoding;
 
-import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedType;
+import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedNativeType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
@@ -123,7 +123,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 			return ByteBuffer.wrap(new byte[] { (byte) entityValue });
 		} else if (byte[].class.isAssignableFrom(sourceType)) {
 			return ByteBuffer.wrap((byte[]) entityValue);
-		} else if (isSupportedType(sourceType)) {
+		} else if (isSupportedNativeType(sourceType)) {
 			return entityValue;
 		} else if (sourceType.isEnum()) {
 			return ((Enum<?>) entityValue).name();
@@ -144,7 +144,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
 			return byteBuffer[0];
 		} else if (byte[].class.isAssignableFrom(targetType)) {
 			return readByteBuffer(cassandraValue);
-		} else if (isSupportedType(targetType)) {
+		} else if (isSupportedNativeType(targetType)) {
 			return cassandraValue;
 		} else if (targetType.isEnum()) {
 			return Enum.valueOf((Class) targetType, (String) cassandraValue);
