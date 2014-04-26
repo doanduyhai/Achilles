@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.context;
 
 import javax.validation.Validator;
+import org.codehaus.jackson.map.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
@@ -107,5 +108,9 @@ public class ConfigurationContext {
             beanValidationInterceptor = new DefaultBeanValidationInterceptor(beanValidator);
         }
         meta.addInterceptor(beanValidationInterceptor);
+    }
+
+    public ObjectMapper getMapperFor(Class<?> type) {
+        return objectMapperFactory.getMapper(type);
     }
 }

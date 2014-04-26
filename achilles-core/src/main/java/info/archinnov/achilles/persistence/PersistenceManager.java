@@ -19,9 +19,11 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
@@ -581,6 +583,32 @@ public class PersistenceManager {
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
         return new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
                 boundValues);
+    }
+
+    /**
+     * Serialize the entity in JSON using a registered Object Mapper or default Achilles Object Mapper
+     * @param entity
+     * @return serialized entity in JSON
+     * @throws IOException
+     */
+    public String jsonSerialize(Object entity) throws IOException {
+        Validator.validateNotNull(entity, "Cannot serialize to JSON null entity");
+        final ObjectMapper objectMapper = configContext.getMapperFor(entity.getClass());
+        return objectMapper.writeValueAsString(entity);
+    }
+
+    /**
+     * Deserialize the given JSON into entity using a registered Object Mapper or default Achilles Object Mapper
+     * @param type
+     * @param serialized
+     * @param <T>
+     * @return deserialized entity from JSON
+     * @throws IOException
+     */
+    public <T> T deserializeJson(Class<T> type, String serialized) throws IOException {
+        Validator.validateNotNull(type, "Cannot deserialize from JSON if target type is null");
+        final ObjectMapper objectMapper = configContext.getMapperFor(type);
+        return objectMapper.readValue(serialized, type);
     }
 
     protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {

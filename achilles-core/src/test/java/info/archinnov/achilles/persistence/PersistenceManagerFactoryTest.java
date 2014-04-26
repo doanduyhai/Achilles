@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +50,7 @@ import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.TypedMap;
 
@@ -178,5 +181,40 @@ public class PersistenceManagerFactoryTest {
 
         // Then
         assertThat(manager).isNotNull();
+    }
+
+    @Test
+    public void should_serialize_to_json() throws Exception {
+        //Given
+        pmf.configContext = configContext;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
+        CompleteBean entity = CompleteBeanTestBuilder.builder().id(10L).name("name").buid();
+
+        //When
+        final String serialized = pmf.jsonSerialize(entity);
+
+        //Then
+        assertThat(serialized).isEqualTo("{\"id\":10,\"name\":\"name\",\"friends\":[],\"followers\":[],\"preferences\":{}}");
+    }
+
+    @Test
+    public void should_deserialize_from_json() throws Exception {
+        //Given
+        pmf.configContext = configContext;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
+
+        //When
+        final CompleteBean actual = pmf.deserializeJson(CompleteBean.class, "{\"id\":10,\"name\":\"name\"}");
+
+        //Then
+        assertThat(actual.getId()).isEqualTo(10L);
+        assertThat(actual.getName()).isEqualTo("name");
+        assertThat(actual.getFriends()).isNull();
+        assertThat(actual.getFollowers()).isNull();
+        assertThat(actual.getPreferences()).isNull();
     }
 }

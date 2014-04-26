@@ -18,10 +18,12 @@ package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 import javax.validation.Validator;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -33,6 +35,9 @@ public class ConfigurationContextTest {
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private Validator validator;
+
+    @Mock
+    private ObjectMapperFactory factory;
 
 	@Test
 	public void should_detect_constrained_class() throws Exception {
@@ -56,4 +61,21 @@ public class ConfigurationContextTest {
 		assertThat(context.isClassConstrained(BeanWithFieldLevelConstraint.class)).isFalse();
 
 	}
+
+    @Test
+    public void should_get_mapper_for_type() throws Exception {
+        //Given
+        ConfigurationContext context = new ConfigurationContext();
+        context.setObjectMapperFactory(factory);
+        ObjectMapper mapper = new ObjectMapper();
+
+        when(factory.getMapper(String.class)).thenReturn(mapper);
+
+        //When
+        final ObjectMapper actual = context.getMapperFor(String.class);
+
+        //Then
+        assertThat(actual).isSameAs(mapper);
+    }
+
 }

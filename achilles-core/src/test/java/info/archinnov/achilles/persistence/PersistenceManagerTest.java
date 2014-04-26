@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.math.RandomUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -630,5 +632,40 @@ public class PersistenceManagerTest {
         assertThat(Whitebox.<Object[]>getInternalState(typedQueryBuilder, "encodedBoundValues")).contains("value");
         verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=:column;",
                 meta);
+    }
+
+    @Test
+    public void should_serialize_to_json() throws Exception {
+        //Given
+        manager.configContext = configContext;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
+        CompleteBean entity = CompleteBeanTestBuilder.builder().id(10L).name("name").buid();
+
+        //When
+        final String serialized = manager.jsonSerialize(entity);
+
+        //Then
+        assertThat(serialized).isEqualTo("{\"id\":10,\"name\":\"name\",\"friends\":[],\"followers\":[],\"preferences\":{}}");
+    }
+
+    @Test
+    public void should_deserialize_from_json() throws Exception {
+        //Given
+        manager.configContext = configContext;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
+
+        //When
+        final CompleteBean actual = manager.deserializeJson(CompleteBean.class, "{\"id\":10,\"name\":\"name\"}");
+
+        //Then
+        assertThat(actual.getId()).isEqualTo(10L);
+        assertThat(actual.getName()).isEqualTo("name");
+        assertThat(actual.getFriends()).isNull();
+        assertThat(actual.getFollowers()).isNull();
+        assertThat(actual.getPreferences()).isNull();
     }
 }
