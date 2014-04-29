@@ -3,7 +3,7 @@
     <parent>
         <groupId>info.archinnov</groupId>
         <artifactId>achilles</artifactId>
-        <version>2.0.12-dse</version>
+        <version>2.0.13-dse-SNAPSHOT</version>
     </parent>
     <artifactId>achilles-documentation</artifactId>
     <name>Achilles Documentation</name>
