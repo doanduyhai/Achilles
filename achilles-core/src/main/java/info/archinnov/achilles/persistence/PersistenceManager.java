@@ -19,6 +19,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
+import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
@@ -45,7 +47,6 @@ import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
 
 public class PersistenceManager {
     private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
@@ -56,6 +57,7 @@ public class PersistenceManager {
 
     protected EntityProxifier proxifier = new EntityProxifier();
     private EntityValidator entityValidator = new EntityValidator();
+    private OptionsValidator optionsValidator = new OptionsValidator();
     private TypedQueryValidator typedQueryValidator = new TypedQueryValidator();
 
     private SliceQueryExecutor sliceQueryExecutor;
@@ -98,9 +100,7 @@ public class PersistenceManager {
 
         entityValidator.validateEntity(entity, entityMetaMap);
 
-        if (options.getTtl().isPresent()) {
-            entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
-        }
+        optionsValidator.validateOptionsForInsert(entity, entityMetaMap, options);
         proxifier.ensureNotProxy(entity);
         PersistenceContext context = initPersistenceContext(entity, options);
         return context.persist(entity);
@@ -133,9 +133,7 @@ public class PersistenceManager {
             log.debug("Updating entity '{}' with options {} ", realObject, options);
         }
         entityValidator.validateEntity(realObject, entityMetaMap);
-        if (options.getTtl().isPresent()) {
-            entityValidator.validateNotClusteredCounter(realObject, entityMetaMap);
-        }
+        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, options);
         PersistenceContext context = initPersistenceContext(realObject, options);
         context.update(entity);
     }
@@ -207,7 +205,7 @@ public class PersistenceManager {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 
         PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                OptionsBuilder.withConsistency(writeLevel));
+                withConsistency(writeLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
@@ -245,8 +243,7 @@ public class PersistenceManager {
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                OptionsBuilder.withConsistency(readLevel));
+        PersistenceContext context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.find(entityClass);
     }
@@ -295,8 +292,7 @@ public class PersistenceManager {
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                OptionsBuilder.withConsistency(readLevel));
+        PersistenceContext context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         T entity = context.getProxy(entityClass);
         return entity;
@@ -329,7 +325,7 @@ public class PersistenceManager {
         proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceContext context = initPersistenceContext(realObject, OptionsBuilder.withConsistency(readLevel));
+        PersistenceContext context = initPersistenceContext(realObject, withConsistency(readLevel));
         context.refresh(entity);
     }
 
@@ -478,9 +474,30 @@ public class PersistenceManager {
      * @return NativeQueryBuilder
      */
     public NativeQueryBuilder nativeQuery(String queryString, Object... boundValues) {
+        return this.nativeQuery(queryString, noOptions(), boundValues);
+    }
+
+    /**
+     * Return a CQL native query builder
+     *
+     * @param queryString
+     *            native CQL query string, including limit, ttl and consistency
+     *            options
+     *
+     * @param options
+     *            options for the query. <strong>Only CAS Result listener passed as option is taken
+     *            into account</strong>. For timestamp, TTL and CAS conditions you must specify them
+     *            directly in the query string
+     *
+     * @param boundValues
+     *            values to be bind to the parameterized query, if any
+     *
+     * @return NativeQueryBuilder
+     */
+    public NativeQueryBuilder nativeQuery(String queryString, Options options, Object... boundValues) {
         log.debug("Execute native query {}", queryString);
         Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
-        return new NativeQueryBuilder(daoContext, queryString, boundValues);
+        return new NativeQueryBuilder(daoContext, queryString, options, boundValues);
     }
 
     /**

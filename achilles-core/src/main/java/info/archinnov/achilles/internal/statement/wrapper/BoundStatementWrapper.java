@@ -23,34 +23,34 @@ import com.datastax.driver.core.Session;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
 
-	private BoundStatement boundStatement;
+    private BoundStatement boundStatement;
 
-	public BoundStatementWrapper(BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel) {
-		super(values);
-		boundStatement = bs;
-		boundStatement.setConsistencyLevel(consistencyLevel);
-	}
+    public BoundStatementWrapper(BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel) {
+        super(values);
+        boundStatement = bs;
+        boundStatement.setConsistencyLevel(consistencyLevel);
+    }
 
-	@Override
-	public ResultSet execute(Session session) {
-		logDMLStatement("");
-		return session.execute(boundStatement);
-	}
+    @Override
+    public ResultSet execute(Session session) {
+        logDMLStatement("");
+        return session.execute(boundStatement);
+    }
 
-	@Override
-	public BoundStatement getStatement() {
-		return boundStatement;
-	}
+    @Override
+    public BoundStatement getStatement() {
+        return boundStatement;
+    }
 
-	@Override
-	public void logDMLStatement(String indentation) {
-		if (dmlLogger.isDebugEnabled()) {
-			PreparedStatement ps = boundStatement.preparedStatement();
-			String queryType = "Prepared statement";
-			String queryString = ps.getQueryString();
-			String consistencyLevel = boundStatement.getConsistencyLevel() == null ? "DEFAULT" : boundStatement
-					.getConsistencyLevel().name();
-			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
-		}
-	}
+    @Override
+    public void logDMLStatement(String indentation) {
+        if (dmlLogger.isDebugEnabled()) {
+            PreparedStatement ps = boundStatement.preparedStatement();
+            String queryType = "Prepared statement";
+            String queryString = ps.getQueryString();
+            String consistencyLevel = boundStatement.getConsistencyLevel() == null ? "DEFAULT" : boundStatement
+                    .getConsistencyLevel().name();
+            writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
+        }
+    }
 }

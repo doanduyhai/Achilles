@@ -16,83 +16,143 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import com.datastax.driver.core.BatchStatement;
-import info.archinnov.achilles.type.ConsistencyLevel;
-
+import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
+import static com.datastax.driver.core.ColumnDefinitions.Definition;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
 import java.util.Arrays;
-
+import java.util.TreeMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
-
-import static com.datastax.driver.core.BatchStatement.Type.LOGGED;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.exception.AchillesCASException;
+import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.TypedMap;
 
 public abstract class AbstractStatementWrapper {
-	public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
-	protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+    public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
+    protected static final String IF_NOT_EXIST_CLAUSE = " IF NOT EXISTS";
+    protected static final String IF_CLAUSE = " IF ";
+    protected static final String CAS_RESULT_COLUMN = "[applied]";
 
-	protected Object[] values = new Object[] {};
+    protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+    protected Object[] values = new Object[] { };
 
-	protected AbstractStatementWrapper(Object[] values) {
-		if (ArrayUtils.isNotEmpty(values))
-			this.values = values;
-	}
+    protected RowMethodInvoker invoker = new RowMethodInvoker();
 
-	public Object[] getValues() {
-		return values;
-	}
+    protected Optional<CASResultListener> casResultListener = Optional.absent();
 
-	public abstract ResultSet execute(Session session);
+    protected AbstractStatementWrapper(Object[] values) {
+        if (ArrayUtils.isNotEmpty(values))
+            this.values = values;
+    }
 
-	public abstract Statement getStatement();
+    public Object[] getValues() {
+        return values;
+    }
 
-	public abstract void logDMLStatement(String indentation);
+    public abstract ResultSet execute(Session session);
 
-	public static void writeDMLStartBatch(BatchStatement.Type batchType) {
-		if (dmlLogger.isDebugEnabled()) {
-            if(batchType == LOGGED) {
+    public abstract Statement getStatement();
+
+    public abstract void logDMLStatement(String indentation);
+
+    public static void writeDMLStartBatch(BatchStatement.Type batchType) {
+        if (dmlLogger.isDebugEnabled()) {
+            if (batchType == LOGGED) {
                 dmlLogger.debug("");
                 dmlLogger.debug("");
                 dmlLogger.debug("****** BATCH LOGGED START ******");
                 dmlLogger.debug("");
-            }
-            else {
+            } else {
                 dmlLogger.debug("");
                 dmlLogger.debug("");
                 dmlLogger.debug("****** BATCH UNLOGGED START ******");
                 dmlLogger.debug("");
             }
-		}
-	}
+        }
+    }
 
-	public static void writeDMLEndBatch(BatchStatement.Type batchType, ConsistencyLevel consistencyLevel) {
-		if (dmlLogger.isDebugEnabled()) {
-            if(batchType == LOGGED)       {
+    public static void writeDMLEndBatch(BatchStatement.Type batchType, ConsistencyLevel consistencyLevel) {
+        if (dmlLogger.isDebugEnabled()) {
+            if (batchType == LOGGED) {
                 dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH LOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel!=null ? consistencyLevel:"DEFAULT");
+                dmlLogger.debug("  ****** BATCH LOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+            } else {
+                dmlLogger.debug("");
+                dmlLogger.debug("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
                 dmlLogger.debug("");
                 dmlLogger.debug("");
             }
-            else {
-                dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel!=null ? consistencyLevel:"DEFAULT");
-                dmlLogger.debug("");
-                dmlLogger.debug("");
-            }
-		}
-	}
+        }
+    }
 
-	protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel,
-			Object... values) {
+    protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel,
+            Object... values) {
 
         dmlLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
 
-		if (ArrayUtils.isNotEmpty(values)) {
-			dmlLogger.debug("\t bound values : {}", Arrays.asList(values));
-		}
-	}
+        if (ArrayUtils.isNotEmpty(values)) {
+            dmlLogger.debug("\t bound values : {}", Arrays.asList(values));
+        }
+    }
+
+    protected boolean isCASInsert(RegularStatement regularStatement) {
+        return regularStatement.getQueryString().contains(IF_NOT_EXIST_CLAUSE);
+    }
+
+    protected boolean isCASOperation(RegularStatement regularStatement) {
+        return regularStatement.getQueryString().contains(IF_CLAUSE);
+    }
+
+    protected void checkForCASSuccess(RegularStatement regularStatement, ResultSet resultSet) {
+
+        if (isCASOperation(regularStatement)) {
+            final Row casResult = resultSet.one();
+            if (!casResult.getBool(CAS_RESULT_COLUMN)) {
+                TreeMap<String, Object> currentValues = new TreeMap<>();
+                for (Definition columnDef : casResult.getColumnDefinitions()) {
+                    final String columnDefName = columnDef.getName();
+                    final Object columnValue = invoker.invokeOnRowForType(casResult, columnDef.getType().asJavaClass(), columnDefName);
+                    currentValues.put(columnDefName, columnValue);
+                }
+
+                Operation operation = UPDATE;
+                if (isCASInsert(regularStatement)) {
+                    operation = INSERT;
+                }
+                notifyCASError(new CASResult(operation, TypedMap.fromMap(currentValues)));
+            } else {
+                notifyCASSuccess();
+            }
+
+        }
+    }
+
+    protected void notifyCASError(CASResult casResult) {
+        if (casResultListener.isPresent()) {
+            casResultListener.get().onCASError(casResult);
+        } else {
+            throw new AchillesCASException(casResult);
+        }
+    }
+
+    protected void notifyCASSuccess() {
+        if (casResultListener.isPresent()) {
+            casResultListener.get().onCASSuccess();
+        }
+    }
 }

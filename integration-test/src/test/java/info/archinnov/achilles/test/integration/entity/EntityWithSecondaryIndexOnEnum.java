@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.entity;
 
-import static info.archinnov.achilles.test.integration.entity.EntityWithEnumSecondaryIndex.TABLE_NAME;
+import static info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum.TABLE_NAME;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
@@ -23,7 +23,7 @@ import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 @Entity(table = TABLE_NAME)
-public class EntityWithEnumSecondaryIndex {
+public class EntityWithSecondaryIndexOnEnum {
     public static final String TABLE_NAME = "enum_secondary_index";
 
     @Id
@@ -34,7 +34,7 @@ public class EntityWithEnumSecondaryIndex {
     private ConsistencyLevel consistencyLevel;
 
 
-    public EntityWithEnumSecondaryIndex(Long id, ConsistencyLevel consistencyLevel) {
+    public EntityWithSecondaryIndexOnEnum(Long id, ConsistencyLevel consistencyLevel) {
         this.id = id;
         this.consistencyLevel = consistencyLevel;
     }

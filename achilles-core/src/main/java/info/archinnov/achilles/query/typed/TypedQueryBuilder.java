@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -32,9 +33,11 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
 
 public class TypedQueryBuilder<T> {
     private static final Logger log = LoggerFactory.getLogger(TypedQueryBuilder.class);
+    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
 
     private DaoContext daoContext;
     private String normalizedQuery;
@@ -74,7 +77,7 @@ public class TypedQueryBuilder<T> {
     public List<T> get() {
         log.debug("Get results for typed query {}", normalizedQuery);
         List<T> result = new ArrayList<>();
-        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues)).all();
+        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).all();
         for (Row row : rows) {
             T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
             if (entity != null) {
@@ -100,7 +103,7 @@ public class TypedQueryBuilder<T> {
     public T getFirst() {
         log.debug("Get first result for typed query {}", normalizedQuery);
         T entity = null;
-        Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues)).one();
+        Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).one();
         if (row != null) {
             entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
             meta.intercept(entity, Event.POST_LOAD);

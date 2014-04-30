@@ -15,63 +15,120 @@
  */
 package info.archinnov.achilles.type;
 
+import static info.archinnov.achilles.type.Options.CasCondition;
+import java.util.Arrays;
+import java.util.List;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.listener.CASResultListener;
+
 public class OptionsBuilder {
 
-	private static final NoOptions noOptions = new NoOptions();
+    private static final NoOptions noOptions = new NoOptions();
 
-	public static NoOptions noOptions() {
-		return noOptions;
-	}
+    public static NoOptions noOptions() {
+        return noOptions;
+    }
 
-	public static InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
-		return new InternalOptionsBuilder(consistencyLevel);
-	}
+    public static InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
+        return new InternalOptionsBuilder(consistencyLevel);
+    }
 
-	public static InternalOptionsBuilder withTtl(Integer ttl) {
-		return new InternalOptionsBuilder(ttl);
-	}
+    public static InternalOptionsBuilder withTtl(Integer ttl) {
+        return new InternalOptionsBuilder(ttl);
+    }
 
-	public static InternalOptionsBuilder withTimestamp(Long timestamp) {
-		return new InternalOptionsBuilder(timestamp);
-	}
+    public static InternalOptionsBuilder withTimestamp(Long timestamp) {
+        return new InternalOptionsBuilder(timestamp);
+    }
 
-	public static class NoOptions extends Options {
-		protected NoOptions() {
-		}
+    public static InternalOptionsBuilder ifNotExists() {
+        return new InternalOptionsBuilder(true);
+    }
 
-		@Override
-		public NoOptions duplicateWithoutTtlAndTimestamp() {
-			return this;
-		}
-	}
+    public static InternalOptionsBuilder ifConditions(CasCondition... casConditions) {
+        return new InternalOptionsBuilder(casConditions);
+    }
 
-	public static class InternalOptionsBuilder extends Options {
-		protected InternalOptionsBuilder(ConsistencyLevel consistencyLevel) {
-			super.consistency = consistencyLevel;
-		}
+    public static InternalOptionsBuilder casResultListener(CASResultListener listener) {
+        return new InternalOptionsBuilder(listener);
+    }
 
-		protected InternalOptionsBuilder(Integer ttl) {
-			super.ttl = ttl;
-		}
+    public static class NoOptions extends Options {
+        protected NoOptions() {
+        }
 
-		protected InternalOptionsBuilder(Long timestamp) {
-			super.timestamp = timestamp;
-		}
+        @Override
+        public NoOptions duplicateWithoutTtlAndTimestamp() {
+            return this;
+        }
+    }
 
-		public InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
-			super.consistency = consistencyLevel;
-			return this;
-		}
+    public static class InternalOptionsBuilder extends Options {
+        protected InternalOptionsBuilder(ConsistencyLevel consistencyLevel) {
+            super.consistency = consistencyLevel;
+        }
 
-		public InternalOptionsBuilder withTtl(Integer ttl) {
-			super.ttl = ttl;
-			return this;
-		}
+        protected InternalOptionsBuilder(Integer ttl) {
+            super.ttl = ttl;
+        }
 
-		public InternalOptionsBuilder withTimestamp(Long timestamp) {
-			super.timestamp = timestamp;
-			return this;
-		}
-	}
+        protected InternalOptionsBuilder(Long timestamp) {
+            super.timestamp = timestamp;
+        }
+
+        protected InternalOptionsBuilder(boolean ifNotExists) {
+            super.ifNotExists = ifNotExists;
+        }
+
+        protected InternalOptionsBuilder(CasCondition... casConditions) {
+            super.casConditions = Arrays.asList(casConditions);
+        }
+
+        protected InternalOptionsBuilder(CASResultListener listener) {
+            super.casResultListenerO = Optional.fromNullable(listener);
+
+        }
+
+
+        public InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
+            super.consistency = consistencyLevel;
+            return this;
+        }
+
+        public InternalOptionsBuilder withTtl(Integer ttl) {
+            super.ttl = ttl;
+            return this;
+        }
+
+        public InternalOptionsBuilder withTimestamp(Long timestamp) {
+            super.timestamp = timestamp;
+            return this;
+        }
+
+        public InternalOptionsBuilder ifNotExists() {
+            super.ifNotExists = true;
+            return this;
+        }
+
+        public InternalOptionsBuilder casResultListener(CASResultListener listener) {
+            super.casResultListenerO = Optional.fromNullable(listener);
+            return this;
+        }
+
+        public InternalOptionsBuilder ifNotExists(boolean ifNotExists) {
+            super.ifNotExists = ifNotExists;
+            return this;
+        }
+
+        public InternalOptionsBuilder ifConditions(CasCondition... casConditions) {
+            super.casConditions = Arrays.asList(casConditions);
+            return this;
+        }
+
+        public InternalOptionsBuilder ifConditions(List<CasCondition> casConditions) {
+            super.casConditions = casConditions;
+            return this;
+        }
+    }
 
 }

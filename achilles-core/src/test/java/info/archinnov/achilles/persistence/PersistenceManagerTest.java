@@ -55,6 +55,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityInitializer;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
+import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.query.cql.NativeQueryBuilder;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
@@ -87,6 +88,9 @@ public class PersistenceManagerTest {
 
     @Mock
     private SliceQueryExecutor sliceQueryExecutor;
+
+    @Mock
+    private OptionsValidator optionsValidator;
 
     @Mock
     private PersistenceManagerFactory pmf;
@@ -130,6 +134,7 @@ public class PersistenceManagerTest {
         manager = Mockito.spy(this.manager);
         Whitebox.setInternalState(manager, EntityProxifier.class, proxifier);
         Whitebox.setInternalState(manager, EntityValidator.class, entityValidator);
+        Whitebox.setInternalState(manager, OptionsValidator.class, optionsValidator);
         Whitebox.setInternalState(manager, SliceQueryExecutor.class, sliceQueryExecutor);
         Whitebox.setInternalState(manager, TypedQueryValidator.class, typedQueryValidator);
         Whitebox.setInternalState(manager, PersistenceContextFactory.class, contextFactory);
@@ -164,15 +169,16 @@ public class PersistenceManagerTest {
                 .withTimestamp(100L));
 
         // Then
+        Options options = optionsCaptor.getValue();
         assertThat(actual).isSameAs(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
+        verify(optionsValidator).validateOptionsForInsert(entity, entityMetaMap, options);
         verify(proxifier).ensureNotProxy(entity);
         verify(context).persist(entity);
 
-        Options value = optionsCaptor.getValue();
-        assertThat(value.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
-        assertThat(value.getTtl().get()).isEqualTo(150);
-        assertThat(value.getTimestamp().get()).isEqualTo(100L);
+        assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
+        assertThat(options.getTtl().get()).isEqualTo(150);
+        assertThat(options.getTimestamp().get()).isEqualTo(100L);
     }
 
     @Test
@@ -204,11 +210,12 @@ public class PersistenceManagerTest {
         manager.update(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150).withTimestamp(100L));
 
         // Then
+        Options options = optionsCaptor.getValue();
         verify(proxifier).ensureProxy(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
+        verify(optionsValidator).validateOptionsForUpdate(entity, entityMetaMap, options);
         verify(context).update(entity);
 
-        Options options = optionsCaptor.getValue();
         assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
         assertThat(options.getTtl().get()).isEqualTo(150);
         assertThat(options.getTimestamp().get()).isEqualTo(100L);

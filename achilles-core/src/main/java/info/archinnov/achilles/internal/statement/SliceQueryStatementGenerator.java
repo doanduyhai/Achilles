@@ -15,122 +15,127 @@
  */
 package info.archinnov.achilles.internal.statement;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.type.OrderingMode.*;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.type.OrderingMode;
-
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gt;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.lt;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
+import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import java.util.List;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Where;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.query.slice.CQLSliceQuery;
+import info.archinnov.achilles.type.OrderingMode;
 
 public class SliceQueryStatementGenerator {
 
-	private static final Logger log = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
+    private static final Logger log = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
 
-	public RegularStatementWrapper generateWhereClauseForSelectSliceQuery(CQLSliceQuery<?> sliceQuery, Select select) {
-		Where where = select.where();
-		List<Object> fixedComponents = sliceQuery.getFixedComponents();
-		List<String> componentNames = sliceQuery.getComponentNames();
-		String varyingComponentName = sliceQuery.getVaryingComponentName();
-		OrderingMode ordering = sliceQuery.getOrdering();
+    private static final Optional<CASResultListener> NO_CAS_LISTENER = Optional.absent();
 
-		Object lastStartComp = sliceQuery.getLastStartComponent();
-		Object lastEndComp = sliceQuery.getLastEndComponent();
-		Object[] boundValues = new Object[fixedComponents.size()];
+    public RegularStatementWrapper generateWhereClauseForSelectSliceQuery(CQLSliceQuery<?> sliceQuery, Select select) {
+        Where where = select.where();
+        List<Object> fixedComponents = sliceQuery.getFixedComponents();
+        List<String> componentNames = sliceQuery.getComponentNames();
+        String varyingComponentName = sliceQuery.getVaryingComponentName();
+        OrderingMode ordering = sliceQuery.getOrdering();
 
-		for (int i = 0; i < fixedComponents.size(); i++) {
-			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
-			boundValues[i] = fixedComponents.get(i);
-		}
+        Object lastStartComp = sliceQuery.getLastStartComponent();
+        Object lastEndComp = sliceQuery.getLastEndComponent();
+        Object[] boundValues = new Object[fixedComponents.size()];
 
-		if (lastStartComp != null)
-			boundValues = ArrayUtils.add(boundValues, lastStartComp);
-		if (lastEndComp != null)
-			boundValues = ArrayUtils.add(boundValues, lastEndComp);
+        for (int i = 0; i < fixedComponents.size(); i++) {
+            where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+            boundValues[i] = fixedComponents.get(i);
+        }
 
-		if (ordering == ASCENDING) {
+        if (lastStartComp != null)
+            boundValues = ArrayUtils.add(boundValues, lastStartComp);
+        if (lastEndComp != null)
+            boundValues = ArrayUtils.add(boundValues, lastEndComp);
 
-			switch (sliceQuery.getBounding()) {
-			case INCLUSIVE_BOUNDS:
-				if (lastStartComp != null)
-					where.and(gte(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(lte(varyingComponentName, lastEndComp));
-				break;
-			case EXCLUSIVE_BOUNDS:
-				if (lastStartComp != null)
-					where.and(gt(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(lt(varyingComponentName, lastEndComp));
-				break;
-			case INCLUSIVE_START_BOUND_ONLY:
-				if (lastStartComp != null)
-					where.and(gte(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(lt(varyingComponentName, lastEndComp));
-				break;
-			case INCLUSIVE_END_BOUND_ONLY:
-				if (lastStartComp != null)
-					where.and(gt(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(lte(varyingComponentName, lastEndComp));
-				break;
-			}
-		} else // ordering == DESCENDING
-		{
-			switch (sliceQuery.getBounding()) {
-			case INCLUSIVE_BOUNDS:
-				if (lastStartComp != null)
-					where.and(lte(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(gte(varyingComponentName, lastEndComp));
-				break;
-			case EXCLUSIVE_BOUNDS:
-				if (lastStartComp != null)
-					where.and(lt(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(gt(varyingComponentName, lastEndComp));
-				break;
-			case INCLUSIVE_START_BOUND_ONLY:
-				if (lastStartComp != null)
-					where.and(lte(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(gt(varyingComponentName, lastEndComp));
-				break;
-			case INCLUSIVE_END_BOUND_ONLY:
-				if (lastStartComp != null)
-					where.and(lt(varyingComponentName, lastStartComp));
-				if (lastEndComp != null)
-					where.and(gte(varyingComponentName, lastEndComp));
-				break;
-			}
-		}
+        if (ordering == ASCENDING) {
+
+            switch (sliceQuery.getBounding()) {
+                case INCLUSIVE_BOUNDS:
+                    if (lastStartComp != null)
+                        where.and(gte(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(lte(varyingComponentName, lastEndComp));
+                    break;
+                case EXCLUSIVE_BOUNDS:
+                    if (lastStartComp != null)
+                        where.and(gt(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(lt(varyingComponentName, lastEndComp));
+                    break;
+                case INCLUSIVE_START_BOUND_ONLY:
+                    if (lastStartComp != null)
+                        where.and(gte(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(lt(varyingComponentName, lastEndComp));
+                    break;
+                case INCLUSIVE_END_BOUND_ONLY:
+                    if (lastStartComp != null)
+                        where.and(gt(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(lte(varyingComponentName, lastEndComp));
+                    break;
+            }
+        } else // ordering == DESCENDING
+        {
+            switch (sliceQuery.getBounding()) {
+                case INCLUSIVE_BOUNDS:
+                    if (lastStartComp != null)
+                        where.and(lte(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(gte(varyingComponentName, lastEndComp));
+                    break;
+                case EXCLUSIVE_BOUNDS:
+                    if (lastStartComp != null)
+                        where.and(lt(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(gt(varyingComponentName, lastEndComp));
+                    break;
+                case INCLUSIVE_START_BOUND_ONLY:
+                    if (lastStartComp != null)
+                        where.and(lte(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(gt(varyingComponentName, lastEndComp));
+                    break;
+                case INCLUSIVE_END_BOUND_ONLY:
+                    if (lastStartComp != null)
+                        where.and(lt(varyingComponentName, lastStartComp));
+                    if (lastEndComp != null)
+                        where.and(gte(varyingComponentName, lastEndComp));
+                    break;
+            }
+        }
         where.setFetchSize(sliceQuery.getBatchSize());
         log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
-		return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel());
-	}
+        return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+    }
 
-	public RegularStatementWrapper generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<?> sliceQuery, Delete delete) {
-		List<Object> fixedComponents = sliceQuery.getFixedComponents();
-		List<String> componentNames = sliceQuery.getComponentNames();
+    public RegularStatementWrapper generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<?> sliceQuery, Delete delete) {
+        List<Object> fixedComponents = sliceQuery.getFixedComponents();
+        List<String> componentNames = sliceQuery.getComponentNames();
 
-		com.datastax.driver.core.querybuilder.Delete.Where where = delete.where();
-		Object[] boundValues = new Object[fixedComponents.size()];
+        com.datastax.driver.core.querybuilder.Delete.Where where = delete.where();
+        Object[] boundValues = new Object[fixedComponents.size()];
 
-		for (int i = 0; i < fixedComponents.size(); i++) {
-			where.and(eq(componentNames.get(i), fixedComponents.get(i)));
-			boundValues[i] = fixedComponents.get(i);
-		}
-		log.trace("Generated WHERE clause for slice delete query : {}", where.getQueryString());
-		return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel());
-	}
+        for (int i = 0; i < fixedComponents.size(); i++) {
+            where.and(eq(componentNames.get(i), fixedComponents.get(i)));
+            boundValues[i] = fixedComponents.get(i);
+        }
+        log.trace("Generated WHERE clause for slice delete query : {}", where.getQueryString());
+        return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+    }
 
 }

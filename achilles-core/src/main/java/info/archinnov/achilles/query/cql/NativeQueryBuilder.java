@@ -15,71 +15,76 @@
  */
 package info.archinnov.achilles.query.cql;
 
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.Row;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.TypedMap;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.Row;
-
 public class NativeQueryBuilder {
-	private static final Logger log = LoggerFactory.getLogger(NativeQueryBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(NativeQueryBuilder.class);
 
-	private DaoContext daoContext;
-	private String queryString;
+    private static final Optional<CASResultListener> NO_CAS_LISTENER = Optional.absent();
 
-	private NativeQueryMapper mapper = new NativeQueryMapper();
+    private DaoContext daoContext;
+    private NativeQueryMapper mapper = new NativeQueryMapper();
 
-	private Object[] boundValues;
+    protected String queryString;
 
-	public NativeQueryBuilder(DaoContext daoContext, String queryString, Object... boundValues) {
-		this.daoContext = daoContext;
-		this.queryString = queryString;
-		this.boundValues = boundValues;
-	}
+    protected Object[] boundValues;
 
-	/**
-	 * Return found rows. The list represents the number of returned rows The
-	 * map contains the (column name, column value) of each row. The map is
-	 * backed by a LinkedHashMap and thus preserves the columns order as they
-	 * were declared in the native query
-	 * 
-	 * @return List<TypedMap>
-	 */
-	public List<TypedMap> get() {
-		log.debug("Get results for native query {}", queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
-		return mapper.mapRows(rows);
-	}
+    protected Options options;
 
-	/**
-	 * Return the first found row. The map contains the (column name, column
-	 * value) of each row. The map is backed by a LinkedHashMap and thus
-	 * preserves the columns order as they were declared in the native query
-	 * 
-	 * @return TypedMap
-	 */
-	public TypedMap first() {
-		log.debug("Get first result for native query {}", queryString);
-		List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues)).all();
-		List<TypedMap> result = mapper.mapRows(rows);
-		if (result.isEmpty())
-			return null;
-		else
-			return result.get(0);
-	}
+    public NativeQueryBuilder(DaoContext daoContext, String queryString, Options options, Object... boundValues) {
+        this.daoContext = daoContext;
+        this.queryString = queryString;
+        this.options = options;
+        this.boundValues = boundValues;
+    }
 
-	/**
-	 * Execute statement without returning result. Useful for
-	 * INSERT/UPDATE/DELETE and DDL statements
-	 */
-	public void execute() {
-		log.debug("Execute native query {}", queryString);
-		daoContext.execute(new SimpleStatementWrapper(queryString, boundValues));
-	}
+    /**
+     * Return found rows. The list represents the number of returned rows The
+     * map contains the (column name, column value) of each row. The map is
+     * backed by a LinkedHashMap and thus preserves the columns order as they
+     * were declared in the native query
+     *
+     * @return List<TypedMap>
+     */
+    public List<TypedMap> get() {
+        log.debug("Get results for native query {}", queryString);
+        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, NO_CAS_LISTENER)).all();
+        return mapper.mapRows(rows);
+    }
+
+    /**
+     * Return the first found row. The map contains the (column name, column
+     * value) of each row. The map is backed by a LinkedHashMap and thus
+     * preserves the columns order as they were declared in the native query
+     *
+     * @return TypedMap
+     */
+    public TypedMap first() {
+        log.debug("Get first result for native query {}", queryString);
+        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, NO_CAS_LISTENER)).all();
+        List<TypedMap> result = mapper.mapRows(rows);
+        if (result.isEmpty())
+            return null;
+        else
+            return result.get(0);
+    }
+
+    /**
+     * Execute statement without returning result. Useful for
+     * INSERT/UPDATE/DELETE and DDL statements
+     */
+    public void execute() {
+        log.debug("Execute native query {}", queryString);
+        daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, options.getCasResultListener()));
+    }
 }

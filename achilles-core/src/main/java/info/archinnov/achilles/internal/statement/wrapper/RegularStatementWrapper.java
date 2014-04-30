@@ -20,37 +20,42 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.listener.CASResultListener;
 
 public class RegularStatementWrapper extends AbstractStatementWrapper {
 
-	private RegularStatement regularStatement;
+    private RegularStatement regularStatement;
 
-	public RegularStatementWrapper(RegularStatement regularStatement, Object[] boundValues,
-			ConsistencyLevel consistencyLevel) {
-		super(boundValues);
-		this.regularStatement = regularStatement;
-		regularStatement.setConsistencyLevel(consistencyLevel);
-	}
+    public RegularStatementWrapper(RegularStatement regularStatement, Object[] boundValues,
+            ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
+        super(boundValues);
+        this.regularStatement = regularStatement;
+        super.casResultListener = casResultListener;
+        regularStatement.setConsistencyLevel(consistencyLevel);
+    }
 
-	@Override
-	public ResultSet execute(Session session) {
-		logDMLStatement("");
-		return session.execute(regularStatement);
-	}
+    @Override
+    public ResultSet execute(Session session) {
+        logDMLStatement("");
+        ResultSet resultSet = session.execute(regularStatement);
+        checkForCASSuccess(regularStatement, resultSet);
+        return resultSet;
+    }
 
-	@Override
-	public RegularStatement getStatement() {
-		return regularStatement;
-	}
+    @Override
+    public RegularStatement getStatement() {
+        return regularStatement;
+    }
 
-	@Override
-	public void logDMLStatement(String indentation) {
-		if (dmlLogger.isDebugEnabled()) {
-			String queryType = "Parameterized statement";
-			String queryString = regularStatement.getQueryString();
-			String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement
-					.getConsistencyLevel().name();
-			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
-		}
-	}
+    @Override
+    public void logDMLStatement(String indentation) {
+        if (dmlLogger.isDebugEnabled()) {
+            String queryType = "Parameterized statement";
+            String queryString = regularStatement.getQueryString();
+            String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement
+                    .getConsistencyLevel().name();
+            writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
+        }
+    }
 }

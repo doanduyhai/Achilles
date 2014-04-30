@@ -17,90 +17,115 @@ package info.archinnov.achilles.query.cql;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
-import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
-import info.archinnov.achilles.type.TypedMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
 import com.datastax.driver.core.Row;
+import info.archinnov.achilles.internal.context.DaoContext;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeQueryBuilderTest {
 
-	@InjectMocks
-	private NativeQueryBuilder query;
+    @InjectMocks
+    private NativeQueryBuilder query;
 
-	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private DaoContext daoContext;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private DaoContext daoContext;
 
-	private String queryString = "query";
+    private String queryString = "query";
 
-	@Mock
-	private NativeQueryMapper mapper;
+    @Mock
+    private NativeQueryMapper mapper;
 
-	@Mock
-	private Row row;
+    @Mock
+    private Row row;
 
-	@Before
-	public void setUp() {
-		Whitebox.setInternalState(query, String.class, queryString);
-		Whitebox.setInternalState(query, NativeQueryMapper.class, mapper);
-	}
+    @Captor
+    private ArgumentCaptor<SimpleStatementWrapper> simpleStatementCaptor;
 
-	@Test
-	public void should_get() throws Exception {
-		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+    @Before
+    public void setUp() {
+        query.queryString = queryString;
+        Whitebox.setInternalState(query, NativeQueryMapper.class, mapper);
+    }
 
-		List<TypedMap> result = new ArrayList<>();
-		when(mapper.mapRows(rows)).thenReturn(result);
+    @Test
+    public void should_get() throws Exception {
+        List<Row> rows = Arrays.asList(row);
+        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		List<TypedMap> actual = query.get();
+        List<TypedMap> result = new ArrayList<>();
+        when(mapper.mapRows(rows)).thenReturn(result);
 
-		assertThat(actual).isSameAs(result);
-	}
+        List<TypedMap> actual = query.get();
 
-	@Test
-	public void should_get_one() throws Exception {
+        assertThat(actual).isSameAs(result);
+    }
 
-		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+    @Test
+    public void should_get_one() throws Exception {
 
-		List<TypedMap> result = new ArrayList<>();
-		TypedMap line = new TypedMap();
-		result.add(line);
-		when(mapper.mapRows(rows)).thenReturn(result);
+        List<Row> rows = Arrays.asList(row);
+        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		TypedMap actual = query.first();
-		assertThat(actual).isSameAs(line);
-	}
+        List<TypedMap> result = new ArrayList<>();
+        TypedMap line = new TypedMap();
+        result.add(line);
+        when(mapper.mapRows(rows)).thenReturn(result);
 
-	@Test
-	public void should_return_null_when_no_row() throws Exception {
+        TypedMap actual = query.first();
+        assertThat(actual).isSameAs(line);
+    }
 
-		List<Row> rows = Arrays.asList(row);
-		when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+    @Test
+    public void should_return_null_when_no_row() throws Exception {
 
-		List<TypedMap> result = new ArrayList<>();
-		when(mapper.mapRows(rows)).thenReturn(result);
+        List<Row> rows = Arrays.asList(row);
+        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
 
-		Map<String, Object> actual = query.first();
-		assertThat(actual).isNull();
-	}
+        List<TypedMap> result = new ArrayList<>();
+        when(mapper.mapRows(rows)).thenReturn(result);
+
+        Map<String, Object> actual = query.first();
+        assertThat(actual).isNull();
+    }
+
+    @Test
+    public void should_execute_upserts() throws Exception {
+        //Given
+        final Object[] boundValues = { "test" };
+        final Options options = OptionsBuilder.ifNotExists();
+        query.boundValues = boundValues;
+        query.options = options;
+
+        //When
+        query.execute();
+
+        //Then
+        verify(daoContext).execute(simpleStatementCaptor.capture());
+
+        final SimpleStatementWrapper actual = simpleStatementCaptor.getValue();
+        assertThat(actual.getStatement().getQueryString()).isEqualTo(queryString);
+        assertThat(actual.getValues()).isEqualTo(boundValues);
+
+    }
 
 }

@@ -18,6 +18,15 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.cassandra.utils.UUIDGen;
+import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Rule;
+import org.junit.Test;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -32,545 +41,533 @@ import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.TypedMap;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import net.sf.cglib.proxy.Factory;
-
-import org.apache.cassandra.utils.UUIDGen;
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Rule;
-import org.junit.Test;
 
 public class QueryIT {
 
-	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
-			CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
-			AchillesCounter.CQL_COUNTER_TABLE);
+    @Rule
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
+            CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
+            AchillesCounter.CQL_COUNTER_TABLE);
 
-	private PersistenceManager manager = resource.getPersistenceManager();
+    private PersistenceManager manager = resource.getPersistenceManager();
 
-	@Test
-	public void should_return_rows_for_native_query() throws Exception {
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
+    @Test
+    public void should_return_rows_for_native_query() throws Exception {
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(35L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(35L)
+                .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+                .addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
 
-		manager.persist(entity1);
-		manager.persist(entity2);
+        manager.persist(entity1);
+        manager.persist(entity2);
 
-		String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
-				+ entity1.getId() + "," + entity2.getId() + ")";
+        String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
+                + entity1.getId() + "," + entity2.getId() + ")";
 
-		List<TypedMap> actual = manager.nativeQuery(nativeQuery).get();
+        List<TypedMap> actual = manager.nativeQuery(nativeQuery).get();
 
-		assertThat(actual).hasSize(2);
+        assertThat(actual).hasSize(2);
 
-		TypedMap row1 = actual.get(0);
-		TypedMap row2 = actual.get(1);
+        TypedMap row1 = actual.get(0);
+        TypedMap row2 = actual.get(1);
 
-		assertThat(row1.get("name")).isEqualTo("DuyHai");
-		assertThat(row1.get("age_in_years")).isEqualTo(35L);
-		assertThat(row1.<List<String>> getTyped("friends")).containsExactly("foo", "bar");
-		assertThat(row1.<Set<String>> getTyped("followers")).contains("George", "Paul");
-		Map<Integer, String> preferences1 = row1.<Map<Integer, String>> getTyped("preferences");
-		assertThat(preferences1.get(1)).isEqualTo("FR");
-		assertThat(preferences1.get(2)).isEqualTo("Paris");
-		assertThat(preferences1.get(3)).isEqualTo("75014");
+        assertThat(row1.get("name")).isEqualTo("DuyHai");
+        assertThat(row1.get("age_in_years")).isEqualTo(35L);
+        assertThat(row1.<List<String>>getTyped("friends")).containsExactly("foo", "bar");
+        assertThat(row1.<Set<String>>getTyped("followers")).contains("George", "Paul");
+        Map<Integer, String> preferences1 = row1.<Map<Integer, String>>getTyped("preferences");
+        assertThat(preferences1.get(1)).isEqualTo("FR");
+        assertThat(preferences1.get(2)).isEqualTo("Paris");
+        assertThat(preferences1.get(3)).isEqualTo("75014");
 
-		assertThat(row2.get("name")).isEqualTo("John DOO");
-		assertThat(row2.get("age_in_years")).isEqualTo(35L);
-		assertThat(row2.<List<String>> getTyped("friends")).containsExactly("qux", "twix");
-		assertThat(row2.<Set<String>> getTyped("followers")).contains("Isaac", "Lara");
-		Map<Integer, String> preferences2 = row2.<Map<Integer, String>> getTyped("preferences");
-		assertThat(preferences2.get(1)).isEqualTo("US");
-		assertThat(preferences2.get(2)).isEqualTo("NewYork");
-	}
+        assertThat(row2.get("name")).isEqualTo("John DOO");
+        assertThat(row2.get("age_in_years")).isEqualTo(35L);
+        assertThat(row2.<List<String>>getTyped("friends")).containsExactly("qux", "twix");
+        assertThat(row2.<Set<String>>getTyped("followers")).contains("Isaac", "Lara");
+        Map<Integer, String> preferences2 = row2.<Map<Integer, String>>getTyped("preferences");
+        assertThat(preferences2.get(1)).isEqualTo("US");
+        assertThat(preferences2.get(2)).isEqualTo("NewYork");
+    }
 
-	@Test
-	public void should_return_rows_for_native_query_with_bound_values() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
-		manager.persist(entity);
+    @Test
+    public void should_return_rows_for_native_query_with_bound_values() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        manager.persist(entity);
 
-		String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
+        String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
 
-		List<TypedMap> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
+        List<TypedMap> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
 
-		assertThat(actual).hasSize(1);
+        assertThat(actual).hasSize(1);
 
-		TypedMap row = actual.get(0);
+        TypedMap row = actual.get(0);
 
-		assertThat(row.get("name")).isEqualTo("DuyHai");
-	}
+        assertThat(row.get("name")).isEqualTo("DuyHai");
+    }
 
-	@Test
-	public void should_return_count_for_native_query() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+    @Test
+    public void should_return_count_for_native_query() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-		manager.persist(entity);
+        manager.persist(entity);
 
-		Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
-				.get("count");
+        Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
+                .get("count");
 
-		assertThat(count).isEqualTo(1L);
-	}
+        assertThat(count).isEqualTo(1L);
+    }
 
-	@Test
-	public void should_return_ttl_and_timestamp_for_native_query() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(32L).buid();
+    @Test
+    public void should_return_ttl_and_timestamp_for_native_query() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(32L).buid();
 
-		Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
+        Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
 
-		manager.persist(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
+        manager.persist(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
-		Map<String, Object> result = manager.nativeQuery(
-				"SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
+        Map<String, Object> result = manager.nativeQuery(
+                "SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
 
-		assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
-		assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
-	}
+        assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
+        assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
+    }
 
-	@Test
-	public void should_return_cql_functions_for_native_query() throws Exception {
+    @Test
+    public void should_return_cql_functions_for_native_query() throws Exception {
 
-		Long id = RandomUtils.nextLong();
-		UUID date = UUIDGen.getTimeUUID();
+        Long id = RandomUtils.nextLong();
+        UUID date = UUIDGen.getTimeUUID();
 
-		manager.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
-
-		Map<String, Object> result = manager.nativeQuery(
-				"SELECT now(),dateOf(date),unixTimestampOf(date) FROM " + ClusteredEntityWithTimeUUID.TABLE_NAME
-						+ " WHERE id=" + id).first();
-		assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
-		assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
-		assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
-	}
-
-	@Test
-	public void should_return_entities_for_typed_query_with_select_star() throws Exception {
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
-
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").buid();
-
-		manager.persist(entity1);
-		manager.persist(entity2);
-
-		String queryString = "SELECT * FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
-
-		assertThat(actual).hasSize(2);
-
-		CompleteBean found1 = actual.get(0);
-		CompleteBean found2 = actual.get(1);
-
-		Factory factory1 = (Factory) found1;
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-
-		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
-
-		assertThat(target1.getLabel()).isNull();
-		assertThat(target1.getWelcomeTweet()).isNull();
-
-		Factory factory2 = (Factory) found1;
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
-
-		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
-
-		assertThat(target2.getLabel()).isNull();
-		assertThat(target2.getWelcomeTweet()).isNull();
-
-		if (found1.getId().equals(entity1.getId())) {
-			CompleteBean reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getAge()).isEqualTo(reference.getAge());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found1.getPreferences().get(1)).isEqualTo("FR");
-			assertThat(found1.getPreferences().get(2)).isEqualTo("Paris");
-			assertThat(found1.getPreferences().get(3)).isEqualTo("75014");
-
-			reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getAge()).isEqualTo(reference.getAge());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found2.getPreferences().get(1)).isEqualTo("US");
-			assertThat(found2.getPreferences().get(2)).isEqualTo("NewYork");
-		} else {
-			CompleteBean reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found1.getPreferences().get(1)).isEqualTo("US");
-			assertThat(found1.getPreferences().get(2)).isEqualTo("NewYork");
-
-			reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found2.getPreferences().get(1)).isEqualTo("FR");
-			assertThat(found2.getPreferences().get(2)).isEqualTo("Paris");
-			assertThat(found2.getPreferences().get(3)).isEqualTo("75014");
-		}
-	}
-
-	@Test
-	public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").buid();
-
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").buid();
-
-		manager.persist(entity1);
-		manager.persist(entity2);
-
-		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
-
-		assertThat(actual).hasSize(2);
-
-		CompleteBean found1 = actual.get(0);
-		CompleteBean found2 = actual.get(1);
-
-		Factory factory1 = (Factory) found1;
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-
-		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
-
-		assertThat(target1.getAge()).isNull();
-		assertThat(target1.getFollowers()).isNull();
-		assertThat(target1.getLabel()).isNull();
-		assertThat(target1.getPreferences()).isNull();
-		assertThat(target1.getWelcomeTweet()).isNull();
-
-		Factory factory2 = (Factory) found1;
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
-
-		CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
-
-		assertThat(target2.getAge()).isNull();
-		assertThat(target2.getFollowers()).isNull();
-		assertThat(target2.getLabel()).isNull();
-		assertThat(target2.getPreferences()).isNull();
-		assertThat(target2.getWelcomeTweet()).isNull();
-
-		if (found1.getId().equals(entity1.getId())) {
-			CompleteBean reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-
-			reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-		} else {
-			CompleteBean reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-
-			reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-		}
-	}
-
-	@Test
-	public void should_return_entity_for_typed_query_with_bound_values() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
-
-		manager.persist(entity);
-
-		String queryString = "SELECT id,name,friends FROM CompleteBean WHERE id = ?";
-		List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString, entity.getId()).get();
-
-		assertThat(actual).hasSize(1);
-
-		CompleteBean found = actual.get(0);
-		assertThat(found.getName()).isEqualTo(entity.getName());
-	}
-
-	@Test
-	public void should_return_raw_entities_for_raw_typed_query_with_select_star() throws Exception {
-		Counter counter1 = CounterBuilder.incr(15L);
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
-
-		Counter counter2 = CounterBuilder.incr(17L);
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(counter2).buid();
-
-		manager.persist(entity1);
-		manager.persist(entity2);
-
-		String queryString = "SELECT * FROM CompleteBean LIMIT :lim";
-		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
-
-		assertThat(actual).hasSize(2);
-
-		CompleteBean found1 = actual.get(0);
-		CompleteBean found2 = actual.get(1);
-
-		if (found1.getId().equals(entity1.getId())) {
-			CompleteBean reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getAge()).isEqualTo(reference.getAge());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found1.getPreferences().get(1)).isEqualTo("FR");
-			assertThat(found1.getPreferences().get(2)).isEqualTo("Paris");
-			assertThat(found1.getPreferences().get(3)).isEqualTo("75014");
-			assertThat(found1.getVersion()).isNull();
-
-			reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getAge()).isEqualTo(reference.getAge());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found2.getPreferences().get(1)).isEqualTo("US");
-			assertThat(found2.getPreferences().get(2)).isEqualTo("NewYork");
-			assertThat(found2.getVersion()).isNull();
-		} else {
-			CompleteBean reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found1.getPreferences().get(1)).isEqualTo("US");
-			assertThat(found1.getPreferences().get(2)).isEqualTo("NewYork");
-			assertThat(found1.getVersion()).isNull();
-
-			reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
-			assertThat(found2.getPreferences().get(1)).isEqualTo("FR");
-			assertThat(found2.getPreferences().get(2)).isEqualTo("Paris");
-			assertThat(found2.getPreferences().get(3)).isEqualTo("75014");
-			assertThat(found2.getVersion()).isNull();
-		}
-	}
-
-	@Test
-	public void should_return_raw_entities_for_raw_typed_query_with_simple_select() throws Exception {
-		Counter counter1 = CounterBuilder.incr(15L);
-		CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
-
-		Counter counter2 = CounterBuilder.incr(17L);
-		CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
-				.addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
-				.addPreference(2, "NewYork").version(counter2).buid();
-
-		manager.persist(entity1);
-		manager.persist(entity2);
-
-		String queryString = "  SELECT id, name, friends   FROM CompleteBean LIMIT 3";
-		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
-
-		assertThat(actual).hasSize(2);
-
-		CompleteBean found1 = actual.get(0);
-		CompleteBean found2 = actual.get(1);
-
-		if (found1.getId().equals(entity1.getId())) {
-			CompleteBean reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getVersion()).isNull();
-
-			reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getVersion()).isNull();
-		} else {
-			CompleteBean reference = entity2;
-
-			assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
-			assertThat(found1.getId()).isEqualTo(reference.getId());
-			assertThat(found1.getName()).isEqualTo(reference.getName());
-			assertThat(found1.getFriends()).containsAll(reference.getFriends());
-			assertThat(found1.getVersion()).isNull();
-
-			reference = entity1;
-
-			assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
-			assertThat(found2.getId()).isEqualTo(reference.getId());
-			assertThat(found2.getName()).isEqualTo(reference.getName());
-			assertThat(found2.getFriends()).containsAll(reference.getFriends());
-			assertThat(found2.getVersion()).isNull();
-		}
-	}
-
-	@Test
-	public void should_return_raw_entity_for_raw_typed_query_with_bound_values() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
-		manager.persist(entity);
-
-		String queryString = "SELECT name FROM CompleteBean LIMIT ?";
-		List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
-
-		assertThat(actual).hasSize(1);
-		assertThat(actual.get(0).getName()).isEqualTo(entity.getName());
-	}
-
-	@Test
-	public void should_return_first_entity_for_typed_query_with_simple_select() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
-
-		manager.persist(entity);
-
-		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
-
-		Factory factory1 = (Factory) actual;
-		@SuppressWarnings("unchecked")
-		EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
-
-		CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
-
-		assertThat(target1.getAge()).isNull();
-		assertThat(target1.getFollowers()).isNull();
-		assertThat(target1.getLabel()).isNull();
-		assertThat(target1.getPreferences()).isNull();
-		assertThat(target1.getWelcomeTweet()).isNull();
-
-		assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
-		assertThat(actual.getId()).isEqualTo(entity.getId());
-		assertThat(actual.getName()).isEqualTo(entity.getName());
-		assertThat(actual.getFriends()).containsAll(entity.getFriends());
-		assertThat(actual.getVersion().get()).isEqualTo(15L);
-
-	}
-
-	@Test
-	public void should_return_first_clustered_entity_for_typed_query_with_select_star() throws Exception {
-		Long id = RandomUtils.nextLong();
-
-		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-		manager.persist(entity);
-
-		String queryString = "SELECT * FROM " + TABLE_NAME + " LIMIT 3";
-		ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
-
-		assertThat(actual).isNotNull();
-		assertThat(actual).isInstanceOf(Factory.class);
-
-		ClusteredKey clusteredKey = actual.getId();
-
-		assertThat(clusteredKey).isNotNull();
-		assertThat(clusteredKey.getId()).isEqualTo(id);
-		assertThat(clusteredKey.getCount()).isEqualTo(10);
-		assertThat(clusteredKey.getName()).isEqualTo("name");
-	}
-
-	@Test
-	public void should_return_first_raw_entity_for_raw_typed_query_with_simple_select() throws Exception {
-		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
-				.addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
-				.addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
-
-		manager.persist(entity);
-
-		String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-		CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, queryString).getFirst();
-
-		assertThat(Factory.class.isAssignableFrom(actual.getClass())).isFalse();
-
-		assertThat(actual.getId()).isEqualTo(entity.getId());
-		assertThat(actual.getName()).isEqualTo(entity.getName());
-		assertThat(actual.getLabel()).isNull();
-		assertThat(actual.getAge()).isNull();
-		assertThat(actual.getFriends()).containsAll(entity.getFriends());
-		assertThat(actual.getFollowers()).isNull();
-		assertThat(actual.getPreferences()).isNull();
-		assertThat(actual.getVersion()).isNull();
-		assertThat(actual.getWelcomeTweet()).isNull();
-
-	}
-
-	@Test
-	public void should_return_first_raw_clustered_entity_for_raw_query_with_simple_select() throws Exception {
-		Long id = RandomUtils.nextLong();
-
-		ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-		manager.persist(entity);
-
-		String queryString = "SELECT id,count,name,value FROM " + TABLE_NAME + " LIMIT 3";
-		ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
-
-		assertThat(actual).isNotNull();
-
-		ClusteredKey clusteredKey = actual.getId();
-
-		assertThat(clusteredKey).isNotNull();
-		assertThat(clusteredKey.getId()).isEqualTo(id);
-		assertThat(clusteredKey.getCount()).isEqualTo(10);
-		assertThat(clusteredKey.getName()).isEqualTo("name");
-	}
+        manager.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
+
+        Map<String, Object> result = manager.nativeQuery(
+                "SELECT now(),dateOf(date),unixTimestampOf(date) FROM " + ClusteredEntityWithTimeUUID.TABLE_NAME
+                        + " WHERE id=" + id).first();
+        assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
+        assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
+        assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
+    }
+
+    @Test
+    public void should_return_entities_for_typed_query_with_select_star() throws Exception {
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+                .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+                .addPreference(2, "NewYork").buid();
+
+        manager.persist(entity1);
+        manager.persist(entity2);
+
+        String queryString = "SELECT * FROM CompleteBean LIMIT 3";
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
+
+        assertThat(actual).hasSize(2);
+
+        CompleteBean found1 = actual.get(0);
+        CompleteBean found2 = actual.get(1);
+
+        Factory factory1 = (Factory) found1;
+        @SuppressWarnings("unchecked")
+        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+
+        CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
+
+        assertThat(target1.getLabel()).isNull();
+        assertThat(target1.getWelcomeTweet()).isNull();
+
+        Factory factory2 = (Factory) found1;
+        @SuppressWarnings("unchecked")
+        EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
+
+        CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
+
+        assertThat(target2.getLabel()).isNull();
+        assertThat(target2.getWelcomeTweet()).isNull();
+
+        if (found1.getId().equals(entity1.getId())) {
+            CompleteBean reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getAge()).isEqualTo(reference.getAge());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found1.getPreferences().get(1)).isEqualTo("FR");
+            assertThat(found1.getPreferences().get(2)).isEqualTo("Paris");
+            assertThat(found1.getPreferences().get(3)).isEqualTo("75014");
+
+            reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getAge()).isEqualTo(reference.getAge());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found2.getPreferences().get(1)).isEqualTo("US");
+            assertThat(found2.getPreferences().get(2)).isEqualTo("NewYork");
+        } else {
+            CompleteBean reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found1.getPreferences().get(1)).isEqualTo("US");
+            assertThat(found1.getPreferences().get(2)).isEqualTo("NewYork");
+
+            reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found2.getPreferences().get(1)).isEqualTo("FR");
+            assertThat(found2.getPreferences().get(2)).isEqualTo("Paris");
+            assertThat(found2.getPreferences().get(3)).isEqualTo("75014");
+        }
+    }
+
+    @Test
+    public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").buid();
+
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+                .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+                .addPreference(2, "NewYork").buid();
+
+        manager.persist(entity1);
+        manager.persist(entity2);
+
+        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
+
+        assertThat(actual).hasSize(2);
+
+        CompleteBean found1 = actual.get(0);
+        CompleteBean found2 = actual.get(1);
+
+        Factory factory1 = (Factory) found1;
+        @SuppressWarnings("unchecked")
+        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+
+        CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
+
+        assertThat(target1.getAge()).isNull();
+        assertThat(target1.getFollowers()).isNull();
+        assertThat(target1.getLabel()).isNull();
+        assertThat(target1.getPreferences()).isNull();
+        assertThat(target1.getWelcomeTweet()).isNull();
+
+        Factory factory2 = (Factory) found1;
+        @SuppressWarnings("unchecked")
+        EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
+
+        CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
+
+        assertThat(target2.getAge()).isNull();
+        assertThat(target2.getFollowers()).isNull();
+        assertThat(target2.getLabel()).isNull();
+        assertThat(target2.getPreferences()).isNull();
+        assertThat(target2.getWelcomeTweet()).isNull();
+
+        if (found1.getId().equals(entity1.getId())) {
+            CompleteBean reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+
+            reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+        } else {
+            CompleteBean reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isTrue();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+
+            reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isTrue();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+        }
+    }
+
+    @Test
+    public void should_return_entity_for_typed_query_with_bound_values() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+
+        manager.persist(entity);
+
+        String queryString = "SELECT id,name,friends FROM CompleteBean WHERE id = ?";
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString, entity.getId()).get();
+
+        assertThat(actual).hasSize(1);
+
+        CompleteBean found = actual.get(0);
+        assertThat(found.getName()).isEqualTo(entity.getName());
+    }
+
+    @Test
+    public void should_return_raw_entities_for_raw_typed_query_with_select_star() throws Exception {
+        Counter counter1 = CounterBuilder.incr(15L);
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
+
+        Counter counter2 = CounterBuilder.incr(17L);
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+                .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+                .addPreference(2, "NewYork").version(counter2).buid();
+
+        manager.persist(entity1);
+        manager.persist(entity2);
+
+        String queryString = "SELECT * FROM CompleteBean LIMIT :lim";
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
+
+        assertThat(actual).hasSize(2);
+
+        CompleteBean found1 = actual.get(0);
+        CompleteBean found2 = actual.get(1);
+
+        if (found1.getId().equals(entity1.getId())) {
+            CompleteBean reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getAge()).isEqualTo(reference.getAge());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found1.getPreferences().get(1)).isEqualTo("FR");
+            assertThat(found1.getPreferences().get(2)).isEqualTo("Paris");
+            assertThat(found1.getPreferences().get(3)).isEqualTo("75014");
+            assertThat(found1.getVersion()).isNull();
+
+            reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getAge()).isEqualTo(reference.getAge());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found2.getPreferences().get(1)).isEqualTo("US");
+            assertThat(found2.getPreferences().get(2)).isEqualTo("NewYork");
+            assertThat(found2.getVersion()).isNull();
+        } else {
+            CompleteBean reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found1.getPreferences().get(1)).isEqualTo("US");
+            assertThat(found1.getPreferences().get(2)).isEqualTo("NewYork");
+            assertThat(found1.getVersion()).isNull();
+
+            reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getFollowers()).containsAll(reference.getFollowers());
+            assertThat(found2.getPreferences().get(1)).isEqualTo("FR");
+            assertThat(found2.getPreferences().get(2)).isEqualTo("Paris");
+            assertThat(found2.getPreferences().get(3)).isEqualTo("75014");
+            assertThat(found2.getVersion()).isNull();
+        }
+    }
+
+    @Test
+    public void should_return_raw_entities_for_raw_typed_query_with_simple_select() throws Exception {
+        Counter counter1 = CounterBuilder.incr(15L);
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
+
+        Counter counter2 = CounterBuilder.incr(17L);
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+                .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
+                .addPreference(2, "NewYork").version(counter2).buid();
+
+        manager.persist(entity1);
+        manager.persist(entity2);
+
+        String queryString = "  SELECT id, name, friends   FROM CompleteBean LIMIT 3";
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
+
+        assertThat(actual).hasSize(2);
+
+        CompleteBean found1 = actual.get(0);
+        CompleteBean found2 = actual.get(1);
+
+        if (found1.getId().equals(entity1.getId())) {
+            CompleteBean reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getVersion()).isNull();
+
+            reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getVersion()).isNull();
+        } else {
+            CompleteBean reference = entity2;
+
+            assertThat(Factory.class.isAssignableFrom(found1.getClass())).isFalse();
+            assertThat(found1.getId()).isEqualTo(reference.getId());
+            assertThat(found1.getName()).isEqualTo(reference.getName());
+            assertThat(found1.getFriends()).containsAll(reference.getFriends());
+            assertThat(found1.getVersion()).isNull();
+
+            reference = entity1;
+
+            assertThat(Factory.class.isAssignableFrom(found2.getClass())).isFalse();
+            assertThat(found2.getId()).isEqualTo(reference.getId());
+            assertThat(found2.getName()).isEqualTo(reference.getName());
+            assertThat(found2.getFriends()).containsAll(reference.getFriends());
+            assertThat(found2.getVersion()).isNull();
+        }
+    }
+
+    @Test
+    public void should_return_raw_entity_for_raw_typed_query_with_bound_values() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        manager.persist(entity);
+
+        String queryString = "SELECT name FROM CompleteBean LIMIT ?";
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
+
+        assertThat(actual).hasSize(1);
+        assertThat(actual.get(0).getName()).isEqualTo(entity.getName());
+    }
+
+    @Test
+    public void should_return_first_entity_for_typed_query_with_simple_select() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
+
+        manager.persist(entity);
+
+        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
+        CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
+
+        Factory factory1 = (Factory) actual;
+        @SuppressWarnings("unchecked")
+        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+
+        CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
+
+        assertThat(target1.getAge()).isNull();
+        assertThat(target1.getFollowers()).isNull();
+        assertThat(target1.getLabel()).isNull();
+        assertThat(target1.getPreferences()).isNull();
+        assertThat(target1.getWelcomeTweet()).isNull();
+
+        assertThat(Factory.class.isAssignableFrom(actual.getClass())).isTrue();
+        assertThat(actual.getId()).isEqualTo(entity.getId());
+        assertThat(actual.getName()).isEqualTo(entity.getName());
+        assertThat(actual.getFriends()).containsAll(entity.getFriends());
+        assertThat(actual.getVersion().get()).isEqualTo(15L);
+
+    }
+
+    @Test
+    public void should_return_first_clustered_entity_for_typed_query_with_select_star() throws Exception {
+        Long id = RandomUtils.nextLong();
+
+        ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
+        manager.persist(entity);
+
+        String queryString = "SELECT * FROM " + TABLE_NAME + " LIMIT 3";
+        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
+
+        assertThat(actual).isNotNull();
+        assertThat(actual).isInstanceOf(Factory.class);
+
+        ClusteredKey clusteredKey = actual.getId();
+
+        assertThat(clusteredKey).isNotNull();
+        assertThat(clusteredKey.getId()).isEqualTo(id);
+        assertThat(clusteredKey.getCount()).isEqualTo(10);
+        assertThat(clusteredKey.getName()).isEqualTo("name");
+    }
+
+    @Test
+    public void should_return_first_raw_entity_for_raw_typed_query_with_simple_select() throws Exception {
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+                .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
+                .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
+
+        manager.persist(entity);
+
+        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
+        CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, queryString).getFirst();
+
+        assertThat(Factory.class.isAssignableFrom(actual.getClass())).isFalse();
+
+        assertThat(actual.getId()).isEqualTo(entity.getId());
+        assertThat(actual.getName()).isEqualTo(entity.getName());
+        assertThat(actual.getLabel()).isNull();
+        assertThat(actual.getAge()).isNull();
+        assertThat(actual.getFriends()).containsAll(entity.getFriends());
+        assertThat(actual.getFollowers()).isNull();
+        assertThat(actual.getPreferences()).isNull();
+        assertThat(actual.getVersion()).isNull();
+        assertThat(actual.getWelcomeTweet()).isNull();
+
+    }
+
+    @Test
+    public void should_return_first_raw_clustered_entity_for_raw_query_with_simple_select() throws Exception {
+        Long id = RandomUtils.nextLong();
+
+        ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
+        manager.persist(entity);
+
+        String queryString = "SELECT id,count,name,value FROM " + TABLE_NAME + " LIMIT 3";
+        ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
+
+        assertThat(actual).isNotNull();
+
+        ClusteredKey clusteredKey = actual.getId();
+
+        assertThat(clusteredKey).isNotNull();
+        assertThat(clusteredKey.getId()).isEqualTo(id);
+        assertThat(clusteredKey.getCount()).isEqualTo(10);
+        assertThat(clusteredKey.getName()).isEqualTo("name");
+    }
 
 }

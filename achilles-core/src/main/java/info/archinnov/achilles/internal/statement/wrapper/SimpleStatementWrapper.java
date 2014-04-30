@@ -19,35 +19,40 @@ package info.archinnov.achilles.internal.statement.wrapper;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.listener.CASResultListener;
 
 public class SimpleStatementWrapper extends AbstractStatementWrapper {
 
-	private SimpleStatement simpleStatement;
+    private SimpleStatement simpleStatement;
 
-	public SimpleStatementWrapper(String query, Object[] values) {
-		super(values);
-		this.simpleStatement = new SimpleStatement(query);
-	}
+    public SimpleStatementWrapper(String query, Object[] values, Optional<CASResultListener> casResultListener) {
+        super(values);
+        super.casResultListener = casResultListener;
+        this.simpleStatement = new SimpleStatement(query);
+    }
 
-	@Override
-	public ResultSet execute(Session session) {
-		logDMLStatement("");
-		return session.execute(simpleStatement.getQueryString(), values);
-	}
+    @Override
+    public ResultSet execute(Session session) {
+        logDMLStatement("");
+        ResultSet resultSet = session.execute(simpleStatement.getQueryString(), values);
+        checkForCASSuccess(simpleStatement, resultSet);
+        return resultSet;
+    }
 
-	@Override
-	public SimpleStatement getStatement() {
-		return simpleStatement;
-	}
+    @Override
+    public SimpleStatement getStatement() {
+        return simpleStatement;
+    }
 
-	@Override
-	public void logDMLStatement(String indentation) {
-		if (dmlLogger.isDebugEnabled()) {
-			String queryType = "Simple statement";
-			String queryString = simpleStatement.getQueryString();
-			String consistencyLevel = simpleStatement.getConsistencyLevel() == null ? "DEFAULT" : simpleStatement
-					.getConsistencyLevel().name();
-			writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
-		}
-	}
+    @Override
+    public void logDMLStatement(String indentation) {
+        if (dmlLogger.isDebugEnabled()) {
+            String queryType = "Simple statement";
+            String queryString = simpleStatement.getQueryString();
+            String consistencyLevel = simpleStatement.getConsistencyLevel() == null ? "DEFAULT" : simpleStatement
+                    .getConsistencyLevel().name();
+            writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
+        }
+    }
 }

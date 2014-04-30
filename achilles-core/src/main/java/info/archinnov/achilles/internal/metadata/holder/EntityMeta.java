@@ -275,15 +275,18 @@ public class EntityMeta {
     public Object[] encodeBoundValues(Object[] boundValues) {
         Object[] encodedBoundValues = new Object[boundValues.length];
         for (int i = 0; i < boundValues.length; i++) {
-            Object boundValue = boundValues[i];
-            if (boundValue != null && !isSupportedNativeType(boundValue.getClass())) {
-                final PropertyMeta propertyMeta = findPropertyMetaByType(boundValue.getClass());
-                encodedBoundValues[i] = propertyMeta.encode(boundValue);
-            } else {
-                encodedBoundValues[i] = boundValue;
-            }
+            encodedBoundValues[i] = encodeValue(boundValues[i]);
         }
         return encodedBoundValues;
+    }
+
+    public Object encodeValue(Object rawValue) {
+        Object encodedValue = rawValue;
+        if (rawValue != null && !isSupportedNativeType(rawValue.getClass())) {
+            final PropertyMeta propertyMeta = findPropertyMetaByType(rawValue.getClass());
+            encodedValue = propertyMeta.encode(rawValue);
+        }
+        return encodedValue;
     }
 
     private PropertyMeta findPropertyMetaByType(Class<?> type) {

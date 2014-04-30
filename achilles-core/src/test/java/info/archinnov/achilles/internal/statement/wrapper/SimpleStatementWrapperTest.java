@@ -16,42 +16,45 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.listener.CASResultListener;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SimpleStatementWrapperTest {
 
-    private final Object[] values = new Object[]{1};
+    private final Object[] values = new Object[] { 1 };
 
     private SimpleStatementWrapper wrapper;
 
     @Mock
     private Session session;
 
+    private Optional<CASResultListener> noListener = Optional.absent();
+
     @Test
     public void should_execute() throws Exception {
         //Given
-        wrapper = new SimpleStatementWrapper("SELECT", values);
+        wrapper = new SimpleStatementWrapper("SELECT", values, noListener);
 
         //When
         wrapper.execute(session);
 
         //Then
-        verify(session).execute("SELECT",values);
+        verify(session).execute("SELECT", values);
     }
 
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new SimpleStatementWrapper("SELECT",values);
+        wrapper = new SimpleStatementWrapper("SELECT", values, noListener);
 
         //When
         final SimpleStatement simpleStatement = wrapper.getStatement();

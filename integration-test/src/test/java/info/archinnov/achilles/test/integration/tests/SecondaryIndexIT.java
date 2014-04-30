@@ -14,7 +14,7 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.integration.entity.EntityWithEnumSecondaryIndex;
+import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum;
 import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndex;
 import info.archinnov.achilles.type.IndexCondition;
 
@@ -49,9 +49,9 @@ public class SecondaryIndexIT {
     @Test
     public void should_find_entities_for_indexed_enum_query() throws Exception {
         //Given
-        EntityWithEnumSecondaryIndex entity1 = new EntityWithEnumSecondaryIndex(10L, EACH_QUORUM);
-        EntityWithEnumSecondaryIndex entity2 = new EntityWithEnumSecondaryIndex(11L, EACH_QUORUM);
-        EntityWithEnumSecondaryIndex entity3 = new EntityWithEnumSecondaryIndex(13L, LOCAL_QUORUM);
+        EntityWithSecondaryIndexOnEnum entity1 = new EntityWithSecondaryIndexOnEnum(10L, EACH_QUORUM);
+        EntityWithSecondaryIndexOnEnum entity2 = new EntityWithSecondaryIndexOnEnum(11L, EACH_QUORUM);
+        EntityWithSecondaryIndexOnEnum entity3 = new EntityWithSecondaryIndexOnEnum(13L, LOCAL_QUORUM);
 
         manager.persist(entity1);
         manager.persist(entity2);
@@ -59,12 +59,12 @@ public class SecondaryIndexIT {
 
         //When
         IndexCondition condition = new IndexCondition("consistencyLevel", EACH_QUORUM);
-        final List<EntityWithEnumSecondaryIndex> actual = manager.indexedQuery(EntityWithEnumSecondaryIndex.class, condition).get();
+        final List<EntityWithSecondaryIndexOnEnum> actual = manager.indexedQuery(EntityWithSecondaryIndexOnEnum.class, condition).get();
 
         //Then
         assertThat(actual).hasSize(2);
-        final EntityWithEnumSecondaryIndex found1 = actual.get(0);
-        final EntityWithEnumSecondaryIndex found2 = actual.get(1);
+        final EntityWithSecondaryIndexOnEnum found1 = actual.get(0);
+        final EntityWithSecondaryIndexOnEnum found2 = actual.get(1);
 
         assertThat(found1.getId()).isEqualTo(10L);
         assertThat(found2.getId()).isEqualTo(11L);

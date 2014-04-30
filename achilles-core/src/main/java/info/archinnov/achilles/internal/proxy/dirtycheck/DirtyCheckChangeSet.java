@@ -16,18 +16,6 @@
 
 package info.archinnov.achilles.internal.proxy.dirtycheck;
 
-import com.datastax.driver.core.querybuilder.Update;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
-import org.apache.commons.collections.MapUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static com.datastax.driver.core.querybuilder.QueryBuilder.addAll;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.appendAll;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
@@ -38,8 +26,20 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.putAll;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.removeAll;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.setIdx;
+import static com.datastax.driver.core.querybuilder.Update.Assignments;
 import static java.util.Map.Entry;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.collections.MapUtils;
+import com.datastax.driver.core.querybuilder.Update;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
+import info.archinnov.achilles.type.Pair;
 
 public class DirtyCheckChangeSet {
 
@@ -48,42 +48,42 @@ public class DirtyCheckChangeSet {
     protected List<Object> listChanges = new ArrayList<>();
     protected ElementAtIndex listChangeAtIndex = null;
     protected Set<Object> setChanges = new HashSet<>();
-    protected Map<Object,Object> mapChanges = new HashMap<>();
+    protected Map<Object, Object> mapChanges = new HashMap<>();
 
-    public DirtyCheckChangeSet(PropertyMeta propertyMeta,CollectionAndMapChangeType changeType) {
+    public DirtyCheckChangeSet(PropertyMeta propertyMeta, CollectionAndMapChangeType changeType) {
         this.propertyMeta = propertyMeta;
         this.changeType = changeType;
     }
 
     public List<Object> getEncodedListChanges() {
-        if(isNotEmpty(listChanges)) {
+        if (isNotEmpty(listChanges)) {
             return propertyMeta.encode(listChanges);
         }
         return listChanges;
     }
 
     public ElementAtIndex getEncodedListChangeAtIndex() {
-        if(listChangeAtIndex != null && listChangeAtIndex.getElement() != null) {
+        if (listChangeAtIndex != null && listChangeAtIndex.getElement() != null) {
             Object encodedElement = propertyMeta.encode(listChangeAtIndex.getElement());
-            return new ElementAtIndex(listChangeAtIndex.getIndex(),encodedElement);
+            return new ElementAtIndex(listChangeAtIndex.getIndex(), encodedElement);
         }
         return listChangeAtIndex;
     }
 
     public Set<Object> getEncodedSetChanges() {
-        if(isNotEmpty(setChanges)) {
+        if (isNotEmpty(setChanges)) {
             return propertyMeta.encode(setChanges);
         }
         return setChanges;
     }
 
     public Map<Object, Object> getEncodedMapChanges() {
-        if(MapUtils.isNotEmpty(mapChanges)) {
-            Map<Object,Object> encodedMapChanges = new HashMap<>();
-            for(Entry<Object,Object> entry : mapChanges.entrySet()) {
+        if (MapUtils.isNotEmpty(mapChanges)) {
+            Map<Object, Object> encodedMapChanges = new HashMap<>();
+            for (Entry<Object, Object> entry : mapChanges.entrySet()) {
                 Object encodedKey = propertyMeta.encodeKey(entry.getKey());
                 Object encodedValue = propertyMeta.encode(entry.getValue());
-                encodedMapChanges.put(encodedKey,encodedValue);
+                encodedMapChanges.put(encodedKey, encodedValue);
             }
             return encodedMapChanges;
         }
@@ -99,169 +99,169 @@ public class DirtyCheckChangeSet {
         return propertyMeta;
     }
 
-    public Object[] generateUpdateForAddedElements(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForAddedElements(Update.Conditions conditions, boolean preparedStatement) {
         Set<Object> encodedElements = null;
-
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-        if(preparedStatement) {
-            with.and(addAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(addAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedSetChanges();
-            with.and(addAll(propertyName, encodedElements));
+            assignments = conditions.with(addAll(propertyName, encodedElements));
         }
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForRemovedElements(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForRemovedElements(Update.Conditions conditions, boolean preparedStatement) {
         Set<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(removeAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(removeAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedSetChanges();
-            with.and(removeAll(propertyName, encodedElements));
+            assignments = conditions.with(removeAll(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForAppendedElements(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForAppendedElements(Update.Conditions conditions, boolean preparedStatement) {
         List<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(appendAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(appendAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedListChanges();
-            with.and(appendAll(propertyName, encodedElements));
+            assignments = conditions.with(appendAll(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForPrependedElements(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForPrependedElements(Update.Conditions conditions, boolean preparedStatement) {
         List<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(prependAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(prependAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedListChanges();
-            with.and(prependAll(propertyName, encodedElements));
+            assignments = conditions.with(prependAll(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForRemoveListElements(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForRemoveListElements(Update.Conditions conditions, boolean preparedStatement) {
         List<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(discardAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(discardAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedListChanges();
-            with.and(discardAll(propertyName, encodedElements));
+            assignments = conditions.with(discardAll(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForSetAtIndexElement(Update.Assignments with) {
+    public Pair<Assignments, Object[]> generateUpdateForSetAtIndexElement(Update.Conditions conditions) {
         final ElementAtIndex elementAtIndex = getEncodedListChangeAtIndex();
         final int index = elementAtIndex.getIndex();
         final Object encoded = elementAtIndex.getElement();
         String propertyName = propertyMeta.getPropertyName();
-        with.and(setIdx(propertyName, index, encoded));
-        return new Object[]{index,encoded};
+        Assignments assignments = conditions.with(setIdx(propertyName, index, encoded));
+        return Pair.create(assignments, new Object[] { index, encoded });
     }
 
-    public Object[] generateUpdateForRemovedAtIndexElement(Update.Assignments with) {
+    public Pair<Assignments, Object[]> generateUpdateForRemovedAtIndexElement(Update.Conditions conditions) {
         String propertyName = propertyMeta.getPropertyName();
-        with.and(setIdx(propertyName, listChangeAtIndex.getIndex(), null));
-        return new Object[]{listChangeAtIndex.getIndex(),null};
+        Assignments assignments = conditions.with(setIdx(propertyName, listChangeAtIndex.getIndex(), null));
+        return Pair.create(assignments, new Object[] { listChangeAtIndex.getIndex(), null });
     }
 
-    public Object[] generateUpdateForAddedEntries(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForAddedEntries(Update.Conditions conditions, boolean preparedStatement) {
         Map<Object, Object> encodedEntries = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(putAll(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(putAll(propertyName, bindMarker(propertyName)));
         } else {
             encodedEntries = getEncodedMapChanges();
-            with.and(putAll(propertyName, encodedEntries));
+            assignments = conditions.with(putAll(propertyName, encodedEntries));
         }
 
-        return new Object[]{encodedEntries};
+        return Pair.create(assignments, new Object[] { encodedEntries });
     }
 
-    public Object[] generateUpdateForRemovedKey(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForRemovedKey(Update.Conditions conditions, boolean preparedStatement) {
         String propertyName = propertyMeta.getPropertyName();
+        Assignments assignments;
         Object encodedKey = propertyMeta.encodeKey(mapChanges.keySet().iterator().next());
-
-        if(preparedStatement) {
-            with.and(put(propertyName,bindMarker("key"),bindMarker("nullValue")));
+        if (preparedStatement) {
+            assignments = conditions.with(put(propertyName, bindMarker("key"), bindMarker("nullValue")));
         } else {
-            with.and(put(propertyName, encodedKey,null));
+            assignments = conditions.with(put(propertyName, encodedKey, null));
         }
 
-        return new Object[]{encodedKey,null};
+        return Pair.create(assignments, new Object[] { encodedKey, null });
     }
 
-    public Object[] generateUpdateForRemoveAll(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForRemoveAll(Update.Conditions conditions, boolean preparedStatement) {
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(set(propertyName,bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(set(propertyName, bindMarker(propertyName)));
         } else {
-            with.and(set(propertyName, null));
+            assignments = conditions.with(set(propertyName, null));
         }
 
-        return new Object[]{null};
+        return Pair.create(assignments, new Object[] { null });
     }
 
-    public Object[] generateUpdateForAssignValueToList(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForAssignValueToList(Update.Conditions conditions, boolean preparedStatement) {
         List<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(set(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(set(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedListChanges();
-            with.and(set(propertyName, encodedElements));
+            assignments = conditions.with(set(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForAssignValueToSet(Update.Assignments with, boolean preparedStatement) {
+    public Pair<Assignments, Object[]> generateUpdateForAssignValueToSet(Update.Conditions conditions, boolean preparedStatement) {
         Set<Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(set(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(set(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedSetChanges();
-            with.and(set(propertyName, encodedElements));
+            assignments = conditions.with(set(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
-    public Object[] generateUpdateForAssignValueToMap(Update.Assignments with, boolean preparedStatement) {
-        Map<Object,Object> encodedElements = null;
+    public Pair<Assignments, Object[]> generateUpdateForAssignValueToMap(Update.Conditions conditions, boolean preparedStatement) {
+        Map<Object, Object> encodedElements = null;
+        Assignments assignments;
         String propertyName = propertyMeta.getPropertyName();
-
-        if(preparedStatement) {
-            with.and(set(propertyName, bindMarker(propertyName)));
+        if (preparedStatement) {
+            assignments = conditions.with(set(propertyName, bindMarker(propertyName)));
         } else {
             encodedElements = getEncodedMapChanges();
-            with.and(set(propertyName, encodedElements));
+            assignments = conditions.with(set(propertyName, encodedElements));
         }
 
-        return new Object[]{encodedElements};
+        return Pair.create(assignments, new Object[] { encodedElements });
     }
 
 
@@ -313,8 +313,10 @@ public class DirtyCheckChangeSet {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
 
             ElementAtIndex that = (ElementAtIndex) o;
 

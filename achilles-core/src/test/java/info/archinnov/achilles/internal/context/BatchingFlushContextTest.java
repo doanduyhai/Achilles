@@ -23,15 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 import java.util.List;
-import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.internal.interceptor.EventHolder;
-import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
-import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
-import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.type.ConsistencyLevel;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,98 +31,109 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.internal.WhiteboxImpl;
-
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
+import info.archinnov.achilles.internal.interceptor.EventHolder;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BatchingFlushContextTest {
 
-	private BatchingFlushContext context;
+    private BatchingFlushContext context;
 
-	@Mock
-	private DaoContext daoContext;
+    @Mock
+    private DaoContext daoContext;
 
-	@Mock
-	private BoundStatementWrapper bsWrapper;
+    @Mock
+    private BoundStatementWrapper bsWrapper;
 
-	@Mock
-	private RegularStatement query;
+    @Mock
+    private RegularStatement query;
 
     @Captor
     ArgumentCaptor<BatchStatement> batchCaptor;
 
-	@Before
-	public void setUp() {
-		context = new BatchingFlushContext(daoContext, EACH_QUORUM);
-	}
+    private Optional<CASResultListener> noListener = Optional.absent();
 
-	@Test
-	public void should_start_batch() throws Exception {
+    @Before
+    public void setUp() {
+        context = new BatchingFlushContext(daoContext, EACH_QUORUM);
+    }
+
+    @Test
+    public void should_start_batch() throws Exception {
         context.startBatch();
-	}
+    }
 
-	@Test
-	public void should_do_nothing_when_flush_is_called() throws Exception {
-		context.statementWrappers.add(bsWrapper);
+    @Test
+    public void should_do_nothing_when_flush_is_called() throws Exception {
+        context.statementWrappers.add(bsWrapper);
 
-		context.flush();
+        context.flush();
 
-		assertThat(context.statementWrappers).containsExactly(bsWrapper);
-	}
+        assertThat(context.statementWrappers).containsExactly(bsWrapper);
+    }
 
-	@Test
-	public void should_end_batch_with_logged_batch() throws Exception {
+    @Test
+    public void should_end_batch_with_logged_batch() throws Exception {
         //Given
         EventHolder eventHolder = mock(EventHolder.class);
         RegularStatement statement1 = QueryBuilder.select().from("table1");
         RegularStatement statement2 = QueryBuilder.select().from("table2");
-        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(statement1,null, com.datastax.driver.core
-                .ConsistencyLevel.ONE);
-        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(statement2,null, com.datastax.driver.core
-                .ConsistencyLevel.ONE);
-        context.eventHolders= Arrays.asList(eventHolder);
-        context.statementWrappers = Arrays.asList(wrapper1,wrapper2);
-        context.counterStatementWrappers = Arrays.asList(wrapper1,wrapper2);
+        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(statement1, null, com.datastax.driver.core
+                .ConsistencyLevel.ONE, noListener);
+        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(statement2, null, com.datastax.driver.core
+                .ConsistencyLevel.ONE, noListener);
+        context.eventHolders = Arrays.asList(eventHolder);
+        context.statementWrappers = Arrays.asList(wrapper1, wrapper2);
+        context.counterStatementWrappers = Arrays.asList(wrapper1, wrapper2);
         context.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
 
         //When
-		context.endBatch();
+        context.endBatch();
 
         //Then
         verify(eventHolder).triggerInterception();
-        verify(daoContext,times(2)).executeBatch(batchCaptor.capture());
+        verify(daoContext, times(2)).executeBatch(batchCaptor.capture());
 
         assertThat(batchCaptor.getAllValues()).hasSize(2);
 
         final BatchStatement batchStatement1 = batchCaptor.getAllValues().get(0);
         assertThat(batchStatement1.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
         final List<Statement> statements1 = WhiteboxImpl.getInternalState(batchStatement1, "statements");
-        assertThat(statements1).contains(statement1,statement2);
+        assertThat(statements1).contains(statement1, statement2);
 
         final BatchStatement batchStatement2 = batchCaptor.getAllValues().get(1);
         assertThat(batchStatement1
-                           .getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+                .getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
         final List<Statement> statements2 = WhiteboxImpl.getInternalState(batchStatement2, "statements");
         assertThat(statements2).contains(statement1, statement2);
     }
 
-	@Test
-	public void should_get_type() throws Exception {
-		assertThat(context.type()).isSameAs(FlushType.BATCH);
-	}
+    @Test
+    public void should_get_type() throws Exception {
+        assertThat(context.type()).isSameAs(FlushType.BATCH);
+    }
 
-	@Test
-	public void should_duplicate_without_ttl() throws Exception {
-		context.statementWrappers.add(bsWrapper);
+    @Test
+    public void should_duplicate_without_ttl() throws Exception {
+        context.statementWrappers.add(bsWrapper);
 
-		BatchingFlushContext duplicate = context.duplicate();
+        BatchingFlushContext duplicate = context.duplicate();
 
-		assertThat(duplicate.statementWrappers).containsOnly(bsWrapper);
-		assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);
-	}
+        assertThat(duplicate.statementWrappers).containsOnly(bsWrapper);
+        assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);
+    }
 
     @Test
     public void should_trigger_interceptor_immediately_for_POST_LOAD_event() throws Exception {
@@ -140,10 +142,10 @@ public class BatchingFlushContextTest {
         Object entity = new Object();
 
         //When
-        context.triggerInterceptor(meta,entity, Event.POST_LOAD);
+        context.triggerInterceptor(meta, entity, Event.POST_LOAD);
 
         //Then
-        verify(meta).intercept(entity,Event.POST_LOAD);
+        verify(meta).intercept(entity, Event.POST_LOAD);
     }
 
     @Test
@@ -153,14 +155,14 @@ public class BatchingFlushContextTest {
         Object entity = new Object();
 
         //When
-        context.triggerInterceptor(meta,entity, Event.POST_PERSIST);
+        context.triggerInterceptor(meta, entity, Event.POST_PERSIST);
 
         //Then
-        verify(meta,never()).intercept(entity,Event.POST_PERSIST);
+        verify(meta, never()).intercept(entity, Event.POST_PERSIST);
         assertThat(context.eventHolders).hasSize(1);
         final EventHolder eventHolder = context.eventHolders.get(0);
         eventHolder.triggerInterception();
-        verify(meta).intercept(entity,Event.POST_PERSIST);
+        verify(meta).intercept(entity, Event.POST_PERSIST);
     }
 
     @Test

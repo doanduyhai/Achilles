@@ -15,34 +15,40 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.*;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.Options.CasCondition;
 import static org.fest.assertions.api.Assertions.assertThat;
-
 import org.junit.Test;
 
 public class OptionsTest {
 
-	@Test
-	public void should_duplicate_without_ttl_and_timestamp() throws Exception {
-		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
+    @Test
+    public void should_duplicate_without_ttl_and_timestamp() throws Exception {
+        final CasCondition casCondition = new CasCondition("name", "John");
+        Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10)
+                .withTimestamp(100L).ifNotExists().ifConditions(casCondition);
 
-		Options newOptions = options.duplicateWithoutTtlAndTimestamp();
+        Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
-		assertThat(newOptions.getConsistencyLevel().get()).isSameAs(EACH_QUORUM);
-		assertThat(newOptions.getTimestamp().isPresent()).isFalse();
-		assertThat(newOptions.getTtl().isPresent()).isFalse();
-	}
+        assertThat(newOptions.getConsistencyLevel().get()).isSameAs(EACH_QUORUM);
+        assertThat(newOptions.getTimestamp().isPresent()).isFalse();
+        assertThat(newOptions.getTtl().isPresent()).isFalse();
+        assertThat(newOptions.isIfNotExists()).isTrue();
+        assertThat(newOptions.hasCasConditions()).isTrue();
+        assertThat(newOptions.getCasConditions()).containsExactly(casCondition);
+    }
 
-	@Test
-	public void should_duplicate_with_new_consistency_level() throws Exception {
-		Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
+    @Test
+    public void should_duplicate_with_new_consistency_level() throws Exception {
+        Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10).withTimestamp(100L);
 
-		Options newOptions = options.duplicateWithNewConsistencyLevel(LOCAL_QUORUM);
+        Options newOptions = options.duplicateWithNewConsistencyLevel(LOCAL_QUORUM);
 
-		assertThat(newOptions.getConsistencyLevel().get()).isSameAs(LOCAL_QUORUM);
-		assertThat(newOptions.getTimestamp().get()).isEqualTo(100L);
-		assertThat(newOptions.getTtl().get()).isEqualTo(10);
-	}
+        assertThat(newOptions.getConsistencyLevel().get()).isSameAs(LOCAL_QUORUM);
+        assertThat(newOptions.getTimestamp().get()).isEqualTo(100L);
+        assertThat(newOptions.getTtl().get()).isEqualTo(10);
+    }
 
     @Test
     public void should_duplicate_with_new_timestamp() throws Exception {

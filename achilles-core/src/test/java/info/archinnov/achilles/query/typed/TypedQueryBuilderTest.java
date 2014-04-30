@@ -15,10 +15,28 @@
  */
 package info.archinnov.achilles.query.typed;
 
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.Row;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -32,244 +50,228 @@ import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapp
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Answers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
-
-import com.datastax.driver.core.Row;
-
 @RunWith(MockitoJUnitRunner.class)
 public class TypedQueryBuilderTest {
 
-	private TypedQueryBuilder<CompleteBean> builder;
+    private TypedQueryBuilder<CompleteBean> builder;
 
-	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private DaoContext daoContext;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private DaoContext daoContext;
 
-	@Mock
-	private EntityMapper mapper;
+    @Mock
+    private EntityMapper mapper;
 
-	@Mock
-	private EntityProxifier proxifier;
+    @Mock
+    private EntityProxifier proxifier;
 
-	@Mock
-	private PersistenceContextFactory contextFactory;
+    @Mock
+    private PersistenceContextFactory contextFactory;
 
-	@Mock
-	private PersistenceContext context;
+    @Mock
+    private PersistenceContext context;
 
-	@Mock
-	private Row row;
+    @Mock
+    private Row row;
 
-	@Mock
-	private EntityMeta meta;
+    @Mock
+    private EntityMeta meta;
 
-	private Class<CompleteBean> entityClass = CompleteBean.class;
+    private Class<CompleteBean> entityClass = CompleteBean.class;
 
-	private CompleteBean entity = new CompleteBean();
+    private CompleteBean entity = new CompleteBean();
 
-	@Test
-	public void should_get_all_managed_with_select_star() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
-				.accessors().build();
+    @Test
+    public void should_get_all_managed_with_select_star() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
+                .accessors().build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                .type(SIMPLE).accessors().build();
 
-		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
+        EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
-		String queryString = "select * from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        String queryString = "select * from test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(true))).thenReturn(entity);
-		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(true))).thenReturn(entity);
+        when(contextFactory.newContext(entity)).thenReturn(context);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
-		List<CompleteBean> actual = builder.get();
+        List<CompleteBean> actual = builder.get();
 
-		assertThat(actual).containsExactly(entity);
+        assertThat(actual).containsExactly(entity);
 
-		verify(meta).intercept(entity, Event.POST_LOAD);
-	}
+        verify(meta).intercept(entity, Event.POST_LOAD);
+    }
 
-	@Test
-	public void should_get_all_managed_with_normal_select() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+    @Test
+    public void should_get_all_managed_with_normal_select() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+                .type(PropertyType.ID).accessors().build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                .type(PropertyType.SIMPLE).accessors().build();
 
-		PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
-				.type(PropertyType.SIMPLE).accessors().build();
+        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
+                .type(PropertyType.SIMPLE).accessors().build();
 
-		EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
+        EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
 
-		String queryString = " select id, name   from  test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        String queryString = " select id, name   from  test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(true))).thenReturn(entity);
-		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(true))).thenReturn(entity);
+        when(contextFactory.newContext(entity)).thenReturn(context);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
-		List<CompleteBean> actual = builder.get();
+        List<CompleteBean> actual = builder.get();
 
-		assertThat(actual).containsExactly(entity);
+        assertThat(actual).containsExactly(entity);
 
-		verify(meta).intercept(entity, Event.POST_LOAD);
-	}
+        verify(meta).intercept(entity, Event.POST_LOAD);
+    }
 
-	@Test
-	public void should_get_all_skipping_null_entity() throws Exception {
-		EntityMeta meta = buildEntityMeta();
-		initBuilder("select * from test", meta, meta.getPropertyMetas(), true);
+    @Test
+    public void should_get_all_skipping_null_entity() throws Exception {
+        EntityMeta meta = buildEntityMeta();
+        initBuilder("select * from test", meta, meta.getPropertyMetas(), true);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(true))).thenReturn(null);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(true))).thenReturn(null);
 
-		List<CompleteBean> actual = builder.get();
+        List<CompleteBean> actual = builder.get();
 
-		assertThat(actual).isEmpty();
-		verify(meta, never()).intercept(entity, Event.POST_LOAD);
-	}
+        assertThat(actual).isEmpty();
+        verify(meta, never()).intercept(entity, Event.POST_LOAD);
+    }
 
-	@Test
-	public void should_get_all_raw_entities() throws Exception {
+    @Test
+    public void should_get_all_raw_entities() throws Exception {
 
-		EntityMeta meta = mock(EntityMeta.class);
-		Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+        EntityMeta meta = mock(EntityMeta.class);
+        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
-		String queryString = "select * from test";
-		initBuilder(queryString, meta, propertyMetas, false);
+        String queryString = "select * from test";
+        initBuilder(queryString, meta, propertyMetas, false);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-		when(mapper.mapRowToEntityWithPrimaryKey(meta, row, propertyMetas, false)).thenReturn(entity);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
+        when(mapper.mapRowToEntityWithPrimaryKey(meta, row, propertyMetas, false)).thenReturn(entity);
 
-		List<CompleteBean> actual = builder.get();
+        List<CompleteBean> actual = builder.get();
 
-		assertThat(actual).containsExactly(entity);
-		verify(meta).intercept(entity, Event.POST_LOAD);
-		verifyZeroInteractions(contextFactory, proxifier);
-	}
+        assertThat(actual).containsExactly(entity);
+        verify(meta).intercept(entity, Event.POST_LOAD);
+        verifyZeroInteractions(contextFactory, proxifier);
+    }
 
-	@Test
-	public void should_get_first_managed_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).accessors().build();
+    @Test
+    public void should_get_first_managed_entity() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+                .type(PropertyType.ID).accessors().build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(PropertyType.SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                .type(PropertyType.SIMPLE).accessors().build();
 
-		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
+        EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
-		String queryString = "select id from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        String queryString = "select id from test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(true))).thenReturn(entity);
-		when(contextFactory.newContext(entity)).thenReturn(context);
-		when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(true))).thenReturn(entity);
+        when(contextFactory.newContext(entity)).thenReturn(context);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
 
-		CompleteBean actual = builder.getFirst();
+        CompleteBean actual = builder.getFirst();
 
-		assertThat(actual).isSameAs(entity);
-		verify(meta).intercept(entity, Event.POST_LOAD);
-	}
+        assertThat(actual).isSameAs(entity);
+        verify(meta).intercept(entity, Event.POST_LOAD);
+    }
 
-	@Test
-	public void should_get_first_raw_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
-				.accessors().build();
+    @Test
+    public void should_get_first_raw_entity() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
+                .accessors().build();
 
-		PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-				.type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+                .type(SIMPLE).accessors().build();
 
-		EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
-		String queryString = "select id from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
+        String queryString = "select id from test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
 
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(false))).thenReturn(entity);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(false))).thenReturn(entity);
 
-		CompleteBean actual = builder.getFirst();
+        CompleteBean actual = builder.getFirst();
 
-		assertThat(actual).isSameAs(entity);
-		verify(meta).intercept(entity, Event.POST_LOAD);
-		verifyZeroInteractions(contextFactory, proxifier);
-	}
+        assertThat(actual).isSameAs(entity);
+        verify(meta).intercept(entity, Event.POST_LOAD);
+        verifyZeroInteractions(contextFactory, proxifier);
+    }
 
-	@Test
-	public void should_return_null_when_null_row() throws Exception {
-		EntityMeta meta = buildEntityMeta();
-		String queryString = "select id from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), false);
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(null);
-		CompleteBean actual = builder.getFirst();
+    @Test
+    public void should_return_null_when_null_row() throws Exception {
+        EntityMeta meta = buildEntityMeta();
+        String queryString = "select id from test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(null);
+        CompleteBean actual = builder.getFirst();
 
-		assertThat(actual).isNull();
+        assertThat(actual).isNull();
 
-		verifyZeroInteractions(contextFactory, proxifier);
-		verify(meta, never()).intercept(entity, Event.POST_LOAD);
-	}
+        verifyZeroInteractions(contextFactory, proxifier);
+        verify(meta, never()).intercept(entity, Event.POST_LOAD);
+    }
 
-	@Test
-	public void should_return_null_when_cannot_map_entity() throws Exception {
-		EntityMeta meta = buildEntityMeta();
-		String queryString = "select id from test";
-		initBuilder(queryString, meta, meta.getPropertyMetas(), false);
-		when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-		when(
-				mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>> any(),
-						eq(true))).thenReturn(null);
+    @Test
+    public void should_return_null_when_cannot_map_entity() throws Exception {
+        EntityMeta meta = buildEntityMeta();
+        String queryString = "select id from test";
+        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
+        when(
+                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
+                        eq(true))).thenReturn(null);
 
-		CompleteBean actual = builder.getFirst();
+        CompleteBean actual = builder.getFirst();
 
-		assertThat(actual).isNull();
+        assertThat(actual).isNull();
 
-		verifyZeroInteractions(contextFactory, proxifier);
-	}
+        verifyZeroInteractions(contextFactory, proxifier);
+    }
 
-	private EntityMeta buildEntityMeta(PropertyMeta... pms) {
-		EntityMeta meta = mock(EntityMeta.class);
-		Map<String, PropertyMeta> propertyMetas = new HashMap<>();
-		for (PropertyMeta pm : pms) {
-			propertyMetas.put(pm.getPropertyName(), pm);
-		}
+    private EntityMeta buildEntityMeta(PropertyMeta... pms) {
+        EntityMeta meta = mock(EntityMeta.class);
+        Map<String, PropertyMeta> propertyMetas = new HashMap<>();
+        for (PropertyMeta pm : pms) {
+            propertyMetas.put(pm.getPropertyName(), pm);
+        }
 
-		when(meta.getPropertyMetas()).thenReturn(propertyMetas);
-		return meta;
-	}
+        when(meta.getPropertyMetas()).thenReturn(propertyMetas);
+        return meta;
+    }
 
-	private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
-			boolean managed) {
-		builder = new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, managed, true,
-				new Object[] { "a" });
+    private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
+            boolean managed) {
+        builder = new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, managed, true, new Object[] { "a" });
 
-		Whitebox.setInternalState(builder, String.class, queryString);
-		Whitebox.setInternalState(builder, Map.class, propertyMetas);
-		Whitebox.setInternalState(builder, EntityMapper.class, mapper);
-		Whitebox.setInternalState(builder, PersistenceContextFactory.class, contextFactory);
-		Whitebox.setInternalState(builder, EntityProxifier.class, proxifier);
-	}
+        Whitebox.setInternalState(builder, String.class, queryString);
+        Whitebox.setInternalState(builder, Map.class, propertyMetas);
+        Whitebox.setInternalState(builder, EntityMapper.class, mapper);
+        Whitebox.setInternalState(builder, PersistenceContextFactory.class, contextFactory);
+        Whitebox.setInternalState(builder, EntityProxifier.class, proxifier);
+    }
 }
