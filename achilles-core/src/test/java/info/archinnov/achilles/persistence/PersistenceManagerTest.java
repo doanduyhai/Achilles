@@ -57,9 +57,9 @@ import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
 import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.query.cql.NativeQueryBuilder;
+import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
-import info.archinnov.achilles.query.typed.TypedQueryBuilder;
+import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -560,7 +560,7 @@ public class PersistenceManagerTest {
     @Test
     public void should_return_native_query_builder() throws Exception {
         // When
-        NativeQueryBuilder builder = manager.nativeQuery("queryString");
+        NativeQuery builder = manager.nativeQuery("queryString");
 
         assertThat(builder).isNotNull();
 
@@ -576,7 +576,7 @@ public class PersistenceManagerTest {
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(meta);
         when(meta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta>());
 
-        TypedQueryBuilder<CompleteBean> builder = manager.typedQuery(CompleteBean.class, "queryString");
+        TypedQuery<CompleteBean> builder = manager.typedQuery(CompleteBean.class, "queryString");
 
         // Then
         assertThat(builder).isNotNull();
@@ -596,7 +596,7 @@ public class PersistenceManagerTest {
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(meta);
         when(meta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta>());
 
-        TypedQueryBuilder<CompleteBean> builder = manager.rawTypedQuery(CompleteBean.class, "queryString");
+        TypedQuery<CompleteBean> builder = manager.rawTypedQuery(CompleteBean.class, "queryString");
 
         // Then
         assertThat(builder).isNotNull();
@@ -632,11 +632,11 @@ public class PersistenceManagerTest {
         when(meta.getTableName()).thenReturn("table");
         when(meta.encodeBoundValues(any(Object[].class))).thenReturn(new Object[] { "value" });
 
-        TypedQueryBuilder<CompleteBean> typedQueryBuilder = manager.indexedQuery(CompleteBean.class,
+        TypedQuery<CompleteBean> typedQuery = manager.indexedQuery(CompleteBean.class,
                 new IndexCondition("column", "value"));
 
         // Then
-        assertThat(Whitebox.<Object[]>getInternalState(typedQueryBuilder, "encodedBoundValues")).contains("value");
+        assertThat(Whitebox.<Object[]>getInternalState(typedQuery, "encodedBoundValues")).contains("value");
         verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=:column;",
                 meta);
     }

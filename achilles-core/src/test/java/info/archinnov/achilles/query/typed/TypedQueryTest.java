@@ -51,9 +51,9 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TypedQueryBuilderTest {
+public class TypedQueryTest {
 
-    private TypedQueryBuilder<CompleteBean> builder;
+    private TypedQuery<CompleteBean> builder;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DaoContext daoContext;
@@ -266,7 +266,7 @@ public class TypedQueryBuilderTest {
 
     private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
             boolean managed) {
-        builder = new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, managed, true, new Object[] { "a" });
+        builder = new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, managed, true, new Object[] { "a" });
 
         Whitebox.setInternalState(builder, String.class, queryString);
         Whitebox.setInternalState(builder, Map.class, propertyMetas);

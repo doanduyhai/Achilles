@@ -40,9 +40,9 @@ import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
 import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.query.cql.NativeQueryBuilder;
+import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
-import info.archinnov.achilles.query.typed.TypedQueryBuilder;
+import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
@@ -471,9 +471,9 @@ public class PersistenceManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return NativeQueryBuilder
+     * @return NativeQuery
      */
-    public NativeQueryBuilder nativeQuery(String queryString, Object... boundValues) {
+    public NativeQuery nativeQuery(String queryString, Object... boundValues) {
         return this.nativeQuery(queryString, noOptions(), boundValues);
     }
 
@@ -492,12 +492,12 @@ public class PersistenceManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return NativeQueryBuilder
+     * @return NativeQuery
      */
-    public NativeQueryBuilder nativeQuery(String queryString, Options options, Object... boundValues) {
+    public NativeQuery nativeQuery(String queryString, Options options, Object... boundValues) {
         log.debug("Execute native query {}", queryString);
         Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
-        return new NativeQueryBuilder(daoContext, queryString, options, boundValues);
+        return new NativeQuery(daoContext, queryString, options, boundValues);
     }
 
     /**
@@ -515,13 +515,13 @@ public class PersistenceManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return TypedQueryBuilder<T>
+     * @return TypedQuery<T>
      */
-    public <T> TypedQueryBuilder<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
+    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
         return typedQueryInternal(entityClass, queryString, true, boundValues);
     }
 
-    private <T> TypedQueryBuilder<T> typedQueryInternal(Class<T> entityClass, String queryString,
+    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString,
             boolean normalizeQuery, Object... boundValues) {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
@@ -532,7 +532,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, true,
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, true,
                 normalizeQuery, boundValues);
     }
 
@@ -547,9 +547,9 @@ public class PersistenceManager {
      * @param indexCondition
      *            index condition
      *
-     * @return TypedQueryBuilder<T>
+     * @return TypedQuery<T>
      */
-    public <T> TypedQueryBuilder<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
+    public <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         log.debug("Execute indexed query for entity class {}", entityClass);
 
         EntityMeta entityMeta = entityMetaMap.get(entityClass);
@@ -586,9 +586,9 @@ public class PersistenceManager {
      * @param boundValues
      *            values to be bind to the parameterized query, if any
      *
-     * @return TypedQueryBuilder<T>
+     * @return TypedQuery<T>
      */
-    public <T> TypedQueryBuilder<T> rawTypedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
+    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
@@ -598,7 +598,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-        return new TypedQueryBuilder<>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
                 boundValues);
     }
 

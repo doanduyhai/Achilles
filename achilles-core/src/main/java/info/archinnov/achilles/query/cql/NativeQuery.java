@@ -27,8 +27,8 @@ import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.TypedMap;
 
-public class NativeQueryBuilder {
-    private static final Logger log = LoggerFactory.getLogger(NativeQueryBuilder.class);
+public class NativeQuery {
+    private static final Logger log = LoggerFactory.getLogger(NativeQuery.class);
 
     private static final Optional<CASResultListener> NO_CAS_LISTENER = Optional.absent();
 
@@ -41,7 +41,7 @@ public class NativeQueryBuilder {
 
     protected Options options;
 
-    public NativeQueryBuilder(DaoContext daoContext, String queryString, Options options, Object... boundValues) {
+    public NativeQuery(DaoContext daoContext, String queryString, Options options, Object... boundValues) {
         this.daoContext = daoContext;
         this.queryString = queryString;
         this.options = options;

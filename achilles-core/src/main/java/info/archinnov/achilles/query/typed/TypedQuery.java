@@ -35,8 +35,8 @@ import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
 
-public class TypedQueryBuilder<T> {
-    private static final Logger log = LoggerFactory.getLogger(TypedQueryBuilder.class);
+public class TypedQuery<T> {
+    private static final Logger log = LoggerFactory.getLogger(TypedQuery.class);
     private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
 
     private DaoContext daoContext;
@@ -50,7 +50,7 @@ public class TypedQueryBuilder<T> {
     private EntityMapper mapper = new EntityMapper();
     private EntityProxifier proxifier = new EntityProxifier();
 
-    public TypedQueryBuilder(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
+    public TypedQuery(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
             PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery,
             Object[] encodedBoundValues) {
         this.daoContext = daoContext;

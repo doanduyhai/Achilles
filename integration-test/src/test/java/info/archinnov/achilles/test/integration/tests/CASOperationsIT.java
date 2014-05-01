@@ -36,7 +36,7 @@ import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.query.cql.NativeQueryBuilder;
+import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.EntityWithEnum;
@@ -359,7 +359,7 @@ public class CASOperationsIT {
         manager.persist(entity);
 
         //When
-        final NativeQueryBuilder nativeQuery = manager.nativeQuery("UPDATE CompleteBean SET name = 'Helen' WHERE id=" + entity.getId() + " IF name='Andrew'",
+        final NativeQuery nativeQuery = manager.nativeQuery("UPDATE CompleteBean SET name = 'Helen' WHERE id=" + entity.getId() + " IF name='Andrew'",
                 casResultListener(listener));
         nativeQuery.execute();
 

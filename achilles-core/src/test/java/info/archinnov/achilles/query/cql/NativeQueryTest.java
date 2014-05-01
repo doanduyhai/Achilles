@@ -42,10 +42,10 @@ import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
-public class NativeQueryBuilderTest {
+public class NativeQueryTest {
 
     @InjectMocks
-    private NativeQueryBuilder query;
+    private NativeQuery query;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DaoContext daoContext;
