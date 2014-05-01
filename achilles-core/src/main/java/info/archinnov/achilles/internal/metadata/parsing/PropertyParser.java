@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
@@ -344,6 +345,7 @@ public class PropertyParser {
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
         boolean timeUUID = isTimeUUID(context, field);
+        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
         Class<V> valueClass;
         Type genericType = field.getGenericType();
         valueClass = inferValueClassForListOrSet(genericType, entityClass);
@@ -355,7 +357,7 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).build(Void.class, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(Void.class, valueClass);
 
         log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
                 context.getCurrentEntityClass().getCanonicalName(), listMeta);
@@ -371,7 +373,7 @@ public class PropertyParser {
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
         boolean timeUUID = isTimeUUID(context, field);
-
+        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
         Class<V> valueClass;
         Type genericType = field.getGenericType();
 
@@ -383,7 +385,7 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).build(Void.class, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(Void.class, valueClass);
 
         log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
                 context.getCurrentEntityClass().getCanonicalName(), setMeta);
@@ -398,7 +400,7 @@ public class PropertyParser {
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
         boolean timeUUID = isTimeUUID(context, field);
-
+        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
         validator.validateMapGenerics(field, entityClass);
 
         Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
@@ -412,7 +414,7 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).build(keyClass, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(keyClass, valueClass);
 
         log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context
                 .getCurrentEntityClass().getCanonicalName(), mapMeta);
@@ -477,6 +479,14 @@ public class PropertyParser {
             timeUUID = true;
         }
         return timeUUID;
+    }
+
+    private boolean mapNullCollectionAndMapToEmpty(Field field) {
+        if (filter.hasAnnotation(field, EmptyCollectionIfNull.class)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

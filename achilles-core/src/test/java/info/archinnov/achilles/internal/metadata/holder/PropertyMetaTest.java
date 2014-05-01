@@ -19,10 +19,6 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
@@ -591,4 +587,43 @@ public class PropertyMetaTest {
 
 		assertThat(pm.isComponentTimeUUID("comp1")).isFalse();
 	}
+
+    @Test
+    public void should_get_default_empty_list_as_value() throws Exception {
+        //Given
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(LIST).build();
+        pm.setEmptyCollectionAndMapIfNull(true);
+
+        //When
+        final Object actual = pm.nullValueForCollectionAndMap();
+
+        //Then
+        assertThat(actual).isNotNull().isInstanceOf(List.class);
+    }
+
+    @Test
+    public void should_get_default_empty_set_as_value() throws Exception {
+        //Given
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SET).build();
+        pm.setEmptyCollectionAndMapIfNull(true);
+
+        //When
+        final Object actual = pm.nullValueForCollectionAndMap();
+
+        //Then
+        assertThat(actual).isNotNull().isInstanceOf(Set.class);
+    }
+
+    @Test
+    public void should_get_default_empty_map_as_value() throws Exception {
+        //Given
+        PropertyMeta pm = PropertyMetaTestBuilder.keyValueClass(String.class,Object.class).type(MAP).build();
+        pm.setEmptyCollectionAndMapIfNull(true);
+
+        //When
+        final Object actual = pm.nullValueForCollectionAndMap();
+
+        //Then
+        assertThat(actual).isNotNull().isInstanceOf(Map.class);
+    }
 }

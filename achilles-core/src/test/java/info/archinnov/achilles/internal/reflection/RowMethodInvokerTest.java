@@ -17,17 +17,14 @@ package info.archinnov.achilles.internal.reflection;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,188 +33,221 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RowMethodInvokerTest {
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private RowMethodInvoker invoker = new RowMethodInvoker();
+    private RowMethodInvoker invoker = new RowMethodInvoker();
 
-	@Mock
-	private Row row;
+    @Mock
+    private Row row;
 
-	@Mock
-	private ColumnDefinitions columnDefs;
+    @Mock
+    private ColumnDefinitions columnDefs;
 
-	@Mock
-	private Definition definition;
+    @Mock
+    private Definition definition;
 
-	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private PropertyMeta pm;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private PropertyMeta pm;
 
-	private List<String> compNames;
+    private List<String> compNames;
 
-	private List<Class<?>> compClasses;
+    private List<Class<?>> compClasses;
 
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
 
-		compNames = new ArrayList<String>();
-		compClasses = new ArrayList<Class<?>>();
+        compNames = new ArrayList<>();
+        compClasses = new ArrayList<>();
 
-		when(pm.getPropertyName()).thenReturn("property");
-		when(pm.<Integer> getKeyClass()).thenReturn(Integer.class);
-		when(pm.<String> getValueClass()).thenReturn(String.class);
-		when(row.isNull("property")).thenReturn(false);
-		when(pm.getComponentNames()).thenReturn(compNames);
-		when(pm.getComponentClasses()).thenReturn(compClasses);
-	}
+        when(pm.getPropertyName()).thenReturn("property");
+        when(pm.<Integer>getKeyClass()).thenReturn(Integer.class);
+        when(pm.<String>getValueClass()).thenReturn(String.class);
+        when(row.isNull("property")).thenReturn(false);
+        when(pm.getComponentNames()).thenReturn(compNames);
+        when(pm.getComponentClasses()).thenReturn(compClasses);
+    }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Test
-	public void should_get_list_value_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.LIST);
-		List<String> list = Arrays.asList("value");
-		when(row.getList("property", String.class)).thenReturn(list);
-		when(pm.decode(list)).thenReturn((List) list);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void should_get_list_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.LIST);
+        List<String> list = Arrays.asList("value");
+        when(row.getList("property", String.class)).thenReturn(list);
+        when(pm.decode(list)).thenReturn((List) list);
 
-		Object actual = invoker.invokeOnRowForFields(row, pm);
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		assertThat((List) actual).containsAll(list);
-	}
+        assertThat((List) actual).containsAll(list);
+    }
 
-	@Test
-	public void should_return_null_when_get_value_from_null_row() throws Exception {
-		assertThat(invoker.invokeOnRowForFields(null, pm)).isNull();
-	}
+    @Test
+    public void should_get_empty_list_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.LIST);
+        when(row.isNull("property")).thenReturn(true);
+        final ArrayList<Object> emptyList = new ArrayList<>();
+        when(pm.nullValueForCollectionAndMap()).thenReturn(emptyList);
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Test
-	public void should_get_set_value_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.SET);
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		Set<String> set = Sets.newHashSet("value");
-		when(row.getSet("property", String.class)).thenReturn(set);
-		when(pm.decode(set)).thenReturn((Set) set);
+        assertThat(actual).isSameAs(emptyList);
+    }
 
-		Object actual = invoker.invokeOnRowForFields(row, pm);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void should_get_set_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SET);
 
-		assertThat((Set) actual).containsAll(set);
-	}
+        Set<String> set = Sets.newHashSet("value");
+        when(row.getSet("property", String.class)).thenReturn(set);
+        when(pm.decode(set)).thenReturn((Set) set);
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Test
-	public void should_get_map_value_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.MAP);
-		Map<Integer, String> map = ImmutableMap.of(11, "value");
-		when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
-		when(pm.decode(map)).thenReturn((Map) map);
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		Object actual = invoker.invokeOnRowForFields(row, pm);
+        assertThat((Set) actual).containsAll(set);
+    }
 
-		assertThat((Map) actual).containsKey(11);
-		assertThat((Map) actual).containsValue("value");
-	}
+    @Test
+    public void should_get_empty_set_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SET);
+        when(row.isNull("property")).thenReturn(true);
+        final HashSet<Object> emptySet = new HashSet<>();
+        when(pm.nullValueForCollectionAndMap()).thenReturn(emptySet);
 
-	@Test
-	public void should_get_simple_value_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.SIMPLE);
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		when(row.getString("property")).thenReturn("value");
-		when(pm.decode("value")).thenReturn("value");
+        assertThat(actual).isSameAs(emptySet);
+    }
 
-		Object actual = invoker.invokeOnRowForFields(row, pm);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void should_get_map_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.MAP);
+        Map<Integer, String> map = ImmutableMap.of(11, "value");
+        when(row.getMap("property", Integer.class, String.class)).thenReturn(map);
+        when(pm.decode(map)).thenReturn((Map) map);
 
-		assertThat(actual).isEqualTo("value");
-	}
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-	@Test
-	public void should_get_id_value_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.ID);
+        assertThat((Map) actual).containsKey(11);
+        assertThat((Map) actual).containsValue("value");
+    }
 
-		when(row.getString("property")).thenReturn("value");
-		when(pm.decode("value")).thenReturn("value");
-		Object actual = invoker.invokeOnRowForFields(row, pm);
+    @Test
+    public void should_get_empty_map_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.MAP);
+        when(row.isNull("property")).thenReturn(true);
+        final HashMap<Object,Object> emptyMap = new HashMap<>();
+        when(pm.nullValueForCollectionAndMap()).thenReturn(emptyMap);
 
-		assertThat(actual).isEqualTo("value");
-	}
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-	@Test
-	public void should_return_null_when_no_value() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.SIMPLE);
-		when(row.isNull("property")).thenReturn(true);
+        assertThat(actual).isSameAs(emptyMap);
+    }
 
-		assertThat(invoker.invokeOnRowForFields(row, pm)).isNull();
-	}
+    @Test
+    public void should_get_simple_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
-	@Test
-	public void should_exception_when_invoking_getter_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.SIMPLE);
+        when(row.getString("property")).thenReturn("value");
+        when(pm.decode("value")).thenReturn("value");
 
-		when(row.getString("property")).thenThrow(new RuntimeException(""));
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot retrieve property 'property' for entity class 'null' from CQL Row");
+        assertThat(actual).isEqualTo("value");
+    }
 
-		invoker.invokeOnRowForFields(row, pm);
-	}
+    @Test
+    public void should_get_id_value_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.ID);
 
-	@Test
-	public void should_exception_when_invoking_list_getter_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.LIST);
+        when(row.getString("property")).thenReturn("value");
+        when(pm.decode("value")).thenReturn("value");
+        Object actual = invoker.invokeOnRowForFields(row, pm);
 
-		when(row.getList("property", String.class)).thenThrow(new RuntimeException(""));
+        assertThat(actual).isEqualTo("value");
+    }
 
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot retrieve list property 'property' from CQL Row");
+    @Test
+    public void should_return_null_when_no_value() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SIMPLE);
+        when(row.isNull("property")).thenReturn(true);
 
-		invoker.invokeOnRowForList(row, pm, "property", String.class);
-	}
+        assertThat(invoker.invokeOnRowForFields(row, pm)).isNull();
+    }
 
-	@Test
-	public void should_exception_when_invoking_set_getter_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.SET);
+    @Test
+    public void should_exception_when_invoking_getter_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SIMPLE);
 
-		when(row.getSet("property", String.class)).thenThrow(new RuntimeException(""));
+        when(row.getString("property")).thenThrow(new RuntimeException(""));
 
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot retrieve set property 'property' from CQL Row");
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Cannot retrieve property 'property' for entity class 'null' from CQL Row");
 
-		invoker.invokeOnRowForSet(row, pm, "property", String.class);
-	}
+        invoker.invokeOnRowForFields(row, pm);
+    }
 
-	@Test
-	public void should_exception_when_invoking_map_getter_from_row() throws Exception {
-		when(pm.type()).thenReturn(PropertyType.MAP);
-		when(row.getMap("property", Integer.class, String.class)).thenThrow(new RuntimeException(""));
+    @Test
+    public void should_exception_when_invoking_list_getter_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.LIST);
 
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot retrieve map property 'property' from CQL Row");
+        when(row.getList("property", String.class)).thenThrow(new RuntimeException(""));
 
-		invoker.invokeOnRowForMap(row, pm, "property", Integer.class, String.class);
-	}
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Cannot retrieve list property 'property' from CQL Row");
 
-	@Test
-	public void should_invoke_on_row_for_type() throws Exception {
-		when(row.getString("column")).thenReturn("value");
+        invoker.invokeOnRowForList(row, pm, "property", String.class);
+    }
 
-		Object actual = invoker.invokeOnRowForType(row, String.class, "column");
+    @Test
+    public void should_exception_when_invoking_set_getter_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.SET);
 
-		assertThat(actual).isEqualTo("value");
-	}
+        when(row.getSet("property", String.class)).thenThrow(new RuntimeException(""));
 
-	@Test
-	public void should_test() throws Exception {
-		List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(2, null));
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Cannot retrieve set property 'property' from CQL Row");
 
-		assertThat(rawValues.get(0)).isNull();
-		assertThat(rawValues.get(1)).isNull();
-	}
+        invoker.invokeOnRowForSet(row, pm, "property", String.class);
+    }
+
+    @Test
+    public void should_exception_when_invoking_map_getter_from_row() throws Exception {
+        when(pm.type()).thenReturn(PropertyType.MAP);
+        when(row.getMap("property", Integer.class, String.class)).thenThrow(new RuntimeException(""));
+
+        exception.expect(AchillesException.class);
+        exception.expectMessage("Cannot retrieve map property 'property' from CQL Row");
+
+        invoker.invokeOnRowForMap(row, pm, "property", Integer.class, String.class);
+    }
+
+    @Test
+    public void should_invoke_on_row_for_type() throws Exception {
+        when(row.getString("column")).thenReturn("value");
+
+        Object actual = invoker.invokeOnRowForType(row, String.class, "column");
+
+        assertThat(actual).isEqualTo("value");
+    }
+
+    @Test
+    public void should_test() throws Exception {
+        List<Object> rawValues = new ArrayList<Object>(Collections.nCopies(2, null));
+
+        assertThat(rawValues.get(0)).isNull();
+        assertThat(rawValues.get(1)).isNull();
+    }
 }

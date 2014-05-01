@@ -15,96 +15,94 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import org.codehaus.jackson.map.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.jackson.map.ObjectMapper;
-
 public class PropertyParsingContext {
-	private EntityParsingContext context;
-	private Field currentField;
-	private String currentPropertyName;
-	private boolean isCustomConsistencyLevels;
-	private boolean primaryKey = false;
-	private boolean embeddedId = false;
+    private EntityParsingContext context;
+    private Field currentField;
+    private String currentPropertyName;
+    private boolean isCustomConsistencyLevels;
+    private boolean primaryKey = false;
+    private boolean embeddedId = false;
 
-	public PropertyParsingContext(EntityParsingContext context, //
-			Field currentField) {
-		this.context = context;
-		this.currentField = currentField;
-	}
+    public PropertyParsingContext(EntityParsingContext context, //
+            Field currentField) {
+        this.context = context;
+        this.currentField = currentField;
+    }
 
-	public ObjectMapper getCurrentObjectMapper() {
-		return context.getCurrentObjectMapper();
-	}
+    public ObjectMapper getCurrentObjectMapper() {
+        return context.getCurrentObjectMapper();
+    }
 
-	public Map<String, PropertyMeta> getPropertyMetas() {
-		return context.getPropertyMetas();
-	}
+    public Map<String, PropertyMeta> getPropertyMetas() {
+        return context.getPropertyMetas();
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> Class<T> getCurrentEntityClass() {
-		return (Class<T>) context.getCurrentEntityClass();
-	}
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> getCurrentEntityClass() {
+        return (Class<T>) context.getCurrentEntityClass();
+    }
 
-	public Field getCurrentField() {
-		return currentField;
-	}
+    public Field getCurrentField() {
+        return currentField;
+    }
 
-	public String getCurrentPropertyName() {
-		return currentPropertyName;
-	}
+    public String getCurrentPropertyName() {
+        return currentPropertyName;
+    }
 
-	public void setCurrentPropertyName(String currentPropertyName) {
-		this.currentPropertyName = currentPropertyName;
-	}
+    public void setCurrentPropertyName(String currentPropertyName) {
+        this.currentPropertyName = currentPropertyName;
+    }
 
-	public List<PropertyMeta> getCounterMetas() {
-		return context.getCounterMetas();
-	}
+    public List<PropertyMeta> getCounterMetas() {
+        return context.getCounterMetas();
+    }
 
-	public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels() {
-		return context.getCurrentConsistencyLevels();
-	}
+    public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels() {
+        return context.getCurrentConsistencyLevels();
+    }
 
-	public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
-		return context.getDefaultConsistencyLevels();
-	}
+    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
+        return context.getDefaultConsistencyLevels();
+    }
 
-	public boolean isCustomConsistencyLevels() {
-		return isCustomConsistencyLevels;
-	}
+    public boolean isCustomConsistencyLevels() {
+        return isCustomConsistencyLevels;
+    }
 
-	public void setCustomConsistencyLevels(boolean isCustomConsistencyLevels) {
-		this.isCustomConsistencyLevels = isCustomConsistencyLevels;
-	}
+    public void setCustomConsistencyLevels(boolean isCustomConsistencyLevels) {
+        this.isCustomConsistencyLevels = isCustomConsistencyLevels;
+    }
 
-	public void hasSimpleCounterType() {
-		context.setHasSimpleCounter(true);
-	}
+    public void hasSimpleCounterType() {
+        context.setHasSimpleCounter(true);
+    }
 
-	public boolean isPrimaryKey() {
-		return primaryKey;
-	}
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
 
-	public void setPrimaryKey(boolean primaryKey) {
-		this.primaryKey = primaryKey;
-	}
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
+    }
 
-	public boolean isEmbeddedId() {
-		return embeddedId;
-	}
+    public boolean isEmbeddedId() {
+        return embeddedId;
+    }
 
-	public void setEmbeddedId(boolean embeddedId) {
-		if (embeddedId) {
-			this.primaryKey = true;
-		}
-		this.embeddedId = embeddedId;
-	}
+    public void setEmbeddedId(boolean embeddedId) {
+        if (embeddedId) {
+            this.primaryKey = true;
+        }
+        this.embeddedId = embeddedId;
+    }
 
 }

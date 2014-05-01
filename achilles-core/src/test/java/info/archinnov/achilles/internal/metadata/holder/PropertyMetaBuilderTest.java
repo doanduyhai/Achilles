@@ -33,6 +33,7 @@ import info.archinnov.achilles.type.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -105,10 +106,10 @@ public class PropertyMetaBuilderTest {
 	}
 
 	@Test
-	public void should_build_list() throws Exception {
+	public void should_build_list_with_default_empty_when_null() throws Exception {
 
 		PropertyMeta built = PropertyMetaBuilder.factory().type(LIST).propertyName("prop").accessors(accessors)
-				.objectMapper(objectMapper).build(Void.class, String.class);
+				.objectMapper(objectMapper).emptyCollectionAndMapIfNull(true).build(Void.class, String.class);
 
 		assertThat(built.type()).isEqualTo(LIST);
 		assertThat(built.getPropertyName()).isEqualTo("prop");
@@ -116,6 +117,7 @@ public class PropertyMetaBuilderTest {
 		assertThat(built.<String> getValueClass()).isEqualTo(String.class);
 
 		assertThat(built.isEmbeddedId()).isFalse();
+		assertThat(built.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
 		assertThat(built.getTranscoder()).isInstanceOf(ListTranscoder.class);
 	}
 

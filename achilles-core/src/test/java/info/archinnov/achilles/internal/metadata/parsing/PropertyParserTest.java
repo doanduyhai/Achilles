@@ -43,6 +43,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Consistency;
 import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
@@ -460,6 +461,7 @@ public class PropertyParserTest {
     public void should_parse_list() throws Exception {
         @SuppressWarnings("unused")
         class Test {
+            @EmptyCollectionIfNull
             @Column
             private List<String> friends;
 
@@ -483,6 +485,7 @@ public class PropertyParserTest {
         assertThat((Class<List>) meta.getSetter().getParameterTypes()[0]).isEqualTo(List.class);
 
         assertThat(meta.type()).isEqualTo(PropertyType.LIST);
+        assertThat(meta.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
