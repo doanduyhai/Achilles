@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import javax.validation.Validator;
 import org.codehaus.jackson.map.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
@@ -35,9 +36,11 @@ public class ConfigurationContext {
 
     private DefaultBeanValidationInterceptor beanValidationInterceptor;
 
-    private int preparedStatementLRUCacheSize = 5000;
+    private int preparedStatementLRUCacheSize = 10000;
 
     private boolean forceBatchStatementsOrdering = true;
+
+    private InsertStrategy insertStrategy;
 
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
@@ -93,6 +96,14 @@ public class ConfigurationContext {
 
     public void setForceBatchStatementsOrdering(boolean forceBatchStatementsOrdering) {
         this.forceBatchStatementsOrdering = forceBatchStatementsOrdering;
+    }
+
+    public InsertStrategy getInsertStrategy() {
+        return insertStrategy;
+    }
+
+    public void setInsertStrategy(InsertStrategy insertStrategy) {
+        this.insertStrategy = insertStrategy;
     }
 
     public boolean isClassConstrained(Class<?> clazz) {

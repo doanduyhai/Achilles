@@ -33,6 +33,9 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
@@ -132,45 +135,45 @@ public class ArgumentExtractorTest {
     public void should_init_entity_packages() throws Exception {
         configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
 
-		Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap);
 
         assertThat(actual).containsOnly(Entity1.class, Entity2.class, Entity3.class);
     }
 
     @Test
     public void should_init_empty_entity_packages() throws Exception {
-		Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap);
 
         assertThat(actual).isEmpty();
     }
 
-	@Test
-	public void should_init_entities_list() {
-		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
+    @Test
+    public void should_init_entities_list() {
+        configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
 
-		Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap);
 
-		assertThat(actual).contains(Entity1.class);
-	}
+        assertThat(actual).contains(Entity1.class);
+    }
 
-	@Test
-	public void should_init_empty_entities_list() {
-		Collection<Class<?>> actual = extractor.initEntities(configMap);
+    @Test
+    public void should_init_empty_entities_list() {
+        Collection<Class<?>> actual = extractor.initEntities(configMap);
 
-		assertThat(actual).isEmpty();
-	}
+        assertThat(actual).isEmpty();
+    }
 
-	@Test
-	public void should_init_from_packages_and_entities_list() {
-		configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
-		configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.more.entity");
+    @Test
+    public void should_init_from_packages_and_entities_list() {
+        configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
+        configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.more.entity");
 
-		Collection<Class<?>> actual = extractor.initEntities(configMap);
+        Collection<Class<?>> actual = extractor.initEntities(configMap);
 
-		assertThat(actual).containsOnly(Entity1.class, Entity3.class);
-	}
+        assertThat(actual).containsOnly(Entity1.class, Entity3.class);
+    }
 
-	@Test
+    @Test
     public void should_init_forceCFCreation_to_default_value() throws Exception {
         boolean actual = extractor.initForceTableCreation(configMap);
 
@@ -430,7 +433,7 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getBeanValidator()).isNull();
         assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_CACHE_SIZE);
         assertThat(configContext.isForceBatchStatementsOrdering()).isTrue();
-
+        assertThat(configContext.getInsertStrategy()).isEqualTo(NOT_NULL_FIELDS);
     }
 
     @Test
@@ -516,5 +519,18 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(actual).isTrue();
+    }
+
+    @Test
+    public void should_init_insert_strategy() throws Exception {
+        //Given
+        TypedMap params = new TypedMap();
+        params.put(INSERT_STRATEGY, ALL_FIELDS);
+
+        //When
+        final ConfigurationParameters.InsertStrategy strategy = extractor.initInsertStrategy(params);
+
+        //Then
+        assertThat(strategy).isEqualTo(ALL_FIELDS);
     }
 }

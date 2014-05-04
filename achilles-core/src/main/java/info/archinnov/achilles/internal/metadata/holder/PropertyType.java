@@ -20,35 +20,35 @@ import info.archinnov.achilles.internal.metadata.util.PropertyTypeFilter;
 
 public enum PropertyType {
 
-	ID, //
-	EMBEDDED_ID, //
-	SIMPLE, //
-	LIST, //
-	SET, //
-	MAP, //
-	COUNTER;
+    ID, //
+    EMBEDDED_ID, //
+    SIMPLE, //
+    LIST, //
+    SET, //
+    MAP, //
+    COUNTER;
 
 
-	public boolean isCounter() {
-		return (this == COUNTER);
-	}
+    public boolean isCounter() {
+        return (this == COUNTER);
+    }
 
-	public boolean isId() {
-		return this == ID || this == EMBEDDED_ID;
-	}
+    public boolean isId() {
+        return this == ID || this == EMBEDDED_ID;
+    }
 
-	public boolean isEmbeddedId() {
-		return this == EMBEDDED_ID;
-	}
+    public boolean isEmbeddedId() {
+        return this == EMBEDDED_ID;
+    }
 
-	public boolean isValidClusteredValueType() {
-		return (this == SIMPLE || this == COUNTER);
-	}
+    public boolean isValidClusteredValueType() {
+        return (this == SIMPLE || this == COUNTER);
+    }
 
-	public static PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
+    public static final PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
 
-	public static PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
-	public static PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
+    public static final PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
+    public static final PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
 
-    public static PropertyTypeExclude excludeIdAndCounterType = new PropertyTypeExclude(ID, EMBEDDED_ID,COUNTER);
+    public static final PropertyTypeExclude excludeIdAndCounterType = new PropertyTypeExclude(ID, EMBEDDED_ID, COUNTER);
 }

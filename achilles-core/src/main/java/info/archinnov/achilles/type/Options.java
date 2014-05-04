@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.type;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
@@ -118,6 +119,10 @@ public class Options {
 
         public Clause toClause() {
             return eq(columnName, value);
+        }
+
+        public Clause toClauseForPreparedStatement() {
+            return eq(columnName, bindMarker(columnName));
         }
 
         @Override

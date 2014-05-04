@@ -16,124 +16,157 @@
  */
 package info.archinnov.achilles.test.integration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.*;
-import info.archinnov.achilles.configuration.ConfigurationParameters;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import org.apache.commons.lang.StringUtils;
+import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.datastax.driver.core.Session;
-
 public class AchillesInternalCQLResource extends AchillesTestResource {
 
-	private static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
+    private static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
 
-	private static final String ACHILLES_ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
+    private static final String ACHILLES_ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 
-	private final PersistenceManagerFactory pmf;
+    private final PersistenceManagerFactory pmf;
 
-	private final PersistenceManager manager;
+    private final PersistenceManager manager;
 
-	private final CassandraEmbeddedServer server;
+    private final CassandraEmbeddedServer server;
 
-	private final Session session;
+    private final Session session;
 
-	private boolean cleanDataFiles = true;
+    private boolean cleanDataFiles = true;
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param tables
-	 *            list of tables to truncate before and after tests
-	 */
-	public AchillesInternalCQLResource(String... tables) {
-		super(tables);
-		final TypedMap config = buildConfigMap();
+    private InsertStrategy insertStrategy = InsertStrategy.NOT_NULL_FIELDS;
 
-		server = new CassandraEmbeddedServer(config);
-		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-	}
+    /**
+     * Initialize a new embedded Cassandra server
+     *
+     * @param tables
+     *            list of tables to truncate before and after tests
+     */
+    public AchillesInternalCQLResource(String... tables) {
+        super(tables);
+        final TypedMap config = buildConfigMap();
 
-	/**
-	 * Initialize a new embedded Cassandra server
-	 * 
-	 * @param cleanUpSteps
-	 *            when to truncate tables for clean up. Possible values are :
-	 *            Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
-	 *            value) <br/>
-	 * <br/>
-	 * @param tables
-	 *            list of tables to truncate before, after or before and after
-	 *            tests, depending on the 'cleanUpSteps' parameters
-	 */
-	public AchillesInternalCQLResource(Steps cleanUpSteps, String... tables) {
-		super(cleanUpSteps, tables);
-		final TypedMap config = buildConfigMap();
+        server = new CassandraEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+    }
 
-		server = new CassandraEmbeddedServer(config);
-		pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-	}
+    /**
+     * Initialize a new embedded Cassandra server
+     *
+     * @param cleanUpSteps
+     *            when to truncate tables for clean up. Possible values are :
+     *            Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
+     *            value) <br/>
+     * <br/>
+     * @param tables
+     *            list of tables to truncate before, after or before and after
+     *            tests, depending on the 'cleanUpSteps' parameters
+     */
+    public AchillesInternalCQLResource(Steps cleanUpSteps, String... tables) {
+        super(cleanUpSteps, tables);
+        final TypedMap config = buildConfigMap();
 
-	/**
-	 * Return a singleton PersistenceManagerFactory
-	 * 
-	 * @return PersistenceManagerFactory singleton
-	 */
-	public PersistenceManagerFactory getPersistenceManagerFactory() {
-		return pmf;
-	}
+        server = new CassandraEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+    }
 
-	/**
-	 * Return a singleton PersistenceManager
-	 * 
-	 * @return PersistenceManager singleton
-	 */
-	public PersistenceManager getPersistenceManager() {
-		return manager;
-	}
+    /**
+     * Initialize a new embedded Cassandra server
+     *
+     * @param cleanUpSteps
+     *            when to truncate tables for clean up. Possible values are :
+     *            Steps.BEFORE_TEST, Steps.AFTER_TEST and Steps.BOTH (Default
+     *            value) <br/>
+     * <br/>
+     * @param insertStrategy
+     *      insert strategy. Possible values : {ALL_FIELDS, NOT_NULL_FIELDS}. Default value = NOT_NULL_FIELDS
+     *
+     * <br/>
+     * @param tables
+     *            list of tables to truncate before, after or before and after
+     *            tests, depending on the 'cleanUpSteps' parameters
+     */
+    public AchillesInternalCQLResource(Steps cleanUpSteps, InsertStrategy insertStrategy, String... tables) {
+        super(cleanUpSteps, tables);
+        this.insertStrategy = insertStrategy;
+        final TypedMap config = buildConfigMap();
 
-	/**
-	 * Return a native CQL3 Session
-	 * 
-	 * @return native CQL3 Session
-	 */
-	public Session getNativeSession() {
-		return session;
-	}
+        server = new CassandraEmbeddedServer(config);
+        pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+    }
 
-	@Override
-	protected void truncateTables() {
-		if (tables != null) {
-			for (String table : tables) {
-				server.truncateTable(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, table);
-			}
-		}
-	}
+    /**
+     * Return a singleton PersistenceManagerFactory
+     *
+     * @return PersistenceManagerFactory singleton
+     */
+    public PersistenceManagerFactory getPersistenceManagerFactory() {
+        return pmf;
+    }
 
-	private TypedMap buildConfigMap() {
-		setCleanDataFiles();
-		final TypedMap config = new TypedMap();
-		config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
-		config.put(ENTITY_PACKAGES_PARAM, ACHILLES_ENTITY_PACKAGES);
-		config.put(KEYSPACE_NAME_PARAM, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
-		config.put(KEYSPACE_DURABLE_WRITE, false);
-		config.put(ConfigurationParameters.BEAN_VALIDATION_ENABLE, true);
-		return config;
-	}
+    /**
+     * Return a singleton PersistenceManager
+     *
+     * @return PersistenceManager singleton
+     */
+    public PersistenceManager getPersistenceManager() {
+        return manager;
+    }
 
-	private void setCleanDataFiles() {
-		final String cleanDataFiles = System.getProperty(CLEAN_DATA_FILES_PROPERTY);
-		if (StringUtils.isNotBlank(cleanDataFiles)) {
-			this.cleanDataFiles = Boolean.parseBoolean(cleanDataFiles);
-		}
-	}
+    /**
+     * Return a native CQL3 Session
+     *
+     * @return native CQL3 Session
+     */
+    public Session getNativeSession() {
+        return session;
+    }
+
+    @Override
+    protected void truncateTables() {
+        if (tables != null) {
+            for (String table : tables) {
+                server.truncateTable(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME, table);
+            }
+        }
+    }
+
+    private TypedMap buildConfigMap() {
+        setCleanDataFiles();
+        final TypedMap config = new TypedMap();
+        config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
+        config.put(ENTITY_PACKAGES_PARAM, ACHILLES_ENTITY_PACKAGES);
+        config.put(KEYSPACE_NAME_PARAM, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        config.put(KEYSPACE_DURABLE_WRITE, false);
+        config.put(BEAN_VALIDATION_ENABLE, true);
+        config.put(INSERT_STRATEGY, insertStrategy);
+        return config;
+    }
+
+    private void setCleanDataFiles() {
+        final String cleanDataFiles = System.getProperty(CLEAN_DATA_FILES_PROPERTY);
+        if (StringUtils.isNotBlank(cleanDataFiles)) {
+            this.cleanDataFiles = Boolean.parseBoolean(cleanDataFiles);
+        }
+    }
 }

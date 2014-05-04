@@ -15,30 +15,29 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class EntityPersister {
-	private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
 
     private CounterPersister counterPersister = new CounterPersister();
 
-	public void persist(PersistenceContext context) {
-		EntityMeta entityMeta = context.getEntityMeta();
-		Object entity = context.getEntity();
+    public void persist(PersistenceContext context) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object entity = context.getEntity();
 
-		log.debug("Persisting transient entity {}", entity);
+        log.debug("Persisting transient entity {}", entity);
 
-		if (entityMeta.isClusteredCounter()) {
-			counterPersister.persistClusteredCounters(context);
-		} else {
+        if (entityMeta.isClusteredCounter()) {
+            counterPersister.persistClusteredCounters(context);
+        } else {
             context.pushInsertStatement();
             counterPersister.persistCounters(context, entityMeta.getAllCounterMetas());
-		}
-	}
+        }
+    }
 
     public void remove(PersistenceContext context) {
         log.trace("Removing entity using PersistenceContext {}", context);
@@ -50,6 +49,4 @@ public class EntityPersister {
             counterPersister.removeRelatedCounters(context);
         }
     }
-
-
 }

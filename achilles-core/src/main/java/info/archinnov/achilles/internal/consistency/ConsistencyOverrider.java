@@ -38,16 +38,16 @@ public class ConsistencyOverrider {
         return result;
     }
 
-    public ConsistencyLevel getReadLevel(PersistenceContext context, EntityMeta meta) {
-        ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
-                : meta.getReadConsistencyLevel();
+    public ConsistencyLevel getReadLevel(PersistenceContext context) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : entityMeta.getReadConsistencyLevel();
         log.trace("Read consistency level : " + readLevel);
         return readLevel;
     }
 
-    public ConsistencyLevel getWriteLevel(PersistenceContext context, EntityMeta meta) {
-        ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
-                : meta.getWriteConsistencyLevel();
+    public ConsistencyLevel getWriteLevel(PersistenceContext context) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : entityMeta.getWriteConsistencyLevel();
         log.trace("Write consistency level : " + writeLevel);
         return writeLevel;
     }

@@ -28,7 +28,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -110,17 +109,17 @@ public abstract class AbstractStatementWrapper {
         }
     }
 
-    protected boolean isCASInsert(RegularStatement regularStatement) {
-        return regularStatement.getQueryString().contains(IF_NOT_EXIST_CLAUSE);
+    protected boolean isCASInsert(String queryString) {
+        return queryString.contains(IF_NOT_EXIST_CLAUSE);
     }
 
-    protected boolean isCASOperation(RegularStatement regularStatement) {
-        return regularStatement.getQueryString().contains(IF_CLAUSE);
+    protected boolean isCASOperation(String queryString) {
+        return queryString.contains(IF_CLAUSE);
     }
 
-    protected void checkForCASSuccess(RegularStatement regularStatement, ResultSet resultSet) {
+    protected void checkForCASSuccess(String queryString, ResultSet resultSet) {
 
-        if (isCASOperation(regularStatement)) {
+        if (isCASOperation(queryString)) {
             final Row casResult = resultSet.one();
             if (!casResult.getBool(CAS_RESULT_COLUMN)) {
                 TreeMap<String, Object> currentValues = new TreeMap<>();
@@ -131,7 +130,7 @@ public abstract class AbstractStatementWrapper {
                 }
 
                 Operation operation = UPDATE;
-                if (isCASInsert(regularStatement)) {
+                if (isCASInsert(queryString)) {
                     operation = INSERT;
                 }
                 notifyCASError(new CASResult(operation, TypedMap.fromMap(currentValues)));

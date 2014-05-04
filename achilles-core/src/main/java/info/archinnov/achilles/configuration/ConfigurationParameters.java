@@ -59,5 +59,11 @@ public interface ConfigurationParameters {
 
     String FORCE_BATCH_STATEMENTS_ORDERING = "achilles.batch.force.statements.ordering";
 
+    String INSERT_STRATEGY = "achilles.insert.strategy";
+
     ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
+
+    public static enum InsertStrategy {
+        ALL_FIELDS, NOT_NULL_FIELDS;
+    }
 }

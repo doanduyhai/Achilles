@@ -15,109 +15,106 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 public class TypedQueryValidatorTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private TypedQueryValidator validator = new TypedQueryValidator();
+    private TypedQueryValidator validator = new TypedQueryValidator();
 
-	@Test
-	public void should_exception_when_wrong_table() throws Exception {
-		EntityMeta meta = new EntityMeta();
-		meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
-		meta.setTableName("table");
+    @Test
+    public void should_exception_when_wrong_table() throws Exception {
+        EntityMeta meta = new EntityMeta();
+        meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
+        meta.setTableName("table");
 
-		String queryString = "SELECT * from test";
+        String queryString = "SELECT * from test";
 
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The typed query [SELECT * from test] should contain the ' from table' clause if type is '"
-						+ CompleteBean.class.getCanonicalName() + "'");
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("The typed query [SELECT * from test] should contain the ' from table' clause if type is '"
+                        + CompleteBean.class.getCanonicalName() + "'");
 
-		validator.validateRawTypedQuery(CompleteBean.class, queryString, meta);
-	}
+        validator.validateRawTypedQuery(CompleteBean.class, queryString, meta);
+    }
 
-	@Test
-	public void should_exception_when_missing_id_column() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).build();
+    @Test
+    public void should_exception_when_missing_id_column() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+                .type(PropertyType.ID).build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
-		meta.setTableName("table");
-		meta.setIdMeta(idMeta);
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        meta.setIdMeta(idMeta);
 
-		String queryString = "SELECT name,age from table";
+        String queryString = "SELECT name,age from table";
 
-		exception.expect(AchillesException.class);
-		exception.expectMessage("The typed query [SELECT name,age from table] should contain the id column 'id'");
+        exception.expect(AchillesException.class);
+        exception.expectMessage("The typed query [SELECT name,age from table] should contain the id column 'id'");
 
-		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
-	}
+        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+    }
 
-	@Test
-	public void should_exception_when_missing_component_column_for_embedded_id() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
+    @Test
+    public void should_exception_when_missing_component_column_for_embedded_id() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
+                .type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
-		meta.setTableName("table");
-		meta.setIdMeta(idMeta);
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
+        meta.setTableName("table");
+        meta.setIdMeta(idMeta);
 
-		String queryString = "SELECT id,age from table";
+        String queryString = "SELECT id,age from table";
 
-		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The typed query [SELECT id,age from table] should contain the component column 'name' for embedded id type '"
-						+ EmbeddedKey.class.getCanonicalName() + "'");
+        exception.expect(AchillesException.class);
+        exception
+                .expectMessage("The typed query [SELECT id,age from table] should contain the component column 'name' for embedded id type '"
+                        + EmbeddedKey.class.getCanonicalName() + "'");
 
-		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
-	}
+        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+    }
 
-	@Test
-	public void should_skip_id_column_validation_when_select_star() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-				.type(PropertyType.ID).build();
+    @Test
+    public void should_skip_id_column_validation_when_select_star() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+                .type(PropertyType.ID).build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
-		meta.setTableName("table");
-		meta.setIdMeta(idMeta);
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
+        meta.setTableName("table");
+        meta.setIdMeta(idMeta);
 
-		String queryString = "SELECT * from table";
+        String queryString = "SELECT * from table";
 
-		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
-	}
+        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+    }
 
-	@Test
-	public void should_skip_component_column_validation_when_select_star() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
-				.type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
+    @Test
+    public void should_skip_component_column_validation_when_select_star() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
+                .type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
 
-		EntityMeta meta = new EntityMeta();
-		meta.setAllMetasExceptId(new ArrayList<PropertyMeta>());
-		meta.setTableName("table");
-		meta.setIdMeta(idMeta);
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
+        meta.setTableName("table");
+        meta.setIdMeta(idMeta);
 
-		String queryString = "SELECT * from table";
+        String queryString = "SELECT * from table";
 
-		validator.validateTypedQuery(CompleteBean.class, queryString, meta);
-	}
+        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+    }
 }

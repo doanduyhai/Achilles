@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
@@ -136,7 +135,8 @@ public class PersistenceContext {
     }
 
     public void pushInsertStatement() {
-        daoContext.pushInsertStatement(this);
+        final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity, configContext.getInsertStrategy());
+        daoContext.pushInsertStatement(this, pms);
     }
 
     public void pushUpdateStatement(List<PropertyMeta> pms) {
@@ -153,15 +153,15 @@ public class PersistenceContext {
 
     // Simple counter
     public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment) {
-        daoContext.bindForSimpleCounterIncrement(this, entityMeta, counterMeta, increment);
+        daoContext.bindForSimpleCounterIncrement(this, counterMeta, increment);
     }
 
     public void incrementSimpleCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency) {
-        daoContext.incrementSimpleCounter(this, entityMeta, counterMeta, increment, consistency);
+        daoContext.incrementSimpleCounter(this, counterMeta, increment, consistency);
     }
 
     public void decrementSimpleCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency) {
-        daoContext.decrementSimpleCounter(this, entityMeta, counterMeta, decrement, consistency);
+        daoContext.decrementSimpleCounter(this, counterMeta, decrement, consistency);
     }
 
     public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency) {
@@ -175,32 +175,28 @@ public class PersistenceContext {
     }
 
     public void bindForSimpleCounterRemoval(PropertyMeta counterMeta) {
-        daoContext.bindForSimpleCounterDelete(this, entityMeta, counterMeta, primaryKey);
+        daoContext.bindForSimpleCounterDelete(this, counterMeta);
     }
 
     // Clustered counter
     public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment) {
-        daoContext.pushClusteredCounterIncrementStatement(this, entityMeta, counterMeta, increment);
+        daoContext.pushClusteredCounterIncrementStatement(this, counterMeta, increment);
     }
 
-    public Row getClusteredCounter(ConsistencyLevel readLevel) {
-        log.trace("Get clustered counter value for entityMeta '{}' with consistency level '{}'", entityMeta, readLevel);
-        return daoContext.getClusteredCounter(this, readLevel);
+    public Row getClusteredCounter() {
+        log.trace("Get clustered counter value for entityMeta '{}'", entityMeta);
+        return daoContext.getClusteredCounter(this);
     }
 
-    public Long getClusteredCounterColumn(PropertyMeta counterMeta, ConsistencyLevel readLevel) {
-        log.trace("Get clustered counter value for counterMeta '{}' with consistency level '{}'", counterMeta,
-                readLevel);
-        return daoContext.getClusteredCounterColumn(this, counterMeta, readLevel);
+    public Long getClusteredCounterColumn(PropertyMeta counterMeta) {
+        log.trace("Get clustered counter value for counterMeta '{}'", counterMeta);
+        return daoContext.getClusteredCounterColumn(this, counterMeta);
     }
 
     public void bindForClusteredCounterRemoval() {
-        daoContext.bindForClusteredCounterDelete(this, entityMeta, primaryKey);
+        daoContext.bindForClusteredCounterDelete(this);
     }
 
-    public ResultSet bindAndExecute(PreparedStatement ps, Object... params) {
-        return daoContext.bindAndExecute(ps, params);
-    }
 
     public void pushStatement(AbstractStatementWrapper statementWrapper) {
         flushContext.pushStatement(statementWrapper);
@@ -345,6 +341,10 @@ public class PersistenceContext {
 
     public void setEntityMeta(EntityMeta entityMeta) {
         this.entityMeta = entityMeta;
+    }
+
+    public Options getOptions() {
+        return options;
     }
 
     public Optional<Integer> getTtl() {

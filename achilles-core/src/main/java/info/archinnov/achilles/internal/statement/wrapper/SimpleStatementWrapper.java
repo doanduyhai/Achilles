@@ -36,7 +36,7 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
     public ResultSet execute(Session session) {
         logDMLStatement("");
         ResultSet resultSet = session.execute(simpleStatement.getQueryString(), values);
-        checkForCASSuccess(simpleStatement, resultSet);
+        checkForCASSuccess(simpleStatement.getQueryString(), resultSet);
         return resultSet;
     }
 

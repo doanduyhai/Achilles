@@ -39,7 +39,7 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
     public ResultSet execute(Session session) {
         logDMLStatement("");
         ResultSet resultSet = session.execute(regularStatement);
-        checkForCASSuccess(regularStatement, resultSet);
+        checkForCASSuccess(regularStatement.getQueryString(), resultSet);
         return resultSet;
     }
 

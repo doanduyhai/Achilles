@@ -16,17 +16,18 @@
 
 package info.archinnov.achilles.internal.consistency;
 
+import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.AbstractFlushContext;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ImmediateFlushContext;
@@ -38,7 +39,7 @@ import info.archinnov.achilles.type.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsistencyOverriderTest {
-    
+
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
     @Mock
@@ -49,6 +50,8 @@ public class ConsistencyOverriderTest {
 
     @Mock
     private PropertyMeta pm;
+
+    private static final Optional<ConsistencyLevel> NO_CONSISTENCY = Optional.absent();
 
     private Options noOptions = noOptions();
 
@@ -88,7 +91,7 @@ public class ConsistencyOverriderTest {
         when(context.getConsistencyLevel()).thenReturn(options.getConsistencyLevel());
 
         //When
-        final ConsistencyLevel actual = overrider.getReadLevel(context, meta);
+        final ConsistencyLevel actual = overrider.getReadLevel(context);
 
         //Then
         assertThat(actual).isEqualTo(EACH_QUORUM);
@@ -97,11 +100,12 @@ public class ConsistencyOverriderTest {
     @Test
     public void should_get_read_level_from_entity_meta() throws Exception {
         //Given
-        when(context.getConsistencyLevel()).thenReturn(noOptions.getConsistencyLevel());
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(context.getConsistencyLevel()).thenReturn(NO_CONSISTENCY);
         when(meta.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
-        final ConsistencyLevel actual = overrider.getReadLevel(context, meta);
+        final ConsistencyLevel actual = overrider.getReadLevel(context);
 
         //Then
         assertThat(actual).isEqualTo(LOCAL_QUORUM);
@@ -110,10 +114,12 @@ public class ConsistencyOverriderTest {
     @Test
     public void should_get_write_level_from_context_rather_than_entity_meta() throws Exception {
         //Given
-        when(context.getConsistencyLevel()).thenReturn(options.getConsistencyLevel());
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(context.getConsistencyLevel()).thenReturn(fromNullable(EACH_QUORUM));
+        when(meta.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
-        final ConsistencyLevel actual = overrider.getWriteLevel(context, meta);
+        final ConsistencyLevel actual = overrider.getWriteLevel(context);
 
         //Then
         assertThat(actual).isEqualTo(EACH_QUORUM);
@@ -122,17 +128,16 @@ public class ConsistencyOverriderTest {
     @Test
     public void should_get_write_level_from_entity_meta() throws Exception {
         //Given
-        when(context.getConsistencyLevel()).thenReturn(noOptions.getConsistencyLevel());
+        when(context.getConsistencyLevel()).thenReturn(NO_CONSISTENCY);
+        when(context.getEntityMeta()).thenReturn(meta);
         when(meta.getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
-        final ConsistencyLevel actual = overrider.getWriteLevel(context, meta);
+        final ConsistencyLevel actual = overrider.getWriteLevel(context);
 
         //Then
         assertThat(actual).isEqualTo(LOCAL_QUORUM);
     }
-
-
 
 
     @Test

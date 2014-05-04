@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
@@ -24,6 +26,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -168,20 +172,6 @@ public class EntityMetaTest {
     }
 
     @Test
-    public void should_return_allMetasExceptId_for_columnsMetaToInsert() throws Exception {
-        //Given
-        final ArrayList<PropertyMeta> allMetasExceptIdMeta = new ArrayList<>();
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptId(allMetasExceptIdMeta);
-
-        //When
-        meta.setClusteredCounter(true);
-
-        //Then
-        assertThat(meta.getColumnsMetaToInsert()).isEqualTo(allMetasExceptIdMeta);
-    }
-
-    @Test
     public void should_return_allMetasExceptIdAndCounters_for_columnsMetaToInsert() throws Exception {
         //Given
         final ArrayList<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>();
@@ -315,6 +305,41 @@ public class EntityMetaTest {
         Assertions.assertThat(bean.getAge()).isEqualTo(30L);
         entityMeta.intercept(bean, POST_PERSIST);
         Assertions.assertThat(bean.getAge()).isEqualTo(35L);
+    }
+
+    @Test
+    public void should_retrieve_all_properties_meta_for_insert() throws Exception {
+        //Given
+        EntityMeta entityMeta = new EntityMeta();
+        List<PropertyMeta> pms = new ArrayList<>();
+        entityMeta.setAllMetasExceptIdAndCounters(pms);
+
+        //When
+        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(new CompleteBean(), ALL_FIELDS);
+
+        //Then
+        assertThat(propertyMetas).isSameAs(pms);
+    }
+
+    @Test
+    public void should_retrieve_not_null_properties_meta_for_insert() throws Exception {
+        //Given
+        PropertyMeta pm1 = mock(PropertyMeta.class);
+        PropertyMeta pm2 = mock(PropertyMeta.class);
+
+        EntityMeta entityMeta = new EntityMeta();
+        List<PropertyMeta> pms = asList(pm1, pm2);
+        entityMeta.setAllMetasExceptIdAndCounters(pms);
+        CompleteBean entity = new CompleteBean();
+
+        when(pm1.getValueFromField(entity)).thenReturn(null);
+        when(pm2.getValueFromField(entity)).thenReturn("not null");
+
+        //When
+        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(entity, NOT_NULL_FIELDS);
+
+        //Then
+        assertThat(propertyMetas).containsExactly(pm2);
     }
 
     private Interceptor<String> createInterceptor(final Event event) {

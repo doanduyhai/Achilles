@@ -33,13 +33,12 @@ public class CounterLoader {
         Object primaryKey = context.getPrimaryKey();
 
         T entity = null;
-        ConsistencyLevel readLevel = overrider.getReadLevel(context,entityMeta);
-        Row row =context.getClusteredCounter(readLevel);
-        if(row != null) {
+        Row row = context.getClusteredCounter();
+        if (row != null) {
             entity = entityMeta.instanciate();
             entityMeta.getIdMeta().setValueToField(entity, primaryKey);
 
-            for(PropertyMeta counterMeta:context.getAllCountersMeta()) {
+            for (PropertyMeta counterMeta : context.getAllCountersMeta()) {
                 mapper.setCounterToEntity(counterMeta, entity, row);
             }
         }
@@ -48,13 +47,12 @@ public class CounterLoader {
 
 
     public void loadClusteredCounterColumn(PersistenceContext context, Object realObject, PropertyMeta counterMeta) {
-        ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
-        Long counterValue = context.getClusteredCounterColumn(counterMeta, readLevel);
+        Long counterValue = context.getClusteredCounterColumn(counterMeta);
         mapper.setCounterToEntity(counterMeta, realObject, counterValue);
     }
 
     public void loadCounter(PersistenceContext context, Object entity, PropertyMeta counterMeta) {
-        ConsistencyLevel readLevel = overrider.getReadLevel(context,counterMeta);
+        ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
         final Long initialCounterValue = context.getSimpleCounter(counterMeta, readLevel);
         mapper.setCounterToEntity(counterMeta, entity, initialCounterValue);
     }

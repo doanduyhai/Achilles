@@ -20,21 +20,26 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.listener.CASResultListener;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     private BoundStatement boundStatement;
 
-    public BoundStatementWrapper(BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper(BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
         super(values);
-        boundStatement = bs;
-        boundStatement.setConsistencyLevel(consistencyLevel);
+        super.casResultListener = casResultListener;
+        this.boundStatement = bs;
+        this.boundStatement.setConsistencyLevel(consistencyLevel);
     }
 
     @Override
     public ResultSet execute(Session session) {
         logDMLStatement("");
-        return session.execute(boundStatement);
+        ResultSet resultSet = session.execute(boundStatement);
+        checkForCASSuccess(boundStatement.preparedStatement().getQueryString(), resultSet);
+        return resultSet;
     }
 
     @Override

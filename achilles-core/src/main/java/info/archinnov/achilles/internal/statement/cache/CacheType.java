@@ -29,5 +29,7 @@ public enum CacheType {
     REMOVE_FROM_LIST_AT_INDEX,
     ADD_TO_MAP,
     REMOVE_FROM_MAP,
-    SELECT_FIELD, UPDATE_FIELDS;
-    }
+    SELECT_FIELD,
+    UPDATE_FIELDS,
+    INSERT;
+}

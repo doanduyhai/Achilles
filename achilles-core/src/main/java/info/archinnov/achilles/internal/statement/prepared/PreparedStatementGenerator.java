@@ -17,11 +17,13 @@ package info.archinnov.achilles.internal.statement.prepared;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.incr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static com.google.common.collect.ImmutableMap.of;
@@ -36,6 +38,8 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
+import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,27 +60,35 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.Pair;
 
 public class PreparedStatementGenerator {
     private static final Logger log = LoggerFactory.getLogger(PreparedStatementGenerator.class);
 
-    public PreparedStatement prepareInsertPS(Session session, EntityMeta entityMeta) {
+    public PreparedStatement prepareInsert(Session session, EntityMeta entityMeta, List<PropertyMeta> pms, Options options) {
         log.trace("Generate prepared statement for INSERT on {}", entityMeta);
         PropertyMeta idMeta = entityMeta.getIdMeta();
         Insert insert = insertInto(entityMeta.getTableName());
+        if (options.isIfNotExists()) {
+            insert.ifNotExists();
+        }
+
         prepareInsertPrimaryKey(idMeta, insert);
 
-        for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
+        for (PropertyMeta pm : pms) {
             String property = pm.getPropertyName();
             insert.value(property, bindMarker(property));
         }
 
-        insert.using(ttl(bindMarker("ttl")));
+        final Insert.Options insertOptions = insert.using(ttl(bindMarker("ttl")));
+        if (options.getTimestamp().isPresent()) {
+            insertOptions.and(timestamp(bindMarker("timestamp")));
+        }
         return session.prepare(insert.getQueryString());
     }
 
-    public PreparedStatement prepareSelectFieldPS(Session session, EntityMeta entityMeta, PropertyMeta pm) {
+    public PreparedStatement prepareSelectField(Session session, EntityMeta entityMeta, PropertyMeta pm) {
         log.trace("Generate prepared statement for SELECT property {}", pm);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
@@ -92,28 +104,35 @@ public class PreparedStatementGenerator {
         }
     }
 
-    public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta, List<PropertyMeta> pms) {
+    public PreparedStatement prepareUpdateFields(Session session, EntityMeta entityMeta, List<PropertyMeta> pms, Options options) {
 
         log.trace("Generate prepared statement for UPDATE properties {}", pms);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
         Update update = update(entityMeta.getTableName());
+        final Update.Conditions updateConditions = update.onlyIf();
+        if (options.hasCasConditions()) {
+            for (CasCondition casCondition : options.getCasConditions()) {
+                updateConditions.and(casCondition.toClauseForPreparedStatement());
+            }
+        }
 
         Assignments assignments = null;
         for (int i = 0; i < pms.size(); i++) {
             PropertyMeta pm = pms.get(i);
             String property = pm.getPropertyName();
             if (i == 0) {
-                assignments = update.with(set(property, bindMarker(property)));
+                assignments = updateConditions.with(set(property, bindMarker(property)));
             } else {
                 assignments.and(set(property, bindMarker(property)));
             }
         }
-        RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments, true);
+
+        RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments, options);
         return session.prepare(statement.getQueryString());
     }
 
-    public PreparedStatement prepareSelectPS(Session session, EntityMeta entityMeta) {
+    public PreparedStatement prepareSelectAll(Session session, EntityMeta entityMeta) {
         log.trace("Generate prepared statement for SELECT of {}", entityMeta);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
@@ -131,46 +150,38 @@ public class PreparedStatementGenerator {
 
     public Map<CQLQueryType, PreparedStatement> prepareSimpleCounterQueryMap(Session session) {
 
-        StringBuilder incr = new StringBuilder();
-        incr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
-        incr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
-        incr.append(CQL_COUNTER_VALUE).append(" + ? ");
-        incr.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
-        incr.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
-        incr.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+        final String incr = update(CQL_COUNTER_TABLE)
+                .with(incr(CQL_COUNTER_VALUE, bindMarker()))
+                .where(eq(CQL_COUNTER_FQCN, bindMarker()))
+                .and(eq(CQL_COUNTER_PRIMARY_KEY, bindMarker()))
+                .and(eq(CQL_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString();
 
-        StringBuilder decr = new StringBuilder();
-        decr.append("UPDATE ").append(CQL_COUNTER_TABLE).append(" ");
-        decr.append("SET ").append(CQL_COUNTER_VALUE).append(" = ");
-        decr.append(CQL_COUNTER_VALUE).append(" - ? ");
-        decr.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
-        decr.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
-        decr.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+        final String decr = update(CQL_COUNTER_TABLE)
+                .with(decr(CQL_COUNTER_VALUE, bindMarker()))
+                .where(eq(CQL_COUNTER_FQCN, bindMarker()))
+                .and(eq(CQL_COUNTER_PRIMARY_KEY, bindMarker()))
+                .and(eq(CQL_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString();
 
-        StringBuilder select = new StringBuilder();
-        select.append("SELECT ").append(CQL_COUNTER_VALUE).append(" ");
-        select.append("FROM ").append(CQL_COUNTER_TABLE).append(" ");
-        select.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
-        select.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
-        select.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+        final String select = select(CQL_COUNTER_VALUE).from(CQL_COUNTER_TABLE)
+                .where(eq(CQL_COUNTER_FQCN, bindMarker()))
+                .and(eq(CQL_COUNTER_PRIMARY_KEY, bindMarker()))
+                .and(eq(CQL_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString();
 
-        StringBuilder delete = new StringBuilder();
-        delete.append("DELETE FROM ").append(CQL_COUNTER_TABLE).append(" ");
-        delete.append("WHERE ").append(CQL_COUNTER_FQCN).append(" = ? ");
-        delete.append("AND ").append(CQL_COUNTER_PRIMARY_KEY).append(" = ? ");
-        delete.append("AND ").append(CQL_COUNTER_PROPERTY_NAME).append(" = ?");
+        final String delete = delete().from(CQL_COUNTER_TABLE)
+                .where(eq(CQL_COUNTER_FQCN, bindMarker()))
+                .and(eq(CQL_COUNTER_PRIMARY_KEY, bindMarker()))
+                .and(eq(CQL_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString();
 
         Map<CQLQueryType, PreparedStatement> counterPSMap = new HashMap<>();
-        counterPSMap.put(INCR, session.prepare(incr.toString()));
-        counterPSMap.put(DECR, session.prepare(decr.toString()));
-        counterPSMap.put(SELECT, session.prepare(select.toString()));
-        counterPSMap.put(DELETE, session.prepare(delete.toString()));
+        counterPSMap.put(INCR, session.prepare(incr));
+        counterPSMap.put(DECR, session.prepare(decr));
+        counterPSMap.put(SELECT, session.prepare(select));
+        counterPSMap.put(DELETE, session.prepare(delete));
 
         return counterPSMap;
     }
 
-    public Map<CQLQueryType, Map<String, PreparedStatement>> prepareClusteredCounterQueryMap(Session session,
-            EntityMeta meta) {
+    public Map<CQLQueryType, Map<String, PreparedStatement>> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
         PropertyMeta idMeta = meta.getIdMeta();
         String tableName = meta.getTableName();
 
@@ -182,11 +193,9 @@ public class PreparedStatementGenerator {
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
             String counterName = counterMeta.getPropertyName();
 
-            RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta,
-                    update(tableName).with(incr(counterName, bindMarker(counterName))), false);
+            RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(incr(counterName, bindMarker(counterName))), noOptions());
+            RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(decr(counterName, bindMarker(counterName))), noOptions());
 
-            RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta,
-                    update(tableName).with(decr(counterName, bindMarker(counterName))), false);
             RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
 
             incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
@@ -249,13 +258,13 @@ public class PreparedStatementGenerator {
         return statement;
     }
 
-    private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments update, boolean prepareTTL) {
+    private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments assignments, Options options) {
         Update.Where where = null;
         if (idMeta.isEmbeddedId()) {
             int i = 0;
             for (String clusteredId : idMeta.getComponentNames()) {
                 if (i == 0) {
-                    where = update.where(eq(clusteredId, bindMarker(clusteredId)));
+                    where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
                 } else {
                     where.and(eq(clusteredId, bindMarker(clusteredId)));
                 }
@@ -263,14 +272,14 @@ public class PreparedStatementGenerator {
             }
         } else {
             String idName = idMeta.getPropertyName();
-            where = update.where(eq(idName, bindMarker(idName)));
+            where = assignments.where(eq(idName, bindMarker(idName)));
         }
 
-        if (prepareTTL) {
-            return where.using(ttl(bindMarker("ttl")));
-        } else {
-            return where;
+        final Update.Options updateOptions = where.using(ttl(bindMarker("ttl")));
+        if (options.getTimestamp().isPresent()) {
+            updateOptions.and(timestamp(bindMarker("timestamp")));
         }
+        return updateOptions;
     }
 
     public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
@@ -309,9 +318,16 @@ public class PreparedStatementGenerator {
         return mainStatement;
     }
 
-    public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, PropertyMeta pm, DirtyCheckChangeSet changeSet) {
+    public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, DirtyCheckChangeSet changeSet, Options options) {
 
         final Update.Conditions conditions = update(meta.getTableName()).onlyIf();
+
+        if (options.hasCasConditions()) {
+            for (CasCondition casCondition : options.getCasConditions()) {
+                conditions.and(casCondition.toClauseForPreparedStatement());
+            }
+        }
+
         CollectionAndMapChangeType changeType = changeSet.getChangeType();
         Pair<Assignments, Object[]> updateClauseAndBoundValues = null;
         switch (changeType) {
@@ -348,7 +364,7 @@ public class PreparedStatementGenerator {
                 break;
         }
 
-        final RegularStatement regularStatement = prepareWhereClauseForUpdate(meta.getIdMeta(), updateClauseAndBoundValues.left, true);
+        final RegularStatement regularStatement = prepareWhereClauseForUpdate(meta.getIdMeta(), updateClauseAndBoundValues.left, options);
         final PreparedStatement preparedStatement = session.prepare(regularStatement);
         return preparedStatement;
     }

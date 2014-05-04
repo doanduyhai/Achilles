@@ -19,55 +19,52 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
 public class EntityValidator {
-	private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
 
-	private EntityProxifier proxifier = new EntityProxifier();
+    private EntityProxifier proxifier = new EntityProxifier();
 
-	public void validateEntity(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
-		Validator.validateNotNull(entity, "Entity should not be null");
+    public void validateEntity(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
+        Validator.validateNotNull(entity, "Entity should not be null");
 
-		Class<?> baseClass = proxifier.deriveBaseClass(entity);
-		EntityMeta entityMeta = entityMetaMap.get(baseClass);
-		validateEntity(entity, entityMeta);
+        Class<?> baseClass = proxifier.deriveBaseClass(entity);
+        EntityMeta entityMeta = entityMetaMap.get(baseClass);
+        validateEntity(entity, entityMeta);
 
-	}
+    }
 
-	public void validateEntity(Object entity, EntityMeta entityMeta) {
-		log.trace("Validate entity {}", entity);
-		Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
-				.getCanonicalName());
+    public void validateEntity(Object entity, EntityMeta entityMeta) {
+        log.trace("Validate entity {}", entity);
+        Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
+                .getCanonicalName());
 
         Object rawEntity = proxifier.getRealObject(entity);
-		Object id = entityMeta.getPrimaryKey(rawEntity);
-		if (id == null) {
-			throw new IllegalArgumentException("Cannot get primary key for entity "
-					+ rawEntity.getClass().getCanonicalName());
-		}
-		validatePrimaryKey(entityMeta.getIdMeta(), id);
-	}
+        Object id = entityMeta.getPrimaryKey(rawEntity);
+        if (id == null) {
+            throw new IllegalArgumentException("Cannot get primary key for entity " + rawEntity.getClass().getCanonicalName());
+        }
+        validatePrimaryKey(entityMeta.getIdMeta(), id);
+    }
 
-	public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
-        log.trace("Validate primary key {} for entity class {}", primaryKey,idMeta.getEntityClassName());
-		if (idMeta.isEmbeddedId()) {
-			List<Object> components = idMeta.encodeToComponents(primaryKey);
-			for (Object component : components) {
-				Validator.validateNotNull(component, "The clustered key '%s' components should not be null",
-						idMeta.getPropertyName());
-			}
-		}
-	}
+    public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
+        log.trace("Validate primary key {} for entity class {}", primaryKey, idMeta.getEntityClassName());
+        if (idMeta.isEmbeddedId()) {
+            List<Object> components = idMeta.encodeToComponents(primaryKey);
+            for (Object component : components) {
+                Validator.validateNotNull(component, "The clustered key '%s' components should not be null", idMeta.getPropertyName());
+            }
+        }
+    }
 
-	public void validateNotClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
+    public void validateNotClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
         log.trace("Validate that entity {} is not a clustered counter", entity);
-		Class<?> baseClass = proxifier.deriveBaseClass(entity);
-		EntityMeta entityMeta = entityMetaMap.get(baseClass);
-		Validator.validateFalse(entityMeta.isClusteredCounter(),
-				"The entity '%s' is a clustered counter and does not support insert/update with TTL", entity);
-	}
+        Class<?> baseClass = proxifier.deriveBaseClass(entity);
+        EntityMeta entityMeta = entityMetaMap.get(baseClass);
+        Validator.validateFalse(entityMeta.isClusteredCounter(),
+                "The entity '%s' is a clustered counter and does not support insert/update with TTL", entity);
+    }
 }

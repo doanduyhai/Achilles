@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
 import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedNativeType;
 import static java.lang.String.format;
@@ -220,14 +221,6 @@ public class EntityMeta {
         return from(propertyMetas.values()).filter(counterType).toList();
     }
 
-    public List<PropertyMeta> getAllMetasExceptId() {
-        return this.allMetasExceptId;
-    }
-
-    public void setAllMetasExceptId(List<PropertyMeta> allMetasExceptIdMeta) {
-        this.allMetasExceptId = allMetasExceptIdMeta;
-    }
-
     public boolean isClusteredCounter() {
         return this.clusteredCounter;
     }
@@ -238,6 +231,10 @@ public class EntityMeta {
 
     public boolean isValueless() {
         return propertyMetas.size() == 1;
+    }
+
+    public void setAllMetasExceptId(List<PropertyMeta> allMetasExceptId) {
+        this.allMetasExceptId = allMetasExceptId;
     }
 
     public List<PropertyMeta> getAllMetasExceptIdAndCounters() {
@@ -287,6 +284,20 @@ public class EntityMeta {
             encodedValue = propertyMeta.encode(rawValue);
         }
         return encodedValue;
+    }
+
+    public List<PropertyMeta> retrievePropertyMetasForInsert(Object entity, InsertStrategy insertStrategy) {
+        if (insertStrategy == InsertStrategy.ALL_FIELDS) {
+            return this.getAllMetasExceptIdAndCounters();
+        }
+
+        List<PropertyMeta> metasForNonNullProperties = new ArrayList<>();
+        for (PropertyMeta propertyMeta : this.getAllMetasExceptIdAndCounters()) {
+            if (propertyMeta.getValueFromField(entity) != null) {
+                metasForNonNullProperties.add(propertyMeta);
+            }
+        }
+        return metasForNonNullProperties;
     }
 
     private PropertyMeta findPropertyMetaByType(Class<?> type) {

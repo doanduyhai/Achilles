@@ -16,73 +16,84 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
+import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.google.common.base.Optional;
+import info.archinnov.achilles.type.Options;
 
 public class PreparedStatementBinder {
 
-	private static final Logger log = LoggerFactory.getLogger(PreparedStatementBinder.class);
+    private static final Logger log = LoggerFactory.getLogger(PreparedStatementBinder.class);
 
-	public BoundStatementWrapper bindForInsert(PreparedStatement ps, EntityMeta entityMeta, Object entity,
-			ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
-		log.trace("Bind prepared statement {} for insert of entity {}", ps.getQueryString(), entity);
-		List<Object> values = new ArrayList<>();
-		Object primaryKey = entityMeta.getPrimaryKey(entity);
-		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
+    protected static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
 
-		List<PropertyMeta> fieldMetas = new ArrayList<>(entityMeta.getColumnsMetaToInsert());
+    private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
-		for (PropertyMeta pm : fieldMetas) {
-			Object value = pm.getAndEncodeValueForCassandra(entity);
-			values.add(value);
-		}
+    public BoundStatementWrapper bindForInsert(PersistenceContext context, PreparedStatement ps, List<PropertyMeta> pms) {
 
-		// TTL or default value 0
-		values.add(ttlO.or(0));
-		BoundStatement bs = ps.bind(values.toArray());
-		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
-	}
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object entity = context.getEntity();
 
-	public BoundStatementWrapper bindForUpdate(PreparedStatement ps, EntityMeta entityMeta, List<PropertyMeta> pms,
-			Object entity, ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
-		log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
-		List<Object> values = new ArrayList<>();
-		// TTL or default value 0
-		values.add(ttlO.or(0));
-		for (PropertyMeta pm : pms) {
-			Object value = pm.getAndEncodeValueForCassandra(entity);
-			values.add(value);
-		}
-		Object primaryKey = entityMeta.getPrimaryKey(entity);
-		values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
-		BoundStatement bs = ps.bind(values.toArray());
+        log.trace("Bind prepared statement {} for insert of entity {}", ps.getQueryString(), entity);
 
-		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
-	}
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
-    public BoundStatementWrapper bindForCollectionAndMapUpdate(PreparedStatement ps, EntityMeta entityMeta, Object entity,
-            DirtyCheckChangeSet changeSet,
-            ConsistencyLevel consistencyLevel, Optional<Integer> ttlO) {
+        List<Object> values = new ArrayList<>();
+        values.addAll(fetchPrimaryKeyValues(entityMeta, entity));
+        values.addAll(fetchPropertiesValues(pms, entity));
+        values.addAll(fetchTTLAndTimestampValues(context));
+
+        BoundStatement bs = ps.bind(values.toArray());
+        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+    }
+
+
+    public BoundStatementWrapper bindForUpdate(PersistenceContext context, PreparedStatement ps, List<PropertyMeta> pms) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object entity = context.getEntity();
+
+        log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
+
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
+
+        List<Object> values = new ArrayList<>();
+
+        values.addAll(fetchTTLAndTimestampValues(context));
+        values.addAll(fetchPropertiesValues(pms, entity));
+        values.addAll(fetchPrimaryKeyValues(entityMeta, entity));
+        values.addAll(fetchCASConditionsValues(context, entityMeta));
+        BoundStatement bs = ps.bind(values.toArray());
+
+        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+    }
+
+    public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistenceContext context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object entity = context.getEntity();
+
         log.trace("Bind prepared statement {} for collection/map update of entity {}", ps.getQueryString(), entity);
+
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
+
         List<Object> values = new ArrayList<>();
         final CollectionAndMapChangeType changeType = changeSet.getChangeType();
-        // TTL or default value 0
-        values.add(ttlO.or(0));
+
+        values.addAll(fetchTTLAndTimestampValues(context));
+
         switch (changeType) {
             case ASSIGN_VALUE_TO_LIST:
                 values.add(changeSet.getEncodedListChanges());
@@ -106,8 +117,10 @@ public class PreparedStatementBinder {
                 values.add(changeSet.getEncodedListChanges());
                 break;
             case SET_TO_LIST_AT_INDEX:
+                // No prepared statement for set list element at index
                 throw new IllegalStateException("Cannot bind statement to set element at index for list");
             case REMOVE_FROM_LIST_AT_INDEX:
+                // No prepared statement for set list element at index
                 throw new IllegalStateException("Cannot bind statement to remove element at index for list");
             case ADD_TO_MAP:
                 values.add(changeSet.getEncodedMapChanges());
@@ -118,104 +131,164 @@ public class PreparedStatementBinder {
                 break;
         }
 
-        Object primaryKey = entityMeta.getPrimaryKey(entity);
-        values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
+        values.addAll(fetchPrimaryKeyValues(entityMeta, entity));
+        values.addAll(fetchCASConditionsValues(context, entityMeta));
         BoundStatement bs = ps.bind(values.toArray());
 
-        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
+        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
 
-	public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PreparedStatement ps, EntityMeta entityMeta,
-			Object primaryKey, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} with primary key {}", ps.getQueryString(), primaryKey);
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		List<Object> values = bindPrimaryKey(primaryKey, idMeta);
+    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistenceContext context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
 
-		BoundStatement bs = ps.bind(values.toArray());
-		return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel));
-	}
+        Object primaryKey = context.getPrimaryKey();
 
-	public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
-			PropertyMeta pm, Object primaryKey, Long increment, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}",
-				ps.getQueryString(), pm, primaryKey, increment);
-		Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0,
-				increment);
+        log.trace("Bind prepared statement {} with primary key {}", ps.getQueryString(), primaryKey);
 
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-	}
+        PropertyMeta idMeta = context.getIdMeta();
+        List<Object> values = bindPrimaryKey(primaryKey, idMeta);
 
-	public BoundStatementWrapper bindForSimpleCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
-			PropertyMeta pm, Object primaryKey, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}", ps.getQueryString(),
-				pm, primaryKey);
-		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-	}
+        BoundStatement bs = ps.bind(values.toArray());
+        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+    }
 
-	public BoundStatementWrapper bindForSimpleCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
-			PropertyMeta pm, Object primaryKey, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}",
-				ps.getQueryString(), pm, primaryKey);
-		Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-	}
+    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
 
-	public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PreparedStatement ps, EntityMeta entityMeta,
-			Object primaryKey, Long increment, ConsistencyLevel consistencyLevel) {
-		log.trace(
-				"Bind prepared statement {} for clustered counter increment/decrement for {} using primary key {} and value {}",
-				ps.getQueryString(), entityMeta, primaryKey, increment);
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
 
-		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-		Object[] keys = ArrayUtils.add(primaryKeys.toArray(new Object[primaryKeys.size()]), 0, increment);
+        log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}", ps.getQueryString(), pm, primaryKey, increment);
+        Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0, increment);
 
-		BoundStatement bs = ps.bind(keys);
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
 
-		return new BoundStatementWrapper(bs, keys, getCQLLevel(consistencyLevel));
-	}
+    public BoundStatementWrapper bindForSimpleCounterSelect(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
 
-	public BoundStatementWrapper bindForClusteredCounterSelect(PreparedStatement ps, EntityMeta entityMeta,
-			Object primaryKey, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} for clustered counter read for {} using primary key {}",
-				ps.getQueryString(), entityMeta, primaryKey);
-		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-		Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
+        log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}", ps.getQueryString(), pm, primaryKey);
 
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-	}
+        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
 
-	public BoundStatementWrapper bindForClusteredCounterDelete(PreparedStatement ps, EntityMeta entityMeta,
-			Object primaryKey, ConsistencyLevel consistencyLevel) {
-		log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}",
-				ps.getQueryString(), entityMeta, primaryKey);
-		List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
-		Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
-		BoundStatement bs = ps.bind(boundValues);
-		return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel));
-	}
+    public BoundStatementWrapper bindForSimpleCounterDelete(PersistenceContext context, PreparedStatement ps, PropertyMeta pm) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
 
-	private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta) {
-		List<Object> values = new ArrayList<>();
-		if (idMeta.isEmbeddedId()) {
-			values.addAll(idMeta.encodeToComponents(primaryKey));
-		} else {
-			values.add(idMeta.encode(primaryKey));
-		}
-		return values;
-	}
+        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), pm, primaryKey);
 
-	private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {
-		PropertyMeta idMeta = entityMeta.getIdMeta();
-		String fqcn = entityMeta.getClassName();
-		String primaryKeyAsString = idMeta.forceEncodeToJSON(primaryKey);
-		String propertyName = pm.getPropertyName();
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
-		return new Object[] { fqcn, primaryKeyAsString, propertyName };
-	}
+        Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
+
+    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, Long increment) {
+
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
+
+        log.trace("Bind prepared statement {} for clustered counter increment/decrement for {} using primary key {} and value {}", ps.getQueryString(), entityMeta, primaryKey, increment);
+
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
+
+        List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        Object[] keys = new Object[] { 0 };
+        keys = ArrayUtils.add(keys, 1, increment);
+        keys = ArrayUtils.addAll(keys, primaryKeys.toArray());
+
+        BoundStatement bs = ps.bind(keys);
+
+        return new BoundStatementWrapper(bs, keys, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
+
+    public BoundStatementWrapper bindForClusteredCounterSelect(PersistenceContext context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
+
+        log.trace("Bind prepared statement {} for clustered counter read for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+
+        List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
+
+        BoundStatement bs = ps.bind(boundValues);
+        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
+
+    public BoundStatementWrapper bindForClusteredCounterDelete(PersistenceContext context, PreparedStatement ps) {
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
+
+        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+
+        ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
+        List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta());
+        Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
+        BoundStatement bs = ps.bind(boundValues);
+
+        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+    }
+
+    private List<Object> fetchPrimaryKeyValues(EntityMeta entityMeta, Object entity) {
+        List<Object> values = new ArrayList<>();
+        Object primaryKey = entityMeta.getPrimaryKey(entity);
+        values.addAll(bindPrimaryKey(primaryKey, entityMeta.getIdMeta()));
+        return values;
+    }
+
+    private List<Object> fetchTTLAndTimestampValues(PersistenceContext context) {
+        List<Object> values = new ArrayList<>();
+
+        // TTL or default value 0
+        values.add(context.getTtl().or(0));
+        if (context.getTimestamp().isPresent()) {
+            values.add(context.getTimestamp().get());
+        }
+        return values;
+    }
+
+    private List<Object> fetchPropertiesValues(List<PropertyMeta> pms, Object entity) {
+        List<Object> values = new ArrayList<>();
+        for (PropertyMeta pm : pms) {
+            Object value = pm.getAndEncodeValueForCassandra(entity);
+            values.add(value);
+        }
+
+        return values;
+    }
+
+    private List<Object> fetchCASConditionsValues(PersistenceContext context, EntityMeta entityMeta) {
+        List<Object> values = new ArrayList<>();
+        if (context.hasCasConditions()) {
+            for (Options.CasCondition casCondition : context.getCasConditions()) {
+                values.add(entityMeta.encodeValue(casCondition.getValue()));
+            }
+        }
+        return values;
+    }
+
+
+    private List<Object> bindPrimaryKey(Object primaryKey, PropertyMeta idMeta) {
+        List<Object> values = new ArrayList<>();
+        if (idMeta.isEmbeddedId()) {
+            values.addAll(idMeta.encodeToComponents(primaryKey));
+        } else {
+            values.add(idMeta.encode(primaryKey));
+        }
+        return values;
+    }
+
+    private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {
+        PropertyMeta idMeta = entityMeta.getIdMeta();
+        String fqcn = entityMeta.getClassName();
+        String primaryKeyAsString = idMeta.forceEncodeToJSON(primaryKey);
+        String propertyName = pm.getPropertyName();
+
+        return new Object[] { fqcn, primaryKeyAsString, propertyName };
+    }
 }

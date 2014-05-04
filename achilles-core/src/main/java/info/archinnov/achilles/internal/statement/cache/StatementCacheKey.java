@@ -15,53 +15,105 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
+import static info.archinnov.achilles.type.Options.CasCondition;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.type.Options;
 
 public class StatementCacheKey {
-	private CacheType type;
+    private CacheType type;
 
-	private Set<String> fields;
+    private Set<String> fields;
 
-	private Class<?> entityClass;
+    private Class<?> entityClass;
 
-	public StatementCacheKey(CacheType type, Set<String> fields, Class<?> entityClass) {
-		this.type = type;
-		this.entityClass = entityClass;
-		this.fields = fields;
-	}
+    private OptionsCacheKey optionsCacheKey;
 
-	public CacheType getType() {
-		return type;
-	}
+    public StatementCacheKey(CacheType type, Set<String> fields, Class<?> entityClass, Options options) {
+        this.type = type;
+        this.entityClass = entityClass;
+        this.fields = fields;
+        this.optionsCacheKey = OptionsCacheKey.fromOptions(options);
+    }
 
-	public Set<String> getFields() {
-		return fields;
-	}
+    public CacheType getType() {
+        return type;
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> Class<T> getEntityClass() {
-		return (Class<T>) entityClass;
-	}
+    public Set<String> getFields() {
+        return fields;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
-	}
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> getEntityClass() {
+        return (Class<T>) entityClass;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityClass, fields, type, optionsCacheKey);
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
-        StatementCacheKey that = (StatementCacheKey) o;
+        StatementCacheKey other = (StatementCacheKey) o;
 
-        return entityClass.equals(that.entityClass)
-                && fields.equals(that.fields)
-                && type == that.type;
+        return Objects.equals(this.entityClass, other.entityClass) &&
+                Objects.equals(this.fields, other.fields) &&
+                Objects.equals(this.type, other.type) &&
+                Objects.equals(this.optionsCacheKey, other.optionsCacheKey);
+    }
 
+    private static class OptionsCacheKey {
+        private boolean hasConsistencyLevel;
+        private boolean hasTimestamp;
+        private boolean ifNotExists;
+        private List<CasCondition> casConditions;
+
+        private OptionsCacheKey(boolean hasConsistencyLevel, boolean hasTimestamp, boolean ifNotExists, List<CasCondition> casConditions) {
+            this.hasConsistencyLevel = hasConsistencyLevel;
+            this.hasTimestamp = hasTimestamp;
+            this.ifNotExists = ifNotExists;
+            this.casConditions = casConditions;
+        }
+
+        private static OptionsCacheKey fromOptions(Options options) {
+            boolean hasConsistencyLevel = options.getConsistencyLevel().isPresent();
+            boolean hasTimestamp = options.getTimestamp().isPresent();
+            boolean ifNotExists = options.isIfNotExists();
+            List<CasCondition> casConditions = Optional.fromNullable(options.getCasConditions()).or(Collections.<CasCondition>emptyList());
+            return new OptionsCacheKey(hasConsistencyLevel, hasTimestamp, ifNotExists, casConditions);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+            if (getClass() != o.getClass()) {
+                return false;
+            }
+
+            final OptionsCacheKey other = (OptionsCacheKey) o;
+            return Objects.equals(this.hasConsistencyLevel, other.hasConsistencyLevel) &&
+                    Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
+                    Objects.equals(this.ifNotExists, other.ifNotExists) &&
+                    Objects.equals(this.casConditions, other.casConditions);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.hasConsistencyLevel, this.hasTimestamp, this.ifNotExists, this.casConditions);
+        }
     }
 }

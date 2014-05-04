@@ -15,9 +15,6 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
@@ -32,14 +29,12 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.Options.CasCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +59,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.Insert.Options;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Where;
 import com.datastax.driver.core.querybuilder.Using;
@@ -74,6 +68,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
@@ -83,6 +78,7 @@ import info.archinnov.achilles.internal.statement.cache.StatementCacheKey;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementBinder;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -91,7 +87,6 @@ import info.archinnov.achilles.type.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DaoContextTest {
-    private final Optional<Integer> ttlO = Optional.fromNullable(null);
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -102,8 +97,6 @@ public class DaoContextTest {
     @Mock
     private StatementGenerator statementGenerator;
 
-    @Mock
-    private Map<Class<?>, PreparedStatement> insertPSs;
 
     @Mock
     private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
@@ -152,6 +145,9 @@ public class DaoContextTest {
     @Mock
     private DirtyCheckChangeSet changeSet;
 
+    @Mock
+    private ConsistencyOverrider overrider;
+
     @Captor
     ArgumentCaptor<Using> usingCaptor;
 
@@ -164,7 +160,6 @@ public class DaoContextTest {
     public void setUp() {
         Whitebox.setInternalState(daoContext, PreparedStatementBinder.class, binder);
         Whitebox.setInternalState(daoContext, CacheManager.class, cacheManager);
-        Whitebox.setInternalState(daoContext, "insertPSs", insertPSs);
         Whitebox.setInternalState(daoContext, Cache.class, dynamicPSCache);
         Whitebox.setInternalState(daoContext, "selectPSs", selectEagerPSs);
         Whitebox.setInternalState(daoContext, "removePSs", removePSs);
@@ -172,6 +167,7 @@ public class DaoContextTest {
         Whitebox.setInternalState(daoContext, "clusteredCounterQueryMap", clusteredCounterQueryMap);
         Whitebox.setInternalState(daoContext, Session.class, session);
         Whitebox.setInternalState(daoContext, StatementGenerator.class, statementGenerator);
+        Whitebox.setInternalState(daoContext, ConsistencyOverrider.class, overrider);
         clusteredCounterQueryMap.clear();
         entityMeta = new EntityMeta();
         entityMeta.setEntityClass(CompleteBean.class);
@@ -183,7 +179,6 @@ public class DaoContextTest {
         when(context.getPrimaryKey()).thenReturn(entity.getId());
         when(context.ifNotExists()).thenReturn(false);
 
-        insertPSs.clear();
         selectEagerPSs.clear();
         removePSs.clear();
     }
@@ -192,174 +187,43 @@ public class DaoContextTest {
     public void should_push_insert() throws Exception {
         // Given
         entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
+        List<PropertyMeta> pms = new ArrayList<>();
 
-        // When
-        when(context.getTtl()).thenReturn(Optional.<Integer>absent());
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(null));
-        when(insertPSs.get(CompleteBean.class)).thenReturn(ps);
-        when(binder.bindForInsert(ps, entityMeta, entity, ALL, ttlO)).thenReturn(bsWrapper);
+        when(cacheManager.getCacheForEntityInsert(session, dynamicPSCache, context, pms)).thenReturn(ps);
+        when(binder.bindForInsert(context, ps, pms)).thenReturn(bsWrapper);
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
 
-        daoContext.pushInsertStatement(context);
+        // When
+        daoContext.pushInsertStatement(context, pms);
 
         // Then
         verify(context).pushStatement(bsWrapper);
-    }
-
-    @Test
-    public void should_push_insert_with_timestamp() throws Exception {
-        // Given
-        Long timestamp = 115L;
-        Options using = insertInto("test").using(ttl(0));
-        Object[] boundValues = new Object[] { };
-        Pair<Insert, Object[]> pair = Pair.create(insert, boundValues);
-        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
-
-        // When
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(null));
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(timestamp));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
-        when(statementGenerator.generateInsert(entity, entityMeta, false)).thenReturn(pair);
-        when(insert.using(any(Using.class))).thenReturn(using);
-
-        daoContext.pushInsertStatement(context);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-        final RegularStatementWrapper captured = statementWrapperCaptor.getValue();
-        assertThat(captured.getValues()).contains(timestamp);
-        assertThat(captured.getStatement().getQueryString()).contains("USING TTL 0 AND TIMESTAMP " + timestamp);
-        assertThat(using.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ALL);
-
-    }
-
-    @Test
-    public void should_push_insert_with_ttl_and_timestamp() throws Exception {
-        // Given
-        Integer ttl = 115;
-        Long timestamp = 115L;
-        Options using = insertInto("test").using(ttl(ttl));
-        Object[] boundValues = new Object[] { };
-        Pair<Insert, Object[]> pair = Pair.create(insert, boundValues);
-        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
-
-        // When
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(ttl));
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(timestamp));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
-        when(statementGenerator.generateInsert(entity, entityMeta, false)).thenReturn(pair);
-        when(insert.using(usingCaptor.capture())).thenReturn(using);
-        daoContext.pushInsertStatement(context);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-        assertThat(statementWrapperCaptor.getValue().getValues()).contains(ttl, timestamp);
-        assertThat(Whitebox.getInternalState(usingCaptor.getValue(), "value")).isEqualTo(new Long(ttl));
-
-        List<Using> usings = Whitebox.getInternalState(using, "usings");
-        assertThat(Whitebox.getInternalState(usings.get(0), "value")).isEqualTo(new Long(timestamp));
-        assertThat(using.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.ALL);
     }
 
     @Test
     public void should_push_update() throws Exception {
         // Given
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("age").build();
-        List<PropertyMeta> pms = asList(nameMeta, ageMeta);
+        List<PropertyMeta> pms = new ArrayList<>();
+
+        when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms)).thenReturn(ps);
+        when(binder.bindForUpdate(context, ps, pms)).thenReturn(bsWrapper);
 
         // When
-        when(context.getTtl()).thenReturn(Optional.<Integer>absent());
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(null));
-        when(cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms)).thenReturn(ps);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(binder.bindForUpdate(ps, entityMeta, pms, entity, EACH_QUORUM, ttlO)).thenReturn(bsWrapper);
-
         daoContext.pushUpdateStatement(context, pms);
 
         // Then
         verify(context).pushStatement(bsWrapper);
     }
-
-    @Test
-    public void should_push_update_with_timestamp() throws Exception {
-        // Given
-        Long timestamp = 15465L;
-        Update.Options options = update("test").using(ttl(0));
-        Object[] boundValues = new Object[] { };
-        Pair<Where, Object[]> pair = Pair.create(update, boundValues);
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("age").build();
-        List<PropertyMeta> pms = asList(nameMeta, ageMeta);
-        final List<CasCondition> casConditions = Collections.emptyList();
-
-        // When
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(null));
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(timestamp));
-        when(context.getCasConditions()).thenReturn(casConditions);
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(statementGenerator.generateUpdateFields(entity, entityMeta, pms, casConditions)).thenReturn(pair);
-        when(update.using(any(Using.class))).thenReturn(options);
-
-        daoContext.pushUpdateStatement(context, pms);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-
-        final RegularStatementWrapper captured = statementWrapperCaptor.getValue();
-        assertThat(captured.getValues()).contains(timestamp);
-        assertThat(captured.getStatement().getQueryString()).contains("USING TTL 0 AND TIMESTAMP " + timestamp);
-
-        assertThat(options.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-    }
-
-    @Test
-    public void should_push_update_with_ttl_and_timestamp() throws Exception {
-        // Given
-        Integer ttl = 54321;
-        Long timestamp = 15465L;
-        Update.Options options = update("test").using(ttl(ttl));
-        Object[] boundValues = new Object[] { };
-        Pair<Where, Object[]> pair = Pair.create(update, boundValues);
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("age").build();
-        List<PropertyMeta> pms = asList(nameMeta, ageMeta);
-        final List<CasCondition> casConditions = Collections.emptyList();
-
-        // When
-        when(context.getTtl()).thenReturn(Optional.fromNullable(ttl));
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(timestamp));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(context.getCasConditions()).thenReturn(casConditions);
-        when(statementGenerator.generateUpdateFields(entity, entityMeta, pms, casConditions)).thenReturn(pair);
-        when(update.using(any(Using.class))).thenReturn(options);
-
-        daoContext.pushUpdateStatement(context, pms);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-        final RegularStatementWrapper captured = statementWrapperCaptor.getValue();
-        assertThat(captured.getValues()).contains(ttl, timestamp);
-        assertThat(captured.getStatement().getQueryString()).contains("USING TTL " + ttl + " AND TIMESTAMP " + timestamp);
-    }
-
 
     @Test
     public void should_push_collection_and_map_update() throws Exception {
         // Given
         PropertyMeta setMeta = PropertyMetaTestBuilder.valueClass(String.class).field("followers").build();
 
-        when(context.getTtl()).thenReturn(Optional.<Integer>absent());
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(null));
         when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
         when(changeSet.getPropertyMeta()).thenReturn(setMeta);
         when(cacheManager.getCacheForCollectionAndMapOperation(session, dynamicPSCache, context, setMeta, changeSet)).thenReturn(ps);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(binder.bindForCollectionAndMapUpdate(ps, entityMeta, entity, changeSet, EACH_QUORUM, ttlO)).thenReturn(bsWrapper);
+        when(binder.bindForCollectionAndMapUpdate(context, ps, changeSet)).thenReturn(bsWrapper);
 
         // When
         daoContext.pushCollectionAndMapUpdateStatement(context, changeSet);
@@ -367,64 +231,6 @@ public class DaoContextTest {
         // Then
         verify(context).pushStatement(bsWrapper);
     }
-
-    @Test
-    public void should_push_collection_and_map_update_with_timestamp() throws Exception {
-        // Given
-        Long timestamp = 15465L;
-        Update.Options options = update("test").using(timestamp(timestamp));
-        Object[] boundValues = new Object[] { };
-        Pair<Where, Object[]> pair = Pair.create(update, boundValues);
-        final List<CasCondition> casConditions = Collections.<CasCondition>emptyList();
-
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(null));
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(timestamp));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(context.getCasConditions()).thenReturn(casConditions);
-        when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
-        when(statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, entity, entityMeta, casConditions)).thenReturn(pair);
-        when(update.using(any(Using.class))).thenReturn(options);
-
-        // When
-
-        daoContext.pushCollectionAndMapUpdateStatement(context, changeSet);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-        final RegularStatementWrapper captured = statementWrapperCaptor.getValue();
-        assertThat(captured.getValues()).contains(timestamp);
-        assertThat(options.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-    }
-
-    @Test
-    public void should_push_collection_and_map_update_with_ttl_and_timestamp() throws Exception {
-        // Given
-        Integer ttl = 54321;
-        Long timestamp = 15465L;
-        Update.Options options = update("test").using(timestamp(timestamp));
-        Object[] boundValues = new Object[] { };
-        Pair<Where, Object[]> pair = Pair.create(update, boundValues);
-        final List<CasCondition> casConditions = Collections.<CasCondition>emptyList();
-
-        when(context.getTtl()).thenReturn(Optional.fromNullable(ttl));
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(timestamp));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(context.getCasConditions()).thenReturn(casConditions);
-        when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
-        when(statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, entity, entityMeta, casConditions)).thenReturn(pair);
-        when(update.using(any(Using.class))).thenReturn(options);
-
-        // When
-        daoContext.pushCollectionAndMapUpdateStatement(context, changeSet);
-
-        // Then
-        verify(context).pushStatement(statementWrapperCaptor.capture());
-        final RegularStatementWrapper captured = statementWrapperCaptor.getValue();
-        assertThat(captured.getValues()).contains(ttl, timestamp);
-    }
-
 
     @Test
     public void should_push_list_set_at_index_update() throws Exception {
@@ -432,16 +238,14 @@ public class DaoContextTest {
         final Where where = update("test").where();
         Object[] boundValues = new Object[] { "whatever" };
         Pair<Where, Object[]> pair = Pair.create(where, boundValues);
-        final List<CasCondition> casConditions = Collections.<CasCondition>emptyList();
 
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(null));
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(null));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getEntityMeta()).thenReturn(entityMeta);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(context.getCasConditions()).thenReturn(casConditions);
+        final Optional<CASResultListener> casResultListener = Optional.absent();
+
         when(changeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
-        when(statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, entity, entityMeta, casConditions)).thenReturn(pair);
+
+        when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
+        when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
+        when(context.getCASResultListener()).thenReturn(casResultListener);
 
         // When
         daoContext.pushCollectionAndMapUpdateStatement(context, changeSet);
@@ -459,16 +263,16 @@ public class DaoContextTest {
         final Where where = update("test").where();
         Object[] boundValues = new Object[] { "whatever" };
         Pair<Where, Object[]> pair = Pair.create(where, boundValues);
-        final List<CasCondition> casConditions = Collections.<CasCondition>emptyList();
 
-        when(context.getTtl()).thenReturn(Optional.<Integer>fromNullable(null));
-        when(context.getTimestamp()).thenReturn(Optional.<Long>fromNullable(null));
-        when(context.getEntity()).thenReturn(entity);
-        when(context.getEntityMeta()).thenReturn(entityMeta);
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(context.getCasConditions()).thenReturn(casConditions);
+        final Optional<CASResultListener> casResultListener = Optional.absent();
+
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
-        when(statementGenerator.generateCollectionAndMapUpdateOperation(changeSet, entity, entityMeta, casConditions)).thenReturn(pair);
+
+        when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
+        when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
+        when(context.getCASResultListener()).thenReturn(casResultListener);
+
+        when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
 
         // When
         daoContext.pushCollectionAndMapUpdateStatement(context, changeSet);
@@ -482,10 +286,10 @@ public class DaoContextTest {
 
     @Test
     public void should_bind_for_removal() throws Exception {
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(removePSs.get(CompleteBean.class)).thenReturn(of("table", ps));
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
-        when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(
-                bsWrapper);
+        when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
 
         daoContext.bindForRemoval(context, "table");
 
@@ -505,17 +309,16 @@ public class DaoContextTest {
     @Test
     public void should_eager_load_entity() throws Exception {
         // Given
-        entityMeta.setConsistencyLevels(Pair.create(LOCAL_QUORUM, LOCAL_QUORUM));
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
 
         // When
+        when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
-        when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId(), LOCAL_QUORUM)).thenReturn(
-                bsWrapper);
+        when(overrider.getReadLevel(context)).thenReturn(LOCAL_QUORUM);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, LOCAL_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(asList(row));
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
-        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
 
         // Then
         Row actual = daoContext.loadEntity(context);
@@ -525,17 +328,15 @@ public class DaoContextTest {
     @Test
     public void should_load_property() throws Exception {
         // Given
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
-                .consistencyLevels(Pair.create(ONE, ALL)).build();
+        PropertyMeta pm = mock(PropertyMeta.class);
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
 
         // When
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
-        when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(
-                bsWrapper);
+        when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(asList(row));
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
@@ -548,15 +349,13 @@ public class DaoContextTest {
     public void should_return_null_when_loading_property() throws Exception {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
-                .consistencyLevels(Pair.create(ONE, ALL)).build();
+        PropertyMeta pm = mock(PropertyMeta.class);
 
         // When
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
-        when(binder.bindStatementWithOnlyPKInWhereClause(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(
-                bsWrapper);
+        when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(Lists.<Row>newLinkedList());
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
@@ -581,16 +380,14 @@ public class DaoContextTest {
     @Test
     public void should_bind_simple_counter_increment() throws Exception {
         // Given
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
-                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+        PropertyMeta pm = mock(PropertyMeta.class);
 
         // When
-        when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
         when(counterQueryMap.get(INCR)).thenReturn(ps);
-        when(binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), 2L, EACH_QUORUM))
-                .thenReturn(bsWrapper);
+        when(overrider.getWriteLevel(context, pm)).thenReturn(EACH_QUORUM);
+        when(binder.bindForSimpleCounterIncrementDecrement(context, ps, pm, 2L, EACH_QUORUM)).thenReturn(bsWrapper);
 
-        daoContext.bindForSimpleCounterIncrement(context, entityMeta, pm, 2L);
+        daoContext.bindForSimpleCounterIncrement(context, pm, 2L);
 
         // Then
         verify(context).pushCounterStatement(bsWrapper);
@@ -604,11 +401,9 @@ public class DaoContextTest {
 
         // When
         when(counterQueryMap.get(INCR)).thenReturn(ps);
-        when(
-                binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue,
-                        EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForSimpleCounterIncrementDecrement(context, ps, pm, counterValue, EACH_QUORUM)).thenReturn(bsWrapper);
 
-        daoContext.incrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+        daoContext.incrementSimpleCounter(context, pm, counterValue, EACH_QUORUM);
 
         // Then
         verify(context).executeImmediate(bsWrapper);
@@ -622,11 +417,9 @@ public class DaoContextTest {
 
         // When
         when(counterQueryMap.get(CQLQueryType.DECR)).thenReturn(ps);
-        when(
-                binder.bindForSimpleCounterIncrementDecrement(ps, entityMeta, pm, entity.getId(), counterValue,
-                        EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForSimpleCounterIncrementDecrement(context, ps, pm, counterValue, EACH_QUORUM)).thenReturn(bsWrapper);
 
-        daoContext.decrementSimpleCounter(context, entityMeta, pm, counterValue, EACH_QUORUM);
+        daoContext.decrementSimpleCounter(context, pm, counterValue, EACH_QUORUM);
 
         // Then
         verify(context).executeImmediate(bsWrapper);
@@ -637,12 +430,11 @@ public class DaoContextTest {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
-                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
 
         // When
         when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
-        when(binder.bindForSimpleCounterSelect(ps, entityMeta, pm, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForSimpleCounterSelect(context, ps, pm, EACH_QUORUM)).thenReturn(bsWrapper);
 
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(asList(row));
@@ -655,15 +447,14 @@ public class DaoContextTest {
     @Test
     public void should_bind_simple_counter_delete() throws Exception {
         // Given
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name")
-                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
 
         // When
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
         when(counterQueryMap.get(CQLQueryType.DELETE)).thenReturn(ps);
-        when(binder.bindForSimpleCounterDelete(ps, entityMeta, pm, 11L, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForSimpleCounterDelete(context, ps, pm)).thenReturn(bsWrapper);
 
-        daoContext.bindForSimpleCounterDelete(context, entityMeta, pm, 11L);
+        daoContext.bindForSimpleCounterDelete(context, pm);
 
         // Then
         verify(context).pushCounterStatement(bsWrapper);
@@ -679,12 +470,10 @@ public class DaoContextTest {
         // When
         when(context.getTtl()).thenReturn(Optional.<Integer>absent());
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(INCR, of("count", ps)));
-        when(binder.bindForClusteredCounterIncrementDecrement(ps, entityMeta, entity.getId(), 2L, EACH_QUORUM))
-                .thenReturn(bsWrapper);
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(INCR, of("count", ps)));
+        when(binder.bindForClusteredCounterIncrementDecrement(context, ps, 2L)).thenReturn(bsWrapper);
 
-        daoContext.pushClusteredCounterIncrementStatement(context, entityMeta, counterMeta, 2L);
+        daoContext.pushClusteredCounterIncrementStatement(context, counterMeta, 2L);
 
         // Then
         verify(context).pushCounterStatement(bsWrapper);
@@ -695,16 +484,16 @@ public class DaoContextTest {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of(SELECT_ALL.name(), ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of(SELECT_ALL.name(), ps)));
 
         // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
+        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(asList(row));
 
         // Then
-        Row actual = daoContext.getClusteredCounter(context, EACH_QUORUM);
+        Row actual = daoContext.getClusteredCounter(context);
 
         assertThat(actual).isSameAs(row);
     }
@@ -720,15 +509,15 @@ public class DaoContextTest {
         when(resultSet.one()).thenReturn(row);
         when(row.getLong("counter")).thenReturn(11L);
 
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
 
         // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
+        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta);
 
         assertThat(actual).isEqualTo(11L);
     }
@@ -744,15 +533,15 @@ public class DaoContextTest {
         when(resultSet.one()).thenReturn(row);
         when(row.isNull("counter")).thenReturn(true);
 
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
 
         // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
+        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta);
 
         assertThat(actual).isNull();
     }
@@ -765,15 +554,15 @@ public class DaoContextTest {
 
         ResultSet resultSet = mock(ResultSet.class);
 
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(SELECT, of("counter", ps)));
 
         // When
-        when(binder.bindForClusteredCounterSelect(ps, entityMeta, entity.getId(), EACH_QUORUM)).thenReturn(bsWrapper);
+        when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
+        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
-        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta, EACH_QUORUM);
+        Long actual = daoContext.getClusteredCounterColumn(context, counterMeta);
 
         assertThat(actual).isNull();
     }
@@ -781,14 +570,13 @@ public class DaoContextTest {
     @Test
     public void should_bind_clustered_counter_delete() throws Exception {
         // Given
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(DELETE, of(DELETE_ALL.name(), ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(DELETE, of(DELETE_ALL.name(), ps)));
 
         // When
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, 11L, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterDelete(context, ps)).thenReturn(bsWrapper);
 
-        daoContext.bindForClusteredCounterDelete(context, entityMeta, 11L);
+        daoContext.bindForClusteredCounterDelete(context);
 
         // Then
         verify(context).pushCounterStatement(bsWrapper);
@@ -797,14 +585,13 @@ public class DaoContextTest {
     @Test
     public void should_bind_clustered_counter_delete_with_runtime_consistency() throws Exception {
         // Given
-        clusteredCounterQueryMap.put(CompleteBean.class,
-                ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(DELETE, of(DELETE_ALL.name(), ps)));
+        clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(DELETE, of(DELETE_ALL.name(), ps)));
 
         // When
         when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(LOCAL_QUORUM));
-        when(binder.bindForClusteredCounterDelete(ps, entityMeta, 11L, LOCAL_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterDelete(context, ps)).thenReturn(bsWrapper);
 
-        daoContext.bindForClusteredCounterDelete(context, entityMeta, 11L);
+        daoContext.bindForClusteredCounterDelete(context);
 
         // Then
         verify(context).pushCounterStatement(bsWrapper);
@@ -816,16 +603,6 @@ public class DaoContextTest {
         when(session.prepare("query")).thenReturn(ps);
 
         assertThat(daoContext.prepare(statement)).isSameAs(ps);
-    }
-
-    @Test
-    public void should_bind_and_execute_prepared_statement() throws Exception {
-        ResultSet rs = mock(ResultSet.class);
-        when(ps.bind(11L, "a")).thenReturn(bs);
-        when(bs.preparedStatement()).thenReturn(ps);
-        when(session.execute(bs)).thenReturn(rs);
-
-        assertThat(daoContext.bindAndExecute(ps, 11L, "a")).isSameAs(rs);
     }
 
     @Test

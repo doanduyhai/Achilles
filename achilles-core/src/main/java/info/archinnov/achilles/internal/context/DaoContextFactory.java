@@ -46,11 +46,8 @@ public class DaoContextFactory {
 
         Map<Class<?>, EntityMeta> metaMap = parsingResult.getMetaMap();
 
-        Map<Class<?>, PreparedStatement> insertPSMap = new HashMap<>(transformValues(
-                filterValues(metaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getInsertPSTransformer(session)));
-
         Map<Class<?>, PreparedStatement> selectPSMap = new HashMap<>(transformValues(metaMap,
-                                                                                     getSelectPSTransformer(session)));
+                getSelectPSTransformer(session)));
 
         Map<Class<?>, Map<String, PreparedStatement>> removePSMap = new HashMap<>(transformValues(
                 filterValues(metaMap, EXCLUDE_CLUSTERED_COUNTER_FILTER), getRemovePSTransformer(session)));
@@ -67,13 +64,11 @@ public class DaoContextFactory {
 
         Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueriesMap = new HashMap<>(
                 transformValues(filterValues(metaMap, CLUSTERED_COUNTER_FILTER),
-                                getClusteredCounterTransformer(session)));
+                        getClusteredCounterTransformer(session)));
 
-        displayPreparedStatementsStats(insertPSMap, selectPSMap, removePSMap, counterQueryMap,
-                                       clusteredCounterQueriesMap);
+        displayPreparedStatementsStats(selectPSMap, removePSMap, counterQueryMap, clusteredCounterQueriesMap);
 
         DaoContext daoContext = new DaoContext();
-        daoContext.setInsertPSs(insertPSMap);
         daoContext.setDynamicPSCache(dynamicPSCache);
         daoContext.setSelectPSs(selectPSMap);
         daoContext.setRemovePSs(removePSMap);
@@ -85,20 +80,11 @@ public class DaoContextFactory {
         return daoContext;
     }
 
-    Function<EntityMeta, PreparedStatement> getInsertPSTransformer(final Session session) {
-        return new Function<EntityMeta, PreparedStatement>() {
-            @Override
-            public PreparedStatement apply(EntityMeta meta) {
-                return queryGenerator.prepareInsertPS(session, meta);
-            }
-        };
-    }
-
     Function<EntityMeta, PreparedStatement> getSelectPSTransformer(final Session session) {
         return new Function<EntityMeta, PreparedStatement>() {
             @Override
             public PreparedStatement apply(EntityMeta meta) {
-                return queryGenerator.prepareSelectPS(session, meta);
+                return queryGenerator.prepareSelectAll(session, meta);
             }
         };
     }
@@ -122,15 +108,12 @@ public class DaoContextFactory {
         };
     }
 
-    private void displayPreparedStatementsStats(Map<Class<?>, PreparedStatement> insertPSMap, Map<Class<?>,
-            PreparedStatement> selectPSMap, Map<Class<?>, Map<String, PreparedStatement>> removePSMap,
-                                                Map<CQLQueryType, PreparedStatement> counterQueryMap, Map<Class<?>,
-            Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueriesMap) {
-        log.info("Prepare {} INSERT, {} SELECT, {} DELETE, {} COUNTER SELECT and {} CLUSTERED COUNTER SELECT " +
-                         "statements", insertPSMap.size(), selectPSMap.size(), removePSMap.size(), counterQueryMap
-                         .size(), clusteredCounterQueriesMap.size());
-        int totalPreparedStatementsCount = insertPSMap.size()
-                + selectPSMap.size()
+    private void displayPreparedStatementsStats(Map<Class<?>, PreparedStatement> selectPSMap, Map<Class<?>, Map<String, PreparedStatement>> removePSMap,
+            Map<CQLQueryType, PreparedStatement> counterQueryMap, Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueriesMap) {
+        log.info("Prepare {} SELECT, {} DELETE, {} COUNTER SELECT and {} CLUSTERED COUNTER SELECT " +
+                "statements", selectPSMap.size(), removePSMap.size(), counterQueryMap
+                .size(), clusteredCounterQueriesMap.size());
+        int totalPreparedStatementsCount = selectPSMap.size()
                 + removePSMap.size()
                 + counterQueryMap.size()
                 + clusteredCounterQueriesMap.size();

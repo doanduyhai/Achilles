@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
@@ -44,7 +46,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -61,7 +62,6 @@ import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -199,14 +199,23 @@ public class PersistenceContextTest {
     }
 
     @Test
-    public void should_bind_for_insert() throws Exception {
+    public void should_push_insert() throws Exception {
+        //Given
+        EntityMeta meta = new EntityMeta();
+        List<PropertyMeta> pms = new ArrayList<>();
+        meta.setAllMetasExceptIdAndCounters(pms);
+        context.setEntityMeta(meta);
+        when(configurationContext.getInsertStrategy()).thenReturn(ALL_FIELDS);
+
+        //When
         context.pushInsertStatement();
 
-        verify(daoContext).pushInsertStatement(context);
+        //Then
+        verify(daoContext).pushInsertStatement(context, pms);
     }
 
     @Test
-    public void should_push_for_update() throws Exception {
+    public void should_push_update() throws Exception {
         List<PropertyMeta> pms = Arrays.asList();
         context.pushUpdateStatement(pms);
 
@@ -227,16 +236,6 @@ public class PersistenceContextTest {
         verify(daoContext).bindForRemoval(context, "table");
     }
 
-    @Test
-    public void should_bind_and_execute() throws Exception {
-        PreparedStatement ps = mock(PreparedStatement.class);
-        ResultSet rs = mock(ResultSet.class);
-
-        when(daoContext.bindAndExecute(ps, 11L, "a")).thenReturn(rs);
-        ResultSet actual = context.bindAndExecute(ps, 11L, "a");
-
-        assertThat(actual).isSameAs(rs);
-    }
 
     // Simple counter
     @Test
@@ -245,7 +244,7 @@ public class PersistenceContextTest {
 
         context.bindForSimpleCounterIncrement(counterMeta, 11L);
 
-        verify(daoContext).bindForSimpleCounterIncrement(context, meta, counterMeta, 11L);
+        verify(daoContext).bindForSimpleCounterIncrement(context, counterMeta, 11L);
     }
 
     @Test
@@ -254,7 +253,7 @@ public class PersistenceContextTest {
 
         context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        verify(daoContext).incrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
+        verify(daoContext).incrementSimpleCounter(context, counterMeta, 11L, LOCAL_QUORUM);
     }
 
     @Test
@@ -263,7 +262,7 @@ public class PersistenceContextTest {
 
         context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
 
-        verify(daoContext).decrementSimpleCounter(context, meta, counterMeta, 11L, LOCAL_QUORUM);
+        verify(daoContext).decrementSimpleCounter(context, counterMeta, 11L, LOCAL_QUORUM);
     }
 
     @Test
@@ -293,17 +292,17 @@ public class PersistenceContextTest {
 
         context.bindForSimpleCounterRemoval(counterMeta);
 
-        verify(daoContext).bindForSimpleCounterDelete(context, meta, counterMeta, entity.getId());
+        verify(daoContext).bindForSimpleCounterDelete(context, counterMeta);
     }
 
     // Clustered counter
     @Test
-    public void should_bind_for_clustered_counter_increment() throws Exception {
+    public void should_push_clustered_counter_increment() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
         context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
-        verify(daoContext).pushClusteredCounterIncrementStatement(context, meta, counterMeta, 11L);
+        verify(daoContext).pushClusteredCounterIncrementStatement(context, counterMeta, 11L);
     }
 
 
@@ -313,9 +312,9 @@ public class PersistenceContextTest {
         counterMeta.setPropertyName("count");
         Long counterValue = 11L;
 
-        when(daoContext.getClusteredCounterColumn(context, counterMeta, LOCAL_QUORUM)).thenReturn(counterValue);
+        when(daoContext.getClusteredCounterColumn(context, counterMeta)).thenReturn(counterValue);
 
-        Long actual = context.getClusteredCounterColumn(counterMeta, LOCAL_QUORUM);
+        Long actual = context.getClusteredCounterColumn(counterMeta);
 
         assertThat(actual).isEqualTo(counterValue);
     }
@@ -323,16 +322,16 @@ public class PersistenceContextTest {
     @Test
     public void should_return_null_when_no_clustered_counter_value() throws Exception {
 
-        when(daoContext.getClusteredCounter(context, LOCAL_QUORUM)).thenReturn(null);
+        when(daoContext.getClusteredCounter(context)).thenReturn(null);
 
-        assertThat(context.getClusteredCounter(LOCAL_QUORUM)).isNull();
+        assertThat(context.getClusteredCounter()).isNull();
     }
 
     @Test
     public void should_bind_for_clustered_counter_removal() throws Exception {
         context.bindForClusteredCounterRemoval();
 
-        verify(daoContext).bindForClusteredCounterDelete(context, meta, entity.getId());
+        verify(daoContext).bindForClusteredCounterDelete(context);
     }
 
     @Test
