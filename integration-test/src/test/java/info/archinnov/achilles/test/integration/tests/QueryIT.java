@@ -587,5 +587,4 @@ public class QueryIT {
         // Then
         assertThat(actual.getLabel()).isEqualTo("label");
     }
-
 }
