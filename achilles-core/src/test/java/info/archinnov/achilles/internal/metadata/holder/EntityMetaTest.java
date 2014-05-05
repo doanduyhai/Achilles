@@ -263,6 +263,20 @@ public class EntityMetaTest {
         assertThat(encoded[0]).isEqualTo(null);
     }
 
+    @Test
+    public void should_not_encode_null_varargs() throws Exception {
+        //Given
+        final PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(String.class).build();
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptCounters(asList(propertyMeta));
+
+        //When
+        final Object[] encoded = meta.encodeBoundValues(null);
+
+        //Then
+        assertThat(encoded).hasSize(0);
+    }
+
     @Test(expected = AchillesException.class)
     public void should_exception_during_encoding_if_property_meta_not_found() throws Exception {
         //Given

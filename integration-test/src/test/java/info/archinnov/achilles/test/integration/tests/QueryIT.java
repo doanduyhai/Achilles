@@ -17,6 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
+import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Date;
 import java.util.List;
@@ -27,16 +28,18 @@ import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -54,11 +57,11 @@ public class QueryIT {
 
     @Test
     public void should_return_rows_for_native_query() throws Exception {
-        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity1 = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(35L)
+        CompleteBean entity2 = builder().randomId().name("John DOO").age(35L)
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
 
@@ -79,7 +82,7 @@ public class QueryIT {
         assertThat(row1.get("age_in_years")).isEqualTo(35L);
         assertThat(row1.<List<String>>getTyped("friends")).containsExactly("foo", "bar");
         assertThat(row1.<Set<String>>getTyped("followers")).contains("George", "Paul");
-        Map<Integer, String> preferences1 = row1.<Map<Integer, String>>getTyped("preferences");
+        Map<Integer, String> preferences1 = row1.getTyped("preferences");
         assertThat(preferences1.get(1)).isEqualTo("FR");
         assertThat(preferences1.get(2)).isEqualTo("Paris");
         assertThat(preferences1.get(3)).isEqualTo("75014");
@@ -88,14 +91,14 @@ public class QueryIT {
         assertThat(row2.get("age_in_years")).isEqualTo(35L);
         assertThat(row2.<List<String>>getTyped("friends")).containsExactly("qux", "twix");
         assertThat(row2.<Set<String>>getTyped("followers")).contains("Isaac", "Lara");
-        Map<Integer, String> preferences2 = row2.<Map<Integer, String>>getTyped("preferences");
+        Map<Integer, String> preferences2 = row2.getTyped("preferences");
         assertThat(preferences2.get(1)).isEqualTo("US");
         assertThat(preferences2.get(2)).isEqualTo("NewYork");
     }
 
     @Test
     public void should_return_rows_for_native_query_with_bound_values() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").buid();
         manager.persist(entity);
 
         String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
@@ -111,26 +114,24 @@ public class QueryIT {
 
     @Test
     public void should_return_count_for_native_query() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").buid();
 
         manager.persist(entity);
 
-        Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first()
-                .get("count");
+        Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first().get("count");
 
         assertThat(count).isEqualTo(1L);
     }
 
     @Test
     public void should_return_ttl_and_timestamp_for_native_query() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(32L).buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").age(32L).buid();
 
         Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
 
         manager.persist(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
-        Map<String, Object> result = manager.nativeQuery(
-                "SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
+        Map<String, Object> result = manager.nativeQuery("SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
 
         assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
         assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
@@ -154,11 +155,11 @@ public class QueryIT {
 
     @Test
     public void should_return_entities_for_typed_query_with_select_star() throws Exception {
-        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity1 = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+        CompleteBean entity2 = builder().randomId().name("John DOO").age(34L)
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").buid();
 
@@ -240,11 +241,11 @@ public class QueryIT {
 
     @Test
     public void should_return_entities_for_typed_query_with_simple_select() throws Exception {
-        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity1 = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+        CompleteBean entity2 = builder().randomId().name("John DOO").age(34L)
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").buid();
 
@@ -316,7 +317,7 @@ public class QueryIT {
 
     @Test
     public void should_return_entity_for_typed_query_with_bound_values() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").buid();
 
         manager.persist(entity);
 
@@ -332,12 +333,12 @@ public class QueryIT {
     @Test
     public void should_return_raw_entities_for_raw_typed_query_with_select_star() throws Exception {
         Counter counter1 = CounterBuilder.incr(15L);
-        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity1 = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
 
         Counter counter2 = CounterBuilder.incr(17L);
-        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+        CompleteBean entity2 = builder().randomId().name("John DOO").age(34L)
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(counter2).buid();
 
@@ -406,12 +407,12 @@ public class QueryIT {
     @Test
     public void should_return_raw_entities_for_raw_typed_query_with_simple_select() throws Exception {
         Counter counter1 = CounterBuilder.incr(15L);
-        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity1 = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(counter1).buid();
 
         Counter counter2 = CounterBuilder.incr(17L);
-        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").age(34L)
+        CompleteBean entity2 = builder().randomId().name("John DOO").age(34L)
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(counter2).buid();
 
@@ -463,7 +464,7 @@ public class QueryIT {
 
     @Test
     public void should_return_raw_entity_for_raw_typed_query_with_bound_values() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+        CompleteBean entity = builder().randomId().name("DuyHai").buid();
         manager.persist(entity);
 
         String queryString = "SELECT name FROM CompleteBean LIMIT ?";
@@ -475,7 +476,7 @@ public class QueryIT {
 
     @Test
     public void should_return_first_entity_for_typed_query_with_simple_select() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
@@ -527,7 +528,7 @@ public class QueryIT {
 
     @Test
     public void should_return_first_raw_entity_for_raw_typed_query_with_simple_select() throws Exception {
-        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
+        CompleteBean entity = builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
@@ -568,6 +569,23 @@ public class QueryIT {
         assertThat(clusteredKey.getId()).isEqualTo(id);
         assertThat(clusteredKey.getCount()).isEqualTo(10);
         assertThat(clusteredKey.getName()).isEqualTo("name");
+    }
+
+    @Test
+    public void should_ignore_null_varargs_for_bounded_values() {
+        // Given
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+
+        manager.persist(entity);
+
+        final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
+
+        // When
+        final CompleteBean actual = queryBuilder.getFirst();
+
+        // Then
+        assertThat(actual.getLabel()).isEqualTo("label");
     }
 
 }

@@ -270,8 +270,8 @@ public class EntityMeta {
     }
 
     public Object[] encodeBoundValues(Object[] boundValues) {
-        Object[] encodedBoundValues = new Object[boundValues.length];
-        for (int i = 0; i < boundValues.length; i++) {
+        Object[] encodedBoundValues = new Object[boundValues != null ? boundValues.length : 0];
+        for (int i = 0; i < encodedBoundValues.length; i++) {
             encodedBoundValues[i] = encodeValue(boundValues[i]);
         }
         return encodedBoundValues;
@@ -302,7 +302,7 @@ public class EntityMeta {
 
     private PropertyMeta findPropertyMetaByType(Class<?> type) {
         for (PropertyMeta meta : allMetasExceptCounters) {
-            if (meta.getValueClass().equals(type))
+            if (meta.getValueClass().isAssignableFrom(type))
                 return meta;
         }
         throw new AchillesException(format("Cannot find matching property meta for the type %s", type));
