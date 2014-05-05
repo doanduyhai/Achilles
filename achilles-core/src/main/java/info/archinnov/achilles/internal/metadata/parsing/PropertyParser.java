@@ -72,6 +72,8 @@ public class PropertyParser {
         allowedTypes.add(Byte.class);
         allowedTypes.add(byte[].class);
         allowedTypes.add(ByteBuffer.class);
+        allowedTypes.add(ByteBuffer.allocate(0).getClass());
+        allowedTypes.add(ByteBuffer.allocateDirect(0).getClass());
 
         // Boolean
         allowedTypes.add(Boolean.class);
