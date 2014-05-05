@@ -27,8 +27,11 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.persistence.BatchingPersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.query.typed.TypedQuery;
+import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.test.integration.entity.Tweet;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +44,8 @@ import org.junit.rules.ExpectedException;
 
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.ImmutableMap;
 
 public class EventInterceptorIT {
@@ -310,4 +315,38 @@ public class EventInterceptorIT {
 		// Then
 		assertThat(actual.getLabel()).isEqualTo("postLoad");
 	}
+
+    @Test
+    public void test(){
+        // Given
+        Tweet entity = TweetTestBuilder.tweet().randomId().content("label").buid();
+
+        manager.persist(entity);
+
+        final Select.Where select = QueryBuilder.select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select.getQueryString(), select.getValues());
+
+        // When
+        final Tweet actual = queryBuilder.getFirst();
+
+        // Then
+        assertThat(actual).isNotNull();
+    }
+
+    @Test
+    public void test2(){
+        // Given
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+
+        manager.persist(entity);
+
+        final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
+
+        // When
+        final CompleteBean actual = queryBuilder.getFirst();
+
+        // Then
+        assertThat(actual.getLabel()).isEqualTo("postLoad");
+    }
 }
