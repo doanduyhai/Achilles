@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -465,12 +468,24 @@ public class PropertyParserTest {
             @Column
             private List<String> friends;
 
+            @NotNull
+            @Column
+            private List<String> mates;
+
             public List<String> getFriends() {
                 return friends;
             }
 
             public void setFriends(List<String> friends) {
                 this.friends = friends;
+            }
+
+            public List<String> getMates() {
+                return mates;
+            }
+
+            public void setMates(List<String> mates) {
+                this.mates = mates;
             }
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("friends"));
@@ -486,6 +501,11 @@ public class PropertyParserTest {
 
         assertThat(meta.type()).isEqualTo(PropertyType.LIST);
         assertThat(meta.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
+
+        PropertyParsingContext context2 = newContext(Test.class, Test.class.getDeclaredField("mates"));
+        PropertyMeta meta2 = parser.parse(context2);
+        assertThat(meta2.type()).isEqualTo(PropertyType.LIST);
+        assertThat(meta2.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
