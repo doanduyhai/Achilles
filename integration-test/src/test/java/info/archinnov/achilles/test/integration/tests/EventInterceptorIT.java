@@ -16,20 +16,6 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
-import static info.archinnov.achilles.interceptor.Event.*;
-import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
-import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
-import info.archinnov.achilles.test.integration.entity.CompleteBean;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,6 +28,27 @@ import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
+
+import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManager;
+import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
+import info.archinnov.achilles.test.integration.entity.CompleteBean;
+
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
+import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
+import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
+import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
+import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class EventInterceptorIT {
 	@Rule
@@ -310,4 +317,5 @@ public class EventInterceptorIT {
 		// Then
 		assertThat(actual.getLabel()).isEqualTo("postLoad");
 	}
+
 }

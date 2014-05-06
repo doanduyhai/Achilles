@@ -73,7 +73,6 @@ public class PropertyParser {
         allowedTypes.add(byte.class);
         allowedTypes.add(Byte.class);
         allowedTypes.add(byte[].class);
-        allowedTypes.add(ByteBuffer.class);
 
         // Boolean
         allowedTypes.add(Boolean.class);
@@ -163,7 +162,7 @@ public class PropertyParser {
     }
 
     public static <T> boolean isSupportedNativeType(Class<T> valueClass) {
-        return allowedTypes.contains(valueClass);
+        return valueClass != null && (allowedTypes.contains(valueClass) || (ByteBuffer.class.isAssignableFrom(valueClass)));
     }
 
     public static <T> boolean isSupportedType(Class<T> valueClass) {
