@@ -16,6 +16,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import java.nio.ByteBuffer;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,7 +54,9 @@ public class QueryBuilderIT {
         manager.persist(entity);
 
         final Select.Where select = QueryBuilder.select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select.getQueryString(), select.getValues());
+        final String queryString = select.getQueryString();
+        final ByteBuffer[] values = select.getValues();
+        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, queryString, values);
 
         // When
         final Tweet actual = queryBuilder.getFirst();
