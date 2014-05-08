@@ -92,10 +92,10 @@ public class ArgumentExtractor {
     static final int DEFAULT_CACHE_SIZE = 5000;
 
     public List<Class<?>> initEntities(TypedMap configurationMap) {
+        log.trace("Extract entities from configuration map");
+
         List<String> entityPackages = getEntityPackages(configurationMap);
         List<Class<?>> entities = discoverEntities(entityPackages);
-
-        log.trace("Extract entities from configuration map");
 
         List<Class<?>> entitiesFromList = configurationMap.getTypedOr(ENTITIES_LIST_PARAM, Collections.<Class<?>>emptyList());
         entities.addAll(entitiesFromList);

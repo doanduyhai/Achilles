@@ -28,6 +28,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
@@ -186,6 +187,27 @@ public class CASOperationsIT {
         assertThat(found.getConsistencyLevel()).isEqualTo(EACH_QUORUM);
     }
 
+    @Test
+    public void should_update_with_cas_conditions_using_cql3_column_name() throws Exception {
+        //Given
+        final Long primaryKey = RandomUtils.nextLong();
+        final CompleteBean entity = new CompleteBean();
+        entity.setId(primaryKey);
+        entity.setAge(32L);
+        entity.setName("John");
+
+        final CompleteBean managed = manager.persist(entity);
+        managed.setName("Helen");
+
+        //When
+        manager.update(managed, ifConditions(new CasCondition("age_in_years", 32L)));
+
+        //Then
+        final CompleteBean found = manager.find(CompleteBean.class, primaryKey);
+
+        assertThat(found).isNotNull();
+        assertThat(found.getName()).isEqualTo("Helen");
+    }
 
     @Test
     public void should_exception_when_failing_cas_update() throws Exception {
