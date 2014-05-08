@@ -37,7 +37,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
@@ -89,7 +88,16 @@ public class ArgumentExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
 
-    static final int DEFAULT_CACHE_SIZE = 10000;
+    static final int DEFAULT_LRU_CACHE_SIZE = 10000;
+
+    static final boolean DEFAULT_ENABLE_BEAN_VALIDATION = false;
+
+    static final boolean DEFAULT_PROXIES_WARM_UP_DISABLED = true;
+
+    static final boolean DEFAULT_FORCE_BATCH_STATEMENTS_ORDERING = false;
+
+    static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
+
 
     public List<Class<?>> initEntities(TypedMap configurationMap) {
         log.trace("Extract entities from configuration map");
@@ -355,7 +363,7 @@ public class ArgumentExtractor {
     }
 
     javax.validation.Validator initValidator(TypedMap configurationMap) {
-        Boolean enableBeanValidation = configurationMap.getTypedOr(BEAN_VALIDATION_ENABLE, false);
+        Boolean enableBeanValidation = configurationMap.getTypedOr(BEAN_VALIDATION_ENABLE, DEFAULT_ENABLE_BEAN_VALIDATION);
         if (enableBeanValidation) {
             try {
                 javax.validation.Validator defaultValidator = buildDefaultValidatorFactory().getValidator();
@@ -368,18 +376,18 @@ public class ArgumentExtractor {
     }
 
     public Integer initPreparedStatementsCacheSize(TypedMap configMap) {
-        return configMap.getTypedOr(PREPARED_STATEMENTS_CACHE_SIZE, DEFAULT_CACHE_SIZE);
+        return configMap.getTypedOr(PREPARED_STATEMENTS_CACHE_SIZE, DEFAULT_LRU_CACHE_SIZE);
     }
 
     public boolean initProxyWarmUp(TypedMap configMap) {
-        return configMap.getTypedOr(PROXIES_WARM_UP_DISABLED, true);
+        return configMap.getTypedOr(PROXIES_WARM_UP_DISABLED, DEFAULT_PROXIES_WARM_UP_DISABLED);
     }
 
     public boolean initForceBatchStatementsOrdering(TypedMap configMap) {
-        return configMap.getTypedOr(FORCE_BATCH_STATEMENTS_ORDERING, true);
+        return configMap.getTypedOr(FORCE_BATCH_STATEMENTS_ORDERING, DEFAULT_FORCE_BATCH_STATEMENTS_ORDERING);
     }
 
     public InsertStrategy initInsertStrategy(TypedMap configMap) {
-        return configMap.getTypedOr(INSERT_STRATEGY, NOT_NULL_FIELDS);
+        return configMap.getTypedOr(INSERT_STRATEGY, DEFAULT_INSERT_STRATEGY);
     }
 }

@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_LRU_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
@@ -35,7 +35,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
@@ -431,9 +430,10 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(configContext.getBeanValidator()).isNull();
-        assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_CACHE_SIZE);
-        assertThat(configContext.isForceBatchStatementsOrdering()).isTrue();
-        assertThat(configContext.getInsertStrategy()).isEqualTo(NOT_NULL_FIELDS);
+        assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_LRU_CACHE_SIZE);
+        assertThat(configContext.isForceBatchStatementsOrdering()).isFalse();
+        assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
+        assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
     }
 
     @Test
