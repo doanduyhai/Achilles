@@ -89,7 +89,7 @@ public class ArgumentExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(ArgumentExtractor.class);
 
-    static final int DEFAULT_CACHE_SIZE = 5000;
+    static final int DEFAULT_CACHE_SIZE = 10000;
 
     public List<Class<?>> initEntities(TypedMap configurationMap) {
         log.trace("Extract entities from configuration map");
