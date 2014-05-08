@@ -41,7 +41,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
 import static info.archinnov.achilles.type.OptionsBuilder.ifNotExists;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
@@ -185,7 +185,7 @@ public class PreparedStatementGeneratorTest {
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta),
-                ifConditions(new CasCondition("name", "John")).withTimestamp(100L));
+                ifConditions(new CASCondition("name", "John")).withTimestamp(100L));
 
         assertThat(actual).isSameAs(ps);
 
@@ -428,7 +428,7 @@ public class PreparedStatementGeneratorTest {
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet,
-                ifConditions(new CasCondition("name", "John")).withTimestamp(100L));
+                ifConditions(new CASCondition("name", "John")).withTimestamp(100L));
 
         //Then
         assertThat(actual).isSameAs(ps);

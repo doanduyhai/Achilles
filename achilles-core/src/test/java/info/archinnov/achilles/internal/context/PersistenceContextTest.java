@@ -25,7 +25,7 @@ import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -476,14 +476,14 @@ public class PersistenceContextTest {
     @Test
     public void should_get_cas_conditions() throws Exception {
         //Given
-        final CasCondition casCondition = new CasCondition("name", "John");
-        context.options = OptionsBuilder.ifConditions(casCondition);
+        final CASCondition CASCondition = new CASCondition("name", "John");
+        context.options = OptionsBuilder.ifConditions(CASCondition);
 
         //When
-        final List<CasCondition> casConditions = context.getCasConditions();
+        final List<CASCondition> CASConditions = context.getCasConditions();
 
         //Then
-        assertThat(casConditions).containsExactly(casCondition);
+        assertThat(CASConditions).containsExactly(CASCondition);
     }
 
     @Test
@@ -492,9 +492,9 @@ public class PersistenceContextTest {
         context.options = OptionsBuilder.noOptions();
 
         //When
-        final List<CasCondition> casConditions = context.getCasConditions();
+        final List<CASCondition> CASConditions = context.getCasConditions();
 
         //Then
-        assertThat(casConditions).isNotNull().isEmpty();
+        assertThat(CASConditions).isNotNull().isEmpty();
     }
 }

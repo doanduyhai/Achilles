@@ -93,7 +93,7 @@ public class OptionsValidatorTest {
         exception.expectMessage("Cannot provide custom timestamp for CAS update operations");
 
         //When
-        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, ifConditions(new Options.CasCondition("name", "John"))
+        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, ifConditions(new Options.CASCondition("name", "John"))
                 .withTimestamp(100L));
     }
 }

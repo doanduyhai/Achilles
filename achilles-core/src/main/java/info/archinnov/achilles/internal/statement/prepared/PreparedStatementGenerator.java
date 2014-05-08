@@ -38,7 +38,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import java.util.HashMap;
 import java.util.List;
@@ -112,8 +112,8 @@ public class PreparedStatementGenerator {
         Update update = update(entityMeta.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
         if (options.hasCasConditions()) {
-            for (CasCondition casCondition : options.getCasConditions()) {
-                updateConditions.and(casCondition.toClauseForPreparedStatement());
+            for (CASCondition CASCondition : options.getCASConditions()) {
+                updateConditions.and(CASCondition.toClauseForPreparedStatement());
             }
         }
 
@@ -323,8 +323,8 @@ public class PreparedStatementGenerator {
         final Update.Conditions conditions = update(meta.getTableName()).onlyIf();
 
         if (options.hasCasConditions()) {
-            for (CasCondition casCondition : options.getCasConditions()) {
-                conditions.and(casCondition.toClauseForPreparedStatement());
+            for (CASCondition CASCondition : options.getCASConditions()) {
+                conditions.and(CASCondition.toClauseForPreparedStatement());
             }
         }
 

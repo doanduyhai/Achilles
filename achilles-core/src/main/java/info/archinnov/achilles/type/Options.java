@@ -35,7 +35,7 @@ public class Options {
 
     boolean ifNotExists;
 
-    List<CasCondition> casConditions;
+    List<CASCondition> CASConditions;
 
     Optional<CASResultListener> casResultListenerO = Optional.absent();
 
@@ -58,12 +58,12 @@ public class Options {
         return ifNotExists;
     }
 
-    public List<CasCondition> getCasConditions() {
-        return casConditions;
+    public List<CASCondition> getCASConditions() {
+        return CASConditions;
     }
 
     public boolean hasCasConditions() {
-        return CollectionUtils.isNotEmpty(casConditions);
+        return CollectionUtils.isNotEmpty(CASConditions);
     }
 
     public Optional<CASResultListener> getCasResultListener() {
@@ -81,31 +81,31 @@ public class Options {
 
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
-                .ifNotExists(ifNotExists).ifConditions(casConditions)
+                .ifNotExists(ifNotExists).ifConditions(CASConditions)
                 .casResultListener(casResultListenerO.orNull());
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(casConditions)
+                .ifNotExists(ifNotExists).ifConditions(CASConditions)
                 .casResultListener(casResultListenerO.orNull());
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
         return OptionsBuilder.withConsistency(consistency)
                 .withTtl(ttl).withTimestamp(timestamp)
-                .ifNotExists(ifNotExists).ifConditions(casConditions)
+                .ifNotExists(ifNotExists).ifConditions(CASConditions)
                 .casResultListener(casResultListenerO.orNull());
     }
 
 
-    public static class CasCondition {
+    public static class CASCondition {
 
         private String columnName;
         private Object value;
 
-        public CasCondition(String columnName, Object value) {
+        public CASCondition(String columnName, Object value) {
             Validator.validateNotBlank(columnName, "CAS condition column cannot be blank");
             this.columnName = columnName;
             this.value = value;
@@ -140,7 +140,7 @@ public class Options {
                 return false;
             }
 
-            CasCondition that = (CasCondition) o;
+            CASCondition that = (CASCondition) o;
 
             return columnName.equals(that.columnName) && value.equals(that.value);
 

@@ -19,7 +19,7 @@ import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
 import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isAssignableFromNativeType;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -288,11 +288,11 @@ public class EntityMeta {
         return encodedBoundValues;
     }
 
-    public Object encodeCasConditionValue(CasCondition casCondition) {
-        Object rawValue = casCondition.getValue();
-        final String columnName = casCondition.getColumnName();
+    public Object encodeCasConditionValue(CASCondition CASCondition) {
+        Object rawValue = CASCondition.getValue();
+        final String columnName = CASCondition.getColumnName();
         Object encodedValue = encodeValueForProperty(columnName, rawValue);
-        casCondition.encodeValue(encodedValue);
+        CASCondition.encodeValue(encodedValue);
         return encodedValue;
     }
 

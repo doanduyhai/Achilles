@@ -24,7 +24,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -282,7 +282,7 @@ public class EntityMetaTest {
     @Test
     public void should_encode_CAS_condition_value() throws Exception {
         //Given
-        final CasCondition casCondition = new CasCondition("name", PropertyType.COUNTER);
+        final CASCondition CASCondition = new CASCondition("name", PropertyType.COUNTER);
         PropertyMeta nameMeta = mock(PropertyMeta.class);
         EntityMeta meta = new EntityMeta();
         meta.setAllMetasExceptCounters(asList(nameMeta));
@@ -291,12 +291,12 @@ public class EntityMetaTest {
         when(nameMeta.encode(PropertyType.COUNTER)).thenReturn("COUNTER");
 
         //When
-        final Object encoded = meta.encodeCasConditionValue(casCondition);
+        final Object encoded = meta.encodeCasConditionValue(CASCondition);
 
         //Then
         verify(nameMeta).encode(PropertyType.COUNTER);
         assertThat(encoded).isInstanceOf(String.class).isEqualTo("COUNTER");
-        assertThat(casCondition.getValue()).isEqualTo("COUNTER");
+        assertThat(CASCondition.getValue()).isEqualTo("COUNTER");
     }
 
     @Test

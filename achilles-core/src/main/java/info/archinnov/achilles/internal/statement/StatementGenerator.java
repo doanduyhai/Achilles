@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.statement;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.apache.commons.lang.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,10 +92,10 @@ public class StatementGenerator {
 
         final Object entity = context.getEntity();
         final EntityMeta meta = context.getEntityMeta();
-        final List<CasCondition> casConditions = context.getCasConditions();
+        final List<CASCondition> CASConditions = context.getCasConditions();
 
         final Update.Conditions conditions = update(meta.getTableName()).onlyIf();
-        List<Object> casEncodedValues = addAndEncodeCasConditions(meta, casConditions, conditions);
+        List<Object> casEncodedValues = addAndEncodeCasConditions(meta, CASConditions, conditions);
 
         final CollectionAndMapChangeType operationType = changeSet.getChangeType();
 
@@ -116,12 +116,12 @@ public class StatementGenerator {
         return Pair.create(whereClauseAndBoundValues.left, boundValues);
     }
 
-    private List<Object> addAndEncodeCasConditions(EntityMeta entityMeta, List<CasCondition> casConditions, Update.Conditions conditions) {
+    private List<Object> addAndEncodeCasConditions(EntityMeta entityMeta, List<CASCondition> CASConditions, Update.Conditions conditions) {
         List<Object> casEncodedValues = new ArrayList<>();
-        for (CasCondition casCondition : casConditions) {
-            final Object encodedValue = entityMeta.encodeCasConditionValue(casCondition);
+        for (CASCondition CASCondition : CASConditions) {
+            final Object encodedValue = entityMeta.encodeCasConditionValue(CASCondition);
             casEncodedValues.add(encodedValue);
-            conditions.and(casCondition.toClause());
+            conditions.and(CASCondition.toClause());
         }
         return casEncodedValues;
     }

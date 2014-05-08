@@ -21,7 +21,7 @@ import static info.archinnov.achilles.listener.CASResultListener.CASResult.Opera
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.casResultListener;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -177,7 +177,7 @@ public class CASOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.update(managed, ifConditions(new CasCondition("name", "John"), new CasCondition("consistency_level", EACH_QUORUM)));
+        manager.update(managed, ifConditions(new CASCondition("name", "John"), new CASCondition("consistency_level", EACH_QUORUM)));
 
         //Then
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
@@ -200,7 +200,7 @@ public class CASOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.update(managed, ifConditions(new CasCondition("age_in_years", 32L)));
+        manager.update(managed, ifConditions(new CASCondition("age_in_years", 32L)));
 
         //Then
         final CompleteBean found = manager.find(CompleteBean.class, primaryKey);
@@ -220,7 +220,7 @@ public class CASOperationsIT {
 
         //When
         try {
-            manager.update(managed, ifConditions(new CasCondition("name", "name"), new CasCondition("consistency_level", EACH_QUORUM)));
+            manager.update(managed, ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM)));
         } catch (AchillesCASException ace) {
             casException = ace;
         }
@@ -253,7 +253,7 @@ public class CASOperationsIT {
 
         //When
         manager.update(managed,
-                ifConditions(new CasCondition("name", "name"), new CasCondition("consistency_level", EACH_QUORUM))
+                ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM))
                         .casResultListener(listener));
 
         final CASResult casResult = atomicCASResult.get();
@@ -285,7 +285,7 @@ public class CASOperationsIT {
 
         //When
         manager.update(managed,
-                ifConditions(new CasCondition("name", "name"), new CasCondition("consistency_level", EACH_QUORUM))
+                ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM))
                         .casResultListener(listener)
                         .withTtl(100));
 
@@ -305,7 +305,7 @@ public class CASOperationsIT {
         managed.getFollowers().remove("Paul");
 
         //When
-        manager.update(managed, ifConditions(new CasCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifConditions(new CASCondition("name", "John")).withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -322,7 +322,7 @@ public class CASOperationsIT {
         managed.getFriends().set(1, null);
 
         //When
-        manager.update(managed, ifConditions(new CasCondition("name", "John")).withTtl(100));
+        manager.update(managed, ifConditions(new CASCondition("name", "John")).withTtl(100));
 
         //Then
         final CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
@@ -350,7 +350,7 @@ public class CASOperationsIT {
         managed.getFollowers().add("Helen");
 
         //When
-        manager.update(managed, ifConditions(new CasCondition("name", "Helen")).casResultListener(listener));
+        manager.update(managed, ifConditions(new CASCondition("name", "Helen")).casResultListener(listener));
 
         //Then
         final CASResult casResult = atomicCASResult.get();

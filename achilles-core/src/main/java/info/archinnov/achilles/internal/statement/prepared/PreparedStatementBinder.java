@@ -265,8 +265,8 @@ public class PreparedStatementBinder {
     private List<Object> fetchCASConditionsValues(PersistenceContext context, EntityMeta entityMeta) {
         List<Object> values = new ArrayList<>();
         if (context.hasCasConditions()) {
-            for (Options.CasCondition casCondition : context.getCasConditions()) {
-                values.add(entityMeta.encodeCasConditionValue(casCondition));
+            for (Options.CASCondition CASCondition : context.getCasConditions()) {
+                values.add(entityMeta.encodeCasConditionValue(CASCondition));
             }
         }
         return values;

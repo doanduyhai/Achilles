@@ -24,7 +24,7 @@ import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
 import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -363,8 +363,8 @@ public class PersistenceContext {
         return options.isIfNotExists();
     }
 
-    public List<CasCondition> getCasConditions() {
-        return Optional.fromNullable(options.getCasConditions()).or(new ArrayList<CasCondition>());
+    public List<CASCondition> getCasConditions() {
+        return Optional.fromNullable(options.getCASConditions()).or(new ArrayList<CASCondition>());
     }
 
     public boolean hasCasConditions() {

@@ -22,7 +22,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -183,7 +183,7 @@ public class StatementGeneratorTest {
 
         when(context.getEntity()).thenReturn(entity);
         when(context.getEntityMeta()).thenReturn(meta);
-        when(context.getCasConditions()).thenReturn(asList(new CasCondition("name", "John")));
+        when(context.getCasConditions()).thenReturn(asList(new CASCondition("name", "John")));
         when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
         when(dirtyCheckChangeSet.generateUpdateForRemovedAtIndexElement(any(Conditions.class))).thenReturn(Pair.create(update(), boundValues));
 

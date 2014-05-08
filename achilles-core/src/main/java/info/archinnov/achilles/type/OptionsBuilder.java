@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.type;
 
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
@@ -45,8 +45,8 @@ public class OptionsBuilder {
         return new InternalOptionsBuilder(true);
     }
 
-    public static InternalOptionsBuilder ifConditions(CasCondition... casConditions) {
-        return new InternalOptionsBuilder(casConditions);
+    public static InternalOptionsBuilder ifConditions(CASCondition... CASConditions) {
+        return new InternalOptionsBuilder(CASConditions);
     }
 
     public static InternalOptionsBuilder casResultListener(CASResultListener listener) {
@@ -80,8 +80,8 @@ public class OptionsBuilder {
             super.ifNotExists = ifNotExists;
         }
 
-        protected InternalOptionsBuilder(CasCondition... casConditions) {
-            super.casConditions = Arrays.asList(casConditions);
+        protected InternalOptionsBuilder(CASCondition... CASConditions) {
+            super.CASConditions = Arrays.asList(CASConditions);
         }
 
         protected InternalOptionsBuilder(CASResultListener listener) {
@@ -120,13 +120,13 @@ public class OptionsBuilder {
             return this;
         }
 
-        public InternalOptionsBuilder ifConditions(CasCondition... casConditions) {
-            super.casConditions = Arrays.asList(casConditions);
+        public InternalOptionsBuilder ifConditions(CASCondition... CASConditions) {
+            super.CASConditions = Arrays.asList(CASConditions);
             return this;
         }
 
-        public InternalOptionsBuilder ifConditions(List<CasCondition> casConditions) {
-            super.casConditions = casConditions;
+        public InternalOptionsBuilder ifConditions(List<CASCondition> CASConditions) {
+            super.CASConditions = CASConditions;
             return this;
         }
     }

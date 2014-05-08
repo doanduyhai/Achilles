@@ -36,7 +36,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -764,19 +764,19 @@ public class PreparedStatementBinderTest {
         //Given
         PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID).invoker(invoker).build();
         Long primaryKey = RandomUtils.nextLong();
-        final CasCondition casCondition = new CasCondition("name", "John");
+        final CASCondition CASCondition = new CASCondition("name", "John");
 
         EntityMeta meta = mock(EntityMeta.class);
         when(meta.getClassName()).thenReturn("CompleteBean");
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(meta.encodeCasConditionValue(casCondition)).thenReturn("John");
+        when(meta.encodeCasConditionValue(CASCondition)).thenReturn("John");
 
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(context.hasCasConditions()).thenReturn(true);
-        when(context.getCasConditions()).thenReturn(asList(casCondition));
+        when(context.getCasConditions()).thenReturn(asList(CASCondition));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);

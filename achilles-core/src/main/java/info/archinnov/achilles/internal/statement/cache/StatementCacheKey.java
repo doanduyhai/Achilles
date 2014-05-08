@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement.cache;
 
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -78,21 +78,21 @@ public class StatementCacheKey {
         private boolean hasConsistencyLevel;
         private boolean hasTimestamp;
         private boolean ifNotExists;
-        private List<CasCondition> casConditions;
+        private List<CASCondition> CASConditions;
 
-        private OptionsCacheKey(boolean hasConsistencyLevel, boolean hasTimestamp, boolean ifNotExists, List<CasCondition> casConditions) {
+        private OptionsCacheKey(boolean hasConsistencyLevel, boolean hasTimestamp, boolean ifNotExists, List<CASCondition> CASConditions) {
             this.hasConsistencyLevel = hasConsistencyLevel;
             this.hasTimestamp = hasTimestamp;
             this.ifNotExists = ifNotExists;
-            this.casConditions = casConditions;
+            this.CASConditions = CASConditions;
         }
 
         private static OptionsCacheKey fromOptions(Options options) {
             boolean hasConsistencyLevel = options.getConsistencyLevel().isPresent();
             boolean hasTimestamp = options.getTimestamp().isPresent();
             boolean ifNotExists = options.isIfNotExists();
-            List<CasCondition> casConditions = Optional.fromNullable(options.getCasConditions()).or(Collections.<CasCondition>emptyList());
-            return new OptionsCacheKey(hasConsistencyLevel, hasTimestamp, ifNotExists, casConditions);
+            List<CASCondition> CASConditions = Optional.fromNullable(options.getCASConditions()).or(Collections.<CASCondition>emptyList());
+            return new OptionsCacheKey(hasConsistencyLevel, hasTimestamp, ifNotExists, CASConditions);
         }
 
         @Override
@@ -108,12 +108,12 @@ public class StatementCacheKey {
             return Objects.equals(this.hasConsistencyLevel, other.hasConsistencyLevel) &&
                     Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
                     Objects.equals(this.ifNotExists, other.ifNotExists) &&
-                    Objects.equals(this.casConditions, other.casConditions);
+                    Objects.equals(this.CASConditions, other.CASConditions);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.hasConsistencyLevel, this.hasTimestamp, this.ifNotExists, this.casConditions);
+            return Objects.hash(this.hasConsistencyLevel, this.hasTimestamp, this.ifNotExists, this.CASConditions);
         }
     }
 }

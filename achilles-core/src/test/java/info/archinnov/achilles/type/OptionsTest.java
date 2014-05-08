@@ -17,7 +17,7 @@ package info.archinnov.achilles.type;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.Options.CasCondition;
+import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 
@@ -25,9 +25,9 @@ public class OptionsTest {
 
     @Test
     public void should_duplicate_without_ttl_and_timestamp() throws Exception {
-        final CasCondition casCondition = new CasCondition("name", "John");
+        final CASCondition CASCondition = new CASCondition("name", "John");
         Options options = OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(10)
-                .withTimestamp(100L).ifNotExists().ifConditions(casCondition);
+                .withTimestamp(100L).ifNotExists().ifConditions(CASCondition);
 
         Options newOptions = options.duplicateWithoutTtlAndTimestamp();
 
@@ -36,7 +36,7 @@ public class OptionsTest {
         assertThat(newOptions.getTtl().isPresent()).isFalse();
         assertThat(newOptions.isIfNotExists()).isTrue();
         assertThat(newOptions.hasCasConditions()).isTrue();
-        assertThat(newOptions.getCasConditions()).containsExactly(casCondition);
+        assertThat(newOptions.getCASConditions()).containsExactly(CASCondition);
     }
 
     @Test
