@@ -17,6 +17,7 @@
 - All new **Cassandra 2.0** features
 - Life cycle interceptors
 - Bean Validation (JSR-303)
+- Distributed CAS operation support
 
 
 ## Installation #
@@ -27,14 +28,14 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.2</version>
+		<version>3.0.3</version>
 	</dependency>
  ```
  
  For now, **Achilles** depends on the following libraries:
  
- 1. cassandra 2.0.6
- 2. cassandra-driver-core 2.0.1
+ 1. cassandra 2.0.7
+ 2. cassandra-driver-core 2.0.2
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson asl, mapper & xc 1.9.3 
    
