@@ -266,7 +266,7 @@ public class PreparedStatementBinder {
         List<Object> values = new ArrayList<>();
         if (context.hasCasConditions()) {
             for (Options.CasCondition casCondition : context.getCasConditions()) {
-                values.add(entityMeta.encodeValue(casCondition.getValue()));
+                values.add(entityMeta.encodeCasConditionValue(casCondition));
             }
         }
         return values;

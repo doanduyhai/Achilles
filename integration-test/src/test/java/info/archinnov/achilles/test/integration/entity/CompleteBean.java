@@ -26,9 +26,10 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.type.Counter;
 
-@Entity
+@Entity(table = CompleteBean.TABLE_NAME)
 public class CompleteBean {
 
+    public static final String TABLE_NAME = "CompleteBean";
     @Id
     private Long id;
 

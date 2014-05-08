@@ -54,7 +54,7 @@ public class TypedQuery<T> {
             PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery,
             Object[] encodedBoundValues) {
         this.daoContext = daoContext;
-        this.encodedBoundValues = meta.encodeBoundValues(encodedBoundValues);
+        this.encodedBoundValues = meta.encodeBoundValuesForTypedQueries(encodedBoundValues);
         this.normalizedQuery = shouldNormalizeQuery ? queryString.toLowerCase() : queryString;
         this.meta = meta;
         this.contextFactory = contextFactory;

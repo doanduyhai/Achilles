@@ -24,26 +24,27 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.Options.CasCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Pair;
 
 public class EntityMetaTest {
@@ -220,12 +221,10 @@ public class EntityMetaTest {
     @Test
     public void should_encode_bound_values_for_native_type() throws Exception {
         //Given
-        final PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(String.class).build();
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(propertyMeta));
 
         //When
-        final Object[] encoded = meta.encodeBoundValues(new Object[] { "test" });
+        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { "test" });
 
         //Then
         assertThat(encoded).hasSize(1);
@@ -235,13 +234,10 @@ public class EntityMetaTest {
     @Test
     public void should_encode_bound_values_for_enum_type() throws Exception {
         //Given
-        final PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(PropertyType.class).build();
-        propertyMeta.setTranscoder(new SimpleTranscoder(new ObjectMapper()));
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(propertyMeta));
 
         //When
-        final Object[] encoded = meta.encodeBoundValues(new Object[] { PropertyType.COUNTER });
+        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { PropertyType.COUNTER });
 
         //Then
         assertThat(encoded).hasSize(1);
@@ -251,12 +247,10 @@ public class EntityMetaTest {
     @Test
     public void should_not_encode_null_value() throws Exception {
         //Given
-        final PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(String.class).build();
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(propertyMeta));
 
         //When
-        final Object[] encoded = meta.encodeBoundValues(new Object[] { null });
+        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { null });
 
         //Then
         assertThat(encoded).hasSize(1);
@@ -266,26 +260,65 @@ public class EntityMetaTest {
     @Test
     public void should_not_encode_null_varargs() throws Exception {
         //Given
-        final PropertyMeta propertyMeta = PropertyMetaTestBuilder.valueClass(String.class).build();
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(propertyMeta));
 
         //When
-        final Object[] encoded = meta.encodeBoundValues(null);
+        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(null);
 
         //Then
         assertThat(encoded).hasSize(0);
     }
 
     @Test(expected = AchillesException.class)
-    public void should_exception_during_encoding_if_property_meta_not_found() throws Exception {
+    public void should_exception_trying_to_encode_non_supported_type_for_typed_query() throws Exception {
         //Given
         EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(new ArrayList<PropertyMeta>());
 
         //When
-        meta.encodeBoundValues(new Object[] { PropertyType.COUNTER });
+        meta.encodeBoundValuesForTypedQueries(new Object[] { new CompleteBean() });
+        //Then
     }
+
+    @Test
+    public void should_encode_CAS_condition_value() throws Exception {
+        //Given
+        final CasCondition casCondition = new CasCondition("name", PropertyType.COUNTER);
+        PropertyMeta nameMeta = mock(PropertyMeta.class);
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptCounters(asList(nameMeta));
+
+        when(nameMeta.getCQL3PropertyName()).thenReturn("name");
+        when(nameMeta.encode(PropertyType.COUNTER)).thenReturn("COUNTER");
+
+        //When
+        final Object encoded = meta.encodeCasConditionValue(casCondition);
+
+        //Then
+        verify(nameMeta).encode(PropertyType.COUNTER);
+        assertThat(encoded).isInstanceOf(String.class).isEqualTo("COUNTER");
+        assertThat(casCondition.getValue()).isEqualTo("COUNTER");
+    }
+
+    @Test
+    public void should_encode_index_condition_value() throws Exception {
+        //Given
+        final IndexCondition indexCondition = new IndexCondition("name", PropertyType.COUNTER);
+        PropertyMeta nameMeta = mock(PropertyMeta.class);
+        EntityMeta meta = new EntityMeta();
+        meta.setAllMetasExceptCounters(asList(nameMeta));
+
+        when(nameMeta.getCQL3PropertyName()).thenReturn("name");
+        when(nameMeta.encode(PropertyType.COUNTER)).thenReturn("COUNTER");
+
+        //When
+        final Object encoded = meta.encodeIndexConditionValue(indexCondition);
+
+        //Then
+        verify(nameMeta).encode(PropertyType.COUNTER);
+        assertThat(encoded).isInstanceOf(String.class).isEqualTo("COUNTER");
+        assertThat(indexCondition.getColumnValue()).isEqualTo("COUNTER");
+    }
+
 
     @Test
     public void should_return_event_interceptors_for_specific_event() throws Exception {

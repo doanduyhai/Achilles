@@ -14,8 +14,8 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum;
 import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndex;
+import info.archinnov.achilles.test.integration.entity.EntityWithSecondaryIndexOnEnum;
 import info.archinnov.achilles.type.IndexCondition;
 
 public class SecondaryIndexIT {
@@ -89,15 +89,5 @@ public class SecondaryIndexIT {
         exception.expectMessage("Index condition should not be null");
 
         manager.indexedQuery(CompleteBean.class, null).get();
-    }
-
-    @Test
-    public void should_throw_empty_column_name_for_indexed_query() throws Exception {
-        IndexCondition condition = new IndexCondition(null, "John DOO");
-
-        exception.expect(AchillesException.class);
-        exception.expectMessage("Column name for index condition '" + condition + "' should be provided");
-
-        manager.indexedQuery(CompleteBean.class, condition).get();
     }
 }

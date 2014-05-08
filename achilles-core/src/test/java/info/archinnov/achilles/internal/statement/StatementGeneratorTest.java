@@ -27,6 +27,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -171,13 +172,13 @@ public class StatementGeneratorTest {
         PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors()
                 .type(ID).invoker(invoker).build();
 
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta));
-        meta.setIdMeta(idMeta);
-
         Long id = RandomUtils.nextLong();
         Object[] boundValues = new Object[] { "whatever" };
+
+        EntityMeta meta = mock(EntityMeta.class);
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.encodeBoundValuesForTypedQueries(boundValues)).thenReturn(boundValues);
+
         CompleteBean entity = builder().id(id).buid();
 
         when(context.getEntity()).thenReturn(entity);

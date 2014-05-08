@@ -119,9 +119,8 @@ public class StatementGenerator {
     private List<Object> addAndEncodeCasConditions(EntityMeta entityMeta, List<CasCondition> casConditions, Update.Conditions conditions) {
         List<Object> casEncodedValues = new ArrayList<>();
         for (CasCondition casCondition : casConditions) {
-            final Object encodedValue = entityMeta.encodeValue(casCondition.getValue());
+            final Object encodedValue = entityMeta.encodeCasConditionValue(casCondition);
             casEncodedValues.add(encodedValue);
-            casCondition.encodeValue(encodedValue);
             conditions.and(casCondition.toClause());
         }
         return casEncodedValues;

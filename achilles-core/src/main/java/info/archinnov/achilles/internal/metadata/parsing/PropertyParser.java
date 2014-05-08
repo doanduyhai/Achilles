@@ -36,9 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,6 +162,15 @@ public class PropertyParser {
 
     public static <T> boolean isSupportedNativeType(Class<T> valueClass) {
         return allowedTypes.contains(valueClass);
+    }
+
+    public static <T> boolean isAssignableFromNativeType(Class<T> valueClass) {
+        for (Class<?> allowedType : allowedTypes) {
+            if (allowedType.isAssignableFrom(valueClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static <T> boolean isSupportedType(Class<T> valueClass) {

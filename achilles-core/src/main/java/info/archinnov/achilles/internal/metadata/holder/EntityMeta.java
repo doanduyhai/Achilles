@@ -18,8 +18,8 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
-import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isSupportedNativeType;
-import static java.lang.String.format;
+import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isAssignableFromNativeType;
+import static info.archinnov.achilles.type.Options.CasCondition;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Pair;
 
 public class EntityMeta {
@@ -269,18 +270,44 @@ public class EntityMeta {
         }
     }
 
-    public Object[] encodeBoundValues(Object[] boundValues) {
+    public Object[] encodeBoundValuesForTypedQueries(Object[] boundValues) {
         Object[] encodedBoundValues = new Object[boundValues != null ? boundValues.length : 0];
         for (int i = 0; i < encodedBoundValues.length; i++) {
-            encodedBoundValues[i] = encodeValue(boundValues[i]);
+            final Object boundValue = boundValues[i];
+            if (boundValue != null) {
+                final Class<?> type = boundValue.getClass();
+                if (isAssignableFromNativeType(type)) {
+                    encodedBoundValues[i] = boundValue;
+                } else if (type.isEnum()) {
+                    encodedBoundValues[i] = ((Enum<?>) boundValue).name();
+                } else {
+                    throw new AchillesException("Cannot encode value " + boundValue + " for typed query");
+                }
+            }
         }
         return encodedBoundValues;
     }
 
-    public Object encodeValue(Object rawValue) {
+    public Object encodeCasConditionValue(CasCondition casCondition) {
+        Object rawValue = casCondition.getValue();
+        final String columnName = casCondition.getColumnName();
+        Object encodedValue = encodeValueForProperty(columnName, rawValue);
+        casCondition.encodeValue(encodedValue);
+        return encodedValue;
+    }
+
+    public Object encodeIndexConditionValue(IndexCondition indexCondition) {
+        Object rawValue = indexCondition.getColumnValue();
+        final String columnName = indexCondition.getColumnName();
+        Object encodedValue = encodeValueForProperty(columnName, rawValue);
+        indexCondition.encodeValue(encodedValue);
+        return encodedValue;
+    }
+
+    private Object encodeValueForProperty(String columnName, Object rawValue) {
         Object encodedValue = rawValue;
-        if (rawValue != null && !isSupportedNativeType(rawValue.getClass())) {
-            final PropertyMeta propertyMeta = findPropertyMetaByType(rawValue.getClass());
+        if (rawValue != null) {
+            final PropertyMeta propertyMeta = findPropertyMetaByCQL3Name(columnName);
             encodedValue = propertyMeta.encode(rawValue);
         }
         return encodedValue;
@@ -300,12 +327,12 @@ public class EntityMeta {
         return metasForNonNullProperties;
     }
 
-    private PropertyMeta findPropertyMetaByType(Class<?> type) {
+    private PropertyMeta findPropertyMetaByCQL3Name(String cql3Name) {
         for (PropertyMeta meta : allMetasExceptCounters) {
-            if (meta.getValueClass().isAssignableFrom(type))
+            if (meta.getCQL3PropertyName().equals(cql3Name))
                 return meta;
         }
-        throw new AchillesException(format("Cannot find matching property meta for the type %s", type));
+        throw new AchillesException(String.format("Cannot find matching property meta for the cql3 field %s", cql3Name));
     }
 
     @Override

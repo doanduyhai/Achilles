@@ -554,19 +554,13 @@ public class PersistenceManager {
 
         EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
-        Validator.validateFalse(entityMeta.isClusteredEntity(),
-                "Index query is not supported for clustered entity. Please use typed query/native query");
+        Validator.validateFalse(entityMeta.isClusteredEntity(), "Index query is not supported for clustered entity. Please use typed query/native query");
         Validator.validateNotNull(indexCondition, "Index condition should not be null");
-        Validator.validateNotBlank(indexCondition.getColumnName(),
-                "Column name for index condition '%s' should be provided", indexCondition);
-        Validator.validateNotNull(indexCondition.getColumnValue(),
-                "Column value for index condition '%s' should be provided", indexCondition);
-        Validator.validateNotNull(indexCondition.getIndexRelation(),
-                "Index relation for index condition '%s' should be provided", indexCondition);
+
+        entityMeta.encodeIndexConditionValue(indexCondition);
 
         String indexColumnName = indexCondition.getColumnName();
-        final Select.Where query = select().from(entityMeta.getTableName())
-                .where(eq(indexColumnName, bindMarker(indexColumnName)));
+        final Select.Where query = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
         return typedQueryInternal(entityClass, query.getQueryString(), false, indexCondition.getColumnValue());
     }
 

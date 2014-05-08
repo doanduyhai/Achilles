@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.CASResultListener;
 
 public class Options {
@@ -105,12 +106,17 @@ public class Options {
         private Object value;
 
         public CasCondition(String columnName, Object value) {
+            Validator.validateNotBlank(columnName, "CAS condition column cannot be blank");
             this.columnName = columnName;
             this.value = value;
         }
 
         public void encodeValue(Object encodedValue) {
             this.value = encodedValue;
+        }
+
+        public String getColumnName() {
+            return columnName;
         }
 
         public Object getValue() {

@@ -36,10 +36,12 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
+import static info.archinnov.achilles.type.Options.CasCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
@@ -72,7 +74,6 @@ import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.type.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementBinderTest {
@@ -762,17 +763,20 @@ public class PreparedStatementBinderTest {
     public void should_bind_for_remove_entry_from_map_with_cas_condition() throws Exception {
         //Given
         PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID).invoker(invoker).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setClassName("CompleteBean");
-        meta.setIdMeta(idMeta);
         Long primaryKey = RandomUtils.nextLong();
+        final CasCondition casCondition = new CasCondition("name", "John");
+
+        EntityMeta meta = mock(EntityMeta.class);
+        when(meta.getClassName()).thenReturn("CompleteBean");
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(meta.encodeCasConditionValue(casCondition)).thenReturn("John");
 
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(context.hasCasConditions()).thenReturn(true);
-        when(context.getCasConditions()).thenReturn(asList(new Options.CasCondition("name", "John")));
+        when(context.getCasConditions()).thenReturn(asList(casCondition));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);

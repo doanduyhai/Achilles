@@ -20,7 +20,6 @@ import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.test.integration.entity.EntityWithEnum.TABLE_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.Options.CasCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.casResultListener;
@@ -45,7 +44,7 @@ import info.archinnov.achilles.type.OptionsBuilder;
 public class CASOperationsIT {
 
     @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(AchillesTestResource.Steps.AFTER_TEST, TABLE_NAME);
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(AchillesTestResource.Steps.AFTER_TEST, EntityWithEnum.TABLE_NAME, CompleteBean.TABLE_NAME);
 
     private PersistenceManager manager = resource.getPersistenceManager();
 

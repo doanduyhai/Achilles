@@ -524,6 +524,10 @@ public class PropertyMeta {
         this.emptyCollectionAndMapIfNull = emptyCollectionAndMapIfNull;
     }
 
+    public String getCQL3PropertyName() {
+        return propertyName;
+    }
+
     public Object nullValueForCollectionAndMap() {
         Object value = null;
         if (emptyCollectionAndMapIfNull) {
