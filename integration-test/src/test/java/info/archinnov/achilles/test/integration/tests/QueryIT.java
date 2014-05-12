@@ -19,6 +19,8 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +37,13 @@ import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.typed.TypedQuery;
+import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity.ClusteredKey;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.test.integration.entity.Tweet;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -573,6 +577,42 @@ public class QueryIT {
 
     @Test
     public void should_ignore_null_varargs_for_bounded_values() {
+        // Given
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+
+        manager.persist(entity);
+
+        final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
+
+        // When
+        final CompleteBean actual = queryBuilder.getFirst();
+
+        // Then
+        assertThat(actual.getLabel()).isEqualTo("label");
+    }
+
+    @Test
+    public void should_apply_null_heap_byte_buffer(){
+        // Given
+        Tweet entity = TweetTestBuilder.tweet().randomId().content("label").buid();
+
+        manager.persist(entity);
+
+        final Select.Where select = QueryBuilder.select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
+        final String queryString = select.getQueryString();
+        final ByteBuffer[] values = select.getValues();
+        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, queryString, values);
+
+        // When
+        final Tweet actual = queryBuilder.getFirst();
+
+        // Then
+        assertThat(actual).isNotNull();
+    }
+
+    @Test
+    public void should_apply_null_bounded_values(){
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
