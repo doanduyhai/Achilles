@@ -15,7 +15,8 @@
  */
 package info.archinnov.achilles.json;
 
-import org.codehaus.jackson.map.ObjectMapper;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface ObjectMapperFactory {
 	public <T> ObjectMapper getMapper(Class<T> type);

@@ -62,7 +62,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.validation.ValidationException;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

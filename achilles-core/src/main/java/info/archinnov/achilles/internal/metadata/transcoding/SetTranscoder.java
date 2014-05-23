@@ -17,7 +17,7 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 

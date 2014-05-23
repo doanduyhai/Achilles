@@ -15,11 +15,12 @@
  */
 package info.archinnov.achilles.type;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import info.archinnov.achilles.json.CounterDeserializer;
 import info.archinnov.achilles.json.CounterSerializer;
 
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @JsonDeserialize(using = CounterDeserializer.class)
 @JsonSerialize(using = CounterSerializer.class)

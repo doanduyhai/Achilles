@@ -25,8 +25,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -188,7 +189,7 @@ public class PersistenceManagerFactoryTest {
         //Given
         pmf.configContext = configContext;
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
         CompleteBean entity = CompleteBeanTestBuilder.builder().id(10L).name("name").buid();
 
@@ -204,7 +205,7 @@ public class PersistenceManagerFactoryTest {
         //Given
         pmf.configContext = configContext;
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
 
         //When

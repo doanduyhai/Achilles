@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

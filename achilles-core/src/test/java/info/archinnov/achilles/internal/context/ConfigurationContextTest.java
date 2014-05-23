@@ -23,7 +23,7 @@ import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 import javax.validation.Validator;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;

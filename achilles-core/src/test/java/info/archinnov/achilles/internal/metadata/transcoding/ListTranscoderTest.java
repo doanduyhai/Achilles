@@ -25,7 +25,7 @@ import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import java.util.Arrays;
 import java.util.List;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 public class ListTranscoderTest {

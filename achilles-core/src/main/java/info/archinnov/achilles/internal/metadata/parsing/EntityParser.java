@@ -31,9 +31,10 @@ import info.archinnov.achilles.type.Pair;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EntityParser {
 	private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
