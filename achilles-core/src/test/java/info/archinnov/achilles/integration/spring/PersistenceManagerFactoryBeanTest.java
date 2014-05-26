@@ -17,7 +17,7 @@ package info.archinnov.achilles.integration.spring;
 
 import info.archinnov.achilles.json.ObjectMapperFactory;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

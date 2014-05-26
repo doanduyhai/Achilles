@@ -16,26 +16,25 @@
 
 package info.archinnov.achilles.json;
 
+import java.io.IOException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import info.archinnov.achilles.type.Counter;
 
-import java.io.IOException;
-
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.SerializerProvider;
 
 public final class CounterSerializer extends JsonSerializer<Counter> {
 
-	@Override
-	public void serialize(Counter value, JsonGenerator generator, SerializerProvider provider) throws IOException {
-		String serializedValue = "";
-		if (value != null) {
-			Long counterValue = value.get();
-			if (counterValue != null) {
-				serializedValue = counterValue.toString();
-			}
-		}
-		generator.writeString(serializedValue);
-	}
+    @Override
+    public void serialize(Counter value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+        String serializedValue = "";
+        if (value != null) {
+            Long counterValue = value.get();
+            if (counterValue != null) {
+                serializedValue = counterValue.toString();
+            }
+        }
+        generator.writeString(serializedValue);
+    }
 
 }

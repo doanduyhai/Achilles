@@ -16,29 +16,28 @@
 
 package info.archinnov.achilles.json;
 
+import java.io.IOException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.CounterBuilder;
 
-import java.io.IOException;
-
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
 
 public final class CounterDeserializer extends JsonDeserializer<Counter> {
 
-	@Override
-	public Counter deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+    @Override
+    public Counter deserialize(JsonParser parser, DeserializationContext context) throws IOException {
 
-		Counter counter = null;
-		String value = parser.getText();
-		if (value != null && !"".equals(value.trim())) {
-			try {
-				counter = CounterBuilder.incr(Long.parseLong(value));
-			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("Cannot deserialize '" + value + "' as Long for Counter ");
-			}
-		}
-		return counter;
-	}
+        Counter counter = null;
+        String value = parser.getText();
+        if (value != null && !"".equals(value.trim())) {
+            try {
+                counter = CounterBuilder.incr(Long.parseLong(value));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Cannot deserialize '" + value + "' as Long for Counter ");
+            }
+        }
+        return counter;
+    }
 }

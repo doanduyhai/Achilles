@@ -15,27 +15,27 @@
  */
 package info.archinnov.achilles.internal.metadata.transcoding;
 
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 
 public class SimpleTranscoder extends AbstractTranscoder {
 
-	protected ReflectionInvoker invoker = new ReflectionInvoker();
+    protected ReflectionInvoker invoker = new ReflectionInvoker();
 
-	public SimpleTranscoder(ObjectMapper objectMapper) {
-		super(objectMapper);
-	}
+    public SimpleTranscoder(ObjectMapper objectMapper) {
+        super(objectMapper);
+    }
 
-	@Override
-	public Object encode(PropertyMeta pm, Object entityValue) {
-		return super.encodeInternal(pm.getValueClass(), entityValue);
-	}
+    @Override
+    public Object encode(PropertyMeta pm, Object entityValue) {
+        return super.encodeInternal(pm.getValueClass(), entityValue);
+    }
 
-	@Override
-	public Object decode(PropertyMeta pm, Object cassandraValue) {
-		return super.decodeInternal(pm.getValueClass(), cassandraValue);
-	}
+    @Override
+    public Object decode(PropertyMeta pm, Object cassandraValue) {
+        return super.decodeInternal(pm.getValueClass(), cassandraValue);
+    }
 
 }

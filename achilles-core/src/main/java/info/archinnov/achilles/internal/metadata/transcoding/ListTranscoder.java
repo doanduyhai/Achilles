@@ -17,31 +17,30 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jackson.map.ObjectMapper;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 
 public class ListTranscoder extends SimpleTranscoder {
 
-	public ListTranscoder(ObjectMapper objectMapper) {
-		super(objectMapper);
-	}
+    public ListTranscoder(ObjectMapper objectMapper) {
+        super(objectMapper);
+    }
 
-	@Override
-	public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
-		List<Object> encoded = new ArrayList<Object>();
-		for (Object value : entityValue) {
-			encoded.add(super.encodeInternal(pm.getValueClass(), value));
-		}
-		return encoded;
-	}
+    @Override
+    public List<Object> encode(PropertyMeta pm, List<?> entityValue) {
+        List<Object> encoded = new ArrayList<Object>();
+        for (Object value : entityValue) {
+            encoded.add(super.encodeInternal(pm.getValueClass(), value));
+        }
+        return encoded;
+    }
 
-	@Override
-	public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
-		List<Object> decoded = new ArrayList<Object>();
-		for (Object value : cassandraValue) {
-			decoded.add(super.decodeInternal(pm.getValueClass(), value));
-		}
-		return decoded;
-	}
+    @Override
+    public List<Object> decode(PropertyMeta pm, List<?> cassandraValue) {
+        List<Object> decoded = new ArrayList<Object>();
+        for (Object value : cassandraValue) {
+            decoded.add(super.decodeInternal(pm.getValueClass(), value));
+        }
+        return decoded;
+    }
 }

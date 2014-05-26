@@ -18,49 +18,47 @@ package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
-
 import javax.validation.Validator;
-
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationContextTest {
 
-	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
-	private Validator validator;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Validator validator;
 
     @Mock
     private ObjectMapperFactory factory;
 
-	@Test
-	public void should_detect_constrained_class() throws Exception {
-		// Given
-		ConfigurationContext context = new ConfigurationContext();
-		context.setBeanValidator(validator);
+    @Test
+    public void should_detect_constrained_class() throws Exception {
+        // Given
+        ConfigurationContext context = new ConfigurationContext();
+        context.setBeanValidator(validator);
 
-		// When
-		when(validator.getConstraintsForClass(BeanWithFieldLevelConstraint.class).isBeanConstrained()).thenReturn(true);
+        // When
+        when(validator.getConstraintsForClass(BeanWithFieldLevelConstraint.class).isBeanConstrained()).thenReturn(true);
 
-		// Then
-		assertThat(context.isClassConstrained(BeanWithFieldLevelConstraint.class)).isTrue();
-	}
+        // Then
+        assertThat(context.isClassConstrained(BeanWithFieldLevelConstraint.class)).isTrue();
+    }
 
-	@Test
-	public void should_not_detect_constrained_class_if_bean_validation_disabled() throws Exception {
-		// Given
-		ConfigurationContext context = new ConfigurationContext();
+    @Test
+    public void should_not_detect_constrained_class_if_bean_validation_disabled() throws Exception {
+        // Given
+        ConfigurationContext context = new ConfigurationContext();
 
-		// Then
-		assertThat(context.isClassConstrained(BeanWithFieldLevelConstraint.class)).isFalse();
+        // Then
+        assertThat(context.isClassConstrained(BeanWithFieldLevelConstraint.class)).isFalse();
 
-	}
+    }
 
     @Test
     public void should_get_mapper_for_type() throws Exception {

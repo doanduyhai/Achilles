@@ -17,32 +17,31 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.codehaus.jackson.map.ObjectMapper;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 
 public class SetTranscoder extends SimpleTranscoder {
 
-	public SetTranscoder(ObjectMapper objectMapper) {
-		super(objectMapper);
-	}
+    public SetTranscoder(ObjectMapper objectMapper) {
+        super(objectMapper);
+    }
 
-	@Override
-	public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
-		Set<Object> encoded = new HashSet<Object>();
-		for (Object value : entityValue) {
-			encoded.add(super.encodeInternal(pm.getValueClass(), value));
-		}
-		return encoded;
-	}
+    @Override
+    public Set<Object> encode(PropertyMeta pm, Set<?> entityValue) {
+        Set<Object> encoded = new HashSet<Object>();
+        for (Object value : entityValue) {
+            encoded.add(super.encodeInternal(pm.getValueClass(), value));
+        }
+        return encoded;
+    }
 
-	@Override
-	public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
-		Set<Object> decoded = new HashSet<Object>();
-		for (Object value : cassandraValue) {
-			decoded.add(super.decodeInternal(pm.getValueClass(), value));
-		}
-		return decoded;
-	}
+    @Override
+    public Set<Object> decode(PropertyMeta pm, Set<?> cassandraValue) {
+        Set<Object> decoded = new HashSet<Object>();
+        for (Object value : cassandraValue) {
+            decoded.add(super.decodeInternal(pm.getValueClass(), value));
+        }
+        return decoded;
+    }
 
 }

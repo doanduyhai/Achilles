@@ -22,7 +22,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;

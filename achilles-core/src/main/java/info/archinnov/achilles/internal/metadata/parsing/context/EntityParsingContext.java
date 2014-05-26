@@ -15,87 +15,86 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.jackson.map.ObjectMapper;
 
 public class EntityParsingContext {
-	private ConfigurationContext configContext;
-	private Boolean hasCounter = false;
+    private ConfigurationContext configContext;
+    private Boolean hasCounter = false;
 
-	private Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
-	private List<PropertyMeta> counterMetas = new ArrayList<PropertyMeta>();
-	private Class<?> currentEntityClass;
-	private ObjectMapper currentObjectMapper;
-	private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
+    private Map<String, PropertyMeta> propertyMetas = new HashMap<>();
+    private List<PropertyMeta> counterMetas = new ArrayList<>();
+    private Class<?> currentEntityClass;
+    private ObjectMapper currentObjectMapper;
+    private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
 
-	public EntityParsingContext(//
-			ConfigurationContext configContext, //
-			Class<?> currentEntityClass) {
-		this.configContext = configContext;
-		this.currentEntityClass = currentEntityClass;
-	}
+    public EntityParsingContext(//
+            ConfigurationContext configContext, //
+            Class<?> currentEntityClass) {
+        this.configContext = configContext;
+        this.currentEntityClass = currentEntityClass;
+    }
 
-	public PropertyParsingContext newPropertyContext(Field currentField) {
-		return new PropertyParsingContext(this, currentField);
-	}
+    public PropertyParsingContext newPropertyContext(Field currentField) {
+        return new PropertyParsingContext(this, currentField);
+    }
 
-	public Class<?> getCurrentEntityClass() {
-		return currentEntityClass;
-	}
+    public Class<?> getCurrentEntityClass() {
+        return currentEntityClass;
+    }
 
-	public Map<String, PropertyMeta> getPropertyMetas() {
-		return propertyMetas;
-	}
+    public Map<String, PropertyMeta> getPropertyMetas() {
+        return propertyMetas;
+    }
 
-	public void setPropertyMetas(Map<String, PropertyMeta> propertyMetas) {
-		this.propertyMetas = propertyMetas;
-	}
+    public void setPropertyMetas(Map<String, PropertyMeta> propertyMetas) {
+        this.propertyMetas = propertyMetas;
+    }
 
-	public Boolean hasSimpleCounter() {
-		return hasCounter;
-	}
+    public Boolean hasSimpleCounter() {
+        return hasCounter;
+    }
 
-	public void setHasSimpleCounter(Boolean hasCounter) {
-		this.hasCounter = hasCounter;
-	}
+    public void setHasSimpleCounter(Boolean hasCounter) {
+        this.hasCounter = hasCounter;
+    }
 
-	public ObjectMapper getCurrentObjectMapper() {
-		return currentObjectMapper;
-	}
+    public ObjectMapper getCurrentObjectMapper() {
+        return currentObjectMapper;
+    }
 
-	public void setCurrentObjectMapper(ObjectMapper currentObjectMapper) {
-		this.currentObjectMapper = currentObjectMapper;
-	}
+    public void setCurrentObjectMapper(ObjectMapper currentObjectMapper) {
+        this.currentObjectMapper = currentObjectMapper;
+    }
 
-	public void setCurrentConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
-		this.currentConsistencyLevels = currentConsistencyLevels;
-	}
+    public void setCurrentConsistencyLevels(Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
+        this.currentConsistencyLevels = currentConsistencyLevels;
+    }
 
-	public List<PropertyMeta> getCounterMetas() {
-		return counterMetas;
-	}
+    public List<PropertyMeta> getCounterMetas() {
+        return counterMetas;
+    }
 
-	public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels() {
-		return currentConsistencyLevels;
-	}
+    public Pair<ConsistencyLevel, ConsistencyLevel> getCurrentConsistencyLevels() {
+        return currentConsistencyLevels;
+    }
 
-	public ObjectMapperFactory getObjectMapperFactory() {
-		return configContext.getObjectMapperFactory();
-	}
+    public ObjectMapperFactory getObjectMapperFactory() {
+        return configContext.getObjectMapperFactory();
+    }
 
-	public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
-		return Pair.create(configContext.getDefaultReadConsistencyLevel(),
-				configContext.getDefaultWriteConsistencyLevel());
-	}
+    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
+        return Pair.create(configContext.getDefaultReadConsistencyLevel(),
+                configContext.getDefaultWriteConsistencyLevel());
+    }
 }

@@ -17,9 +17,9 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.transcoding.CompoundTranscoder;
 import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
 import info.archinnov.achilles.internal.metadata.transcoding.ListTranscoder;

@@ -16,6 +16,11 @@
 package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder.entityMetaBuilder;
+import java.lang.reflect.Field;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Id;
@@ -28,88 +33,81 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class EntityParser {
-	private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
 
-	private EntityParsingValidator validator = new EntityParsingValidator();
-	private PropertyParser parser = new PropertyParser();
-	private PropertyFilter filter = new PropertyFilter();
-	private EntityIntrospector introspector = new EntityIntrospector();
+    private EntityParsingValidator validator = new EntityParsingValidator();
+    private PropertyParser parser = new PropertyParser();
+    private PropertyFilter filter = new PropertyFilter();
+    private EntityIntrospector introspector = new EntityIntrospector();
 
-	public EntityMeta parseEntity(EntityParsingContext context) {
-		log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
+    public EntityMeta parseEntity(EntityParsingContext context) {
+        log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
 
-		Class<?> entityClass = context.getCurrentEntityClass();
-		validateEntityAndGetObjectMapper(context);
+        Class<?> entityClass = context.getCurrentEntityClass();
+        validateEntityAndGetObjectMapper(context);
 
-		String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
-		Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass,
-				context.getDefaultConsistencyLevels());
+        String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass,
+                context.getDefaultConsistencyLevels());
 
-		context.setCurrentConsistencyLevels(consistencyLevels);
+        context.setCurrentConsistencyLevels(consistencyLevels);
 
-		PropertyMeta idMeta = null;
-		List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
-		for (Field field : inheritedFields) {
-			PropertyParsingContext propertyContext = context.newPropertyContext(field);
-			if (filter.hasAnnotation(field, Id.class)) {
-				propertyContext.setPrimaryKey(true);
-				idMeta = parser.parse(propertyContext);
-			} else if (filter.hasAnnotation(field, EmbeddedId.class)) {
-				propertyContext.setEmbeddedId(true);
-				idMeta = parser.parse(propertyContext);
-			} else if (filter.hasAnnotation(field, Column.class)) {
-				parser.parse(propertyContext);
-			} else {
-				log.trace("Un-mapped field {} of entity {} will not be managed by Achilles", field.getName(), context
-						.getCurrentEntityClass().getCanonicalName());
-			}
-		}
+        PropertyMeta idMeta = null;
+        List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);
+        for (Field field : inheritedFields) {
+            PropertyParsingContext propertyContext = context.newPropertyContext(field);
+            if (filter.hasAnnotation(field, Id.class)) {
+                propertyContext.setPrimaryKey(true);
+                idMeta = parser.parse(propertyContext);
+            } else if (filter.hasAnnotation(field, EmbeddedId.class)) {
+                propertyContext.setEmbeddedId(true);
+                idMeta = parser.parse(propertyContext);
+            } else if (filter.hasAnnotation(field, Column.class)) {
+                parser.parse(propertyContext);
+            } else {
+                log.trace("Un-mapped field {} of entity {} will not be managed by Achilles", field.getName(), context
+                        .getCurrentEntityClass().getCanonicalName());
+            }
+        }
 
-		// First validate id meta
-		validator.validateHasIdMeta(entityClass, idMeta);
+        // First validate id meta
+        validator.validateHasIdMeta(entityClass, idMeta);
 
-		// Deferred counter property meta completion
-		completeCounterPropertyMeta(context, idMeta);
+        // Deferred counter property meta completion
+        completeCounterPropertyMeta(context, idMeta);
 
-		EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
-				.className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
-				.propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
-				.build();
+        EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
+                .className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
+                .propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
+                .build();
 
-		log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),
-				entityMeta);
-		return entityMeta;
-	}
+        log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),
+                entityMeta);
+        return entityMeta;
+    }
 
-	private void validateEntityAndGetObjectMapper(EntityParsingContext context) {
+    private void validateEntityAndGetObjectMapper(EntityParsingContext context) {
 
-		Class<?> entityClass = context.getCurrentEntityClass();
-		log.debug("Validate entity {}", entityClass.getCanonicalName());
+        Class<?> entityClass = context.getCurrentEntityClass();
+        log.debug("Validate entity {}", entityClass.getCanonicalName());
 
-		ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
-		Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '%s'",
-				entityClass.getCanonicalName());
+        ObjectMapper objectMapper = context.getObjectMapperFactory().getMapper(entityClass);
+        Validator.validateNotNull(objectMapper, "No Jackson ObjectMapper found for entity '%s'",
+                entityClass.getCanonicalName());
 
-		log.debug("Set default object mapper {} for entity {}", objectMapper.getClass().getCanonicalName(),
-				entityClass.getCanonicalName());
-		context.setCurrentObjectMapper(objectMapper);
-	}
+        log.debug("Set default object mapper {} for entity {}", objectMapper.getClass().getCanonicalName(),
+                entityClass.getCanonicalName());
+        context.setCurrentObjectMapper(objectMapper);
+    }
 
-	private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta idMeta) {
-		for (PropertyMeta counterMeta : context.getCounterMetas()) {
+    private void completeCounterPropertyMeta(EntityParsingContext context, PropertyMeta idMeta) {
+        for (PropertyMeta counterMeta : context.getCounterMetas()) {
 
-			log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta.getPropertyName(),
-					counterMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
+            log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta.getPropertyName(),
+                    counterMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
-			counterMeta.getCounterProperties().setIdMeta(idMeta);
-		}
-	}
+            counterMeta.getCounterProperties().setIdMeta(idMeta);
+        }
+    }
 }

@@ -19,11 +19,10 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMP
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 public class SimpleTranscoderTest {

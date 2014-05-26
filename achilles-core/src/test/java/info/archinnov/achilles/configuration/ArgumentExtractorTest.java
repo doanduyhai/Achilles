@@ -63,12 +63,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Validator;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
-import org.codehaus.jackson.xc.JaxbAnnotationIntrospector;
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -83,6 +77,12 @@ import com.datastax.driver.core.ProtocolOptions;
 import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.Policies;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesException;
@@ -197,20 +197,15 @@ public class ArgumentExtractorTest {
         ObjectMapper mapper = actual.getMapper(Integer.class);
 
         assertThat(mapper).isNotNull();
-        assertThat(mapper.getSerializationConfig().getSerializationInclusion()).isEqualTo(Inclusion.NON_NULL);
-        assertThat(
-                mapper.getDeserializationConfig().isEnabled(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES))
-                .isFalse();
-        Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector()
-                .allIntrospectors();
+        assertThat(mapper.getSerializationConfig().getSerializationInclusion()).isEqualTo(JsonInclude.Include.NON_NULL);
+        assertThat(mapper.getDeserializationConfig().isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)).isFalse();
+        Collection<AnnotationIntrospector> ais = mapper.getSerializationConfig().getAnnotationIntrospector().allIntrospectors();
 
         assertThat(ais).hasSize(2);
         Iterator<AnnotationIntrospector> iterator = ais.iterator();
 
-        assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-                JaxbAnnotationIntrospector.class);
-        assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class,
-                JaxbAnnotationIntrospector.class);
+        assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class, JaxbAnnotationIntrospector.class);
+        assertThat(iterator.next()).isInstanceOfAny(JacksonAnnotationIntrospector.class, JaxbAnnotationIntrospector.class);
     }
 
     @Test

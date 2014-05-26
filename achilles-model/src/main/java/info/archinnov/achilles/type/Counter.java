@@ -15,24 +15,24 @@
  */
 package info.archinnov.achilles.type;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import info.archinnov.achilles.json.CounterDeserializer;
 import info.archinnov.achilles.json.CounterSerializer;
 
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 @JsonDeserialize(using = CounterDeserializer.class)
 @JsonSerialize(using = CounterSerializer.class)
 public interface Counter {
-	public Long get();
+    public Long get();
 
-	public void incr();
+    public void incr();
 
-	public void incr(long increment);
+    public void incr(long increment);
 
-	public void decr();
+    public void decr();
 
-	public void decr(long decrement);
+    public void decr(long decrement);
 
 
 }

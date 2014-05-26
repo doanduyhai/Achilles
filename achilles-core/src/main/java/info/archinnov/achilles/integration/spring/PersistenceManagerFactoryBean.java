@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 import com.datastax.driver.core.Cluster;
@@ -36,6 +35,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PersistenceManagerFactoryBean extends AbstractFactoryBean<PersistenceManager> {
 	private static PersistenceManager manager;

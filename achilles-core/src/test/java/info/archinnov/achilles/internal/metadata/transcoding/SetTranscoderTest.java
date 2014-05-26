@@ -19,12 +19,11 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMP
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.transcoding.SetTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 import java.util.Set;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;

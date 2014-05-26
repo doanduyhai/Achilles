@@ -19,12 +19,11 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.transcoding.MapTranscoder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
