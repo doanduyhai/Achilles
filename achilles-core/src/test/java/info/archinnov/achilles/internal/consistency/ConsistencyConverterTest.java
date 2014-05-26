@@ -16,19 +16,18 @@
 package info.archinnov.achilles.internal.consistency;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import org.junit.Test;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-import org.junit.Test;
-
 public class ConsistencyConverterTest {
-	@Test
-	public void should_get_CQL_level_from_achilles_level() throws Exception {
-		assertThat(ConsistencyConverter.getCQLLevel(ConsistencyLevel.EACH_QUORUM)).isEqualTo(
-				com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-	}
+    @Test
+    public void should_get_CQL_level_from_achilles_level() throws Exception {
+        assertThat(ConsistencyConverter.getCQLLevel(ConsistencyLevel.EACH_QUORUM)).isEqualTo(
+                com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void should_exception_when_no_CQL_level() throws Exception {
-		ConsistencyConverter.getCQLLevel(null);
-	}
+    @Test(expected = IllegalArgumentException.class)
+    public void should_exception_when_no_CQL_level() throws Exception {
+        ConsistencyConverter.getCQLLevel(null);
+    }
 }

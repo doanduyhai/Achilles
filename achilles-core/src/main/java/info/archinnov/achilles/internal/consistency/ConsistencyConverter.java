@@ -15,40 +15,40 @@
  */
 package info.archinnov.achilles.internal.consistency;
 
-import info.archinnov.achilles.type.ConsistencyLevel;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class ConsistencyConverter {
 
-    private static final Logger log  = LoggerFactory.getLogger(ConsistencyConverter.class);
+    private static final Logger log = LoggerFactory.getLogger(ConsistencyConverter.class);
 
     private final static Map<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel> fromAchillesToCQL = new HashMap<ConsistencyLevel, com.datastax.driver.core.ConsistencyLevel>();
 
-	static {
-		fromAchillesToCQL.put(ConsistencyLevel.ANY, com.datastax.driver.core.ConsistencyLevel.ANY);
-		fromAchillesToCQL.put(ConsistencyLevel.ONE, com.datastax.driver.core.ConsistencyLevel.ONE);
-		fromAchillesToCQL.put(ConsistencyLevel.TWO, com.datastax.driver.core.ConsistencyLevel.TWO);
-		fromAchillesToCQL.put(ConsistencyLevel.THREE, com.datastax.driver.core.ConsistencyLevel.THREE);
-		fromAchillesToCQL.put(ConsistencyLevel.QUORUM, com.datastax.driver.core.ConsistencyLevel.QUORUM);
-		fromAchillesToCQL.put(ConsistencyLevel.LOCAL_QUORUM, com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-		fromAchillesToCQL.put(ConsistencyLevel.EACH_QUORUM, com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-		fromAchillesToCQL.put(ConsistencyLevel.ALL, com.datastax.driver.core.ConsistencyLevel.ALL);
-		fromAchillesToCQL.put(ConsistencyLevel.SERIAL, com.datastax.driver.core.ConsistencyLevel.SERIAL);
-		fromAchillesToCQL.put(ConsistencyLevel.LOCAL_SERIAL, com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
-	}
+    static {
+        fromAchillesToCQL.put(ConsistencyLevel.ANY, com.datastax.driver.core.ConsistencyLevel.ANY);
+        fromAchillesToCQL.put(ConsistencyLevel.ONE, com.datastax.driver.core.ConsistencyLevel.ONE);
+        fromAchillesToCQL.put(ConsistencyLevel.TWO, com.datastax.driver.core.ConsistencyLevel.TWO);
+        fromAchillesToCQL.put(ConsistencyLevel.THREE, com.datastax.driver.core.ConsistencyLevel.THREE);
+        fromAchillesToCQL.put(ConsistencyLevel.QUORUM, com.datastax.driver.core.ConsistencyLevel.QUORUM);
+        fromAchillesToCQL.put(ConsistencyLevel.LOCAL_QUORUM, com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        fromAchillesToCQL.put(ConsistencyLevel.EACH_QUORUM, com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+        fromAchillesToCQL.put(ConsistencyLevel.ALL, com.datastax.driver.core.ConsistencyLevel.ALL);
+        fromAchillesToCQL.put(ConsistencyLevel.SERIAL, com.datastax.driver.core.ConsistencyLevel.SERIAL);
+        fromAchillesToCQL.put(ConsistencyLevel.LOCAL_SERIAL, com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+        fromAchillesToCQL.put(ConsistencyLevel.LOCAL_ONE, com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE);
+    }
 
-	public static com.datastax.driver.core.ConsistencyLevel getCQLLevel(ConsistencyLevel achillesLevel) {
+    public static com.datastax.driver.core.ConsistencyLevel getCQLLevel(ConsistencyLevel achillesLevel) {
         log.trace("Convert Achilles Consistency Level to CQL Consistency Level");
-		com.datastax.driver.core.ConsistencyLevel cqlLevel = fromAchillesToCQL.get(achillesLevel);
-		if (cqlLevel == null) {
-			throw new IllegalArgumentException("No matching Consistency Level for Achilles level '"
-					+ (achillesLevel != null ? achillesLevel.name() : "null") + "'");
-		}
+        com.datastax.driver.core.ConsistencyLevel cqlLevel = fromAchillesToCQL.get(achillesLevel);
+        if (cqlLevel == null) {
+            throw new IllegalArgumentException("No matching Consistency Level for Achilles level '"
+                    + (achillesLevel != null ? achillesLevel.name() : "null") + "'");
+        }
 
-		return cqlLevel;
-	}
+        return cqlLevel;
+    }
 }
