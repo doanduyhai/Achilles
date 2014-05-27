@@ -24,7 +24,6 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_STORAGE_SSL_PORT;
@@ -59,7 +58,6 @@ public class CassandraConfig {
 
     public CassandraConfig(TypedMap parameters) {
         this.parameters = parameters;
-        config.cluster_name = parameters.getTyped(CLUSTER_NAME_PARAM);
         this.configFile = new File(parameters.<String>getTyped(CONFIG_YAML_FILE));
 
         config.rpc_port = parameters.getTyped(CASSANDRA_THRIFT_PORT);

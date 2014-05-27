@@ -18,40 +18,27 @@ package info.archinnov.achilles.configuration;
 import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_LRU_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
@@ -73,10 +60,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ProtocolOptions;
-import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.policies.Policies;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -294,27 +278,6 @@ public class ArgumentExtractorTest {
     }
 
     @Test
-    public void should_init_cluster_with_all_params() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-        params.put(CONNECTION_CQL_PORT_PARAM, 9111);
-        params.put(COMPRESSION_TYPE, ProtocolOptions.Compression.SNAPPY);
-        params.put(RETRY_POLICY, Policies.defaultRetryPolicy());
-        params.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());
-        params.put(RECONNECTION_POLICY, Policies.defaultReconnectionPolicy());
-        params.put(USERNAME, "user");
-        params.put(PASSWORD, "pass");
-        params.put(DISABLE_JMX, true);
-        params.put(DISABLE_METRICS, true);
-        params.put(SSL_ENABLED, true);
-        params.put(SSL_OPTIONS, new SSLOptions());
-
-        Cluster actual = extractor.initCluster(params);
-
-        assertThat(actual).isNotNull();
-    }
-
-    @Test
     public void should_return_empty_event_interceptor_list_when_empty_list_parameter() throws Exception {
         List<Interceptor<?>> interceptors = extractor.initInterceptors(configMap);
         assertThat(interceptors).isEmpty();
@@ -330,47 +293,6 @@ public class ArgumentExtractorTest {
         List<Interceptor<?>> interceptorsResult = extractor.initInterceptors(configMap);
 
         assertThat(interceptorsResult).containsExactly(interceptor1, interceptor2);
-    }
-
-    @Test
-    public void should_get_cluster_directly_from_parameter() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(CLUSTER_PARAM, cluster);
-
-        Cluster actual = extractor.initCluster(params);
-        assertThat(actual).isSameAs(cluster);
-    }
-
-    @Test
-    public void should_init_cluster_with_minimum_params() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-        params.put(CONNECTION_CQL_PORT_PARAM, 9111);
-
-        Cluster actual = extractor.initCluster(params);
-
-        assertThat(actual).isNotNull();
-    }
-
-    @Test
-    public void should_exception_when_no_hostname_property() throws Exception {
-        TypedMap params = new TypedMap();
-
-        exception.expect(AchillesException.class);
-        exception.expectMessage(CONNECTION_CONTACT_POINTS_PARAM + " property should be provided");
-
-        extractor.initCluster(params);
-    }
-
-    @Test
-    public void should_exception_when_no_port_property() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(CONNECTION_CONTACT_POINTS_PARAM, "localhost");
-
-        exception.expect(AchillesException.class);
-        exception.expectMessage(CONNECTION_CQL_PORT_PARAM + " property should be provided");
-
-        extractor.initCluster(params);
     }
 
     @Test

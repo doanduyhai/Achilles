@@ -17,6 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
@@ -62,9 +63,9 @@ public class BatchModeIT {
             "Tweet", "User");
 
     private PersistenceManagerFactory pmf2 = CassandraEmbeddedServerBuilder
-            .withEntityPackages(CompleteBean.class.getPackage().getName())
+            .withEntities(CompleteBean.class)
             .withKeyspaceName("BATCH_STATEMENT_ORDERING")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(FORCE_BATCH_STATEMENTS_ORDERING, true))
+            .withAchillesConfigParams(ImmutableMap.<String, Object>of(FORCE_BATCH_STATEMENTS_ORDERING, true, FORCE_TABLE_CREATION_PARAM, true))
             .buildPersistenceManagerFactory();
 
     private PersistenceManager manager2 = pmf2.createPersistenceManager();

@@ -18,75 +18,80 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
-
 public class CassandraEmbeddedServer {
 
-	public static final Logger log = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
+    public static final Logger log = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
 
-	public static final String CASSANDRA_HOST = "cassandraHost";
+    public static final String CASSANDRA_HOST = "cassandraHost";
 
-	private static final Object SEMAPHORE = new Object();
+    private static final Object SEMAPHORE = new Object();
 
-	private static boolean embeddedServerStarted = false;
+    private static boolean embeddedServerStarted = false;
 
-	private static final AchillesInitializer initializer = new AchillesInitializer();
+    private static final AchillesInitializer initializer = new AchillesInitializer();
 
-	private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
+    private static final Logger DML_LOGGER = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
 
-	public CassandraEmbeddedServer(TypedMap originalParameters) {
-		TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(originalParameters);
+    /**
+     * Start a Cassandra embedded server
+     * <em>This constructor is not meant to be used directly. Please use the
+     * {@code info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder} instead
+     * </em>
+     * @param parameters embedded Cassandra server parameters
+     * @param achillesParameters Achilles parameters
+     */
+    public CassandraEmbeddedServer(TypedMap originalParameters, TypedMap achillesParameters) {
+        TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(originalParameters);
+        String cassandraHost = System.getProperty(CASSANDRA_HOST);
 
-		String cassandraHost = System.getProperty(CASSANDRA_HOST);
+        // No external Cassandra server, start an embedded instance
+        if (StringUtils.isBlank(cassandraHost)) {
+            synchronized (SEMAPHORE) {
+                if (!embeddedServerStarted) {
+                    CASSANDRA_EMBEDDED.startServer(cassandraHost, parameters);
+                    CassandraEmbeddedServer.embeddedServerStarted = true;
+                } else {
+                    CASSANDRA_EMBEDDED.checkAndConfigurePorts(parameters);
+                }
+            }
+        }
+        initializer.initializeFromParameters(cassandraHost, parameters, achillesParameters);
+    }
 
-		// No external Cassandra server, start an embedded instance
-		if (StringUtils.isBlank(cassandraHost)) {
-			synchronized (SEMAPHORE) {
-				if (!embeddedServerStarted) {
-					CASSANDRA_EMBEDDED.startServer(cassandraHost, parameters);
-					CassandraEmbeddedServer.embeddedServerStarted = true;
-				} else {
-					CASSANDRA_EMBEDDED.checkAndConfigurePorts(parameters);
-				}
-			}
-		}
-		initializer.initializeFromParameters(cassandraHost, parameters);
-	}
+    public PersistenceManagerFactory getPersistenceManagerFactory(String keyspaceName) {
+        return REPOSITORY.getManagerFactoryForKeyspace(keyspaceName);
+    }
 
-	public PersistenceManagerFactory getPersistenceManagerFactory(String keyspaceName) {
-		return REPOSITORY.getManagerFactoryForKeyspace(keyspaceName);
-	}
+    public PersistenceManager getPersistenceManager(String keyspaceName) {
+        return REPOSITORY.getManagerForKeyspace(keyspaceName);
+    }
 
-	public PersistenceManager getPersistenceManager(String keyspaceName) {
-		return REPOSITORY.getManagerForKeyspace(keyspaceName);
-	}
+    public Session getNativeSession(String keyspaceName) {
+        return REPOSITORY.getSessionForKeyspace(keyspaceName);
+    }
 
-	public Session getNativeSession(String keyspaceName) {
-		return REPOSITORY.getSessionForKeyspace(keyspaceName);
-	}
+    public static int getThriftPort() {
+        return CASSANDRA_EMBEDDED.getThriftPort();
+    }
 
-	public static int getThriftPort() {
-		return CASSANDRA_EMBEDDED.getThriftPort();
-	}
+    public static int getCqlPort() {
+        return CASSANDRA_EMBEDDED.getCQLPort();
+    }
 
-	public static int getCqlPort() {
-		return CASSANDRA_EMBEDDED.getCQLPort();
-	}
-
-	public void truncateTable(String keyspaceName, String tableName) {
-		String query = "TRUNCATE " + tableName;
-		Session session = REPOSITORY.getSessionForKeyspace(keyspaceName);
-		session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
-		DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "  Simple query", query, "ALL");
-	}
+    public void truncateTable(String keyspaceName, String tableName) {
+        String query = "TRUNCATE " + tableName;
+        Session session = REPOSITORY.getSessionForKeyspace(keyspaceName);
+        session.execute(new SimpleStatement(query).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL));
+        DML_LOGGER.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", "  Simple query", query, "ALL");
+    }
 
 }

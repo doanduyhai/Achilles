@@ -91,7 +91,7 @@ public class PersistenceManagerFactoryTest {
 
     @Before
     public void setUp() {
-        pmf = new PersistenceManagerFactory(ImmutableMap.<String, Object>of("test", "test"));
+        pmf = new PersistenceManagerFactory(cluster, ImmutableMap.<String, Object>of("test", "test"));
         pmf.configurationMap = configMap;
         Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
         Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
@@ -109,7 +109,6 @@ public class PersistenceManagerFactoryTest {
 
         // When
         when(argumentExtractor.initConfigContext(configMap)).thenReturn(configContext);
-        when(argumentExtractor.initCluster(configMap)).thenReturn(cluster);
         when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
         when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
         when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);

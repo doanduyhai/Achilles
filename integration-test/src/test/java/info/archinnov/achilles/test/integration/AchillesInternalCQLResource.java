@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
@@ -59,8 +60,9 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     public AchillesInternalCQLResource(String... tables) {
         super(tables);
         final TypedMap config = buildConfigMap();
+        final TypedMap achillesConfig = buildAchillesConfigMap();
 
-        server = new CassandraEmbeddedServer(config);
+        server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -81,8 +83,9 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     public AchillesInternalCQLResource(Steps cleanUpSteps, String... tables) {
         super(cleanUpSteps, tables);
         final TypedMap config = buildConfigMap();
+        final TypedMap achillesConfig = buildAchillesConfigMap();
 
-        server = new CassandraEmbeddedServer(config);
+        server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -108,8 +111,9 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         super(cleanUpSteps, tables);
         this.insertStrategy = insertStrategy;
         final TypedMap config = buildConfigMap();
+        final TypedMap achillesConfig = buildAchillesConfigMap();
 
-        server = new CassandraEmbeddedServer(config);
+        server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
@@ -155,11 +159,18 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         setCleanDataFiles();
         final TypedMap config = new TypedMap();
         config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
-        config.put(ENTITY_PACKAGES_PARAM, ACHILLES_ENTITY_PACKAGES);
-        config.put(KEYSPACE_NAME_PARAM, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         config.put(KEYSPACE_DURABLE_WRITE, false);
+        return config;
+    }
+
+
+    private TypedMap buildAchillesConfigMap() {
+        TypedMap config = new TypedMap();
+        config.put(FORCE_TABLE_CREATION_PARAM, true);
         config.put(BEAN_VALIDATION_ENABLE, true);
         config.put(INSERT_STRATEGY, insertStrategy);
+        config.put(KEYSPACE_NAME_PARAM, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        config.put(ENTITY_PACKAGES_PARAM, ACHILLES_ENTITY_PACKAGES);
         return config;
     }
 

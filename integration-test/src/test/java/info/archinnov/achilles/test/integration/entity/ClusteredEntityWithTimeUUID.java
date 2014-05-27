@@ -17,7 +17,6 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithTimeUUID.TABLE_NAME;
-
 import java.util.UUID;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
@@ -28,70 +27,67 @@ import info.archinnov.achilles.annotations.TimeUUID;
 @Entity(table = TABLE_NAME)
 public class ClusteredEntityWithTimeUUID {
 
-	public static final String TABLE_NAME = "clustered_with_time_uuid";
+    public static final String TABLE_NAME = "clustered_with_time_uuid";
 
-	@EmbeddedId
-	private ClusteredKey id;
+    @EmbeddedId
+    private ClusteredKey id;
 
-	@Column
-	private String value;
+    @Column
+    private String value;
 
-	public ClusteredEntityWithTimeUUID() {
-	}
+    public ClusteredEntityWithTimeUUID(Long id, UUID date, String value) {
+        this.id = new ClusteredKey(id, date);
+        this.value = value;
+    }
 
-	public ClusteredEntityWithTimeUUID(Long id, UUID date, String value) {
-		this.id = new ClusteredKey(id, date);
-		this.value = value;
-	}
+    public ClusteredKey getId() {
+        return id;
+    }
 
-	public ClusteredKey getId() {
-		return id;
-	}
+    public void setId(ClusteredKey id) {
+        this.id = id;
+    }
 
-	public void setId(ClusteredKey id) {
-		this.id = id;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public static class ClusteredKey {
+        @Column
+        @Order(1)
+        private Long id;
 
-	public static class ClusteredKey {
-		@Column
-		@Order(1)
-		private Long id;
+        @TimeUUID
+        @Column
+        @Order(2)
+        private UUID date;
 
-		@TimeUUID
-		@Column
-		@Order(2)
-		private UUID date;
+        public ClusteredKey() {
+        }
 
-		public ClusteredKey() {
-		}
+        public ClusteredKey(Long id, UUID date) {
+            this.id = id;
+            this.date = date;
+        }
 
-		public ClusteredKey(Long id, UUID date) {
-			this.id = id;
-			this.date = date;
-		}
+        public Long getId() {
+            return id;
+        }
 
-		public Long getId() {
-			return id;
-		}
+        public void setId(Long id) {
+            this.id = id;
+        }
 
-		public void setId(Long id) {
-			this.id = id;
-		}
+        public UUID getDate() {
+            return date;
+        }
 
-		public UUID getDate() {
-			return date;
-		}
-
-		public void setDate(UUID date) {
-			this.date = date;
-		}
-	}
+        public void setDate(UUID date) {
+            this.date = date;
+        }
+    }
 }

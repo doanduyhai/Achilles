@@ -16,6 +16,7 @@
 package info.archinnov.achilles.junit;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
@@ -52,19 +53,26 @@ public class AchillesResource extends AchillesTestResource {
     private void initResource(String keyspaceName, String entityPackages) {
         keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
                 : DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-        TypedMap config = buildConfigMap(entityPackages, keyspaceToUse);
+        TypedMap config = buildConfigMap();
+        TypedMap achillesConfig = buildAchillesConfigMap(entityPackages, keyspaceToUse);
 
-        server = new CassandraEmbeddedServer(config);
+        server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(keyspaceToUse);
         manager = server.getPersistenceManager(keyspaceToUse);
         session = server.getNativeSession(keyspaceToUse);
     }
 
-    private TypedMap buildConfigMap(String entityPackages, String keyspaceToUse) {
+    private TypedMap buildConfigMap() {
         TypedMap config = new TypedMap();
         config.put(CLEAN_CASSANDRA_DATA_FILES, true);
-        config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
         config.put(KEYSPACE_DURABLE_WRITE, false);
+        return config;
+    }
+
+    private TypedMap buildAchillesConfigMap(String entityPackages, String keyspaceToUse) {
+        TypedMap config = new TypedMap();
+        config.put(FORCE_TABLE_CREATION_PARAM, true);
+        config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
         config = addEntityPackagesIfNeeded(entityPackages, config);
         return config;
     }

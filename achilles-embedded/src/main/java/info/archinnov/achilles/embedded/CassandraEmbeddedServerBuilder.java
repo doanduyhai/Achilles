@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
@@ -27,6 +26,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_THRIFT_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_CONFIG_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMMIT_LOG_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CONFIG_YAML_FILE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
@@ -331,10 +331,10 @@ public class CassandraEmbeddedServerBuilder {
      * @return PersistenceManagerFactory
      */
     public PersistenceManagerFactory buildPersistenceManagerFactory() {
-
         TypedMap parameters = buildConfigMap();
-        String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
-        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
+        TypedMap achillesParameters = buildAchillesConfigMap();
+        String keyspace = achillesParameters.getTyped(KEYSPACE_NAME_PARAM);
+        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters, achillesParameters);
         return embeddedServer.getPersistenceManagerFactory(keyspace);
     }
 
@@ -345,8 +345,9 @@ public class CassandraEmbeddedServerBuilder {
      */
     public PersistenceManager buildPersistenceManager() {
         TypedMap parameters = buildConfigMap();
-        String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
-        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
+        TypedMap achillesParameters = buildAchillesConfigMap();
+        String keyspace = achillesParameters.getTyped(KEYSPACE_NAME_PARAM);
+        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters, achillesParameters);
         return embeddedServer.getPersistenceManager(keyspace);
     }
 
@@ -358,21 +359,32 @@ public class CassandraEmbeddedServerBuilder {
     public Session buildNativeSessionOnly() {
         this.buildNativeSessionOnly = true;
         TypedMap parameters = buildConfigMap();
-        String keyspace = parameters.getTyped(KEYSPACE_NAME_PARAM);
-        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters);
+        TypedMap achillesParameters = buildAchillesConfigMap();
+        String keyspace = achillesParameters.getTyped(KEYSPACE_NAME_PARAM);
+        final CassandraEmbeddedServer embeddedServer = new CassandraEmbeddedServer(parameters, achillesParameters);
         return embeddedServer.getNativeSession(keyspace);
+    }
+
+
+    private TypedMap buildAchillesConfigMap() {
+        TypedMap config = new TypedMap();
+        if (StringUtils.isNotBlank(entityPackages))
+            config.put(ENTITY_PACKAGES_PARAM, entityPackages);
+        if (CollectionUtils.isNotEmpty(entities)) {
+            config.put(ENTITIES_LIST_PARAM, entities);
+        }
+        if (StringUtils.isNotBlank(keyspaceName)) {
+            config.put(KEYSPACE_NAME_PARAM, keyspaceName);
+        }
+
+        config.putAll(achillesConfigParams);
+        return config;
     }
 
     private TypedMap buildConfigMap() {
         TypedMap config = new TypedMap();
         config.put(CLEAN_CASSANDRA_DATA_FILES, cleanDataFiles);
         config.put(CLEAN_CASSANDRA_CONFIG_FILE, cleanConfigFile);
-        if (CollectionUtils.isNotEmpty(entities)) {
-            config.put(ENTITIES_LIST_PARAM, entities);
-        }
-
-        if (StringUtils.isNotBlank(entityPackages))
-            config.put(ENTITY_PACKAGES_PARAM, entityPackages);
 
         if (StringUtils.isNotBlank(dataFileFolder))
             config.put(DATA_FILE_FOLDER, dataFileFolder);
@@ -387,10 +399,7 @@ public class CassandraEmbeddedServerBuilder {
             config.put(CONFIG_YAML_FILE, configYamlFile);
 
         if (StringUtils.isNotBlank(clusterName))
-            config.put(CLUSTER_NAME_PARAM, clusterName);
-
-        if (StringUtils.isNotBlank(keyspaceName))
-            config.put(KEYSPACE_NAME_PARAM, keyspaceName);
+            config.put(CLUSTER_NAME, clusterName);
 
         if (cqlPort > 0)
             config.put(CASSANDRA_CQL_PORT, cqlPort);
@@ -406,8 +415,6 @@ public class CassandraEmbeddedServerBuilder {
 
         config.put(KEYSPACE_DURABLE_WRITE, durableWrite);
         config.put(BUILD_NATIVE_SESSION_ONLY, buildNativeSessionOnly);
-
-        config.putAll(achillesConfigParams);
 
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(config);
         return parameters;

@@ -16,16 +16,16 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.COMPRESSION_TYPE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_CASSANDRA_HOST;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.LOAD_BALANCING_POLICY;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RECONNECTION_POLICY;
+import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RETRY_POLICY;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
@@ -47,19 +47,19 @@ public class AchillesInitializer {
 
     private static final Pattern KEYSPACE_NAME_PATTERN = Pattern.compile("[a-zA-Z][_a-zA-Z0-9]{0,31}");
 
-    void initializeFromParameters(String cassandraHost, TypedMap parameters) {
-        String keyspaceName = parameters.getTyped(KEYSPACE_NAME_PARAM);
+    void initializeFromParameters(String cassandraHost, TypedMap parameters, TypedMap achillesParameters) {
+        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME_PARAM);
         synchronized (REPOSITORY) {
             if (!REPOSITORY.keyspaceAlreadyBootstrapped(keyspaceName)) {
-                initialize(cassandraHost, parameters);
+                initialize(cassandraHost, parameters, achillesParameters);
                 REPOSITORY.markKeyspaceAsBootstrapped(keyspaceName);
             }
         }
     }
 
-    private void initialize(String cassandraHost, TypedMap parameters) {
+    private void initialize(String cassandraHost, TypedMap parameters, TypedMap achillesParameters) {
 
-        String keyspaceName = extractAndValidateKeyspaceName(parameters);
+        String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
         Boolean keyspaceDurableWrite = parameters.getTyped(KEYSPACE_DURABLE_WRITE);
         Boolean nativeSessionOnly = parameters.getTyped(BUILD_NATIVE_SESSION_ONLY);
 
@@ -82,15 +82,13 @@ public class AchillesInitializer {
             REPOSITORY.addNewSessionToKeyspace(keyspaceName, cluster.connect(keyspaceName));
         } else {
             Session nativeSession = cluster.connect(keyspaceName);
-            parameters.put(ConfigurationParameters.CLUSTER_PARAM, cluster);
             parameters.put(ConfigurationParameters.NATIVE_SESSION_PARAM, nativeSession);
             parameters.put(ConfigurationParameters.KEYSPACE_NAME_PARAM, keyspaceName);
             if (!parameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION_PARAM)) {
                 parameters.put(ConfigurationParameters.FORCE_TABLE_CREATION_PARAM, true);
             }
-            parameters.put(ConfigurationParameters.CLUSTER_PARAM, cluster);
 
-            PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(parameters);
+            PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
 
             PersistenceManager manager = factory.createPersistenceManager();
 
@@ -111,7 +109,7 @@ public class AchillesInitializer {
     }
 
     private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
-        String clusterName = parameters.getTyped(CLUSTER_NAME_PARAM);
+        String clusterName = parameters.getTyped(CLUSTER_NAME);
         Compression compression = parameters.getTyped(COMPRESSION_TYPE);
         LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
         RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);

@@ -18,18 +18,11 @@ package info.archinnov.achilles.configuration;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_LEVEL;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
@@ -37,18 +30,11 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,13 +51,7 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ProtocolOptions;
-import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.policies.LoadBalancingPolicy;
-import com.datastax.driver.core.policies.Policies;
-import com.datastax.driver.core.policies.ReconnectionPolicy;
-import com.datastax.driver.core.policies.RetryPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.exception.AchillesException;
@@ -212,106 +192,6 @@ public class ArgumentExtractor {
         Map<String, String> writeConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_MAP_PARAM);
 
         return parseConsistencyLevelMap(writeConsistencyMap);
-    }
-
-    public Cluster initCluster(TypedMap configurationMap) {
-        log.trace("Extract or init cluster from configuration map");
-
-        Cluster cluster = configurationMap.getTyped(CLUSTER_PARAM);
-        if (cluster == null) {
-            String contactPoints = configurationMap.getTyped(CONNECTION_CONTACT_POINTS_PARAM);
-            Integer port = configurationMap.getTyped(CONNECTION_CQL_PORT_PARAM);
-
-            ProtocolOptions.Compression compression = ProtocolOptions.Compression.SNAPPY;
-            if (configurationMap.containsKey(COMPRESSION_TYPE)) {
-                compression = configurationMap.getTyped(COMPRESSION_TYPE);
-            }
-
-            RetryPolicy retryPolicy = Policies.defaultRetryPolicy();
-            if (configurationMap.containsKey(RETRY_POLICY)) {
-                retryPolicy = configurationMap.getTyped(RETRY_POLICY);
-            }
-
-            LoadBalancingPolicy loadBalancingPolicy = Policies.defaultLoadBalancingPolicy();
-            if (configurationMap.containsKey(LOAD_BALANCING_POLICY)) {
-                loadBalancingPolicy = configurationMap.getTyped(LOAD_BALANCING_POLICY);
-            }
-
-            ReconnectionPolicy reconnectionPolicy = Policies.defaultReconnectionPolicy();
-            if (configurationMap.containsKey(RECONNECTION_POLICY)) {
-                reconnectionPolicy = configurationMap.getTyped(RECONNECTION_POLICY);
-            }
-
-            String username = null;
-            String password = null;
-            if (configurationMap.containsKey(USERNAME) && configurationMap.containsKey(PASSWORD)) {
-                username = configurationMap.getTyped(USERNAME);
-                password = configurationMap.getTyped(PASSWORD);
-            }
-
-            boolean disableJmx = false;
-            if (configurationMap.containsKey(DISABLE_JMX)) {
-                disableJmx = configurationMap.getTyped(DISABLE_JMX);
-            }
-
-            boolean disableMetrics = false;
-            if (configurationMap.containsKey(DISABLE_METRICS)) {
-                disableMetrics = configurationMap.getTyped(DISABLE_METRICS);
-            }
-
-            boolean sslEnabled = false;
-            if (configurationMap.containsKey(SSL_ENABLED)) {
-                sslEnabled = configurationMap.getTyped(SSL_ENABLED);
-            }
-
-            SSLOptions sslOptions = null;
-            if (configurationMap.containsKey(SSL_OPTIONS)) {
-                sslOptions = configurationMap.getTyped(SSL_OPTIONS);
-            }
-
-            String clusterName = null;
-            if (configurationMap.containsKey(CLUSTER_NAME_PARAM)) {
-                clusterName = configurationMap.getTyped(CLUSTER_NAME_PARAM);
-            }
-
-            Validator
-                    .validateNotBlank(contactPoints, "%s property should be provided",
-                            CONNECTION_CONTACT_POINTS_PARAM);
-            Validator.validateNotNull(port, "%s property should be provided", CONNECTION_CQL_PORT_PARAM);
-            if (sslEnabled) {
-                Validator
-                        .validateNotNull(sslOptions, "%s property should be provided when SSL is enabled",
-                                SSL_OPTIONS);
-            }
-
-            String[] contactPointsList = StringUtils.split(contactPoints, ",");
-
-            Cluster.Builder clusterBuilder = Cluster.builder().addContactPoints(contactPointsList).withPort(port)
-                    .withCompression(compression).withRetryPolicy(retryPolicy)
-                    .withLoadBalancingPolicy(loadBalancingPolicy)
-                    .withReconnectionPolicy(reconnectionPolicy);
-
-            if (StringUtils.isNotBlank(clusterName)) {
-                clusterBuilder.withClusterName(clusterName);
-            }
-            if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-                clusterBuilder.withCredentials(username, password);
-            }
-
-            if (disableJmx) {
-                clusterBuilder.withoutJMXReporting();
-            }
-
-            if (disableMetrics) {
-                clusterBuilder.withoutMetrics();
-            }
-
-            if (sslEnabled) {
-                clusterBuilder.withSSL().withSSL(sslOptions);
-            }
-            cluster = clusterBuilder.build();
-        }
-        return cluster;
     }
 
     public Session initSession(Cluster cluster, TypedMap configurationMap) {

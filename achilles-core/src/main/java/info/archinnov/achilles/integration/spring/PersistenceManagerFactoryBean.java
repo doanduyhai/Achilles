@@ -15,290 +15,249 @@
  */
 package info.archinnov.achilles.integration.spring;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
-import static org.apache.commons.lang.StringUtils.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.validation.Validator;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ProtocolOptions.Compression;
-import com.datastax.driver.core.SSLOptions;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.policies.LoadBalancingPolicy;
-import com.datastax.driver.core.policies.ReconnectionPolicy;
-import com.datastax.driver.core.policies.RetryPolicy;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.type.InsertStrategy;
 
 public class PersistenceManagerFactoryBean extends AbstractFactoryBean<PersistenceManager> {
-	private static PersistenceManager manager;
-	private String entityPackages;
+    private static PersistenceManager manager;
 
-	private String contactPoints;
-	private Integer port;
-	private String keyspaceName;
-	private Cluster cluster;
-	private Session session;
+    private Cluster cluster;
+    private String entityPackages;
+    private List<Class<?>> entityList;
 
-	private Compression compression;
-	private RetryPolicy retryPolicy;
-	private LoadBalancingPolicy loadBalancingPolicy;
-	private ReconnectionPolicy reconnectionPolicy;
-	private String username;
-	private String password;
-	private Boolean disableJmx;
-	private Boolean disableMetrics;
-	private Boolean sslEnabled;
-	private SSLOptions sslOptions;
+    private Session session;
+    private String keyspaceName;
 
-	private ObjectMapperFactory objectMapperFactory;
-	private ObjectMapper objectMapper;
+    private ObjectMapperFactory objectMapperFactory;
+    private ObjectMapper objectMapper;
 
-	private String consistencyLevelReadDefault;
-	private String consistencyLevelWriteDefault;
-	private Map<String, String> consistencyLevelReadMap;
-	private Map<String, String> consistencyLevelWriteMap;
+    private String consistencyLevelReadDefault;
+    private String consistencyLevelWriteDefault;
+    private Map<String, String> consistencyLevelReadMap;
+    private Map<String, String> consistencyLevelWriteMap;
 
-	private boolean forceTableCreation = false;
+    private boolean forceTableCreation = false;
 
-	protected void initialize() {
-		Map<String, Object> configMap = new HashMap<>();
+    private boolean enableBeanValidation = false;
 
-		fillEntityPackages(configMap);
+    private Validator beanValidator;
 
-		fillCluster(configMap);
+    private Integer preparedStatementCacheSize;
 
-		fillCompression(configMap);
+    private boolean disableProxiesWarmUp = true;
 
-		fillPolicies(configMap);
+    private boolean forceBatchStatementOrdering = false;
 
-		fillCredentials(configMap);
+    private InsertStrategy insertStrategy = InsertStrategy.ALL_FIELDS;
 
-		fillJmxAndMetrics(configMap);
 
-		fillSSLConfig(configMap);
+    protected void initialize() {
+        Map<String, Object> configMap = new HashMap<>();
 
-		fillObjectMapper(configMap);
+        fillEntityPackages(configMap);
 
-		fillConsistencyLevels(configMap);
+        fillEntityList(configMap);
 
-		configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
+        if (session != null) {
+            configMap.put(NATIVE_SESSION_PARAM, session);
+        }
 
-		PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.build(configMap);
-		manager = pmf.createPersistenceManager();
-	}
+        fillKeyspaceName(configMap);
 
-	private void fillEntityPackages(Map<String, Object> configMap) {
-		if (isNotBlank(entityPackages)) {
-			configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
-		}
-	}
+        fillObjectMapper(configMap);
 
-	private void fillCluster(Map<String, Object> configMap) {
-		if ((isBlank(contactPoints) || port == null || isBlank(keyspaceName)) && (cluster == null || session == null)) {
-			throw new IllegalArgumentException(
-					"Either 'contactPoints/port/keyspace name' or 'cluster/session' should be provided");
-		}
+        fillConsistencyLevels(configMap);
 
-		if (cluster != null && session != null) {
-			configMap.put(CLUSTER_PARAM, cluster);
-			configMap.put(NATIVE_SESSION_PARAM, session);
-		} else {
-			configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
-			configMap.put(CONNECTION_CQL_PORT_PARAM, port);
-			configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
-		}
-	}
+        configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
 
-	private void fillCompression(Map<String, Object> configMap) {
-		if (compression != null) {
-			configMap.put(COMPRESSION_TYPE, compression);
-		}
-	}
+        fillBeanValidation(configMap);
 
-	private void fillPolicies(Map<String, Object> configMap) {
-		if (retryPolicy != null) {
-			configMap.put(RETRY_POLICY, retryPolicy);
-		}
+        if (preparedStatementCacheSize != null) {
+            configMap.put(PREPARED_STATEMENTS_CACHE_SIZE, preparedStatementCacheSize);
+        }
+        configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
+        configMap.put(FORCE_BATCH_STATEMENTS_ORDERING, forceBatchStatementOrdering);
+        configMap.put(INSERT_STRATEGY, insertStrategy);
 
-		if (loadBalancingPolicy != null) {
-			configMap.put(LOAD_BALANCING_POLICY, loadBalancingPolicy);
-		}
+        PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.build(cluster, configMap);
+        manager = pmf.createPersistenceManager();
+    }
 
-		if (reconnectionPolicy != null) {
-			configMap.put(RECONNECTION_POLICY, reconnectionPolicy);
-		}
-	}
+    private void fillBeanValidation(Map<String, Object> configMap) {
+        configMap.put(BEAN_VALIDATION_ENABLE, enableBeanValidation);
+        if (beanValidator != null) {
+            configMap.put(BEAN_VALIDATION_VALIDATOR, beanValidator);
+        }
+    }
 
-	private void fillJmxAndMetrics(Map<String, Object> configMap) {
-		if (disableJmx != null) {
-			configMap.put(DISABLE_JMX, disableJmx);
-		}
+    private void fillEntityPackages(Map<String, Object> configMap) {
+        if (isNotBlank(entityPackages)) {
+            configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+        }
+    }
 
-		if (disableMetrics != null) {
-			configMap.put(DISABLE_METRICS, disableMetrics);
-		}
-	}
+    private void fillEntityList(Map<String, Object> configMap) {
+        if (CollectionUtils.isNotEmpty(entityList)) {
+            configMap.put(ENTITIES_LIST_PARAM, entityList);
+        }
+    }
 
-	private void fillCredentials(Map<String, Object> configMap) {
-		if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-			configMap.put(USERNAME, username);
-			configMap.put(PASSWORD, password);
-		}
-	}
+    private void fillKeyspaceName(Map<String, Object> configMap) {
+        if (isBlank(keyspaceName)) {
+            throw new IllegalArgumentException("Keyspace name should be provided");
+        }
+        configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
+    }
 
-	private void fillSSLConfig(Map<String, Object> configMap) {
-		if (sslEnabled != null) {
-			if (sslOptions == null)
-				throw new IllegalArgumentException("'sslOptions' property should be set when SSL is enabled");
 
-			configMap.put(SSL_ENABLED, sslEnabled);
-			configMap.put(SSL_OPTIONS, sslOptions);
-		}
-	}
+    private void fillObjectMapper(Map<String, Object> configMap) {
+        if (objectMapperFactory != null) {
+            configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objectMapperFactory);
+        }
+        if (objectMapper != null) {
+            configMap.put(OBJECT_MAPPER_PARAM, objectMapper);
+        }
+    }
 
-	private void fillObjectMapper(Map<String, Object> configMap) {
-		if (objectMapperFactory != null) {
-			configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objectMapperFactory);
-		}
-		if (objectMapper != null) {
-			configMap.put(OBJECT_MAPPER_PARAM, objectMapper);
-		}
-	}
+    private void fillConsistencyLevels(Map<String, Object> configMap) {
+        if (consistencyLevelReadDefault != null) {
+            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
+        }
+        if (consistencyLevelWriteDefault != null) {
+            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
+        }
 
-	private void fillConsistencyLevels(Map<String, Object> configMap) {
-		if (consistencyLevelReadDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
-		}
-		if (consistencyLevelWriteDefault != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
-		}
+        if (consistencyLevelReadMap != null) {
+            configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, consistencyLevelReadMap);
+        }
+        if (consistencyLevelWriteMap != null) {
+            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, consistencyLevelWriteMap);
+        }
+    }
 
-		if (consistencyLevelReadMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, consistencyLevelReadMap);
-		}
-		if (consistencyLevelWriteMap != null) {
-			configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, consistencyLevelWriteMap);
-		}
-	}
 
-	public void setContactPoints(String contactPoints) {
-		this.contactPoints = contactPoints;
-	}
+    public void setKeyspaceName(String keyspaceName) {
+        this.keyspaceName = keyspaceName;
+    }
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
+    }
 
-	public void setKeyspaceName(String keyspaceName) {
-		this.keyspaceName = keyspaceName;
-	}
 
-	public void setCluster(Cluster cluster) {
-		this.cluster = cluster;
-	}
+    public void setEntityPackages(String entityPackages) {
+        this.entityPackages = entityPackages;
+    }
 
-	public void setSession(Session session) {
-		this.session = session;
-	}
+    public void setEntityList(List<Class<?>> entityList) {
+        this.entityList = entityList;
+    }
 
-	public void setCompression(Compression compression) {
-		this.compression = compression;
-	}
+    public void setSession(Session session) {
+        this.session = session;
+    }
 
-	public void setRetryPolicy(RetryPolicy retryPolicy) {
-		this.retryPolicy = retryPolicy;
-	}
+    public void setEnableBeanValidation(boolean enableBeanValidation) {
+        this.enableBeanValidation = enableBeanValidation;
+    }
 
-	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
-		this.loadBalancingPolicy = loadBalancingPolicy;
-	}
+    public void setBeanValidator(Validator beanValidator) {
+        this.beanValidator = beanValidator;
+    }
 
-	public void setReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
-		this.reconnectionPolicy = reconnectionPolicy;
-	}
+    public void setPreparedStatementCacheSize(Integer preparedStatementCacheSize) {
+        this.preparedStatementCacheSize = preparedStatementCacheSize;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setDisableProxiesWarmUp(boolean disableProxiesWarmUp) {
+        this.disableProxiesWarmUp = disableProxiesWarmUp;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setForceBatchStatementOrdering(boolean forceBatchStatementOrdering) {
+        this.forceBatchStatementOrdering = forceBatchStatementOrdering;
+    }
 
-	public void setDisableJmx(Boolean disableJmx) {
-		this.disableJmx = disableJmx;
-	}
+    public void setInsertStrategy(InsertStrategy insertStrategy) {
+        this.insertStrategy = insertStrategy;
+    }
 
-	public void setDisableMetrics(Boolean disableMetrics) {
-		this.disableMetrics = disableMetrics;
-	}
+    public void setForceTableCreation(boolean forceTableCreation) {
+        this.forceTableCreation = forceTableCreation;
+    }
 
-	public void setSslEnabled(Boolean sslEnabled) {
-		this.sslEnabled = sslEnabled;
-	}
+    public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
+        this.objectMapperFactory = objectMapperFactory;
+    }
 
-	public void setSslOptions(SSLOptions sslOptions) {
-		this.sslOptions = sslOptions;
-	}
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
-	public void setEntityPackages(String entityPackages) {
-		this.entityPackages = entityPackages;
-	}
+    public void setConsistencyLevelReadDefault(String consistencyLevelReadDefault) {
+        this.consistencyLevelReadDefault = consistencyLevelReadDefault;
+    }
 
-	public void setForceTableCreation(boolean forceTableCreation) {
-		this.forceTableCreation = forceTableCreation;
-	}
+    public void setConsistencyLevelWriteDefault(String consistencyLevelWriteDefault) {
+        this.consistencyLevelWriteDefault = consistencyLevelWriteDefault;
+    }
 
-	public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-		this.objectMapperFactory = objectMapperFactory;
-	}
+    public void setConsistencyLevelReadMap(Map<String, String> consistencyLevelReadMap) {
+        this.consistencyLevelReadMap = consistencyLevelReadMap;
+    }
 
-	public void setObjectMapper(ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-	}
+    public void setConsistencyLevelWriteMap(Map<String, String> consistencyLevelWriteMap) {
+        this.consistencyLevelWriteMap = consistencyLevelWriteMap;
+    }
 
-	public void setConsistencyLevelReadDefault(String consistencyLevelReadDefault) {
-		this.consistencyLevelReadDefault = consistencyLevelReadDefault;
-	}
+    @Override
+    public Class<?> getObjectType() {
+        return PersistenceManager.class;
+    }
 
-	public void setConsistencyLevelWriteDefault(String consistencyLevelWriteDefault) {
-		this.consistencyLevelWriteDefault = consistencyLevelWriteDefault;
-	}
+    @Override
+    public boolean isSingleton() {
+        return true;
+    }
 
-	public void setConsistencyLevelReadMap(Map<String, String> consistencyLevelReadMap) {
-		this.consistencyLevelReadMap = consistencyLevelReadMap;
-	}
-
-	public void setConsistencyLevelWriteMap(Map<String, String> consistencyLevelWriteMap) {
-		this.consistencyLevelWriteMap = consistencyLevelWriteMap;
-	}
-
-	@Override
-	public Class<?> getObjectType() {
-		return PersistenceManager.class;
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	@Override
-	protected PersistenceManager createInstance() throws Exception {
-		synchronized (this) {
-			if (manager == null) {
-				initialize();
-			}
-		}
-		return manager;
-	}
+    @Override
+    protected PersistenceManager createInstance() throws Exception {
+        synchronized (this) {
+            if (manager == null) {
+                initialize();
+            }
+        }
+        return manager;
+    }
 
 }

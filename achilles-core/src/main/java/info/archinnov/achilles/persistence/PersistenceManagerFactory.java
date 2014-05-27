@@ -17,32 +17,22 @@ package info.archinnov.achilles.persistence;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CLUSTER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.COMPRESSION_TYPE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CONTACT_POINTS_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONNECTION_CQL_PORT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_JMX;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DISABLE_METRICS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PASSWORD;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RECONNECTION_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RETRY_POLICY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_ENABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.SSL_OPTIONS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.USERNAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +40,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ProtocolOptions;
-import com.datastax.driver.core.SSLOptions;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.policies.LoadBalancingPolicy;
-import com.datastax.driver.core.policies.ReconnectionPolicy;
-import com.datastax.driver.core.policies.RetryPolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
 import info.archinnov.achilles.interceptor.Interceptor;
@@ -69,6 +54,7 @@ import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.TypedMap;
 
 public class PersistenceManagerFactory {
@@ -89,6 +75,7 @@ public class PersistenceManagerFactory {
     private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
 
     private ProxyClassFactory proxyClassFactory = new ProxyClassFactory();
+    private Cluster cluster;
 
     /**
      * Create a new PersistenceManagerFactory with a configuration map
@@ -96,11 +83,10 @@ public class PersistenceManagerFactory {
      * @param configurationMap Check documentation for more details on configuration
      *                         parameters
      */
-    PersistenceManagerFactory(Map<String, Object> configurationMap) {
-        Validator.validateNotNull(configurationMap,
-                "Configuration map for PersistenceManagerFactory should not be null");
-        Validator.validateNotEmpty(configurationMap,
-                "Configuration map for PersistenceManagerFactory should not be empty");
+    PersistenceManagerFactory(Cluster cluster, Map<String, Object> configurationMap) {
+        this.cluster = cluster;
+        Validator.validateNotNull(configurationMap, "Configuration map for PersistenceManagerFactory should not be null");
+        Validator.validateNotEmpty(configurationMap, "Configuration map for PersistenceManagerFactory should not be empty");
         this.configurationMap = TypedMap.fromMap(configurationMap);
     }
 
@@ -110,7 +96,6 @@ public class PersistenceManagerFactory {
         log.info("Bootstrapping Achilles PersistenceManagerFactory for keyspace {}", keyspaceName);
 
         configContext = argumentExtractor.initConfigContext(configurationMap);
-        Cluster cluster = argumentExtractor.initCluster(configurationMap);
         Session session = argumentExtractor.initSession(cluster, configurationMap);
         List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
         List<Class<?>> candidateClasses = argumentExtractor.initEntities(configurationMap);
@@ -126,7 +111,6 @@ public class PersistenceManagerFactory {
 
         daoContext = bootstrapper.buildDaoContext(session, parsingResult, configContext);
         contextFactory = new PersistenceContextFactory(daoContext, configContext, parsingResult.getMetaMap());
-        registerShutdownHook(cluster);
 
         warmUpProxies();
 
@@ -202,39 +186,38 @@ public class PersistenceManagerFactory {
         return objectMapper.readValue(serialized, type);
     }
 
-    private void registerShutdownHook(final Cluster cluster) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                cluster.close();
-            }
-        });
-    }
 
     public static class PersistenceManagerFactoryBuilder {
 
         private TypedMap configMap = new TypedMap();
+        private Cluster cluster;
 
-        private PersistenceManagerFactoryBuilder() {
+        private PersistenceManagerFactoryBuilder(Cluster cluster) {
+            this.cluster = cluster;
+            Validator.validateNotNull(cluster, "Cluster object should not be null");
+
         }
 
         /**
          * Create a new PersistenceManagerFactory with the given configuration
          * map
          *
+         * @param cluster pre-configured {@code com.datastax.driver.core.Cluster}
          * @param configurationMap configuration map
          */
-        public static PersistenceManagerFactory build(Map<String, Object> configurationMap) {
-            return new PersistenceManagerFactory(configurationMap).bootstrap();
+        public static PersistenceManagerFactory build(Cluster cluster, Map<String, Object> configurationMap) {
+            return new PersistenceManagerFactory(cluster, configurationMap).bootstrap();
         }
 
         /**
          * Create a new builder to configure each parameter
          *
          * @return PersistenceManagerFactoryBuilder
+         *
+         * @param cluster pre-configured {@code com.datastax.driver.core.Cluster}
          */
-        public static PersistenceManagerFactoryBuilder builder() {
-            return new PersistenceManagerFactoryBuilder();
+        public static PersistenceManagerFactoryBuilder builder(Cluster cluster) {
+            return new PersistenceManagerFactoryBuilder(cluster);
         }
 
         /**
@@ -339,19 +322,9 @@ public class PersistenceManagerFactory {
             return this;
         }
 
-        /**
-         * Define the pre-configured com.datastax.driver.core.Cluster object to
-         * be used instead of creating a new one
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withCluster(Cluster cluster) {
-            configMap.put(CLUSTER_PARAM, cluster);
-            return this;
-        }
 
         /**
-         * Define the pre-configured com.datastax.driver.core.Session object to
+         * Define the pre-configured {@code com.datastax.driver.core.Session} object to
          * be used instead of creating a new one
          *
          * @return PersistenceManagerFactoryBuilder
@@ -361,26 +334,6 @@ public class PersistenceManagerFactory {
             return this;
         }
 
-        /**
-         * Define the contact points to connect to. The contact point list is
-         * comma-separated
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withConnectionContactPoints(String contactPoints) {
-            configMap.put(CONNECTION_CONTACT_POINTS_PARAM, contactPoints);
-            return this;
-        }
-
-        /**
-         * Define the CQL port to connect to. Default value is 9042
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withCQLPort(Integer cqlPort) {
-            configMap.put(CONNECTION_CQL_PORT_PARAM, cqlPort);
-            return this;
-        }
 
         /**
          * Define the keyspace name to be used by Achilles. Note: you should
@@ -391,109 +344,6 @@ public class PersistenceManagerFactory {
          */
         public PersistenceManagerFactoryBuilder withKeyspaceName(String keyspaceName) {
             configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
-            return this;
-        }
-
-        /**
-         * Define the com.datastax.driver.core.ProtocolOptions.Compression type
-         * to be used
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withCompressionType(ProtocolOptions.Compression compressionType) {
-            configMap.put(COMPRESSION_TYPE, compressionType);
-            return this;
-        }
-
-        /**
-         * Define the com.datastax.driver.core.policies.RetryPolicy to be used
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withRetryPolicy(RetryPolicy retryPolicy) {
-            configMap.put(RETRY_POLICY, retryPolicy);
-            return this;
-        }
-
-        /**
-         * Define the com.datastax.driver.core.policies.LoadBalancingPolicy to
-         * be used
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
-            configMap.put(LOAD_BALANCING_POLICY, loadBalancingPolicy);
-            return this;
-        }
-
-        /**
-         * Define the com.datastax.driver.core.policies.ReconnectionPolicy to be
-         * used
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withReconnectionPolicy(ReconnectionPolicy reconnectionPolicy) {
-            configMap.put(RECONNECTION_POLICY, reconnectionPolicy);
-            return this;
-        }
-
-        /**
-         * Define the username to connect to the cluster
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withUsername(String username) {
-            configMap.put(USERNAME, username);
-            return this;
-        }
-
-        /**
-         * Define the password to connect to the cluster
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withPassword(String password) {
-            configMap.put(PASSWORD, password);
-            return this;
-        }
-
-        /**
-         * Whether JMX should be disabled
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder disableJMX(Boolean disableJmx) {
-            configMap.put(DISABLE_JMX, disableJmx);
-            return this;
-        }
-
-        /**
-         * Whether metrics should be disabled
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder disableMetrics(Boolean disableMetrics) {
-            configMap.put(DISABLE_METRICS, disableMetrics);
-            return this;
-        }
-
-        /**
-         * Whether to enable SSL connection
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder enableSSL(Boolean enableSSL) {
-            configMap.put(SSL_ENABLED, enableSSL);
-            return this;
-        }
-
-        /**
-         * Define the com.datastax.driver.core.SSLOptions to be used
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder withSSLOptions(SSLOptions sslOptions) {
-            configMap.put(SSL_OPTIONS, sslOptions);
             return this;
         }
 
@@ -546,12 +396,54 @@ public class PersistenceManagerFactory {
         }
 
         /**
+         * Whether to disable proxies warm up or not.
+         *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#proxies" target="_blank">Proxies Warm Up</a>
+         *
+         * @param disableProxiesWarmUp
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder disableProxiesWarmUp(boolean disableProxiesWarmUp) {
+            configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
+            return this;
+        }
+
+        /**
+         * Whether to force Batch statements ordering
+         *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Batch-Mode#statements-ordering" target="_blank">Batch Statements Ordering</a>
+         *
+         * @param forceBatchStatementsOrdering
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder forceBatchStatementsOrdering(boolean forceBatchStatementsOrdering) {
+            configMap.put(FORCE_BATCH_STATEMENTS_ORDERING, forceBatchStatementsOrdering);
+            return this;
+        }
+
+        /**
+         * Define the global insert strategy
+         *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Insert-Strategy" target="_blank">Insert Strategy</a>
+         *
+         * @param globalInsertStrategy
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder globalInsertStrategy(InsertStrategy globalInsertStrategy) {
+            configMap.put(INSERT_STRATEGY, globalInsertStrategy);
+            return this;
+        }
+
+        /**
          * Build a new PersistenceManagerFactory
          *
          * @return PersistenceManagerFactory
          */
         public PersistenceManagerFactory build() {
-            return new PersistenceManagerFactory(configMap).bootstrap();
+            return new PersistenceManagerFactory(cluster, configMap).bootstrap();
         }
     }
 }

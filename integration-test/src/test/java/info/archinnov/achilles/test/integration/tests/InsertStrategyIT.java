@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
@@ -33,14 +34,14 @@ public class InsertStrategyIT {
     private PersistenceManager manager1 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class, EntityWithNotNullInsertStrategy.class)
             .withKeyspaceName("ALL_FIELDS_INSERT")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, ALL_FIELDS))
+            .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, ALL_FIELDS, FORCE_TABLE_CREATION_PARAM, true))
             .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
     private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .withKeyspaceName("NOT_NULL_FIELDS_INSERT")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, NOT_NULL_FIELDS))
+            .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, NOT_NULL_FIELDS, FORCE_TABLE_CREATION_PARAM, true))
             .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 

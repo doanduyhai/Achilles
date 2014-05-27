@@ -17,6 +17,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
@@ -155,7 +156,7 @@ public class EventInterceptorIT {
 
     private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
             .withEntityPackages(CompleteBean.class.getPackage().getName()).withKeyspaceName("interceptor_keyspace1")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(EVENT_INTERCEPTORS_PARAM, interceptors))
+            .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS_PARAM, interceptors, FORCE_TABLE_CREATION_PARAM, true))
             .buildPersistenceManagerFactory();
 
     private PersistenceManager manager = pmf.createPersistenceManager();
@@ -164,14 +165,14 @@ public class EventInterceptorIT {
     private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .withKeyspaceName("interceptor_keyspace2")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(EVENT_INTERCEPTORS_PARAM, postRemoveInterceptors))
+            .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS_PARAM, postRemoveInterceptors, FORCE_TABLE_CREATION_PARAM, true))
             .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
     private PersistenceManager manager3 = CassandraEmbeddedServerBuilder
             .withEntities(ClusteredEntity.class)
             .withKeyspaceName("interceptor_keyspace3")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(EVENT_INTERCEPTORS_PARAM, asList(postLoadForClustered)))
+            .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS_PARAM, asList(postLoadForClustered), FORCE_TABLE_CREATION_PARAM, true))
             .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
