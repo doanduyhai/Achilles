@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
@@ -25,6 +24,7 @@ import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;

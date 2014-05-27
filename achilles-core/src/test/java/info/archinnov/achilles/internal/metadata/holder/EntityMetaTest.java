@@ -15,8 +15,6 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
@@ -24,6 +22,8 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
+import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -360,9 +360,10 @@ public class EntityMetaTest {
         EntityMeta entityMeta = new EntityMeta();
         List<PropertyMeta> pms = new ArrayList<>();
         entityMeta.setAllMetasExceptIdAndCounters(pms);
+        entityMeta.setInsertStrategy(ALL_FIELDS);
 
         //When
-        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(new CompleteBean(), ALL_FIELDS);
+        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(new CompleteBean());
 
         //Then
         assertThat(propertyMetas).isSameAs(pms);
@@ -375,6 +376,7 @@ public class EntityMetaTest {
         PropertyMeta pm2 = mock(PropertyMeta.class);
 
         EntityMeta entityMeta = new EntityMeta();
+        entityMeta.setInsertStrategy(NOT_NULL_FIELDS);
         List<PropertyMeta> pms = asList(pm1, pm2);
         entityMeta.setAllMetasExceptIdAndCounters(pms);
         CompleteBean entity = new CompleteBean();
@@ -383,7 +385,7 @@ public class EntityMetaTest {
         when(pm2.getValueFromField(entity)).thenReturn("not null");
 
         //When
-        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(entity, NOT_NULL_FIELDS);
+        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(entity);
 
         //Then
         assertThat(propertyMetas).containsExactly(pm2);

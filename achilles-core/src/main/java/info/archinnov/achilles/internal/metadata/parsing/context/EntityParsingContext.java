@@ -25,6 +25,7 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
 
 
@@ -57,9 +58,6 @@ public class EntityParsingContext {
         return propertyMetas;
     }
 
-    public void setPropertyMetas(Map<String, PropertyMeta> propertyMetas) {
-        this.propertyMetas = propertyMetas;
-    }
 
     public Boolean hasSimpleCounter() {
         return hasCounter;
@@ -96,5 +94,9 @@ public class EntityParsingContext {
     public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
         return Pair.create(configContext.getDefaultReadConsistencyLevel(),
                 configContext.getDefaultWriteConsistencyLevel());
+    }
+
+    public InsertStrategy getDefaultInsertStrategy() {
+        return configContext.getInsertStrategy();
     }
 }

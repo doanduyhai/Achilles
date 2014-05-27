@@ -15,13 +15,13 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.InsertStrategy;
 
 public class ConfigurationContext {
     private boolean forceColumnFamilyCreation;

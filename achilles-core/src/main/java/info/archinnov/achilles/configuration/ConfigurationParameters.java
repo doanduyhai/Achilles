@@ -63,7 +63,5 @@ public interface ConfigurationParameters {
 
     ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
 
-    public static enum InsertStrategy {
-        ALL_FIELDS, NOT_NULL_FIELDS;
-    }
+
 }

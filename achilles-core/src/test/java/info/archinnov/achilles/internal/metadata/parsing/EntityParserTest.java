@@ -21,7 +21,6 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.CounterProperties;
@@ -42,6 +42,7 @@ import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedColumnName;
 import info.archinnov.achilles.test.parser.entity.BeanWithIdAndColumnAnnotationsOnSameField;
+import info.archinnov.achilles.test.parser.entity.BeanWithInsertStrategy;
 import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
 import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
@@ -50,6 +51,7 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.test.parser.entity.UserBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.InsertStrategy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParserTest {
@@ -79,6 +81,7 @@ public class EntityParserTest {
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
         configContext.setObjectMapperFactory(objectMapperFactory);
+        configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
     }
 
     @Test
@@ -164,6 +167,7 @@ public class EntityParserTest {
         assertThat(meta.getAllMetasExceptIdAndCounters()).hasSize(6).containsOnly(name, age, friends, followers, preferences, creator);
         assertThat(meta.getAllMetasExceptCounters()).hasSize(7).containsOnly(id, name, age, friends, followers, preferences, creator);
 
+        assertThat(meta.getInsertStrategy()).isEqualTo(InsertStrategy.ALL_FIELDS);
     }
 
     @Test
@@ -270,6 +274,19 @@ public class EntityParserTest {
         assertThat(meta.getPropertyMetas()).hasSize(2);
         assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
         assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
+    }
+
+    @Test
+    public void should_parse_bean_with_insert_strategy() throws Exception {
+        //Given
+        initEntityParsingContext(BeanWithInsertStrategy.class);
+
+        //When
+        EntityMeta meta = parser.parseEntity(entityContext);
+
+        //Then
+        assertThat(meta.getInsertStrategy()).isEqualTo(InsertStrategy.NOT_NULL_FIELDS);
+
     }
 
     private <T> void initEntityParsingContext(Class<T> entityClass) {

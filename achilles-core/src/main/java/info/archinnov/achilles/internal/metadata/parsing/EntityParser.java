@@ -31,6 +31,7 @@ import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsing
 import info.archinnov.achilles.internal.metadata.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
 
 public class EntityParser {
@@ -48,8 +49,8 @@ public class EntityParser {
         validateEntityAndGetObjectMapper(context);
 
         String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass,
-                context.getDefaultConsistencyLevels());
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass, context.getDefaultConsistencyLevels());
+        final InsertStrategy insertStrategy = introspector.getInsertStrategy(entityClass, context);
 
         context.setCurrentConsistencyLevels(consistencyLevels);
 
@@ -80,6 +81,7 @@ public class EntityParser {
         EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
                 .className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
                 .propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
+                .insertStrategy(insertStrategy)
                 .build();
 
         log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),

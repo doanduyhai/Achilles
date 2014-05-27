@@ -17,7 +17,6 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,65 +32,65 @@ import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 @RunWith(MockitoJUnitRunner.class)
 public class CQLEmbeddedServerIT {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
-	private Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
-			.buildNativeSessionOnly();
+    private Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
+            .buildNativeSessionOnly();
 
-	@Test
-	public void should_return_same_native_session() throws Exception {
-		Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
-				.buildNativeSessionOnly();
+    @Test
+    public void should_return_same_native_session() throws Exception {
+        Session session = CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace")
+                .buildNativeSessionOnly();
 
-		assertThat(session).isSameAs(this.session);
-	}
+        assertThat(session).isSameAs(this.session);
+    }
 
-	@Test
-	public void should_return_same_manager_for_same_keyspace() throws Exception {
-		PersistenceManager manager1 = CassandraEmbeddedServerBuilder.noEntityPackages()
-				.withKeyspaceName("second_keyspace").buildPersistenceManager();
+    @Test
+    public void should_return_same_manager_for_same_keyspace() throws Exception {
+        PersistenceManager manager1 = CassandraEmbeddedServerBuilder.noEntityPackages()
+                .withKeyspaceName("second_keyspace").buildPersistenceManager();
 
-		PersistenceManager manager2 = CassandraEmbeddedServerBuilder.noEntityPackages()
-				.withKeyspaceName("second_keyspace").buildPersistenceManager();
+        PersistenceManager manager2 = CassandraEmbeddedServerBuilder.noEntityPackages()
+                .withKeyspaceName("second_keyspace").buildPersistenceManager();
 
-		assertThat(manager1).isSameAs(manager2);
-	}
+        assertThat(manager1).isSameAs(manager2);
+    }
 
-	@Test
-	public void should_return_same_factory_for_same_keyspace() throws Exception {
-		PersistenceManagerFactory factory1 = CassandraEmbeddedServerBuilder.noEntityPackages()
-				.withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
+    @Test
+    public void should_return_same_factory_for_same_keyspace() throws Exception {
+        PersistenceManagerFactory factory1 = CassandraEmbeddedServerBuilder.noEntityPackages()
+                .withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
 
-		PersistenceManagerFactory factory2 = CassandraEmbeddedServerBuilder.noEntityPackages()
-				.withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
+        PersistenceManagerFactory factory2 = CassandraEmbeddedServerBuilder.noEntityPackages()
+                .withKeyspaceName("third_keyspace").buildPersistenceManagerFactory();
 
-		assertThat(factory1).isSameAs(factory2);
-	}
+        assertThat(factory1).isSameAs(factory2);
+    }
 
-	@Test
-	public void should_exception_when_embedded_already_started_with_another_cql_port() throws Exception {
+    @Test
+    public void should_exception_when_embedded_already_started_with_another_cql_port() throws Exception {
 
         String cassandraHost = System.getProperty(CassandraEmbeddedServer.CASSANDRA_HOST);
-        if(StringUtils.isBlank(cassandraHost)) {
+        if (StringUtils.isBlank(cassandraHost)) {
             exception.expect(IllegalArgumentException.class);
             exception.expectMessage("An embedded Cassandra server is already listening to CQL port");
         }
 
-		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withCQLPort(9500)
-				.buildNativeSessionOnly();
-	}
+        CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withCQLPort(9500)
+                .buildNativeSessionOnly();
+    }
 
-	@Test
-	public void should_exception_when_embedded_already_started_with_another_thrift_port() throws Exception {
+    @Test
+    public void should_exception_when_embedded_already_started_with_another_thrift_port() throws Exception {
 
         String cassandraHost = System.getProperty(CassandraEmbeddedServer.CASSANDRA_HOST);
-        if(StringUtils.isBlank(cassandraHost)) {
+        if (StringUtils.isBlank(cassandraHost)) {
             exception.expect(IllegalArgumentException.class);
             exception.expectMessage("An embedded Cassandra server is already listening to Thrift port");
         }
 
-		CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withThriftPort(9500)
-				.buildNativeSessionOnly();
-	}
+        CassandraEmbeddedServerBuilder.noEntityPackages().withKeyspaceName("test_keyspace").withThriftPort(9500)
+                .buildNativeSessionOnly();
+    }
 }

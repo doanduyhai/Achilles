@@ -17,8 +17,8 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS;
+import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
+import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -26,19 +26,22 @@ import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.test.integration.entity.EntityWithNotNullInsertStrategy;
 
 public class InsertStrategyIT {
 
     private PersistenceManager manager1 = CassandraEmbeddedServerBuilder
-            .withEntityPackages(CompleteBean.class.getPackage().getName())
+            .withEntities(CompleteBean.class, EntityWithNotNullInsertStrategy.class)
             .withKeyspaceName("ALL_FIELDS_INSERT")
             .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, ALL_FIELDS))
+            .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
     private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
-            .withEntityPackages(CompleteBean.class.getPackage().getName())
+            .withEntities(CompleteBean.class)
             .withKeyspaceName("NOT_NULL_FIELDS_INSERT")
             .withAchillesConfigParams(ImmutableMap.<String, Object>of(INSERT_STRATEGY, NOT_NULL_FIELDS))
+            .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
 
@@ -63,6 +66,28 @@ public class InsertStrategyIT {
 
         assertThat(found.getName()).isEqualTo("Helen");
         assertThat(found.getAge()).isNull();
+    }
+
+    @Test
+    public void should_insert_not_null_field_overriding_global_config() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong();
+        EntityWithNotNullInsertStrategy entity = new EntityWithNotNullInsertStrategy();
+        entity.setId(id);
+        entity.setName("Helen");
+        entity.setLabel("label");
+
+        //When
+        manager1.persist(entity);
+        entity.setLabel(null);
+
+        manager1.persist(entity);
+
+        //Then
+        final EntityWithNotNullInsertStrategy found = manager1.find(EntityWithNotNullInsertStrategy.class, id);
+
+        assertThat(found.getName()).isEqualTo("Helen");
+        assertThat(found.getLabel()).isEqualTo("label");
     }
 
     @Test

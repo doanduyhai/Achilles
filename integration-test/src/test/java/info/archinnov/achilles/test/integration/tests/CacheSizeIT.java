@@ -31,11 +31,10 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 public class CacheSizeIT {
 
     private PersistenceManager pm = CassandraEmbeddedServerBuilder
-            .withEntityPackages(CompleteBean.class.getPackage().getName())
+            .withEntities(CompleteBean.class)
             .withKeyspaceName("prepared_statement_cache")
-            .withAchillesConfigParams(
-                    ImmutableMap
-                            .<String, Object>of(FORCE_TABLE_CREATION_PARAM, true, PREPARED_STATEMENTS_CACHE_SIZE, 2))
+            .withAchillesConfigParams(ImmutableMap.<String, Object>of(FORCE_TABLE_CREATION_PARAM, true, PREPARED_STATEMENTS_CACHE_SIZE, 2))
+            .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 
 

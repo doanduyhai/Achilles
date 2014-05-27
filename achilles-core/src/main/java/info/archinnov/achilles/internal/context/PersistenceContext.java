@@ -135,7 +135,7 @@ public class PersistenceContext {
     }
 
     public void pushInsertStatement() {
-        final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity, configContext.getInsertStrategy());
+        final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity);
         daoContext.pushInsertStatement(this, pms);
     }
 

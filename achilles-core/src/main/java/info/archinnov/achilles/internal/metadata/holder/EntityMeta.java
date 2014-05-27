@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
 import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isAssignableFromNativeType;
 import static info.archinnov.achilles.type.Options.CASCondition;
@@ -36,6 +35,7 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
 
 public class EntityMeta {
@@ -72,6 +72,7 @@ public class EntityMeta {
     private List<PropertyMeta> allMetasExceptId;
     private boolean clusteredCounter = false;
     private List<Interceptor<?>> interceptors = new ArrayList<>();
+    private InsertStrategy insertStrategy;
 
     public Object getPrimaryKey(Object entity) {
         return idMeta.getPrimaryKey(entity);
@@ -205,6 +206,14 @@ public class EntityMeta {
         this.consistencyLevels = consistencyLevels;
     }
 
+    public InsertStrategy getInsertStrategy() {
+        return insertStrategy;
+    }
+
+    public void setInsertStrategy(InsertStrategy insertStrategy) {
+        this.insertStrategy = insertStrategy;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> Class<T> getIdClass() {
         return (Class<T>) idClass;
@@ -313,7 +322,7 @@ public class EntityMeta {
         return encodedValue;
     }
 
-    public List<PropertyMeta> retrievePropertyMetasForInsert(Object entity, InsertStrategy insertStrategy) {
+    public List<PropertyMeta> retrievePropertyMetasForInsert(Object entity) {
         if (insertStrategy == InsertStrategy.ALL_FIELDS) {
             return this.getAllMetasExceptIdAndCounters();
         }

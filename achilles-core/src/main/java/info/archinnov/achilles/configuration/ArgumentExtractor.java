@@ -36,7 +36,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.EVEN
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
@@ -82,6 +81,7 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.DefaultObjectMapperFactory;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.TypedMap;
 
 public class ArgumentExtractor {

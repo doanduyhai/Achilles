@@ -34,7 +34,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.EVEN
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.InsertStrategy.ALL_FIELDS;
+import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.LOAD_BALANCING_POLICY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
@@ -94,6 +94,7 @@ import info.archinnov.achilles.test.more.entity.Entity3;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 import info.archinnov.achilles.test.sample.entity.Entity2;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -523,7 +524,7 @@ public class ArgumentExtractorTest {
         params.put(INSERT_STRATEGY, ALL_FIELDS);
 
         //When
-        final ConfigurationParameters.InsertStrategy strategy = extractor.initInsertStrategy(params);
+        final InsertStrategy strategy = extractor.initInsertStrategy(params);
 
         //Then
         assertThat(strategy).isEqualTo(ALL_FIELDS);

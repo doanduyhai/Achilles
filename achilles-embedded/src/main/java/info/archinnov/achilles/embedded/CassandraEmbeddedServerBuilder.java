@@ -32,6 +32,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DATA_FILE_FOLDER;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -113,6 +114,18 @@ public class CassandraEmbeddedServerBuilder {
      */
     public static CassandraEmbeddedServerBuilder withEntities(List<Class<?>> entities) {
         return new CassandraEmbeddedServerBuilder(entities);
+    }
+
+    /**
+     * Bootstrap Achilles with entities
+     *
+     * @param entities
+     *            entities
+     *
+     * @return CassandraEmbeddedServerBuilder
+     */
+    public static CassandraEmbeddedServerBuilder withEntities(Class<?>... entities) {
+        return new CassandraEmbeddedServerBuilder(Arrays.asList(entities));
     }
 
     /**
