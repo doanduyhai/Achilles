@@ -18,20 +18,20 @@ package info.archinnov.achilles.configuration;
 import static info.archinnov.achilles.configuration.ArgumentExtractor.DEFAULT_LRU_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
@@ -73,13 +73,13 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.test.more.entity.Entity3;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 import info.archinnov.achilles.test.sample.entity.Entity2;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArgumentExtractorTest {
@@ -108,7 +108,7 @@ public class ArgumentExtractorTest {
     @Mock
     private Interceptor<String> interceptor2;
 
-    private TypedMap configMap = new TypedMap();
+    private ConfigMap configMap = new ConfigMap();
 
     @Before
     public void setUp() {
@@ -117,7 +117,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_entity_packages() throws Exception {
-        configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
+        configMap.put(ENTITY_PACKAGES, "info.archinnov.achilles.test.sample.entity,info.archinnov.achilles.test.more.entity");
 
         Collection<Class<?>> actual = extractor.initEntities(configMap);
 
@@ -133,7 +133,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_entities_list() {
-        configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
+        configMap.put(ENTITIES_LIST, Arrays.asList(Entity1.class));
 
         Collection<Class<?>> actual = extractor.initEntities(configMap);
 
@@ -149,8 +149,8 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_from_packages_and_entities_list() {
-        configMap.put(ENTITIES_LIST_PARAM, Arrays.asList(Entity1.class));
-        configMap.put(ENTITY_PACKAGES_PARAM, "info.archinnov.achilles.test.more.entity");
+        configMap.put(ENTITIES_LIST, Arrays.asList(Entity1.class));
+        configMap.put(ENTITY_PACKAGES, "info.archinnov.achilles.test.more.entity");
 
         Collection<Class<?>> actual = extractor.initEntities(configMap);
 
@@ -166,7 +166,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_forceCFCreation() throws Exception {
-        configMap.put(FORCE_TABLE_CREATION_PARAM, true);
+        configMap.put(FORCE_TABLE_CREATION, true);
 
         boolean actual = extractor.initForceTableCreation(configMap);
 
@@ -195,7 +195,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_object_mapper_factory_from_mapper() throws Exception {
-        configMap.put(OBJECT_MAPPER_PARAM, mapper);
+        configMap.put(OBJECT_MAPPER, mapper);
 
         ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
@@ -205,7 +205,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_object_mapper_factory() throws Exception {
-        configMap.put(OBJECT_MAPPER_FACTORY_PARAM, factory);
+        configMap.put(OBJECT_MAPPER_FACTORY, factory);
 
         ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
@@ -214,14 +214,14 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_default_read_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, "ONE");
+        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, "ONE");
 
         assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
     }
 
     @Test
     public void should_exception_when_invalid_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, "wrong_value");
+        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, "wrong_value");
 
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("'wrong_value' is not a valid Consistency Level");
@@ -231,7 +231,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_default_write_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, "LOCAL_QUORUM");
+        configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, "LOCAL_QUORUM");
 
         assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
     }
@@ -243,7 +243,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_read_consistency_level_map() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
+        configMap.put(CONSISTENCY_LEVEL_READ_MAP, ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
 
         Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
 
@@ -253,7 +253,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_write_consistency_level_map() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
+        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
 
         Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
@@ -270,7 +270,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_return_empty_consistency_map_when_empty_map_parameter() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, new HashMap<String, String>());
+        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, new HashMap<String, String>());
 
         Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
@@ -287,7 +287,7 @@ public class ArgumentExtractorTest {
     public void should_init_event_interceptor_list() throws Exception {
         ImmutableList<Interceptor<?>> interceptorsExcepted = new ImmutableList.Builder<Interceptor<?>>()
                 .add(interceptor1).add(interceptor2).build();
-        configMap.put(EVENT_INTERCEPTORS_PARAM, interceptorsExcepted);
+        configMap.put(EVENT_INTERCEPTORS, interceptorsExcepted);
 
         doCallRealMethod().when(extractor).initInterceptors(configMap);
         List<Interceptor<?>> interceptorsResult = extractor.initInterceptors(configMap);
@@ -297,8 +297,8 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_session() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(KEYSPACE_NAME_PARAM, "achilles");
+        ConfigMap params = new ConfigMap();
+        params.put(KEYSPACE_NAME, "achilles");
 
         when(cluster.connect("achilles")).thenReturn(session);
 
@@ -309,19 +309,19 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_exception_when_no_keyspace_name_param() throws Exception {
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
 
         exception.expect(AchillesException.class);
-        exception.expectMessage(KEYSPACE_NAME_PARAM + " property should be provided");
+        exception.expectMessage(KEYSPACE_NAME + " property should be provided");
 
         extractor.initSession(cluster, params);
     }
 
     @Test
     public void should_get_native_session_from_parameter() throws Exception {
-        TypedMap params = new TypedMap();
-        params.put(KEYSPACE_NAME_PARAM, "achilles");
-        params.put(NATIVE_SESSION_PARAM, session);
+        ConfigMap params = new ConfigMap();
+        params.put(KEYSPACE_NAME, "achilles");
+        params.put(NATIVE_SESSION, session);
 
         Session actual = extractor.initSession(cluster, params);
 
@@ -331,7 +331,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_config_context() throws Exception {
         // Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
 
         // When
         doReturn(true).when(extractor).initForceTableCreation(params);
@@ -357,7 +357,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_return_default_validator() throws Exception {
         // Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(BEAN_VALIDATION_ENABLE, true);
 
         // When
@@ -370,7 +370,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_return_null_when_bean_validation_disabled() throws Exception {
         // Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(BEAN_VALIDATION_ENABLE, false);
 
         assertThat(extractor.initValidator(params)).isNull();
@@ -379,7 +379,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_return_null_when_bean_validation_not_configured() throws Exception {
         // Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
 
         assertThat(extractor.initValidator(params)).isNull();
     }
@@ -388,7 +388,7 @@ public class ArgumentExtractorTest {
     public void should_get_provided_custom_validator() throws Exception {
         // Given
         FakeValidator customValidator = new FakeValidator();
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(BEAN_VALIDATION_ENABLE, true);
         params.put(BEAN_VALIDATION_VALIDATOR, customValidator);
 
@@ -403,7 +403,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_max_prepared_statements_cache_size() throws Exception {
         //Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(PREPARED_STATEMENTS_CACHE_SIZE, 10);
 
         //When
@@ -416,7 +416,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_proxy_warmup() throws Exception {
         //Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(PROXIES_WARM_UP_DISABLED, false);
 
         //When
@@ -429,7 +429,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_force_batch_statements_ordering() throws Exception {
         //Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(FORCE_BATCH_STATEMENTS_ORDERING, true);
 
         //When
@@ -442,7 +442,7 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_insert_strategy() throws Exception {
         //Given
-        TypedMap params = new TypedMap();
+        ConfigMap params = new ConfigMap();
         params.put(INSERT_STRATEGY, ALL_FIELDS);
 
         //When

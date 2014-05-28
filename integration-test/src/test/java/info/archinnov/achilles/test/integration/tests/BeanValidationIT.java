@@ -16,6 +16,11 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -260,12 +265,12 @@ public class BeanValidationIT {
         Cluster cluster = nativeSession.getCluster();
         CustomValidationInterceptor interceptor = new CustomValidationInterceptor();
 
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put(ConfigurationParameters.NATIVE_SESSION_PARAM, nativeSession);
-        configMap.put(ConfigurationParameters.ENTITIES_LIST_PARAM, Arrays.asList(EntityWithGroupConstraint.class));
-        configMap.put(ConfigurationParameters.BEAN_VALIDATION_ENABLE, true);
-        configMap.put(ConfigurationParameters.EVENT_INTERCEPTORS_PARAM, Arrays.asList(interceptor));
-        configMap.put(ConfigurationParameters.KEYSPACE_NAME_PARAM, "achilles_test");
+        Map<ConfigurationParameters, Object> configMap = new HashMap<>();
+        configMap.put(NATIVE_SESSION, nativeSession);
+        configMap.put(ENTITIES_LIST, Arrays.asList(EntityWithGroupConstraint.class));
+        configMap.put(BEAN_VALIDATION_ENABLE, true);
+        configMap.put(EVENT_INTERCEPTORS, Arrays.asList(interceptor));
+        configMap.put(KEYSPACE_NAME, "achilles_test");
         PersistenceManagerFactory managerFactory = PersistenceManagerFactoryBuilder.build(cluster, configMap);
         PersistenceManager manager = managerFactory.createPersistenceManager();
 

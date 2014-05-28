@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -24,6 +23,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -33,7 +33,7 @@ public class CacheSizeIT {
     private PersistenceManager pm = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .withKeyspaceName("prepared_statement_cache")
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(FORCE_TABLE_CREATION_PARAM, true, PREPARED_STATEMENTS_CACHE_SIZE, 2))
+            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(PREPARED_STATEMENTS_CACHE_SIZE, 2))
             .cleanDataFilesAtStartup(true)
             .buildPersistenceManager();
 

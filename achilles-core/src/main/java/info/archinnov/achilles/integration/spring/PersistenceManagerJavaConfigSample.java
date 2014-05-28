@@ -17,19 +17,19 @@ package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
@@ -47,6 +47,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -114,7 +115,7 @@ public class PersistenceManagerJavaConfigSample {
 
     @PostConstruct
     public void initialize() {
-        Map<String, Object> configMap = extractConfigParams();
+        Map<ConfigurationParameters, Object> configMap = extractConfigParams();
         pmf = PersistenceManagerFactoryBuilder.build(cluster, configMap);
     }
 
@@ -123,35 +124,35 @@ public class PersistenceManagerJavaConfigSample {
         return pmf.createPersistenceManager();
     }
 
-    private Map<String, Object> extractConfigParams() {
-        Map<String, Object> configMap = new HashMap<>();
-        configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
-        configMap.put(ENTITIES_LIST_PARAM, entityList);
+    private Map<ConfigurationParameters, Object> extractConfigParams() {
+        Map<ConfigurationParameters, Object> configMap = new HashMap<>();
+        configMap.put(ENTITY_PACKAGES, entityPackages);
+        configMap.put(ENTITIES_LIST, entityList);
 
         if (session != null) {
-            configMap.put(NATIVE_SESSION_PARAM, session);
+            configMap.put(NATIVE_SESSION, session);
         }
 
-        configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
-        configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objecMapperFactory);
+        configMap.put(KEYSPACE_NAME, keyspaceName);
+        configMap.put(OBJECT_MAPPER_FACTORY, objecMapperFactory);
 
         if (isNotBlank(consistencyLevelReadDefault)) {
-            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
+            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, consistencyLevelReadDefault);
         }
         if (isNotBlank(consistencyLevelWriteDefault)) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
+            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, consistencyLevelWriteDefault);
         }
 
         if (isNotBlank(consistencyLevelReadMap)) {
-            configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, extractConsistencyMap(consistencyLevelReadMap));
+            configMap.put(CONSISTENCY_LEVEL_READ_MAP, extractConsistencyMap(consistencyLevelReadMap));
         }
         if (isNotBlank(consistencyLevelWriteMap)) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, extractConsistencyMap(consistencyLevelWriteMap));
+            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, extractConsistencyMap(consistencyLevelWriteMap));
         }
 
-        configMap.put(EVENT_INTERCEPTORS_PARAM, eventInterceptors);
+        configMap.put(EVENT_INTERCEPTORS, eventInterceptors);
 
-        configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
+        configMap.put(FORCE_TABLE_CREATION, forceTableCreation);
 
         if (enableBeanValidation) {
             configMap.put(BEAN_VALIDATION_ENABLE, enableBeanValidation);

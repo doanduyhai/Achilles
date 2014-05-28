@@ -15,8 +15,9 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -50,9 +52,9 @@ import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.TypedMap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceManagerFactoryTest {
@@ -84,14 +86,14 @@ public class PersistenceManagerFactoryTest {
     private DaoContext daoContext;
 
     @Mock
-    private TypedMap configMap;
+    private ConfigMap configMap;
 
     @Captor
     private ArgumentCaptor<SchemaContext> contextCaptor;
 
     @Before
     public void setUp() {
-        pmf = new PersistenceManagerFactory(cluster, ImmutableMap.<String, Object>of("test", "test"));
+        pmf = new PersistenceManagerFactory(cluster, ImmutableMap.<ConfigurationParameters, Object>of(FORCE_TABLE_CREATION, true));
         pmf.configurationMap = configMap;
         Whitebox.setInternalState(pmf, ArgumentExtractor.class, argumentExtractor);
         Whitebox.setInternalState(pmf, AchillesBootstrapper.class, boostrapper);
@@ -114,8 +116,8 @@ public class PersistenceManagerFactoryTest {
         when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);
         when(argumentExtractor.initEntities(configMap)).thenReturn(candidateClasses);
 
-        when(configMap.getTyped(ENTITY_PACKAGES_PARAM)).thenReturn("packages");
-        when(configMap.getTyped(KEYSPACE_NAME_PARAM)).thenReturn("keyspace");
+        when(configMap.getTyped(ENTITY_PACKAGES)).thenReturn("packages");
+        when(configMap.getTyped(KEYSPACE_NAME)).thenReturn("keyspace");
         when(boostrapper.buildMetaDatas(configContext, candidateClasses)).thenReturn(parsingResult);
         when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
         when(boostrapper.buildDaoContext(session, parsingResult, configContext)).thenReturn(daoContext);

@@ -23,13 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
 public class CassandraEmbeddedServer {
 
-    public static final Logger log = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(CassandraEmbeddedServer.class);
 
     public static final String CASSANDRA_HOST = "cassandraHost";
 
@@ -49,7 +50,8 @@ public class CassandraEmbeddedServer {
      * @param parameters embedded Cassandra server parameters
      * @param achillesParameters Achilles parameters
      */
-    public CassandraEmbeddedServer(TypedMap originalParameters, TypedMap achillesParameters) {
+    public CassandraEmbeddedServer(TypedMap originalParameters, ConfigMap achillesParameters) {
+        LOGGER.trace("Start Cassandra Embedded server with server and Achilles config");
         TypedMap parameters = CassandraEmbeddedConfigParameters.mergeWithDefaultParameters(originalParameters);
         String cassandraHost = System.getProperty(CASSANDRA_HOST);
 

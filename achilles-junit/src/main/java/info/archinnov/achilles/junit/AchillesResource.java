@@ -15,15 +15,16 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
 import org.apache.commons.lang.StringUtils;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
@@ -54,7 +55,7 @@ public class AchillesResource extends AchillesTestResource {
         keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
                 : DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
         TypedMap config = buildConfigMap();
-        TypedMap achillesConfig = buildAchillesConfigMap(entityPackages, keyspaceToUse);
+        ConfigMap achillesConfig = buildAchillesConfigMap(entityPackages, keyspaceToUse);
 
         server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(keyspaceToUse);
@@ -69,19 +70,19 @@ public class AchillesResource extends AchillesTestResource {
         return config;
     }
 
-    private TypedMap buildAchillesConfigMap(String entityPackages, String keyspaceToUse) {
-        TypedMap config = new TypedMap();
-        config.put(FORCE_TABLE_CREATION_PARAM, true);
-        config.put(KEYSPACE_NAME_PARAM, keyspaceToUse);
+    private ConfigMap buildAchillesConfigMap(String entityPackages, String keyspaceToUse) {
+        ConfigMap config = new ConfigMap();
+        config.put(FORCE_TABLE_CREATION, true);
+        config.put(KEYSPACE_NAME, keyspaceToUse);
         config = addEntityPackagesIfNeeded(entityPackages, config);
         return config;
     }
 
-    private TypedMap addEntityPackagesIfNeeded(String entityPackages, TypedMap config) {
+    private ConfigMap addEntityPackagesIfNeeded(String entityPackages, ConfigMap config) {
         if (StringUtils.isNotBlank(entityPackages)) {
-            final TypedMap newConfig = new TypedMap();
+            final ConfigMap newConfig = new ConfigMap();
             newConfig.putAll(config);
-            newConfig.put(ENTITY_PACKAGES_PARAM, entityPackages);
+            newConfig.put(ENTITY_PACKAGES, entityPackages);
             config = newConfig;
         }
         return config;

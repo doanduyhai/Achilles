@@ -16,7 +16,6 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
 import java.util.Set;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.policies.Policies;
@@ -62,6 +61,8 @@ public class CassandraEmbeddedConfigParameters {
 
     public static final String BUILD_NATIVE_SESSION_ONLY = "buildNativeSessionOnly";
 
+    public static final String KEYSPACE_NAME = "keyspaceName";
+
     /*
      * Default values
      */
@@ -101,7 +102,7 @@ public class CassandraEmbeddedConfigParameters {
         defaultParams.put(SAVED_CACHES_FOLDER, DEFAULT_ACHILLES_TEST_SAVED_CACHES_FOLDER);
         defaultParams.put(CONFIG_YAML_FILE, DEFAULT_ACHILLES_TEST_CONFIG_YAML_FILE);
         defaultParams.put(CLUSTER_NAME, DEFAULT_CASSANDRA_EMBEDDED_CLUSTER_NAME);
-        defaultParams.put(KEYSPACE_NAME_PARAM, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
+        defaultParams.put(KEYSPACE_NAME, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_NAME);
         defaultParams.put(KEYSPACE_DURABLE_WRITE, DEFAULT_CASSANDRA_EMBEDDED_KEYSPACE_DURABLE_WRITE);
         defaultParams.put(COMPRESSION_TYPE, Compression.NONE);
         defaultParams.put(LOAD_BALANCING_POLICY, Policies.defaultLoadBalancingPolicy());

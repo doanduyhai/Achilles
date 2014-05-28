@@ -18,37 +18,40 @@ package info.archinnov.achilles.configuration;
 
 import info.archinnov.achilles.type.ConsistencyLevel;
 
-public interface ConfigurationParameters {
-    String ENTITY_PACKAGES_PARAM = "achilles.entity.packages";
-    String ENTITIES_LIST_PARAM = "achilles.entities.list";
+public enum ConfigurationParameters {
+    ENTITY_PACKAGES("achilles.entity.packages"),
+    ENTITIES_LIST("achilles.entities.list"),
 
-    String OBJECT_MAPPER_FACTORY_PARAM = "achilles.json.object.mapper.factory";
-    String OBJECT_MAPPER_PARAM = "achilles.json.object.mapper";
+    NATIVE_SESSION("achilles.cassandra.native.session"),
+    KEYSPACE_NAME("achilles.cassandra.keyspace.name"),
 
-    String CONSISTENCY_LEVEL_READ_DEFAULT_PARAM = "achilles.consistency.read.default";
-    String CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM = "achilles.consistency.write.default";
-    String CONSISTENCY_LEVEL_READ_MAP_PARAM = "achilles.consistency.read.map";
-    String CONSISTENCY_LEVEL_WRITE_MAP_PARAM = "achilles.consistency.write.map";
-    String EVENT_INTERCEPTORS_PARAM = "achilles.event.interceptors";
+    OBJECT_MAPPER_FACTORY("achilles.json.object.mapper.factory"),
+    OBJECT_MAPPER("achilles.json.object.mapper"),
 
-    String FORCE_TABLE_CREATION_PARAM = "achilles.ddl.force.table.creation";
+    CONSISTENCY_LEVEL_READ_DEFAULT("achilles.consistency.read.default"),
+    CONSISTENCY_LEVEL_WRITE_DEFAULT("achilles.consistency.write.default"),
+    CONSISTENCY_LEVEL_READ_MAP("achilles.consistency.read.map"),
+    CONSISTENCY_LEVEL_WRITE_MAP("achilles.consistency.write.map"),
 
+    EVENT_INTERCEPTORS("achilles.event.interceptors"),
 
-    String NATIVE_SESSION_PARAM = "achilles.cassandra.native.session";
-    String KEYSPACE_NAME_PARAM = "achilles.cassandra.keyspace.name";
+    FORCE_TABLE_CREATION("achilles.ddl.force.table.creation"),
 
-    String BEAN_VALIDATION_ENABLE = "achilles.bean.validation.enable";
-    String BEAN_VALIDATION_VALIDATOR = "achilles.bean.validation.validator";
+    BEAN_VALIDATION_ENABLE("achilles.bean.validation.enable"),
+    BEAN_VALIDATION_VALIDATOR("achilles.bean.validation.validator"),
 
-    String PREPARED_STATEMENTS_CACHE_SIZE = "achilles.prepared.statements.cache.size";
+    PREPARED_STATEMENTS_CACHE_SIZE("achilles.prepared.statements.cache.size"),
 
-    String PROXIES_WARM_UP_DISABLED = "achilles.proxies.warm.up.disabled";
+    PROXIES_WARM_UP_DISABLED("achilles.proxies.warm.up.disabled"),
 
-    String FORCE_BATCH_STATEMENTS_ORDERING = "achilles.batch.force.statements.ordering";
+    FORCE_BATCH_STATEMENTS_ORDERING("achilles.batch.force.statements.ordering"),
 
-    String INSERT_STRATEGY = "achilles.insert.strategy";
+    INSERT_STRATEGY("achilles.insert.strategy");
 
-    ConsistencyLevel DEFAULT_LEVEL = ConsistencyLevel.ONE;
+    private String label;
 
+    ConfigurationParameters(String label) {
+        this.label = label;
+    }
 
 }

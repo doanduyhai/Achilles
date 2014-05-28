@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.embedded;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.BUILD_NATIVE_SESSION_ONLY;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CASSANDRA_CQL_PORT;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLUSTER_NAME;
@@ -29,6 +29,8 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ProtocolOptions.Compression;
 import com.datastax.driver.core.Row;
@@ -37,6 +39,7 @@ import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.ReconnectionPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
@@ -45,19 +48,24 @@ import info.archinnov.achilles.type.TypedMap;
 
 public class AchillesInitializer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AchillesInitializer.class);
+
     private static final Pattern KEYSPACE_NAME_PATTERN = Pattern.compile("[a-zA-Z][_a-zA-Z0-9]{0,31}");
 
-    void initializeFromParameters(String cassandraHost, TypedMap parameters, TypedMap achillesParameters) {
-        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME_PARAM);
+    void initializeFromParameters(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
+
+        String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
         synchronized (REPOSITORY) {
             if (!REPOSITORY.keyspaceAlreadyBootstrapped(keyspaceName)) {
+                LOGGER.trace("Bootstrapping Achilles for keyspace {}", keyspaceName);
                 initialize(cassandraHost, parameters, achillesParameters);
                 REPOSITORY.markKeyspaceAsBootstrapped(keyspaceName);
             }
+            LOGGER.trace("Do not bootstrap Achilles for keyspace {} because it was already created", keyspaceName);
         }
     }
 
-    private void initialize(String cassandraHost, TypedMap parameters, TypedMap achillesParameters) {
+    private void initialize(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
 
         String keyspaceName = extractAndValidateKeyspaceName(achillesParameters);
         Boolean keyspaceDurableWrite = parameters.getTyped(KEYSPACE_DURABLE_WRITE);
@@ -82,10 +90,10 @@ public class AchillesInitializer {
             REPOSITORY.addNewSessionToKeyspace(keyspaceName, cluster.connect(keyspaceName));
         } else {
             Session nativeSession = cluster.connect(keyspaceName);
-            parameters.put(ConfigurationParameters.NATIVE_SESSION_PARAM, nativeSession);
-            parameters.put(ConfigurationParameters.KEYSPACE_NAME_PARAM, keyspaceName);
-            if (!parameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION_PARAM)) {
-                parameters.put(ConfigurationParameters.FORCE_TABLE_CREATION_PARAM, true);
+            achillesParameters.put(ConfigurationParameters.NATIVE_SESSION, nativeSession);
+            achillesParameters.put(ConfigurationParameters.KEYSPACE_NAME, keyspaceName);
+            if (!achillesParameters.containsKey(ConfigurationParameters.FORCE_TABLE_CREATION)) {
+                achillesParameters.put(ConfigurationParameters.FORCE_TABLE_CREATION, true);
             }
 
             PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
@@ -98,8 +106,8 @@ public class AchillesInitializer {
         }
     }
 
-    private String extractAndValidateKeyspaceName(TypedMap parameters) {
-        String keyspaceName = parameters.getTyped(KEYSPACE_NAME_PARAM);
+    private String extractAndValidateKeyspaceName(ConfigMap parameters) {
+        String keyspaceName = parameters.getTyped(KEYSPACE_NAME);
         Validator.validateNotBlank(keyspaceName, "The provided keyspace name should not be blank");
         Validator.validateTrue(KEYSPACE_NAME_PATTERN.matcher(keyspaceName).matches(),
                 "The provided keyspace name '%s' should match the " + "following pattern : '%s'", keyspaceName,
@@ -109,6 +117,7 @@ public class AchillesInitializer {
     }
 
     private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
+        LOGGER.debug("Creating Cluster object with host/port {}/{} and parameters {}", host, cqlPort, parameters);
         String clusterName = parameters.getTyped(CLUSTER_NAME);
         Compression compression = parameters.getTyped(COMPRESSION_TYPE);
         LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);
@@ -121,6 +130,8 @@ public class AchillesInitializer {
     }
 
     private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {
+        LOGGER.debug("Creating keyspace {} if neeeded", keyspaceName);
+
         final Session session = cluster.connect("system");
         final Row row = session.execute(
                 "SELECT count(1) FROM schema_keyspaces WHERE keyspace_name='" + keyspaceName + "'").one();

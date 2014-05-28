@@ -17,19 +17,19 @@ package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -43,6 +43,7 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
@@ -83,14 +84,14 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
 
     protected void initialize() {
-        Map<String, Object> configMap = new HashMap<>();
+        Map<ConfigurationParameters, Object> configMap = new HashMap<>();
 
         fillEntityPackages(configMap);
 
         fillEntityList(configMap);
 
         if (session != null) {
-            configMap.put(NATIVE_SESSION_PARAM, session);
+            configMap.put(NATIVE_SESSION, session);
         }
 
         fillKeyspaceName(configMap);
@@ -99,7 +100,7 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
         fillConsistencyLevels(configMap);
 
-        configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
+        configMap.put(FORCE_TABLE_CREATION, forceTableCreation);
 
         fillBeanValidation(configMap);
 
@@ -114,55 +115,55 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         manager = pmf.createPersistenceManager();
     }
 
-    private void fillBeanValidation(Map<String, Object> configMap) {
+    private void fillBeanValidation(Map<ConfigurationParameters, Object> configMap) {
         configMap.put(BEAN_VALIDATION_ENABLE, enableBeanValidation);
         if (beanValidator != null) {
             configMap.put(BEAN_VALIDATION_VALIDATOR, beanValidator);
         }
     }
 
-    private void fillEntityPackages(Map<String, Object> configMap) {
+    private void fillEntityPackages(Map<ConfigurationParameters, Object> configMap) {
         if (isNotBlank(entityPackages)) {
-            configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+            configMap.put(ENTITY_PACKAGES, entityPackages);
         }
     }
 
-    private void fillEntityList(Map<String, Object> configMap) {
+    private void fillEntityList(Map<ConfigurationParameters, Object> configMap) {
         if (CollectionUtils.isNotEmpty(entityList)) {
-            configMap.put(ENTITIES_LIST_PARAM, entityList);
+            configMap.put(ENTITIES_LIST, entityList);
         }
     }
 
-    private void fillKeyspaceName(Map<String, Object> configMap) {
+    private void fillKeyspaceName(Map<ConfigurationParameters, Object> configMap) {
         if (isBlank(keyspaceName)) {
             throw new IllegalArgumentException("Keyspace name should be provided");
         }
-        configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
+        configMap.put(KEYSPACE_NAME, keyspaceName);
     }
 
 
-    private void fillObjectMapper(Map<String, Object> configMap) {
+    private void fillObjectMapper(Map<ConfigurationParameters, Object> configMap) {
         if (objectMapperFactory != null) {
-            configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objectMapperFactory);
+            configMap.put(OBJECT_MAPPER_FACTORY, objectMapperFactory);
         }
         if (objectMapper != null) {
-            configMap.put(OBJECT_MAPPER_PARAM, objectMapper);
+            configMap.put(OBJECT_MAPPER, objectMapper);
         }
     }
 
-    private void fillConsistencyLevels(Map<String, Object> configMap) {
+    private void fillConsistencyLevels(Map<ConfigurationParameters, Object> configMap) {
         if (consistencyLevelReadDefault != null) {
-            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, consistencyLevelReadDefault);
+            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, consistencyLevelReadDefault);
         }
         if (consistencyLevelWriteDefault != null) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, consistencyLevelWriteDefault);
+            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, consistencyLevelWriteDefault);
         }
 
         if (consistencyLevelReadMap != null) {
-            configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, consistencyLevelReadMap);
+            configMap.put(CONSISTENCY_LEVEL_READ_MAP, consistencyLevelReadMap);
         }
         if (consistencyLevelWriteMap != null) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, consistencyLevelWriteMap);
+            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, consistencyLevelWriteMap);
         }
     }
 

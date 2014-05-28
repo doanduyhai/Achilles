@@ -17,10 +17,10 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.persistence.BatchingPersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -33,7 +33,7 @@ public class UnorderedBatchModeIT {
     private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class).withKeyspaceName("unordered_batch")
             .cleanDataFilesAtStartup(true)
-            .withAchillesConfigParams(ImmutableMap.<String, Object>of(FORCE_BATCH_STATEMENTS_ORDERING, false, FORCE_TABLE_CREATION_PARAM, true))
+            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(FORCE_BATCH_STATEMENTS_ORDERING, false))
             .buildPersistenceManagerFactory();
 
 

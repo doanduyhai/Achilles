@@ -17,20 +17,20 @@ package info.archinnov.achilles.persistence;
 
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY_PARAM;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_PARAM;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import java.io.IOException;
@@ -43,6 +43,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.configuration.ArgumentExtractor;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -52,10 +53,10 @@ import info.archinnov.achilles.internal.metadata.discovery.AchillesBootstrapper;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.TypedMap;
 
 public class PersistenceManagerFactory {
     private static final Logger log = LoggerFactory.getLogger(PersistenceManagerFactory.class);
@@ -68,7 +69,7 @@ public class PersistenceManagerFactory {
 
     PersistenceContextFactory contextFactory;
 
-    TypedMap configurationMap;
+    ConfigMap configurationMap;
 
     private ArgumentExtractor argumentExtractor = new ArgumentExtractor();
 
@@ -83,15 +84,15 @@ public class PersistenceManagerFactory {
      * @param configurationMap Check documentation for more details on configuration
      *                         parameters
      */
-    PersistenceManagerFactory(Cluster cluster, Map<String, Object> configurationMap) {
+    PersistenceManagerFactory(Cluster cluster, Map<ConfigurationParameters, Object> configurationMap) {
         this.cluster = cluster;
         Validator.validateNotNull(configurationMap, "Configuration map for PersistenceManagerFactory should not be null");
         Validator.validateNotEmpty(configurationMap, "Configuration map for PersistenceManagerFactory should not be empty");
-        this.configurationMap = TypedMap.fromMap(configurationMap);
+        this.configurationMap = ConfigMap.fromMap(configurationMap);
     }
 
     PersistenceManagerFactory bootstrap() {
-        final String keyspaceName = configurationMap.getTyped(KEYSPACE_NAME_PARAM);
+        final String keyspaceName = configurationMap.getTyped(KEYSPACE_NAME);
 
         log.info("Bootstrapping Achilles PersistenceManagerFactory for keyspace {}", keyspaceName);
 
@@ -189,7 +190,7 @@ public class PersistenceManagerFactory {
 
     public static class PersistenceManagerFactoryBuilder {
 
-        private TypedMap configMap = new TypedMap();
+        private ConfigMap configMap = new ConfigMap();
         private Cluster cluster;
 
         private PersistenceManagerFactoryBuilder(Cluster cluster) {
@@ -205,7 +206,7 @@ public class PersistenceManagerFactory {
          * @param cluster pre-configured {@code com.datastax.driver.core.Cluster}
          * @param configurationMap configuration map
          */
-        public static PersistenceManagerFactory build(Cluster cluster, Map<String, Object> configurationMap) {
+        public static PersistenceManagerFactory build(Cluster cluster, Map<ConfigurationParameters, Object> configurationMap) {
             return new PersistenceManagerFactory(cluster, configurationMap).bootstrap();
         }
 
@@ -227,7 +228,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withEntityPackages(String entityPackages) {
-            configMap.put(ENTITY_PACKAGES_PARAM, entityPackages);
+            configMap.put(ENTITY_PACKAGES, entityPackages);
             return this;
         }
 
@@ -237,7 +238,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withEntities(List<Class<?>> entities) {
-            configMap.put(ENTITIES_LIST_PARAM, entities);
+            configMap.put(ENTITIES_LIST, entities);
             return this;
         }
 
@@ -248,7 +249,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withObjectMapper(ObjectMapper objectMapper) {
-            configMap.put(OBJECT_MAPPER_PARAM, objectMapper);
+            configMap.put(OBJECT_MAPPER, objectMapper);
             return this;
         }
 
@@ -259,7 +260,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-            configMap.put(OBJECT_MAPPER_FACTORY_PARAM, objectMapperFactory);
+            configMap.put(OBJECT_MAPPER_FACTORY, objectMapperFactory);
             return this;
         }
 
@@ -270,7 +271,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultReadConsistency(String defaultReadConsistency) {
-            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT_PARAM, defaultReadConsistency);
+            configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, defaultReadConsistency);
             return this;
         }
 
@@ -281,7 +282,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultWriteConsistency(String defaultWriteConsistency) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT_PARAM, defaultWriteConsistency);
+            configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, defaultWriteConsistency);
             return this;
         }
 
@@ -293,7 +294,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultReadConsistencyMap(Map<String, String> readConsistencyMap) {
-            configMap.put(CONSISTENCY_LEVEL_READ_MAP_PARAM, readConsistencyMap);
+            configMap.put(CONSISTENCY_LEVEL_READ_MAP, readConsistencyMap);
             return this;
         }
 
@@ -306,7 +307,7 @@ public class PersistenceManagerFactory {
          */
         public PersistenceManagerFactoryBuilder withDefaultWriteConsistencyMap(Map<String,
                 String> writeConsistencyMap) {
-            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP_PARAM, writeConsistencyMap);
+            configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, writeConsistencyMap);
             return this;
         }
 
@@ -318,7 +319,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder forceTableCreation(boolean forceTableCreation) {
-            configMap.put(FORCE_TABLE_CREATION_PARAM, forceTableCreation);
+            configMap.put(FORCE_TABLE_CREATION, forceTableCreation);
             return this;
         }
 
@@ -330,7 +331,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withNativeSession(Session nativeSession) {
-            configMap.put(NATIVE_SESSION_PARAM, nativeSession);
+            configMap.put(NATIVE_SESSION, nativeSession);
             return this;
         }
 
@@ -343,7 +344,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withKeyspaceName(String keyspaceName) {
-            configMap.put(KEYSPACE_NAME_PARAM, keyspaceName);
+            configMap.put(KEYSPACE_NAME, keyspaceName);
             return this;
         }
 
@@ -353,7 +354,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withEventInterceptors(List<Interceptor<?>> interceptors) {
-            configMap.put(EVENT_INTERCEPTORS_PARAM, interceptors);
+            configMap.put(EVENT_INTERCEPTORS, interceptors);
             return this;
         }
 
