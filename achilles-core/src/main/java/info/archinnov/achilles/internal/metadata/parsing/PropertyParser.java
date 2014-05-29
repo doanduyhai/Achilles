@@ -161,7 +161,7 @@ public class PropertyParser {
     }
 
     public static <T> boolean isSupportedNativeType(Class<T> valueClass) {
-        return allowedTypes.contains(valueClass);
+        return valueClass != null && (allowedTypes.contains(valueClass) || (ByteBuffer.class.isAssignableFrom(valueClass)));
     }
 
     public static <T> boolean isAssignableFromNativeType(Class<T> valueClass) {
