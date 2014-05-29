@@ -54,6 +54,10 @@
     <logger name="org.apache.cassandra.db.Memtable">
         <level value="OFF"/>
     </logger>
+
+    <logger name="info.archinnov.achilles.test.sample.entity.Entity1">
+        <level value="TRACE"/>
+    </logger>
     <!-- ********************************************************* -->
     <!-- Root Loggers                                              -->
     <!-- ********************************************************* -->

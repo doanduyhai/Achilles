@@ -20,8 +20,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.google.common.base.Optional;
@@ -37,6 +40,9 @@ public class SimpleStatementWrapperTest {
     @Mock
     private Session session;
 
+    @Captor
+    private ArgumentCaptor<RegularStatement> statementCaptor;
+
     private Optional<CASResultListener> noListener = Optional.absent();
 
     @Test
@@ -48,7 +54,10 @@ public class SimpleStatementWrapperTest {
         wrapper.execute(session);
 
         //Then
-        verify(session).execute("SELECT", values);
+        verify(session).execute(statementCaptor.capture());
+
+        final RegularStatement regularStatement = statementCaptor.getValue();
+        assertThat(regularStatement.getQueryString()).isEqualTo("SELECT");
     }
 
     @Test

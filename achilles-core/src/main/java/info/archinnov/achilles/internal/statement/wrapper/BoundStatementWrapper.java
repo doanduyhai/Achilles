@@ -27,8 +27,8 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     private BoundStatement boundStatement;
 
-    public BoundStatementWrapper(BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
-        super(values);
+    public BoundStatementWrapper(Class<?> entityClass, BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
+        super(entityClass, values);
         super.casResultListener = casResultListener;
         this.boundStatement = bs;
         this.boundStatement.setConsistencyLevel(consistencyLevel);
@@ -37,7 +37,9 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
     @Override
     public ResultSet execute(Session session) {
         logDMLStatement("");
+        activateQueryTracing(boundStatement);
         ResultSet resultSet = session.execute(boundStatement);
+        tracing(resultSet);
         checkForCASSuccess(boundStatement.preparedStatement().getQueryString(), resultSet);
         return resultSet;
     }

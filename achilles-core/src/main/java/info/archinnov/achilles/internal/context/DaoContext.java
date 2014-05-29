@@ -102,7 +102,7 @@ public class DaoContext {
         if (changeType == SET_TO_LIST_AT_INDEX || changeType == REMOVE_FROM_LIST_AT_INDEX) {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
             final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet);
-            context.pushStatement(new RegularStatementWrapper(pair.left, pair.right, getCQLLevel(writeLevel), context.getCASResultListener()));
+            context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel), context.getCASResultListener()));
         } else {
             PreparedStatement ps = cacheManager.getCacheForCollectionAndMapOperation(session, dynamicPSCache, context, propertyMeta, changeSet);
             BoundStatementWrapper bsWrapper = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);
@@ -133,7 +133,7 @@ public class DaoContext {
 
     // Simple counter
     public void bindForSimpleCounterIncrement(PersistenceContext context, PropertyMeta counterMeta, Long increment) {
-        log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context,increment);
+        log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context, increment);
         PreparedStatement ps = counterQueryMap.get(INCR);
         ConsistencyLevel writeLevel = overrider.getWriteLevel(context, counterMeta);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(context, ps, counterMeta, increment, writeLevel);

@@ -29,6 +29,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BoundStatementWrapperTest {
@@ -49,7 +50,7 @@ public class BoundStatementWrapperTest {
     @Test
     public void should_execute() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(bs, new Object[] { 1 }, ConsistencyLevel.ALL, NO_LISTENER);
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ALL, NO_LISTENER);
         when(bs.preparedStatement()).thenReturn(ps);
         when(ps.getQueryString()).thenReturn("SELECT");
 
@@ -63,7 +64,7 @@ public class BoundStatementWrapperTest {
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER);
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER);
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();

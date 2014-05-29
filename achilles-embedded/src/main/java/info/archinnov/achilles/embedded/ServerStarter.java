@@ -42,6 +42,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.SAVED_CACHES_FOLDER;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -61,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.TypedMap;
 
@@ -201,7 +203,11 @@ public enum ServerStarter {
                 File dataFolderFile = new File(dataFolder);
                 if (dataFolderFile.exists() && dataFolderFile.isDirectory()) {
                     log.info("Cleaning up embedded Cassandra data directory '{}'", dataFolderFile.getAbsolutePath());
-                    FileUtils.deleteQuietly(dataFolderFile);
+                    try {
+                        FileUtils.cleanDirectory(dataFolderFile);
+                    } catch (IOException e) {
+                        throw new AchillesException(String.format("Cannot clean data folder %s", dataFolder));
+                    }
                 }
             }
         }

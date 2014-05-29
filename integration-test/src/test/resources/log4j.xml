@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE log4j:configuration PUBLIC
-		"-//APACHE//DTD LOG4J 1.2//EN"
-		"http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
+        "-//APACHE//DTD LOG4J 1.2//EN"
+        "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
 <log4j:configuration debug="false"
-					 xmlns:log4j="http://jakarta.apache.org/log4j/">
-	<!-- Appenders -->
-	<appender name="ConsoleAppender"
-			  class="org.apache.log4j.ConsoleAppender">
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern"
-				   value="%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"/>
-		</layout>
-	</appender>
+                     xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <!-- Appenders -->
+    <appender name="ConsoleAppender"
+              class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                   value="%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"/>
+        </layout>
+    </appender>
 
-	<logger name="ACHILLES_DDL_SCRIPT">
-		<level value="DEBUG"/>
-	</logger>
+    <logger name="ACHILLES_DDL_SCRIPT">
+        <level value="DEBUG"/>
+    </logger>
 
-	<logger name="ACHILLES_DML_STATEMENT">
-		<level value="DEBUG"/>
-	</logger>
+    <logger name="ACHILLES_DML_STATEMENT">
+        <level value="DEBUG"/>
+    </logger>
 
-	<logger name="info.archinnov.achilles">
-		<level value="INFO"/>
-	</logger>
+    <logger name="info.archinnov.achilles">
+        <level value="INFO"/>
+    </logger>
 
-	<logger name="org.apache.cassandra.cql3.QueryProcessor">
-		<level value="OFF"/>
-	</logger>
+    <logger name="org.apache.cassandra.cql3.QueryProcessor">
+        <level value="OFF"/>
+    </logger>
 
-	<logger name="org.apache.cassandra.db.Memtable">
-		<level value="OFF"/>
-	</logger>
-	<!-- ********************************************************* -->
-	<!-- Root Loggers                                              -->
-	<!-- ********************************************************* -->
-	<root>
-		<level value="WARN"/>
-		<appender-ref ref="ConsoleAppender"/>
-	</root>
+    <logger name="org.apache.cassandra.db.Memtable">
+        <level value="OFF"/>
+    </logger>
+
+    <logger name="info.archinnov.achilles.test.integration.entity.EntityWithEnum">
+        <level value="TRACE"/>
+    </logger>
+    <!-- ********************************************************* -->
+    <!-- Root Loggers                                              -->
+    <!-- ********************************************************* -->
+    <root>
+        <level value="WARN"/>
+        <appender-ref ref="ConsoleAppender"/>
+    </root>
 </log4j:configuration>

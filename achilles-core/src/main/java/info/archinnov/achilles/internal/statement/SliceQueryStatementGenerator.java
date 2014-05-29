@@ -120,7 +120,7 @@ public class SliceQueryStatementGenerator {
         }
         where.setFetchSize(sliceQuery.getBatchSize());
         log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
-        return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
     }
 
     public RegularStatementWrapper generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<?> sliceQuery, Delete delete) {
@@ -135,7 +135,7 @@ public class SliceQueryStatementGenerator {
             boundValues[i] = fixedComponents.get(i);
         }
         log.trace("Generated WHERE clause for slice delete query : {}", where.getQueryString());
-        return new RegularStatementWrapper(where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
     }
 
 }

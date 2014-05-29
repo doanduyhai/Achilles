@@ -58,7 +58,7 @@ public class PreparedStatementBinder {
         values.addAll(fetchTTLAndTimestampValues(context));
 
         BoundStatement bs = ps.bind(values.toArray());
-        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
 
@@ -78,7 +78,7 @@ public class PreparedStatementBinder {
         values.addAll(fetchCASConditionsValues(context, entityMeta));
         BoundStatement bs = ps.bind(values.toArray());
 
-        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
     public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistenceContext context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
@@ -135,7 +135,7 @@ public class PreparedStatementBinder {
         values.addAll(fetchCASConditionsValues(context, entityMeta));
         BoundStatement bs = ps.bind(values.toArray());
 
-        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
 
@@ -149,7 +149,7 @@ public class PreparedStatementBinder {
         List<Object> values = bindPrimaryKey(primaryKey, idMeta);
 
         BoundStatement bs = ps.bind(values.toArray());
-        return new BoundStatementWrapper(bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
+        return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
     public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
@@ -161,7 +161,7 @@ public class PreparedStatementBinder {
         Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0, increment);
 
         BoundStatement bs = ps.bind(boundValues);
-        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     public BoundStatementWrapper bindForSimpleCounterSelect(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
@@ -172,7 +172,7 @@ public class PreparedStatementBinder {
 
         Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         BoundStatement bs = ps.bind(boundValues);
-        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     public BoundStatementWrapper bindForSimpleCounterDelete(PersistenceContext context, PreparedStatement ps, PropertyMeta pm) {
@@ -185,7 +185,7 @@ public class PreparedStatementBinder {
 
         Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         BoundStatement bs = ps.bind(boundValues);
-        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, Long increment) {
@@ -204,7 +204,7 @@ public class PreparedStatementBinder {
 
         BoundStatement bs = ps.bind(keys);
 
-        return new BoundStatementWrapper(bs, keys, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, keys, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     public BoundStatementWrapper bindForClusteredCounterSelect(PersistenceContext context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
@@ -217,7 +217,7 @@ public class PreparedStatementBinder {
         Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
 
         BoundStatement bs = ps.bind(boundValues);
-        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     public BoundStatementWrapper bindForClusteredCounterDelete(PersistenceContext context, PreparedStatement ps) {
@@ -231,7 +231,7 @@ public class PreparedStatementBinder {
         Object[] boundValues = primaryKeys.toArray(new Object[primaryKeys.size()]);
         BoundStatement bs = ps.bind(boundValues);
 
-        return new BoundStatementWrapper(bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
+        return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
     private List<Object> fetchPrimaryKeyValues(EntityMeta entityMeta, Object entity) {

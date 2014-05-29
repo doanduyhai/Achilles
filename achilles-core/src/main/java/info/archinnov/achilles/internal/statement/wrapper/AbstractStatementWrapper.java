@@ -22,12 +22,18 @@ import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.TreeMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.ExecutionInfo;
+import com.datastax.driver.core.QueryTrace;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -40,21 +46,32 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
 
 public abstract class AbstractStatementWrapper {
+    public static final EventComparator EVENT_TRACE_COMPARATOR = new EventComparator();
     public static final String ACHILLES_DML_STATEMENT = "ACHILLES_DML_STATEMENT";
     protected static final String IF_NOT_EXIST_CLAUSE = " IF NOT EXISTS";
     protected static final String IF_CLAUSE = " IF ";
     protected static final String CAS_RESULT_COLUMN = "[applied]";
 
     protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
-    protected Object[] values = new Object[] { };
-
     protected RowMethodInvoker invoker = new RowMethodInvoker();
 
     protected Optional<CASResultListener> casResultListener = Optional.absent();
 
-    protected AbstractStatementWrapper(Object[] values) {
-        if (ArrayUtils.isNotEmpty(values))
+    protected Object[] values = new Object[] { };
+    protected boolean traceQueryForEntity = false;
+    protected boolean displayDMLForEntity = false;
+    protected Logger entityLogger;
+
+    protected AbstractStatementWrapper(Class<?> entityClass, Object[] values) {
+        if (ArrayUtils.isNotEmpty(values)) {
             this.values = values;
+        }
+        if (entityClass != null && LoggerFactory.getLogger(entityClass) != null) {
+            this.traceQueryForEntity = LoggerFactory.getLogger(entityClass).isTraceEnabled();
+            this.displayDMLForEntity = LoggerFactory.getLogger(entityClass).isDebugEnabled();
+            this.entityLogger = LoggerFactory.getLogger(entityClass);
+        }
+
     }
 
     public Object[] getValues() {
@@ -99,13 +116,14 @@ public abstract class AbstractStatementWrapper {
         }
     }
 
-    protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel,
-            Object... values) {
+    protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel, Object... values) {
 
-        dmlLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+        Logger actualLogger = displayDMLForEntity ? entityLogger : dmlLogger;
+
+        actualLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
 
         if (ArrayUtils.isNotEmpty(values)) {
-            dmlLogger.debug("\t bound values : {}", Arrays.asList(values));
+            actualLogger.debug("\t bound values : {}", Arrays.asList(values));
         }
     }
 
@@ -152,6 +170,38 @@ public abstract class AbstractStatementWrapper {
     protected void notifyCASSuccess() {
         if (casResultListener.isPresent()) {
             casResultListener.get().onCASSuccess();
+        }
+    }
+
+    protected Statement activateQueryTracing(Statement statement) {
+        if (dmlLogger.isTraceEnabled() || traceQueryForEntity) {
+            statement.enableTracing();
+        }
+        return statement;
+    }
+
+    protected void tracing(ResultSet resultSet) {
+        if (dmlLogger.isTraceEnabled() || traceQueryForEntity) {
+            Logger actualLogger = traceQueryForEntity ? entityLogger : dmlLogger;
+            for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
+                actualLogger.trace("Query tracing at host {} with achieved consistency level {} ", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel());
+                actualLogger.trace("****************************");
+                actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
+                final List<QueryTrace.Event> events = new ArrayList<>(executionInfo.getQueryTrace().getEvents());
+                Collections.sort(events, EVENT_TRACE_COMPARATOR);
+                for (QueryTrace.Event event : events) {
+                    final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
+                    actualLogger.trace(formatted);
+                }
+                actualLogger.trace("****************************");
+            }
+        }
+    }
+
+    private static class EventComparator implements Comparator<QueryTrace.Event> {
+        @Override
+        public int compare(QueryTrace.Event event1, QueryTrace.Event event2) {
+            return event1.getSource().toString().compareTo(event2.getSource().toString());
         }
     }
 }

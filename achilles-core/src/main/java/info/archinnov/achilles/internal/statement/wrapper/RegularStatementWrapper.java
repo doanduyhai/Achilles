@@ -27,9 +27,9 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
 
     private RegularStatement regularStatement;
 
-    public RegularStatementWrapper(RegularStatement regularStatement, Object[] boundValues,
+    public RegularStatementWrapper(Class<?> entityClass, RegularStatement regularStatement, Object[] boundValues,
             ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
-        super(boundValues);
+        super(entityClass, boundValues);
         this.regularStatement = regularStatement;
         super.casResultListener = casResultListener;
         regularStatement.setConsistencyLevel(consistencyLevel);
@@ -38,7 +38,9 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
     @Override
     public ResultSet execute(Session session) {
         logDMLStatement("");
+        activateQueryTracing(regularStatement);
         ResultSet resultSet = session.execute(regularStatement);
+        tracing(resultSet);
         checkForCASSuccess(regularStatement.getQueryString(), resultSet);
         return resultSet;
     }

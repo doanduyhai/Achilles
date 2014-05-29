@@ -24,10 +24,11 @@ import info.archinnov.achilles.listener.CASResultListener;
 
 public class SimpleStatementWrapper extends AbstractStatementWrapper {
 
+
     private SimpleStatement simpleStatement;
 
     public SimpleStatementWrapper(String query, Object[] values, Optional<CASResultListener> casResultListener) {
-        super(values);
+        super(null, values);
         super.casResultListener = casResultListener;
         this.simpleStatement = new SimpleStatement(query);
     }
@@ -35,8 +36,13 @@ public class SimpleStatementWrapper extends AbstractStatementWrapper {
     @Override
     public ResultSet execute(Session session) {
         logDMLStatement("");
-        ResultSet resultSet = session.execute(simpleStatement.getQueryString(), values);
-        checkForCASSuccess(simpleStatement.getQueryString(), resultSet);
+
+        final String queryString = simpleStatement.getQueryString();
+        final SimpleStatement statement = new SimpleStatement(queryString, values);
+        activateQueryTracing(statement);
+        ResultSet resultSet = session.execute(statement);
+        tracing(resultSet);
+        checkForCASSuccess(queryString, resultSet);
         return resultSet;
     }
 

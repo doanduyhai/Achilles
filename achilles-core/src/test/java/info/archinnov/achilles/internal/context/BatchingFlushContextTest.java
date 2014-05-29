@@ -44,6 +44,7 @@ import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapp
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -90,10 +91,8 @@ public class BatchingFlushContextTest {
         EventHolder eventHolder = mock(EventHolder.class);
         RegularStatement statement1 = QueryBuilder.select().from("table1");
         RegularStatement statement2 = QueryBuilder.select().from("table2");
-        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(statement1, null, com.datastax.driver.core
-                .ConsistencyLevel.ONE, noListener);
-        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(statement2, null, com.datastax.driver.core
-                .ConsistencyLevel.ONE, noListener);
+        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(CompleteBean.class, statement1, null, com.datastax.driver.core.ConsistencyLevel.ONE, noListener);
+        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(CompleteBean.class, statement2, null, com.datastax.driver.core.ConsistencyLevel.ONE, noListener);
         context.eventHolders = Arrays.asList(eventHolder);
         context.statementWrappers = Arrays.asList(wrapper1, wrapper2);
         context.counterStatementWrappers = Arrays.asList(wrapper1, wrapper2);
