@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -28,7 +28,7 @@ public class CounterLoader {
     private EntityMapper mapper = new EntityMapper();
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
-    public <T> T loadClusteredCounters(PersistenceContext context) {
+    public <T> T loadClusteredCounters(EntityOperations context) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -46,12 +46,12 @@ public class CounterLoader {
     }
 
 
-    public void loadClusteredCounterColumn(PersistenceContext context, Object realObject, PropertyMeta counterMeta) {
+    public void loadClusteredCounterColumn(EntityOperations context, Object realObject, PropertyMeta counterMeta) {
         Long counterValue = context.getClusteredCounterColumn(counterMeta);
         mapper.setCounterToEntity(counterMeta, realObject, counterValue);
     }
 
-    public void loadCounter(PersistenceContext context, Object entity, PropertyMeta counterMeta) {
+    public void loadCounter(EntityOperations context, Object entity, PropertyMeta counterMeta) {
         ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
         final Long initialCounterValue = context.getSimpleCounter(counterMeta, readLevel);
         mapper.setCounterToEntity(counterMeta, entity, initialCounterValue);

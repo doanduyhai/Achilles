@@ -39,6 +39,7 @@ import com.google.common.cache.Cache;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
+import info.archinnov.achilles.internal.context.facade.DaoOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
@@ -76,7 +77,7 @@ public class DaoContext {
 
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
-    public void pushInsertStatement(PersistenceContext context, List<PropertyMeta> pms) {
+    public void pushInsertStatement(DaoOperations context, List<PropertyMeta> pms) {
         log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context, pms);
 
         PreparedStatement ps = cacheManager.getCacheForEntityInsert(session, dynamicPSCache, context, pms);
@@ -84,7 +85,7 @@ public class DaoContext {
         context.pushStatement(bsWrapper);
     }
 
-    public void pushUpdateStatement(PersistenceContext context, List<PropertyMeta> pms) {
+    public void pushUpdateStatement(DaoOperations context, List<PropertyMeta> pms) {
         log.debug("Push update statement for PersistenceContext '{}' and properties '{}'", context, pms);
 
         PreparedStatement ps = cacheManager.getCacheForFieldsUpdate(session, dynamicPSCache, context, pms);
@@ -92,7 +93,7 @@ public class DaoContext {
         context.pushStatement(bsWrapper);
     }
 
-    public void pushCollectionAndMapUpdateStatement(PersistenceContext context, DirtyCheckChangeSet changeSet) {
+    public void pushCollectionAndMapUpdateStatement(DaoOperations context, DirtyCheckChangeSet changeSet) {
 
         final CollectionAndMapChangeType changeType = changeSet.getChangeType();
         final PropertyMeta propertyMeta = changeSet.getPropertyMeta();
@@ -110,14 +111,14 @@ public class DaoContext {
         }
     }
 
-    public Row loadProperty(PersistenceContext context, PropertyMeta pm) {
+    public Row loadProperty(DaoOperations context, PropertyMeta pm) {
         log.debug("Load property '{}' for PersistenceContext '{}'", pm, context);
         PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm);
         List<Row> rows = executeReadWithConsistency(context, ps);
         return returnFirstRowOrNull(rows);
     }
 
-    public void bindForRemoval(PersistenceContext context, String tableName) {
+    public void bindForRemoval(DaoOperations context, String tableName) {
         log.debug("Push delete statement for PersistenceContext '{}'", context);
         Class<?> entityClass = context.getEntityClass();
         Map<String, PreparedStatement> psMap = removePSs.get(entityClass);
@@ -132,7 +133,7 @@ public class DaoContext {
     }
 
     // Simple counter
-    public void bindForSimpleCounterIncrement(PersistenceContext context, PropertyMeta counterMeta, Long increment) {
+    public void bindForSimpleCounterIncrement(DaoOperations context, PropertyMeta counterMeta, Long increment) {
         log.debug("Push simple counter increment statement for PersistenceContext '{}' and value '{}'", context, increment);
         PreparedStatement ps = counterQueryMap.get(INCR);
         ConsistencyLevel writeLevel = overrider.getWriteLevel(context, counterMeta);
@@ -140,21 +141,21 @@ public class DaoContext {
         context.pushCounterStatement(bsWrapper);
     }
 
-    public void incrementSimpleCounter(PersistenceContext context, PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel) {
+    public void incrementSimpleCounter(DaoOperations context, PropertyMeta counterMeta, Long increment, ConsistencyLevel consistencyLevel) {
         log.debug("Increment immediately simple counter for PersistenceContext '{}' and value '{}'", context, increment);
         PreparedStatement ps = counterQueryMap.get(INCR);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(context, ps, counterMeta, increment, consistencyLevel);
         context.executeImmediate(bsWrapper);
     }
 
-    public void decrementSimpleCounter(PersistenceContext context, PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel) {
+    public void decrementSimpleCounter(DaoOperations context, PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistencyLevel) {
         log.debug("Decrement immediately simple counter for PersistenceContext '{}' and value '{}'", context, decrement);
         PreparedStatement ps = counterQueryMap.get(DECR);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterIncrementDecrement(context, ps, counterMeta, decrement, consistencyLevel);
         context.executeImmediate(bsWrapper);
     }
 
-    public Row getSimpleCounter(PersistenceContext context, PropertyMeta counterMeta, ConsistencyLevel consistencyLevel) {
+    public Row getSimpleCounter(DaoOperations context, PropertyMeta counterMeta, ConsistencyLevel consistencyLevel) {
         log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'", counterMeta, context, consistencyLevel);
         PreparedStatement ps = counterQueryMap.get(SELECT);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(context, ps, counterMeta, consistencyLevel);
@@ -162,7 +163,7 @@ public class DaoContext {
         return returnFirstRowOrNull(resultSet.all());
     }
 
-    public void bindForSimpleCounterDelete(PersistenceContext context, PropertyMeta counterMeta) {
+    public void bindForSimpleCounterDelete(DaoOperations context, PropertyMeta counterMeta) {
         log.debug("Push simple counter deletion statement for counterMeta '{}' and PersistenceContext '{}'", counterMeta, context);
         PreparedStatement ps = counterQueryMap.get(DELETE);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterDelete(context, ps, counterMeta);
@@ -170,7 +171,7 @@ public class DaoContext {
     }
 
     // Clustered counter
-    public void pushClusteredCounterIncrementStatement(PersistenceContext context, PropertyMeta counterMeta, Long increment) {
+    public void pushClusteredCounterIncrementStatement(DaoOperations context, PropertyMeta counterMeta, Long increment) {
         log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta, context, increment);
 
         PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(INCR).get(counterMeta.getPropertyName());
@@ -178,7 +179,7 @@ public class DaoContext {
         context.pushCounterStatement(bsWrapper);
     }
 
-    public Row getClusteredCounter(PersistenceContext context) {
+    public Row getClusteredCounter(DaoOperations context) {
         log.debug("Get clustered counter for PersistenceContext '{}'", context);
         EntityMeta entityMeta = context.getEntityMeta();
         PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL.name());
@@ -189,7 +190,7 @@ public class DaoContext {
         return returnFirstRowOrNull(resultSet.all());
     }
 
-    public Long getClusteredCounterColumn(PersistenceContext context, PropertyMeta counterMeta) {
+    public Long getClusteredCounterColumn(DaoOperations context, PropertyMeta counterMeta) {
         log.debug("Get clustered counter for PersistenceContext '{}'", context);
         EntityMeta entityMeta = context.getEntityMeta();
         final String counterColumnName = counterMeta.getPropertyName();
@@ -204,14 +205,14 @@ public class DaoContext {
         return counterValue;
     }
 
-    public void bindForClusteredCounterDelete(PersistenceContext context) {
+    public void bindForClusteredCounterDelete(DaoOperations context) {
         log.debug("Push clustered counter deletion statement for PersistenceContext '{}'", context);
         PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(DELETE).get(DELETE_ALL.name());
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterDelete(context, ps);
         context.pushCounterStatement(bsWrapper);
     }
 
-    public Row loadEntity(PersistenceContext context) {
+    public Row loadEntity(DaoOperations context) {
         log.debug("Load entity for PersistenceContext '{}'", context);
 
         Class<?> entityClass = context.getEntityClass();
@@ -221,7 +222,7 @@ public class DaoContext {
         return returnFirstRowOrNull(rows);
     }
 
-    private List<Row> executeReadWithConsistency(PersistenceContext context, PreparedStatement ps) {
+    private List<Row> executeReadWithConsistency(DaoOperations context, PreparedStatement ps) {
         ConsistencyLevel readLevel = overrider.getReadLevel(context);
         BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, ps, readLevel);
         return context.executeImmediate(bsWrapper).all();

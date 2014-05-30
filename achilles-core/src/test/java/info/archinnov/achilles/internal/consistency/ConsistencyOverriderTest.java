@@ -43,7 +43,7 @@ public class ConsistencyOverriderTest {
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.StateHolderFacade context;
 
     @Mock
     private EntityMeta meta;

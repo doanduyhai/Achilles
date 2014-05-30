@@ -32,8 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
+import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
@@ -102,7 +102,7 @@ public class PersistenceManager {
 
         optionsValidator.validateOptionsForInsert(entity, entityMetaMap, options);
         proxifier.ensureNotProxy(entity);
-        PersistenceContext context = initPersistenceContext(entity, options);
+        PersistenceManagerOperations context = initPersistenceContext(entity, options);
         return context.persist(entity);
     }
 
@@ -134,7 +134,7 @@ public class PersistenceManager {
         }
         entityValidator.validateEntity(realObject, entityMetaMap);
         optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, options);
-        PersistenceContext context = initPersistenceContext(realObject, options);
+        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
         context.update(entity);
     }
 
@@ -165,7 +165,7 @@ public class PersistenceManager {
         if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
         }
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey, noOptions());
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, noOptions());
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
@@ -185,7 +185,7 @@ public class PersistenceManager {
         }
 
         entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceContext context = initPersistenceContext(realObject, options);
+        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
         context.remove();
     }
 
@@ -204,8 +204,7 @@ public class PersistenceManager {
         if (log.isDebugEnabled())
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
 
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey,
-                withConsistency(writeLevel));
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(writeLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
@@ -243,7 +242,7 @@ public class PersistenceManager {
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.find(entityClass);
     }
@@ -292,7 +291,7 @@ public class PersistenceManager {
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
-        PersistenceContext context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         T entity = context.getProxy(entityClass);
         return entity;
@@ -325,7 +324,7 @@ public class PersistenceManager {
         proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceContext context = initPersistenceContext(realObject, withConsistency(readLevel));
+        PersistenceManagerOperations context = initPersistenceContext(realObject, withConsistency(readLevel));
         context.refresh(entity);
     }
 
@@ -344,7 +343,7 @@ public class PersistenceManager {
         }
         proxifier.ensureProxy(entity);
         T realObject = proxifier.getRealObject(entity);
-        PersistenceContext context = initPersistenceContext(realObject, noOptions());
+        PersistenceManagerOperations context = initPersistenceContext(realObject, noOptions());
         return context.initialize(entity);
     }
 
@@ -622,12 +621,12 @@ public class PersistenceManager {
         return objectMapper.readValue(serialized, type);
     }
 
-    protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
-        return contextFactory.newContext(entityClass, primaryKey, options);
+    protected PersistenceManagerOperations initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+        return contextFactory.newContext(entityClass, primaryKey, options).getPersistenceManagerFacade();
     }
 
-    protected PersistenceContext initPersistenceContext(Object entity, Options options) {
-        return contextFactory.newContext(entity, options);
+    protected PersistenceManagerOperations initPersistenceContext(Object entity, Options options) {
+        return contextFactory.newContext(entity, options).getPersistenceManagerFacade();
     }
 
     public Session getNativeSession() {

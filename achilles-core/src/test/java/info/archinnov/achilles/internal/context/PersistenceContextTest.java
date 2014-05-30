@@ -132,41 +132,10 @@ public class PersistenceContextTest {
     }
 
     @Test
-    public void should_return_is_clustered_true() throws Exception {
-        when(meta.isClusteredEntity()).thenReturn(true);
-        assertThat(context.isClusteredEntity()).isTrue();
-    }
-
-    @Test
-    public void should_return_column_family_name() throws Exception {
-        when(meta.getTableName()).thenReturn("table");
-        assertThat(context.getTableName()).isEqualTo("table");
-    }
-
-    @Test
-    public void should_return_true_for_is_batch_mode() throws Exception {
-        when(flushContext.type()).thenReturn(AbstractFlushContext.FlushType.BATCH);
-        assertThat(context.isBatchMode()).isTrue();
-    }
-
-    @Test
-    public void should_return_false_for_is_batch_mode() throws Exception {
-        when(flushContext.type()).thenReturn(AbstractFlushContext.FlushType.IMMEDIATE);
-        assertThat(context.isBatchMode()).isFalse();
-    }
-
-    @Test
     public void should_call_flush() throws Exception {
-        context.flush();
+        context.persistenceManagerFacade.flush();
 
         verify(flushContext).flush();
-    }
-
-    @Test
-    public void should_call_end_batch() throws Exception {
-        context.endBatch();
-
-        verify(flushContext).endBatch();
     }
 
     @Test
@@ -178,24 +147,24 @@ public class PersistenceContextTest {
 
         PersistenceContext duplicateContext = context.duplicate(entity);
 
-        assertThat(duplicateContext.getEntity()).isSameAs(entity);
-        assertThat(duplicateContext.getPrimaryKey()).isSameAs(primaryKey);
+        assertThat(duplicateContext.stateHolderFacade.getEntity()).isSameAs(entity);
+        assertThat(duplicateContext.stateHolderFacade.getPrimaryKey()).isSameAs(primaryKey);
     }
 
     @Test
     public void should_eager_load_entity() throws Exception {
         Row row = mock(Row.class);
-        when(daoContext.loadEntity(context)).thenReturn(row);
+        when(daoContext.loadEntity(context.daoFacade)).thenReturn(row);
 
-        assertThat(context.loadEntity()).isSameAs(row);
+        assertThat(context.entityFacade.loadEntity()).isSameAs(row);
     }
 
     @Test
     public void should_load_property() throws Exception {
         Row row = mock(Row.class);
-        when(daoContext.loadProperty(context, idMeta)).thenReturn(row);
+        when(daoContext.loadProperty(context.daoFacade, idMeta)).thenReturn(row);
 
-        assertThat(context.loadProperty(idMeta)).isSameAs(row);
+        assertThat(context.entityFacade.loadProperty(idMeta)).isSameAs(row);
     }
 
     @Test
@@ -204,36 +173,36 @@ public class PersistenceContextTest {
         EntityMeta meta = new EntityMeta();
         List<PropertyMeta> pms = new ArrayList<>();
         meta.setAllMetasExceptIdAndCounters(pms);
-        context.setEntityMeta(meta);
+        context.entityMeta = meta;
         when(configurationContext.getInsertStrategy()).thenReturn(ALL_FIELDS);
 
         //When
-        context.pushInsertStatement();
+        context.entityFacade.pushInsertStatement();
 
         //Then
-        verify(daoContext).pushInsertStatement(context, pms);
+        verify(daoContext).pushInsertStatement(context.daoFacade, pms);
     }
 
     @Test
     public void should_push_update() throws Exception {
         List<PropertyMeta> pms = Arrays.asList();
-        context.pushUpdateStatement(pms);
+        context.entityFacade.pushUpdateStatement(pms);
 
-        verify(daoContext).pushUpdateStatement(context, pms);
+        verify(daoContext).pushUpdateStatement(context.daoFacade, pms);
     }
 
     @Test
     public void should_push_for_collection_and_map_update() throws Exception {
-        context.pushCollectionAndMapUpdateStatements(changeSet);
+        context.entityFacade.pushCollectionAndMapUpdateStatements(changeSet);
 
-        verify(daoContext).pushCollectionAndMapUpdateStatement(context, changeSet);
+        verify(daoContext).pushCollectionAndMapUpdateStatement(context.daoFacade, changeSet);
     }
 
     @Test
     public void should_bind_for_removal() throws Exception {
-        context.bindForRemoval("table");
+        context.entityFacade.bindForRemoval("table");
 
-        verify(daoContext).bindForRemoval(context, "table");
+        verify(daoContext).bindForRemoval(context.daoFacade, "table");
     }
 
 
@@ -242,27 +211,9 @@ public class PersistenceContextTest {
     public void should_bind_for_simple_counter_increment() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
-        context.bindForSimpleCounterIncrement(counterMeta, 11L);
+        context.entityFacade.bindForSimpleCounterIncrement(counterMeta, 11L);
 
-        verify(daoContext).bindForSimpleCounterIncrement(context, counterMeta, 11L);
-    }
-
-    @Test
-    public void should_increment_simple_counter() throws Exception {
-        PropertyMeta counterMeta = new PropertyMeta();
-
-        context.incrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
-
-        verify(daoContext).incrementSimpleCounter(context, counterMeta, 11L, LOCAL_QUORUM);
-    }
-
-    @Test
-    public void should_decrement_simple_counter() throws Exception {
-        PropertyMeta counterMeta = new PropertyMeta();
-
-        context.decrementSimpleCounter(counterMeta, 11L, LOCAL_QUORUM);
-
-        verify(daoContext).decrementSimpleCounter(context, counterMeta, 11L, LOCAL_QUORUM);
+        verify(daoContext).bindForSimpleCounterIncrement(context.daoFacade, counterMeta, 11L);
     }
 
     @Test
@@ -270,9 +221,9 @@ public class PersistenceContextTest {
         PropertyMeta counterMeta = new PropertyMeta();
 
         Row row = mock(Row.class);
-        when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(row);
+        when(daoContext.getSimpleCounter(context.daoFacade, counterMeta, LOCAL_QUORUM)).thenReturn(row);
         when(row.getLong(CQL_COUNTER_VALUE)).thenReturn(11L);
-        Long counterValue = context.getSimpleCounter(counterMeta, LOCAL_QUORUM);
+        Long counterValue = context.entityFacade.getSimpleCounter(counterMeta, LOCAL_QUORUM);
 
         assertThat(counterValue).isEqualTo(11L);
     }
@@ -281,18 +232,18 @@ public class PersistenceContextTest {
     public void should_return_null_when_no_simple_counter_value() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
-        when(daoContext.getSimpleCounter(context, counterMeta, LOCAL_QUORUM)).thenReturn(null);
+        when(daoContext.getSimpleCounter(context.daoFacade, counterMeta, LOCAL_QUORUM)).thenReturn(null);
 
-        assertThat(context.getSimpleCounter(counterMeta, LOCAL_QUORUM)).isNull();
+        assertThat(context.entityFacade.getSimpleCounter(counterMeta, LOCAL_QUORUM)).isNull();
     }
 
     @Test
     public void should_bind_for_simple_counter_removal() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
-        context.bindForSimpleCounterRemoval(counterMeta);
+        context.entityFacade.bindForSimpleCounterRemoval(counterMeta);
 
-        verify(daoContext).bindForSimpleCounterDelete(context, counterMeta);
+        verify(daoContext).bindForSimpleCounterDelete(context.daoFacade, counterMeta);
     }
 
     // Clustered counter
@@ -300,9 +251,9 @@ public class PersistenceContextTest {
     public void should_push_clustered_counter_increment() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
-        context.pushClusteredCounterIncrementStatement(counterMeta, 11L);
+        context.entityFacade.pushClusteredCounterIncrementStatement(counterMeta, 11L);
 
-        verify(daoContext).pushClusteredCounterIncrementStatement(context, counterMeta, 11L);
+        verify(daoContext).pushClusteredCounterIncrementStatement(context.daoFacade, counterMeta, 11L);
     }
 
 
@@ -312,9 +263,9 @@ public class PersistenceContextTest {
         counterMeta.setPropertyName("count");
         Long counterValue = 11L;
 
-        when(daoContext.getClusteredCounterColumn(context, counterMeta)).thenReturn(counterValue);
+        when(daoContext.getClusteredCounterColumn(context.daoFacade, counterMeta)).thenReturn(counterValue);
 
-        Long actual = context.getClusteredCounterColumn(counterMeta);
+        Long actual = context.entityFacade.getClusteredCounterColumn(counterMeta);
 
         assertThat(actual).isEqualTo(counterValue);
     }
@@ -322,23 +273,23 @@ public class PersistenceContextTest {
     @Test
     public void should_return_null_when_no_clustered_counter_value() throws Exception {
 
-        when(daoContext.getClusteredCounter(context)).thenReturn(null);
+        when(daoContext.getClusteredCounter(context.daoFacade)).thenReturn(null);
 
-        assertThat(context.getClusteredCounter()).isNull();
+        assertThat(context.entityFacade.getClusteredCounter()).isNull();
     }
 
     @Test
     public void should_bind_for_clustered_counter_removal() throws Exception {
-        context.bindForClusteredCounterRemoval();
+        context.entityFacade.bindForClusteredCounterRemoval();
 
-        verify(daoContext).bindForClusteredCounterDelete(context);
+        verify(daoContext).bindForClusteredCounterDelete(context.daoFacade);
     }
 
     @Test
     public void should_push_statement_wrapper() throws Exception {
         BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-        context.pushStatement(bsWrapper);
+        context.daoFacade.pushStatement(bsWrapper);
 
         verify(flushContext).pushStatement(bsWrapper);
     }
@@ -347,7 +298,7 @@ public class PersistenceContextTest {
     public void should_push_counter_statement_wrapper() throws Exception {
         BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-        context.pushCounterStatement(bsWrapper);
+        context.daoFacade.pushCounterStatement(bsWrapper);
 
         verify(flushContext).pushCounterStatement(bsWrapper);
     }
@@ -361,7 +312,7 @@ public class PersistenceContextTest {
         // When
         when(flushContext.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
-        ResultSet actual = context.executeImmediate(bsWrapper);
+        ResultSet actual = context.daoFacade.executeImmediate(bsWrapper);
 
         // Then
         assertThat(actual).isSameAs(resultSet);
@@ -372,10 +323,10 @@ public class PersistenceContextTest {
         //Given
         Object entity = new Object();
         context.entity = entity;
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
 
         //When
-        Object actual = context.persist(entity);
+        Object actual = context.persistenceManagerFacade.persist(entity);
 
         //Then
         assertThat(actual).isSameAs(entity);
@@ -383,7 +334,7 @@ public class PersistenceContextTest {
         InOrder inOrder = Mockito.inOrder(flushContext, persister);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_PERSIST);
-        inOrder.verify(persister).persist(context);
+        inOrder.verify(persister).persist(context.entityFacade);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_PERSIST);
     }
@@ -395,13 +346,13 @@ public class PersistenceContextTest {
         context.entity = rawEntity;
 
         //When
-        context.update(entity);
+        context.persistenceManagerFacade.update(entity);
 
         //Then
         InOrder inOrder = Mockito.inOrder(flushContext, updater);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, PRE_UPDATE);
-        inOrder.verify(updater).update(context, entity);
+        inOrder.verify(updater).update(context.entityFacade, entity);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, POST_UPDATE);
     }
@@ -413,13 +364,13 @@ public class PersistenceContextTest {
         context.entity = entity;
 
         //When
-        context.remove();
+        context.persistenceManagerFacade.remove();
 
         //Then
         InOrder inOrder = Mockito.inOrder(flushContext, persister);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_REMOVE);
-        inOrder.verify(persister).remove(context);
+        inOrder.verify(persister).remove(context.entityFacade);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_REMOVE);
     }
@@ -427,11 +378,11 @@ public class PersistenceContextTest {
     @Test
     public void should_find() throws Exception {
         //Given
-        when(loader.load(context, CompleteBean.class)).thenReturn(entity);
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
 
         //When
-        CompleteBean found = context.find(CompleteBean.class);
+        CompleteBean found = context.persistenceManagerFacade.find(CompleteBean.class);
 
         //Then
         assertThat(found).isSameAs(entity);
@@ -440,9 +391,9 @@ public class PersistenceContextTest {
 
     @Test
     public void should_return_null_when_not_found() throws Exception {
-        when(loader.load(context, CompleteBean.class)).thenReturn(null);
+        when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(null);
 
-        CompleteBean found = context.find(CompleteBean.class);
+        CompleteBean found = context.persistenceManagerFacade.find(CompleteBean.class);
 
         assertThat(found).isNull();
         verifyZeroInteractions(proxifier);
@@ -450,23 +401,27 @@ public class PersistenceContextTest {
 
     @Test
     public void should_get_proxy() throws Exception {
-        when(loader.createEmptyEntity(context, CompleteBean.class)).thenReturn(entity);
-        when(proxifier.buildProxyWithNoFieldLoaded(entity, context)).thenReturn(entity);
+        when(loader.createEmptyEntity(context.entityFacade, CompleteBean.class)).thenReturn(entity);
+        when(proxifier.buildProxyWithNoFieldLoaded(entity, context.entityFacade)).thenReturn(entity);
 
-        CompleteBean found = context.getProxy(CompleteBean.class);
+        CompleteBean found = context.persistenceManagerFacade.getProxy(CompleteBean.class);
 
         assertThat(found).isSameAs(entity);
     }
 
     @Test
     public void should_refresh() throws Exception {
-        context.refresh(entity);
-        verify(refresher).refresh(entity, context);
+        context.persistenceManagerFacade.refresh(entity);
+
+        InOrder inOrder = Mockito.inOrder(flushContext, refresher);
+
+        inOrder.verify(refresher).refresh(entity, context.entityFacade);
+        inOrder.verify(flushContext).triggerInterceptor(meta, context.entity, POST_LOAD);
     }
 
     @Test
     public void should_initialize() throws Exception {
-        CompleteBean actual = context.initialize(entity);
+        CompleteBean actual = context.persistenceManagerFacade.initialize(entity);
 
         assertThat(actual).isSameAs(entity);
 
@@ -480,7 +435,7 @@ public class PersistenceContextTest {
         context.options = OptionsBuilder.ifConditions(CASCondition);
 
         //When
-        final List<CASCondition> CASConditions = context.getCasConditions();
+        final List<CASCondition> CASConditions = context.stateHolderFacade.getCasConditions();
 
         //Then
         assertThat(CASConditions).containsExactly(CASCondition);
@@ -492,7 +447,7 @@ public class PersistenceContextTest {
         context.options = OptionsBuilder.noOptions();
 
         //When
-        final List<CASCondition> CASConditions = context.getCasConditions();
+        final List<CASCondition> CASConditions = context.stateHolderFacade.getCasConditions();
 
         //Then
         assertThat(CASConditions).isNotNull().isEmpty();

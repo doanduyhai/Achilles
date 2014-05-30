@@ -17,8 +17,11 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static java.util.Arrays.asList;
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +38,7 @@ public class CounterPersisterTest {
     private CounterPersister persister = new CounterPersister();
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.EntityFacade context;
 
     @Mock
     private EntityMeta meta;
@@ -78,7 +81,7 @@ public class CounterPersisterTest {
         persister.persistCounters(context, asList(counterMeta));
 
         //Then
-        verify(context,never()).bindForSimpleCounterIncrement(eq(counterMeta), anyLong());
+        verify(context, never()).bindForSimpleCounterIncrement(eq(counterMeta), anyLong());
     }
 
     @Test
@@ -92,7 +95,7 @@ public class CounterPersisterTest {
         persister.persistCounters(context, asList(counterMeta));
 
         //Then
-        verify(context,never()).bindForSimpleCounterIncrement(counterMeta, delta);
+        verify(context, never()).bindForSimpleCounterIncrement(counterMeta, delta);
     }
 
     @Test
@@ -102,19 +105,19 @@ public class CounterPersisterTest {
         final Counter counter = InternalCounterBuilder.incr(delta);
         when(counterMeta.getValueFromField(entity)).thenReturn(counter);
         when(counterMeta3.getValueFromField(entity)).thenReturn(InternalCounterBuilder.incr(0L));
-        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta,counterMeta2,counterMeta3));
+        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta, counterMeta2, counterMeta3));
 
         //When
         persister.persistClusteredCounters(context);
 
         //Then
-        verify(context).pushClusteredCounterIncrementStatement(counterMeta,delta);
+        verify(context).pushClusteredCounterIncrementStatement(counterMeta, delta);
     }
 
     @Test(expected = IllegalStateException.class)
     public void should_exception_when_persisting_null_clustered_counters() throws Exception {
         //Given
-        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta,counterMeta));
+        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta, counterMeta));
 
         //When
         persister.persistClusteredCounters(context);
@@ -123,7 +126,7 @@ public class CounterPersisterTest {
     @Test
     public void should_remove_related_counters() throws Exception {
         //Given
-        when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta,counterMeta2));
+        when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta, counterMeta2));
 
         //When
         persister.removeRelatedCounters(context);
@@ -132,5 +135,5 @@ public class CounterPersisterTest {
         verify(context).bindForSimpleCounterRemoval(counterMeta);
         verify(context).bindForSimpleCounterRemoval(counterMeta2);
     }
-    
+
 }

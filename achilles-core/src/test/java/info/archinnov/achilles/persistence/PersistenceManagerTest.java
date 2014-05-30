@@ -108,6 +108,12 @@ public class PersistenceManagerTest {
     private PersistenceContext context;
 
     @Mock
+    private PersistenceContext.PersistenceManagerFacade facade;
+
+    @Mock
+    private PersistenceContext.EntityFacade entityFacade;
+
+    @Mock
     private Map<Class<?>, EntityMeta> entityMetaMap;
 
     @Mock
@@ -127,6 +133,8 @@ public class PersistenceManagerTest {
     @Before
     public void setUp() throws Exception {
         when(contextFactory.newContext(eq(entity), optionsCaptor.capture())).thenReturn(context);
+        when(context.getPersistenceManagerFacade()).thenReturn(facade);
+        when(context.getEntityFacade()).thenReturn(entityFacade);
         when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ConsistencyLevel.EACH_QUORUM);
         when(meta.getIdMeta()).thenReturn(idMeta);
 
@@ -146,8 +154,8 @@ public class PersistenceManagerTest {
     @Test
     public void should_persist() throws Exception {
         // Given
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
-        when(context.persist(entity)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
+        when(facade.persist(entity)).thenReturn(entity);
 
         // When
         CompleteBean actual = manager.persist(entity);
@@ -161,8 +169,8 @@ public class PersistenceManagerTest {
     @Test
     public void should_persist_with_options() throws Exception {
         // Given
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
-        when(context.persist(entity)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
+        when(facade.persist(entity)).thenReturn(entity);
 
         // When
         CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
@@ -174,7 +182,7 @@ public class PersistenceManagerTest {
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(optionsValidator).validateOptionsForInsert(entity, entityMetaMap, options);
         verify(proxifier).ensureNotProxy(entity);
-        verify(context).persist(entity);
+        verify(facade).persist(entity);
 
         assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
         assertThat(options.getTtl().get()).isEqualTo(150);
@@ -193,7 +201,7 @@ public class PersistenceManagerTest {
         // Then
         verify(proxifier).ensureProxy(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(context).update(entity);
+        verify(facade).update(entity);
 
         Options options = optionsCaptor.getValue();
         assertThat(options.getConsistencyLevel().isPresent()).isFalse();
@@ -214,7 +222,7 @@ public class PersistenceManagerTest {
         verify(proxifier).ensureProxy(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(optionsValidator).validateOptionsForUpdate(entity, entityMetaMap, options);
-        verify(context).update(entity);
+        verify(facade).update(entity);
 
         assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);
         assertThat(options.getTtl().get()).isEqualTo(150);
@@ -259,28 +267,27 @@ public class PersistenceManagerTest {
     public void should_remove_by_id() throws Exception {
         // When
         when(contextFactory.newContext(CompleteBean.class, primaryKey, OptionsBuilder.noOptions())).thenReturn(context);
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(facade.getIdMeta()).thenReturn(idMeta);
 
         manager.removeById(CompleteBean.class, primaryKey);
 
         // Then
         verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
-        verify(context).remove();
+        verify(facade).remove();
     }
 
     @Test
     public void should_remove_by_id_with_consistency() throws Exception {
         // When
-        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
+        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
 
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(facade.getIdMeta()).thenReturn(idMeta);
 
         manager.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
 
         // Then
         verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);
-        verify(context).remove();
+        verify(facade).remove();
 
         Options options = optionsCaptor.getValue();
         assertThat(options.getConsistencyLevel().get()).isSameAs(LOCAL_QUORUM);
@@ -291,12 +298,11 @@ public class PersistenceManagerTest {
     @Test
     public void should_find() throws Exception {
         // When
-        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
-        when(context.find(CompleteBean.class)).thenReturn(entity);
+        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
+        when(facade.find(CompleteBean.class)).thenReturn(entity);
 
         PropertyMeta idMeta = new PropertyMeta();
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(facade.getIdMeta()).thenReturn(idMeta);
         when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
         CompleteBean bean = manager.find(CompleteBean.class, primaryKey);
@@ -314,10 +320,9 @@ public class PersistenceManagerTest {
     @Test
     public void should_find_with_consistency() throws Exception {
         // When
-        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
-        when(context.find(CompleteBean.class)).thenReturn(entity);
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
+        when(facade.find(CompleteBean.class)).thenReturn(entity);
+        when(facade.getIdMeta()).thenReturn(idMeta);
         when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
         CompleteBean bean = manager.find(CompleteBean.class, primaryKey, EACH_QUORUM);
@@ -335,10 +340,9 @@ public class PersistenceManagerTest {
     @Test
     public void should_get_reference() throws Exception {
         // When
-        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
-        when(context.getProxy(CompleteBean.class)).thenReturn(entity);
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
+        when(facade.getProxy(CompleteBean.class)).thenReturn(entity);
+        when(facade.getIdMeta()).thenReturn(idMeta);
         when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
         CompleteBean bean = manager.getProxy(CompleteBean.class, primaryKey);
@@ -356,10 +360,9 @@ public class PersistenceManagerTest {
     @Test
     public void should_get_reference_with_consistency() throws Exception {
         // When
-        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(
-                context);
-        when(context.getProxy(CompleteBean.class)).thenReturn(entity);
-        when(context.getIdMeta()).thenReturn(idMeta);
+        when(contextFactory.newContext(eq(CompleteBean.class), eq(primaryKey), optionsCaptor.capture())).thenReturn(context);
+        when(facade.getProxy(CompleteBean.class)).thenReturn(entity);
+        when(facade.getIdMeta()).thenReturn(idMeta);
         when(entityMetaMap.containsKey(CompleteBean.class)).thenReturn(true);
 
         CompleteBean bean = manager.getProxy(CompleteBean.class, primaryKey, EACH_QUORUM);
@@ -385,7 +388,7 @@ public class PersistenceManagerTest {
         // Then
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(proxifier).ensureProxy(entity);
-        verify(context).refresh(entity);
+        verify(facade).refresh(entity);
 
         Options options = optionsCaptor.getValue();
         assertThat(options.getConsistencyLevel().isPresent()).isFalse();
@@ -404,7 +407,7 @@ public class PersistenceManagerTest {
         // Then
         verify(entityValidator).validateEntity(entity, entityMetaMap);
         verify(proxifier).ensureProxy(entity);
-        verify(context).refresh(entity);
+        verify(facade).refresh(entity);
 
         Options options = optionsCaptor.getValue();
         assertThat(options.getConsistencyLevel().get()).isSameAs(EACH_QUORUM);
@@ -415,7 +418,7 @@ public class PersistenceManagerTest {
     @Test
     public void should_initialize_entity() throws Exception {
         // Given
-        when(context.initialize(entity)).thenReturn(entity);
+        when(facade.initialize(entity)).thenReturn(entity);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
 
         // When
@@ -435,7 +438,7 @@ public class PersistenceManagerTest {
     public void should_initialize_list_of_entities() throws Exception {
         // Given
         List<CompleteBean> entities = Arrays.asList(entity);
-        when(context.initialize(entity)).thenReturn(entity);
+        when(facade.initialize(entity)).thenReturn(entity);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
 
         // When
@@ -449,7 +452,7 @@ public class PersistenceManagerTest {
     public void should_initialize_set_of_entities() throws Exception {
         // Given
         Set<CompleteBean> entities = Sets.newHashSet(entity);
-        when(context.initialize(entity)).thenReturn(entity);
+        when(facade.initialize(entity)).thenReturn(entity);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
 
         // When
@@ -501,7 +504,7 @@ public class PersistenceManagerTest {
     @Test
     public void should_init_and_remove_proxy_for_entity() throws Exception {
         // Given
-        when(context.initialize(entity)).thenReturn(entity);
+        when(facade.initialize(entity)).thenReturn(entity);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
         when(proxifier.removeProxy(entity)).thenReturn(entity);
 
@@ -517,7 +520,7 @@ public class PersistenceManagerTest {
     public void should_init_and_remove_proxy_for_list_of_entities() throws Exception {
         // Given
         List<CompleteBean> entities = Arrays.asList(entity);
-        when(context.initialize(entities)).thenReturn(entities);
+        when(facade.initialize(entities)).thenReturn(entities);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
         when(proxifier.removeProxy(entities)).thenReturn(entities);
 
@@ -532,7 +535,7 @@ public class PersistenceManagerTest {
     public void should_init_and_remove_proxy_for_set_of_entities() throws Exception {
         // Given
         Set<CompleteBean> entities = Sets.newHashSet(entity);
-        when(context.initialize(entities)).thenReturn(entities);
+        when(facade.initialize(entities)).thenReturn(entities);
         when(proxifier.getRealObject(entity)).thenReturn(entity);
         when(proxifier.removeProxy(entities)).thenReturn(entities);
 

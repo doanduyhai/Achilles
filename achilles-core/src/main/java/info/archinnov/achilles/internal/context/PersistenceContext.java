@@ -39,6 +39,10 @@ import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
+import info.archinnov.achilles.internal.context.facade.DaoOperations;
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
+import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
+import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityInitializer;
@@ -78,6 +82,15 @@ public class PersistenceContext {
     protected DaoContext daoContext;
 
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
+
+    protected PersistenceManagerFacade persistenceManagerFacade = new PersistenceManagerFacade();
+
+    protected EntityFacade entityFacade = new EntityFacade();
+
+    protected DaoFacade daoFacade = new DaoFacade();
+
+    protected StateHolderFacade stateHolderFacade = new StateHolderFacade();
+
     private Function<PropertyMeta, Method> metaToGetter = new Function<PropertyMeta, Method>() {
         @Override
         public Method apply(PropertyMeta meta) {
@@ -126,272 +139,250 @@ public class PersistenceContext {
                 options.duplicateWithoutTtlAndTimestamp());
     }
 
-    public Row loadEntity() {
-        return daoContext.loadEntity(this);
+    public StateHolderFacade getStateHolderFacade() {
+        return stateHolderFacade;
     }
 
-    public Row loadProperty(PropertyMeta pm) {
-        return daoContext.loadProperty(this, pm);
+    public EntityFacade getEntityFacade() {
+        return entityFacade;
     }
 
-    public void pushInsertStatement() {
-        final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity);
-        daoContext.pushInsertStatement(this, pms);
-    }
-
-    public void pushUpdateStatement(List<PropertyMeta> pms) {
-        daoContext.pushUpdateStatement(this, pms);
-    }
-
-    public void pushCollectionAndMapUpdateStatements(DirtyCheckChangeSet changeSet) {
-        daoContext.pushCollectionAndMapUpdateStatement(this, changeSet);
-    }
-
-    public void bindForRemoval(String tableName) {
-        daoContext.bindForRemoval(this, tableName);
-    }
-
-    // Simple counter
-    public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment) {
-        daoContext.bindForSimpleCounterIncrement(this, counterMeta, increment);
-    }
-
-    public void incrementSimpleCounter(PropertyMeta counterMeta, Long increment, ConsistencyLevel consistency) {
-        daoContext.incrementSimpleCounter(this, counterMeta, increment, consistency);
-    }
-
-    public void decrementSimpleCounter(PropertyMeta counterMeta, Long decrement, ConsistencyLevel consistency) {
-        daoContext.decrementSimpleCounter(this, counterMeta, decrement, consistency);
-    }
-
-    public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency) {
-        log.trace("Get counter value for counterMeta '{}' with consistency level '{}'", counterMeta, consistency);
-
-        Row row = daoContext.getSimpleCounter(this, counterMeta, consistency);
-        if (row != null) {
-            return row.getLong(CQL_COUNTER_VALUE);
-        }
-        return null;
-    }
-
-    public void bindForSimpleCounterRemoval(PropertyMeta counterMeta) {
-        daoContext.bindForSimpleCounterDelete(this, counterMeta);
-    }
-
-    // Clustered counter
-    public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment) {
-        daoContext.pushClusteredCounterIncrementStatement(this, counterMeta, increment);
-    }
-
-    public Row getClusteredCounter() {
-        log.trace("Get clustered counter value for entityMeta '{}'", entityMeta);
-        return daoContext.getClusteredCounter(this);
-    }
-
-    public Long getClusteredCounterColumn(PropertyMeta counterMeta) {
-        log.trace("Get clustered counter value for counterMeta '{}'", counterMeta);
-        return daoContext.getClusteredCounterColumn(this, counterMeta);
-    }
-
-    public void bindForClusteredCounterRemoval() {
-        daoContext.bindForClusteredCounterDelete(this);
-    }
-
-
-    public void pushStatement(AbstractStatementWrapper statementWrapper) {
-        flushContext.pushStatement(statementWrapper);
-    }
-
-    public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
-        flushContext.pushCounterStatement(statementWrapper);
-    }
-
-    public ResultSet executeImmediate(AbstractStatementWrapper bsWrapper) {
-        return flushContext.executeImmediate(bsWrapper);
-    }
-
-    public <T> T persist(T rawEntity) {
-        flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
-        persister.persist(this);
-        flush();
-        flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
-        return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
-    }
-
-    public void update(Object proxifiedEntity) {
-        flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
-        updater.update(this, proxifiedEntity);
-        flush();
-        flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
-    }
-
-    public void remove() {
-        flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
-        persister.remove(this);
-        flush();
-        flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
-    }
-
-    public <T> T find(Class<T> entityClass) {
-        T rawEntity = loader.load(this, entityClass);
-        T proxifiedEntity = null;
-        if (rawEntity != null) {
-            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
-            proxifiedEntity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, this);
-        }
-        return proxifiedEntity;
-    }
-
-    public <T> T getProxy(Class<T> entityClass) {
-        T entity = loader.createEmptyEntity(this, entityClass);
-        return proxifier.buildProxyWithNoFieldLoaded(entity, this);
-    }
-
-    public void refresh(Object proxifiedEntity) throws AchillesStaleObjectStateException {
-        refresher.refresh(proxifiedEntity, this);
-        flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
-    }
-
-    public <T> T initialize(T proxifiedEntity) {
-        initializer.initializeEntity(proxifiedEntity, entityMeta);
-        return proxifiedEntity;
-    }
-
-    public <T> List<T> initialize(List<T> entities) {
-        for (T entity : entities) {
-            initialize(entity);
-        }
-        return entities;
-    }
-
-    public <T> Set<T> initialize(Set<T> entities) {
-        for (T entity : entities) {
-            initialize(entity);
-        }
-        return entities;
-    }
-
-    public PropertyMeta getIdMeta() {
-        return entityMeta.getIdMeta();
-    }
-
-    public boolean isClusteredEntity() {
-        return this.entityMeta.isClusteredEntity();
-    }
-
-    public boolean isClusteredCounter() {
-        return this.entityMeta.isClusteredCounter();
-    }
-
-    public String getTableName() {
-        return entityMeta.getTableName();
-    }
-
-    public boolean isBatchMode() {
-        return flushContext.type() == AbstractFlushContext.FlushType.BATCH;
-    }
-
-    public void flush() {
-        flushContext.flush();
-    }
-
-    public void endBatch() {
-        flushContext.endBatch();
-    }
-
-    public EntityMeta getEntityMeta() {
-        return entityMeta;
-    }
-
-    public Object getEntity() {
-        return entity;
-    }
-
-    public void setEntity(Object entity) {
-        this.entity = entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> Class<T> getEntityClass() {
-        return (Class<T>) entityClass;
-    }
-
-    public Object getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(Object primaryKey) {
-        this.primaryKey = primaryKey;
-    }
-
-    public Object getPartitionKey() {
-        if (partitionKey == null && primaryKey != null) {
-            extractPartitionKey();
-        }
-        return partitionKey;
-    }
-
-    public void setPartitionKey(Object partitionKey) {
-        this.partitionKey = partitionKey;
-    }
-
-    public ConfigurationContext getConfigContext() {
-        return configContext;
-    }
-
-    public void setEntityMeta(EntityMeta entityMeta) {
-        this.entityMeta = entityMeta;
-    }
-
-    public Options getOptions() {
-        return options;
-    }
-
-    public Optional<Integer> getTtl() {
-        return options.getTtl();
-    }
-
-    public Optional<Long> getTimestamp() {
-        return options.getTimestamp();
-    }
-
-    public Optional<ConsistencyLevel> getConsistencyLevel() {
-        return options.getConsistencyLevel();
-    }
-
-    public boolean ifNotExists() {
-        return options.isIfNotExists();
-    }
-
-    public List<CASCondition> getCasConditions() {
-        return Optional.fromNullable(options.getCASConditions()).or(new ArrayList<CASCondition>());
-    }
-
-    public boolean hasCasConditions() {
-        return options.hasCasConditions();
-    }
-
-    public Optional getCASResultListener() {
-        return options.getCasResultListener();
-    }
-
-    public Set<Method> getAllGettersExceptCounters() {
-        return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toList());
-    }
-
-    public List<PropertyMeta> getAllCountersMeta() {
-        return entityMeta.getAllCounterMetas();
-    }
-
-    private void extractPartitionKey() {
-        if (entityMeta.hasEmbeddedId()) {
-            this.partitionKey = entityMeta.getPartitionKey(primaryKey);
-        }
+    public PersistenceManagerFacade getPersistenceManagerFacade() {
+        return persistenceManagerFacade;
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(PersistenceContext.class).add("entity class", this.entityClass)
                 .add("primary key", this.primaryKey).add("partition key", this.partitionKey).toString();
+    }
+
+    public class StateHolderFacade implements PersistentStateHolder {
+
+        private StateHolderFacade() {
+        }
+
+        public PropertyMeta getIdMeta() {
+            return entityMeta.getIdMeta();
+        }
+
+        public boolean isClusteredCounter() {
+            return entityMeta.isClusteredCounter();
+        }
+
+        public EntityMeta getEntityMeta() {
+            return entityMeta;
+        }
+
+        public Object getEntity() {
+            return entity;
+        }
+
+        public void setEntity(Object entity) {
+            PersistenceContext.this.entity = entity;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> Class<T> getEntityClass() {
+            return (Class<T>) entityClass;
+        }
+
+        public Object getPrimaryKey() {
+            return primaryKey;
+        }
+
+        public Options getOptions() {
+            return options;
+        }
+
+        public Optional<Integer> getTtl() {
+            return options.getTtl();
+        }
+
+        public Optional<Long> getTimestamp() {
+            return options.getTimestamp();
+        }
+
+        public Optional<ConsistencyLevel> getConsistencyLevel() {
+            return options.getConsistencyLevel();
+        }
+
+        public List<CASCondition> getCasConditions() {
+            return Optional.fromNullable(options.getCASConditions()).or(new ArrayList<CASCondition>());
+        }
+
+        public boolean hasCasConditions() {
+            return options.hasCasConditions();
+        }
+
+        public Optional getCASResultListener() {
+            return options.getCasResultListener();
+        }
+
+        public Set<Method> getAllGettersExceptCounters() {
+            return new HashSet<>(from(entityMeta.getAllMetasExceptCounters()).transform(metaToGetter).toList());
+        }
+
+        public List<PropertyMeta> getAllCountersMeta() {
+            return entityMeta.getAllCounterMetas();
+        }
+    }
+
+    public class PersistenceManagerFacade extends StateHolderFacade implements PersistenceManagerOperations {
+
+        private PersistenceManagerFacade() {
+        }
+
+        public <T> T persist(T rawEntity) {
+            flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
+            persister.persist(entityFacade);
+            flush();
+            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
+            return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+        }
+
+        public void update(Object proxifiedEntity) {
+            flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
+            updater.update(entityFacade, proxifiedEntity);
+            flush();
+            flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
+        }
+
+        public void remove() {
+            flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
+            persister.remove(entityFacade);
+            flush();
+            flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
+        }
+
+        public <T> T find(Class<T> entityClass) {
+            T rawEntity = loader.load(entityFacade, entityClass);
+            T proxifiedEntity = null;
+            if (rawEntity != null) {
+                flushContext.triggerInterceptor(entityMeta, rawEntity, POST_LOAD);
+                proxifiedEntity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
+            }
+            return proxifiedEntity;
+        }
+
+        public <T> T getProxy(Class<T> entityClass) {
+            T entity = loader.createEmptyEntity(entityFacade, entityClass);
+            return proxifier.buildProxyWithNoFieldLoaded(entity, entityFacade);
+        }
+
+        public void refresh(Object proxifiedEntity) throws AchillesStaleObjectStateException {
+            refresher.refresh(proxifiedEntity, entityFacade);
+            flushContext.triggerInterceptor(entityMeta, entity, POST_LOAD);
+        }
+
+        public <T> T initialize(T proxifiedEntity) {
+            initializer.initializeEntity(proxifiedEntity, entityMeta);
+            return proxifiedEntity;
+        }
+
+        public <T> List<T> initialize(List<T> entities) {
+            for (T entity : entities) {
+                initialize(entity);
+            }
+            return entities;
+        }
+
+        public <T> Set<T> initialize(Set<T> entities) {
+            for (T entity : entities) {
+                initialize(entity);
+            }
+            return entities;
+        }
+
+        protected void flush() {
+            flushContext.flush();
+        }
+    }
+
+    public class EntityFacade extends StateHolderFacade implements EntityOperations {
+
+        private EntityFacade() {
+        }
+
+        public Row loadEntity() {
+            return daoContext.loadEntity(daoFacade);
+        }
+
+        public Row loadProperty(PropertyMeta pm) {
+            return daoContext.loadProperty(daoFacade, pm);
+        }
+
+        public void pushInsertStatement() {
+            final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity);
+            daoContext.pushInsertStatement(daoFacade, pms);
+        }
+
+        public void pushUpdateStatement(List<PropertyMeta> pms) {
+            daoContext.pushUpdateStatement(daoFacade, pms);
+        }
+
+        public void pushCollectionAndMapUpdateStatements(DirtyCheckChangeSet changeSet) {
+            daoContext.pushCollectionAndMapUpdateStatement(daoFacade, changeSet);
+        }
+
+        public void bindForRemoval(String tableName) {
+            daoContext.bindForRemoval(daoFacade, tableName);
+        }
+
+        // Simple counter
+        public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment) {
+            daoContext.bindForSimpleCounterIncrement(daoFacade, counterMeta, increment);
+        }
+
+        public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency) {
+            log.trace("Get counter value for counterMeta '{}' with consistency level '{}'", counterMeta, consistency);
+
+            Row row = daoContext.getSimpleCounter(daoFacade, counterMeta, consistency);
+            if (row != null) {
+                return row.getLong(CQL_COUNTER_VALUE);
+            }
+            return null;
+        }
+
+        public void bindForSimpleCounterRemoval(PropertyMeta counterMeta) {
+            daoContext.bindForSimpleCounterDelete(daoFacade, counterMeta);
+        }
+
+        // Clustered counter
+        public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment) {
+            daoContext.pushClusteredCounterIncrementStatement(daoFacade, counterMeta, increment);
+        }
+
+        public Row getClusteredCounter() {
+            log.trace("Get clustered counter value for entityMeta '{}'", entityMeta);
+            return daoContext.getClusteredCounter(daoFacade);
+        }
+
+        public Long getClusteredCounterColumn(PropertyMeta counterMeta) {
+            log.trace("Get clustered counter value for counterMeta '{}'", counterMeta);
+            return daoContext.getClusteredCounterColumn(daoFacade, counterMeta);
+        }
+
+        public void bindForClusteredCounterRemoval() {
+            daoContext.bindForClusteredCounterDelete(daoFacade);
+        }
+    }
+
+    public class DaoFacade extends StateHolderFacade implements DaoOperations {
+
+        private DaoFacade() {
+        }
+
+        public void pushStatement(AbstractStatementWrapper statementWrapper) {
+            flushContext.pushStatement(statementWrapper);
+        }
+
+        public void pushCounterStatement(AbstractStatementWrapper statementWrapper) {
+            flushContext.pushCounterStatement(statementWrapper);
+        }
+
+        public ResultSet executeImmediate(AbstractStatementWrapper bsWrapper) {
+            return flushContext.executeImmediate(bsWrapper);
+        }
     }
 }

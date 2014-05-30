@@ -125,7 +125,7 @@ public class TypedQuery<T> {
 
     private T buildProxy(T entity) {
         PersistenceContext context = contextFactory.newContext(entity);
-        entity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context);
+        entity = proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.getEntityFacade());
         return entity;
     }
 }

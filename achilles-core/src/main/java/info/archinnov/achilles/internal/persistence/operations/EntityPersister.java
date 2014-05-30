@@ -17,7 +17,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 
 public class EntityPersister {
@@ -25,7 +25,7 @@ public class EntityPersister {
 
     private CounterPersister counterPersister = new CounterPersister();
 
-    public void persist(PersistenceContext context) {
+    public void persist(EntityOperations context) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
@@ -39,7 +39,7 @@ public class EntityPersister {
         }
     }
 
-    public void remove(PersistenceContext context) {
+    public void remove(EntityOperations context) {
         log.trace("Removing entity using PersistenceContext {}", context);
         EntityMeta entityMeta = context.getEntityMeta();
         if (entityMeta.isClusteredCounter()) {

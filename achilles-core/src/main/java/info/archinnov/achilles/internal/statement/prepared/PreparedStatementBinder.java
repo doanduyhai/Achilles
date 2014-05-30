@@ -25,7 +25,7 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
@@ -43,7 +43,7 @@ public class PreparedStatementBinder {
 
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
-    public BoundStatementWrapper bindForInsert(PersistenceContext context, PreparedStatement ps, List<PropertyMeta> pms) {
+    public BoundStatementWrapper bindForInsert(PersistentStateHolder context, PreparedStatement ps, List<PropertyMeta> pms) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
@@ -62,7 +62,7 @@ public class PreparedStatementBinder {
     }
 
 
-    public BoundStatementWrapper bindForUpdate(PersistenceContext context, PreparedStatement ps, List<PropertyMeta> pms) {
+    public BoundStatementWrapper bindForUpdate(PersistentStateHolder context, PreparedStatement ps, List<PropertyMeta> pms) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
@@ -81,7 +81,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
-    public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistenceContext context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
+    public BoundStatementWrapper bindForCollectionAndMapUpdate(PersistentStateHolder context, PreparedStatement ps, DirtyCheckChangeSet changeSet) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
@@ -139,7 +139,7 @@ public class PreparedStatementBinder {
     }
 
 
-    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistenceContext context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindStatementWithOnlyPKInWhereClause(PersistentStateHolder context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
 
         Object primaryKey = context.getPrimaryKey();
 
@@ -152,7 +152,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, values.toArray(), getCQLLevel(consistencyLevel), context.getCASResultListener());
     }
 
-    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForSimpleCounterIncrementDecrement(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm, Long increment, ConsistencyLevel consistencyLevel) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
@@ -164,7 +164,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
-    public BoundStatementWrapper bindForSimpleCounterSelect(PersistenceContext context, PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForSimpleCounterSelect(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm, ConsistencyLevel consistencyLevel) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -175,7 +175,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
-    public BoundStatementWrapper bindForSimpleCounterDelete(PersistenceContext context, PreparedStatement ps, PropertyMeta pm) {
+    public BoundStatementWrapper bindForSimpleCounterDelete(PersistentStateHolder context, PreparedStatement ps, PropertyMeta pm) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -188,7 +188,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistenceContext context, PreparedStatement ps, Long increment) {
+    public BoundStatementWrapper bindForClusteredCounterIncrementDecrement(PersistentStateHolder context, PreparedStatement ps, Long increment) {
 
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
@@ -207,7 +207,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, keys, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterSelect(PersistenceContext context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
+    public BoundStatementWrapper bindForClusteredCounterSelect(PersistentStateHolder context, PreparedStatement ps, ConsistencyLevel consistencyLevel) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -220,7 +220,7 @@ public class PreparedStatementBinder {
         return new BoundStatementWrapper(context.getEntityClass(), bs, boundValues, getCQLLevel(consistencyLevel), NO_LISTENER);
     }
 
-    public BoundStatementWrapper bindForClusteredCounterDelete(PersistenceContext context, PreparedStatement ps) {
+    public BoundStatementWrapper bindForClusteredCounterDelete(PersistentStateHolder context, PreparedStatement ps) {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
@@ -241,7 +241,7 @@ public class PreparedStatementBinder {
         return values;
     }
 
-    private List<Object> fetchTTLAndTimestampValues(PersistenceContext context) {
+    private List<Object> fetchTTLAndTimestampValues(PersistentStateHolder context) {
         List<Object> values = new ArrayList<>();
 
         // TTL or default value 0
@@ -262,7 +262,7 @@ public class PreparedStatementBinder {
         return values;
     }
 
-    private List<Object> fetchCASConditionsValues(PersistenceContext context, EntityMeta entityMeta) {
+    private List<Object> fetchCASConditionsValues(PersistentStateHolder context, EntityMeta entityMeta) {
         List<Object> values = new ArrayList<>();
         if (context.hasCasConditions()) {
             for (Options.CASCondition CASCondition : context.getCasConditions()) {

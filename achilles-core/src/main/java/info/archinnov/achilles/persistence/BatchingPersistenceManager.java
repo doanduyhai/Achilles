@@ -23,8 +23,8 @@ import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
+import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.utils.UUIDGen;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -151,20 +151,20 @@ public class BatchingPersistenceManager extends PersistenceManager {
     }
 
     @Override
-    protected PersistenceContext initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
+    protected PersistenceManagerOperations initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
         log.trace("Initializing new persistence context for entity class {} and primary key {}",
                 entityClass.getCanonicalName(), primaryKey);
-        return contextFactory.newContextWithFlushContext(entityClass, primaryKey, options, flushContext);
+        return contextFactory.newContextWithFlushContext(entityClass, primaryKey, options, flushContext).getPersistenceManagerFacade();
     }
 
     @Override
-    protected PersistenceContext initPersistenceContext(Object entity, Options options) {
+    protected PersistenceManagerOperations initPersistenceContext(Object entity, Options options) {
         log.trace("Initializing new persistence context for entity {}", entity);
-        return contextFactory.newContextWithFlushContext(entity, options, flushContext);
+        return contextFactory.newContextWithFlushContext(entity, options, flushContext).getPersistenceManagerFacade();
     }
 
     private Options maybeAddTimestampToStatement(Options options) {
-        if(forceStatementsOrdering)
+        if (forceStatementsOrdering)
             return options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp());
         else
             return options;

@@ -31,7 +31,7 @@ import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
@@ -46,17 +46,17 @@ public class StatementGenerator {
 
     private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
 
-    public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery, int limit, int batchSize) {
+    public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery) {
 
         log.trace("Generate SELECT statement for slice query");
         EntityMeta meta = sliceQuery.getMeta();
 
         Select select = generateSelectEntityInternal(meta);
-        select = select.limit(limit);
+        select = select.limit(sliceQuery.getLimit());
         if (sliceQuery.getCQLOrdering() != null) {
             select.orderBy(sliceQuery.getCQLOrdering());
         }
-        select.setFetchSize(batchSize);
+        select.setFetchSize(sliceQuery.getBatchSize());
         return sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
     }
 
@@ -88,7 +88,7 @@ public class StatementGenerator {
     }
 
 
-    public Pair<Update.Where, Object[]> generateCollectionAndMapUpdateOperation(PersistenceContext context, DirtyCheckChangeSet changeSet) {
+    public Pair<Update.Where, Object[]> generateCollectionAndMapUpdateOperation(PersistentStateHolder context, DirtyCheckChangeSet changeSet) {
 
         final Object entity = context.getEntity();
         final EntityMeta meta = context.getEntityMeta();
@@ -99,7 +99,7 @@ public class StatementGenerator {
 
         final CollectionAndMapChangeType operationType = changeSet.getChangeType();
 
-        Pair<Assignments, Object[]> updateClauseAndBoundValues = null;
+        Pair<Assignments, Object[]> updateClauseAndBoundValues;
         switch (operationType) {
             case SET_TO_LIST_AT_INDEX:
                 updateClauseAndBoundValues = changeSet.generateUpdateForSetAtIndexElement(conditions);

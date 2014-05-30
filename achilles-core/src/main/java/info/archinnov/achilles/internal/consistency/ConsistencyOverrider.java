@@ -20,7 +20,7 @@ import static info.archinnov.achilles.internal.context.AbstractFlushContext.Flus
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.AbstractFlushContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -38,28 +38,28 @@ public class ConsistencyOverrider {
         return result;
     }
 
-    public ConsistencyLevel getReadLevel(PersistenceContext context) {
+    public ConsistencyLevel getReadLevel(PersistentStateHolder context) {
         EntityMeta entityMeta = context.getEntityMeta();
         ConsistencyLevel readLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : entityMeta.getReadConsistencyLevel();
         log.trace("Read consistency level : " + readLevel);
         return readLevel;
     }
 
-    public ConsistencyLevel getWriteLevel(PersistenceContext context) {
+    public ConsistencyLevel getWriteLevel(PersistentStateHolder context) {
         EntityMeta entityMeta = context.getEntityMeta();
         ConsistencyLevel writeLevel = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get() : entityMeta.getWriteConsistencyLevel();
         log.trace("Write consistency level : " + writeLevel);
         return writeLevel;
     }
 
-    public ConsistencyLevel getReadLevel(PersistenceContext context, PropertyMeta pm) {
+    public ConsistencyLevel getReadLevel(PersistentStateHolder context, PropertyMeta pm) {
         ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
                 : pm.getReadConsistencyLevel();
         log.trace("Read consistency level : " + consistency);
         return consistency;
     }
 
-    public ConsistencyLevel getWriteLevel(PersistenceContext context, PropertyMeta pm) {
+    public ConsistencyLevel getWriteLevel(PersistentStateHolder context, PropertyMeta pm) {
         ConsistencyLevel consistency = context.getConsistencyLevel().isPresent() ? context.getConsistencyLevel().get()
                 : pm.getWriteConsistencyLevel();
         log.trace("Write consistency level : " + consistency);

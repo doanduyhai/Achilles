@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -71,6 +72,9 @@ public class TypedQueryTest {
     private PersistenceContext context;
 
     @Mock
+    private PersistenceContext.EntityFacade entityFacade;
+
+    @Mock
     private Row row;
 
     @Mock
@@ -80,13 +84,16 @@ public class TypedQueryTest {
 
     private CompleteBean entity = new CompleteBean();
 
+    @Before
+    public void setUp() {
+        when(context.getEntityFacade()).thenReturn(entityFacade);
+    }
+
     @Test
     public void should_get_all_managed_with_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
-                .accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
@@ -94,11 +101,9 @@ public class TypedQueryTest {
         initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         List<CompleteBean> actual = builder.get();
 
@@ -109,14 +114,11 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_all_managed_with_normal_select() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .type(PropertyType.ID).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .type(PropertyType.SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
 
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age")
-                .type(PropertyType.SIMPLE).accessors().build();
+        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
 
@@ -124,11 +126,9 @@ public class TypedQueryTest {
         initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         List<CompleteBean> actual = builder.get();
 
@@ -143,9 +143,7 @@ public class TypedQueryTest {
         initBuilder("select * from test", meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(true))).thenReturn(null);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(null);
 
         List<CompleteBean> actual = builder.get();
 
@@ -186,11 +184,9 @@ public class TypedQueryTest {
         initBuilder(queryString, meta, meta.getPropertyMetas(), true);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context)).thenReturn(entity);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
         CompleteBean actual = builder.getFirst();
 
@@ -200,20 +196,16 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_first_raw_entity() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID)
-                .accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
-                .type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
         String queryString = "select id from test";
         initBuilder(queryString, meta, meta.getPropertyMetas(), false);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(false))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(false))).thenReturn(entity);
 
         CompleteBean actual = builder.getFirst();
 
@@ -242,9 +234,7 @@ public class TypedQueryTest {
         String queryString = "select id from test";
         initBuilder(queryString, meta, meta.getPropertyMetas(), false);
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(
-                mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(),
-                        eq(true))).thenReturn(null);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(null);
 
         CompleteBean actual = builder.getFirst();
 

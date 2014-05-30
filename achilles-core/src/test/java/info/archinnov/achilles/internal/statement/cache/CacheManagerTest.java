@@ -63,7 +63,7 @@ public class CacheManagerTest {
     private Cache<StatementCacheKey, PreparedStatement> cache;
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.StateHolderFacade context;
 
     @Mock
     private PreparedStatement ps;

@@ -44,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -121,8 +122,8 @@ public class DaoContextTest {
     @Mock
     private CacheManager cacheManager;
 
-    @Mock
-    private PersistenceContext context;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private PersistenceContext.DaoFacade context;
 
     @Mock
     private EntityMeta entityMeta;
@@ -177,7 +178,7 @@ public class DaoContextTest {
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntity()).thenReturn(entity);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
-        when(context.ifNotExists()).thenReturn(false);
+        when(context.getOptions().isIfNotExists()).thenReturn(false);
 
         selectEagerPSs.clear();
         removePSs.clear();

@@ -35,6 +35,7 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
+import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -174,8 +175,7 @@ public class BatchingPersistenceManagerTest {
     @Test
     public void should_exception_when_refresh_with_consistency() throws Exception {
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+        exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
         manager.refresh(new CompleteBean(), ONE);
     }
@@ -186,14 +186,16 @@ public class BatchingPersistenceManagerTest {
         Object entity = new Object();
         Options options = OptionsBuilder.noOptions();
         PersistenceContext context = mock(PersistenceContext.class);
+        PersistenceContext.PersistenceManagerFacade operations = mock(PersistenceContext.PersistenceManagerFacade.class);
+
+        when(contextFactory.newContextWithFlushContext(entity, options, flushContext)).thenReturn(context);
+        when(context.getPersistenceManagerFacade()).thenReturn(operations);
 
         // When
-        when(contextFactory.newContextWithFlushContext(entity, options, flushContext)).thenReturn(context);
-
-        PersistenceContext actual = manager.initPersistenceContext(entity, options);
+        PersistenceManagerOperations actual = manager.initPersistenceContext(entity, options);
 
         // Then
-        assertThat(actual).isSameAs(context);
+        assertThat(actual).isSameAs(operations);
     }
 
     @Test
@@ -202,14 +204,15 @@ public class BatchingPersistenceManagerTest {
         Object primaryKey = new Object();
         Options options = OptionsBuilder.noOptions();
         PersistenceContext context = mock(PersistenceContext.class);
+        PersistenceContext.PersistenceManagerFacade operations = mock(PersistenceContext.PersistenceManagerFacade.class);
+
+        when(contextFactory.newContextWithFlushContext(Object.class, primaryKey, options, flushContext)).thenReturn(context);
+        when(context.getPersistenceManagerFacade()).thenReturn(operations);
 
         // When
-        when(contextFactory.newContextWithFlushContext(Object.class, primaryKey, options, flushContext)).thenReturn(
-                context);
-
-        PersistenceContext actual = manager.initPersistenceContext(Object.class, primaryKey, options);
+        PersistenceManagerOperations actual = manager.initPersistenceContext(Object.class, primaryKey, options);
 
         // Then
-        assertThat(actual).isSameAs(context);
+        assertThat(actual).isSameAs(operations);
     }
 }

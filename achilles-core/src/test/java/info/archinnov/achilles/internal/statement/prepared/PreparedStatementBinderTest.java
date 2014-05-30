@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.math.RandomUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +59,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -104,7 +104,7 @@ public class PreparedStatementBinderTest {
     private DirtyCheckChangeSet changeSet;
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.StateHolderFacade context;
 
     @Mock
     private ConsistencyOverrider overrider;

@@ -48,7 +48,7 @@ public class CounterLoaderTest {
     private ConsistencyOverrider overrider;
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.EntityFacade context;
 
     @Mock
     private EntityMeta meta;

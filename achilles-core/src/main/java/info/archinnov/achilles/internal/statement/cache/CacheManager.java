@@ -28,7 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheStats;
 import com.google.common.collect.Sets;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
@@ -55,7 +55,7 @@ public class CacheManager {
 
     public PreparedStatement getCacheForFieldSelect(Session session,
             Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-            PersistenceContext context, PropertyMeta pm) {
+            PersistentStateHolder context, PropertyMeta pm) {
 
         log.trace("Get cache for SELECT property {} from entity class {}", pm.getPropertyName(), pm
                 .getEntityClassName());
@@ -74,7 +74,7 @@ public class CacheManager {
     }
 
     public PreparedStatement getCacheForEntityInsert(Session session, Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-            PersistenceContext context, List<PropertyMeta> pms) {
+            PersistentStateHolder context, List<PropertyMeta> pms) {
 
         log.trace("Get cache for INSERT properties {} from entity class {}", pms, context.getEntityClass());
 
@@ -92,7 +92,7 @@ public class CacheManager {
     }
 
     public PreparedStatement getCacheForFieldsUpdate(Session session, Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
-            PersistenceContext context, List<PropertyMeta> pms) {
+            PersistentStateHolder context, List<PropertyMeta> pms) {
 
         log.trace("Get cache for UPDATE properties {} from entity class {}", pms, context.getEntityClass());
 
@@ -110,7 +110,7 @@ public class CacheManager {
     }
 
     public PreparedStatement getCacheForCollectionAndMapOperation(Session session, Cache<StatementCacheKey,
-            PreparedStatement> dynamicPSCache, PersistenceContext context, PropertyMeta pm, DirtyCheckChangeSet changeSet) {
+            PreparedStatement> dynamicPSCache, PersistentStateHolder context, PropertyMeta pm, DirtyCheckChangeSet changeSet) {
         final Class<Object> entityClass = context.getEntityClass();
         CollectionAndMapChangeType changeType = changeSet.getChangeType();
         log.trace("Get cache for operation {} on entity class {} and property {}", changeType.name(),

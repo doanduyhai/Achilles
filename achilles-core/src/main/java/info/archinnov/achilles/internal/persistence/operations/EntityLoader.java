@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
-import info.archinnov.achilles.internal.context.PersistenceContext;
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
@@ -26,20 +26,20 @@ import info.archinnov.achilles.internal.validation.Validator;
 
 public class EntityLoader {
 
-    private static final Logger log  = LoggerFactory.getLogger(EntityLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityLoader.class);
 
     private EntityMapper mapper = new EntityMapper();
     private CounterLoader counterLoader = new CounterLoader();
 
-	public <T> T load(PersistenceContext context, Class<T> entityClass) {
-        log.debug("Loading entity of class {} using PersistenceContext {}",entityClass,context);
-		EntityMeta entityMeta = context.getEntityMeta();
-		Object primaryKey = context.getPrimaryKey();
+    public <T> T load(EntityOperations context, Class<T> entityClass) {
+        log.debug("Loading entity of class {} using PersistenceContext {}", entityClass, context);
+        EntityMeta entityMeta = context.getEntityMeta();
+        Object primaryKey = context.getPrimaryKey();
 
-		Validator.validateNotNull(entityClass, "Entity class should not be null");
-		Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
-		Validator
-				.validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
+        Validator.validateNotNull(entityClass, "Entity class should not be null");
+        Validator.validateNotNull(primaryKey, "Entity '%s' key should not be null", entityClass.getCanonicalName());
+        Validator
+                .validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
         T entity = null;
 
@@ -53,10 +53,10 @@ public class EntityLoader {
             }
         }
 
-		return entity;
-	}
+        return entity;
+    }
 
-    public <T> T createEmptyEntity(PersistenceContext context, Class<T> entityClass) {
+    public <T> T createEmptyEntity(EntityOperations context, Class<T> entityClass) {
         log.debug("Loading entity of class {} using PersistenceContext {}", entityClass, context);
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
@@ -72,8 +72,8 @@ public class EntityLoader {
         return entity;
     }
 
-    public void loadPropertyIntoObject(PersistenceContext context, Object realObject, PropertyMeta pm) {
-        log.trace("Loading property {} into object {}",pm.getPropertyName(),realObject);
+    public void loadPropertyIntoObject(EntityOperations context, Object realObject, PropertyMeta pm) {
+        log.trace("Loading property {} into object {}", pm.getPropertyName(), realObject);
         PropertyType type = pm.type();
         if (type.isCounter()) {
             counterLoader.loadCounter(context, realObject, pm);

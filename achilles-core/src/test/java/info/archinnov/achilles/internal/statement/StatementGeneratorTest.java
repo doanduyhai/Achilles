@@ -74,7 +74,7 @@ public class StatementGeneratorTest {
     private DaoContext daoContext;
 
     @Mock
-    private PersistenceContext context;
+    private PersistenceContext.StateHolderFacade context;
 
     @Mock
     private RegularStatementWrapper statementWrapper;
@@ -98,7 +98,9 @@ public class StatementGeneratorTest {
         when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
         when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
         when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture())).thenReturn(statementWrapper);
-        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98, 101);
+        when(sliceQuery.getLimit()).thenReturn(98);
+        when(sliceQuery.getBatchSize()).thenReturn(101);
+        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery);
 
         assertThat(actual).isSameAs(statementWrapper);
 
@@ -113,8 +115,10 @@ public class StatementGeneratorTest {
         when(sliceQuery.getCQLOrdering()).thenReturn(null);
         when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
         when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture())).thenReturn(statementWrapper);
+        when(sliceQuery.getLimit()).thenReturn(98);
+        when(sliceQuery.getBatchSize()).thenReturn(101);
 
-        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery, 98, 101);
+        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery);
 
         assertThat(actual).isSameAs(statementWrapper);
         assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT id,comp1,comp2,age,name,label FROM table LIMIT 98;");

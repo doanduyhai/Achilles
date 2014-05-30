@@ -15,37 +15,36 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
+import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 
 public class EntityRefresher {
-	private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
+    private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
 
-	private EntityProxifier proxifier = new EntityProxifier();
-	private EntityLoader loader = new EntityLoader();
+    private EntityProxifier proxifier = new EntityProxifier();
+    private EntityLoader loader = new EntityLoader();
 
-	public void refresh(Object proxifiedEntity, PersistenceContext context) throws AchillesStaleObjectStateException {
-		Object primaryKey = context.getPrimaryKey();
-		log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
-				primaryKey);
+    public void refresh(Object proxifiedEntity, EntityOperations context) throws AchillesStaleObjectStateException {
+        Object primaryKey = context.getPrimaryKey();
+        log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
+                primaryKey);
 
-		EntityInterceptor<Object> interceptor = proxifier.getInterceptor(proxifiedEntity);
-		Object entity = context.getEntity();
+        EntityInterceptor<Object> interceptor = proxifier.getInterceptor(proxifiedEntity);
+        Object entity = context.getEntity();
 
-		interceptor.getDirtyMap().clear();
+        interceptor.getDirtyMap().clear();
 
-		Object freshEntity = loader.load(context, context.getEntityClass());
+        Object freshEntity = loader.load(context, context.getEntityClass());
 
-		if (freshEntity == null) {
-			throw new AchillesStaleObjectStateException("The entity '" + entity + "' with primary_key '" + primaryKey
-					+ "' no longer exists in Cassandra");
-		}
-		interceptor.setTarget(freshEntity);
-		interceptor.getAlreadyLoaded().clear();
-		interceptor.getAlreadyLoaded().addAll(context.getAllGettersExceptCounters());
-	}
+        if (freshEntity == null) {
+            throw new AchillesStaleObjectStateException("The entity '" + entity + "' with primary_key '" + primaryKey
+                    + "' no longer exists in Cassandra");
+        }
+        interceptor.setTarget(freshEntity);
+        interceptor.getAlreadyLoaded().clear();
+        interceptor.getAlreadyLoaded().addAll(context.getAllGettersExceptCounters());
+    }
 }
