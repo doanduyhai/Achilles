@@ -13,10 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package info.archinnov.achilles.internal.context;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,16 +26,22 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.datastax.driver.core.ResultSet;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
+import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PersistenceContextTest {
+public class DaoFacadeTest {
 
     private PersistenceContext context;
+
+    private PersistenceContext.DaoFacade facade;
 
     @Mock
     private DaoContext daoContext;
@@ -44,14 +52,16 @@ public class PersistenceContextTest {
     @Mock
     private ConfigurationContext configurationContext;
 
-
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
+
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
     private Long primaryKey = RandomUtils.nextLong();
+
+    private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 
     @Before
     public void setUp() throws Exception {
@@ -59,23 +69,39 @@ public class PersistenceContextTest {
         when(meta.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(configurationContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
 
-        context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class,
-                primaryKey, OptionsBuilder.noOptions());
+        context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class, primaryKey, OptionsBuilder.noOptions());
+        facade = context.daoFacade;
+    }
+    @Test
+    public void should_push_statement_wrapper() throws Exception {
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
+        facade.pushStatement(bsWrapper);
+
+        verify(flushContext).pushStatement(bsWrapper);
     }
 
     @Test
-    public void should_duplicate_for_new_entity() throws Exception {
-        CompleteBean entity = new CompleteBean();
-        entity.setId(primaryKey);
-        when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
-        when(flushContext.duplicate()).thenReturn(flushContext);
+    public void should_push_counter_statement_wrapper() throws Exception {
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
 
-        PersistenceContext duplicateContext = context.duplicate(entity);
+        facade.pushCounterStatement(bsWrapper);
 
-        assertThat(duplicateContext.stateHolderFacade.getEntity()).isSameAs(entity);
-        assertThat(duplicateContext.stateHolderFacade.getPrimaryKey()).isSameAs(primaryKey);
+        verify(flushContext).pushCounterStatement(bsWrapper);
     }
 
+    @Test
+    public void should_execute_immediate() throws Exception {
+        // Given
+        BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
+        ResultSet resultSet = mock(ResultSet.class);
 
+        // When
+        when(flushContext.executeImmediate(bsWrapper)).thenReturn(resultSet);
+
+        ResultSet actual = facade.executeImmediate(bsWrapper);
+
+        // Then
+        assertThat(actual).isSameAs(resultSet);
+    }
 }
