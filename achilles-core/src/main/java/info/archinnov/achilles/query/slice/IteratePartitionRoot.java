@@ -23,6 +23,8 @@ import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_B
 import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
 import java.util.Iterator;
+import com.google.common.util.concurrent.FutureCallback;
+import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -142,6 +144,11 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
         super.properties.fetchSize(batchSize);
         super.withClusteringsInternal(clusterings);
         return super.iteratorInternal();
+    }
+
+
+    public IteratePartitionRootAsync async() {
+        return new IteratePartitionRootAsync();
     }
 
     /**
@@ -328,7 +335,16 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
             return getThis();
         }
 
+        public T withAsyncListeners(FutureCallback<Object>...asyncListeners) {
+            IteratePartitionRoot.this.properties.asyncListeners(asyncListeners);
+            return getThis();
+        }
+
         protected abstract T getThis();
+
+        public IterateClusteringsRootAsync async() {
+            return new IterateClusteringsRootAsync();
+        }
 
         /**
          *
@@ -579,6 +595,41 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
         @Override
         protected IterateEndWithLimitation<ENTITY_TYPE> getThis() {
             return IterateEndWithLimitation.this;
+        }
+    }
+
+    public class IteratePartitionRootAsync {
+
+        public AchillesFuture<Iterator<TYPE>> iterator() {
+            return IteratePartitionRoot.super.asyncIteratorInternal();
+        }
+
+        public AchillesFuture<Iterator<TYPE>> iterator(int batchSize) {
+            IteratePartitionRoot.super.properties.fetchSize(batchSize);
+            return IteratePartitionRoot.super.asyncIteratorInternal();
+        }
+
+        public AchillesFuture<Iterator<TYPE>> iteratorWithMatching(Object... clusterings) {
+            IteratePartitionRoot.super.withClusteringsInternal(clusterings);
+            return IteratePartitionRoot.super.asyncIteratorInternal();
+        }
+
+        public AchillesFuture<Iterator<TYPE>> iteratorWithMatchingAndBatchSize(int batchSize, Object... clusterings) {
+            IteratePartitionRoot.super.properties.fetchSize(batchSize);
+            IteratePartitionRoot.super.withClusteringsInternal(clusterings);
+            return IteratePartitionRoot.super.asyncIteratorInternal();
+        }
+    }
+
+    public class IterateClusteringsRootAsync{
+
+        public AchillesFuture<Iterator<TYPE>> iterator() {
+            return IteratePartitionRoot.super.asyncIteratorInternal();
+        }
+
+        public AchillesFuture<Iterator<TYPE>> iterator(int batchSize) {
+            IteratePartitionRoot.super.properties.fetchSize(batchSize);
+            return IteratePartitionRoot.super.asyncIteratorInternal();
         }
     }
 }

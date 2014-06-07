@@ -115,7 +115,7 @@ public class PreparedStatementGenerator {
         final EntityMetaConfig metaConfig = entityMeta.config();
         Update update = update(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
-        if (options.hasCasConditions()) {
+        if (options.hasCASConditions()) {
             for (CASCondition CASCondition : options.getCASConditions()) {
                 updateConditions.and(CASCondition.toClauseForPreparedStatement());
             }
@@ -272,7 +272,7 @@ public class PreparedStatementGenerator {
 
         final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
 
-        if (options.hasCasConditions()) {
+        if (options.hasCASConditions()) {
             for (CASCondition CASCondition : options.getCASConditions()) {
                 conditions.and(CASCondition.toClauseForPreparedStatement());
             }

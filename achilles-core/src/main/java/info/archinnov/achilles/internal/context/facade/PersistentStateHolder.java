@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.context.facade;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -63,4 +64,6 @@ public interface PersistentStateHolder {
     public List<PropertyMeta> getAllCountersMeta();
 
     public ConfigurationContext getConfigContext();
+
+	public ExecutorService getExecutorService();
 }

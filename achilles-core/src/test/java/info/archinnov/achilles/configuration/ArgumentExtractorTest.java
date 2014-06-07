@@ -27,6 +27,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENAB
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
@@ -55,6 +56,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import javax.validation.Validator;
 
 import com.google.common.base.Optional;
@@ -79,6 +82,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -116,6 +120,9 @@ public class ArgumentExtractorTest {
 
     @Mock
     private Interceptor<String> interceptor2;
+
+    @Mock
+    private ExecutorService executorService;
 
     private ConfigMap configMap = new ConfigMap();
 
@@ -408,6 +415,7 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getGlobalInsertStrategy()).isEqualTo(ALL_FIELDS);
         assertThat(configContext.getGlobalNamingStrategy()).isEqualTo(NamingStrategy.LOWER_CASE);
         assertThat(configContext.getCurrentKeyspace().isPresent()).isFalse();
+        assertThat(configContext.getExecutorService()).isNotNull().isInstanceOf(ThreadPoolExecutor.class);
     }
 
     @Test
@@ -509,6 +517,20 @@ public class ArgumentExtractorTest {
     }
 
     @Test
+    public void should_init_default_executor_service() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+
+        //When
+        final ExecutorService executorService = extractor.initExecutorService(params);
+
+        //Then
+        assertThat(executorService).isNotNull()
+                .isInstanceOf(ThreadPoolExecutor.class)
+                .isNotEqualTo(this.executorService);
+    }
+
+    @Test
     public void should_init_relax_index_validation() throws Exception {
         //Given
         ConfigMap params = new ConfigMap();
@@ -522,7 +544,7 @@ public class ArgumentExtractorTest {
         assertThat(extractor.initRelaxIndexValidation(new ConfigMap())).isFalse();
     }
 
-    @Test
+   @Test
     public void should_init_global_naming_strategy() throws Exception {
         //Given
         ConfigMap params = new ConfigMap();
@@ -545,5 +567,18 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(ArgumentExtractor.DEFAULT_GLOBAL_NAMING_STRATEGY);
+    }
+
+    @Test
+    public void should_init_custom_executor_service() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+        params.put(EXECUTOR_SERVICE, executorService);
+
+        //When
+        final ExecutorService executorService = extractor.initExecutorService(params);
+
+        //Then
+        assertThat(executorService).isNotNull().isEqualTo(this.executorService);
     }
 }

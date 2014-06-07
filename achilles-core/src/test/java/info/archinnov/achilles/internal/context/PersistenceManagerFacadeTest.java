@@ -25,23 +25,30 @@ import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.ResultSet;
+import com.google.common.base.Function;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.internal.async.ImmediateValue;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityInitializer;
@@ -54,7 +61,7 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.type.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PersistenceManagerFacadeTest {
@@ -65,9 +72,6 @@ public class PersistenceManagerFacadeTest {
 
     @Mock
     private DaoContext daoContext;
-
-    @Mock
-    private AbstractFlushContext flushContext;
 
     @Mock
     private ConfigurationContext configurationContext;
@@ -93,12 +97,38 @@ public class PersistenceManagerFacadeTest {
     @Mock
     private ReflectionInvoker invoker;
 
+    @Mock
+    private AbstractFlushContext flushContext;
+
+    @Mock
+    private AsyncUtils asyncUtils;
+
+    @Mock
+    private ExecutorService executorService;
+
+    @Mock
+    private ListenableFuture<List<ResultSet>> futureResultSets;
+
+    @Mock
+    private ListenableFuture<CompleteBean> futureEntity;
+
+    @Mock
+    private AchillesFuture<CompleteBean> achillesFutureEntity;
+
+    @Captor
+    private ArgumentCaptor<Function<List<ResultSet>, CompleteBean>> resultSetsToEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<CompleteBean, CompleteBean>> isoEntityCaptor;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
+
+    @Mock
+    private Options options;
 
     private Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
@@ -109,116 +139,184 @@ public class PersistenceManagerFacadeTest {
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(configurationContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+        when(configurationContext.getExecutorService()).thenReturn(executorService);
+        when(flushContext.flush()).thenReturn(futureResultSets);
 
-        context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class, primaryKey, OptionsBuilder.noOptions());
+        context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class, primaryKey, options);
         facade = context.persistenceManagerFacade;
 
-        Whitebox.setInternalState(context, "initializer", initializer);
-        Whitebox.setInternalState(context, "persister", persister);
-        Whitebox.setInternalState(context, "proxifier", proxifier);
-        Whitebox.setInternalState(context, "refresher", refresher);
-        Whitebox.setInternalState(context, "loader", loader);
-        Whitebox.setInternalState(context, "updater", updater);
+        context.flushContext = flushContext;
+        context.initializer = initializer;
+        context.persister = persister;
+        context.proxifier = proxifier;
+        context.refresher = refresher;
+        context.loader = loader;
+        context.updater = updater;
+        context.asyncUtils = asyncUtils;
+        context.configContext = configurationContext;
+        context.entity = entity;
+
     }
 
     @Test
     public void should_persist() throws Exception {
         //Given
-        Object entity = new Object();
-        context.entity = entity;
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
+        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
-        Object actual = facade.persist(entity);
+        final AchillesFuture<CompleteBean> actual = facade.persist(entity);
 
         //Then
-        assertThat(actual).isSameAs(entity);
+        assertThat(actual).isSameAs(achillesFutureEntity);
 
-        InOrder inOrder = Mockito.inOrder(flushContext, persister);
+        assertThat(resultSetsToEntityCaptor.getValue().apply(null)).isSameAs(entity);
+        assertThat(isoEntityCaptor.getValue().apply(null)).isSameAs(entity);
+
+        InOrder inOrder = inOrder(flushContext, persister, asyncUtils);
+
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_INSERT);
+        inOrder.verify(persister).persist(context.entityFacade);
+        inOrder.verify(flushContext).flush();
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_INSERT);
+    }
+
+    @Test
+    public void should_batch_persist() throws Exception {
+        //Given
+        final ArgumentCaptor<ImmediateValue> immediateValueCaptor = ArgumentCaptor.forClass(ImmediateValue.class);
+        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
+        when(asyncUtils.buildInterruptible(immediateValueCaptor.capture())).thenReturn(achillesFutureEntity);
+
+        //When
+        final AchillesFuture<CompleteBean> actual = facade.batchPersist(entity);
+
+        //Then
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        assertThat(immediateValueCaptor.getValue().get()).isSameAs(entity);
+
+        InOrder inOrder = inOrder(flushContext, persister, asyncUtils);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_INSERT);
         inOrder.verify(persister).persist(context.entityFacade);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_INSERT);
+
     }
 
     @Test
     public void should_update() throws Exception {
         //Given
-        final CompleteBean rawEntity = new CompleteBean();
-        context.entity = rawEntity;
+        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
-        facade.update(entity);
+        final AchillesFuture<CompleteBean> actual = facade.update(entity);
 
         //Then
-        InOrder inOrder = Mockito.inOrder(flushContext, updater);
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        assertThat(resultSetsToEntityCaptor.getValue().apply(null)).isSameAs(entity);
 
-        inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, PRE_UPDATE);
+        InOrder inOrder = inOrder(flushContext, updater, asyncUtils);
+
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_UPDATE);
         inOrder.verify(updater).update(context.entityFacade, entity);
         inOrder.verify(flushContext).flush();
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
     }
 
     @Test
     public void should_delete() throws Exception {
         //Given
-        Object entity = new Object();
-        context.entity = entity;
+        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
-        facade.delete();
+        final AchillesFuture<CompleteBean> actual = facade.delete();
 
         //Then
-        InOrder inOrder = Mockito.inOrder(flushContext, persister);
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        assertThat(resultSetsToEntityCaptor.getValue().apply(null)).isSameAs(entity);
+
+        InOrder inOrder = inOrder(flushContext, persister, asyncUtils);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_DELETE);
         inOrder.verify(persister).delete(context.entityFacade);
         inOrder.verify(flushContext).flush();
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_DELETE);
     }
 
     @Test
     public void should_find() throws Exception {
         //Given
-        when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(entity);
+        when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(achillesFutureEntity);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
 
+        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
+
         //When
-        CompleteBean found = facade.find(CompleteBean.class);
+        final AchillesFuture<CompleteBean> actual = facade.find(CompleteBean.class);
 
         //Then
-        assertThat(found).isSameAs(entity);
-        verify(flushContext).triggerInterceptor(meta, entity, POST_LOAD);
-    }
+        assertThat(actual).isSameAs(achillesFutureEntity);
 
-    @Test
-    public void should_return_null_when_not_found() throws Exception {
-        when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(null);
+        assertThat(isoEntityCaptor.getAllValues().get(0).apply(entity)).isSameAs(entity);
+        assertThat(isoEntityCaptor.getAllValues().get(1).apply(entity)).isSameAs(entity);
 
-        CompleteBean found = facade.find(CompleteBean.class);
-
-        assertThat(found).isNull();
-        verifyZeroInteractions(proxifier);
+        InOrder inOrder = inOrder(flushContext, updater, asyncUtils);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_LOAD);
     }
 
     @Test
     public void should_get_proxy() throws Exception {
+        // Given
+        final ArgumentCaptor<ImmediateValue> immediateValueCaptor = ArgumentCaptor.forClass(ImmediateValue.class);
         when(loader.createEmptyEntity(context.entityFacade, CompleteBean.class)).thenReturn(entity);
         when(proxifier.buildProxyWithNoFieldLoaded(entity, context.entityFacade)).thenReturn(entity);
+        when(asyncUtils.buildInterruptible(immediateValueCaptor.capture())).thenReturn(achillesFutureEntity);
 
-        CompleteBean found = facade.getProxy(CompleteBean.class);
+        // When
+        final AchillesFuture<CompleteBean> actual = facade.getProxy(CompleteBean.class);
 
-        assertThat(found).isSameAs(entity);
+        // Then
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        verify(asyncUtils).maybeAddAsyncListeners(immediateValueCaptor.capture(), eq(options), eq(executorService));
+        assertThat(immediateValueCaptor.getAllValues().get(0).get()).isSameAs(entity);
+        assertThat(immediateValueCaptor.getAllValues().get(1).get()).isSameAs(entity);
     }
 
     @Test
     public void should_refresh() throws Exception {
-        facade.refresh(entity);
+        // Given
+        CompleteBean proxy = new CompleteBean();
+        when(refresher.refresh(proxy, context.entityFacade)).thenReturn(achillesFutureEntity);
+        when(proxifier.removeProxy(proxy)).thenReturn(entity);
+        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
-        InOrder inOrder = Mockito.inOrder(flushContext, refresher);
+        // When
+        final AchillesFuture<CompleteBean> actual = facade.refresh(proxy);
 
-        inOrder.verify(refresher).refresh(entity, context.entityFacade);
+        // Then
+        assertThat(actual).isSameAs(achillesFutureEntity);
+
+        assertThat(isoEntityCaptor.getAllValues().get(0).apply(proxy)).isSameAs(entity);
+        assertThat(isoEntityCaptor.getAllValues().get(1).apply(entity)).isSameAs(entity);
+
+        InOrder inOrder = inOrder(flushContext, refresher, proxifier, asyncUtils);
+
+        inOrder.verify(refresher).refresh(proxy, context.entityFacade);
+        inOrder.verify(asyncUtils).maybeAddAsyncListeners(futureEntity, options, executorService);
+        inOrder.verify(proxifier).removeProxy(proxy);
         inOrder.verify(flushContext).triggerInterceptor(meta, context.entity, POST_LOAD);
     }
 

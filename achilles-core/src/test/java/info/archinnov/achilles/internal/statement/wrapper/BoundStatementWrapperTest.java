@@ -16,19 +16,16 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import static com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
+import static com.google.common.base.Optional.fromNullable;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -41,40 +38,19 @@ public class BoundStatementWrapperTest {
     @Mock
     private BoundStatement bs;
 
-    @Mock
-    private PreparedStatement ps;
-
-    @Mock
-    private Session session;
 
     private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
-    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
-
-    @Test
-    public void should_execute() throws Exception {
-        //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ALL, NO_LISTENER, Optional.fromNullable(LOCAL_SERIAL));
-        when(bs.preparedStatement()).thenReturn(ps);
-        when(ps.getQueryString()).thenReturn("SELECT");
-
-        //When
-        wrapper.execute(session);
-
-        //Then
-        verify(session).execute(bs);
-        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
-    }
 
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, fromNullable(ConsistencyLevel.LOCAL_SERIAL));
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();
 
         //Then
         assertThat(expectedBs).isSameAs(bs);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
     }
 }

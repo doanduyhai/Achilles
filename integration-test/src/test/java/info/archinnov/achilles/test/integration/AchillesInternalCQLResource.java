@@ -23,6 +23,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYS
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
+
+import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
@@ -42,6 +44,8 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
     private final PersistenceManagerFactory pmf;
 
     private final PersistenceManager manager;
+
+    private final AsyncManager asyncManager;
 
     private final CassandraEmbeddedServer server;
 
@@ -65,6 +69,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        asyncManager = server.getAsyncManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
     }
 
@@ -88,6 +93,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        asyncManager = server.getAsyncManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
     }
 
@@ -116,6 +122,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         server = new CassandraEmbeddedServer(config, achillesConfig);
         pmf = server.getPersistenceManagerFactory(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         manager = server.getPersistenceManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        asyncManager = server.getAsyncManager(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         session = server.getNativeSession(DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
     }
 
@@ -135,6 +142,15 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
      */
     public PersistenceManager getPersistenceManager() {
         return manager;
+    }
+
+    /**
+     * Return a singleton AsyncManager
+     *
+     * @return PersistenceManager singleton
+     */
+    public AsyncManager getAsyncManager() {
+        return asyncManager;
     }
 
     /**

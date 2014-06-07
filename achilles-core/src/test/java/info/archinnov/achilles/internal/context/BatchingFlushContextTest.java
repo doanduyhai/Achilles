@@ -16,14 +16,20 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import java.util.Arrays;
+import static org.mockito.Mockito.when;
+
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.type.Empty;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,17 +37,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.internal.WhiteboxImpl;
-import com.datastax.driver.core.BatchStatement;
+import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.internal.async.EmptyFutureResultSets;
 import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
 import info.archinnov.achilles.internal.interceptor.EventHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.BatchStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
@@ -57,20 +67,50 @@ public class BatchingFlushContextTest {
     private DaoContext daoContext;
 
     @Mock
+    private AsyncUtils asyncUtils;
+
+    @Mock
+    private ExecutorService executorService;
+
+    @Mock
     private BoundStatementWrapper bsWrapper;
 
     @Mock
     private RegularStatement query;
 
-    @Captor
-    ArgumentCaptor<BatchStatement> batchCaptor;
+    @Mock
+    private ListenableFuture<ResultSet> futureResultSet1;
 
-    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
-    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
+    @Mock
+    private ListenableFuture<ResultSet> futureResultSet2;
+
+    @Mock
+    private ListenableFuture<List<ResultSet>> futureAsList;
+
+    @Mock
+    private ListenableFuture<Empty> futureEmpty;
+
+    @Mock
+    private AchillesFuture<Empty> achillesEmpty;
+
+
+    @Captor
+    private ArgumentCaptor<AbstractStatementWrapper> statementWrapperCaptor;
+
+    @Captor
+    private ArgumentCaptor<List<ListenableFuture<ResultSet>>> futureResultSetsCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<List<ResultSet>, Empty>> applyTriggersCaptor;
+
+    private Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Before
     public void setUp() {
-        context = new BatchingFlushContext(daoContext, EACH_QUORUM,NO_SERIAL_CONSISTENCY);
+        context = new BatchingFlushContext(daoContext, EACH_QUORUM, NO_SERIAL_CONSISTENCY);
+        context.asyncUtils = asyncUtils;
+        when(daoContext.getExecutorService()).thenReturn(executorService);
     }
 
     @Test
@@ -82,8 +122,9 @@ public class BatchingFlushContextTest {
     public void should_do_nothing_when_flush_is_called() throws Exception {
         context.statementWrappers.add(bsWrapper);
 
-        context.flush();
+        final ListenableFuture<List<ResultSet>> actual = context.flush();
 
+        assertThat(actual).isInstanceOf(EmptyFutureResultSets.class);
         assertThat(context.statementWrappers).containsExactly(bsWrapper);
     }
 
@@ -95,35 +136,37 @@ public class BatchingFlushContextTest {
         RegularStatement statement2 = QueryBuilder.select().from("table2");
         AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(CompleteBean.class, statement1, null, com.datastax.driver.core.ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
         AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(CompleteBean.class, statement2, null, com.datastax.driver.core.ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
-        context.eventHolders = Arrays.asList(eventHolder);
-        context.statementWrappers = Arrays.asList(wrapper1, wrapper2);
-        context.counterStatementWrappers = Arrays.asList(wrapper1, wrapper2);
-        context.consistencyLevel= ConsistencyLevel.LOCAL_QUORUM;
-        context.serialConsistencyLevel = Optional.absent();
+        AbstractStatementWrapper wrapper3 = new RegularStatementWrapper(CompleteBean.class, statement2, null, com.datastax.driver.core.ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
+        context.eventHolders = asList(eventHolder);
+        context.statementWrappers = asList(wrapper1, wrapper2);
+        context.counterStatementWrappers = asList(wrapper3);
+        context.consistencyLevel = ConsistencyLevel.LOCAL_QUORUM;
+        context.serialConsistencyLevel = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
 
+        when(daoContext.execute(statementWrapperCaptor.capture())).thenReturn(futureResultSet1, futureResultSet2);
+        when(asyncUtils.mergeResultSetFutures(futureResultSetsCaptor.capture())).thenReturn(futureAsList);
+        when(asyncUtils.transformFuture(eq(futureAsList), applyTriggersCaptor.capture(), eq(executorService))).thenReturn(futureEmpty);
+        when(asyncUtils.buildInterruptible(futureEmpty)).thenReturn(achillesEmpty);
 
         //When
-        context.endBatch();
+        final ListenableFuture<Empty> futureResultSets = context.flushBatch();
 
         //Then
+        assertThat(futureResultSets).isSameAs(achillesEmpty);
+        assertThat(futureResultSetsCaptor.getValue()).containsExactly(futureResultSet1, futureResultSet2);
+
+        final List<AbstractStatementWrapper> wrappers = statementWrapperCaptor.getAllValues();
+        BatchStatementWrapper batchWrapper = (BatchStatementWrapper) wrappers.get(0);
+        assertThat(Whitebox.<List<AbstractStatementWrapper>>getInternalState(batchWrapper, "statementWrappers")).containsExactly(wrapper1, wrapper2);
+        assertThat(wrappers.get(1)).isSameAs(wrapper3);
+
+        assertThat(batchWrapper.getStatement().getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        assertThat(batchWrapper.getStatement().getSerialConsistencyLevel()).isNull();
+
+        final Function<List<ResultSet>, Empty> applyTriggers = applyTriggersCaptor.getValue();
+        applyTriggers.apply(asList(mock(ResultSet.class)));
+
         verify(eventHolder).triggerInterception();
-        verify(daoContext, times(2)).executeBatch(batchCaptor.capture());
-
-        assertThat(batchCaptor.getAllValues()).hasSize(2);
-
-        final BatchStatement batchStatement1 = batchCaptor.getAllValues().get(0);
-        assertThat(batchStatement1.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(batchStatement1.getSerialConsistencyLevel()).isNull();
-
-        final List<Statement> statements1 = WhiteboxImpl.getInternalState(batchStatement1, "statements");
-        assertThat(statements1).contains(statement1, statement2);
-
-        final BatchStatement batchStatement2 = batchCaptor.getAllValues().get(1);
-        assertThat(batchStatement2.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(batchStatement2.getSerialConsistencyLevel()).isNull();
-
-        final List<Statement> statements2 = WhiteboxImpl.getInternalState(batchStatement2, "statements");
-        assertThat(statements2).contains(statement1, statement2);
     }
 
     @Test
@@ -203,4 +246,5 @@ public class BatchingFlushContextTest {
         assertThat(newContext.consistencyLevel).isEqualTo(ConsistencyLevel.EACH_QUORUM);
         assertThat(newContext.serialConsistencyLevel.get()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
     }
+
 }

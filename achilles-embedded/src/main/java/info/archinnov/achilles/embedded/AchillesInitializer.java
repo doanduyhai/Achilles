@@ -28,6 +28,8 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RETRY_POLICY;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import java.util.regex.Pattern;
+
+import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,9 +104,11 @@ public class AchillesInitializer {
             PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
 
             PersistenceManager manager = factory.createPersistenceManager();
+            AsyncManager asyncManager = factory.createAsyncManager();
 
             REPOSITORY.addNewManagerFactoryToKeyspace(keyspaceName, factory);
             REPOSITORY.addNewManagerToKeyspace(keyspaceName, manager);
+            REPOSITORY.addNewAsyncManagerToKeyspace(keyspaceName, asyncManager);
             REPOSITORY.addNewSessionToKeyspace(keyspaceName, manager.getNativeSession());
         }
     }

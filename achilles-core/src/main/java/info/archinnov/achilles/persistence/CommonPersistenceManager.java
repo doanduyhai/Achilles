@@ -49,7 +49,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public <T> T insert(T entity) {
         log.debug("Inserting entity '{}'", entity);
-        return super.insert(entity, noOptions());
+        return super.asyncInsert(entity, noOptions()).getImmediately();
     }
 
     /**
@@ -68,7 +68,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public <T> T insert(final T entity, Options options) {
         log.debug("Inserting entity '{}' with options {} ", entity, options);
-        return super.insert(entity, options);
+        return super.asyncInsert(entity, options).getImmediately();
     }
 
     /**
@@ -86,7 +86,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public void update(Object entity) {
         log.debug("Updating entity '{}'", proxifier.getRealObject(entity));
-        super.update(entity, noOptions());
+        super.asyncUpdate(entity, noOptions()).getImmediately();
     }
 
     /**
@@ -106,7 +106,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public void update(Object entity, Options options) {
         log.debug("Updating entity '{}' with options {} ", proxifier.getRealObject(entity), options);
-        super.update(entity, options);
+        super.asyncUpdate(entity, options).getImmediately();
     }
 
 
@@ -121,7 +121,8 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      * @return proxified entity
      */
     public <T> T insertOrUpdate(T entity) {
-        return this.insertOrUpdate(entity,noOptions());
+        log.debug("Inserting or updating entity '{}'", proxifier.getRealObject(entity));
+        return this.asyncInsertOrUpdate(entity,noOptions()).getImmediately();
     }
 
     /**
@@ -135,15 +136,8 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *            options
      */
     public <T> T insertOrUpdate(T entity, Options options) {
-        entityValidator.validateEntity(entity, entityMetaMap);
         log.debug("Inserting or updating entity '{}' with options {}", proxifier.getRealObject(entity), options);
-
-        if (proxifier.isProxy(entity)) {
-            super.update(entity, options);
-            return entity;
-        } else {
-            return super.insert(entity, options);
-        }
+        return this.asyncInsertOrUpdate(entity,options).getImmediately();
     }
 
     /**
@@ -160,14 +154,14 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public void delete(Object entity) {
         log.debug("Deleting entity '{}'", proxifier.getRealObject(entity));
-        super.delete(entity, noOptions());
+        super.asyncDelete(entity, noOptions()).getImmediately();
     }
 
     /**
      * Delete an entity with the given options.
      *
      *  <pre class="code"><code class="java">
-     *      // Deletion with option
+     *      // Deletion  with option
      *      User managedUser = manager.find(User.class,1L);
      *      manager.delete(managedUser, OptionsBuilder.withConsistency(QUORUM));
      *  </code></pre>
@@ -179,14 +173,14 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      */
     public void delete(final Object entity, Options options) {
         log.debug("Deleting entity '{}' with options {}", proxifier.getRealObject(entity), options);
-        super.delete(entity, options);
+        super.asyncDelete(entity,options).getImmediately();
     }
 
     /**
-     * Delete an entity by its id.
+     * Delete  an entity by its id.
      *
      *  <pre class="code"><code class="java">
-     *      // Direct deletion without read-before-write
+     *      // Direct deletion  without read-before-write
      *      manager.deleteById(User.class,1L);
      *  </code></pre>
      *
@@ -197,15 +191,15 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *            Primary key
      */
     public void deleteById(Class<?> entityClass, Object primaryKey) {
-        log.debug("Deleting entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        super.deleteById(entityClass, primaryKey, noOptions());
+        log.debug("Deleting  entity of type '{}' by its id '{}'", entityClass, primaryKey);
+        super.asyncDeleteById(entityClass, primaryKey, noOptions()).getImmediately();
     }
 
     /**
-     * Delete an entity by its id with the given options.
+     * Delete  an entity by its id with the given options.
      *
      *  <pre class="code"><code class="java">
-     *      // Direct deletion without read-before-write
+     *      // Direct deletion  without read-before-write
      *      manager.deleteById(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
      *  </code></pre>
      *
@@ -216,7 +210,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *            Primary key
      */
     public void deleteById(Class<?> entityClass, Object primaryKey, Options options) {
-        log.debug("Deleting entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        super.deleteById(entityClass, primaryKey, options);
+        log.debug("Deleting  entity of type '{}' by its id '{}'", entityClass, primaryKey);
+        super.asyncDeleteById(entityClass, primaryKey, options).getImmediately();
     }
 }

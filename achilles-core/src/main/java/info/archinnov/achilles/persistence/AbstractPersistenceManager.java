@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.type.Empty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -80,67 +82,77 @@ abstract class AbstractPersistenceManager {
         this.sliceQueryExecutor = new SliceQueryExecutor(contextFactory, configContext, daoContext);
     }
 
-    protected <T> T insert(final T entity, Options options) {
+    protected <T> AchillesFuture<T> asyncInsert(final T entity, Options options) {
         entityValidator.validateEntity(entity, entityMetaMap);
-
         optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
         proxifier.ensureNotProxy(entity);
         PersistenceManagerOperations context = initPersistenceContext(entity, options);
         return context.persist(entity);
     }
 
-    protected void update(Object entity, Options options) {
+    protected <T> AchillesFuture<T> asyncUpdate(T entity, Options options) {
         proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
         optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
         PersistenceManagerOperations context = initPersistenceContext(realObject, options);
-        context.update(entity);
+        return context.update(entity);
     }
 
-    protected void delete(final Object entity, Options options) {
+    protected <T> AchillesFuture<T> asyncInsertOrUpdate(T entity, Options options) {
+        entityValidator.validateEntity(entity, entityMetaMap);
+        if (proxifier.isProxy(entity)) {
+            return this.asyncUpdate(entity, options);
+        } else {
+            return this.asyncInsert(entity, options);
+        }
+    }
+
+
+    protected <T> AchillesFuture<T> asyncDelete(final T entity, Options options) {
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
         PersistenceManagerOperations context = initPersistenceContext(realObject, options);
-        context.delete();
+        return context.delete();
     }
 
-    protected void deleteById(Class<?> entityClass, Object primaryKey, Options options) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null for deletion by id");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null for deletion by id");
+
+    protected AchillesFuture<Empty> asyncDeleteById(Class<?> entityClass, Object primaryKey, Options options) {
+        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
+        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
+
         PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.delete();
+        return context.deleteById();
     }
 
-    protected <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+    protected <T> AchillesFuture<T> asyncFind(final Class<T> entityClass, final Object primaryKey, Options options) {
         Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.find(entityClass);
     }
 
-    protected <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
+    protected <T> AchillesFuture<T> asyncGetProxy(final Class<T> entityClass, final Object primaryKey, Options options) {
         Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),"The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
+        Validator.validateTrue(entityMetaMap.containsKey(entityClass), "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
 
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         return context.getProxy(entityClass);
     }
 
-    protected void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
+    protected <T> AchillesFuture<T> asyncRefresh(final T entity, Options options) throws AchillesStaleObjectStateException {
         proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, withConsistency(readLevel));
-        context.refresh(entity);
+        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
+        return context.refresh(entity);
     }
 
     protected <T> T initialize(final T entity) {
@@ -172,7 +184,7 @@ abstract class AbstractPersistenceManager {
 
     protected NativeQuery nativeQuery(RegularStatement regularStatement, Options options, Object... boundValues) {
         Validator.validateNotNull(regularStatement, "The regularStatement for native query should not be null");
-        return new NativeQuery(daoContext, regularStatement, options, boundValues);
+        return new NativeQuery(daoContext, configContext, regularStatement, options, boundValues);
     }
 
     protected <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
@@ -183,7 +195,7 @@ abstract class AbstractPersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, regularStatement, meta);
-        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, MANAGED, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory, MANAGED, boundValues);
     }
 
     protected <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
@@ -193,7 +205,7 @@ abstract class AbstractPersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, regularStatement, meta);
-        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, NOT_MANAGED, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     protected <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {

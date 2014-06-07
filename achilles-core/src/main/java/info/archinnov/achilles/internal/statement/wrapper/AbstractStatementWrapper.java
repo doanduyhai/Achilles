@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
+import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +39,14 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.QueryTrace;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.TraceRetrievalException;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -57,6 +61,7 @@ public abstract class AbstractStatementWrapper {
 
     protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
     protected RowMethodInvoker invoker = RowMethodInvoker.Singleton.INSTANCE.get();
+    protected AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
     protected Optional<CASResultListener> casResultListener = Optional.absent();
 
@@ -81,46 +86,66 @@ public abstract class AbstractStatementWrapper {
         return values;
     }
 
-    public abstract ResultSet execute(Session session);
+    public abstract String getQueryString();
+
+    public abstract ListenableFuture<ResultSet> executeAsync(Session session, ExecutorService executorService);
 
     public abstract Statement getStatement();
 
     public abstract void logDMLStatement(String indentation);
 
+    protected ListenableFuture<ResultSet> executeAsyncInternal(Session session, AbstractStatementWrapper statementWrapper, ExecutorService executorService) {
+        ResultSetFuture resultSetFuture = session.executeAsync(statementWrapper.getStatement());
+        return asyncUtils.applyLoggingTracingAndCASCheck(resultSetFuture, statementWrapper, executorService);
+    }
+
     public static void writeDMLStartBatch(BatchStatement.Type batchType) {
-        if (dmlLogger.isDebugEnabled()) {
-            if (batchType == LOGGED) {
+        switch (batchType) {
+            case LOGGED:
                 dmlLogger.debug("");
                 dmlLogger.debug("");
                 dmlLogger.debug("****** BATCH LOGGED START ******");
                 dmlLogger.debug("");
-            } else {
+                break;
+            case UNLOGGED:
                 dmlLogger.debug("");
                 dmlLogger.debug("");
                 dmlLogger.debug("****** BATCH UNLOGGED START ******");
                 dmlLogger.debug("");
-            }
+                break;
+            case COUNTER:
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+                dmlLogger.debug("****** BATCH COUNTER START ******");
+                dmlLogger.debug("");
+                break;
         }
     }
 
     public static void writeDMLEndBatch(BatchStatement.Type batchType, ConsistencyLevel consistencyLevel) {
-        if (dmlLogger.isDebugEnabled()) {
-            if (batchType == LOGGED) {
+        switch (batchType) {
+            case LOGGED:
                 dmlLogger.debug("");
-                dmlLogger.debug("  ****** BATCH LOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
+                dmlLogger.debug("  ****** BATCH LOGGED END  with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
                 dmlLogger.debug("");
                 dmlLogger.debug("");
-            } else {
+                break;
+            case UNLOGGED:
                 dmlLogger.debug("");
                 dmlLogger.debug("  ****** BATCH UNLOGGED END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
                 dmlLogger.debug("");
                 dmlLogger.debug("");
-            }
+                break;
+            case COUNTER:
+                dmlLogger.debug("");
+                dmlLogger.debug("  ****** BATCH COUNTER END with CONSISTENCY LEVEL [{}] ******", consistencyLevel != null ? consistencyLevel : "DEFAULT");
+                dmlLogger.debug("");
+                dmlLogger.debug("");
+                break;
         }
     }
 
     protected void writeDMLStatementLog(String queryType, String queryString, String consistencyLevel, Object... values) {
-
         Logger actualLogger = displayDMLForEntity ? entityLogger : dmlLogger;
 
         if (actualLogger.isDebugEnabled()) {
@@ -140,11 +165,11 @@ public abstract class AbstractStatementWrapper {
         return queryString.contains(IF_CLAUSE);
     }
 
-    protected void checkForCASSuccess(String queryString, ResultSet resultSet) {
-
+    public void checkForCASSuccess(ResultSet resultSet) {
+        String queryString = this.getQueryString();
         if (isCASOperation(queryString)) {
             final Row casResult = resultSet.one();
-            if (!casResult.getBool(CAS_RESULT_COLUMN)) {
+            if (casResult != null && !casResult.getBool(CAS_RESULT_COLUMN)) {
                 TreeMap<String, Object> currentValues = new TreeMap<>();
                 for (Definition columnDef : casResult.getColumnDefinitions()) {
                     final String columnDefName = columnDef.getName();
@@ -195,31 +220,36 @@ public abstract class AbstractStatementWrapper {
         }
     }
 
-    protected Statement activateQueryTracing(Statement statement) {
-        if (dmlLogger.isTraceEnabled() || traceQueryForEntity) {
-            statement.enableTracing();
+    public void activateQueryTracing() {
+        if (isTracingEnabled()) {
+            getStatement().enableTracing();
         }
-        return statement;
     }
 
-    protected void tracing(ResultSet resultSet) {
-        if (dmlLogger.isTraceEnabled() || traceQueryForEntity) {
+    public boolean isTracingEnabled() {
+        return dmlLogger.isTraceEnabled() || traceQueryForEntity;
+    }
+
+    public void tracing(ResultSet resultSet) {
+        if (isTracingEnabled()) {
             Logger actualLogger = traceQueryForEntity ? entityLogger : dmlLogger;
             for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
+
                 actualLogger.trace("Query tracing at host {} with achieved consistency level {} ", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel());
                 actualLogger.trace("****************************");
                 if (actualLogger.isTraceEnabled()) {
                     actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
                 }
                 try {
-                    final List<QueryTrace.Event> events = new ArrayList<>(executionInfo.getQueryTrace().getEvents());
+                    final QueryTrace queryTrace = executionInfo.getQueryTrace();
+                    final List<QueryTrace.Event> events = new ArrayList<>(queryTrace.getEvents());
                     Collections.sort(events, EVENT_TRACE_COMPARATOR);
                     for (QueryTrace.Event event : events) {
                         final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
                         actualLogger.trace(formatted);
                     }
                 } catch (TraceRetrievalException e) {
-                    actualLogger.trace("Cannot retrieve asynchronous trace, reason: " + e.getMessage());
+                    actualLogger.trace(" ERROR: cannot retrieve trace for query {} because it may not be yet available", getQueryString());
                 }
                 actualLogger.trace("****************************");
             }

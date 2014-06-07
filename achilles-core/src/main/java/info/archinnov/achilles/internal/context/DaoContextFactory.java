@@ -77,6 +77,7 @@ public class DaoContextFactory {
         daoContext.setClusteredCounterQueryMap(clusteredCounterQueriesMap);
         daoContext.setSession(session);
         daoContext.setCacheManager(new CacheManager(configContext.getPreparedStatementLRUCacheSize()));
+        daoContext.setExecutorService(configContext.getExecutorService());
 
         return daoContext;
     }

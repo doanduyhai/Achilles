@@ -17,26 +17,39 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ITERATOR;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -80,6 +93,12 @@ public class SliceQueryExecutorTest {
     private PersistenceContext.EntityFacade entityFacade;
 
     @Mock
+    private AsyncUtils asyncUtils;
+
+    @Mock
+    private ExecutorService executorService;
+
+    @Mock
     private Iterator<Row> iterator;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -88,10 +107,48 @@ public class SliceQueryExecutorTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
+    @Mock
     private SliceQueryProperties<ClusteredEntity> sliceQueryProperties;
 
     @Mock
     private ClusteredEntity entity;
+
+    @Mock
+    private ListenableFuture<ResultSet> futureResultSet;
+
+    @Mock
+    private ListenableFuture<List<Row>> futureRows;
+
+
+    @Captor
+    private ArgumentCaptor<Function<List<Row>, List<ClusteredEntity>>> rowsToEntitiesCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<List<ClusteredEntity>, List<ClusteredEntity>>> isoEntitiesCaptor;
+
+    @Mock
+    private ListenableFuture<List<ClusteredEntity>> futureEntities;
+
+    @Mock
+    private AchillesFuture<List<ClusteredEntity>> achillesFutureEntities;
+
+    @Mock
+    private ListenableFuture<Iterator<Row>> futureIteratorRow;
+
+    @Captor
+    private ArgumentCaptor<Function<Iterator<Row>, Iterator<ClusteredEntity>>> rowToEntityIteratorCaptor;
+
+    @Mock
+    private ListenableFuture<Iterator<ClusteredEntity>> futureIteratorEntities;
+
+    @Mock
+    private AchillesFuture<Iterator<ClusteredEntity>> achillesFutureIteratorEntities;
+
+    @Mock
+    private ListenableFuture<Empty> futureEmpty;
+
+    @Mock
+    private AchillesFuture<Empty> achillesFutureEmpty;
 
     private Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
@@ -99,6 +156,7 @@ public class SliceQueryExecutorTest {
 
     private ConsistencyLevel defaultReadLevel = ConsistencyLevel.EACH_QUORUM;
     private ConsistencyLevel defaultWriteLevel = ConsistencyLevel.LOCAL_QUORUM;
+    private FutureCallback<Object>[] asyncListeners = new FutureCallback[] { };
 
     @Before
     public void setUp() {
@@ -110,54 +168,85 @@ public class SliceQueryExecutorTest {
 
         sliceQueryProperties = SliceQueryProperties.builder(meta,ClusteredEntity.class, SliceQueryProperties.SliceType.SELECT);
 
+        Whitebox.setInternalState(sliceQueryProperties,"asyncListeners",asyncListeners);
+
         executor = new SliceQueryExecutor(contextFactory,configContext,daoContext);
 
-        Whitebox.setInternalState(executor, EntityProxifier.class, proxifier);
-        Whitebox.setInternalState(executor, EntityMapper.class, mapper);
+        executor.proxifier = proxifier;
+        executor.mapper = mapper;
+        executor.executorService = executorService;
+        executor.asyncUtils = asyncUtils;
     }
 
     @Test
-    public void should_get_clustered_entities() throws Exception {
+    public void should_get_clustered_entities_async() throws Exception {
 
         Row row = mock(Row.class);
         List<Row> rows = asList(row);
 
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
-        when(daoContext.execute(bsWrapper).all()).thenReturn(rows);
+
+        when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.buildInterruptible(futureEntities)).thenReturn(achillesFutureEntities);
 
         when(meta.forOperations().instanciate()).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
-        List<ClusteredEntity> actual = executor.get(sliceQueryProperties);
+        // When
+        AchillesFuture<List<ClusteredEntity>> actual = executor.asyncGet(sliceQueryProperties);
 
-        verify(daoContext).bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
+        // Then
+        assertThat(actual).isSameAs(achillesFutureEntities);
 
-        assertThat(actual).containsOnly(entity);
-        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
+        final Function<List<Row>, List<ClusteredEntity>> rowsToEntities = rowsToEntitiesCaptor.getValue();
+        List<ClusteredEntity> entities = rowsToEntities.apply(rows);
+        assertThat(entities).containsExactly(entity);
         verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
+        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
+
+        final Function<List<ClusteredEntity>, List<ClusteredEntity>> entitiesFunction = isoEntitiesCaptor.getValue();
+        entities = entitiesFunction.apply(asList(entity));
+        assertThat(entities).containsExactly(entity);
+
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners, executorService);
     }
 
     @Test
-    public void should_create_iterator_for_clustered_entities() throws Exception {
+    public void should_create_iterator_for_clustered_entities_async() throws Exception {
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
-        when(daoContext.execute(bsWrapper).iterator()).thenReturn(iterator);
 
-        when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
-                .thenReturn(context);
+        when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ITERATOR, executorService)).thenReturn(futureIteratorRow);
+        when(asyncUtils.transformFuture(eq(futureIteratorRow), rowToEntityIteratorCaptor.capture(), eq(executorService))).thenReturn(futureIteratorEntities);
+        when(asyncUtils.buildInterruptible(futureIteratorEntities)).thenReturn(achillesFutureIteratorEntities);
 
-        Iterator<ClusteredEntity> iter = executor.iterator(sliceQueryProperties);
+        when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM)).thenReturn(context);
+        final AchillesFuture<Iterator<ClusteredEntity>> actual = executor.asyncIterator(sliceQueryProperties);
 
-        assertThat(iter).isNotNull();
-        assertThat(iter).isInstanceOf(SliceQueryIterator.class);
+        assertThat(actual).isSameAs(achillesFutureIteratorEntities);
+
+        final Function<Iterator<Row>, Iterator<ClusteredEntity>> iteratorFunction = rowToEntityIteratorCaptor.getValue();
+        final Iterator<ClusteredEntity> entitiesIterator = iteratorFunction.apply(iterator);
+
+        assertThat(entitiesIterator).isNotNull().isInstanceOf(SliceQueryIterator.class);
+
+        verify(asyncUtils).maybeAddAsyncListeners(futureIteratorEntities, asyncListeners, executorService);
     }
 
     @Test
     public void should_delete_clustered_entities() throws Exception {
         when(daoContext.bindForSliceQueryDelete(sliceQueryProperties, defaultWriteLevel)).thenReturn(bsWrapper);
+        when(daoContext.execute(bsWrapper)).thenReturn(futureResultSet);
+        when(asyncUtils.transformFutureToEmpty(futureResultSet, executorService)).thenReturn(futureEmpty);
+        when(asyncUtils.buildInterruptible(futureEmpty)).thenReturn(achillesFutureEmpty);
 
-        executor.delete(sliceQueryProperties);
+        final AchillesFuture<Empty> actual = executor.asyncDelete(sliceQueryProperties);
 
+        assertThat(actual).isSameAs(achillesFutureEmpty);
         verify(daoContext).execute(bsWrapper);
 
     }

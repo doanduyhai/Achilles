@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.CASResultListener;
 
@@ -38,6 +39,8 @@ public class Options {
     List<CASCondition> CASConditions;
 
     Optional<CASResultListener> CASResultListenerO = Optional.absent();
+
+    List<FutureCallback<Object>> asyncListeners;
 
     Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO = Optional.absent();
 
@@ -64,12 +67,20 @@ public class Options {
         return CASConditions;
     }
 
-    public boolean hasCasConditions() {
+    public boolean hasCASConditions() {
         return CollectionUtils.isNotEmpty(CASConditions);
     }
 
     public Optional<CASResultListener> getCasResultListener() {
         return CASResultListenerO;
+    }
+
+    public List<FutureCallback<Object>> getAsyncListeners() {
+        return asyncListeners;
+    }
+
+    public boolean hasAsyncListeners() {
+        return CollectionUtils.isNotEmpty(asyncListeners);
     }
 
     public Optional<com.datastax.driver.core.ConsistencyLevel> getSerialConsistency() {
@@ -84,15 +95,15 @@ public class Options {
                 .add("Timestamp", this.timestamp)
                 .add("IF NOT EXISTS ? ", this.ifNotExists)
                 .add("CAS conditions", this.CASConditions)
-                .add("CAS result listener", this.CASResultListenerO)
-                .add("Serial consistency", this.serialConsistencyO)
+                .add("CAS result listener optional", this.CASResultListenerO)
+                .add("Async listeners", this.asyncListeners)
+				.add("Serial consistency", this.serialConsistencyO)
                 .toString();
     }
 
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
-                .ifNotExists(ifNotExists)
-                .ifConditions(CASConditions)
+                .ifNotExists(ifNotExists).ifConditions(CASConditions)
                 .casResultListener(CASResultListenerO.orNull())
                 .casLocalSerial(serialConsistencyO.isPresent());
     }
@@ -166,6 +177,16 @@ public class Options {
             result = 31 * result + value.hashCode();
             return result;
         }
+
+
+        @Override
+        public String toString() {
+            return Objects.toStringHelper(Options.class)
+                    .add("columnName", this.columnName)
+                    .add("value", this.value)
+                    .toString();
+        }
+
     }
 
 }

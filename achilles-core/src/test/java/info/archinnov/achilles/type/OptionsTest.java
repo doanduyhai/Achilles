@@ -35,7 +35,7 @@ public class OptionsTest {
         assertThat(newOptions.getTimestamp().isPresent()).isFalse();
         assertThat(newOptions.getTtl().isPresent()).isFalse();
         assertThat(newOptions.isIfNotExists()).isTrue();
-        assertThat(newOptions.hasCasConditions()).isTrue();
+        assertThat(newOptions.hasCASConditions()).isTrue();
         assertThat(newOptions.getCASConditions()).containsExactly(CASCondition);
     }
 

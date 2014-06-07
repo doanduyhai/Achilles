@@ -41,6 +41,8 @@ import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.EntityWithTwoConsistency;
 import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadThreeConsistency;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.OptionsBuilder;
 
 public class ConsistencyLevelIT {
 

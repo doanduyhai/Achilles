@@ -17,6 +17,8 @@
 package info.archinnov.achilles.internal.context.facade;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 
 public interface DaoOperations extends PersistentStateHolder {
@@ -25,6 +27,6 @@ public interface DaoOperations extends PersistentStateHolder {
 
     public void pushCounterStatement(AbstractStatementWrapper statementWrapper);
 
-    public ResultSet executeImmediate(AbstractStatementWrapper bsWrapper);
+    public ListenableFuture<ResultSet> executeImmediate(AbstractStatementWrapper bsWrapper);
 
 }

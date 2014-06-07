@@ -15,13 +15,14 @@
  */
 package info.archinnov.achilles.internal.statement.wrapper;
 
-import org.slf4j.Logger;
+import java.util.concurrent.ExecutorService;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.listener.CASResultListener;
 
 public class BoundStatementWrapper extends AbstractStatementWrapper {
@@ -40,13 +41,9 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
     }
 
     @Override
-    public ResultSet execute(Session session) {
-        logDMLStatement("");
-        activateQueryTracing(boundStatement);
-        ResultSet resultSet = session.execute(boundStatement);
-        tracing(resultSet);
-        checkForCASSuccess(boundStatement.preparedStatement().getQueryString(), resultSet);
-        return resultSet;
+    public ListenableFuture<ResultSet> executeAsync(Session session, ExecutorService executorService) {
+        activateQueryTracing();
+        return super.executeAsyncInternal(session, this, executorService);
     }
 
     @Override
@@ -55,10 +52,15 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
     }
 
     @Override
+    public String getQueryString() {
+        return boundStatement.preparedStatement().getQueryString();
+    }
+
+    @Override
     public void logDMLStatement(String indentation) {
         if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
             PreparedStatement ps = boundStatement.preparedStatement();
-            String queryType = "Prepared statement";
+            String queryType = "Bound statement";
             String queryString = ps.getQueryString();
             String consistencyLevel = boundStatement.getConsistencyLevel() == null ? "DEFAULT" : boundStatement
                     .getConsistencyLevel().name();

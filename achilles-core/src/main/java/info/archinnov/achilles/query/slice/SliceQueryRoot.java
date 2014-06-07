@@ -22,6 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.FutureCallback;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -34,7 +37,7 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
     protected final SliceQueryExecutor sliceQueryExecutor;
     protected final Class<TYPE> entityClass;
     protected final EntityMeta meta;
-    protected final SliceQueryProperties properties;
+    protected final SliceQueryProperties<TYPE> properties;
 
 
     protected SliceQueryRoot(SliceQueryExecutor sliceQueryExecutor, Class<TYPE> entityClass, EntityMeta meta, SliceType sliceType) {
@@ -43,8 +46,6 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         this.meta = meta;
         this.properties = SliceQueryProperties.builder(meta, entityClass, sliceType);
     }
-
-
 
     protected void withPartitionComponentsInternal(Object... partitionKeyComponents) {
         log.trace("Add partition key components {}", partitionKeyComponents);
@@ -125,18 +126,39 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         return getThis();
     }
 
+    public T withAsyncListeners(FutureCallback<Object>... asyncListeners) {
+        this.properties.asyncListeners(asyncListeners);
+        return getThis();
+    }
+
     protected abstract T getThis();
 
     protected List<TYPE> getInternal() {
         return this.sliceQueryExecutor.get(this.properties);
     }
 
+
+    protected AchillesFuture<List<TYPE>> asyncGetInternal() {
+        return this.sliceQueryExecutor.asyncGet(this.properties);
+    }
+
+    protected AchillesFuture<TYPE> asyncGetOneInternal() {
+        return this.sliceQueryExecutor.asyncGetOne(this.properties);
+    }
+
     protected Iterator<TYPE> iteratorInternal() {
         return this.sliceQueryExecutor.iterator(this.properties);
+    }
+
+    protected AchillesFuture<Iterator<TYPE>> asyncIteratorInternal() {
+        return this.sliceQueryExecutor.asyncIterator(this.properties);
     }
 
     protected void deleteInternal() {
         this.sliceQueryExecutor.delete(this.properties);
     }
 
+    protected AchillesFuture<Empty> asyncDeleteInternal() {
+        return this.sliceQueryExecutor.asyncDelete(this.properties);
+    }
 }

@@ -27,9 +27,11 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENAB
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
@@ -47,6 +49,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.validation.ValidationException;
 
 import com.google.common.base.Optional;
@@ -64,6 +68,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.utils.ConfigMap;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -84,8 +89,9 @@ public class ArgumentExtractor {
     static final boolean DEFAULT_INDEX_RELAX_VALIDATION = false;
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
-    static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
+     static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
 
+    static final ExecutorService DEFAULT_EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     public List<Class<?>> initEntities(ConfigMap configurationMap, ClassLoader classLoader) {
         log.trace("Extract entities from configuration map");
@@ -125,7 +131,7 @@ public class ArgumentExtractor {
         log.trace("Build ConfigurationContext from configuration map");
 
         ConfigurationContext configContext = new ConfigurationContext();
-        configContext.setCurrentKeyspace(initKeyspaceName(configurationMap));
+	configContext.setCurrentKeyspace(initKeyspaceName(configurationMap));
         configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
         configContext.setEnableSchemaUpdate(initForceTableUpdate(configurationMap));
         configContext.setEnableSchemaUpdateForTables(initForceTableUpdateMap(configurationMap));
@@ -140,6 +146,7 @@ public class ArgumentExtractor {
         configContext.setGlobalNamingStrategy(initGlobalNamingStrategy(configurationMap));
         configContext.setOSGIClassLoader(initOSGIClassLoader(configurationMap));
         configContext.setRelaxIndexValidation(initRelaxIndexValidation(configurationMap));
+        configContext.setExecutorService(initExecutorService(configurationMap));
         return configContext;
     }
 
@@ -207,12 +214,10 @@ public class ArgumentExtractor {
     public Optional<String> initKeyspaceName(ConfigMap configurationMap) {
         return Optional.fromNullable(configurationMap.<String>getTyped(KEYSPACE_NAME));
     }
-
     public Session initSession(Cluster cluster, ConfigMap configurationMap) {
         log.trace("Extract or init Session from configuration map");
 
         Session nativeSession = configurationMap.getTyped(NATIVE_SESSION);
-
         if (nativeSession == null) {
             final Optional<String> keyspaceNameO = initKeyspaceName(configurationMap);
             if (keyspaceNameO.isPresent()) {
@@ -259,6 +264,10 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(GLOBAL_INSERT_STRATEGY, DEFAULT_INSERT_STRATEGY);
     }
 
+    public NamingStrategy initGlobalNamingStrategy(ConfigMap configMap) {
+        return configMap.getTypedOr(GLOBAL_NAMING_STRATEGY, DEFAULT_GLOBAL_NAMING_STRATEGY);
+    }
+
     public ClassLoader initOSGIClassLoader(ConfigMap configMap) {
         return configMap.getTyped(OSGI_CLASS_LOADER);
     }
@@ -267,8 +276,7 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(RELAX_INDEX_VALIDATION, DEFAULT_INDEX_RELAX_VALIDATION);
     }
 
-    public NamingStrategy initGlobalNamingStrategy(ConfigMap configMap) {
-        return configMap.getTypedOr(GLOBAL_NAMING_STRATEGY, DEFAULT_GLOBAL_NAMING_STRATEGY);
+    public ExecutorService initExecutorService(ConfigMap configMap) {
+        return configMap.getTypedOr(EXECUTOR_SERVICE, DEFAULT_EXECUTOR_SERVICE);
     }
-
 }

@@ -61,6 +61,7 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * <p>
@@ -151,6 +152,17 @@ public class PersistenceManagerFactory {
     }
 
     /**
+     * Create a new AsyncManager for asynchronous operation. This instance of PersistenceManager is
+     * <strong>thread-safe</strong>
+     *
+     * @return AsyncManager
+     */
+    public AsyncManager createAsyncManager() {
+        log.debug("Spawn new AsyncManager");
+        return new AsyncManager(entityMetaMap, contextFactory, daoContext, configContext);
+    }
+
+    /**
      * Create a new state-full Batch <br/>
      * <br/>
      * <p/>
@@ -158,13 +170,28 @@ public class PersistenceManagerFactory {
      * thread-safe. In case of exception, you MUST not re-use it but create
      * another one</strong>
      *
-     * @return a new state-full PersistenceManager
+     * @return a new state-full Batch
      */
     public Batch createBatch() {
-        log.debug("Spawn new BatchingPersistenceManager");
+        log.debug("Spawn new Batch");
         return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
     }
 
+
+    /**
+     * Create a new asynchronous state-full Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createAsyncBatch() {
+        log.debug("Spawn new AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    }
 
     /**
      * Create a new state-full <strong>ordered</strong> Batch <br/>
@@ -178,11 +205,30 @@ public class PersistenceManagerFactory {
      * thread-safe. In case of exception, you MUST not re-use it but create
      * another one</strong>
      *
-     * @return a new state-full PersistenceManager
+     * @return a new state-full Batch
      */
     public Batch createOrderedBatch() {
-        log.debug("Spawn new BatchingPersistenceManager");
+        log.debug("Spawn new ordered Batch");
         return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    }
+
+    /**
+     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full AsyncBatch
+     */
+    public AsyncBatch createOrderedAsyncBatch() {
+        log.debug("Spawn new ordered AsyncBatch");
+        return new AsyncBatch(entityMetaMap, contextFactory, daoContext, configContext, true);
     }
 
     /**

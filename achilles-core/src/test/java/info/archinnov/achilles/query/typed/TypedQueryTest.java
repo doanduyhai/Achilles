@@ -18,31 +18,42 @@ package info.archinnov.achilles.query.typed;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW;
+import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROWS;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.internal.async.AsyncUtils;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
@@ -52,7 +63,6 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,13 +86,59 @@ public class TypedQueryTest {
     private PersistenceContext context;
 
     @Mock
+    private ConfigurationContext configContext;
+
+    @Mock
+    private AsyncUtils asyncUtils;
+
+    @Mock
+    private ExecutorService executorService;
+
+    @Mock
     private PersistenceContext.EntityFacade entityFacade;
 
     @Mock
     private Row row;
 
+    @Mock
+    private ListenableFuture<ResultSet> futureResultSet;
+
+    @Mock
+    private ListenableFuture<List<Row>> futureRows;
+
+    @Mock
+    private ListenableFuture<Row> futureRow;
+
+    @Mock
+    private ListenableFuture<List<CompleteBean>> futureEntities;
+
+    @Mock
+    private ListenableFuture<CompleteBean> futureEntity;
+
+    @Mock
+    private AchillesFuture<List<CompleteBean>> achillesFuturesEntities;
+
+    @Mock
+    private AchillesFuture<CompleteBean> achillesFuturesEntity;
+
+
+    private FutureCallback<Object>[] asyncListeners = new FutureCallback[] { };
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
+
+    @Captor
+    private ArgumentCaptor<Function<List<Row>, List<CompleteBean>>> rowsToEntitiesCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<Row, CompleteBean>> rowToEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<List<CompleteBean>, List<CompleteBean>>> isoEntitiesCaptor;
+
+    @Captor
+    private ArgumentCaptor<Function<CompleteBean, CompleteBean>> isoEntityCaptor;
+
 
     private Class<CompleteBean> entityClass = CompleteBean.class;
 
@@ -94,88 +150,53 @@ public class TypedQueryTest {
     }
 
     @Test
-    public void should_get_all_managed_with_select_star() throws Exception {
+    public void should_get_all_managed_with_select_star_async() throws Exception {
+        // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
-        RegularStatement regularStatement = select().from("test");
-        initBuilder(regularStatement, meta, MANAGED);
+        RegularStatement statement = select().from("test");
 
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
+        initBuilder(statement, meta, meta.getPropertyMetas(), MANAGED);
+
+        when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROWS, executorService)).thenReturn(futureRows);
+        when(asyncUtils.transformFuture(eq(futureRows), rowsToEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.transformFuture(eq(futureEntities), isoEntitiesCaptor.capture(), eq(executorService))).thenReturn(futureEntities);
+        when(asyncUtils.buildInterruptible(futureEntities)).thenReturn(achillesFuturesEntities);
+
         when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
-        List<CompleteBean> actual = typedQuery.get();
+        // When
+        final AchillesFuture<List<CompleteBean>> actual = typedQuery.asyncGet(asyncListeners);
 
-        assertThat(actual).containsExactly(entity);
+        // Then
+        assertThat(actual).isSameAs(achillesFuturesEntities);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntities, asyncListeners, executorService);
 
+        final Function<List<Row>, List<CompleteBean>> rowsToEntities = rowsToEntitiesCaptor.getValue();
+        final List<CompleteBean> entities = rowsToEntities.apply(asList(row));
+        assertThat(entities).containsExactly(entity);
+
+        final List<Function<List<CompleteBean>, List<CompleteBean>>> entitiesFunctions = isoEntitiesCaptor.getAllValues();
+
+        final List<CompleteBean> entitiesWithTriggers = entitiesFunctions.get(0).apply(asList(entity));
+        assertThat(entitiesWithTriggers).containsExactly(entity);
         verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
+
+        final List<CompleteBean> entitiesWithProxy = entitiesFunctions.get(1).apply(asList(entity));
+        assertThat(entitiesWithProxy).containsExactly(entity);
     }
 
-    @Test
-    public void should_get_all_managed_with_normal_select() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
-
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
-
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("age").type(SIMPLE).accessors().build();
-
-        EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
-
-        RegularStatement regularStatement = select("id","name").from("test");
-        initBuilder(regularStatement, meta, MANAGED);
-
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
-        when(contextFactory.newContext(entity)).thenReturn(context);
-        when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
-
-        List<CompleteBean> actual = typedQuery.get();
-
-        assertThat(actual).containsExactly(entity);
-
-        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
-    }
 
     @Test
-    public void should_get_all_skipping_null_entity() throws Exception {
-        EntityMeta meta = buildEntityMeta();
-        RegularStatement regularStatement = select().from("test");
-        initBuilder(regularStatement, meta, MANAGED);
-
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(null);
-
-        List<CompleteBean> actual = typedQuery.get();
-
-        assertThat(actual).isEmpty();
-        verify(meta.forInterception(), never()).intercept(entity, Event.POST_LOAD);
-    }
-
-    @Test
-    public void should_get_all_raw_entities() throws Exception {
-
-        Map<String, PropertyMeta> propertyMetas = new HashMap<>();
-
-        RegularStatement regularStatement = select().from("test");
-        initBuilder(regularStatement, meta, NOT_MANAGED);
-
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(meta, row, propertyMetas, NOT_MANAGED)).thenReturn(entity);
-
-        List<CompleteBean> actual = typedQuery.get();
-
-        assertThat(actual).containsExactly(entity);
-        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
-        verifyZeroInteractions(contextFactory, proxifier);
-    }
-
-    @Test
-    public void should_get_first_managed_entity() throws Exception {
+    public void should_get_first_entity_async() throws Exception {
+        // When
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.ID).accessors().build();
 
@@ -184,68 +205,38 @@ public class TypedQueryTest {
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
-        RegularStatement regularStatement = select("id").from("test");
-        initBuilder(regularStatement, meta, MANAGED);
+        RegularStatement statement = select("id").from("test");
+        initBuilder(statement, meta, meta.getPropertyMetas(), MANAGED);
 
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
+        when(daoContext.execute(any(AbstractStatementWrapper.class))).thenReturn(futureResultSet);
+        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFuturesEntity);
+
         when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
-        CompleteBean actual = typedQuery.getFirst();
+        // When
+        final AchillesFuture<CompleteBean> actual = typedQuery.asyncGetFirst(asyncListeners);
 
-        assertThat(actual).isSameAs(entity);
+        // Then
+        assertThat(actual).isSameAs(achillesFuturesEntity);
+        verify(asyncUtils).maybeAddAsyncListeners(futureEntity, asyncListeners, executorService);
+
+        final CompleteBean actualEntity = rowToEntityCaptor.getValue().apply(row);
+        assertThat(actualEntity).isSameAs(entity);
+
+        final List<Function<CompleteBean, CompleteBean>> captured = isoEntityCaptor.getAllValues();
+        final CompleteBean applyTriggers = captured.get(0).apply(entity);
+        assertThat(applyTriggers).isSameAs(entity);
         verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
+
+        final CompleteBean proxifiedEntity = captured.get(1).apply(entity);
+        assertThat(proxifiedEntity).isSameAs(entity);
     }
 
-    @Test
-    public void should_get_first_raw_entity() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
-
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
-
-        EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
-        RegularStatement regularStatement = select("id").from("test");
-        initBuilder(regularStatement, meta, NOT_MANAGED);
-
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(NOT_MANAGED))).thenReturn(entity);
-
-        CompleteBean actual = typedQuery.getFirst();
-
-        assertThat(actual).isSameAs(entity);
-        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
-        verifyZeroInteractions(contextFactory, proxifier);
-    }
-
-    @Test
-    public void should_return_null_when_null_row() throws Exception {
-        EntityMeta meta = buildEntityMeta();
-        RegularStatement regularStatement = select("id").from("test");
-        initBuilder(regularStatement, meta, NOT_MANAGED);
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(null);
-        CompleteBean actual = typedQuery.getFirst();
-
-        assertThat(actual).isNull();
-
-        verifyZeroInteractions(contextFactory, proxifier);
-        verify(meta.forInterception(), never()).intercept(entity, Event.POST_LOAD);
-    }
-
-    @Test
-    public void should_return_null_when_cannot_map_entity() throws Exception {
-        EntityMeta meta = buildEntityMeta();
-        RegularStatement regularStatement = select().from("test");
-        initBuilder(regularStatement, meta, NOT_MANAGED);
-        when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(null);
-
-        CompleteBean actual = typedQuery.getFirst();
-
-        assertThat(actual).isNull();
-
-        verifyZeroInteractions(contextFactory, proxifier);
-    }
 
     private EntityMeta buildEntityMeta(PropertyMeta... pms) {
         Map<String, PropertyMeta> propertyMetas = new HashMap<>();
@@ -256,9 +247,16 @@ public class TypedQueryTest {
         return meta;
     }
 
-    private void initBuilder(RegularStatement regularStatement, EntityMeta meta, EntityState entityState) {
-        typedQuery = new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, entityState, new Object[] { "a" });
-        typedQuery.mapper = mapper;
-        typedQuery.proxifier = proxifier;
+    private void initBuilder(RegularStatement regularStatement, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
+            EntityState entityState) {
+        typedQuery = new TypedQuery<>(entityClass, daoContext, configContext, regularStatement, meta, contextFactory, entityState, new Object[] { "a" });
+
+        Whitebox.setInternalState(typedQuery, Map.class, propertyMetas);
+        Whitebox.setInternalState(typedQuery, EntityMapper.class, mapper);
+        Whitebox.setInternalState(typedQuery, PersistenceContextFactory.class, contextFactory);
+        Whitebox.setInternalState(typedQuery, EntityProxifier.class, proxifier);
+        Whitebox.setInternalState(typedQuery, AsyncUtils.class, asyncUtils);
+        Whitebox.setInternalState(typedQuery, ExecutorService.class, executorService);
     }
+
 }

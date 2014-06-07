@@ -16,9 +16,10 @@
 
 package info.archinnov.achilles.internal.context;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +28,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.ResultSet;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -55,6 +56,8 @@ public class DaoFacadeTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
+    @Mock
+    private ListenableFuture<ResultSet> futureResultSet;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
@@ -72,6 +75,7 @@ public class DaoFacadeTest {
         context = new PersistenceContext(meta, configurationContext, daoContext, flushContext, CompleteBean.class, primaryKey, OptionsBuilder.noOptions());
         facade = context.daoFacade;
     }
+
     @Test
     public void should_push_statement_wrapper() throws Exception {
         BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
@@ -94,14 +98,14 @@ public class DaoFacadeTest {
     public void should_execute_immediate() throws Exception {
         // Given
         BoundStatementWrapper bsWrapper = mock(BoundStatementWrapper.class);
-        ResultSet resultSet = mock(ResultSet.class);
 
         // When
-        when(flushContext.executeImmediate(bsWrapper)).thenReturn(resultSet);
+        when(flushContext.execute(bsWrapper)).thenReturn(futureResultSet);
 
-        ResultSet actual = facade.executeImmediate(bsWrapper);
+        ListenableFuture<ResultSet> actual = facade.executeImmediate(bsWrapper);
 
         // Then
-        assertThat(actual).isSameAs(resultSet);
+        assertThat(actual).isSameAs(futureResultSet);
     }
+
 }

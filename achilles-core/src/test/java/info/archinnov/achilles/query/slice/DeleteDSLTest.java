@@ -76,6 +76,24 @@ public class DeleteDSLTest {
     }
 
     @Test
+    public void should_async_delete_with_partition_keys_only() throws Exception {
+        //Given
+        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+
+        //When
+        final DeleteFromPartition<String> start = builder.withPartitionComponents("a");
+
+        start.async().delete();
+
+        final Delete.Where whereClause = start.properties.generateWhereClauseForDelete(delete);
+
+        //Then
+        assertThat(whereClause.getQueryString()).isEqualTo("DELETE FROM table WHERE id=:id;");
+        assertThat(start.properties.getBoundValues()).containsSequence("a");
+    }
+
+    @Test
     public void should_delete_with_partition_keys_IN() throws Exception {
         //Given
         final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
@@ -113,4 +131,22 @@ public class DeleteDSLTest {
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B");
     }
 
+    @Test
+    public void should_async_delete_with_matching_clustering_keys() throws Exception {
+        //Given
+        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
+
+        //When
+        final DeleteFromPartition<String> start = builder.withPartitionComponents("a");
+
+        start.async().deleteMatching("A", "B");
+
+        final Delete.Where whereClause = start.properties.generateWhereClauseForDelete(delete);
+
+        //Then
+        assertThat(whereClause.getQueryString()).isEqualTo("DELETE FROM table WHERE id=:id AND col1=:col1 AND col2=:col2;");
+        assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B");
+    }
 }

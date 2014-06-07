@@ -130,7 +130,7 @@ public class EntityProxifier {
 
     public void ensureNotProxy(Object rawEntity) {
         if (isProxy(rawEntity)) {
-            throw new IllegalStateException("Then entity is already in 'managed' state.");
+            throw new IllegalStateException("The entity is already in 'managed' state.");
         }
     }
 

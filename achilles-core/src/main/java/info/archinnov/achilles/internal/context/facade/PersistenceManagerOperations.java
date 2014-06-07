@@ -18,29 +18,32 @@ package info.archinnov.achilles.internal.context.facade;
 
 import java.util.List;
 import java.util.Set;
+import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.type.Empty;
 
 public interface PersistenceManagerOperations extends PersistentStateHolder {
 
-    public <T> T persist(T rawEntity);
+    public <T> AchillesFuture<T> persist(T rawEntity);
 
-    public void update(Object proxifiedEntity);
+    public <T> AchillesFuture<T> batchPersist(T rawEntity);
 
-    public void delete();
+    public <T> AchillesFuture<T> update(T proxy);
 
-    public <T> T find(Class<T> entityClass);
+    public <T> AchillesFuture<T> delete();
 
-    public <T> T getProxy(Class<T> entityClass);
+    public AchillesFuture<Empty> deleteById();
 
-    public void refresh(Object proxifiedEntity) throws AchillesStaleObjectStateException;
+    public <T> AchillesFuture<T> find(Class<T> entityClass);
 
-    public <T> T initialize(T proxifiedEntity);
+    public <T> AchillesFuture<T> getProxy(Class<T> entityClass);
 
-    public <T> List<T> initialize(List<T> entities);
+    public <T> AchillesFuture<T> refresh(T proxy) throws AchillesStaleObjectStateException;
 
-    public <T> Set<T> initialize(Set<T> entities);
+    public <T> T initialize(T proxy);
 
-    public PropertyMeta getIdMeta();
+    public <T> List<T> initialize(List<T> proxies);
+
+    public <T> Set<T> initialize(Set<T> proxies);
 
 }

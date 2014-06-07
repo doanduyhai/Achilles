@@ -15,13 +15,7 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
@@ -30,26 +24,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.datastax.driver.core.querybuilder.Insert;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.type.TypedMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
 import info.archinnov.achilles.test.builders.UserTestBuilder;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -60,7 +56,6 @@ import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.type.TypedMap;
 
 public class BatchModeIT {
 
@@ -70,7 +65,6 @@ public class BatchModeIT {
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
             "Tweet", "User");
-
     private PersistenceManager manager = resource.getPersistenceManager();
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
@@ -87,12 +81,12 @@ public class BatchModeIT {
     @Test
     public void should_batch_counters() throws Exception {
         // Start batch
-        Batch batchEm = manager.createBatch();
-        batchEm.startBatch();
+        Batch batch = manager.createBatch();
+        batch.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-        entity = batchEm.insert(entity);
+        entity = batch.insert(entity);
 
         entity.setLabel("label");
 
@@ -100,29 +94,29 @@ public class BatchModeIT {
         entity.setWelcomeTweet(welcomeTweet);
 
         entity.getVersion().incr(10L);
-        batchEm.update(entity);
+        batch.update(entity);
 
         final RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
         Map<String, Object> result = manager.nativeQuery(selectLabel).first();
         assertThat(result).isNull();
 
-        RegularStatement statement = select("counter_value").from("achilles_counter_table")
+        RegularStatement selectCounter = select("counter_value").from("achilles_counter_table")
                 .where(eq("fqcn", CompleteBean.class.getCanonicalName()))
                 .and(eq("primary_key", entity.getId().toString()))
                 .and(eq("property_name", "version"));
 
-        result = manager.nativeQuery(statement).first();
+        result = manager.nativeQuery(selectCounter).first();
         assertThat(result).isNull();
 
         // Flush
-        batchEm.endBatch();
+        batch.endBatch();
 
-        Row row = manager.getNativeSession().execute(new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId())).one();
+        Row row = manager.getNativeSession().execute(selectLabel).one();
         assertThat(row.getString("label")).isEqualTo("label");
 
-        result = manager.nativeQuery(statement).first();
+        result = manager.nativeQuery(selectCounter).first();
         assertThat(result.get("counter_value")).isEqualTo(10L);
-        assertThatBatchContextHasBeenReset(batchEm);
+        assertThatBatchContextHasBeenReset(batch);
     }
 
     @Test
@@ -152,6 +146,9 @@ public class BatchModeIT {
 
         // Flush
         batch.endBatch();
+
+        final ResultSet resultSet = manager.getNativeSession().execute("SELECT id,favoriteTweets,followers,friends,age_in_years,name,welcomeTweet,label,preferences FROM CompleteBean WHERE id=:id", bean.getId());
+        assertThat(resultSet.all()).hasSize(1);
 
         foundBean = manager.find(CompleteBean.class, bean.getId());
         foundTweet1 = manager.find(Tweet.class, tweet1.getId());
@@ -185,10 +182,9 @@ public class BatchModeIT {
             exceptionCaught = true;
             batch.cleanBatch();
             assertThatBatchContextHasBeenReset(batch);
+
             assertThat(manager.find(Tweet.class, tweet.getId())).isNull();
         }
-
-        assertThat(exceptionCaught).isTrue();
 
         // batch should reinit batch context
         batch.insertOrUpdate(user);
@@ -247,16 +243,16 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batchEm = manager.createBatch();
-        batchEm.startBatch();
+        Batch batch = manager.createBatch();
+        batch.startBatch();
 
-        batchEm.startBatch(TWO);
-        batchEm.insertOrUpdate(tweet2);
+        batch.startBatch(TWO);
+        batch.insertOrUpdate(tweet2);
 
         try {
-            batchEm.endBatch();
+            batch.endBatch();
         } catch (Exception e) {
-            assertThatBatchContextHasBeenReset(batchEm);
+            assertThatBatchContextHasBeenReset(batch);
             exceptionCaught = true;
         }
 
@@ -264,8 +260,8 @@ public class BatchModeIT {
 
         Thread.sleep(1000);
         logAsserter.prepareLogLevel();
-        batchEm.insert(tweet2);
-        batchEm.endBatch();
+        batch.insert(tweet2);
+        batch.endBatch();
         logAsserter.assertConsistencyLevels(ONE);
     }
 
@@ -348,7 +344,7 @@ public class BatchModeIT {
         final Insert statement = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
 
         final AtomicBoolean error = new AtomicBoolean(false);
-        final AtomicReference<CASResult> result = new AtomicReference<>(null);
+        final AtomicReference<CASResultListener.CASResult> result = new AtomicReference<>(null);
 
         CASResultListener listener = new CASResultListener() {
             @Override

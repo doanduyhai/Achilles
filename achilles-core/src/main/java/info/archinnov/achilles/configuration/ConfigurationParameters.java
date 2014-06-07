@@ -197,7 +197,9 @@ public enum ConfigurationParameters {
 
     OSGI_CLASS_LOADER("achilles.osgi.class.loader"),
 
-    RELAX_INDEX_VALIDATION("achilles.relax.index.validation"),
+     RELAX_INDEX_VALIDATION("achilles.relax.index.validation"),
+
+     EXECUTOR_SERVICE("achilles.executor.service"),
 
     GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy");
 

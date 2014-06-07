@@ -32,7 +32,15 @@ public class OptionsValidator {
 
     public void validateNoCasConditionsAndTimestamp(Options options) {
         Validator.validateFalse(options.isIfNotExists() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS insert operations");
-        Validator.validateFalse(options.hasCasConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS update operations");
+        Validator.validateFalse(options.hasCASConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS update operations");
+    }
+
+    public boolean isOptionsValidForBatch(Options options) {
+        boolean valid = true;
+        if (options.getConsistencyLevel().isPresent() || options.hasAsyncListeners()) {
+            valid = false;
+        }
+        return valid;
     }
 
     private void validateNoTtlForClusteredCounter(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {

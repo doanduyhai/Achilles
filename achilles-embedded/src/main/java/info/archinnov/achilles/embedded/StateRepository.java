@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.embedded;
 
+import info.archinnov.achilles.persistence.AsyncManager;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 
@@ -34,6 +35,8 @@ public enum StateRepository {
 	private static final Map<String, PersistenceManagerFactory> FACTORIES_MAP = new HashMap<>();
 
 	private static final Map<String, PersistenceManager> MANAGERS_MAP = new HashMap<>();
+
+	private static final Map<String, AsyncManager> ASYNC_MANAGERS_MAP = new HashMap<>();
 
 	public boolean keyspaceAlreadyBootstrapped(String keyspaceName) {
 		return KEYSPACE_BOOTSTRAP_MAP.containsKey(keyspaceName);
@@ -77,4 +80,16 @@ public enum StateRepository {
 		}
 		return MANAGERS_MAP.get(keyspaceName);
 	}
+
+    public void addNewAsyncManagerToKeyspace(String keyspaceName, AsyncManager manager) {
+        ASYNC_MANAGERS_MAP.put(keyspaceName, manager);
+    }
+
+    public AsyncManager getAsyncManagerForKeyspace(String keyspaceName) {
+        if (!ASYNC_MANAGERS_MAP.containsKey(keyspaceName)) {
+            throw new IllegalStateException(String.format("Cannot find PersistenceManager for keyspace '%s'",
+                    keyspaceName));
+        }
+        return ASYNC_MANAGERS_MAP.get(keyspaceName);
+    }
 }

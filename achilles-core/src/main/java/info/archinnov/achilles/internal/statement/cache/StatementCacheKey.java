@@ -85,25 +85,32 @@ public class StatementCacheKey {
                 Objects.equals(this.sliceQueryPropertiesO, other.sliceQueryPropertiesO);
     }
 
+    @Override
+    public String toString() {
+        return "StatementCacheKey{" +
+                "type=" + Objects.toString(type) +
+                ", fields=" + Objects.toString(fields) +
+                ", entityClass=" + Objects.toString(entityClass) +
+                ", optionsCacheKey=" + Objects.toString(optionsCacheKey) +
+                '}';
+    }
+
     private static class OptionsCacheKey {
-        private boolean hasConsistencyLevel;
         private boolean hasTimestamp;
         private boolean ifNotExists;
         private List<CASCondition> CASConditions;
 
-        private OptionsCacheKey(boolean hasConsistencyLevel, boolean hasTimestamp, boolean ifNotExists, List<CASCondition> CASConditions) {
-            this.hasConsistencyLevel = hasConsistencyLevel;
+        private OptionsCacheKey(boolean hasTimestamp, boolean ifNotExists, List<CASCondition> CASConditions) {
             this.hasTimestamp = hasTimestamp;
             this.ifNotExists = ifNotExists;
             this.CASConditions = CASConditions;
         }
 
         private static OptionsCacheKey fromOptions(Options options) {
-            boolean hasConsistencyLevel = options.getConsistencyLevel().isPresent();
             boolean hasTimestamp = options.getTimestamp().isPresent();
             boolean ifNotExists = options.isIfNotExists();
             List<CASCondition> CASConditions = Optional.fromNullable(options.getCASConditions()).or(Collections.<CASCondition>emptyList());
-            return new OptionsCacheKey(hasConsistencyLevel, hasTimestamp, ifNotExists, CASConditions);
+            return new OptionsCacheKey(hasTimestamp, ifNotExists, CASConditions);
         }
 
         @Override
@@ -116,15 +123,23 @@ public class StatementCacheKey {
             }
 
             final OptionsCacheKey other = (OptionsCacheKey) o;
-            return Objects.equals(this.hasConsistencyLevel, other.hasConsistencyLevel) &&
-                    Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
+            return Objects.equals(this.hasTimestamp, other.hasTimestamp) &&
                     Objects.equals(this.ifNotExists, other.ifNotExists) &&
                     Objects.equals(this.CASConditions, other.CASConditions);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.hasConsistencyLevel, this.hasTimestamp, this.ifNotExists, this.CASConditions);
+            return Objects.hash(this.hasTimestamp, this.ifNotExists, this.CASConditions);
+        }
+
+        @Override
+        public String toString() {
+            return "OptionsCacheKey{" +
+                    "hasTimestamp=" + Objects.toString(hasTimestamp) +
+                    ", ifNotExists=" + Objects.toString(ifNotExists) +
+                    ", CASConditions=" + Objects.toString(CASConditions) +
+                    '}';
         }
     }
 }

@@ -16,14 +16,16 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import java.util.concurrent.ExecutorService;
+
 import com.datastax.driver.core.Statement;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.listener.CASResultListener;
 
 public class NativeStatementWrapper extends AbstractStatementWrapper {
@@ -37,20 +39,16 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
         super.casResultListener = casResultListener;
     }
 
-    @Override
-    public ResultSet execute(Session session) {
-        logDMLStatement("");
-        activateQueryTracing(regularStatement);
-        ResultSet resultSet;
-        if (ArrayUtils.isNotEmpty(super.values)) {
-            resultSet = session.execute(regularStatement.getQueryString(), super.values);
-        } else {
-            resultSet = session.execute(regularStatement);
-        }
 
-        tracing(resultSet);
-        checkForCASSuccess(regularStatement.getQueryString(), resultSet);
-        return resultSet;
+    @Override
+    public String getQueryString() {
+        return regularStatement.getQueryString();
+    }
+
+    @Override
+    public ListenableFuture<ResultSet> executeAsync(Session session, ExecutorService executorService) {
+        activateQueryTracing();
+        return super.executeAsyncInternal(session, this, executorService);
     }
 
     @Override

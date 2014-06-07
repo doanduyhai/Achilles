@@ -19,6 +19,7 @@ import static info.archinnov.achilles.type.Options.CASCondition;
 import java.util.Arrays;
 import java.util.List;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.listener.CASResultListener;
 
 /**
@@ -157,9 +158,13 @@ public class OptionsBuilder {
      *
      * @param listener CASResultListener
      * @return BuiltOptions
-     */
+     */	
     public static BuiltOptions casResultListener(CASResultListener listener) {
         return new BuiltOptions(listener);
+    }
+
+    public static BuiltOptions withAsyncListeners(FutureCallback<Object>... listeners) {
+        return new BuiltOptions(listeners);
     }
 
     /**
@@ -216,6 +221,9 @@ public class OptionsBuilder {
             super.serialConsistencyO = serialConsistencyO;
         }
 
+        protected BuiltOptions(FutureCallback<Object>... listeners) {
+            super.asyncListeners = Arrays.asList(listeners);
+        }
 
         /**
          * Use provided consistency level
@@ -268,7 +276,7 @@ public class OptionsBuilder {
             return this;
         }
 
-        /**
+         /**
          * Inject a CAS result listener for all CAS operations
          *
          * <pre class="code"><code class="java">

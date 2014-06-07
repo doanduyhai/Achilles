@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.query.slice;
 
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
@@ -74,5 +76,25 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
         super.properties.disableLimit();
         super.withClusteringsInternal(clusterings);
         super.deleteInternal();
+    }
+
+    public  DeletePartitionRootAsync async() {
+        return new DeletePartitionRootAsync();
+    }
+
+    public class DeletePartitionRootAsync {
+
+        public AchillesFuture<Empty> delete() {
+            DeletePartitionRoot.super.properties.disableLimit();
+            return DeletePartitionRoot.super.asyncDeleteInternal();
+        }
+
+
+        public AchillesFuture<Empty> deleteMatching(Object... clusterings) {
+            DeletePartitionRoot.super.properties.disableLimit();
+            DeletePartitionRoot.super.withClusteringsInternal(clusterings);
+            return DeletePartitionRoot.super.asyncDeleteInternal();
+        }
+
     }
 }

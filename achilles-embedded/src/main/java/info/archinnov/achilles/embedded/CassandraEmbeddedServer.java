@@ -18,6 +18,8 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
+
+import info.archinnov.achilles.persistence.AsyncManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +77,10 @@ public class CassandraEmbeddedServer {
 
     public PersistenceManager getPersistenceManager(String keyspaceName) {
         return REPOSITORY.getManagerForKeyspace(keyspaceName);
+    }
+
+    public AsyncManager getAsyncManager(String keyspaceName) {
+        return REPOSITORY.getAsyncManagerForKeyspace(keyspaceName);
     }
 
     public Session getNativeSession(String keyspaceName) {

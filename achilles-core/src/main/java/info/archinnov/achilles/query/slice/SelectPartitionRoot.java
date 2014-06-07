@@ -16,15 +16,18 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 import static info.archinnov.achilles.query.slice.BoundingMode.EXCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
 import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
 import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
+import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
+
 import java.util.List;
 import com.google.common.collect.FluentIterable;
+import com.google.common.util.concurrent.FutureCallback;
+import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -214,6 +217,9 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
         return super.getInternal();
     }
 
+    public SelectPartitionAsyncRoot async() {
+        return new SelectPartitionAsyncRoot();
+    }
 
     /**
      *
@@ -398,6 +404,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
             return getThis();
         }
 
+
         /**
          * Remove the default limit of 100 rows
          *
@@ -407,7 +414,7 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
             SelectPartitionRoot.super.properties.disableLimit();
             return getThis();
         }
-
+		
         /**
          *
          * Provide a consistency level for SELECT statement
@@ -420,7 +427,16 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
             return getThis();
         }
 
+        public T withAsyncListeners(FutureCallback<Object>...asyncListeners) {
+            SelectPartitionRoot.this.properties.asyncListeners(asyncListeners);
+            return getThis();
+        }
+
         protected abstract T getThis();
+
+        public SelectClusteringRootAsync async() {
+            return new SelectClusteringRootAsync();
+        }
 
         /**
          *
@@ -709,6 +725,64 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
         @Override
         protected SelectEndWithLimitation<ENTITY_TYPE> getThis() {
             return SelectEndWithLimitation.this;
+        }
+    }
+
+    public class SelectPartitionAsyncRoot {
+
+        public AchillesFuture<List<TYPE>> get() {
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> get(int limit) {
+            SelectPartitionRoot.super.properties.limit(limit);
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+
+        public AchillesFuture<TYPE> getOne() {
+            SelectPartitionRoot.super.properties.limit(1);
+            return SelectPartitionRoot.super.asyncGetOneInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> getMatching(Object... matchedClusteringKeys) {
+            SelectPartitionRoot.super.withClusteringsInternal(matchedClusteringKeys);
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+
+        public AchillesFuture<TYPE> getOneMatching(Object... matchedClusteringKeys) {
+            SelectPartitionRoot.super.withClusteringsInternal(matchedClusteringKeys);
+            return SelectPartitionRoot.super.asyncGetOneInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> getFirstMatching(int limit, Object... matchingClusteringKeys) {
+            SelectPartitionRoot.super.properties.ordering(ASCENDING);
+            SelectPartitionRoot.super.properties.limit(limit);
+            SelectPartitionRoot.super.withClusteringsInternal(matchingClusteringKeys);
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> getLastMatching(int limit, Object... matchingClusteringKeys) {
+            SelectPartitionRoot.super.properties.ordering(DESCENDING);
+            SelectPartitionRoot.super.withClusteringsInternal(matchingClusteringKeys);
+            SelectPartitionRoot.super.properties.limit(limit);
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+    }
+
+    public class SelectClusteringRootAsync {
+
+        public AchillesFuture<TYPE> getOne() {
+            SelectPartitionRoot.super.properties.limit(1);
+            return SelectPartitionRoot.super.asyncGetOneInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> get() {
+            return SelectPartitionRoot.super.asyncGetInternal();
+        }
+
+        public AchillesFuture<List<TYPE>> get(int limit) {
+            SelectPartitionRoot.super.properties.limit(limit);
+            return SelectPartitionRoot.super.asyncGetInternal();
         }
     }
 }

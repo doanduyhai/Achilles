@@ -17,6 +17,7 @@ package info.archinnov.achilles.internal.context;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -48,7 +49,7 @@ public class ConfigurationContext {
 
     private DefaultBeanValidationInterceptor beanValidationInterceptor;
 
-    private int preparedStatementLRUCacheSize = 10000;
+    private int preparedStatementLRUCacheSize;
 
     private InsertStrategy globalInsertStrategy;
     private NamingStrategy globalNamingStrategy;
@@ -57,7 +58,9 @@ public class ConfigurationContext {
 
     private boolean relaxIndexValidation;
 
-    private Optional<String> currentKeyspace = Optional.absent();
+     private Optional<String> currentKeyspace = Optional.absent();
+
+     private ExecutorService executorService;
 
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
@@ -201,5 +204,13 @@ public class ConfigurationContext {
 
     public void setCurrentKeyspace(Optional<String> currentKeyspace) {
         this.currentKeyspace = currentKeyspace;
+    }
+
+     public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 }

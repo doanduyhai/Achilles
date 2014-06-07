@@ -9,7 +9,7 @@
               class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern"
-                   value="%-5p [%d{ABSOLUTE}][%x] %c@:%M %m %n"/>
+                   value="%-5p [%d{ABSOLUTE}][%t] %c{1}@:%M %m %n"/>
         </layout>
     </appender>
 
@@ -41,6 +41,8 @@
     <logger name="info.archinnov.achilles.test.integration.entity.EntityWithEnum">
         <level value="TRACE"/>
     </logger>
+
+
     <!-- ********************************************************* -->
     <!-- Root Loggers                                              -->
     <!-- ********************************************************* -->

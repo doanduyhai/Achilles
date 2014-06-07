@@ -17,6 +17,10 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -27,27 +31,35 @@ public class CounterLoader {
 
     private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
     private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
+    private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
-    public <T> T loadClusteredCounters(EntityOperations context) {
-        EntityMeta entityMeta = context.getEntityMeta();
-        Object primaryKey = context.getPrimaryKey();
+    public <T> AchillesFuture<T> loadClusteredCounters(final EntityOperations context) {
+        final EntityMeta entityMeta = context.getEntityMeta();
+        final Object primaryKey = context.getPrimaryKey();
 
-        T entity = null;
-        Row row = context.getClusteredCounter();
-        if (row != null) {
-            entity = entityMeta.forOperations().instanciate();
-            entityMeta.getIdMeta().forValues().setValueToField(entity, primaryKey);
+        final ListenableFuture<Row> futureRow = context.getClusteredCounter();
+        Function<Row, T> rowToEntity = new Function<Row, T>() {
+            @Override
+            public T apply(Row row) {
+                T entity = null;
+                if (row != null) {
+                    entity = entityMeta.forOperations().instanciate();
+                    entityMeta.getIdMeta().forValues().setValueToField(entity, primaryKey);
 
-            for (PropertyMeta counterMeta : context.getAllCountersMeta()) {
-                mapper.setCounterToEntity(counterMeta, entity, row);
+                    for (PropertyMeta counterMeta : context.getAllCountersMeta()) {
+                        mapper.setCounterToEntity(counterMeta, entity, row);
+                    }
+                }
+                return entity;
             }
-        }
-        return entity;
+        };
+        final ListenableFuture<T> futureEntity = asyncUtils.transformFuture(futureRow, rowToEntity, context.getExecutorService());
+        return asyncUtils.buildInterruptible(futureEntity);
     }
 
 
     public void loadClusteredCounterColumn(EntityOperations context, Object realObject, PropertyMeta counterMeta) {
-        Long counterValue = context.getClusteredCounterColumn(counterMeta);
+        final Long counterValue = context.getClusteredCounterColumn(counterMeta);
         mapper.setCounterToEntity(counterMeta, realObject, counterValue);
     }
 
@@ -66,5 +78,4 @@ public class CounterLoader {
             return instance;
         }
     }
-
 }

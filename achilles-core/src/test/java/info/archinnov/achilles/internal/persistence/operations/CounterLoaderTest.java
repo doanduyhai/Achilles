@@ -17,26 +17,35 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import java.util.Arrays;
-
-import info.archinnov.achilles.internal.metadata.holder.PropertyMetaValues;
+import java.util.concurrent.ExecutorService;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Row;
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.ListenableFuture;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.internal.async.AsyncUtils;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CounterLoaderTest {
@@ -51,63 +60,93 @@ public class CounterLoaderTest {
     private ConsistencyOverrider overrider;
 
     @Mock
+    private AsyncUtils asyncUtils;
+
+    @Mock
+    private ExecutorService executorService;
+
+
+    @Mock
     private PersistenceContext.EntityFacade context;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock(answer = RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    @Mock(answer = RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
     @Mock
     private PropertyMeta counterMeta;
 
+    @Mock
+    private ListenableFuture<Row> futureRow;
+
+    @Mock
+    private ListenableFuture<CompleteBean> futureEntity;
+
+    @Mock
+    private AchillesFuture<CompleteBean> achillesFutureEntity;
+
+    @Captor
+    private ArgumentCaptor<Function<Row, CompleteBean>> rowToEntityCaptor;
+
     private Object primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-    private Object entity = new Object();
+    private CompleteBean entity = new CompleteBean();
+
+    @Before
+    public void setUp() throws Exception {
+        when(context.getEntity()).thenReturn(entity);
+        when(context.getEntityMeta()).thenReturn(meta);
+        when(context.getPrimaryKey()).thenReturn(primaryKey);
+        when(context.getExecutorService()).thenReturn(executorService);
+        when(meta.getIdMeta()).thenReturn(idMeta);
+    }
 
     @Test
     public void should_load_clustered_counters() throws Exception {
         // Given
         Row row = mock(Row.class);
-        PropertyMetaValues forValues = mock(PropertyMetaValues.class);
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
-        when(context.getEntityMeta()).thenReturn(meta);
-        when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getReadLevel(context)).thenReturn(ONE);
-        when(context.getClusteredCounter()).thenReturn(row);
-
+        when(context.getClusteredCounter()).thenReturn(futureRow);
         when(meta.forOperations().instanciate()).thenReturn(entity);
-        when(meta.getIdMeta().forValues()).thenReturn(forValues);
-
-        when(context.getAllCountersMeta()).thenReturn(Arrays.asList(counterMeta));
+        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta));
 
         // When
-
-        Object actual = loader.loadClusteredCounters(context);
+        AchillesFuture<CompleteBean> actual = loader.loadClusteredCounters(context);
 
         // Then
-        assertThat(actual).isSameAs(entity);
-        verify(forValues).setValueToField(entity, primaryKey);
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        final CompleteBean actualEntity = rowToEntityCaptor.getValue().apply(row);
+        assertThat(actualEntity).isSameAs(entity);
+
+        verify(idMeta.forValues()).setValueToField(entity, primaryKey);
         verify(mapper).setCounterToEntity(counterMeta, entity, row);
     }
 
     @Test
     public void should_not_load_clustered_counters_when_not_found() throws Exception {
         // Given
+        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
-        when(context.getEntityMeta()).thenReturn(meta);
-        when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getReadLevel(context)).thenReturn(ONE);
+        when(context.getClusteredCounter()).thenReturn(futureRow);
+        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta));
 
         // When
-
-        Object actual = loader.loadClusteredCounters(context);
+        AchillesFuture<CompleteBean> actual = loader.loadClusteredCounters(context);
 
         // Then
-        assertThat(actual).isNull();
+        assertThat(actual).isSameAs(achillesFutureEntity);
+        final CompleteBean actualEntity = rowToEntityCaptor.getValue().apply(null);
+        assertThat(actualEntity).isNull();
 
-        verifyZeroInteractions(mapper);
+        verify(meta.forOperations(), never()).instanciate();
+        verifyZeroInteractions(idMeta, mapper);
     }
 
     @Test
