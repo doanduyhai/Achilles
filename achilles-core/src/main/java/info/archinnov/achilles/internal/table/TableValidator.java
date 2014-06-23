@@ -15,13 +15,10 @@
  */
 package info.archinnov.achilles.internal.table;
 
-import static com.datastax.driver.core.DataType.*;
+import static com.datastax.driver.core.DataType.counter;
+import static com.datastax.driver.core.DataType.text;
 import static info.archinnov.achilles.counter.AchillesCounter.*;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.validation.Validator;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +30,11 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.validation.Validator;
 
 public class TableValidator {
 
@@ -56,19 +58,19 @@ public class TableValidator {
 			validatePrimaryKeyComponents(tableMetadata, idMeta, false);
 		} else {
 			validateColumn(tableMetadata, idMeta.getPropertyName().toLowerCase(),
-					idMeta.getValueClassForTableCreation(), idMeta.isIndexed());
+					idMeta.getValueClassForTableCreation(), idMeta.isIndexed(), entityMeta.isSchemaUpdateEnabled());
 		}
 
 		for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
 			switch (pm.type()) {
 			case SIMPLE:
 				validateColumn(tableMetadata, pm.getPropertyName().toLowerCase(), pm.getValueClassForTableCreation(),
-						pm.isIndexed());
+						pm.isIndexed(), entityMeta.isSchemaUpdateEnabled());
 				break;
 			case LIST:
 			case SET:
 			case MAP:
-				validateCollectionAndMapColumn(tableMetadata, pm);
+				validateCollectionAndMapColumn(tableMetadata, pm, entityMeta.isSchemaUpdateEnabled());
 				break;
 			default:
 				break;
@@ -122,7 +124,8 @@ public class TableValidator {
 						.getName(), counterTypeName);
 	}
 
-	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType, boolean indexed) {
+	private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType,
+			boolean indexed, boolean schemaUpdateEnabled) {
 
 		log.debug("Validate existing column {} from table {} against type {}", columnName, tableMetaData.getName(),
 				columnJavaType);
@@ -131,8 +134,13 @@ public class TableValidator {
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Name expectedType = toCQLType(columnJavaType);
 
-		Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
-				tableName);
+		if (schemaUpdateEnabled) {
+            // will be created in updater
+            if(columnMetadata == null) return;
+		} else {
+			Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'",
+					columnName, tableName);
+		}
 
 		boolean columnIsIndexed = columnMetadata.getIndex() != null;
 
@@ -158,7 +166,8 @@ public class TableValidator {
 		log.debug("Validate existing partition key component {} from table {} against type {}", columnName,
 				tableMetaData.getName(), columnJavaType);
 
-		validateColumn(tableMetaData, columnName, columnJavaType, false);
+        // no ALTER's for partition components
+        validateColumn(tableMetaData, columnName, columnJavaType, false, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), columnMetadata),
@@ -170,13 +179,14 @@ public class TableValidator {
 		log.debug("Validate existing clustering column {} from table {} against type {}", columnName,
 				tableMetaData.getName(), columnJavaType);
 
-		validateColumn(tableMetaData, columnName, columnJavaType, false);
+        // no ALTER's for clustering components
+		validateColumn(tableMetaData, columnName, columnJavaType, false, false);
 		ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
 		Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringColumns(), columnMetadata),
 				"Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());
 	}
 
-	private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm) {
+    private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm, boolean schemaUpdateEnabled) {
 
 		log.debug("Validate existing collection/map column {} from table {}");
 
@@ -184,8 +194,10 @@ public class TableValidator {
 		String tableName = tableMetadata.getName();
 		ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
 
-		Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName,
-				tableName);
+        if (!schemaUpdateEnabled) {
+			Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'",
+					columnName, tableName);
+		}
 		Name realType = columnMetadata.getType().getName();
 		Name expectedValueType = toCQLType(pm.getValueClassForTableCreation());
 

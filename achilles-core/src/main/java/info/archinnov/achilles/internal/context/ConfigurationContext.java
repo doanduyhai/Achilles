@@ -23,8 +23,14 @@ import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
+import java.util.Map;
+
 public class ConfigurationContext {
     private boolean forceColumnFamilyCreation;
+
+    private boolean forceColumnFamilyUpdate;
+
+    private Map<String, Boolean> forceColumnFamilyUpdateMap;
 
     private ObjectMapperFactory objectMapperFactory;
 
@@ -48,6 +54,22 @@ public class ConfigurationContext {
 
     public void setForceColumnFamilyCreation(boolean forceColumnFamilyCreation) {
         this.forceColumnFamilyCreation = forceColumnFamilyCreation;
+    }
+
+    public boolean isForceColumnFamilyUpdate() {
+        return forceColumnFamilyUpdate;
+    }
+
+    public void setForceColumnFamilyUpdateMap(Map<String, Boolean> forceColumnFamilyUpdateMap) {
+        this.forceColumnFamilyUpdateMap = forceColumnFamilyUpdateMap;
+    }
+
+    public Map<String, Boolean> getForceColumnFamilyUpdateMap() {
+        return forceColumnFamilyUpdateMap;
+    }
+
+    public void setForceColumnFamilyUpdate(boolean forceColumnFamilyUpdate) {
+        this.forceColumnFamilyUpdate = forceColumnFamilyUpdate;
     }
 
     public ObjectMapperFactory getObjectMapperFactory() {

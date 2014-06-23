@@ -96,6 +96,14 @@ public class EntityParsingContext {
                 configContext.getDefaultWriteConsistencyLevel());
     }
 
+    public boolean isSchemaUpdateEnabled(String columnFamilyName) {
+        Map<String, Boolean> columnFamilyUpdateMap = configContext.getForceColumnFamilyUpdateMap();
+        if (columnFamilyUpdateMap.containsKey(columnFamilyName)) {
+            return columnFamilyUpdateMap.get(columnFamilyName);
+        }
+        return configContext.isForceColumnFamilyUpdate();
+    }
+
     public InsertStrategy getDefaultInsertStrategy() {
         return configContext.getInsertStrategy();
     }

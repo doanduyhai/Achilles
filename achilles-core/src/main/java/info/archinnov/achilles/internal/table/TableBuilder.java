@@ -19,37 +19,30 @@ import static com.datastax.driver.core.DataType.Name.COUNTER;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLType;
 import static info.archinnov.achilles.internal.table.TableCreator.ACHILLES_DDL_SCRIPT;
 import static info.archinnov.achilles.internal.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
-import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
-import info.archinnov.achilles.type.Pair;
-import info.archinnov.achilles.internal.validation.Validator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TableBuilder {
+import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.Pair;
+
+public class TableBuilder extends AbstractTableBuilder {
 
 	private static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
 	private String tableName;
 	private String comment;
-	private List<String> partitionComponents = new ArrayList<String>();
-	private List<String> clusteringComponents = new ArrayList<String>();
-	private Set<IndexProperties> indexedColumns = new HashSet<IndexProperties>();
-	private Map<String, String> columns = new LinkedHashMap<String, String>();
-	private Map<String, String> lists = new LinkedHashMap<String, String>();
-	private Map<String, String> sets = new LinkedHashMap<String, String>();
-	private Map<String, Pair<String, String>> maps = new LinkedHashMap<String, Pair<String, String>>();
+	private List<String> partitionComponents = new ArrayList<>();
+	private List<String> clusteringComponents = new ArrayList<>();
+	private Map<String, String> columns = new LinkedHashMap<>();
+	private Map<String, String> lists = new LinkedHashMap<>();
+	private Map<String, String> sets = new LinkedHashMap<>();
+	private Map<String, Pair<String, String>> maps = new LinkedHashMap<>();
 	private String reversedComponent = null;
 	private boolean counter;
 
@@ -235,27 +228,8 @@ public class TableBuilder {
 		return ddl.toString();
 	}
 
-	public boolean hasIndices() {
-		return indexedColumns.size() > 0;
-	}
-
 	public Collection<String> generateIndices() {
-		Collection<String> indicesScripts = new LinkedList<String>();
-		if (hasIndices()) {
-			for (IndexProperties indexProperties : indexedColumns) {
-				String indexName = indexProperties.getName();
-				indexName = indexName != null && indexName.trim().length() > 0 ? indexName : tableName + "_"
-						+ indexProperties.getPropertyName();
-				StringBuilder ddl = new StringBuilder();
-				ddl.append("\n");
-				ddl.append("CREATE INDEX ").append(indexName);
-				ddl.append("\n");
-				ddl.append("ON ").append(tableName).append(" (").append(indexProperties.getPropertyName())
-						.append(");\n");
-				indicesScripts.add(ddl.toString());
-			}
-		}
-		return indicesScripts;
+		return generateIndices(indexedColumns, tableName);
 	}
 
 	private String generateCounterTable() {

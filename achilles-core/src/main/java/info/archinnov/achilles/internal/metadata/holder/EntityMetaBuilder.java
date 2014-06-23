@@ -43,6 +43,7 @@ public class EntityMetaBuilder {
     private Map<String, PropertyMeta> propertyMetas;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
     private InsertStrategy insertStrategy;
+    private boolean schemaUpdateEnabled;
 
     public static EntityMetaBuilder entityMetaBuilder(PropertyMeta idMeta) {
         return new EntityMetaBuilder(idMeta);
@@ -71,6 +72,7 @@ public class EntityMetaBuilder {
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
         meta.setConsistencyLevels(consistencyLevels);
         meta.setInsertStrategy(insertStrategy);
+        meta.setSchemaUpdateEnabled(schemaUpdateEnabled);
 
         List<PropertyMeta> allMetasExceptId = new ArrayList<>(from(propertyMetas.values()).filter(excludeIdType)
                 .toList());
@@ -141,6 +143,11 @@ public class EntityMetaBuilder {
 
     public EntityMetaBuilder insertStrategy(InsertStrategy insertStrategy) {
         this.insertStrategy = insertStrategy;
+        return this;
+    }
+
+    public EntityMetaBuilder schemaUpdateEnabled(boolean value) {
+        this.schemaUpdateEnabled = value;
         return this;
     }
 }

@@ -73,6 +73,7 @@ public class EntityMeta {
     private boolean clusteredCounter = false;
     private List<Interceptor<?>> interceptors = new ArrayList<>();
     private InsertStrategy insertStrategy;
+    private boolean schemaUpdateEnabled = false;
 
     public Object getPrimaryKey(Object entity) {
         return idMeta.getPrimaryKey(entity);
@@ -212,6 +213,14 @@ public class EntityMeta {
 
     public void setInsertStrategy(InsertStrategy insertStrategy) {
         this.insertStrategy = insertStrategy;
+    }
+
+    public boolean isSchemaUpdateEnabled() {
+        return schemaUpdateEnabled;
+    }
+
+    public void setSchemaUpdateEnabled(boolean schemaUpdateEnabled) {
+        this.schemaUpdateEnabled = schemaUpdateEnabled;
     }
 
     @SuppressWarnings("unchecked")

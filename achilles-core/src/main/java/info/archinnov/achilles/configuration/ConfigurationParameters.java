@@ -16,8 +16,6 @@
 
 package info.archinnov.achilles.configuration;
 
-import info.archinnov.achilles.type.ConsistencyLevel;
-
 public enum ConfigurationParameters {
     ENTITY_PACKAGES("achilles.entity.packages"),
     ENTITIES_LIST("achilles.entities.list"),
@@ -36,6 +34,9 @@ public enum ConfigurationParameters {
     EVENT_INTERCEPTORS("achilles.event.interceptors"),
 
     FORCE_TABLE_CREATION("achilles.ddl.force.table.creation"),
+
+    FORCE_TABLE_UPDATE("achilles.ddl.force.table.update"),
+    FORCE_TABLE_UPDATE_MAP("achilles.ddl.force.table.update.map"),
 
     BEAN_VALIDATION_ENABLE("achilles.bean.validation.enable"),
     BEAN_VALIDATION_VALIDATOR("achilles.bean.validation.validator"),

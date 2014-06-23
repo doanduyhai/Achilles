@@ -26,6 +26,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_UPDATE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_UPDATE_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
@@ -323,6 +325,30 @@ public class PersistenceManagerFactory {
             return this;
         }
 
+        /**
+         * Whether Achilles should force update table if entities have new fields and table not.
+         * This flag is useful for dev only. <strong>It
+         * should be disabled in production</strong>
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder forceTableUpdate(boolean forceTableUpdate) {
+            configMap.put(FORCE_TABLE_UPDATE, forceTableUpdate);
+            return this;
+        }
+
+		/**
+		 * Map to allow table schema update, same as
+		 * {@link #forceTableUpdate(boolean)} per table. <strong>It should be
+		 * disabled in production</strong>
+		 * 
+		 * @return PersistenceManagerFactoryBuilder
+		 */
+        public PersistenceManagerFactoryBuilder withForceTableUpdateMap(Map<String,
+                Boolean> map) {
+            configMap.put(FORCE_TABLE_UPDATE_MAP, map);
+            return this;
+        }
 
         /**
          * Define the pre-configured {@code com.datastax.driver.core.Session} object to
