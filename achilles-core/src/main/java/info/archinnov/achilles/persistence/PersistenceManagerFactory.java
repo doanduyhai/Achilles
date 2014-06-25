@@ -21,13 +21,13 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_UPDATE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_UPDATE_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
@@ -100,7 +100,7 @@ public class PersistenceManagerFactory {
 
         configContext = argumentExtractor.initConfigContext(configurationMap);
         Session session = argumentExtractor.initSession(cluster, configurationMap);
-        final ClassLoader classLoader = argumentExtractor.initOsgiClassLoader(configurationMap);
+        final ClassLoader classLoader = argumentExtractor.initOSGIClassLoader(configurationMap);
         List<Interceptor<?>> interceptors = argumentExtractor.initInterceptors(configurationMap);
         List<Class<?>> candidateClasses = argumentExtractor.initEntities(configurationMap, classLoader);
 
@@ -122,17 +122,17 @@ public class PersistenceManagerFactory {
     }
 
 
-	private void warmUpProxies() {
-		if (argumentExtractor.initProxyWarmUp(configurationMap)) {
-			long start = System.nanoTime();
-			for (Class<?> clazz : entityMetaMap.keySet()) {
-				proxyClassFactory.createProxyClass(clazz, configContext);
-			}
-			long end = System.nanoTime();
-			long duration = (end - start) / 1000000;
-			log.info("Entity proxies warm up took {} millisecs for {} entities", duration, entityMetaMap.size());
-		}
-	}
+    private void warmUpProxies() {
+        if (argumentExtractor.initProxyWarmUp(configurationMap)) {
+            long start = System.nanoTime();
+            for (Class<?> clazz : entityMetaMap.keySet()) {
+                proxyClassFactory.createProxyClass(clazz, configContext);
+            }
+            long end = System.nanoTime();
+            long duration = (end - start) / 1000000;
+            log.info("Entity proxies warm up took {} millisecs for {} entities", duration, entityMetaMap.size());
+        }
+    }
 
     private ParsingResult parseEntities(List<Class<?>> candidateClasses) {
         return bootstrapper.buildMetaDatas(configContext, candidateClasses);
@@ -333,21 +333,20 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder forceTableUpdate(boolean forceTableUpdate) {
-            configMap.put(FORCE_TABLE_UPDATE, forceTableUpdate);
+        public PersistenceManagerFactoryBuilder enableSchemaUpdate(boolean forceTableUpdate) {
+            configMap.put(ENABLE_SCHEMA_UPDATE, forceTableUpdate);
             return this;
         }
 
-		/**
-		 * Map to allow table schema update, same as
-		 * {@link #forceTableUpdate(boolean)} per table. <strong>It should be
-		 * disabled in production</strong>
-		 * 
-		 * @return PersistenceManagerFactoryBuilder
-		 */
-        public PersistenceManagerFactoryBuilder withForceTableUpdateMap(Map<String,
-                Boolean> map) {
-            configMap.put(FORCE_TABLE_UPDATE_MAP, map);
+        /**
+         * Map to allow table schema update, same as
+         * {@link #enableSchemaUpdate(boolean)} per table. <strong>It should be
+         * disabled in production</strong>
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder enableSchemaUpdateForTables(List<String> tables) {
+            configMap.put(ENABLE_SCHEMA_UPDATE_FOR_TABLES, tables);
             return this;
         }
 

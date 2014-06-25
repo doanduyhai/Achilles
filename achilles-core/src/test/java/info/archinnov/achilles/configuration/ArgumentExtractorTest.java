@@ -22,6 +22,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
@@ -51,7 +53,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Validator;
-
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +62,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -72,7 +72,6 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
@@ -208,24 +207,36 @@ public class ArgumentExtractorTest {
     }
 
     @Test
-	public void should_init_force_update() throws Exception {
-		configMap.put(FORCE_TABLE_UPDATE, true);
+    public void should_init_force_update() throws Exception {
+        configMap.put(ENABLE_SCHEMA_UPDATE, true);
 
-		boolean actual = extractor.initForceTableUpdate(configMap);
+        boolean actual = extractor.initForceTableUpdate(configMap);
 
-		assertThat(actual).isTrue();
-	}
+        assertThat(actual).isTrue();
+    }
 
-	@Test
-	public void should_init_default_force_update_to_false() throws Exception {
-		boolean actual = extractor.initForceTableUpdate(configMap);
-		Map<String, Boolean> map = extractor.initForceTableUpdateMap(configMap);
+    @Test
+    public void should_init_force_update_map() throws Exception {
+        //Given
+        configMap.put(ENABLE_SCHEMA_UPDATE_FOR_TABLES, Arrays.asList("myTable"));
 
-		assertThat(actual).isFalse();
-		assertThat(map.isEmpty());
-	}
+        //When
+        List<String> tables = extractor.initForceTableUpdateMap(configMap);
 
-	@Test
+        //Then
+        assertThat(tables).containsExactly("myTable");
+    }
+
+    @Test
+    public void should_init_default_force_update_to_false() throws Exception {
+        boolean actual = extractor.initForceTableUpdate(configMap);
+        List<String> tables = extractor.initForceTableUpdateMap(configMap);
+
+        assertThat(actual).isFalse();
+        assertThat(tables.isEmpty());
+    }
+
+    @Test
     public void should_init_object_mapper_factory() throws Exception {
         configMap.put(OBJECT_MAPPER_FACTORY, factory);
 
@@ -481,7 +492,7 @@ public class ArgumentExtractorTest {
         params.put(OSGI_CLASS_LOADER, this.getClass().getClassLoader());
 
         //When
-        final ClassLoader actual = extractor.initOsgiClassLoader(params);
+        final ClassLoader actual = extractor.initOSGIClassLoader(params);
 
         //Then
         assertThat(actual).isSameAs(this.getClass().getClassLoader());

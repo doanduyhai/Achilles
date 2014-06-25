@@ -61,7 +61,7 @@ public class TableBuilderTest {
 				.addPartitionComponent("longCol").addClusteringComponent("enumCol").addIndex(new IndexProperties("", "intCol")).generateIndices();
 
 		assertThat(indicesScript.iterator().next()).isEqualTo(
-				"\nCREATE INDEX tableName_intCol\n" + "ON tableName (intCol);\n");
+				"\nCREATE INDEX tableName_intCol ON tableName(intCol);\n");
 	}
 
 	@Test

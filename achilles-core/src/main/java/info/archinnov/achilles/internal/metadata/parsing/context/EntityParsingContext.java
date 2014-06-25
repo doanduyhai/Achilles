@@ -97,11 +97,7 @@ public class EntityParsingContext {
     }
 
     public boolean isSchemaUpdateEnabled(String columnFamilyName) {
-        Map<String, Boolean> columnFamilyUpdateMap = configContext.getForceColumnFamilyUpdateMap();
-        if (columnFamilyUpdateMap.containsKey(columnFamilyName)) {
-            return columnFamilyUpdateMap.get(columnFamilyName);
-        }
-        return configContext.isForceColumnFamilyUpdate();
+        return configContext.getEnableSchemaUpdateForTables().contains(columnFamilyName) || configContext.isEnableSchemaUpdate();
     }
 
     public InsertStrategy getDefaultInsertStrategy() {

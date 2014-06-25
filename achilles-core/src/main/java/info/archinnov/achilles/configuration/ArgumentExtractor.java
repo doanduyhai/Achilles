@@ -22,6 +22,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
@@ -32,6 +34,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
@@ -119,8 +122,8 @@ public class ArgumentExtractor {
 
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
-        configContext.setForceColumnFamilyUpdate(initForceTableUpdate(configurationMap));
-        configContext.setForceColumnFamilyUpdateMap(initForceTableUpdateMap(configurationMap));
+        configContext.setEnableSchemaUpdate(initForceTableUpdate(configurationMap));
+        configContext.setEnableSchemaUpdateForTables(initForceTableUpdateMap(configurationMap));
         configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
         configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
         configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
@@ -128,42 +131,24 @@ public class ArgumentExtractor {
         configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
         configContext.setForceBatchStatementsOrdering(initForceBatchStatementsOrdering(configurationMap));
         configContext.setInsertStrategy(initInsertStrategy(configurationMap));
-        configContext.setOsgiClassLoader(initOsgiClassLoader(configurationMap));
+        configContext.setOSGIClassLoader(initOSGIClassLoader(configurationMap));
         return configContext;
     }
 
     boolean initForceTableCreation(ConfigMap configurationMap) {
         log.trace("Extract 'force table creation' from configuration map");
-
-        return findParamOrFalse(configurationMap, FORCE_TABLE_CREATION);
+        return configurationMap.getTypedOr(FORCE_TABLE_CREATION, false);
     }
 
     boolean initForceTableUpdate(ConfigMap configurationMap) {
         log.trace("Extract 'force table update' from configuration map");
 
-        return findParamOrFalse(configurationMap, FORCE_TABLE_UPDATE);
+        return configurationMap.getTypedOr(ENABLE_SCHEMA_UPDATE, false);
     }
 
-    public Map<String, Boolean> initForceTableUpdateMap(ConfigMap configMap) {
+    public List<String> initForceTableUpdateMap(ConfigMap configMap) {
         log.trace("Extract 'force table update' map from configuration map");
-
-        Map<String, String> forceTableUpdateMap = configMap.getTyped(FORCE_TABLE_UPDATE_MAP);
-        Map<String, Boolean> result = new HashMap<>();
-        if (forceTableUpdateMap != null && !forceTableUpdateMap.isEmpty()) {
-            for (Entry<String, String> entry : forceTableUpdateMap.entrySet()) {
-                result.put(entry.getKey(), Boolean.valueOf(entry.getValue()));
-            }
-        }
-        return result;
-    }
-
-    private boolean findParamOrFalse(ConfigMap configurationMap, ConfigurationParameters key) {
-        Boolean forceColumnFamilyCreation = configurationMap.getTyped(key);
-        if (forceColumnFamilyCreation != null) {
-            return forceColumnFamilyCreation;
-        } else {
-            return false;
-        }
+        return configMap.getTypedOr(ENABLE_SCHEMA_UPDATE_FOR_TABLES, Arrays.<String>asList());
     }
 
     ObjectMapperFactory initObjectMapperFactory(ConfigMap configurationMap) {
@@ -298,7 +283,7 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(INSERT_STRATEGY, DEFAULT_INSERT_STRATEGY);
     }
 
-    public ClassLoader initOsgiClassLoader(ConfigMap configMap) {
+    public ClassLoader initOSGIClassLoader(ConfigMap configMap) {
         return configMap.getTyped(OSGI_CLASS_LOADER);
     }
 }

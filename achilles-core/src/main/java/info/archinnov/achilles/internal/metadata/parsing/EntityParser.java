@@ -81,7 +81,8 @@ public class EntityParser {
         EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
                 .className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
                 .propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
-                .insertStrategy(insertStrategy).schemaUpdateEnabled(context.isSchemaUpdateEnabled(columnFamilyName))
+                .insertStrategy(insertStrategy)
+                .schemaUpdateEnabled(context.isSchemaUpdateEnabled(columnFamilyName))
                 .build();
 
         log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),

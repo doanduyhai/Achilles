@@ -194,7 +194,7 @@ public class TableCreatorTest {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
-        longColPM.setIndexProperties(new IndexProperties(""));
+        longColPM.setIndexProperties(new IndexProperties("", ""));
 
         meta = new EntityMeta();
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
@@ -207,7 +207,7 @@ public class TableCreatorTest {
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
         assertThat(stringCaptor.getValue()).isEqualTo(
-                "\nCREATE INDEX tableName_longCol\n" + "ON tableName (longCol);\n");
+                "\nCREATE INDEX tableName_longCol ON tableName(longCol);\n");
 
     }
 
@@ -216,7 +216,7 @@ public class TableCreatorTest {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
-        longColPM.setIndexProperties(new IndexProperties("monIndex"));
+        longColPM.setIndexProperties(new IndexProperties("monIndex", "longCol"));
 
         meta = new EntityMeta();
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
@@ -228,7 +228,7 @@ public class TableCreatorTest {
 
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("\nCREATE INDEX monIndex\n" + "ON tableName (longCol);\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\nCREATE INDEX monIndex ON tableName(longCol);\n");
     }
 
     @Test

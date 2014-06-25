@@ -35,8 +35,8 @@ public enum ConfigurationParameters {
 
     FORCE_TABLE_CREATION("achilles.ddl.force.table.creation"),
 
-    FORCE_TABLE_UPDATE("achilles.ddl.force.table.update"),
-    FORCE_TABLE_UPDATE_MAP("achilles.ddl.force.table.update.map"),
+    ENABLE_SCHEMA_UPDATE("achilles.ddl.enable.schema.update"),
+    ENABLE_SCHEMA_UPDATE_FOR_TABLES("achilles.ddl.enable.schema.update.for.tables"),
 
     BEAN_VALIDATION_ENABLE("achilles.bean.validation.enable"),
     BEAN_VALIDATION_VALIDATOR("achilles.bean.validation.validator"),
@@ -49,7 +49,7 @@ public enum ConfigurationParameters {
 
     INSERT_STRATEGY("achilles.insert.strategy"),
 
-	OSGI_CLASS_LOADER("achilles.osgi.class.loader");
+    OSGI_CLASS_LOADER("achilles.osgi.class.loader");
 
     private String label;
 

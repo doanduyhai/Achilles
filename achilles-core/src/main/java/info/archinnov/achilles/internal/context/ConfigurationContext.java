@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import java.util.List;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
@@ -23,14 +24,12 @@ import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
-import java.util.Map;
-
 public class ConfigurationContext {
     private boolean forceColumnFamilyCreation;
 
-    private boolean forceColumnFamilyUpdate;
+    private boolean enableSchemaUpdate;
 
-    private Map<String, Boolean> forceColumnFamilyUpdateMap;
+    private List<String> enableSchemaUpdateForTables;
 
     private ObjectMapperFactory objectMapperFactory;
 
@@ -48,7 +47,7 @@ public class ConfigurationContext {
 
     private InsertStrategy insertStrategy;
 
-	private ClassLoader osgiClassLoader;
+    private ClassLoader OSGIClassLoader;
 
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
@@ -58,20 +57,20 @@ public class ConfigurationContext {
         this.forceColumnFamilyCreation = forceColumnFamilyCreation;
     }
 
-    public boolean isForceColumnFamilyUpdate() {
-        return forceColumnFamilyUpdate;
+    public boolean isEnableSchemaUpdate() {
+        return enableSchemaUpdate;
     }
 
-    public void setForceColumnFamilyUpdateMap(Map<String, Boolean> forceColumnFamilyUpdateMap) {
-        this.forceColumnFamilyUpdateMap = forceColumnFamilyUpdateMap;
+    public void setEnableSchemaUpdateForTables(List<String> enableSchemaUpdateForTables) {
+        this.enableSchemaUpdateForTables = enableSchemaUpdateForTables;
     }
 
-    public Map<String, Boolean> getForceColumnFamilyUpdateMap() {
-        return forceColumnFamilyUpdateMap;
+    public List<String> getEnableSchemaUpdateForTables() {
+        return enableSchemaUpdateForTables;
     }
 
-    public void setForceColumnFamilyUpdate(boolean forceColumnFamilyUpdate) {
-        this.forceColumnFamilyUpdate = forceColumnFamilyUpdate;
+    public void setEnableSchemaUpdate(boolean enableSchemaUpdate) {
+        this.enableSchemaUpdate = enableSchemaUpdate;
     }
 
     public ObjectMapperFactory getObjectMapperFactory() {
@@ -130,8 +129,8 @@ public class ConfigurationContext {
         this.insertStrategy = insertStrategy;
     }
 
-    public void setOsgiClassLoader(ClassLoader osgiClassLoader) {
-        this.osgiClassLoader = osgiClassLoader;
+    public void setOSGIClassLoader(ClassLoader OSGIClassLoader) {
+        this.OSGIClassLoader = OSGIClassLoader;
     }
 
     public boolean isClassConstrained(Class<?> clazz) {
@@ -154,10 +153,10 @@ public class ConfigurationContext {
     }
 
     public ClassLoader selectClassLoader(Class<?> entityClass) {
-        return osgiClassLoader != null ? osgiClassLoader : entityClass.getClassLoader();
+        return OSGIClassLoader != null ? OSGIClassLoader : entityClass.getClassLoader();
     }
 
     public ClassLoader selectClassLoader() {
-        return osgiClassLoader != null ? osgiClassLoader : this.getClass().getClassLoader();
+        return OSGIClassLoader != null ? OSGIClassLoader : this.getClass().getClassLoader();
     }
 }

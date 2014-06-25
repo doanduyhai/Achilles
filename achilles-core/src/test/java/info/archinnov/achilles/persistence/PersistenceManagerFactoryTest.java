@@ -115,7 +115,7 @@ public class PersistenceManagerFactoryTest {
         when(argumentExtractor.initSession(cluster, configMap)).thenReturn(session);
         when(argumentExtractor.initInterceptors(configMap)).thenReturn(interceptors);
         when(argumentExtractor.initProxyWarmUp(configMap)).thenReturn(true);
-        when(argumentExtractor.initOsgiClassLoader(configMap)).thenReturn(classLoader);
+        when(argumentExtractor.initOSGIClassLoader(configMap)).thenReturn(classLoader);
         when(argumentExtractor.initEntities(configMap, classLoader)).thenReturn(candidateClasses);
 
         when(configMap.getTyped(ENTITY_PACKAGES)).thenReturn("packages");

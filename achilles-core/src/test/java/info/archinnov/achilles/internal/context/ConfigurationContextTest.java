@@ -28,9 +28,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationContextTest {
@@ -102,7 +100,7 @@ public class ConfigurationContextTest {
                 return super.loadClass(name);
             }
         };
-        context.setOsgiClassLoader(osgiClassLoader);
+        context.setOSGIClassLoader(osgiClassLoader);
 
         //When
         final ClassLoader classLoader = context.selectClassLoader(CompleteBean.class);

@@ -251,7 +251,7 @@ public class PropertyParser {
             propertyMeta = parseSimpleProperty(context);
             String indexName = getIndexName(field);
             if (indexName != null) {
-                propertyMeta.setIndexProperties(new IndexProperties(indexName));
+                propertyMeta.setIndexProperties(new IndexProperties(indexName, propertyMeta.getCQL3PropertyName()));
             }
         }
         context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);

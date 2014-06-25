@@ -20,8 +20,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,7 +81,7 @@ public class EntityParserTest {
     public void setUp() {
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
-        configContext.setForceColumnFamilyUpdateMap(new HashMap<String, Boolean>());
+        configContext.setEnableSchemaUpdateForTables(Arrays.<String>asList());
         configContext.setObjectMapperFactory(objectMapperFactory);
         configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
     }
@@ -90,6 +89,7 @@ public class EntityParserTest {
     @Test
     public void should_parse_entity() throws Exception {
 
+        configContext.setEnableSchemaUpdate(true);
         initEntityParsingContext(Bean.class);
         EntityMeta meta = parser.parseEntity(entityContext);
 
@@ -99,7 +99,6 @@ public class EntityParserTest {
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
         assertThat(meta.getPropertyMetas()).hasSize(8);
-        assertThat(meta.isSchemaUpdateEnabled()).isFalse();
 
         PropertyMeta id = meta.getPropertyMetas().get("id");
         PropertyMeta name = meta.getPropertyMetas().get("name");
@@ -172,6 +171,7 @@ public class EntityParserTest {
         assertThat(meta.getAllMetasExceptCounters()).hasSize(7).containsOnly(id, name, age, friends, followers, preferences, creator);
 
         assertThat(meta.getInsertStrategy()).isEqualTo(InsertStrategy.ALL_FIELDS);
+        assertThat(meta.isSchemaUpdateEnabled()).isTrue();
     }
 
     @Test
@@ -293,8 +293,18 @@ public class EntityParserTest {
 
     }
 
+    @Test
+    public void should_parse_entity_with_scheme_update_enabled() throws Exception {
+        initEntityParsingContext(BeanWithClusteredId.class);
+
+        configContext.setEnableSchemaUpdate(false);
+        configContext.setEnableSchemaUpdateForTables(Arrays.asList("BeanWithClusteredId"));
+        EntityMeta meta = parser.parseEntity(entityContext);
+
+        assertThat(meta.isSchemaUpdateEnabled()).isTrue();
+    }
+
     private <T> void initEntityParsingContext(Class<T> entityClass) {
-        entityContext = new EntityParsingContext( //
-                configContext, entityClass);
+        entityContext = new EntityParsingContext(configContext, entityClass);
     }
 }
