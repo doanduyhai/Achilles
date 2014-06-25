@@ -20,6 +20,8 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,6 +82,7 @@ public class EntityParserTest {
     public void setUp() {
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
+        configContext.setForceColumnFamilyUpdateMap(new HashMap<String, Boolean>());
         configContext.setObjectMapperFactory(objectMapperFactory);
         configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
     }
@@ -96,6 +99,7 @@ public class EntityParserTest {
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
         assertThat(meta.getPropertyMetas()).hasSize(8);
+        assertThat(meta.isSchemaUpdateEnabled()).isFalse();
 
         PropertyMeta id = meta.getPropertyMetas().get("id");
         PropertyMeta name = meta.getPropertyMetas().get("name");

@@ -73,7 +73,9 @@ public class AchillesBootstrapper {
             String tableName = entityMeta.getTableName().toLowerCase();
 
             if (tableMetaDatas.containsKey(tableName)) {
-                schemaContext.validateForEntity(entityMeta, tableMetaDatas.get(tableName));
+                TableMetadata tableMetaData = tableMetaDatas.get(tableName);
+                schemaContext.validateForEntity(entityMeta, tableMetaData);
+                schemaContext.updateForEntity(entityMeta, tableMetaData);
             } else {
                 schemaContext.createTableForEntity(entry.getValue());
             }

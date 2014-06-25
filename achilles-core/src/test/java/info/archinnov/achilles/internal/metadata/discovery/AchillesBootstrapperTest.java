@@ -120,7 +120,7 @@ public class AchillesBootstrapperTest {
     }
 
     @Test
-    public void should_validate_tables() throws Exception {
+    public void should_validate_and_update_tables() throws Exception {
         // Given
         Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
         Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of("userbean", tableMeta);
@@ -135,6 +135,7 @@ public class AchillesBootstrapperTest {
 
         // Then
         verify(schemaContext).validateForEntity(meta, tableMeta);
+        verify(schemaContext).updateForEntity(meta, tableMeta);
     }
 
     @Test

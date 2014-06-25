@@ -16,24 +16,7 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,6 +102,8 @@ public class ArgumentExtractor {
 
         ConfigurationContext configContext = new ConfigurationContext();
         configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
+        configContext.setForceColumnFamilyUpdate(initForceTableUpdate(configurationMap));
+        configContext.setForceColumnFamilyUpdateMap(initForceTableUpdateMap(configurationMap));
         configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
         configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
         configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
@@ -132,7 +117,30 @@ public class ArgumentExtractor {
     boolean initForceTableCreation(ConfigMap configurationMap) {
         log.trace("Extract 'force table creation' from configuration map");
 
-        Boolean forceColumnFamilyCreation = configurationMap.getTyped(FORCE_TABLE_CREATION);
+        return findParamOrFalse(configurationMap, FORCE_TABLE_CREATION);
+    }
+
+    boolean initForceTableUpdate(ConfigMap configurationMap) {
+        log.trace("Extract 'force table update' from configuration map");
+
+        return findParamOrFalse(configurationMap, FORCE_TABLE_UPDATE);
+    }
+
+    public Map<String, Boolean> initForceTableUpdateMap(ConfigMap configMap) {
+        log.trace("Extract 'force table update' map from configuration map");
+
+        Map<String, String> forceTableUpdateMap = configMap.getTyped(FORCE_TABLE_UPDATE_MAP);
+        Map<String, Boolean> result = new HashMap<>();
+        if (forceTableUpdateMap != null && !forceTableUpdateMap.isEmpty()) {
+            for (Entry<String, String> entry : forceTableUpdateMap.entrySet()) {
+                result.put(entry.getKey(), Boolean.valueOf(entry.getValue()));
+            }
+        }
+        return result;
+    }
+
+    private boolean findParamOrFalse(ConfigMap configurationMap, ConfigurationParameters key) {
+        Boolean forceColumnFamilyCreation = configurationMap.getTyped(key);
         if (forceColumnFamilyCreation != null) {
             return forceColumnFamilyCreation;
         } else {

@@ -17,13 +17,13 @@
 package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,14 +31,17 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.Sets;
+
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.table.TableCreator;
+import info.archinnov.achilles.internal.table.TableUpdater;
 import info.archinnov.achilles.internal.table.TableValidator;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,6 +61,9 @@ public class SchemaContextTest {
     @Mock
     private TableCreator tableCreator;
 
+	@Mock
+	private TableUpdater tableUpdater;
+
     @Mock
     private TableValidator tableValidator;
 
@@ -68,7 +74,8 @@ public class SchemaContextTest {
     public void setUp() {
         context = new SchemaContext(true, session, keyspaceName, cluster, new ParsingResult(entityMetaMap, true));
         Whitebox.setInternalState(context, TableCreator.class, tableCreator);
-        Whitebox.setInternalState(context, TableValidator.class, tableValidator);
+		Whitebox.setInternalState(context, TableUpdater.class, tableUpdater);
+		Whitebox.setInternalState(context, TableValidator.class, tableValidator);
     }
 
     @Test
@@ -153,7 +160,20 @@ public class SchemaContextTest {
     }
 
     @Test
-    public void should_create_table_for_counter() throws Exception {
+	public void should_update_table_for_entity() throws Exception {
+		// Given
+		EntityMeta entityMeta = mock(EntityMeta.class);
+		TableMetadata tableMetadata = mock(TableMetadata.class);
+
+		// When
+		context.updateForEntity(entityMeta, tableMetadata);
+
+		// Then
+		verify(tableUpdater).updateTableForEntity(session, entityMeta, tableMetadata);
+	}
+
+	@Test
+	public void should_create_table_for_counter() throws Exception {
 
         // When
         context.createTableForCounter();
