@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
+import static com.google.common.base.Optional.fromNullable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,10 +90,6 @@ public class EntityParsingContext {
         return configContext.getObjectMapperFactory();
     }
 
-    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
-        return Pair.create(configContext.getDefaultReadConsistencyLevel(),
-                configContext.getDefaultWriteConsistencyLevel());
-    }
 
     public boolean isSchemaUpdateEnabled(String columnFamilyName) {
         Map<String, Boolean> columnFamilyUpdateMap = configContext.getEnableSchemaUpdateForTables();
@@ -104,5 +101,9 @@ public class EntityParsingContext {
 
     public InsertStrategy getDefaultInsertStrategy() {
         return configContext.getInsertStrategy();
+    }
+
+    public ConfigurationContext getConfigContext() {
+        return configContext;
     }
 }

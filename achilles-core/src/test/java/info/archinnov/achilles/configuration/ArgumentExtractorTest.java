@@ -39,8 +39,10 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.PREP
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -248,25 +250,14 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_default_read_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, "ONE");
+        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, ONE);
 
         assertThat(extractor.initDefaultReadConsistencyLevel(configMap)).isEqualTo(ONE);
     }
 
     @Test
-    public void should_exception_when_invalid_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, "wrong_value");
-
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("'wrong_value' is not a valid Consistency Level");
-
-        extractor.initDefaultReadConsistencyLevel(configMap);
-    }
-
-    @Test
     public void should_init_default_write_consistency_level() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, "LOCAL_QUORUM");
-
+        configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, LOCAL_QUORUM);
         assertThat(extractor.initDefaultWriteConsistencyLevel(configMap)).isEqualTo(LOCAL_QUORUM);
     }
 
@@ -277,7 +268,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_read_consistency_level_map() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_READ_MAP, ImmutableMap.of("cf1", "ONE", "cf2", "LOCAL_QUORUM"));
+        configMap.put(CONSISTENCY_LEVEL_READ_MAP, ImmutableMap.of("cf1", ONE, "cf2", LOCAL_QUORUM));
 
         Map<String, ConsistencyLevel> consistencyMap = extractor.initReadConsistencyMap(configMap);
 
@@ -287,12 +278,12 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_write_consistency_level_map() throws Exception {
-        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.of("cf1", "THREE", "cf2", "EACH_QUORUM"));
+        configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.of("cf1", THREE, "cf2", EACH_QUORUM));
 
         Map<String, ConsistencyLevel> consistencyMap = extractor.initWriteConsistencyMap(configMap);
 
-        assertThat(consistencyMap.get("cf1")).isEqualTo(ConsistencyLevel.THREE);
-        assertThat(consistencyMap.get("cf2")).isEqualTo(ConsistencyLevel.EACH_QUORUM);
+        assertThat(consistencyMap.get("cf1")).isEqualTo(THREE);
+        assertThat(consistencyMap.get("cf2")).isEqualTo(EACH_QUORUM);
     }
 
     @Test
@@ -371,6 +362,9 @@ public class ArgumentExtractorTest {
         doReturn(true).when(extractor).initForceTableCreation(params);
         doReturn(factory).when(extractor).initObjectMapperFactory(params);
         doReturn(ANY).when(extractor).initDefaultReadConsistencyLevel(params);
+        doReturn(ALL).when(extractor).initDefaultWriteConsistencyLevel(params);
+        doReturn(ImmutableMap.of("table1", EACH_QUORUM)).when(extractor).initReadConsistencyMap(params);
+        doReturn(ImmutableMap.of("table2",ConsistencyLevel.LOCAL_QUORUM)).when(extractor).initWriteConsistencyMap(params);
         doReturn(ALL).when(extractor).initDefaultWriteConsistencyLevel(params);
 
         ConfigurationContext configContext = extractor.initConfigContext(params);

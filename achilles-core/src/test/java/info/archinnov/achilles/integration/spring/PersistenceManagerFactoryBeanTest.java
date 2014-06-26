@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.integration.spring;
 
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import javax.validation.Validator;
@@ -90,10 +91,10 @@ public class PersistenceManagerFactoryBeanTest {
 
         factory.setObjectMapper(objectMapper);
         factory.setObjectMapperFactory(objectMapperFactory);
-        factory.setConsistencyLevelReadDefault("ONE");
-        factory.setConsistencyLevelWriteDefault("ONE");
-        factory.setConsistencyLevelReadMap(ImmutableMap.of("entity", "ONE"));
-        factory.setConsistencyLevelWriteMap(ImmutableMap.of("entity", "ONE"));
+        factory.setConsistencyLevelReadDefault(ONE);
+        factory.setConsistencyLevelWriteDefault(ONE);
+        factory.setConsistencyLevelReadMap(ImmutableMap.of("entity", ONE));
+        factory.setConsistencyLevelWriteMap(ImmutableMap.of("entity", ONE));
         factory.setForceTableCreation(true);
         factory.setEntityList(Arrays.<Class<?>>asList(CompleteBean.class));
         factory.setEnableBeanValidation(true);

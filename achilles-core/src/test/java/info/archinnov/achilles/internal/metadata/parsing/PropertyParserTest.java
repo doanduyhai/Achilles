@@ -21,6 +21,8 @@ import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.i
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -62,6 +64,7 @@ import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParserTest {
@@ -363,7 +366,10 @@ public class PropertyParserTest {
                 this.counter = counter;
             }
         }
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("counter"));
+        entityContext = new EntityParsingContext(configContext, Test.class);
+        entityContext.setCurrentConsistencyLevels(Pair.create(TWO, THREE));
+        PropertyParsingContext context = entityContext.newPropertyContext(Test.class.getDeclaredField("counter"));
+
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
@@ -388,9 +394,10 @@ public class PropertyParserTest {
             }
         }
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx
-                .expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("counter"));
+        expectedEx.expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
+        entityContext = new EntityParsingContext(configContext, Test.class);
+        entityContext.setCurrentConsistencyLevels(Pair.create(TWO, THREE));
+        PropertyParsingContext context = entityContext.newPropertyContext(Test.class.getDeclaredField("counter"));
         parser.parse(context);
     }
 
@@ -412,9 +419,10 @@ public class PropertyParserTest {
         }
 
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx
-                .expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("counter"));
+        expectedEx.expectMessage("Counter field 'counter' of entity 'null' cannot have ANY as read/write consistency level. All consistency levels except ANY are allowed");
+        entityContext = new EntityParsingContext(configContext, Test.class);
+        entityContext.setCurrentConsistencyLevels(Pair.create(TWO, THREE));
+        PropertyParsingContext context = entityContext.newPropertyContext(Test.class.getDeclaredField("counter"));
         parser.parse(context);
     }
 

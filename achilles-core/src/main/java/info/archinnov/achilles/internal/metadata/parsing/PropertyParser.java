@@ -178,8 +178,7 @@ public class PropertyParser {
     }
 
 
-    public Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field,
-            Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
+    public Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Field field, Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
         log.debug("Find consistency configuration for field {} of class {}", field.getName(), field.getDeclaringClass()
                 .getCanonicalName());
 
@@ -471,8 +470,7 @@ public class PropertyParser {
     private void parseSimpleCounterConsistencyLevel(PropertyParsingContext context, PropertyMeta propertyMeta) {
 
         log.trace("Parse custom consistency levels for counter property {}", propertyMeta);
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = findConsistencyLevels(context.getCurrentField(),
-                context.getDefaultConsistencyLevels());
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = findConsistencyLevels(context.getCurrentField(), context.getCurrentConsistencyLevels());
 
         validator.validateConsistencyLevelForCounter(context, consistencyLevels);
 

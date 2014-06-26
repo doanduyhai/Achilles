@@ -48,8 +48,8 @@ public class EntityParser {
         Class<?> entityClass = context.getCurrentEntityClass();
         validateEntityAndGetObjectMapper(context);
 
-        String columnFamilyName = introspector.inferColumnFamilyName(entityClass, entityClass.getName());
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass, context.getDefaultConsistencyLevels());
+        String tableName = introspector.inferTableName(entityClass, entityClass.getName());
+        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass, tableName, context.getConfigContext());
         final InsertStrategy insertStrategy = introspector.getInsertStrategy(entityClass, context);
 
         context.setCurrentConsistencyLevels(consistencyLevels);
@@ -79,10 +79,10 @@ public class EntityParser {
         completeCounterPropertyMeta(context, idMeta);
 
         EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
-                .className(entityClass.getCanonicalName()).columnFamilyName(columnFamilyName)
+                .className(entityClass.getCanonicalName()).columnFamilyName(tableName)
                 .propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
                 .insertStrategy(insertStrategy)
-                .schemaUpdateEnabled(context.isSchemaUpdateEnabled(columnFamilyName))
+                .schemaUpdateEnabled(context.isSchemaUpdateEnabled(tableName))
                 .build();
 
         log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),

@@ -41,11 +41,9 @@ import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.validation.ValidationException;
 import org.apache.commons.lang.StringUtils;
@@ -128,6 +126,8 @@ public class ArgumentExtractor {
         configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
         configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
         configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
+        configContext.setReadConsistencyLevelMap(initReadConsistencyMap(configurationMap));
+        configContext.setWriteConsistencyLevelMap(initWriteConsistencyMap(configurationMap));
         configContext.setBeanValidator(initValidator(configurationMap));
         configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
         configContext.setForceBatchStatementsOrdering(initForceBatchStatementsOrdering(configurationMap));
@@ -179,32 +179,22 @@ public class ArgumentExtractor {
 
     ConsistencyLevel initDefaultReadConsistencyLevel(ConfigMap configMap) {
         log.trace("Extract default read Consistency level from configuration map");
-
-        String defaultReadLevel = configMap.getTyped(CONSISTENCY_LEVEL_READ_DEFAULT);
-        return parseConsistencyLevelOrGetDefault(defaultReadLevel);
+        return configMap.getTypedOr(CONSISTENCY_LEVEL_READ_DEFAULT, DEFAULT_LEVEL);
     }
 
     ConsistencyLevel initDefaultWriteConsistencyLevel(ConfigMap configMap) {
         log.trace("Extract default write Consistency level from configuration map");
-
-        String defaultWriteLevel = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_DEFAULT);
-        return parseConsistencyLevelOrGetDefault(defaultWriteLevel);
+        return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_DEFAULT, DEFAULT_LEVEL);
     }
 
     public Map<String, ConsistencyLevel> initReadConsistencyMap(ConfigMap configMap) {
         log.trace("Extract read Consistency level map from configuration map");
-
-        Map<String, String> readConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_READ_MAP);
-
-        return parseConsistencyLevelMap(readConsistencyMap);
+        return configMap.getTypedOr(CONSISTENCY_LEVEL_READ_MAP, ImmutableMap.<String, ConsistencyLevel>of());
     }
 
     public Map<String, ConsistencyLevel> initWriteConsistencyMap(ConfigMap configMap) {
         log.trace("Extract write Consistency level map from configuration map");
-
-        Map<String, String> writeConsistencyMap = configMap.getTyped(CONSISTENCY_LEVEL_WRITE_MAP);
-
-        return parseConsistencyLevelMap(writeConsistencyMap);
+        return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.<String, ConsistencyLevel>of());
     }
 
     public Session initSession(Cluster cluster, ConfigMap configurationMap) {
@@ -218,31 +208,6 @@ public class ArgumentExtractor {
             nativeSession = cluster.connect(keyspace);
         }
         return nativeSession;
-    }
-
-    private Map<String, ConsistencyLevel> parseConsistencyLevelMap(Map<String, String> consistencyLevelMap) {
-        log.trace("Extract read Consistency level map from configuration map");
-
-        Map<String, ConsistencyLevel> map = new HashMap<>();
-        if (consistencyLevelMap != null && !consistencyLevelMap.isEmpty()) {
-            for (Entry<String, String> entry : consistencyLevelMap.entrySet()) {
-                map.put(entry.getKey(), parseConsistencyLevelOrGetDefault(entry.getValue()));
-            }
-        }
-
-        return map;
-    }
-
-    private ConsistencyLevel parseConsistencyLevelOrGetDefault(String consistencyLevel) {
-        ConsistencyLevel level = DEFAULT_LEVEL;
-        if (StringUtils.isNotBlank(consistencyLevel)) {
-            try {
-                level = ConsistencyLevel.valueOf(consistencyLevel);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("'" + consistencyLevel + "' is not a valid Consistency Level");
-            }
-        }
-        return level;
     }
 
     @SuppressWarnings("unchecked")

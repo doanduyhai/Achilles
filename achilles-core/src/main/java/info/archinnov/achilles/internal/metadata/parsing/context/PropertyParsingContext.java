@@ -70,9 +70,8 @@ public class PropertyParsingContext {
         return context.getCurrentConsistencyLevels();
     }
 
-    public Pair<ConsistencyLevel, ConsistencyLevel> getDefaultConsistencyLevels() {
-        return context.getDefaultConsistencyLevels();
-    }
+
+
 
     public boolean isCustomConsistencyLevels() {
         return isCustomConsistencyLevels;

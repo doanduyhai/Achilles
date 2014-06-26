@@ -58,6 +58,7 @@ import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
 public class PersistenceManagerFactory {
@@ -273,7 +274,7 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withDefaultReadConsistency(String defaultReadConsistency) {
+        public PersistenceManagerFactoryBuilder withDefaultReadConsistency(ConsistencyLevel defaultReadConsistency) {
             configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, defaultReadConsistency);
             return this;
         }
@@ -284,7 +285,7 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withDefaultWriteConsistency(String defaultWriteConsistency) {
+        public PersistenceManagerFactoryBuilder withDefaultWriteConsistency(ConsistencyLevel defaultWriteConsistency) {
             configMap.put(CONSISTENCY_LEVEL_WRITE_DEFAULT, defaultWriteConsistency);
             return this;
         }
@@ -296,7 +297,7 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withDefaultReadConsistencyMap(Map<String, String> readConsistencyMap) {
+        public PersistenceManagerFactoryBuilder withDefaultReadConsistencyMap(Map<String, ConsistencyLevel> readConsistencyMap) {
             configMap.put(CONSISTENCY_LEVEL_READ_MAP, readConsistencyMap);
             return this;
         }
@@ -308,8 +309,7 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withDefaultWriteConsistencyMap(Map<String,
-                String> writeConsistencyMap) {
+        public PersistenceManagerFactoryBuilder withDefaultWriteConsistencyMap(Map<String, ConsistencyLevel> writeConsistencyMap) {
             configMap.put(CONSISTENCY_LEVEL_WRITE_MAP, writeConsistencyMap);
             return this;
         }

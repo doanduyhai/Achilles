@@ -48,6 +48,7 @@ import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
 public class PersistenceManagerFactoryBean extends AbstractFactoryBean<PersistenceManager> {
@@ -63,10 +64,10 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
     private ObjectMapperFactory objectMapperFactory;
     private ObjectMapper objectMapper;
 
-    private String consistencyLevelReadDefault;
-    private String consistencyLevelWriteDefault;
-    private Map<String, String> consistencyLevelReadMap;
-    private Map<String, String> consistencyLevelWriteMap;
+    private ConsistencyLevel consistencyLevelReadDefault;
+    private ConsistencyLevel consistencyLevelWriteDefault;
+    private Map<String, ConsistencyLevel> consistencyLevelReadMap;
+    private Map<String, ConsistencyLevel> consistencyLevelWriteMap;
 
     private boolean forceTableCreation = false;
 
@@ -225,19 +226,19 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         this.objectMapper = objectMapper;
     }
 
-    public void setConsistencyLevelReadDefault(String consistencyLevelReadDefault) {
+    public void setConsistencyLevelReadDefault(ConsistencyLevel consistencyLevelReadDefault) {
         this.consistencyLevelReadDefault = consistencyLevelReadDefault;
     }
 
-    public void setConsistencyLevelWriteDefault(String consistencyLevelWriteDefault) {
+    public void setConsistencyLevelWriteDefault(ConsistencyLevel consistencyLevelWriteDefault) {
         this.consistencyLevelWriteDefault = consistencyLevelWriteDefault;
     }
 
-    public void setConsistencyLevelReadMap(Map<String, String> consistencyLevelReadMap) {
+    public void setConsistencyLevelReadMap(Map<String, ConsistencyLevel> consistencyLevelReadMap) {
         this.consistencyLevelReadMap = consistencyLevelReadMap;
     }
 
-    public void setConsistencyLevelWriteMap(Map<String, String> consistencyLevelWriteMap) {
+    public void setConsistencyLevelWriteMap(Map<String, ConsistencyLevel> consistencyLevelWriteMap) {
         this.consistencyLevelWriteMap = consistencyLevelWriteMap;
     }
 

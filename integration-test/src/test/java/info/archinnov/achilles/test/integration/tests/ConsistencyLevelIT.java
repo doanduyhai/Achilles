@@ -15,15 +15,23 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
+import java.util.Arrays;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.UnavailableException;
+import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -77,9 +85,7 @@ public class ConsistencyLevelIT {
 
     @Test
     public void should_recover_from_exception_and_reinit_consistency_level() throws Exception {
-        EntityWithWriteOneAndReadThreeConsistency bean = new EntityWithWriteOneAndReadThreeConsistency(id,
-                "FN", "LN");
-
+        EntityWithWriteOneAndReadThreeConsistency bean = new EntityWithWriteOneAndReadThreeConsistency(id, "FN", "LN");
         try {
             manager.persist(bean);
             manager.find(EntityWithWriteOneAndReadThreeConsistency.class, id);
@@ -114,7 +120,7 @@ public class ConsistencyLevelIT {
         manager.persist(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name zerferg");
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ONE, ConsistencyLevel.ALL);
     }
 
     @Test
@@ -135,7 +141,7 @@ public class ConsistencyLevelIT {
         manager.update(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("zeruioze");
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ONE, ConsistencyLevel.ALL);
     }
 
     @Test
@@ -184,7 +190,7 @@ public class ConsistencyLevelIT {
         logAsserter.prepareLogLevel();
         manager.remove(entity, OptionsBuilder.withConsistency(ConsistencyLevel.ALL));
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ONE, ConsistencyLevel.ALL);
     }
 
     @Test
@@ -201,7 +207,31 @@ public class ConsistencyLevelIT {
         manager.persist(entity, OptionsBuilder.withConsistency(ALL));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name qzerferf");
-        logAsserter.assertConsistencyLevels(ConsistencyLevel.ONE, ConsistencyLevel.ALL);
+        logAsserter.assertConsistencyLevels(ONE, ConsistencyLevel.ALL);
+    }
+
+    @Test
+    public void should_override_consistency_by_map() throws Exception {
+        //Given
+        final PersistenceManager pm = CassandraEmbeddedServerBuilder
+                .withEntities(Arrays.<Class<?>>asList(EntityWithTwoConsistency.class))
+                .withKeyspaceName("consistency_map_override")
+                .cleanDataFilesAtStartup(true)
+                .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(
+                        CONSISTENCY_LEVEL_READ_MAP, ImmutableMap.of(EntityWithTwoConsistency.TABLE_NAME, QUORUM),
+                        CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.of(EntityWithTwoConsistency.TABLE_NAME, ONE)
+                ))
+                .buildPersistenceManager();
+
+        //When
+        logAsserter.prepareLogLevel();
+        final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
+        entity.setId(RandomUtils.nextLong());
+
+        pm.persist(entity);
+        //Then
+        assertThat(pm.find(EntityWithTwoConsistency.class, entity.getId())).isNotNull();
+        logAsserter.assertConsistencyLevels(QUORUM, ONE);
     }
 
 }

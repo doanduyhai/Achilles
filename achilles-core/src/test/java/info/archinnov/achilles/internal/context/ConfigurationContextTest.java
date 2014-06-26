@@ -18,9 +18,6 @@ package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import info.archinnov.achilles.json.ObjectMapperFactory;
-import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
-
 import javax.validation.Validator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +25,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.json.ObjectMapperFactory;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationContextTest {
@@ -119,5 +118,5 @@ public class ConfigurationContextTest {
 
         //Then
         assertThat(actual).isSameAs(this.getClass().getClassLoader());
-    }	
+    }
 }

@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,10 @@ public class ConfigurationContext {
     private ConsistencyLevel defaultReadConsistencyLevel;
 
     private ConsistencyLevel defaultWriteConsistencyLevel;
+
+    private Map<String, ConsistencyLevel> readConsistencyLevelMap = new HashMap<>();
+
+    private Map<String, ConsistencyLevel> writeConsistencyLevelMap = new HashMap<>();
 
     private Validator beanValidator;
 
@@ -148,6 +153,15 @@ public class ConfigurationContext {
         meta.addInterceptor(beanValidationInterceptor);
     }
 
+    public ConsistencyLevel getReadConsistencyLevelForTable(String tableName) {
+        return readConsistencyLevelMap.get(tableName);
+    }
+
+    public ConsistencyLevel getWriteConsistencyLevelForTable(String tableName) {
+        return writeConsistencyLevelMap.get(tableName);
+    }
+
+
     public ObjectMapper getMapperFor(Class<?> type) {
         return objectMapperFactory.getMapper(type);
     }
@@ -158,5 +172,13 @@ public class ConfigurationContext {
 
     public ClassLoader selectClassLoader() {
         return OSGIClassLoader != null ? OSGIClassLoader : this.getClass().getClassLoader();
+    }
+
+    public void setReadConsistencyLevelMap(Map<String, ConsistencyLevel> readConsistencyLevelMap) {
+        this.readConsistencyLevelMap = readConsistencyLevelMap;
+    }
+
+    public void setWriteConsistencyLevelMap(Map<String, ConsistencyLevel> writeConsistencyLevelMap) {
+        this.writeConsistencyLevelMap = writeConsistencyLevelMap;
     }
 }

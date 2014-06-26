@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing;
 
+import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.internal.helper.LoggerHelper.fieldToStringFn;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -131,7 +132,7 @@ public class EntityIntrospector {
         return accessors;
     }
 
-    public String inferColumnFamilyName(Class<?> entity, String canonicalName) {
+    public String inferTableName(Class<?> entity, String canonicalName) {
         String columnFamilyName = null;
         Entity annotation = entity.getAnnotation(Entity.class);
         if (annotation != null) {
@@ -150,23 +151,25 @@ public class EntityIntrospector {
         return columnFamilyName;
     }
 
-    public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity,
-            Pair<ConsistencyLevel, ConsistencyLevel> defaultConsistencyLevels) {
+    public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity, String tableName, ConfigurationContext configContext) {
         log.debug("Find consistency levels for entity class {}", entity.getCanonicalName());
 
-        ConsistencyLevel defaultGlobalRead = defaultConsistencyLevels.left;
-        ConsistencyLevel defaultGlobalWrite = defaultConsistencyLevels.right;
+        ConsistencyLevel readLevel = configContext.getDefaultReadConsistencyLevel();
+        ConsistencyLevel writeLevel = configContext.getDefaultWriteConsistencyLevel();
 
         Consistency clevel = entity.getAnnotation(Consistency.class);
 
         if (clevel != null) {
-            defaultGlobalRead = clevel.read();
-            defaultGlobalWrite = clevel.write();
+            readLevel = clevel.read();
+            writeLevel = clevel.write();
         }
 
-        log.trace("Found consistency levels : {}/{}", defaultGlobalRead, defaultGlobalWrite);
+        readLevel = fromNullable(configContext.getReadConsistencyLevelForTable(tableName)).or(readLevel);
+        writeLevel = fromNullable(configContext.getWriteConsistencyLevelForTable(tableName)).or(writeLevel);
 
-        return Pair.create(defaultGlobalRead, defaultGlobalWrite);
+        log.trace("Found consistency levels : {}/{}", readLevel, writeLevel);
+
+        return Pair.create(readLevel, writeLevel);
     }
 
     public List<Field> getInheritedPrivateFields(Class<?> type) {

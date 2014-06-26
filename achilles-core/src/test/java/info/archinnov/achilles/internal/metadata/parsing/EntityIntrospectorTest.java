@@ -19,6 +19,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
+import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -40,6 +42,7 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
@@ -73,6 +76,9 @@ public class EntityIntrospectorTest {
 
     @Mock
     private EntityParsingContext parsingContext;
+
+    @Mock
+    private ConfigurationContext configContext;
 
     private final EntityIntrospector introspector = new EntityIntrospector();
 
@@ -324,13 +330,13 @@ public class EntityIntrospectorTest {
 
     @Test
     public void should_infer_column_family_from_annotation() throws Exception {
-        String cfName = introspector.inferColumnFamilyName(BeanWithColumnFamilyName.class, "canonicalName");
+        String cfName = introspector.inferTableName(BeanWithColumnFamilyName.class, "canonicalName");
         assertThat(cfName).isEqualTo("myOwnCF");
     }
 
     @Test
     public void should_infer_column_family_from_default_name() throws Exception {
-        String cfName = introspector.inferColumnFamilyName(CompleteBean.class, "canonicalName");
+        String cfName = introspector.inferTableName(CompleteBean.class, "canonicalName");
         assertThat(cfName).isEqualTo("canonicalName");
     }
 
@@ -340,33 +346,80 @@ public class EntityIntrospectorTest {
         class Test {
 
         }
-        String cfName = introspector.inferColumnFamilyName(Test.class, "canonicalName");
+        String cfName = introspector.inferTableName(Test.class, "canonicalName");
         assertThat(cfName).isEqualTo("canonicalName");
     }
 
     @Test
-    public void should_find_any_any_consistency_level() throws Exception {
+    public void should_find_consistency_level_from_class() throws Exception {
         @Consistency(read = ANY, write = LOCAL_QUORUM)
         class Test {
         }
 
-        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,
-                Pair.create(ALL, ALL));
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ONE);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(TWO);
+        when(configContext.getReadConsistencyLevelForTable("table")).thenReturn(null);
+        when(configContext.getWriteConsistencyLevelForTable("table")).thenReturn(null);
+
+        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,"table",configContext);
 
         assertThat(levels.left).isEqualTo(ANY);
         assertThat(levels.right).isEqualTo(LOCAL_QUORUM);
     }
 
     @Test
-    public void should_find_one_one_consistency_level_by_default() throws Exception {
+    public void should_find_consistency_level_by_default() throws Exception {
         class Test {
         }
 
-        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,
-                Pair.create(ONE, ONE));
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ONE);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(TWO);
+        when(configContext.getReadConsistencyLevelForTable("table")).thenReturn(null);
+        when(configContext.getWriteConsistencyLevelForTable("table")).thenReturn(null);
+
+        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,"table",configContext);
 
         assertThat(levels.left).isEqualTo(ONE);
-        assertThat(levels.right).isEqualTo(ONE);
+        assertThat(levels.right).isEqualTo(TWO);
+    }
+
+    @Test
+    public void should_find_consistency_level_from_map_overriding_default() throws Exception {
+        //Given
+        class Test {
+        }
+
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ONE);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(TWO);
+        when(configContext.getReadConsistencyLevelForTable("table")).thenReturn(THREE);
+        when(configContext.getWriteConsistencyLevelForTable("table")).thenReturn(ALL);
+
+        //When
+        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,"table",configContext);
+
+        //Then
+        assertThat(levels.left).isEqualTo(THREE);
+        assertThat(levels.right).isEqualTo(ALL);
+    }
+
+    @Test
+    public void should_find_consistency_level_from_map_overriding_entity() throws Exception {
+        //Given
+        @Consistency(read = ANY, write = LOCAL_QUORUM)
+        class Test {
+        }
+
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ONE);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(TWO);
+        when(configContext.getReadConsistencyLevelForTable("table")).thenReturn(THREE);
+        when(configContext.getWriteConsistencyLevelForTable("table")).thenReturn(ALL);
+
+        //When
+        Pair<ConsistencyLevel, ConsistencyLevel> levels = introspector.findConsistencyLevels(Test.class,"table",configContext);
+
+        //Then
+        assertThat(levels.left).isEqualTo(THREE);
+        assertThat(levels.right).isEqualTo(ALL);
     }
 
     @Test
