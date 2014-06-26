@@ -38,6 +38,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.TraceRetrievalException;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
@@ -187,11 +188,15 @@ public abstract class AbstractStatementWrapper {
                 actualLogger.trace("Query tracing at host {} with achieved consistency level {} ", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel());
                 actualLogger.trace("****************************");
                 actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
-                final List<QueryTrace.Event> events = new ArrayList<>(executionInfo.getQueryTrace().getEvents());
-                Collections.sort(events, EVENT_TRACE_COMPARATOR);
-                for (QueryTrace.Event event : events) {
-                    final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
-                    actualLogger.trace(formatted);
+                try {
+                    final List<QueryTrace.Event> events = new ArrayList<>(executionInfo.getQueryTrace().getEvents());
+                    Collections.sort(events, EVENT_TRACE_COMPARATOR);
+                    for (QueryTrace.Event event : events) {
+                        final String formatted = String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", event.getDescription(), event.getSource(), event.getSourceElapsedMicros(), event.getThreadName());
+                        actualLogger.trace(formatted);
+                    }
+                } catch (TraceRetrievalException e) {
+                    actualLogger.trace("Cannot retrieve asynchronous trace, reason: " + e.getMessage());
                 }
                 actualLogger.trace("****************************");
             }
