@@ -252,6 +252,10 @@ public class EntityMeta {
         return propertyMetas.size() == 1;
     }
 
+    public List<PropertyMeta> getAllMetasExceptId() {
+        return allMetasExceptId;
+    }
+
     public void setAllMetasExceptId(List<PropertyMeta> allMetasExceptId) {
         this.allMetasExceptId = allMetasExceptId;
     }
@@ -347,8 +351,9 @@ public class EntityMeta {
 
     private PropertyMeta findPropertyMetaByCQL3Name(String cql3Name) {
         for (PropertyMeta meta : allMetasExceptCounters) {
-            if (meta.getCQL3PropertyName().equals(cql3Name))
+            if (meta.getCQL3PropertyName().equals(cql3Name)) {
                 return meta;
+            }
         }
         throw new AchillesException(String.format("Cannot find matching property meta for the cql3 field %s", cql3Name));
     }

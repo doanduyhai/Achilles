@@ -33,8 +33,6 @@ import info.archinnov.achilles.type.Pair;
 
 public class TableBuilder extends AbstractTableBuilder {
 
-	private static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
-
 	private String tableName;
 	private String comment;
 	private List<String> partitionComponents = new ArrayList<>();

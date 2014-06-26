@@ -345,7 +345,7 @@ public class PersistenceManagerFactory {
          *
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder enableSchemaUpdateForTables(List<String> tables) {
+        public PersistenceManagerFactoryBuilder enableSchemaUpdateForTables(Map<String, Boolean> tables) {
             configMap.put(ENABLE_SCHEMA_UPDATE_FOR_TABLES, tables);
             return this;
         }

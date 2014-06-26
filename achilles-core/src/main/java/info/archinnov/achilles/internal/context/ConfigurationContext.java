@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
-import java.util.List;
+import java.util.Map;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
@@ -29,7 +29,7 @@ public class ConfigurationContext {
 
     private boolean enableSchemaUpdate;
 
-    private List<String> enableSchemaUpdateForTables;
+    private Map<String, Boolean> enableSchemaUpdateForTables;
 
     private ObjectMapperFactory objectMapperFactory;
 
@@ -61,11 +61,11 @@ public class ConfigurationContext {
         return enableSchemaUpdate;
     }
 
-    public void setEnableSchemaUpdateForTables(List<String> enableSchemaUpdateForTables) {
+    public void setEnableSchemaUpdateForTables(Map<String, Boolean> enableSchemaUpdateForTables) {
         this.enableSchemaUpdateForTables = enableSchemaUpdateForTables;
     }
 
-    public List<String> getEnableSchemaUpdateForTables() {
+    public Map<String, Boolean> getEnableSchemaUpdateForTables() {
         return enableSchemaUpdateForTables;
     }
 

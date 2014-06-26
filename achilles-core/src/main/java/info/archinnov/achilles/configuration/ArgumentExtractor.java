@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
@@ -146,9 +147,9 @@ public class ArgumentExtractor {
         return configurationMap.getTypedOr(ENABLE_SCHEMA_UPDATE, false);
     }
 
-    public List<String> initForceTableUpdateMap(ConfigMap configMap) {
+    public Map<String, Boolean> initForceTableUpdateMap(ConfigMap configMap) {
         log.trace("Extract 'force table update' map from configuration map");
-        return configMap.getTypedOr(ENABLE_SCHEMA_UPDATE_FOR_TABLES, Arrays.<String>asList());
+        return configMap.getTypedOr(ENABLE_SCHEMA_UPDATE_FOR_TABLES, ImmutableMap.<String, Boolean>of());
     }
 
     ObjectMapperFactory initObjectMapperFactory(ConfigMap configurationMap) {

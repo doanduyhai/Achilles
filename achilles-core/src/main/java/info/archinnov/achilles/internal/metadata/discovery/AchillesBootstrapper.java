@@ -55,7 +55,7 @@ public class AchillesBootstrapper {
             EntityMeta entityMeta = entityParser.parseEntity(context);
             entityMetaMap.put(entityClass, entityMeta);
 
-            hasSimpleCounter = hasSimpleCounter || context.hasSimpleCounter();
+            hasSimpleCounter = hasSimpleCounter || (context.hasSimpleCounter() && !entityMeta.isClusteredCounter());
             boolean shouldValidateBean = configContext.isClassConstrained(entityClass);
             if (shouldValidateBean) {
                 configContext.addBeanValidationInterceptor(entityMeta);

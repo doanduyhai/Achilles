@@ -215,9 +215,11 @@ public class TableValidator {
         String tableName = tableMetadata.getName();
         ColumnMetadata columnMetadata = tableMetadata.getColumn(columnName);
 
-        if (!schemaUpdateEnabled) {
-            Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'",
-                    columnName, tableName);
+        if (schemaUpdateEnabled && columnMetadata == null) {
+            // will be created in updater
+            return;
+        } else {
+            Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName, tableName);
         }
         Name realType = columnMetadata.getType().getName();
         Name expectedValueType = toCQLType(pm.getValueClassForTableCreation());

@@ -98,19 +98,13 @@ public enum ServerStarter {
         Integer cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
         Integer thriftPort = parameters.getTyped(CASSANDRA_THRIFT_PORT);
         if (cqlPort != null && ServerStarter.cqlPort != cqlPort.intValue()) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "An embedded Cassandra server is already listening to CQL port '%s', the specified CQL port '%s' does not match",
-                            ServerStarter.cqlPort, cqlPort));
+            throw new IllegalArgumentException(String.format("An embedded Cassandra server is already listening to CQL port '%s', the specified CQL port '%s' does not match", ServerStarter.cqlPort, cqlPort));
         } else {
             parameters.put(CASSANDRA_CQL_PORT, ServerStarter.cqlPort);
         }
 
         if (thriftPort != null && ServerStarter.thriftPort != thriftPort.intValue()) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "An embedded Cassandra server is already listening to Thrift port '%s', the specified Thrift port '%s' does not match",
-                            ServerStarter.thriftPort, thriftPort));
+            throw new IllegalArgumentException(String.format("An embedded Cassandra server is already listening to Thrift port '%s', the specified Thrift port '%s' does not match", ServerStarter.thriftPort, thriftPort));
         } else {
             parameters.put(CASSANDRA_THRIFT_PORT, ServerStarter.thriftPort);
         }
@@ -186,10 +180,14 @@ public enum ServerStarter {
         if (!DEFAULT_ACHILLES_TEST_FOLDERS.contains(folderPath)) {
             Validator.validateTrue(folder.exists(), "Folder '%s' does not exist", folder.getAbsolutePath());
             Validator.validateTrue(folder.isDirectory(), "Folder '%s' is not a directory", folder.getAbsolutePath());
-            Validator.validateTrue(folder.canRead(), "No read credential. Please grant read permission for the current"
-                    + " " + "user '%s' on folder '%s'", currentUser, folder.getAbsolutePath());
-            Validator.validateTrue(folder.canWrite(), "No write credential. Please grant write permission for the "
-                    + "current " + "user '%s' on folder '%s'", currentUser, folder.getAbsolutePath());
+            Validator.validateTrue(folder.canRead(), "No read credential. Please grant read permission for the current user '%s' on folder '%s'", currentUser, folder.getAbsolutePath());
+            Validator.validateTrue(folder.canWrite(), "No write credential. Please grant write permission for the current user '%s' on folder '%s'", currentUser, folder.getAbsolutePath());
+        } else if (!folder.exists()) {
+            try {
+                FileUtils.forceMkdir(folder);
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot create Cassandra data folder " + folderPath, e);
+            }
         }
     }
 

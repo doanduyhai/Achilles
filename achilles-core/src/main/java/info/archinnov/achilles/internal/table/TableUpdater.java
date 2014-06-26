@@ -10,6 +10,8 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 
@@ -23,6 +25,13 @@ public class TableUpdater {
         }
     };
 
+    private static final Predicate<String> NOT_BLANK = new Predicate<String>() {
+        @Override
+        public boolean apply(String input) {
+            return StringUtils.isNotBlank(input);
+        }
+    };
+
     public void updateTableForEntity(Session session, EntityMeta entityMeta, TableMetadata tableMetadata) {
         log.debug("Updating table for entityMeta {}", entityMeta.getClassName());
 
@@ -31,16 +40,17 @@ public class TableUpdater {
         }
 
         List<ColumnMetadata> existingColumns = tableMetadata.getColumns();
-        List<PropertyMeta> propertyMetas = entityMeta.getAllMetasExceptIdAndCounters();
+        List<PropertyMeta> propertyMetas = entityMeta.getAllMetasExceptId();
         Set<String> columnNames = from(existingColumns).transform(COLUMN_NAME_EXTRACTOR).toSet();
 
         TableUpdateBuilder builder = new TableUpdateBuilder(tableMetadata.getName());
         addNewPropertiesToBuilder(propertyMetas, columnNames, builder);
 
-        final String ddlScript = builder.generateDDLScript();
-        if (StringUtils.isNotBlank(ddlScript)) {
-            session.execute(ddlScript);
+        final List<String> updateScripts = FluentIterable.from(builder.generateDDLUpdateScripts()).filter(NOT_BLANK).toList();
+        for (String updateScript : updateScripts) {
+            session.execute(updateScript);
         }
+
         if (builder.hasIndices()) {
             for (String indexScript : builder.generateIndices()) {
                 session.execute(indexScript);

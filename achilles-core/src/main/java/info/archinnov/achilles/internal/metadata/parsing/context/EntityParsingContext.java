@@ -39,9 +39,7 @@ public class EntityParsingContext {
     private ObjectMapper currentObjectMapper;
     private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
 
-    public EntityParsingContext(//
-            ConfigurationContext configContext, //
-            Class<?> currentEntityClass) {
+    public EntityParsingContext(ConfigurationContext configContext, Class<?> currentEntityClass) {
         this.configContext = configContext;
         this.currentEntityClass = currentEntityClass;
     }
@@ -97,7 +95,11 @@ public class EntityParsingContext {
     }
 
     public boolean isSchemaUpdateEnabled(String columnFamilyName) {
-        return configContext.getEnableSchemaUpdateForTables().contains(columnFamilyName) || configContext.isEnableSchemaUpdate();
+        Map<String, Boolean> columnFamilyUpdateMap = configContext.getEnableSchemaUpdateForTables();
+        if (columnFamilyUpdateMap.containsKey(columnFamilyName)) {
+            return columnFamilyUpdateMap.get(columnFamilyName);
+        }
+        return configContext.isEnableSchemaUpdate();
     }
 
     public InsertStrategy getDefaultInsertStrategy() {

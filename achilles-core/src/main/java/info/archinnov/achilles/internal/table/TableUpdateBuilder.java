@@ -61,52 +61,62 @@ public class TableUpdateBuilder extends AbstractTableBuilder {
         return this;
     }
 
-    public String generateDDLScript() {
-        StringBuilder ddl = new StringBuilder();
+    public List<String> generateDDLUpdateScripts() {
 
-        ddl.append("\n");
+        List<String> updateScripts = new LinkedList<>();
 
         for (Map.Entry<String, String> columnEntry : columns.entrySet()) {
+            StringBuilder ddl = new StringBuilder("\n");
             appendAlterStart(ddl);
             ddl.append(columnEntry.getKey());
             ddl.append(" ");
             ddl.append(columnEntry.getValue());
-            ddl.append(";\n");
+            ddl.append(";");
+            updateScripts.add(ddl.toString());
         }
         for (Map.Entry<String, String> listEntry : lists.entrySet()) {
+            StringBuilder ddl = new StringBuilder("\n");
             appendAlterStart(ddl);
             ddl.append(listEntry.getKey());
             ddl.append(" list<");
             ddl.append(listEntry.getValue());
-            ddl.append(">");
-            ddl.append(";\n");
+            ddl.append(">;");
+            updateScripts.add(ddl.toString());
         }
         for (Map.Entry<String, String> setEntry : sets.entrySet()) {
+            StringBuilder ddl = new StringBuilder("\n");
             appendAlterStart(ddl);
             ddl.append(setEntry.getKey());
             ddl.append(" set<");
             ddl.append(setEntry.getValue());
-            ddl.append(">");
-            ddl.append(";\n");
+            ddl.append(">;");
+            updateScripts.add(ddl.toString());
         }
         for (Map.Entry<String, Pair<String, String>> mapEntry : maps.entrySet()) {
+            StringBuilder ddl = new StringBuilder("\n");
             appendAlterStart(ddl);
             ddl.append(mapEntry.getKey());
             ddl.append(" map<");
             ddl.append(mapEntry.getValue().left);
             ddl.append(",");
             ddl.append(mapEntry.getValue().right);
-            ddl.append(">");
-            ddl.append(";\n");
+            ddl.append(">;");
+            updateScripts.add(ddl.toString());
         }
 
         for (String counter : counters) {
+            StringBuilder ddl = new StringBuilder("\n");
             appendAlterStart(ddl);
             ddl.append(counter);
-            ddl.append(" counter");
-            ddl.append(";\n");
+            ddl.append(" counter;");
+            updateScripts.add(ddl.toString());
         }
-        return ddl.toString();
+
+        for (String updateScript : updateScripts) {
+            log.debug(updateScript);
+        }
+
+        return updateScripts;
     }
 
     private void appendAlterStart(StringBuilder ddl) {

@@ -20,7 +20,6 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBE
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import java.util.Arrays;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.CounterProperties;
@@ -81,7 +81,7 @@ public class EntityParserTest {
     public void setUp() {
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
-        configContext.setEnableSchemaUpdateForTables(Arrays.<String>asList());
+        configContext.setEnableSchemaUpdateForTables(ImmutableMap.<String, Boolean>of());
         configContext.setObjectMapperFactory(objectMapperFactory);
         configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
     }
@@ -298,7 +298,7 @@ public class EntityParserTest {
         initEntityParsingContext(BeanWithClusteredId.class);
 
         configContext.setEnableSchemaUpdate(false);
-        configContext.setEnableSchemaUpdateForTables(Arrays.asList("BeanWithClusteredId"));
+        configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("BeanWithClusteredId", true));
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.isSchemaUpdateEnabled()).isTrue();

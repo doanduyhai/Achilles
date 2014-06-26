@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Validator;
+import org.fest.assertions.data.MapEntry;
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -218,19 +219,19 @@ public class ArgumentExtractorTest {
     @Test
     public void should_init_force_update_map() throws Exception {
         //Given
-        configMap.put(ENABLE_SCHEMA_UPDATE_FOR_TABLES, Arrays.asList("myTable"));
+        configMap.put(ENABLE_SCHEMA_UPDATE_FOR_TABLES, ImmutableMap.of("myTable", true));
 
         //When
-        List<String> tables = extractor.initForceTableUpdateMap(configMap);
+        Map<String, Boolean> tables = extractor.initForceTableUpdateMap(configMap);
 
         //Then
-        assertThat(tables).containsExactly("myTable");
+        assertThat(tables).contains(MapEntry.entry("myTable", true));
     }
 
     @Test
     public void should_init_default_force_update_to_false() throws Exception {
         boolean actual = extractor.initForceTableUpdate(configMap);
-        List<String> tables = extractor.initForceTableUpdateMap(configMap);
+        Map<String, Boolean> tables = extractor.initForceTableUpdateMap(configMap);
 
         assertThat(actual).isFalse();
         assertThat(tables.isEmpty());

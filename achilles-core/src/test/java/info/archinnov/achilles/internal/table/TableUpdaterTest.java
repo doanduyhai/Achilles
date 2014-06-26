@@ -106,7 +106,7 @@ public class TableUpdaterTest {
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(longColPM));
+        meta.setAllMetasExceptId(asList(longColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -117,7 +117,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;");
     }
 
     @Test
@@ -128,7 +128,7 @@ public class TableUpdaterTest {
         longColPM.setIndexProperties(new IndexProperties("long_index", "longCol"));
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(longColPM));
+        meta.setAllMetasExceptId(asList(longColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -140,7 +140,7 @@ public class TableUpdaterTest {
         // Then
         verify(session, Mockito.times(2)).execute(stringCaptor.capture());
         final List<String> updates = stringCaptor.getAllValues();
-        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;\n");
+        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;");
         assertThat(updates.get(1)).isEqualTo("\nCREATE INDEX long_index ON tableName(longCol);\n");
     }
 
@@ -151,7 +151,7 @@ public class TableUpdaterTest {
         PropertyMeta listStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(LIST).field("list_string").build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(listStringPM));
+        meta.setAllMetasExceptId(asList(listStringPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -162,7 +162,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD list_string list<text>;\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD list_string list<text>;");
     }
 
     @Test
@@ -172,7 +172,7 @@ public class TableUpdaterTest {
         PropertyMeta listStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(SET).field("set_string").build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(listStringPM));
+        meta.setAllMetasExceptId(asList(listStringPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -183,7 +183,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD set_string set<text>;\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD set_string set<text>;");
     }
 
     @Test
@@ -193,7 +193,7 @@ public class TableUpdaterTest {
         PropertyMeta listStringPM = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).type(MAP).field("preferences").build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(listStringPM));
+        meta.setAllMetasExceptId(asList(listStringPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -204,7 +204,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD preferences map<int,text>;\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD preferences map<int,text>;");
     }
 
     @Test
@@ -214,7 +214,7 @@ public class TableUpdaterTest {
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
 
         meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(asList(longColPM));
+        meta.setAllMetasExceptId(asList(longColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
@@ -225,7 +225,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD count counter;\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD count counter;");
     }
 
 }

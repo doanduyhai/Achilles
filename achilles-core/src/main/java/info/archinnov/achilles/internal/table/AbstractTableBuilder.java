@@ -1,13 +1,17 @@
 package info.archinnov.achilles.internal.table;
 
+import static info.archinnov.achilles.internal.table.TableCreator.ACHILLES_DDL_SCRIPT;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
 
 public abstract class AbstractTableBuilder {
 
+    protected static final Logger log = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
     protected Set<IndexProperties> indexedColumns = new HashSet<>();
 
     public boolean hasIndices() {
