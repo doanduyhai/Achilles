@@ -101,8 +101,8 @@ public class PersistenceManagerFactoryBeanTest {
         factory.setBeanValidator(Mockito.mock(Validator.class));
         factory.setPreparedStatementCacheSize(100);
         factory.setDisableProxiesWarmUp(true);
-        factory.setForceBatchStatementOrdering(true);
         factory.setInsertStrategy(InsertStrategy.NOT_NULL_FIELDS);
+        factory.setOsgiClassLoader(this.getClass().getClassLoader());
 
         exception.expect(IllegalStateException.class);
 

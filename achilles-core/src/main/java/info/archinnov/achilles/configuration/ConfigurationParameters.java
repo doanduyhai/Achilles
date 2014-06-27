@@ -45,8 +45,6 @@ public enum ConfigurationParameters {
 
     PROXIES_WARM_UP_DISABLED("achilles.proxies.warm.up.disabled"),
 
-    FORCE_BATCH_STATEMENTS_ORDERING("achilles.batch.force.statements.ordering"),
-
     INSERT_STRATEGY("achilles.insert.strategy"),
 
     OSGI_CLASS_LOADER("achilles.osgi.class.loader");

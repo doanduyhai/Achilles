@@ -66,7 +66,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
         manager.persist(entity);
 
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch(ONE);
         logAsserter.prepareLogLevel();
 
@@ -90,7 +90,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setName("name sdfsdf");
         manager.persist(entity);
 
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
 
         batchEm.startBatch(EACH_QUORUM);
 
@@ -125,7 +125,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setName("name");
         entity.setCount(CounterBuilder.incr());
 
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch(THREE);
         entity = batchEm.persist(entity);
 
@@ -139,7 +139,7 @@ public class ConsistencyLevelPriorityOrderingIT {
     @Test
     public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch(ONE);
 
         expectedEx.expect(InvalidQueryException.class);

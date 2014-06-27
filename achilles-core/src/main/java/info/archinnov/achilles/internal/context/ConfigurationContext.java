@@ -48,8 +48,6 @@ public class ConfigurationContext {
 
     private int preparedStatementLRUCacheSize = 10000;
 
-    private boolean forceBatchStatementsOrdering = true;
-
     private InsertStrategy insertStrategy;
 
     private ClassLoader OSGIClassLoader;
@@ -116,14 +114,6 @@ public class ConfigurationContext {
 
     public void setPreparedStatementLRUCacheSize(int preparedStatementLRUCacheSize) {
         this.preparedStatementLRUCacheSize = preparedStatementLRUCacheSize;
-    }
-
-    public boolean isForceBatchStatementsOrdering() {
-        return forceBatchStatementsOrdering;
-    }
-
-    public void setForceBatchStatementsOrdering(boolean forceBatchStatementsOrdering) {
-        this.forceBatchStatementsOrdering = forceBatchStatementsOrdering;
     }
 
     public InsertStrategy getInsertStrategy() {

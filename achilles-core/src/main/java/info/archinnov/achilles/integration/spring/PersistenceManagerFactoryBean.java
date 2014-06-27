@@ -23,13 +23,13 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -79,9 +79,9 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
     private boolean disableProxiesWarmUp = true;
 
-    private boolean forceBatchStatementOrdering = false;
-
     private InsertStrategy insertStrategy = InsertStrategy.ALL_FIELDS;
+
+    private ClassLoader osgiClassLoader;
 
 
     protected void initialize() {
@@ -109,8 +109,11 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
             configMap.put(PREPARED_STATEMENTS_CACHE_SIZE, preparedStatementCacheSize);
         }
         configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
-        configMap.put(FORCE_BATCH_STATEMENTS_ORDERING, forceBatchStatementOrdering);
         configMap.put(INSERT_STRATEGY, insertStrategy);
+
+        if (osgiClassLoader != null) {
+            configMap.put(OSGI_CLASS_LOADER, osgiClassLoader);
+        }
 
         PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.build(cluster, configMap);
         manager = pmf.createPersistenceManager();
@@ -206,10 +209,6 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         this.disableProxiesWarmUp = disableProxiesWarmUp;
     }
 
-    public void setForceBatchStatementOrdering(boolean forceBatchStatementOrdering) {
-        this.forceBatchStatementOrdering = forceBatchStatementOrdering;
-    }
-
     public void setInsertStrategy(InsertStrategy insertStrategy) {
         this.insertStrategy = insertStrategy;
     }
@@ -240,6 +239,10 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
     public void setConsistencyLevelWriteMap(Map<String, ConsistencyLevel> consistencyLevelWriteMap) {
         this.consistencyLevelWriteMap = consistencyLevelWriteMap;
+    }
+
+    public void setOsgiClassLoader(ClassLoader osgiClassLoader) {
+        this.osgiClassLoader = osgiClassLoader;
     }
 
     @Override

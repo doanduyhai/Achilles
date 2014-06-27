@@ -245,7 +245,7 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_interceptors_before_flush_for_batch() throws Exception {
         // Given
-        final BatchingPersistenceManager batchingPM = pmf.createBatchingPersistenceManager();
+        final BatchingPersistenceManager batchingPM = pmf.createBatch();
         batchingPM.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();

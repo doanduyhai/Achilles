@@ -180,7 +180,7 @@ public class PersistenceManagerFactoryTest {
         pmf.daoContext = daoContext;
         pmf.contextFactory = contextFactory;
 
-        PersistenceManager manager = pmf.createBatchingPersistenceManager();
+        PersistenceManager manager = pmf.createBatch();
 
         // Then
         assertThat(manager).isNotNull();

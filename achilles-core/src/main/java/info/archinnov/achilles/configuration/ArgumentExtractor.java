@@ -27,7 +27,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENAB
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
@@ -76,8 +75,6 @@ public class ArgumentExtractor {
     static final boolean DEFAULT_ENABLE_BEAN_VALIDATION = false;
 
     static final boolean DEFAULT_PROXIES_WARM_UP_DISABLED = true;
-
-    static final boolean DEFAULT_FORCE_BATCH_STATEMENTS_ORDERING = false;
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
 
@@ -130,7 +127,6 @@ public class ArgumentExtractor {
         configContext.setWriteConsistencyLevelMap(initWriteConsistencyMap(configurationMap));
         configContext.setBeanValidator(initValidator(configurationMap));
         configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
-        configContext.setForceBatchStatementsOrdering(initForceBatchStatementsOrdering(configurationMap));
         configContext.setInsertStrategy(initInsertStrategy(configurationMap));
         configContext.setOSGIClassLoader(initOSGIClassLoader(configurationMap));
         return configContext;
@@ -239,10 +235,6 @@ public class ArgumentExtractor {
 
     public boolean initProxyWarmUp(ConfigMap configMap) {
         return configMap.getTypedOr(PROXIES_WARM_UP_DISABLED, DEFAULT_PROXIES_WARM_UP_DISABLED);
-    }
-
-    public boolean initForceBatchStatementsOrdering(ConfigMap configMap) {
-        return configMap.getTypedOr(FORCE_BATCH_STATEMENTS_ORDERING, DEFAULT_FORCE_BATCH_STATEMENTS_ORDERING);
     }
 
     public InsertStrategy initInsertStrategy(ConfigMap configMap) {

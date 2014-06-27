@@ -36,13 +36,13 @@ public class BatchingPersistenceManager extends PersistenceManager {
 
     protected BatchingFlushContext flushContext;
     private final ConsistencyLevel defaultConsistencyLevel;
-    private final boolean forceStatementsOrdering;
+    private final boolean orderedBatch;
 
     BatchingPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
-            DaoContext daoContext, ConfigurationContext configContext) {
+            DaoContext daoContext, ConfigurationContext configContext, boolean orderedBatch) {
         super(entityMetaMap, contextFactory, daoContext, configContext);
         this.defaultConsistencyLevel = configContext.getDefaultWriteConsistencyLevel();
-        this.forceStatementsOrdering = configContext.isForceBatchStatementsOrdering();
+        this.orderedBatch = orderedBatch;
         this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel);
     }
 
@@ -164,7 +164,7 @@ public class BatchingPersistenceManager extends PersistenceManager {
     }
 
     private Options maybeAddTimestampToStatement(Options options) {
-        if (forceStatementsOrdering)
+        if (orderedBatch)
             return options.duplicateWithNewTimestamp(UUIDGen.increasingMicroTimestamp());
         else
             return options;

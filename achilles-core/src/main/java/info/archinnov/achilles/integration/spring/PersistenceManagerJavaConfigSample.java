@@ -24,12 +24,12 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import static info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
@@ -113,6 +113,9 @@ public class PersistenceManagerJavaConfigSample {
     @Autowired
     private InsertStrategy insertStrategy;
 
+    @Autowired
+    private ClassLoader osgiClassLoader;
+
     @PostConstruct
     public void initialize() {
         Map<ConfigurationParameters, Object> configMap = extractConfigParams();
@@ -164,10 +167,13 @@ public class PersistenceManagerJavaConfigSample {
 
         configMap.put(PREPARED_STATEMENTS_CACHE_SIZE, preparedStatementsCacheSize);
         configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
-        configMap.put(FORCE_BATCH_STATEMENTS_ORDERING, forceBatchStatementsOrdering);
 
         if (insertStrategy != null) {
             configMap.put(INSERT_STRATEGY, insertStrategy);
+        }
+
+        if (osgiClassLoader != null) {
+            configMap.put(OSGI_CLASS_LOADER, osgiClassLoader);
         }
 
         return configMap;

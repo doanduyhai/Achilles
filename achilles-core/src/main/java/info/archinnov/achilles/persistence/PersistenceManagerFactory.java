@@ -26,7 +26,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENAB
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
@@ -131,7 +130,7 @@ public class PersistenceManagerFactory {
             }
             long end = System.nanoTime();
             long duration = (end - start) / 1000000;
-            log.info("Entity proxies warm up took {} millisecs for {} entities", duration, entityMetaMap.size());
+            log.info("Entity proxies warm up took {} milli secs for {} entities", duration, entityMetaMap.size());
         }
     }
 
@@ -151,18 +150,38 @@ public class PersistenceManagerFactory {
     }
 
     /**
-     * Create a new state-full PersistenceManager for batch handling <br/>
+     * Create a new state-full Batch <br/>
      * <br/>
      * <p/>
-     * <strong>WARNING : This PersistenceManager is state-full and not
+     * <strong>WARNING : This Batch is state-full and not
      * thread-safe. In case of exception, you MUST not re-use it but create
      * another one</strong>
      *
      * @return a new state-full PersistenceManager
      */
-    public BatchingPersistenceManager createBatchingPersistenceManager() {
+    public BatchingPersistenceManager createBatch() {
         log.debug("Spawn new BatchingPersistenceManager");
-        return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext);
+        return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext, false);
+    }
+
+
+    /**
+     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full PersistenceManager
+     */
+    public BatchingPersistenceManager createOrderedBatch() {
+        log.debug("Spawn new BatchingPersistenceManager");
+        return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext, true);
     }
 
     /**
@@ -436,19 +455,6 @@ public class PersistenceManagerFactory {
             return this;
         }
 
-        /**
-         * Whether to force Batch statements ordering
-         *
-         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Batch-Mode#statements-ordering" target="_blank">Batch Statements Ordering</a>
-         *
-         * @param forceBatchStatementsOrdering
-         *
-         * @return PersistenceManagerFactoryBuilder
-         */
-        public PersistenceManagerFactoryBuilder forceBatchStatementsOrdering(boolean forceBatchStatementsOrdering) {
-            configMap.put(FORCE_BATCH_STATEMENTS_ORDERING, forceBatchStatementsOrdering);
-            return this;
-        }
 
         /**
          * Define the global insert strategy

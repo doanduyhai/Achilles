@@ -67,8 +67,7 @@ public class BatchingPersistenceManagerTest {
     @Before
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-        when(configContext.isForceBatchStatementsOrdering()).thenReturn(true);
-        manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext);
+        manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext,true);
         Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
     }
 

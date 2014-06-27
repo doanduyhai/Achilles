@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
@@ -61,14 +60,6 @@ public class BatchModeIT {
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
             "Tweet", "User");
 
-    private PersistenceManagerFactory pmf2 = CassandraEmbeddedServerBuilder
-            .withEntities(CompleteBean.class)
-            .withKeyspaceName("BATCH_STATEMENT_ORDERING")
-            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(FORCE_BATCH_STATEMENTS_ORDERING, true))
-            .buildPersistenceManagerFactory();
-
-    private PersistenceManager manager2 = pmf2.createPersistenceManager();
-
     private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
     private PersistenceManager manager = resource.getPersistenceManager();
@@ -87,7 +78,7 @@ public class BatchModeIT {
     @Test
     public void should_batch_counters() throws Exception {
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -132,7 +123,7 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.persist(bean);
@@ -172,7 +163,7 @@ public class BatchModeIT {
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         try {
@@ -212,7 +203,7 @@ public class BatchModeIT {
         manager.persist(tweet1);
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(QUORUM);
@@ -240,7 +231,7 @@ public class BatchModeIT {
         manager.persist(tweet1);
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatchingPersistenceManager();
+        BatchingPersistenceManager batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(EACH_QUORUM);
@@ -263,20 +254,20 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final BatchingPersistenceManager batchPM = pmf2.createBatchingPersistenceManager();
+        final BatchingPersistenceManager batch = pmf.createOrderedBatch();
 
         //When
-        batchPM.startBatch();
+        batch.startBatch();
 
-        entity = batchPM.persist(entity);
+        entity = batch.persist(entity);
         entity.setLabel("label");
-        batchPM.update(entity);
+        batch.update(entity);
 
-        batchPM.endBatch();
+        batch.endBatch();
 
         //Then
         Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
-        Row row = manager2.getNativeSession().execute(statement).one();
+        Row row = manager.getNativeSession().execute(statement).one();
         assertThat(row.getString("label")).isEqualTo("label");
     }
 
@@ -285,20 +276,20 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final BatchingPersistenceManager batchPM = pmf2.createBatchingPersistenceManager();
+        final BatchingPersistenceManager batch = pmf.createOrderedBatch();
 
         //When
-        batchPM.startBatch();
+        batch.startBatch();
 
-        entity = batchPM.persist(entity);
+        entity = batch.persist(entity);
         entity.setName("name");
-        batchPM.update(entity);
+        batch.update(entity);
 
-        batchPM.endBatch();
+        batch.endBatch();
 
         //Then
         Statement statement = new SimpleStatement("SELECT name from CompleteBean where id=" + entity.getId());
-        Row row = manager2.getNativeSession().execute(statement).one();
+        Row row = manager.getNativeSession().execute(statement).one();
         assertThat(row.getString("name")).isEqualTo("name");
     }
 

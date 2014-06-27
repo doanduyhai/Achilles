@@ -27,7 +27,6 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENAB
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_BATCH_STATEMENTS_ORDERING;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
@@ -377,7 +376,6 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(configContext.getBeanValidator()).isNull();
         assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_LRU_CACHE_SIZE);
-        assertThat(configContext.isForceBatchStatementsOrdering()).isFalse();
         assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
         assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
     }
@@ -452,19 +450,6 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(actual).isFalse();
-    }
-
-    @Test
-    public void should_init_force_batch_statements_ordering() throws Exception {
-        //Given
-        ConfigMap params = new ConfigMap();
-        params.put(FORCE_BATCH_STATEMENTS_ORDERING, true);
-
-        //When
-        boolean actual = extractor.initForceBatchStatementsOrdering(params);
-
-        //Then
-        assertThat(actual).isTrue();
     }
 
     @Test

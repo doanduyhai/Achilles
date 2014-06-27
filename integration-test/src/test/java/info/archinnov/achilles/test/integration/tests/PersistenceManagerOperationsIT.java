@@ -53,10 +53,7 @@ public class PersistenceManagerOperationsIT {
 
         manager.persist(entity);
 
-        Row row = session
-                .execute(
-                        "select name,age_in_years,friends,followers,preferences from completebean where id = "
-                                + entity.getId()).one();
+        Row row = session.execute("select name,age_in_years,friends,followers,preferences from completebean where id = "+ entity.getId()).one();
 
         assertThat(row.getLong("age_in_years")).isEqualTo(35L);
         assertThat(row.getList("friends", String.class)).containsExactly("foo", "bar");
@@ -73,8 +70,7 @@ public class PersistenceManagerOperationsIT {
         assertThat(preferences).containsValue("75014");
 
         row = session.execute(
-                "select counter_value from achilles_counter_table where fqcn = '"
-                        + CompleteBean.class.getCanonicalName() + "' and primary_key='" + entity.getId()
+                "select counter_value from achilles_counter_table where fqcn = '"+ CompleteBean.class.getCanonicalName() + "' and primary_key='" + entity.getId()
                         + "' and property_name='version'").one();
 
         assertThat(row.getLong("counter_value")).isEqualTo(15L);
@@ -248,7 +244,7 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_get_reference() throws Exception {
+    public void should_get_proxy() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
