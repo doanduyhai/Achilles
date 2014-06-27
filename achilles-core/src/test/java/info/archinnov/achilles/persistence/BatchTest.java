@@ -42,12 +42,12 @@ import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BatchingPersistenceManagerTest {
+public class BatchTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private BatchingPersistenceManager manager;
+    private Batch manager;
 
     @Mock
     private PersistenceContextFactory contextFactory;
@@ -67,7 +67,7 @@ public class BatchingPersistenceManagerTest {
     @Before
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-        manager = new BatchingPersistenceManager(null, contextFactory, daoContext, configContext,true);
+        manager = new Batch(null, contextFactory, daoContext, configContext,true);
         Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
     }
 

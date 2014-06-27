@@ -19,7 +19,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static org.fest.assertions.api.Assertions.assertThat;
 import org.junit.Test;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
@@ -37,7 +37,7 @@ public class UnorderedBatchModeIT {
     public void should_not_order_batch_statements_for_insert() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        BatchingPersistenceManager batchingPM = pmf.createBatch();
+        Batch batchingPM = pmf.createBatch();
 
         //When
         batchingPM.startBatch();
@@ -60,7 +60,7 @@ public class UnorderedBatchModeIT {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
         PersistenceManager pm = pmf.createPersistenceManager();
-        BatchingPersistenceManager batchingPM = pmf.createBatch();
+        Batch batchingPM = pmf.createBatch();
 
         CompleteBean managed = pm.persist(entity);
 

@@ -30,14 +30,11 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.configuration.ConfigurationParameters;
-import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -78,7 +75,7 @@ public class BatchModeIT {
     @Test
     public void should_batch_counters() throws Exception {
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -123,7 +120,7 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.persist(bean);
@@ -163,7 +160,7 @@ public class BatchModeIT {
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         try {
@@ -203,7 +200,7 @@ public class BatchModeIT {
         manager.persist(tweet1);
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(QUORUM);
@@ -231,7 +228,7 @@ public class BatchModeIT {
         manager.persist(tweet1);
 
         // Start batch
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(EACH_QUORUM);
@@ -254,7 +251,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final BatchingPersistenceManager batch = pmf.createOrderedBatch();
+        final Batch batch = pmf.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -276,7 +273,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final BatchingPersistenceManager batch = pmf.createOrderedBatch();
+        final Batch batch = pmf.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -293,7 +290,7 @@ public class BatchModeIT {
         assertThat(row.getString("name")).isEqualTo("name");
     }
 
-    private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
+    private void assertThatBatchContextHasBeenReset(Batch batchEm) {
         BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
         ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
         List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");

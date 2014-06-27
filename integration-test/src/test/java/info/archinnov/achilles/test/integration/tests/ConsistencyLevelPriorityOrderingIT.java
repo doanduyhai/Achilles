@@ -32,7 +32,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -66,7 +66,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
         manager.persist(entity);
 
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch(ONE);
         logAsserter.prepareLogLevel();
 
@@ -90,7 +90,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setName("name sdfsdf");
         manager.persist(entity);
 
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
 
         batchEm.startBatch(EACH_QUORUM);
 
@@ -125,7 +125,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setName("name");
         entity.setCount(CounterBuilder.incr());
 
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch(THREE);
         entity = batchEm.persist(entity);
 
@@ -139,7 +139,7 @@ public class ConsistencyLevelPriorityOrderingIT {
     @Test
     public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
 
-        BatchingPersistenceManager batchEm = pmf.createBatch();
+        Batch batchEm = pmf.createBatch();
         batchEm.startBatch(ONE);
 
         expectedEx.expect(InvalidQueryException.class);
@@ -148,7 +148,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         batchEm.sliceQuery(ClusteredEntity.class).partitionComponents(11L).consistencyLevel(EACH_QUORUM).get(10);
     }
 
-    private void assertThatBatchContextHasBeenReset(BatchingPersistenceManager batchEm) {
+    private void assertThatBatchContextHasBeenReset(Batch batchEm) {
         BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
         ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
         List<AbstractStatementWrapper> statementWrappers = Whitebox.getInternalState(flushContext, "statementWrappers");

@@ -30,15 +30,15 @@ import info.archinnov.achilles.internal.utils.UUIDGen;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
-public class BatchingPersistenceManager extends PersistenceManager {
+public class Batch extends PersistenceManager {
 
-    private static final Logger log = LoggerFactory.getLogger(BatchingPersistenceManager.class);
+    private static final Logger log = LoggerFactory.getLogger(Batch.class);
 
     protected BatchingFlushContext flushContext;
     private final ConsistencyLevel defaultConsistencyLevel;
     private final boolean orderedBatch;
 
-    BatchingPersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
+    Batch(Map<Class<?>, EntityMeta> entityMetaMap, PersistenceContextFactory contextFactory,
             DaoContext daoContext, ConfigurationContext configContext, boolean orderedBatch) {
         super(entityMetaMap, contextFactory, daoContext, configContext);
         this.defaultConsistencyLevel = configContext.getDefaultWriteConsistencyLevel();

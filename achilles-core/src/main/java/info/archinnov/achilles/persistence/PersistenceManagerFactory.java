@@ -159,9 +159,9 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full PersistenceManager
      */
-    public BatchingPersistenceManager createBatch() {
+    public Batch createBatch() {
         log.debug("Spawn new BatchingPersistenceManager");
-        return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext, false);
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
     }
 
 
@@ -179,9 +179,9 @@ public class PersistenceManagerFactory {
      *
      * @return a new state-full PersistenceManager
      */
-    public BatchingPersistenceManager createOrderedBatch() {
+    public Batch createOrderedBatch() {
         log.debug("Spawn new BatchingPersistenceManager");
-        return new BatchingPersistenceManager(entityMetaMap, contextFactory, daoContext, configContext, true);
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
     }
 
     /**

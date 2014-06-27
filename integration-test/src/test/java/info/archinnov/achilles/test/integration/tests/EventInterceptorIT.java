@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.persistence.BatchingPersistenceManager;
+import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
@@ -245,7 +245,7 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_interceptors_before_flush_for_batch() throws Exception {
         // Given
-        final BatchingPersistenceManager batchingPM = pmf.createBatch();
+        final Batch batchingPM = pmf.createBatch();
         batchingPM.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
