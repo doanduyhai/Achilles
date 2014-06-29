@@ -57,25 +57,25 @@ import info.archinnov.achilles.type.Pair;
 public class DaoContext {
     private static final Logger log = LoggerFactory.getLogger(DaoContext.class);
 
-    private Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
+    protected Cache<StatementCacheKey, PreparedStatement> dynamicPSCache;
 
-    private Map<Class<?>, PreparedStatement> selectPSs;
+    protected Map<Class<?>, PreparedStatement> selectPSs;
 
-    private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
+    protected Map<Class<?>, Map<String, PreparedStatement>> removePSs;
 
-    private Map<CQLQueryType, PreparedStatement> counterQueryMap;
+    protected Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
-    private Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap;
+    protected Map<Class<?>, Map<CQLQueryType, Map<String, PreparedStatement>>> clusteredCounterQueryMap;
 
-    private Session session;
+    protected Session session;
 
-    private CacheManager cacheManager;
+    protected CacheManager cacheManager;
 
-    private PreparedStatementBinder binder = new PreparedStatementBinder();
+    protected PreparedStatementBinder binder = new PreparedStatementBinder();
 
-    private StatementGenerator statementGenerator = new StatementGenerator();
+    protected StatementGenerator statementGenerator = new StatementGenerator();
 
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
+    protected ConsistencyOverrider overrider = new ConsistencyOverrider();
 
     public void pushInsertStatement(DaoOperations context, List<PropertyMeta> pms) {
         log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context, pms);
@@ -103,7 +103,8 @@ public class DaoContext {
         if (changeType == SET_TO_LIST_AT_INDEX || changeType == REMOVE_FROM_LIST_AT_INDEX) {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
             final Pair<Update.Where, Object[]> pair = statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet);
-            context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel), context.getCASResultListener()));
+            context.pushStatement(new RegularStatementWrapper(context.getEntityClass(), pair.left, pair.right, getCQLLevel(writeLevel),
+                    context.getCASResultListener(), context.getSerialConsistencyLevel()));
         } else {
             PreparedStatement ps = cacheManager.getCacheForCollectionAndMapOperation(session, dynamicPSCache, context, propertyMeta, changeSet);
             BoundStatementWrapper bsWrapper = binder.bindForCollectionAndMapUpdate(context, ps, changeSet);

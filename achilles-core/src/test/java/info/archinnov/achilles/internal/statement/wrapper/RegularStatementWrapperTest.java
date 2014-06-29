@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.statement.wrapper;
 
 import static com.datastax.driver.core.ColumnDefinitionBuilder.buildColumnDef;
 import static com.datastax.driver.core.ColumnDefinitions.Definition;
+import static com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
 import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.CAS_RESULT_COLUMN;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult;
@@ -78,7 +79,8 @@ public class RegularStatementWrapperTest {
     @Mock
     private RowMethodInvoker invoker;
 
-    private Optional<CASResultListener> noListener = Optional.absent();
+    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
 
     @Before
@@ -89,13 +91,15 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_execute() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, noListener);
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER,Optional.fromNullable(LOCAL_SERIAL));
 
         //When
         wrapper.execute(session);
 
         //Then
         verify(session).execute(rs);
+        verify(rs).setConsistencyLevel(ONE);
+        verify(rs).setSerialConsistencyLevel(LOCAL_SERIAL);
     }
 
     @Test
@@ -115,7 +119,7 @@ public class RegularStatementWrapperTest {
         };
 
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.fromNullable(listener));
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.fromNullable(listener), NO_SERIAL_CONSISTENCY);
         when(session.execute(rs)).thenReturn(resultSet);
         when(resultSet.one().getBool(CAS_RESULT_COLUMN)).thenReturn(true);
 
@@ -141,7 +145,7 @@ public class RegularStatementWrapperTest {
                 atomicCASResult.compareAndSet(null, casResult);
             }
         };
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.fromNullable(listener));
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, Optional.fromNullable(listener), NO_SERIAL_CONSISTENCY);
         wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("UPDATE table IF name='John' SET");
         when(session.execute(rs)).thenReturn(resultSet);
@@ -171,7 +175,7 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_notify_listener_on_cas_error() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, noListener);
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
         wrapper.invoker = invoker;
         when(rs.getQueryString()).thenReturn("INSERT INTO table IF NOT EXISTS");
         when(session.execute(rs)).thenReturn(resultSet);
@@ -206,7 +210,7 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, noListener);
+        wrapper = new RegularStatementWrapper(CompleteBean.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
 
         //When
         final RegularStatement expectedRs = wrapper.getStatement();
@@ -218,7 +222,7 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_activate_query_tracing() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(Entity1.class, rs, new Object[] { 1 }, ONE, noListener);
+        wrapper = new RegularStatementWrapper(Entity1.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
 
         //When
         wrapper.activateQueryTracing(rs);
@@ -230,7 +234,7 @@ public class RegularStatementWrapperTest {
     @Test
     public void should_trace_query() throws Exception {
         //Given
-        wrapper = new RegularStatementWrapper(Entity1.class, rs, new Object[] { 1 }, ONE, noListener);
+        wrapper = new RegularStatementWrapper(Entity1.class, rs, new Object[] { 1 }, ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
 
         ExecutionInfo executionInfo = mock(ExecutionInfo.class, RETURNS_DEEP_STUBS);
 

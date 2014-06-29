@@ -27,19 +27,21 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
+import com.google.common.base.Optional;
 
 public class BatchingFlushContext extends AbstractFlushContext {
 
 	private static final Logger log = LoggerFactory.getLogger(BatchingFlushContext.class);
     protected List<EventHolder> eventHolders = new ArrayList<>();
 
-	public BatchingFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel) {
-		super(daoContext, consistencyLevel);
+	public BatchingFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel,
+            Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+		super(daoContext, consistencyLevel,serialConsistencyLevel);
 	}
 
 	private BatchingFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
-			ConsistencyLevel consistencyLevel) {
-		super(daoContext, statementWrappers, consistencyLevel);
+			ConsistencyLevel consistencyLevel,Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+		super(daoContext, statementWrappers, consistencyLevel,serialConsistencyLevel);
 	}
 
 	@Override
@@ -60,12 +62,6 @@ public class BatchingFlushContext extends AbstractFlushContext {
         for(EventHolder eventHolder:eventHolders) {
             eventHolder.triggerInterception();
         }
-
-		/*
-		 * Deactivate prepared statement batches until
-		 * https://issues.apache.org/jira/browse/CASSANDRA-6426 is solved
-		 */
-
         executeBatch(BatchStatement.Type.LOGGED, statementWrappers);
         executeBatch(BatchStatement.Type.COUNTER, counterStatementWrappers);
 	}
@@ -78,7 +74,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
 
 	@Override
 	public BatchingFlushContext duplicate() {
-		return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel);
+		return new BatchingFlushContext(daoContext, statementWrappers, consistencyLevel,serialConsistencyLevel);
 	}
 
     @Override
@@ -91,6 +87,11 @@ public class BatchingFlushContext extends AbstractFlushContext {
     }
 
     public BatchingFlushContext duplicateWithNoData(ConsistencyLevel defaultConsistencyLevel) {
-        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel);
+        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel);
+    }
+
+    public BatchingFlushContext duplicateWithNoData(ConsistencyLevel defaultConsistencyLevel,
+            Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel ) {
+        return new BatchingFlushContext(daoContext, new ArrayList<AbstractStatementWrapper>(), defaultConsistencyLevel, serialConsistencyLevel);
     }
 }

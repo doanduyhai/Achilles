@@ -207,6 +207,11 @@ public class PersistenceContext {
             return options.getConsistencyLevel();
         }
 
+        @Override
+        public Optional<com.datastax.driver.core.ConsistencyLevel> getSerialConsistencyLevel() {
+            return options.getSerialConsistency();
+        }
+
         public List<CASCondition> getCasConditions() {
             return Optional.fromNullable(options.getCASConditions()).or(new ArrayList<CASCondition>());
         }

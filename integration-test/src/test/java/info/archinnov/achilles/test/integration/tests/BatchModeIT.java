@@ -216,7 +216,7 @@ public class BatchModeIT {
 
         batchEm.endBatch();
 
-        logAsserter.assertConsistencyLevels(QUORUM, QUORUM);
+        logAsserter.assertConsistencyLevels(QUORUM);
         assertThatBatchContextHasBeenReset(batchEm);
     }
 
@@ -244,7 +244,7 @@ public class BatchModeIT {
         logAsserter.prepareLogLevel();
         batchEm.persist(tweet2);
         batchEm.endBatch();
-        logAsserter.assertConsistencyLevels(ONE, ONE);
+        logAsserter.assertConsistencyLevels(ONE);
     }
 
     @Test

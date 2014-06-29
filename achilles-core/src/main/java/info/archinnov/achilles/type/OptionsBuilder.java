@@ -53,6 +53,10 @@ public class OptionsBuilder {
         return new InternalOptionsBuilder(listener);
     }
 
+    public static InternalOptionsBuilder casLocalSerial() {
+        return new InternalOptionsBuilder(Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
+    }
+
     public static class NoOptions extends Options {
         protected NoOptions() {
         }
@@ -85,8 +89,11 @@ public class OptionsBuilder {
         }
 
         protected InternalOptionsBuilder(CASResultListener listener) {
-            super.casResultListenerO = Optional.fromNullable(listener);
+            super.CASResultListenerO = Optional.fromNullable(listener);
+        }
 
+        protected InternalOptionsBuilder(Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO) {
+            super.serialConsistencyO = serialConsistencyO;
         }
 
 
@@ -111,7 +118,7 @@ public class OptionsBuilder {
         }
 
         public InternalOptionsBuilder casResultListener(CASResultListener listener) {
-            super.casResultListenerO = Optional.fromNullable(listener);
+            super.CASResultListenerO = Optional.fromNullable(listener);
             return this;
         }
 
@@ -127,6 +134,18 @@ public class OptionsBuilder {
 
         public InternalOptionsBuilder ifConditions(List<CASCondition> CASConditions) {
             super.CASConditions = CASConditions;
+            return this;
+        }
+
+        public InternalOptionsBuilder casLocalSerial() {
+            super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+            return this;
+        }
+
+        InternalOptionsBuilder casLocalSerial(boolean localSerial) {
+            if (localSerial) {
+                super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+            }
             return this;
         }
     }

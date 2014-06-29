@@ -39,6 +39,7 @@ public class SliceQueryStatementGenerator {
     private static final Logger log = LoggerFactory.getLogger(SliceQueryStatementGenerator.class);
 
     private static final Optional<CASResultListener> NO_CAS_LISTENER = Optional.absent();
+    private static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     public RegularStatementWrapper generateWhereClauseForSelectSliceQuery(CQLSliceQuery<?> sliceQuery, Select select) {
         Where where = select.where();
@@ -120,7 +121,7 @@ public class SliceQueryStatementGenerator {
         }
         where.setFetchSize(sliceQuery.getBatchSize());
         log.trace("Generated WHERE clause for slice query : {}", where.getQueryString());
-        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER,NO_SERIAL_CONSISTENCY);
     }
 
     public RegularStatementWrapper generateWhereClauseForDeleteSliceQuery(CQLSliceQuery<?> sliceQuery, Delete delete) {
@@ -135,7 +136,7 @@ public class SliceQueryStatementGenerator {
             boundValues[i] = fixedComponents.get(i);
         }
         log.trace("Generated WHERE clause for slice delete query : {}", where.getQueryString());
-        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER);
+        return new RegularStatementWrapper(sliceQuery.getEntityClass(), where, boundValues, sliceQuery.getConsistencyLevel(), NO_CAS_LISTENER,NO_SERIAL_CONSISTENCY);
     }
 
 }

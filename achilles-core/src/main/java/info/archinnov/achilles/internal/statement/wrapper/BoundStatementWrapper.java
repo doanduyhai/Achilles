@@ -27,11 +27,15 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     private BoundStatement boundStatement;
 
-    public BoundStatementWrapper(Class<?> entityClass, BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
+    public BoundStatementWrapper(Class<?> entityClass, BoundStatement bs, Object[] values, ConsistencyLevel consistencyLevel,
+            Optional<CASResultListener> casResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, values);
         super.casResultListener = casResultListener;
         this.boundStatement = bs;
         this.boundStatement.setConsistencyLevel(consistencyLevel);
+        if (serialConsistencyLevel.isPresent()) {
+            boundStatement.setSerialConsistencyLevel(serialConsistencyLevel.get());
+        }
     }
 
     @Override

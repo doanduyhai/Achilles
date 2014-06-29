@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.ResultSet;
+import com.google.common.base.Optional;
 
 public abstract class AbstractFlushContext {
 	protected DaoContext daoContext;
@@ -34,18 +35,21 @@ public abstract class AbstractFlushContext {
 	protected List<AbstractStatementWrapper> counterStatementWrappers = new ArrayList<>();
 
 	protected ConsistencyLevel consistencyLevel;
+	protected Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel = Optional.absent();
 
-	public AbstractFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel) {
+	public AbstractFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel, Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
 		this.daoContext = daoContext;
 		this.consistencyLevel = consistencyLevel;
-	}
+        this.serialConsistencyLevel = serialConsistencyLevel;
+    }
 
 	protected AbstractFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
-			ConsistencyLevel consistencyLevel) {
+			ConsistencyLevel consistencyLevel,Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
 		this.statementWrappers = statementWrappers;
 		this.daoContext = daoContext;
 		this.consistencyLevel = consistencyLevel;
-	}
+        this.serialConsistencyLevel = serialConsistencyLevel;
+    }
 
 	protected void executeBatch(BatchStatement.Type batchType, List<AbstractStatementWrapper> statementWrappers) {
 		if (statementWrappers.size() > 1) {
@@ -59,7 +63,10 @@ public abstract class AbstractFlushContext {
 			if (consistencyLevel != null) {
 				batch.setConsistencyLevel(getCQLLevel(consistencyLevel));
 			}
-			daoContext.executeBatch(batch);
+            if (serialConsistencyLevel.isPresent()) {
+                batch.setSerialConsistencyLevel(serialConsistencyLevel.get());
+            }
+            daoContext.executeBatch(batch);
 		} else if (statementWrappers.size() == 1) {
 			daoContext.execute(statementWrappers.get(0));
 		}
@@ -75,10 +82,6 @@ public abstract class AbstractFlushContext {
 
 	public ResultSet executeImmediate(AbstractStatementWrapper statementWrapper) {
 		return daoContext.execute(statementWrapper);
-	}
-
-	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
-		this.consistencyLevel = consistencyLevel;
 	}
 
 	public ConsistencyLevel getConsistencyLevel() {

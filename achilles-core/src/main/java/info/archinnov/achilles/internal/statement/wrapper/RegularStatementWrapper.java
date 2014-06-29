@@ -28,11 +28,14 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
     private RegularStatement regularStatement;
 
     public RegularStatementWrapper(Class<?> entityClass, RegularStatement regularStatement, Object[] boundValues,
-            ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener) {
+            ConsistencyLevel consistencyLevel, Optional<CASResultListener> casResultListener, Optional<ConsistencyLevel> serialConsistencyLevel) {
         super(entityClass, boundValues);
         this.regularStatement = regularStatement;
         super.casResultListener = casResultListener;
-        regularStatement.setConsistencyLevel(consistencyLevel);
+        this.regularStatement.setConsistencyLevel(consistencyLevel);
+        if (serialConsistencyLevel.isPresent()) {
+            this.regularStatement.setSerialConsistencyLevel(serialConsistencyLevel.get());
+        }
     }
 
     @Override

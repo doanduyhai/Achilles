@@ -33,6 +33,11 @@
         <level value="OFF"/>
     </logger>
 
+    <logger name="com.datastax.driver.core.Connection" additivity="false">
+        <level value="OFF"/>
+    </logger>
+
+
     <logger name="info.archinnov.achilles.test.integration.entity.EntityWithEnum">
         <level value="TRACE"/>
     </logger>

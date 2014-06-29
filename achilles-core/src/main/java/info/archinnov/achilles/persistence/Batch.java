@@ -15,11 +15,14 @@
  */
 package info.archinnov.achilles.persistence;
 
+import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
+import info.archinnov.achilles.internal.consistency.ConsistencyConverter;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -43,7 +46,7 @@ public class Batch extends PersistenceManager {
         super(entityMetaMap, contextFactory, daoContext, configContext);
         this.defaultConsistencyLevel = configContext.getDefaultWriteConsistencyLevel();
         this.orderedBatch = orderedBatch;
-        this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel);
+        this.flushContext = new BatchingFlushContext(daoContext, defaultConsistencyLevel, Optional.<com.datastax.driver.core.ConsistencyLevel>absent());
     }
 
     /**
@@ -55,11 +58,23 @@ public class Batch extends PersistenceManager {
     }
 
     /**
-     * Start a batch session with read/write consistency levels
+     * Start a batch session with write consistency level
      */
     public void startBatch(ConsistencyLevel consistencyLevel) {
         log.debug("Starting batch mode with consistency level {}", consistencyLevel.name());
         flushContext = flushContext.duplicateWithNoData(consistencyLevel);
+    }
+
+    /**
+     * Start a batch session with write consistency level and write serial consistency level
+     */
+    public void startBatch(ConsistencyLevel consistencyLevel, ConsistencyLevel serialConsistency) {
+        log.debug("Starting batch mode with consistency level {}", consistencyLevel.name());
+        Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel = Optional.absent();
+        if (serialConsistency != null) {
+            serialConsistencyLevel = Optional.fromNullable(getCQLLevel(serialConsistency));
+        }
+        flushContext = flushContext.duplicateWithNoData(consistencyLevel, serialConsistencyLevel);
     }
 
     /**

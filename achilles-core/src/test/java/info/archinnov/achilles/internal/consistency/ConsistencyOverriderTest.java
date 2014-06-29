@@ -39,6 +39,7 @@ import info.archinnov.achilles.type.Options;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConsistencyOverriderTest {
+    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
@@ -61,7 +62,7 @@ public class ConsistencyOverriderTest {
     public void should_override_runtime_value_by_batch_setting() throws Exception {
         //Given
         Options options = withConsistency(LOCAL_QUORUM);
-        AbstractFlushContext flushContext = new BatchingFlushContext(null, EACH_QUORUM);
+        AbstractFlushContext flushContext = new BatchingFlushContext(null, EACH_QUORUM, NO_SERIAL_CONSISTENCY);
 
         //When
         final Options actual = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);
@@ -75,7 +76,7 @@ public class ConsistencyOverriderTest {
     public void should_not_override_runtime_value_if_no_batch() throws Exception {
         //Given
         Options options = withConsistency(LOCAL_QUORUM);
-        AbstractFlushContext flushContext = new ImmediateFlushContext(null, EACH_QUORUM);
+        AbstractFlushContext flushContext = new ImmediateFlushContext(null, EACH_QUORUM, NO_SERIAL_CONSISTENCY);
 
         //When
         final Options actual = overrider.overrideRuntimeValueByBatchSetting(options, flushContext);

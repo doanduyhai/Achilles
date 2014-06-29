@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
+import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
@@ -84,6 +85,7 @@ public class PreparedStatementBinderTest {
     private static final Optional<Integer> NO_TTL = Optional.absent();
     private static final Optional<Long> NO_TIMESTAMP = Optional.absent();
     private static final Optional<info.archinnov.achilles.type.ConsistencyLevel> NO_CONSISTENCY = Optional.absent();
+    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Mock
     private ReflectionInvoker invoker;
@@ -121,6 +123,7 @@ public class PreparedStatementBinderTest {
         when(context.getTtl()).thenReturn(NO_TTL);
         when(context.getTimestamp()).thenReturn(NO_TIMESTAMP);
         when(context.getConsistencyLevel()).thenReturn(NO_CONSISTENCY);
+        when(context.getSerialConsistencyLevel()).thenReturn(NO_SERIAL_CONSISTENCY);
     }
 
     @Test
@@ -143,6 +146,7 @@ public class PreparedStatementBinderTest {
         entityMeta.setClusteredCounter(false);
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
+        when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
 
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
         when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
@@ -156,7 +160,8 @@ public class PreparedStatementBinderTest {
 
         BoundStatementWrapper actual = binder.bindForInsert(context, ps, asList(nameMeta, ageMeta));
 
-        verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.ALL);
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
         assertThat(asList(actual.getValues())).containsExactly(primaryKey, name, age, 0);
     }
 
@@ -196,7 +201,6 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_insert_with_compound_key() throws Exception {
         long userId = RandomUtils.nextLong();
-        long age = RandomUtils.nextLong();
         String name = "name";
         List<Object> friends = Arrays.<Object>asList("foo", "bar");
         Set<Object> followers = Sets.<Object>newHashSet("George", "Paul");
@@ -280,6 +284,7 @@ public class PreparedStatementBinderTest {
         when(invoker.getValueFromField(entity, nameMeta.getField())).thenReturn(name);
         when(invoker.getValueFromField(entity, ageMeta.getField())).thenReturn(age);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
+        when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(transcoder.encode(nameMeta, name)).thenReturn(name);
         when(transcoder.encode(ageMeta, age)).thenReturn(age);
@@ -289,6 +294,7 @@ public class PreparedStatementBinderTest {
         BoundStatementWrapper actual = binder.bindForUpdate(context, ps, asList(nameMeta, ageMeta));
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
         assertThat(asList(actual.getValues())).containsExactly(0, name, age, primaryKey);
     }
 
@@ -579,6 +585,7 @@ public class PreparedStatementBinderTest {
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
+        when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
@@ -593,6 +600,7 @@ public class PreparedStatementBinderTest {
 
         //Then
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
         assertThat(asList(actual.getValues())).containsExactly(0, values, primaryKey);
     }
 
@@ -741,7 +749,7 @@ public class PreparedStatementBinderTest {
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn(idMeta);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
-        when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
+        when(context.getTimestamp()).thenReturn(fromNullable(100L));
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);

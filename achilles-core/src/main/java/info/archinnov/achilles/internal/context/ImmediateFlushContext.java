@@ -25,17 +25,18 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
+import com.google.common.base.Optional;
 
 public class ImmediateFlushContext extends AbstractFlushContext {
 	private static final Logger log = LoggerFactory.getLogger(ImmediateFlushContext.class);
 
-	public ImmediateFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel) {
-		super(daoContext, consistencyLevel);
+	public ImmediateFlushContext(DaoContext daoContext, ConsistencyLevel consistencyLevel,Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+		super(daoContext, consistencyLevel,serialConsistencyLevel);
 	}
 
 	private ImmediateFlushContext(DaoContext daoContext, List<AbstractStatementWrapper> statementWrappers,
-			ConsistencyLevel consistencyLevel) {
-		super(daoContext, statementWrappers, consistencyLevel);
+			ConsistencyLevel consistencyLevel,Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyLevel) {
+		super(daoContext, statementWrappers, consistencyLevel,serialConsistencyLevel);
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 	@Override
 	public ImmediateFlushContext duplicate() {
 		log.trace("Duplicate immediate flushing context");
-		return new ImmediateFlushContext(daoContext, statementWrappers, consistencyLevel);
+		return new ImmediateFlushContext(daoContext, statementWrappers, consistencyLevel,serialConsistencyLevel);
 	}
 
     @Override

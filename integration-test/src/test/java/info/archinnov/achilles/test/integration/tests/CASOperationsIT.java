@@ -21,6 +21,8 @@ import static info.archinnov.achilles.listener.CASResultListener.CASResult.Opera
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.casResultListener;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
@@ -28,6 +30,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,6 +43,8 @@ import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.EntityWithEnum;
+import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
+import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 public class CASOperationsIT {
@@ -49,19 +54,23 @@ public class CASOperationsIT {
 
     private PersistenceManager manager = resource.getPersistenceManager();
 
+    private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
+
     @Test
     public void should_insert_when_not_exists() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
 
         //When
-        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists());
+        logAsserter.prepareLogLevel();
+        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists().casLocalSerial());
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
         assertThat(found).isNotNull();
         assertThat(found.getName()).isEqualTo("name");
         assertThat(found.getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        logAsserter.assertSerialConsistencyLevels(LOCAL_SERIAL,ONE);
     }
 
     @Test

@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement;
 
+import static com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.BoundingMode.*;
 import static info.archinnov.achilles.type.OrderingMode.*;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -33,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -64,6 +66,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
 		when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -92,6 +95,8 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c>1 AND c<=2;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
 	}
 
 	@Test
@@ -102,6 +107,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
         when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -130,7 +136,9 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c>1;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
-	}
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
+    }
 
 	@Test
 	public void should_generate_where_clause_when_more_components_for_end_ascending() throws Exception {
@@ -140,6 +148,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(2);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
         when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -168,6 +177,8 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c<=2;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
 	}
 
 	// ///////////////////////////////////// DESCENDING
@@ -179,6 +190,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
         when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -207,6 +219,8 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c<2 AND c>=1;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
 	}
 
 	@Test
@@ -217,6 +231,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(null);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
         when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -245,6 +260,8 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c<2;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
 	}
 
 	@Test
@@ -255,6 +272,7 @@ public class SliceQueryStatementGeneratorTest {
 		when(sliceQuery.getLastEndComponent()).thenReturn(1);
 		when(sliceQuery.getBounding()).thenReturn(INCLUSIVE_BOUNDS);
         when(sliceQuery.getBatchSize()).thenReturn(99);
+        when(sliceQuery.getConsistencyLevel()).thenReturn(EACH_QUORUM);
 
 		RegularStatementWrapper statement = generator.generateWhereClauseForSelectSliceQuery(sliceQuery,
 				buildFakeSelect());
@@ -283,6 +301,8 @@ public class SliceQueryStatementGeneratorTest {
 				"SELECT test FROM table WHERE id=11 AND a=? AND b=? AND c>=1;");
 		assertThat(statement.getValues()).contains(uuid1, "author");
         assertThat(statement.getStatement().getFetchSize()).isEqualTo(99);
+        assertThat(statement.getStatement().getConsistencyLevel()).isEqualTo(EACH_QUORUM);
+        assertThat(statement.getStatement().getSerialConsistencyLevel()).isNull();
 	}
 
 	@Test

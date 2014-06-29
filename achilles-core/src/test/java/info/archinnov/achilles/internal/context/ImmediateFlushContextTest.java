@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
@@ -34,12 +35,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Statement;
+import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ImmediateFlushContextTest {
+
+    private  static final Optional<ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
 	private ImmediateFlushContext context;
 
@@ -54,10 +59,9 @@ public class ImmediateFlushContextTest {
 
 	@Mock
 	private RegularStatement query;
-
 	@Before
 	public void setUp() {
-		context = new ImmediateFlushContext(daoContext, null);
+		context = new ImmediateFlushContext(daoContext, null, NO_SERIAL_CONSISTENCY);
 	}
 
 	@Test
@@ -97,10 +101,12 @@ public class ImmediateFlushContextTest {
 
 	@Test
 	public void should_duplicate() throws Exception {
-		context = new ImmediateFlushContext(daoContext, LOCAL_QUORUM);
+		context = new ImmediateFlushContext(daoContext, LOCAL_QUORUM,
+                Optional.fromNullable(ConsistencyLevel.LOCAL_SERIAL));
 		ImmediateFlushContext actual = context.duplicate();
 
 		assertThat(actual.consistencyLevel).isEqualTo(LOCAL_QUORUM);
+		assertThat(actual.serialConsistencyLevel.get()).isEqualTo(ConsistencyLevel.LOCAL_SERIAL);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)

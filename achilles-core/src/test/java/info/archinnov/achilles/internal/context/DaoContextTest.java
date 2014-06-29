@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static com.google.common.base.Optional.fromNullable;
 import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
@@ -50,7 +51,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -159,16 +159,16 @@ public class DaoContextTest {
 
     @Before
     public void setUp() {
-        Whitebox.setInternalState(daoContext, PreparedStatementBinder.class, binder);
-        Whitebox.setInternalState(daoContext, CacheManager.class, cacheManager);
-        Whitebox.setInternalState(daoContext, Cache.class, dynamicPSCache);
-        Whitebox.setInternalState(daoContext, "selectPSs", selectEagerPSs);
-        Whitebox.setInternalState(daoContext, "removePSs", removePSs);
-        Whitebox.setInternalState(daoContext, "counterQueryMap", counterQueryMap);
-        Whitebox.setInternalState(daoContext, "clusteredCounterQueryMap", clusteredCounterQueryMap);
-        Whitebox.setInternalState(daoContext, Session.class, session);
-        Whitebox.setInternalState(daoContext, StatementGenerator.class, statementGenerator);
-        Whitebox.setInternalState(daoContext, ConsistencyOverrider.class, overrider);
+        daoContext.binder = binder;
+        daoContext.cacheManager = cacheManager;
+        daoContext.dynamicPSCache = dynamicPSCache;
+        daoContext.selectPSs = selectEagerPSs;
+        daoContext.removePSs = removePSs;
+        daoContext.counterQueryMap = counterQueryMap;
+        daoContext.clusteredCounterQueryMap = clusteredCounterQueryMap;
+        daoContext.session = session;
+        daoContext.statementGenerator = statementGenerator;
+        daoContext.overrider = overrider;
         clusteredCounterQueryMap.clear();
         entityMeta = new EntityMeta();
         entityMeta.setEntityClass(CompleteBean.class);
@@ -243,6 +243,7 @@ public class DaoContextTest {
         final Optional<CASResultListener> casResultListener = Optional.absent();
 
         when(changeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
+        when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
 
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(statementGenerator.generateCollectionAndMapUpdateOperation(context, changeSet)).thenReturn(pair);
@@ -253,8 +254,10 @@ public class DaoContextTest {
 
         // Then
         verify(context).pushStatement(statementWrapperCaptor.capture());
-        assertThat(statementWrapperCaptor.getValue().getValues()).contains(boundValues);
-
+        final RegularStatementWrapper statementWrapper = statementWrapperCaptor.getValue();
+        assertThat(statementWrapper.getValues()).contains(boundValues);
+        assertThat(statementWrapper.getStatement().getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
+        assertThat(statementWrapper.getStatement().getSerialConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
         assertThat(where.getConsistencyLevel()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
     }
 
@@ -300,7 +303,7 @@ public class DaoContextTest {
     @Test
     public void should_exception_when_removal_ps_not_found_for_a_table() throws Exception {
         when(removePSs.get(CompleteBean.class)).thenReturn(of("some_table", ps));
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(EACH_QUORUM));
+        when(context.getConsistencyLevel()).thenReturn(fromNullable(EACH_QUORUM));
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot find prepared statement for deletion for table 'table'");
 
@@ -589,7 +592,7 @@ public class DaoContextTest {
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(DELETE, of(DELETE_ALL.name(), ps)));
 
         // When
-        when(context.getConsistencyLevel()).thenReturn(Optional.fromNullable(LOCAL_QUORUM));
+        when(context.getConsistencyLevel()).thenReturn(fromNullable(LOCAL_QUORUM));
         when(binder.bindForClusteredCounterDelete(context, ps)).thenReturn(bsWrapper);
 
         daoContext.bindForClusteredCounterDelete(context);

@@ -16,8 +16,10 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import static com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,11 +48,12 @@ public class BoundStatementWrapperTest {
     private Session session;
 
     private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Test
     public void should_execute() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ALL, NO_LISTENER);
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ALL, NO_LISTENER, Optional.fromNullable(LOCAL_SERIAL));
         when(bs.preparedStatement()).thenReturn(ps);
         when(ps.getQueryString()).thenReturn("SELECT");
 
@@ -59,12 +62,14 @@ public class BoundStatementWrapperTest {
 
         //Then
         verify(session).execute(bs);
+        verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
+        verify(bs).setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
     }
 
     @Test
     public void should_get_bound_statement() throws Exception {
         //Given
-        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER);
+        wrapper = new BoundStatementWrapper(CompleteBean.class, bs, new Object[] { 1 }, ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
 
         //When
         final BoundStatement expectedBs = wrapper.getStatement();

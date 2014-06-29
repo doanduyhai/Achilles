@@ -72,7 +72,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
         entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
 
-        logAsserter.assertConsistencyLevels(ONE, ONE);
+        logAsserter.assertConsistencyLevels(ONE);
         batchEm.endBatch();
 
         assertThatBatchContextHasBeenReset(batchEm);
@@ -110,12 +110,11 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setCount(CounterBuilder.incr());
         entity = manager.persist(entity);
 
+        logAsserter.prepareLogLevel();
         Counter counter = entity.getCount();
         counter.incr(10L);
-
-        logAsserter.prepareLogLevel();
         assertThat(counter.get()).isEqualTo(11L);
-        logAsserter.assertConsistencyLevels(ONE, ONE);
+        logAsserter.assertConsistencyLevels(ONE);
     }
 
     @Test
@@ -130,8 +129,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity = batchEm.persist(entity);
 
         expectedEx.expect(UnavailableException.class);
-        expectedEx
-                .expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+        expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
 
         entity.getCount();
     }

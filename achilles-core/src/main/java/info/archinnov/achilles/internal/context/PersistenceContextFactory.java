@@ -102,6 +102,6 @@ public class PersistenceContextFactory {
 	}
 
 	private ImmediateFlushContext buildImmediateFlushContext(Options options) {
-		return new ImmediateFlushContext(daoContext, options.getConsistencyLevel().orNull());
+		return new ImmediateFlushContext(daoContext, options.getConsistencyLevel().orNull(), options.getSerialConsistency());
 	}
 }

@@ -64,11 +64,12 @@ public class BatchingFlushContextTest {
     @Captor
     ArgumentCaptor<BatchStatement> batchCaptor;
 
-    private Optional<CASResultListener> noListener = Optional.absent();
+    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private  static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
     @Before
     public void setUp() {
-        context = new BatchingFlushContext(daoContext, EACH_QUORUM);
+        context = new BatchingFlushContext(daoContext, EACH_QUORUM,NO_SERIAL_CONSISTENCY);
     }
 
     @Test
@@ -91,12 +92,14 @@ public class BatchingFlushContextTest {
         EventHolder eventHolder = mock(EventHolder.class);
         RegularStatement statement1 = QueryBuilder.select().from("table1");
         RegularStatement statement2 = QueryBuilder.select().from("table2");
-        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(CompleteBean.class, statement1, null, com.datastax.driver.core.ConsistencyLevel.ONE, noListener);
-        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(CompleteBean.class, statement2, null, com.datastax.driver.core.ConsistencyLevel.ONE, noListener);
+        AbstractStatementWrapper wrapper1 = new RegularStatementWrapper(CompleteBean.class, statement1, null, com.datastax.driver.core.ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
+        AbstractStatementWrapper wrapper2 = new RegularStatementWrapper(CompleteBean.class, statement2, null, com.datastax.driver.core.ConsistencyLevel.ONE, NO_LISTENER, NO_SERIAL_CONSISTENCY);
         context.eventHolders = Arrays.asList(eventHolder);
         context.statementWrappers = Arrays.asList(wrapper1, wrapper2);
         context.counterStatementWrappers = Arrays.asList(wrapper1, wrapper2);
-        context.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+        context.consistencyLevel= ConsistencyLevel.LOCAL_QUORUM;
+        context.serialConsistencyLevel = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+
 
         //When
         context.endBatch();
@@ -109,12 +112,15 @@ public class BatchingFlushContextTest {
 
         final BatchStatement batchStatement1 = batchCaptor.getAllValues().get(0);
         assertThat(batchStatement1.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        assertThat(batchStatement1.getSerialConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+
         final List<Statement> statements1 = WhiteboxImpl.getInternalState(batchStatement1, "statements");
         assertThat(statements1).contains(statement1, statement2);
 
         final BatchStatement batchStatement2 = batchCaptor.getAllValues().get(1);
-        assertThat(batchStatement1
-                .getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        assertThat(batchStatement2.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        assertThat(batchStatement2.getSerialConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+
         final List<Statement> statements2 = WhiteboxImpl.getInternalState(batchStatement2, "statements");
         assertThat(statements2).contains(statement1, statement2);
     }
@@ -132,6 +138,7 @@ public class BatchingFlushContextTest {
 
         assertThat(duplicate.statementWrappers).containsOnly(bsWrapper);
         assertThat(duplicate.consistencyLevel).isSameAs(EACH_QUORUM);
+        assertThat(duplicate.serialConsistencyLevel.isPresent()).isFalse();
     }
 
     @Test
@@ -165,7 +172,7 @@ public class BatchingFlushContextTest {
     }
 
     @Test
-    public void should_duplicate_with_no_data() throws Exception {
+    public void should_duplicate_with_no_data_but_consistency() throws Exception {
         //Given
         context.statementWrappers.add(mock(AbstractStatementWrapper.class));
         context.eventHolders.add(mock(EventHolder.class));
@@ -176,6 +183,23 @@ public class BatchingFlushContextTest {
         //Then
         assertThat(newContext.statementWrappers).isEmpty();
         assertThat(newContext.eventHolders).isEmpty();
+        assertThat(newContext.consistencyLevel).isEqualTo(ConsistencyLevel.EACH_QUORUM);
+    }
 
+    @Test
+    public void should_duplicate_with_no_data_vut_consistency_and_serial_consistency() throws Exception {
+        //Given
+        context.statementWrappers.add(mock(AbstractStatementWrapper.class));
+        context.eventHolders.add(mock(EventHolder.class));
+
+        //When
+        final BatchingFlushContext newContext = context.duplicateWithNoData(ConsistencyLevel.EACH_QUORUM,
+                Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
+
+        //Then
+        assertThat(newContext.statementWrappers).isEmpty();
+        assertThat(newContext.eventHolders).isEmpty();
+        assertThat(newContext.consistencyLevel).isEqualTo(ConsistencyLevel.EACH_QUORUM);
+        assertThat(newContext.serialConsistencyLevel.get()).isEqualTo(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
     }
 }

@@ -37,7 +37,9 @@ public class Options {
 
     List<CASCondition> CASConditions;
 
-    Optional<CASResultListener> casResultListenerO = Optional.absent();
+    Optional<CASResultListener> CASResultListenerO = Optional.absent();
+
+    Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO = Optional.absent();
 
     Options() {
     }
@@ -67,7 +69,11 @@ public class Options {
     }
 
     public Optional<CASResultListener> getCasResultListener() {
-        return casResultListenerO;
+        return CASResultListenerO;
+    }
+
+    public Optional<com.datastax.driver.core.ConsistencyLevel> getSerialConsistency() {
+       return serialConsistencyO;
     }
 
     @Override
@@ -76,27 +82,35 @@ public class Options {
                 .add("Consistency Level", this.consistency)
                 .add("Time to live", this.ttl)
                 .add("Timestamp", this.timestamp)
+                .add("IF NOT EXISTS ? ", this.ifNotExists)
+                .add("CAS conditions", this.CASConditions)
+                .add("CAS result listener", this.CASResultListenerO)
+                .add("Serial consistency", this.serialConsistencyO)
                 .toString();
     }
 
     public Options duplicateWithoutTtlAndTimestamp() {
         return OptionsBuilder.withConsistency(consistency)
-                .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(casResultListenerO.orNull());
+                .ifNotExists(ifNotExists)
+                .ifConditions(CASConditions)
+                .casResultListener(CASResultListenerO.orNull())
+                .casLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewConsistencyLevel(ConsistencyLevel consistencyLevel) {
         return OptionsBuilder.withConsistency(consistencyLevel)
                 .withTtl(ttl).withTimestamp(timestamp)
                 .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(casResultListenerO.orNull());
+                .casResultListener(CASResultListenerO.orNull())
+                .casLocalSerial(serialConsistencyO.isPresent());
     }
 
     public Options duplicateWithNewTimestamp(Long timestamp) {
         return OptionsBuilder.withConsistency(consistency)
                 .withTtl(ttl).withTimestamp(timestamp)
                 .ifNotExists(ifNotExists).ifConditions(CASConditions)
-                .casResultListener(casResultListenerO.orNull());
+                .casResultListener(CASResultListenerO.orNull())
+                .casLocalSerial(serialConsistencyO.isPresent());
     }
 
 
