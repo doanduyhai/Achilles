@@ -54,7 +54,7 @@ public class Batch extends PersistenceManager {
      */
     public void startBatch() {
         log.debug("Starting batch mode");
-        flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
+        flushContext = flushContext.duplicateWithNoData();
     }
 
     /**
@@ -97,15 +97,14 @@ public class Batch extends PersistenceManager {
      */
     public void cleanBatch() {
         log.debug("Cleaning all pending statements");
-        flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
+        flushContext = flushContext.duplicateWithNoData();
     }
 
     @Override
     public <T> T persist(final T entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
-            flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             return super.persist(entity, maybeAddTimestampToStatement(options));
         }
@@ -114,9 +113,8 @@ public class Batch extends PersistenceManager {
     @Override
     public void update(Object entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
-            flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             super.update(entity, maybeAddTimestampToStatement(options));
         }
@@ -125,9 +123,8 @@ public class Batch extends PersistenceManager {
     @Override
     public void remove(final Object entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
-            flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             super.remove(entity, maybeAddTimestampToStatement(options));
         }
@@ -136,9 +133,8 @@ public class Batch extends PersistenceManager {
     @Override
     public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
         if (readLevel != null) {
-            flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             return super.find(entityClass, primaryKey, null);
         }
@@ -147,9 +143,8 @@ public class Batch extends PersistenceManager {
     @Override
     public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
         if (readLevel != null) {
-            flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             return super.getProxy(entityClass, primaryKey, null);
         }
@@ -158,8 +153,8 @@ public class Batch extends PersistenceManager {
     @Override
     public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
         if (readLevel != null) {
-            throw new AchillesException(
-                    "Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
             super.refresh(entity, null);
         }

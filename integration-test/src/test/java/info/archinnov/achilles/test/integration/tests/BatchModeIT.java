@@ -15,9 +15,9 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
@@ -222,6 +222,7 @@ public class BatchModeIT {
 
     @Test
     public void should_reinit_batch_context_and_consistency_after_exception() throws Exception {
+        boolean exceptionCaught = false;
         Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 
@@ -231,14 +232,17 @@ public class BatchModeIT {
         Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
-        batchEm.startBatch(EACH_QUORUM);
+        batchEm.startBatch(TWO);
         batchEm.persist(tweet2);
 
         try {
             batchEm.endBatch();
         } catch (Exception e) {
             assertThatBatchContextHasBeenReset(batchEm);
+            exceptionCaught = true;
         }
+
+        assertThat(exceptionCaught).isTrue();
 
         Thread.sleep(1000);
         logAsserter.prepareLogLevel();

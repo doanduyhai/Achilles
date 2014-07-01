@@ -75,7 +75,7 @@ public class BatchTest {
     public void should_start_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
-        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
+        when(flushContext.duplicateWithNoData()).thenReturn(newFlushContext);
 
         //When
         manager.startBatch();
@@ -117,7 +117,7 @@ public class BatchTest {
     public void should_clean_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
-        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
+        when(flushContext.duplicateWithNoData()).thenReturn(newFlushContext);
 
         //When
         manager.cleanBatch();
@@ -129,8 +129,7 @@ public class BatchTest {
     @Test
     public void should_exception_when_persist_with_consistency() throws Exception {
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+        exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
         manager.persist(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
