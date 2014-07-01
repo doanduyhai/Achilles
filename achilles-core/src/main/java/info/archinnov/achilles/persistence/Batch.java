@@ -54,7 +54,7 @@ public class Batch extends PersistenceManager {
      */
     public void startBatch() {
         log.debug("Starting batch mode");
-        flushContext = flushContext.duplicateWithNoData();
+        flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
     }
 
     /**
@@ -97,7 +97,7 @@ public class Batch extends PersistenceManager {
      */
     public void cleanBatch() {
         log.debug("Cleaning all pending statements");
-        flushContext = flushContext.duplicateWithNoData();
+        flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
     }
 
     @Override

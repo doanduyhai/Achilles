@@ -75,7 +75,7 @@ public class BatchTest {
     public void should_start_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
-        when(flushContext.duplicateWithNoData()).thenReturn(newFlushContext);
+        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
         //When
         manager.startBatch();
@@ -117,7 +117,7 @@ public class BatchTest {
     public void should_clean_batch() throws Exception {
         //Given
         BatchingFlushContext newFlushContext = mock(BatchingFlushContext.class);
-        when(flushContext.duplicateWithNoData()).thenReturn(newFlushContext);
+        when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
         //When
         manager.cleanBatch();
