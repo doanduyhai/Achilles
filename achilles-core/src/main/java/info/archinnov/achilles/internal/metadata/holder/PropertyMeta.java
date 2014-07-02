@@ -15,12 +15,14 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -194,7 +196,7 @@ public class PropertyMeta {
 
     }
 
-    public boolean isComponentTimeUUID(String componentName) {
+    public boolean isPrimaryKeyTimeUUID(String componentName) {
         log.trace("Determine whether component {} is of TimeUUID type", componentName);
         return embeddedIdProperties != null && embeddedIdProperties.getTimeUUIDComponents().contains(componentName);
     }
@@ -208,22 +210,16 @@ public class PropertyMeta {
         return component;
     }
 
-    public String getReversedComponent() {
-        log.trace("Get reversed ordering component name if any");
-        String component = null;
+    public List<ClusteringOrder> getClusteringOrders() {
+        log.trace("Get clustering orders if any");
+        List<ClusteringOrder> clusteringOrders = new LinkedList<>();
         if (embeddedIdProperties != null) {
-            return embeddedIdProperties.getReversedComponent();
+            return embeddedIdProperties.getCluseringOrders();
         }
-        return component;
+        return clusteringOrders;
     }
 
-    public boolean hasReversedComponent() {
-        log.trace("Determine whether the entity has a reversed ordering component");
-        if (embeddedIdProperties != null) {
-            return embeddedIdProperties.hasReversedComponent();
-        }
-        return false;
-    }
+
 
     public PropertyMeta counterIdMeta() {
         return counterProperties != null ? counterProperties.getIdMeta() : null;
@@ -239,6 +235,14 @@ public class PropertyMeta {
 
     public boolean isEmbeddedId() {
         return type.isEmbeddedId();
+    }
+
+    public boolean isClustered() {
+        boolean isClustered = false;
+        if (embeddedIdProperties != null) {
+            isClustered = !embeddedIdProperties.getClusteringComponentClasses().isEmpty();
+        }
+        return isClustered;
     }
 
     public ConsistencyLevel getReadConsistencyLevel() {

@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.test.builders;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
     private DataTranscoder transcoder;
     private ReflectionInvoker invoker;
     private List<String> compTimeUUID;
+    private List<ClusteringOrder> clusteringOrders = new ArrayList<>();
 
     public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz, Class<K> keyClass, Class<V> valueClass) {
         return new PropertyMetaTestBuilder<>(clazz, keyClass, valueClass);
@@ -216,7 +218,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
                 partitionFields, partitionGetters, partitionSetters);
 
         ClusteringComponents clusteringComponents = new ClusteringComponents(clusteringClasses, clusteringNames,
-                clusteringFields, clusteringGetters, clusteringSetters);
+                clusteringFields, clusteringGetters, clusteringSetters,clusteringOrders);
 
         EmbeddedIdProperties embeddedIdProperties = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
                 componentClasses, componentNames, componentFields, componentGetters, componentSetters, compTimeUUID);
@@ -294,6 +296,11 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
     public PropertyMetaTestBuilder<T, K, V> compSetters(Method... componentSetters) {
         this.componentSetters = Arrays.asList(componentSetters);
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> clusteringOrders(ClusteringOrder...clusteringOrders) {
+        this.clusteringOrders= Arrays.asList(clusteringOrders);
         return this;
     }
 

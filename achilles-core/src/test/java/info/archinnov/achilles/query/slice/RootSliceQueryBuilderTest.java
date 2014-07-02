@@ -15,8 +15,11 @@
  */
 package info.archinnov.achilles.query.slice;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.*;
@@ -79,12 +82,13 @@ public class RootSliceQueryBuilderTest {
 		Whitebox.setInternalState(builder, "entityClass", (Object) entityClass);
 		Whitebox.setInternalState(builder, "meta", meta);
 		Whitebox.setInternalState(builder, "idMeta", idMeta);
-		Whitebox.setInternalState(builder, "partitionComponents", new ArrayList<Object>());
-		Whitebox.setInternalState(builder, "fromClusterings", new ArrayList<Object>());
-		Whitebox.setInternalState(builder, "toClusterings", new ArrayList<Object>());
+		Whitebox.setInternalState(builder, "partitionComponents", new ArrayList<>());
+		Whitebox.setInternalState(builder, "fromClusterings", new ArrayList<>());
+		Whitebox.setInternalState(builder, "toClusterings", new ArrayList<>());
 
 		when(meta.getIdMeta()).thenReturn(idMeta);
 		when(meta.getClassName()).thenReturn("entityClass");
+        when(idMeta.getClusteringOrders()).thenReturn(Arrays.asList(new ClusteringOrder("clust", Sorting.DESC)));
 		doCallRealMethod().when(builder).partitionComponentsInternal(any());
 	}
 
@@ -142,7 +146,7 @@ public class RootSliceQueryBuilderTest {
 	public void should_set_ordering() throws Exception {
 		builder.partitionComponentsInternal(10L).ordering(DESCENDING);
 
-		assertThat(builder.buildClusterQuery().getOrdering()).isEqualTo(DESCENDING);
+		assertThat(builder.buildClusterQuery().getOrdering()).isEqualTo(ASCENDING);
 	}
 
 	@Test

@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class EmbeddedIdPropertiesBuilder {
 	private final List<Method> componentGetters = new ArrayList<>();
 	private final List<Method> componentSetters = new ArrayList<>();
 	private final List<String> componentsAsTimeUUID = new ArrayList<>();
-	private String reversedComponentName = null;
+	private List<ClusteringOrder> clusteringOrders;
 
 	public void addComponentClass(Class<?> clazz) {
 		componentClasses.add(clazz);
@@ -85,8 +86,8 @@ public class EmbeddedIdPropertiesBuilder {
 		this.componentsAsTimeUUID.add(name);
 	}
 
-	public void setReversedComponentName(String reversedComponentName) {
-		this.reversedComponentName = reversedComponentName;
+	public void setClusteringOrders(List<ClusteringOrder> clusteringOrders) {
+        this.clusteringOrders = clusteringOrders;
 	}
 
 	public PartitionComponents buildPartitionKeys() {
@@ -94,7 +95,7 @@ public class EmbeddedIdPropertiesBuilder {
 	}
 
 	public ClusteringComponents buildClusteringKeys() {
-		return new ClusteringComponents(componentClasses, componentNames, reversedComponentName,componentFields, componentGetters, componentSetters);
+		return new ClusteringComponents(componentClasses, componentNames,componentFields, componentGetters, componentSetters, clusteringOrders);
 	}
 
 	public EmbeddedIdProperties buildEmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents) {

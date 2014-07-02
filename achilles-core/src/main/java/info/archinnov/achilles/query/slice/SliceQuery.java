@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.query.slice;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -43,6 +44,7 @@ public class SliceQuery<T> {
 	private int limit;
 	private boolean limitSet;
 	private boolean noComponent;
+    private Sorting clusteringOrder;
 
 	public SliceQuery(Class<T> entityClass, EntityMeta meta, List<Object> partitionComponents,
 			List<Object> clusteringsFrom, List<Object> clusteringsTo, OrderingMode ordering, BoundingMode bounding,
@@ -78,7 +80,8 @@ public class SliceQuery<T> {
 		this.consistencyLevel = consistencyLevel;
 		this.limit = limit;
 		this.batchSize = batchSize;
-	}
+        this.clusteringOrder = meta.getIdMeta().getClusteringOrders().get(0).getSorting();
+    }
 
 	public Class<T> getEntityClass() {
 		return entityClass;
@@ -90,10 +93,6 @@ public class SliceQuery<T> {
 
 	public PropertyMeta getIdMeta() {
 		return meta.getIdMeta();
-	}
-
-	boolean hasReversedClustering() {
-		return getIdMeta().hasReversedComponent();
 	}
 
 	public List<Object> getPartitionComponents() {
@@ -113,7 +112,7 @@ public class SliceQuery<T> {
 	}
 
 	public OrderingMode getOrdering() {
-		return hasReversedClustering() ? ordering.reverse() : ordering;
+		return clusteringOrder == Sorting.ASC ? ordering: ordering.reverse();
 	}
 
 	public BoundingMode getBounding() {

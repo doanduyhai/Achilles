@@ -27,6 +27,8 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -143,20 +145,21 @@ public class TableCreatorTest {
         verify(session).execute(stringCaptor.capture());
 
         assertThat(stringCaptor.getValue()).isEqualTo(
-                "\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tid bigint,\n"
+                "\n\tCREATE TABLE tableName(\n"
+                        + "\t\tid bigint,\n"
+                        + "\t\tlongCol bigint,\n"
                         + "\t\tlongListCol list<bigint>,\n" + "\t\tlongSetCol set<bigint>,\n"
-                        + "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id)\n"
-                        + "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+                        + "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id))\n"
+                        + "\tWITH comment = 'Create table for entity \"entityName\"'");
     }
 
     @Test
     public void should_create_complete_table_with_clustering_order() throws Exception {
         PropertyMeta idMeta = new PropertyMeta();
         idMeta.setType(PropertyType.EMBEDDED_ID);
-        PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>>asList(Long.class),
-                asList("id"), new ArrayList<Field>(), new ArrayList<Method>(), new ArrayList<Method>());
-        ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>>asList(String.class),
-                asList("name"), "name", null, null, null);
+        PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>>asList(Long.class),asList("id"), new ArrayList<Field>(), new ArrayList<Method>(), new ArrayList<Method>());
+        ClusteringOrder clusteringOrder = new ClusteringOrder("name", Sorting.DESC);
+        ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>>asList(String.class),asList("name"), null, null, null,Arrays.asList(clusteringOrder));
         EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents,
                 new ArrayList<Class<?>>(), asList("a", "b", "c"), new ArrayList<Field>(), new ArrayList<Method>(),
                 new ArrayList<Method>(), new ArrayList<String>());
@@ -184,9 +187,13 @@ public class TableCreatorTest {
         verify(session).execute(stringCaptor.capture());
 
         assertThat(stringCaptor.getValue()).isEqualTo(
-                "\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tid bigint,\n" + "\t\tname text,\n"
-                        + "\t\tPRIMARY KEY(id, name)\n" + "\t) WITH COMMENT = 'Create table for entity \"entityName\"'"
-                        + " AND CLUSTERING ORDER BY (name DESC)");
+                "\n\tCREATE TABLE tableName(\n"
+                        + "\t\tid bigint,\n"
+                        + "\t\tname text,\n"
+                        + "\t\tlongCol bigint,\n"
+                        + "\t\tPRIMARY KEY(id, name))\n"
+                        + "\tWITH comment = 'Create table for entity \"entityName\"'"
+                        + " AND CLUSTERING ORDER BY(name DESC)");
     }
 
     @Test
@@ -206,8 +213,7 @@ public class TableCreatorTest {
 
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo(
-                "\nCREATE INDEX tableName_longCol ON tableName(longCol);\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE INDEX tableName_longCol ON tableName(longCol)");
 
     }
 
@@ -216,7 +222,7 @@ public class TableCreatorTest {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
-        longColPM.setIndexProperties(new IndexProperties("monIndex", "longCol"));
+        longColPM.setIndexProperties(new IndexProperties("myIndex", "longCol"));
 
         meta = new EntityMeta();
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
@@ -228,14 +234,14 @@ public class TableCreatorTest {
 
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
-        assertThat(stringCaptor.getValue()).isEqualTo("\nCREATE INDEX monIndex ON tableName(longCol);\n");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tCREATE INDEX myIndex ON tableName(longCol)");
     }
 
     @Test
     public void should_create_clustered_table() throws Exception {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).field("id")
-                .compNames("index", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class)
-                .compTimeUUID("uuid").build();
+                .compNames("indexCol", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class)
+                .compTimeUUID("uuid").clusteringOrders(new ClusteringOrder("count", Sorting.DESC)).build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
 
@@ -250,16 +256,21 @@ public class TableCreatorTest {
         verify(session).execute(stringCaptor.capture());
 
         assertThat(stringCaptor.getValue()).isEqualTo(
-                "\n\tCREATE TABLE tableName(\n" + "\t\tlongCol bigint,\n" + "\t\tindex bigint,\n" + "\t\tcount int,\n"
-                        + "\t\tuuid timeuuid,\n" + "\t\tPRIMARY KEY(index, count, uuid)\n"
-                        + "\t) WITH COMMENT = 'Create table for entity \"entityName\"'");
+                "\n\tCREATE TABLE tableName(\n"
+                        + "\t\tindexCol bigint,\n"
+                        + "\t\tcount int,\n"
+                        + "\t\tuuid timeuuid,\n"
+                        + "\t\tlongCol bigint,\n"
+                        + "\t\tPRIMARY KEY(indexCol, count, uuid))\n"
+                        + "\tWITH comment = 'Create table for entity \"entityName\"' AND CLUSTERING ORDER BY(count DESC)");
 
     }
 
     @Test
     public void should_create_clustered_counter_table() throws Exception {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID).field("id")
-                .compNames("index", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class).build();
+                .compNames("indexCol", "count", "uuid").compClasses(Long.class, Integer.class, UUID.class)
+                .clusteringOrders(new ClusteringOrder("count", Sorting.DESC)).build();
 
         PropertyMeta counterColPM = PropertyMetaTestBuilder.keyValueClass(Void.class, Counter.class).type(COUNTER)
                 .field("counterCol").build();
@@ -278,9 +289,13 @@ public class TableCreatorTest {
         verify(session).execute(stringCaptor.capture());
 
         assertThat(stringCaptor.getValue()).isEqualTo(
-                "\n\tCREATE TABLE tableName(\n" + "\t\tindex bigint,\n" + "\t\tcount int,\n" + "\t\tuuid uuid,\n"
-                        + "\t\tcounterCol counter,\n" + "\t\tPRIMARY KEY(index, count, uuid)\n"
-                        + "\t) WITH COMMENT = 'Create table for clustered counter entity \"entityName\"'");
+                "\n\tCREATE TABLE tableName(\n"
+                        + "\t\tindexCol bigint,\n"
+                        + "\t\tcount int,\n"
+                        + "\t\tuuid uuid,\n"
+                        + "\t\tcounterCol counter,\n"
+                        + "\t\tPRIMARY KEY(indexCol, count, uuid))\n"
+                        + "\tWITH comment = 'Create table for clustered counter entity \"entityName\"' AND CLUSTERING ORDER BY(count DESC)");
 
     }
 
@@ -306,8 +321,9 @@ public class TableCreatorTest {
                 "\n\tCREATE TABLE " + CQL_COUNTER_TABLE + "(\n" + "\t\t" + CQL_COUNTER_FQCN + " text,\n" + "\t\t"
                         + CQL_COUNTER_PRIMARY_KEY + " text,\n" + "\t\t" + CQL_COUNTER_PROPERTY_NAME + " text,\n"
                         + "\t\t" + CQL_COUNTER_VALUE + " counter,\n" + "\t\tPRIMARY KEY((" + CQL_COUNTER_FQCN + ", "
-                        + CQL_COUNTER_PRIMARY_KEY + "), " + CQL_COUNTER_PROPERTY_NAME + ")\n"
-                        + "\t) WITH COMMENT = 'Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"'");
+                        + CQL_COUNTER_PRIMARY_KEY + "), "
+                        + CQL_COUNTER_PROPERTY_NAME + "))\n"
+                        + "\tWITH comment = 'Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"'");
     }
 
     @Test

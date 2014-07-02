@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -71,12 +72,8 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 		return clusteringComponents.getOrderingComponent();
 	}
 
-	public String getReversedComponent() {
-		return clusteringComponents.getReversedComponent();
-	}
-
-	public boolean hasReversedComponent() {
-		return clusteringComponents.hasReversedComponent();
+	public List<ClusteringOrder> getCluseringOrders() {
+		return clusteringComponents.getClusteringOrders();
 	}
 
 	public List<String> getClusteringComponentNames() {
@@ -97,10 +94,6 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 
 	public List<Field> getPartitionComponentFields() {
 		return partitionComponents.getComponentFields();
-	}
-
-	public List<Method> getPartitionComponentSetters() {
-		return partitionComponents.getComponentSetters();
 	}
 
 	public List<String> getTimeUUIDComponents() {

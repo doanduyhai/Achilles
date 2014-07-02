@@ -16,6 +16,8 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.*;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting.*;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -164,7 +166,7 @@ public class PropertyMetaTest {
 		PropertyMeta meta = new PropertyMeta();
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
-				String.class), Arrays.asList("age", "name"), null,null, null);
+				String.class), Arrays.asList("age", "name"), null,null, null,null);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
 				"c"), null, null, null, null);
@@ -174,18 +176,19 @@ public class PropertyMetaTest {
 	}
 
 	@Test
-	public void should_get_reversed_component() throws Exception {
+	public void should_get_clustering_order() throws Exception {
 		PropertyMeta meta = new PropertyMeta();
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
-				String.class), Arrays.asList("age", "name"), "name", null, null,null);
+        final ClusteringOrder clusteringOrder = new ClusteringOrder("test", DESC);
+        ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class,
+				String.class), Arrays.asList("age", "name"), null, null,null,Arrays.asList(clusteringOrder));
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(null, clusteringComponents, null, Arrays.asList("a", "b",
 				"c"), null, null, null, null);
 		meta.setEmbeddedIdProperties(props);
 
-		assertThat(meta.getReversedComponent()).isEqualTo("name");
-	}
+        assertThat(meta.getClusteringOrders()).containsExactly(clusteringOrder);
+    }
 
 	@Test
 	public void should_return_null_for_cql_ordering_component_if_no_multikey() throws Exception {
@@ -577,15 +580,15 @@ public class PropertyMetaTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).compNames("id", "comp1", "comp2")
 				.compTimeUUID("comp1").build();
 
-		assertThat(pm.isComponentTimeUUID("comp1")).isTrue();
-		assertThat(pm.isComponentTimeUUID("comp2")).isFalse();
+		assertThat(pm.isPrimaryKeyTimeUUID("comp1")).isTrue();
+		assertThat(pm.isPrimaryKeyTimeUUID("comp2")).isFalse();
 	}
 
 	@Test
 	public void should_return_false_for_is_component_time_uuid_if_not_embedded_id() throws Exception {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).build();
 
-		assertThat(pm.isComponentTimeUUID("comp1")).isFalse();
+		assertThat(pm.isPrimaryKeyTimeUUID("comp1")).isFalse();
 	}
 
     @Test

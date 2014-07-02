@@ -15,11 +15,9 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting.DESC;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
-import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -35,6 +33,7 @@ public class EmbeddedIdPropertiesTest {
 	private static final List<Method> noAccessors = Arrays.asList();
 	private static final List<Field> noFields = Arrays.asList();
 	private static final List<String> noTimeUUID = Arrays.asList();
+	private static final List<ClusteringOrder> noClusteringOrder = Arrays.asList();
 
 	@Test
 	public void should_to_string() throws Exception {
@@ -43,7 +42,7 @@ public class EmbeddedIdPropertiesTest {
 				noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class), Arrays.asList("date"),
-				noFields, noAccessors, noAccessors);
+				noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -62,7 +61,7 @@ public class EmbeddedIdPropertiesTest {
 				noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -72,24 +71,27 @@ public class EmbeddedIdPropertiesTest {
 	
 	@Test
 	public void should_get_reversed_component() throws Exception {
-		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class), Arrays.asList("id"),
+
+        final ClusteringOrder clusteringOrder = new ClusteringOrder("col", DESC);
+        PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class), Arrays.asList("id"),
 				noFields, noAccessors, noAccessors);
 
+
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), "name", noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"),  noFields, noAccessors, noAccessors, Arrays.asList(clusteringOrder));
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
 
-		assertThat(props.getReversedComponent()).isEqualTo("name");
-	}
+        assertThat(props.getCluseringOrders()).containsExactly(clusteringOrder);
+    }
 
 	@Test
 	public void should_return_null_if_no_ordering_component() throws Exception {
 		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class), Arrays.asList("id"),
 				noFields, noAccessors, noAccessors);
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(noClasses, noNames, noFields, noAccessors, noAccessors);
+		ClusteringComponents clusteringComponents = new ClusteringComponents(noClasses, noNames, noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -103,7 +105,7 @@ public class EmbeddedIdPropertiesTest {
 				noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -119,7 +121,7 @@ public class EmbeddedIdPropertiesTest {
 				Arrays.asList("id", "type"), noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -137,7 +139,7 @@ public class EmbeddedIdPropertiesTest {
 				Arrays.asList("id", "type"), noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -155,7 +157,7 @@ public class EmbeddedIdPropertiesTest {
 		PartitionComponents partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class),
 				Arrays.asList("id", "type"), noFields, noAccessors, noAccessors);
 
-		ClusteringComponents clusteringComponents = new ClusteringComponents(noClasses, noNames, noFields, noAccessors, noAccessors);
+		ClusteringComponents clusteringComponents = new ClusteringComponents(noClasses, noNames, noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);
@@ -172,7 +174,7 @@ public class EmbeddedIdPropertiesTest {
 				noFields, noAccessors, noAccessors);
 
 		ClusteringComponents clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(UUID.class, String.class),
-				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors);
+				Arrays.asList("date", "name"), noFields, noAccessors, noAccessors, noClusteringOrder);
 
 		EmbeddedIdProperties props = new EmbeddedIdProperties(partitionComponents, clusteringComponents, noClasses, noNames,
 				noFields, noAccessors, noAccessors, noTimeUUID);

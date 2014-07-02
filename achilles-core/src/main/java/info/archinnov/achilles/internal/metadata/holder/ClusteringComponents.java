@@ -16,27 +16,21 @@
 
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
 
 public class ClusteringComponents extends AbstractComponentProperties {
 
-	private final String reversedComponentName;
+    private List<ClusteringOrder> clusteringOrders;
 
-	public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,
-			String reversedComponentName,List<Field> componentFields, List<Method> componentGetters, List<Method> componentSetters) {
-		super(componentClasses, componentNames, componentFields,componentGetters, componentSetters);
-		this.reversedComponentName = reversedComponentName;
-	}
-
-	public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,
-            List<Field> componentFields,List<Method> componentGetters, List<Method> componentSetters) {
-		this(componentClasses, componentNames, null, componentFields,componentGetters, componentSetters);
-	}
+    public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,List<Field> componentFields,List<Method> componentGetters, List<Method> componentSetters,List<ClusteringOrder> clusteringOrders) {
+		super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
+        this.clusteringOrders = clusteringOrders;
+    }
 
 	void validateClusteringComponents(String className, List<Object> clusteringComponents) {
 		Validator.validateNotNull(clusteringComponents,
@@ -81,15 +75,11 @@ public class ClusteringComponents extends AbstractComponentProperties {
 		return componentClasses.size() > 0;
 	}
 
-	public String getReversedComponent() {
-		return reversedComponentName;
-	}
+    public List<ClusteringOrder> getClusteringOrders() {
+        return clusteringOrders;
+    }
 
-	public boolean hasReversedComponent() {
-		return StringUtils.isNotBlank(reversedComponentName);
-	}
-
-	private int validateNoHoleAndReturnLastNonNullIndex(List<Object> components) {
+    private int validateNoHoleAndReturnLastNonNullIndex(List<Object> components) {
 		boolean nullFlag = false;
 		int lastNotNullIndex = 0;
 		for (Object component : components) {

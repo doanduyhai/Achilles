@@ -143,9 +143,7 @@ public class TableValidator {
 
         boolean columnIsIndexed = columnMetadata.getIndex() != null;
 
-        Validator.validateTableFalse((columnIsIndexed ^ indexed),
-                "Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it" + " is (or not)",
-                columnName, tableName);
+        Validator.validateTableFalse((columnIsIndexed ^ indexed),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",columnName, tableName);
         Name realType = columnMetadata.getType().getName();
 
 		/*
@@ -154,10 +152,7 @@ public class TableValidator {
         if (realType == Name.CUSTOM) {
             realType = Name.BLOB;
         }
-
-        Validator.validateTableTrue(expectedType == realType,
-                "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,
-                realType, expectedType);
+        Validator.validateTableTrue(expectedType == realType,"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,realType, expectedType);
     }
 
     private void validateCounterColumnForClusteredCounters(TableMetadata tableMetaData, PropertyMeta propertyMeta, boolean schemaUpdateEnabled) {
@@ -284,7 +279,7 @@ public class TableValidator {
         for (int i = 0; i < componentNames.size(); i++) {
             Class<?> componentClass = componentClasses.get(i);
             String componentName = componentNames.get(i);
-            if (idMeta.isComponentTimeUUID(componentName)) {
+            if (idMeta.isPrimaryKeyTimeUUID(componentName)) {
                 componentClass = InternalTimeUUID.class;
             }
             if (partitionKey) {

@@ -20,20 +20,16 @@ import com.google.common.base.Objects;
 
 public class IndexProperties {
 
-    private String name;
+    private String indexName;
     private String propertyName;
 
-    public IndexProperties(String name, String propertyName) {
-        this.name = name;
+    public IndexProperties(String indexName, String propertyName) {
+        this.indexName = indexName;
         this.propertyName = propertyName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getIndexName() {
+        return indexName;
     }
 
     public String getPropertyName() {
@@ -46,6 +42,6 @@ public class IndexProperties {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this.getClass()).add("name", name).add("propertyName", propertyName).toString();
+        return Objects.toStringHelper(this.getClass()).add("name", indexName).add("propertyName", propertyName).toString();
     }
 }

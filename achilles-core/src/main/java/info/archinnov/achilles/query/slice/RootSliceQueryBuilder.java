@@ -39,10 +39,10 @@ public abstract class RootSliceQueryBuilder<T> {
 	protected Class<T> entityClass;
 	protected EntityMeta meta;
 
-	protected List<Object> partitionComponents = new ArrayList<Object>();
+	protected List<Object> partitionComponents = new ArrayList<>();
 	private PropertyMeta idMeta;
-	private List<Object> fromClusterings = new ArrayList<Object>();
-	private List<Object> toClusterings = new ArrayList<Object>();
+	private List<Object> fromClusterings = new ArrayList<>();
+	private List<Object> toClusterings = new ArrayList<>();
 	private OrderingMode ordering = OrderingMode.ASCENDING;
 	private BoundingMode bounding = BoundingMode.INCLUSIVE_BOUNDS;
 	private ConsistencyLevel consistencyLevel;

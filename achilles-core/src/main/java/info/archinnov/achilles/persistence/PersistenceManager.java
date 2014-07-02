@@ -531,8 +531,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, true,
-                normalizeQuery, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, true,normalizeQuery, boundValues);
     }
 
     /**

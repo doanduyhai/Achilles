@@ -24,6 +24,9 @@ public class CorrectEmbeddedReversedKey {
 	@Order(value=2, reversed=true)
 	private int rank;
 
+    @Order(value=3, reversed=true)
+    private int count;
+
 	public String getName() {
 		return name;
 	}
@@ -39,4 +42,12 @@ public class CorrectEmbeddedReversedKey {
 	public void setRank(int rank) {
 		this.rank = rank;
 	}
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 }

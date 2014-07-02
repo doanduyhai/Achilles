@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.query.slice;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.query.slice.SliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OrderingMode;
@@ -51,8 +52,9 @@ public class SliceQueryTest {
 		List<Object> toComponents = Arrays.<Object> asList(11L, "b");
 		when(idMeta.encodeToComponents(fromComponents)).thenReturn(fromComponents);
 		when(idMeta.encodeToComponents(toComponents)).thenReturn(toComponents);
+		when(idMeta.getClusteringOrders()).thenReturn(Arrays.asList(new ClusteringOrder("clust", Sorting.DESC)));
 
-		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta,
+		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta,
 				Arrays.<Object> asList(11L), Arrays.<Object> asList("a"), Arrays.<Object> asList("b"),
 				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
 
@@ -64,7 +66,7 @@ public class SliceQueryTest {
 		assertThat(sliceQuery.getConsistencyLevel()).isNull();
 		assertThat(sliceQuery.getLimit()).isEqualTo(100);
 		assertThat(sliceQuery.getMeta()).isSameAs(meta);
-		assertThat(sliceQuery.getOrdering()).isSameAs(OrderingMode.ASCENDING);
+		assertThat(sliceQuery.getOrdering()).isSameAs(OrderingMode.DESCENDING);
 		assertThat(sliceQuery.getPartitionComponents()).containsExactly(11L);
 		assertThat(sliceQuery.isLimitSet()).isFalse();
 	}
@@ -72,11 +74,12 @@ public class SliceQueryTest {
 	@Test
 	public void should_return_true_when_no_component() throws Exception {
 		PropertyMeta idMeta = mock(PropertyMeta.class);
+        when(idMeta.getClusteringOrders()).thenReturn(Arrays.asList(new ClusteringOrder("clust", Sorting.DESC)));
 
 		EntityMeta meta = new EntityMeta();
 		meta.setIdMeta(idMeta);
 		SliceQuery<ClusteredEntity> sliceQuery = new SliceQuery<ClusteredEntity>(ClusteredEntity.class, meta,
-				Arrays.<Object> asList(11L), Arrays.<Object> asList(), Arrays.<Object> asList(),
+				Arrays.<Object> asList(11L), Arrays.asList(), Arrays.asList(),
 				OrderingMode.ASCENDING, BoundingMode.INCLUSIVE_BOUNDS, null, 100, 99, false);
 
 		assertThat(sliceQuery.hasNoComponent()).isTrue();

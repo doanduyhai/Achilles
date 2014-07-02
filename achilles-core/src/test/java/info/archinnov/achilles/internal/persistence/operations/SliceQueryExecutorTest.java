@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
@@ -110,6 +112,7 @@ public class SliceQueryExecutorTest {
         when(meta.getIdMeta()).thenReturn(idMeta);
 
         when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
+        when(idMeta.getClusteringOrders()).thenReturn(Arrays.asList(new ClusteringOrder("clust", Sorting.DESC)));
         when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class, String.class));
 
         sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom, clusteringsTo,

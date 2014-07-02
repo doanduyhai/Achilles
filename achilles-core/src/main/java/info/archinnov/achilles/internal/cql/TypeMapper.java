@@ -56,9 +56,10 @@ import info.archinnov.achilles.type.Counter;
 
 public class TypeMapper {
 
-    private static final Map<Class<?>, Name> java2CQL = new HashMap<Class<?>, Name>();
-    private static final Map<Name, Class<?>> cql2Java = new HashMap<Name, Class<?>>();
-    private static final Map<Class<?>, Method> rowPropertyInvoker = new HashMap<Class<?>, Method>();
+    private static final Map<Class<?>, Name> java2CQL = new HashMap<>();
+    private static final Map<Class<?>, DataType> java2CQLDataType = new HashMap<>();
+    private static final Map<Name, Class<?>> cql2Java = new HashMap<>();
+    private static final Map<Class<?>, Method> rowPropertyInvoker = new HashMap<>();
 
     static {
         // Bytes
@@ -67,48 +68,86 @@ public class TypeMapper {
         java2CQL.put(byte[].class, BLOB);
         java2CQL.put(ByteBuffer.class, BLOB);
 
+        java2CQLDataType.put(byte.class, DataType.blob());
+        java2CQLDataType.put(Byte.class, DataType.blob());
+        java2CQLDataType.put(byte[].class, DataType.blob());
+        java2CQLDataType.put(ByteBuffer.class, DataType.blob());
+
         // Boolean
         java2CQL.put(Boolean.class, BOOLEAN);
         java2CQL.put(boolean.class, BOOLEAN);
+
+        java2CQLDataType.put(Boolean.class, DataType.cboolean());
+        java2CQLDataType.put(boolean.class, DataType.cboolean());
+
 
         // Date
         java2CQL.put(Date.class, TIMESTAMP);
         java2CQL.put(InternalTimeUUID.class, TIMEUUID);
 
+        java2CQLDataType.put(Date.class, DataType.timestamp());
+        java2CQLDataType.put(InternalTimeUUID.class, DataType.timeuuid());
+
         // Double
         java2CQL.put(Double.class, DOUBLE);
         java2CQL.put(double.class, DOUBLE);
+
+        java2CQLDataType.put(Double.class, DataType.cdouble());
+        java2CQLDataType.put(double.class, DataType.cdouble());
 
         // Float
         java2CQL.put(Float.class, FLOAT);
         java2CQL.put(float.class, FLOAT);
         java2CQL.put(BigDecimal.class, DECIMAL);
 
+        java2CQLDataType.put(Float.class, DataType.cfloat());
+        java2CQLDataType.put(float.class, DataType.cfloat());
+        java2CQLDataType.put(BigDecimal.class, DataType.decimal());
+
         // InetAddress
         java2CQL.put(InetAddress.class, INET);
+
+        java2CQLDataType.put(InetAddress.class, DataType.inet());
 
         // Integer
         java2CQL.put(BigInteger.class, VARINT);
         java2CQL.put(Integer.class, INT);
         java2CQL.put(int.class, INT);
 
+        java2CQLDataType.put(BigInteger.class, DataType.varint());
+        java2CQLDataType.put(Integer.class, DataType.cint());
+        java2CQLDataType.put(int.class, DataType.cint());
+
         // Long
         java2CQL.put(Long.class, BIGINT);
         java2CQL.put(long.class, BIGINT);
 
+        java2CQLDataType.put(Long.class, DataType.bigint());
+        java2CQLDataType.put(long.class, DataType.bigint());
+
         // String
         java2CQL.put(String.class, TEXT);
 
+        java2CQLDataType.put(String.class, DataType.text());
+
         // UUID
         java2CQL.put(UUID.class, UUID);
+
+        java2CQLDataType.put(UUID.class, DataType.uuid());
 
         // Collections & Map
         java2CQL.put(List.class, LIST);
         java2CQL.put(Set.class, SET);
         java2CQL.put(Map.class, MAP);
 
+
         // Counter
         java2CQL.put(Counter.class, COUNTER);
+
+        java2CQLDataType.put(Counter.class, DataType.counter());
+
+
+
 
         cql2Java.put(ASCII, String.class);
         cql2Java.put(BIGINT, Long.class);
@@ -186,8 +225,17 @@ public class TypeMapper {
         if (name == null) {
             name = TEXT;
         }
-
         return name;
+    }
+
+    public static DataType toCQLDataType(Class<?> javaType) {
+        DataType dataType = java2CQLDataType.get(javaType);
+
+        // Custom object will be JSON serialized
+        if (dataType == null) {
+            dataType = DataType.text();
+        }
+        return dataType;
     }
 
     public static Class<?> toJavaType(Name cqlType) {

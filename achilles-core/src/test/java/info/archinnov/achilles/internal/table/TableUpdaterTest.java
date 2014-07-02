@@ -117,7 +117,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint");
     }
 
     @Test
@@ -140,8 +140,8 @@ public class TableUpdaterTest {
         // Then
         verify(session, Mockito.times(2)).execute(stringCaptor.capture());
         final List<String> updates = stringCaptor.getAllValues();
-        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint;");
-        assertThat(updates.get(1)).isEqualTo("\nCREATE INDEX long_index ON tableName(longCol);\n");
+        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint");
+        assertThat(updates.get(1)).isEqualTo("\n\tCREATE INDEX long_index ON tableName(longCol)");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD list_string list<text>;");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD list_string list<text>");
     }
 
     @Test
@@ -183,7 +183,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD set_string set<text>;");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD set_string set<text>");
     }
 
     @Test
@@ -204,7 +204,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD preferences map<int,text>;");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD preferences map<int, text>");
     }
 
     @Test
@@ -225,7 +225,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD count counter;");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD count counter");
     }
 
 }

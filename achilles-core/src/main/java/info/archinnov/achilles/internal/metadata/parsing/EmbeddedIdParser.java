@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing;
 
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.getAllFields;
@@ -22,6 +24,7 @@ import static org.reflections.ReflectionUtils.withParametersCount;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +34,8 @@ import java.util.TreeMap;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
@@ -53,10 +58,9 @@ public class EmbeddedIdParser {
         checkForDefaultConstructor(embeddedIdClass);
 
         Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
-        Integer reversedField = extractReversedClusteredKey(embeddedIdClass);
         validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
-        validateReversedClusteredKey(components, reversedField, embeddedIdClass.getCanonicalName());
-        EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, reversedField);
+        final List<ClusteringOrder> clusteringOrders = extractClusteredOrder(embeddedIdClass);
+        EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, clusteringOrders);
 
         log.trace("Built embeddedId properties : {}", embeddedIdProperties);
         return embeddedIdProperties;
@@ -91,23 +95,35 @@ public class EmbeddedIdParser {
 
     }
 
-    private Integer extractReversedClusteredKey(Class<?> embeddedIdClass) {
-        log.debug("Extract reversed clustering component from embedded id class {} ",
-                embeddedIdClass.getCanonicalName());
+    private List<ClusteringOrder> extractClusteredOrder(Class<?> embeddedIdClass) {
+        log.debug("Extract clustering component order from embedded id class {} ",embeddedIdClass.getCanonicalName());
+
+        List<ClusteringOrder> sortOrders = new LinkedList<>();
 
         @SuppressWarnings("unchecked")
-        Set<Field> candidateFields = getAllFields(embeddedIdClass, ReflectionUtils.<Field>withAnnotation(Order.class));
-        List<Integer> reversedFields = new LinkedList<>();
-        for (Field candidateField : candidateFields) {
-            Order orderAnnotation = candidateField.getAnnotation(Order.class);
-            if (orderAnnotation.reversed()) {
-                reversedFields.add(orderAnnotation.value());
+        Set<Field> candidateFields = getAllFields(embeddedIdClass, ReflectionUtils.withAnnotation(Order.class));
+        final List<Field> clusteringFields = FluentIterable.from(candidateFields).filter(new Predicate<Field>() {
+            @Override
+            public boolean apply(Field field) {
+                Order orderAnnotation = field.getAnnotation(Order.class);
+                return !filter.hasAnnotation(field, PartitionKey.class) && orderAnnotation.value() > 1;
             }
+        }).toSortedList(new Comparator<Field>() {
+            @Override
+            public int compare(Field o1, Field o2) {
+                Order order1 = o1.getAnnotation(Order.class);
+                Order order2 = o2.getAnnotation(Order.class);
+                return new Integer(order1.value()).compareTo(new Integer(order2.value()));
+            }
+        });
+
+        for (Field clusteringField : clusteringFields) {
+            final Order order = clusteringField.getAnnotation(Order.class);
+            final String columnName = extractColumnName(clusteringField);
+            sortOrders.add(new ClusteringOrder(columnName, order.reversed() ? Sorting.DESC : Sorting.ASC));
         }
-        Validator.validateBeanMappingTrue(reversedFields.size() <= 1,
-                "There should be at most 1 field annotated with @Order(reversed=true) for the @EmbeddedId class '%s'",
-                embeddedIdClass.getCanonicalName());
-        return reversedFields.size() > 0 ? reversedFields.get(0) : null;
+
+        return sortOrders;
 
     }
 
@@ -150,39 +166,16 @@ public class EmbeddedIdParser {
         Validator.validateBeanMappingTrue(orderSum == check, "The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
     }
 
-    private void validateReversedClusteredKey(Map<Integer, Field> componentsOrdering, Integer reversedField, String embeddedIdClassName) {
-        if (reversedField != null) {
-            log.debug("Validate reversed clustered key component ordering for @EmbeddedId class {} ",
-                    embeddedIdClassName);
-            int lastPartitionKey = 0;
-            for (Integer order : componentsOrdering.keySet()) {
-                Field componentField = componentsOrdering.get(order);
-                if (filter.hasAnnotation(componentField, PartitionKey.class)) {
-                    lastPartitionKey = Math.max(lastPartitionKey, order.intValue());
-                }
-            }
-            if (lastPartitionKey > 0) {
-                Validator.validateBeanMappingTrue(reversedField.intValue() == lastPartitionKey + 1,
-                        "The reversed clustered key must be set after the last partition key for @EmbeddedId class '%s'",
-                        embeddedIdClassName);
-            } else {
-                Validator.validateBeanMappingTrue(reversedField.intValue() == 2,
-                        "The composite clustered key must be set at position 2 for @EmbeddedId class '%s'",
-                        embeddedIdClassName);
-            }
-        }
-
-    }
-
     private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
-            Integer reversedField) {
+            List<ClusteringOrder> clusteringOrders) {
 
         log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
         EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
         EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
+        clusteringKeysBuilder.setClusteringOrders(clusteringOrders);
         EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder = new EmbeddedIdPropertiesBuilder();
 
-        boolean hasPartitionKeyAnnotation = buildPartitionAndClusteringKeys(embeddedIdClass, components, reversedField,
+        boolean hasPartitionKeyAnnotation = buildPartitionAndClusteringKeys(embeddedIdClass, components,
                 partitionKeysBuilder, clusteringKeysBuilder, embeddedIdPropertiesBuilder);
 
         if (!hasPartitionKeyAnnotation) {
@@ -198,8 +191,8 @@ public class EmbeddedIdParser {
     }
 
     private boolean buildPartitionAndClusteringKeys(Class<?> embeddedIdClass, Map<Integer, Field> components,
-            Integer reversedField, EmbeddedIdPropertiesBuilder partitionKeysBuilder,
-            EmbeddedIdPropertiesBuilder clusteringKeysBuilder, EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
+            EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder,
+            EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
         log.debug("Build Components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
 
         boolean hasPartitionKeyAnnotation = false;
@@ -210,12 +203,7 @@ public class EmbeddedIdParser {
             Method componentGetter = entityIntrospector.findGetter(embeddedIdClass, compositeKeyField);
             Method componentSetter = entityIntrospector.findSetter(embeddedIdClass, compositeKeyField);
 
-            Column column = compositeKeyField.getAnnotation(Column.class);
-
-            if (column != null && isNotBlank(column.name()))
-                componentName = column.name();
-            else
-                componentName = compositeKeyField.getName();
+            componentName = extractColumnName(compositeKeyField);
 
             embeddedIdPropertiesBuilder.addComponentName(componentName);
             embeddedIdPropertiesBuilder.addComponentClass(componentClass);
@@ -241,11 +229,18 @@ public class EmbeddedIdParser {
                 clusteringKeysBuilder.addComponentGetter(componentGetter);
                 clusteringKeysBuilder.addComponentSetter(componentSetter);
             }
-            if (reversedField != null && order.intValue() == reversedField.intValue()) {
-                clusteringKeysBuilder.setReversedComponentName(componentName);
-            }
+
         }
         return hasPartitionKeyAnnotation;
+    }
+
+    private String extractColumnName(Field compositeKeyField) {
+        String componentName;Column column = compositeKeyField.getAnnotation(Column.class);
+        if (column != null && isNotBlank(column.name()))
+            componentName = column.name();
+        else
+            componentName = compositeKeyField.getName();
+        return componentName;
     }
 
     private void checkForDefaultConstructor(Class<?> embeddedIdClass) {
