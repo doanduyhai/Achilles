@@ -350,11 +350,11 @@ public class PropertyMetaTest {
 		pm.setTranscoder(transcoder);
 
 		assertThat(pm.encode((Object) null)).isNull();
-		assertThat(pm.encodeKey((Object) null)).isNull();
+		assertThat(pm.encodeKey( null)).isNull();
 		assertThat(pm.encode((List<?>) null)).isNull();
 		assertThat(pm.encode((Set<?>) null)).isNull();
 		assertThat(pm.encode((Map<?, ?>) null)).isNull();
-		assertThat(pm.encodeToComponents((List<?>) null)).isNull();
+		assertThat(pm.encodeToComponents( null, true)).isNull();
 
 		Object value = "";
 		List<Object> list = new ArrayList<Object>();

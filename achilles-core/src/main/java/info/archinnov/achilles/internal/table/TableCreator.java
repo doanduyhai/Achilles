@@ -38,16 +38,16 @@ import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.schemabuilder.Create;
 import info.archinnov.achilles.schemabuilder.SchemaBuilder;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.Counter;
 
 public class TableCreator {
-    private static final Logger log = LoggerFactory.getLogger(TableCreator.class);
+    static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
     public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
-    static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
+    private static final Logger log = LoggerFactory.getLogger(TableCreator.class);
+    private static final Logger DML_LOG = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
     public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
 
@@ -112,9 +112,10 @@ public class TableCreator {
             String propertyName = pm.getCQL3PropertyName();
             Class<?> keyClass = pm.getKeyClass();
             Class<?> valueClass = pm.getValueClassForTableCreation();
+            final boolean staticColumn = pm.isStaticColumn();
             switch (pm.type()) {
                 case SIMPLE:
-                    createTable.addColumn(propertyName, toCQLDataType(valueClass));
+                    createTable.addColumn(propertyName, toCQLDataType(valueClass), staticColumn);
                     if (pm.isIndexed()) {
                         final String optionalIndexName = pm.getIndexProperties().getIndexName();
                         final String indexName = isBlank(optionalIndexName) ? tableName + "_" + propertyName : optionalIndexName;
@@ -122,13 +123,13 @@ public class TableCreator {
                     }
                     break;
                 case LIST:
-                    createTable.addColumn(propertyName, DataType.list(toCQLDataType(valueClass)));
+                    createTable.addColumn(propertyName, DataType.list(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case SET:
-                    createTable.addColumn(propertyName, DataType.set(toCQLDataType(valueClass)));
+                    createTable.addColumn(propertyName, DataType.set(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case MAP:
-                    createTable.addColumn(propertyName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)));
+                    createTable.addColumn(propertyName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
                     break;
                 default:
                     break;
@@ -140,10 +141,14 @@ public class TableCreator {
         addClusteringOrder(idMeta, tableOptions);
         tableOptions.comment("Create table for entity \"" + entityMeta.getClassName() + "\"");
 
-        session.execute(tableOptions.build());
+        final String createTableScript = tableOptions.build();
+        session.execute(createTableScript);
+        DML_LOG.debug(createTableScript);
+
         if (!indexes.isEmpty()) {
             for (String indexScript : indexes) {
                 session.execute(indexScript);
+                DML_LOG.debug(indexScript);
             }
         }
 
@@ -157,14 +162,15 @@ public class TableCreator {
         PropertyMeta idMeta = meta.getIdMeta();
         buildPrimaryKey(idMeta, createTable);
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
-            createTable.addColumn(counterMeta.getCQL3PropertyName(),DataType.counter());
+            createTable.addColumn(counterMeta.getCQL3PropertyName(), DataType.counter(),counterMeta.isStaticColumn());
         }
         final Create.Options tableOptions = createTable.withOptions();
         addClusteringOrder(idMeta, tableOptions);
         tableOptions.comment("Create table for clustered counter entity \"" + meta.getClassName() + "\"");
 
-        session.execute(tableOptions.build());
-
+        final String createTableScript = tableOptions.build();
+        session.execute(createTableScript);
+        DML_LOG.debug(createTableScript);
     }
 
     private void addClusteringOrder(PropertyMeta idMeta, Create.Options tableOptions) {
@@ -192,8 +198,8 @@ public class TableCreator {
         List<Class<?>> componentClasses = pm.getPartitionComponentClasses();
         for (int i = 0; i < componentNames.size(); i++) {
             String componentName = componentNames.get(i);
-            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class:componentClasses.get(i);
-            createTable.addPartitionKey(componentName,toCQLDataType(javaType));
+            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class : componentClasses.get(i);
+            createTable.addPartitionKey(componentName, toCQLDataType(javaType));
         }
     }
 
@@ -202,7 +208,7 @@ public class TableCreator {
         List<Class<?>> componentClasses = pm.getClusteringComponentClasses();
         for (int i = 0; i < componentNames.size(); i++) {
             String componentName = componentNames.get(i);
-            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class:componentClasses.get(i);
+            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class : componentClasses.get(i);
             createTable.addClusteringKey(componentName, toCQLDataType(javaType));
 
         }

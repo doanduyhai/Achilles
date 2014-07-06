@@ -46,6 +46,8 @@ import info.archinnov.achilles.test.parser.entity.BeanWithIdAndColumnAnnotations
 import info.archinnov.achilles.test.parser.entity.BeanWithInsertStrategy;
 import info.archinnov.achilles.test.parser.entity.BeanWithNoId;
 import info.archinnov.achilles.test.parser.entity.BeanWithSimpleCounter;
+import info.archinnov.achilles.test.parser.entity.BeanWithStaticColumnAndEmbeddedId;
+import info.archinnov.achilles.test.parser.entity.BeanWithStaticColumnNotClustered;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.test.parser.entity.ClusteredEntity;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -188,6 +190,7 @@ public class EntityParserTest {
         assertThat(idMeta.isEmbeddedId()).isTrue();
         assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
 
+        assertThat(meta.getPropertyMetas().get("name").isStaticColumn()).isTrue();
     }
 
     @Test
@@ -251,7 +254,25 @@ public class EntityParserTest {
 
         expectedEx.expect(AchillesBeanMappingException.class);
         expectedEx.expectMessage("The entity '" + BeanWithNoId.class.getCanonicalName()
-                + "' should have at least one field with javax.persistence.Id/javax.persistence.EmbeddedId annotation");
+                + "' should have at least one field with info.archinnov.achilles.annotations.Id/info.archinnov.achilles.annotations.EmbeddedId annotation");
+        parser.parseEntity(entityContext);
+    }
+
+    @Test
+    public void should_exception_when_static_column_on_non_clustered_entity() throws Exception {
+        initEntityParsingContext(BeanWithStaticColumnNotClustered.class);
+
+        expectedEx.expect(AchillesBeanMappingException.class);
+        expectedEx.expectMessage("The entity class '" + BeanWithStaticColumnNotClustered.class.getCanonicalName() + "' cannot have a static column because it does not declare any clustering column");
+        parser.parseEntity(entityContext);
+    }
+
+    @Test
+    public void should_exception_when_entity_with_embedded_id_and_static_column_and_not_clustered() throws Exception {
+        initEntityParsingContext(BeanWithStaticColumnAndEmbeddedId.class);
+
+        expectedEx.expect(AchillesBeanMappingException.class);
+        expectedEx.expectMessage("The entity class '" + BeanWithStaticColumnAndEmbeddedId.class.getCanonicalName() + "' cannot have a static column because it does not declare any clustering column");
         parser.parseEntity(entityContext);
     }
 
@@ -266,7 +287,7 @@ public class EntityParserTest {
     }
 
     @Test
-    public void should_parse_wide_row() throws Exception {
+    public void should_parse_clustered_entity() throws Exception {
         initEntityParsingContext(ClusteredEntity.class);
         EntityMeta meta = parser.parseEntity(entityContext);
 
@@ -278,6 +299,7 @@ public class EntityParserTest {
         assertThat(meta.getPropertyMetas()).hasSize(2);
         assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
         assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
+        assertThat(meta.getPropertyMetas().get("value").isStaticColumn()).isTrue();
     }
 
     @Test

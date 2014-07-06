@@ -110,6 +110,7 @@ public class EntityProxifierTest {
 
         long primaryKey = RandomUtils.nextLong();
         PropertyMeta pm = mock(PropertyMeta.class);
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
         Object value = new Object();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
@@ -118,7 +119,8 @@ public class EntityProxifierTest {
         doReturn(interceptor).when(proxifier).buildInterceptor(eq(context), eq(entity), anySetOf(Method.class));
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(entityMeta.getAllMetas()).thenReturn(Arrays.asList(pm));
+        when(entityMeta.getAllMetasExceptCounters()).thenReturn(Arrays.asList(pm));
+        when(entityMeta.getAllCounterMetas()).thenReturn(Arrays.asList(counterMeta));
         when(pm.getValueFromField(entity)).thenReturn(value);
         when(context.getConfigContext()).thenReturn(configContext);
         when(factory.createProxyClass(entity.getClass(), configContext)).thenReturn((Class) entity.getClass());
@@ -135,6 +137,7 @@ public class EntityProxifierTest {
 
         verify(pm).getValueFromField(entity);
         verify(pm).setValueToField(realProxy, value);
+        verify(counterMeta).setValueToField(entity,null);
     }
 
     @Test

@@ -55,6 +55,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -99,7 +100,7 @@ public class PreparedStatementGenerator {
         } else {
             Selection select = prepareSelectField(pm, select());
             Select from = select.from(entityMeta.getTableName());
-            RegularStatement statement = prepareWhereClauseForSelect(idMeta, from);
+            RegularStatement statement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(pm),from);
             return session.prepare(statement.getQueryString());
         }
     }
@@ -118,8 +119,14 @@ public class PreparedStatementGenerator {
         }
 
         Assignments assignments = null;
+        boolean onlyStaticColumns = true;
         for (int i = 0; i < pms.size(); i++) {
             PropertyMeta pm = pms.get(i);
+
+            if (!pm.isStaticColumn()) {
+                onlyStaticColumns = false;
+            }
+
             String property = pm.getPropertyName();
             if (i == 0) {
                 assignments = updateConditions.with(set(property, bindMarker(property)));
@@ -128,7 +135,7 @@ public class PreparedStatementGenerator {
             }
         }
 
-        RegularStatement statement = prepareWhereClauseForUpdate(idMeta, assignments, options);
+        RegularStatement statement = prepareWhereClauseWithTTLForUpdate(idMeta, assignments, onlyStaticColumns, options);
         return session.prepare(statement.getQueryString());
     }
 
@@ -144,7 +151,7 @@ public class PreparedStatementGenerator {
         }
         Select from = select.from(entityMeta.getTableName());
 
-        RegularStatement statement = prepareWhereClauseForSelect(idMeta, from);
+        RegularStatement statement = prepareWhereClauseForSelect(idMeta, Optional.<PropertyMeta>absent(), from);
         return session.prepare(statement.getQueryString());
     }
 
@@ -193,10 +200,12 @@ public class PreparedStatementGenerator {
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
             String counterName = counterMeta.getPropertyName();
 
-            RegularStatement incrementStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(incr(counterName, bindMarker(counterName))), noOptions());
-            RegularStatement decrementStatement = prepareWhereClauseForUpdate(idMeta, update(tableName).with(decr(counterName, bindMarker(counterName))), noOptions());
+            RegularStatement incrementStatement = prepareWhereClauseForCounterUpdate(idMeta, update(tableName).with(incr(counterName, bindMarker(counterName))),
+                    counterMeta.isStaticColumn(), noOptions());
+            RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(idMeta, update(tableName).with(decr(counterName, bindMarker(counterName))),
+                    counterMeta.isStaticColumn(), noOptions());
 
-            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select(counterName).from(tableName));
+            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(counterMeta),select(counterName).from(tableName));
 
             incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
             decrStatementPerCounter.put(counterName, session.prepare(decrementStatement));
@@ -205,7 +214,7 @@ public class PreparedStatementGenerator {
         clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
         clusteredCounterPSMap.put(DECR, decrStatementPerCounter);
 
-        RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, select().from(tableName));
+        RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, Optional.<PropertyMeta>absent(), select().from(tableName));
         selectStatementPerCounter.put(SELECT_ALL.name(), session.prepare(selectStatement));
         clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
 
@@ -237,18 +246,27 @@ public class PreparedStatementGenerator {
         }
     }
 
-    private RegularStatement prepareWhereClauseForSelect(PropertyMeta idMeta, Select from) {
+    private RegularStatement prepareWhereClauseForSelect(PropertyMeta idMeta,Optional<PropertyMeta> pmO, Select from) {
         RegularStatement statement;
         if (idMeta.isEmbeddedId()) {
             Select.Where where = null;
             int i = 0;
-            for (String clusteredId : idMeta.getComponentNames()) {
-                if (i == 0) {
-                    where = from.where(eq(clusteredId, bindMarker(clusteredId)));
-                } else {
-                    where.and(eq(clusteredId, bindMarker(clusteredId)));
+            if (pmO.isPresent() && pmO.get().isStaticColumn()) {
+                for (String partitionKey : idMeta.getPartitionComponentNames()) {
+                    if (i++ == 0) {
+                        where = from.where(eq(partitionKey, bindMarker(partitionKey)));
+                    } else {
+                        where.and(eq(partitionKey, bindMarker(partitionKey)));
+                    }
                 }
-                i++;
+            } else {
+                for (String clusteredId : idMeta.getComponentNames()) {
+                    if (i ++== 0) {
+                        where = from.where(eq(clusteredId, bindMarker(clusteredId)));
+                    } else {
+                        where.and(eq(clusteredId, bindMarker(clusteredId)));
+                    }
+                }
             }
             statement = where;
         } else {
@@ -258,18 +276,10 @@ public class PreparedStatementGenerator {
         return statement;
     }
 
-    private RegularStatement prepareWhereClauseForUpdate(PropertyMeta idMeta, Assignments assignments, Options options) {
+    private RegularStatement prepareWhereClauseWithTTLForUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns,Options options) {
         Update.Where where = null;
         if (idMeta.isEmbeddedId()) {
-            int i = 0;
-            for (String clusteredId : idMeta.getComponentNames()) {
-                if (i == 0) {
-                    where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
-                } else {
-                    where.and(eq(clusteredId, bindMarker(clusteredId)));
-                }
-                i++;
-            }
+            where = prepareCommonWhereClauseForUpdate(idMeta, assignments, onlyStaticColumns, where);
         } else {
             String idName = idMeta.getPropertyName();
             where = assignments.where(eq(idName, bindMarker(idName)));
@@ -280,6 +290,44 @@ public class PreparedStatementGenerator {
             updateOptions.and(timestamp(bindMarker("timestamp")));
         }
         return updateOptions;
+    }
+
+    private RegularStatement prepareWhereClauseForCounterUpdate(PropertyMeta idMeta, Assignments assignments,boolean onlyStaticColumns, Options options) {
+        Update.Where where = null;
+        if (idMeta.isEmbeddedId()) {
+            where = prepareCommonWhereClauseForUpdate(idMeta, assignments, onlyStaticColumns, where);
+        } else {
+            String idName = idMeta.getPropertyName();
+            where = assignments.where(eq(idName, bindMarker(idName)));
+        }
+
+        if (options.getTimestamp().isPresent()) {
+            return where.using(timestamp(bindMarker("timestamp")));
+        } else {
+            return where;
+        }
+    }
+
+    private Update.Where prepareCommonWhereClauseForUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns, Update.Where where) {
+        int i = 0;
+        if (onlyStaticColumns) {
+            for (String partitionKeys : idMeta.getPartitionComponentNames()) {
+                if (i++ == 0) {
+                    where = assignments.where(eq(partitionKeys, bindMarker(partitionKeys)));
+                } else {
+                    where.and(eq(partitionKeys, bindMarker(partitionKeys)));
+                }
+            }
+        } else {
+            for (String clusteredId : idMeta.getComponentNames()) {
+                if (i ++== 0) {
+                    where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
+                } else {
+                    where.and(eq(clusteredId, bindMarker(clusteredId)));
+                }
+            }
+        }
+        return where;
     }
 
     public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
@@ -364,7 +412,8 @@ public class PreparedStatementGenerator {
                 break;
         }
 
-        final RegularStatement regularStatement = prepareWhereClauseForUpdate(meta.getIdMeta(), updateClauseAndBoundValues.left, options);
+        final RegularStatement regularStatement = prepareWhereClauseWithTTLForUpdate(meta.getIdMeta(), updateClauseAndBoundValues.left,
+                changeSet.getPropertyMeta().isStaticColumn(), options);
         final PreparedStatement preparedStatement = session.prepare(regularStatement);
         return preparedStatement;
     }

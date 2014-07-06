@@ -104,6 +104,7 @@ public class TableUpdaterTest {
         // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+        longColPM.setStaticColumn(true);
 
         meta = new EntityMeta();
         meta.setAllMetasExceptId(asList(longColPM));
@@ -117,7 +118,7 @@ public class TableUpdaterTest {
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint static");
     }
 
     @Test
@@ -219,6 +220,7 @@ public class TableUpdaterTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
         meta.setSchemaUpdateEnabled(true);
+        meta.setClusteredCounter(true);
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -226,6 +228,26 @@ public class TableUpdaterTest {
         // Then
         verify(session).execute(stringCaptor.capture());
         assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD count counter");
+    }
+
+    @Test
+    public void should_not_add_counter_field_if_non_clustered_counter_entity() throws Exception {
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
+        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
+
+        meta = new EntityMeta();
+        meta.setAllMetasExceptId(asList(longColPM));
+        meta.setIdMeta(idMeta);
+        meta.setTableName("tableName");
+        meta.setClassName("entityName");
+        meta.setSchemaUpdateEnabled(true);
+        meta.setClusteredCounter(false);
+
+        // When
+        updater.updateTableForEntity(session, meta, tableMeta);
+
+        // Then
+        verifyZeroInteractions(session);
     }
 
 }

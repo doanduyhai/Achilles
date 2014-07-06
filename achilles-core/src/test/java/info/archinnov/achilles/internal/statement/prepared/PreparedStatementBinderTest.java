@@ -53,6 +53,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -102,7 +103,7 @@ public class PreparedStatementBinderTest {
     @Mock
     private ObjectMapper objectMapper;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DirtyCheckChangeSet changeSet;
 
     @Mock
@@ -231,7 +232,7 @@ public class PreparedStatementBinderTest {
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
 
-        when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(Arrays.<Object>asList(userId, name));
+        when(transcoder.encodeToComponents(idMeta, embeddedKey, false)).thenReturn(Arrays.<Object>asList(userId, name));
         when(transcoder.encode(friendsMeta, friends)).thenReturn(friends);
         when(transcoder.encode(followersMeta, followers)).thenReturn(followers);
         when(transcoder.encode(preferencesMeta, preferences)).thenReturn(preferences);
@@ -257,7 +258,7 @@ public class PreparedStatementBinderTest {
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(ps.bind(Matchers.anyVararg())).thenReturn(bs);
 
-        BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(context, ps, info.archinnov.achilles.type.ConsistencyLevel.ALL);
+        BoundStatementWrapper actual = binder.bindStatementWithOnlyPKInWhereClause(context, ps, true,info.archinnov.achilles.type.ConsistencyLevel.ALL);
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(primaryKey);
@@ -380,11 +381,14 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_clustered_counter_increment_decrement() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(ID).invoker(invoker).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").transcoder(transcoder).type(EMBEDDED_ID).invoker(invoker).build();
 
         EntityMeta meta = new EntityMeta();
         meta.setClassName("CompleteBean");
         meta.setIdMeta(idMeta);
+
+        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        when(counterMeta.isStaticColumn()).thenReturn(false);
 
         Long primaryKey = RandomUtils.nextLong();
         Long counter = RandomUtils.nextLong();
@@ -394,14 +398,13 @@ public class PreparedStatementBinderTest {
         when(context.getPrimaryKey()).thenReturn(primaryKey);
 
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
-        when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
-        when(ps.bind(0, counter, primaryKey)).thenReturn(bs);
+        when(transcoder.encodeToComponents(idMeta, primaryKey, false)).thenReturn(Arrays.<Object>asList(primaryKey));
+        when(ps.bind(counter, primaryKey)).thenReturn(bs);
 
-        BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(context, ps, counter);
+        BoundStatementWrapper actual = binder.bindForClusteredCounterIncrementDecrement(context, ps,counterMeta, counter);
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
-        assertThat(asList(actual.getValues())).containsExactly(0, counter, primaryKey);
-
+        assertThat(asList(actual.getValues())).containsExactly(counter, primaryKey);
     }
 
     @Test
@@ -422,7 +425,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(ps.bind(primaryKey)).thenReturn(bs);
 
-        BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(context, ps, ALL);
+        BoundStatementWrapper actual = binder.bindForClusteredCounterSelect(context, ps, true,ALL);
 
         verify(bs).setConsistencyLevel(ConsistencyLevel.ALL);
         assertThat(asList(actual.getValues())).containsExactly(primaryKey);
@@ -472,6 +475,7 @@ public class PreparedStatementBinderTest {
         when(invoker.getPrimaryKey(entity, idMeta)).thenReturn(primaryKey);
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         when(changeSet.getChangeType()).thenReturn(REMOVE_COLLECTION_OR_MAP);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(ps.bind(0, null, primaryKey)).thenReturn(bs);
 
         //When
@@ -501,6 +505,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Set<Object> values = Sets.<Object>newHashSet("whatever");
         when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_SET);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -531,6 +536,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Map<Object, Object> values = ImmutableMap.<Object, Object>of(1, "whatever");
         when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_MAP);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedMapChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -561,6 +567,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final List<Object> values = Arrays.<Object>asList("whatever");
         when(changeSet.getChangeType()).thenReturn(ASSIGN_VALUE_TO_LIST);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedListChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -592,6 +599,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Set<Object> values = Sets.<Object>newHashSet("whatever");
         when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -623,6 +631,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Set<Object> values = Sets.<Object>newHashSet("whatever");
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_SET);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedSetChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -653,6 +662,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final List<Object> values = Arrays.<Object>asList("whatever");
         when(changeSet.getChangeType()).thenReturn(APPEND_TO_LIST);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedListChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -683,6 +693,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final List<Object> values = Arrays.<Object>asList("whatever");
         when(changeSet.getChangeType()).thenReturn(PREPEND_TO_LIST);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedListChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -713,6 +724,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final List<Object> values = Arrays.<Object>asList("whatever");
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedListChanges()).thenReturn(values);
         when(ps.bind(0, values, primaryKey)).thenReturn(bs);
 
@@ -756,6 +768,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Map<Object, Object> values = ImmutableMap.<Object, Object>of(1, "whatever");
         when(changeSet.getChangeType()).thenReturn(ADD_TO_MAP);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedMapChanges()).thenReturn(values);
         when(ps.bind(0, 100L, values, primaryKey)).thenReturn(bs);
 
@@ -791,6 +804,7 @@ public class PreparedStatementBinderTest {
         when(transcoder.encode(idMeta, primaryKey)).thenReturn(primaryKey);
         final Map<Object, Object> values = ImmutableMap.<Object, Object>of(1, "whatever");
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_MAP);
+        when(changeSet.getPropertyMeta().isStaticColumn()).thenReturn(false);
         when(changeSet.getEncodedMapChanges()).thenReturn(values);
         when(ps.bind(0, 1, null, primaryKey, "John")).thenReturn(bs);
 

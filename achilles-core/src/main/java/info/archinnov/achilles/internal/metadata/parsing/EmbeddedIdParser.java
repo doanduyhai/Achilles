@@ -40,6 +40,7 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
 import info.archinnov.achilles.annotations.TimeUUID;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
 import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator;
@@ -235,11 +236,19 @@ public class EmbeddedIdParser {
     }
 
     private String extractColumnName(Field compositeKeyField) {
-        String componentName;Column column = compositeKeyField.getAnnotation(Column.class);
-        if (column != null && isNotBlank(column.name()))
+        String componentName;
+        Column column = compositeKeyField.getAnnotation(Column.class);
+
+        if (column != null && isNotBlank(column.name())) {
             componentName = column.name();
-        else
+        }
+        else {
             componentName = compositeKeyField.getName();
+        }
+
+        if (column != null && column.staticColumn()) {
+            throw new AchillesBeanMappingException(String.format("The property '%s' of class '%s' cannot be a static column because it belongs to the primary key",componentName,compositeKeyField.getDeclaringClass().getCanonicalName()));
+        }
         return componentName;
     }
 

@@ -16,31 +16,30 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmbeddedId;
-import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Order;
 
-@Entity
-public class ClusteredEntity {
+public class EmbeddedKeyWithStaticColumn {
+	@Order(1)
+	private String name;
 
-	@EmbeddedId
-	private EmbeddedKey id;
+	@Order(2)
+    @Column(name = "rank", staticColumn = true)
+	private int rank;
 
-	@Column(staticColumn = true)
-	private String value;
-
-	public EmbeddedKey getId() {
-		return id;
+	public String getName() {
+		return name;
 	}
 
-	public void setId(EmbeddedKey id) {
-		this.id = id;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getValue() {
-		return value;
+	public int getRank() {
+		return rank;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setRank(int rank) {
+		this.rank = rank;
 	}
+
 }

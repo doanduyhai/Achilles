@@ -103,7 +103,7 @@ public class EntityValidatorTest {
 		when(entityMeta.getPrimaryKey(bean)).thenReturn(clusteredId);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
 		when(idMeta.isEmbeddedId()).thenReturn(true);
-		when(idMeta.encodeToComponents(clusteredId)).thenReturn(Arrays.<Object> asList(11L, "name"));
+		when(idMeta.encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "name"));
 
 		entityValidator.validateEntity(bean, entityMeta);
 	}

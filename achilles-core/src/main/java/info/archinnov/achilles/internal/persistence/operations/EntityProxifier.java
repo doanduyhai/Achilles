@@ -78,9 +78,13 @@ public class EntityProxifier {
         T instance = (T) instantiator.instantiate(proxyClass);
 
         EntityMeta meta = context.getEntityMeta();
-        for (PropertyMeta pm : meta.getAllMetas()) {
+        for (PropertyMeta pm : meta.getAllMetasExceptCounters()) {
             Object value = pm.getValueFromField(entity);
             pm.setValueToField(instance, value);
+        }
+
+        for (PropertyMeta pm : meta.getAllCounterMetas()) {
+            pm.setValueToField(entity,null);
         }
 
         ((Factory) instance).setCallbacks(new Callback[] { buildInterceptor(context, entity, alreadyLoaded) });

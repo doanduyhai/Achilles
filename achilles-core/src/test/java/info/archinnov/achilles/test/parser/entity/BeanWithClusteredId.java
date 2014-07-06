@@ -22,7 +22,7 @@ public class BeanWithClusteredId {
 	@EmbeddedId
 	private EmbeddedKey id;
 
-	@Column
+	@Column(staticColumn = true)
 	private String name;
 
 	public EmbeddedKey getId() {

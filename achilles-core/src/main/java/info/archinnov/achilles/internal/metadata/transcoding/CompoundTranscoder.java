@@ -33,12 +33,17 @@ public class CompoundTranscoder extends AbstractTranscoder {
     }
 
     @Override
-    public List<Object> encodeToComponents(PropertyMeta idMeta, Object compoundKey) {
+    public List<Object> encodeToComponents(PropertyMeta idMeta, Object compoundKey, boolean onlyStaticColumns) {
         log.trace("Encode {} to CQL components", compoundKey);
         List<Object> compoundComponents = new ArrayList<>();
-        List<Field> componentFields = idMeta.getComponentFields();
         List<Class<?>> componentClasses = idMeta.getComponentClasses();
+        List<Field> componentFields;
         if (compoundKey != null) {
+            if (onlyStaticColumns) {
+                componentFields = idMeta.getPartitionComponentFields();
+            } else {
+                componentFields = idMeta.getComponentFields();
+            }
             for (int i = 0; i < componentFields.size(); i++) {
                 Object component = invoker.getValueFromField(compoundKey, componentFields.get(i));
                 Object encoded = super.encodeInternal(componentClasses.get(i), component);

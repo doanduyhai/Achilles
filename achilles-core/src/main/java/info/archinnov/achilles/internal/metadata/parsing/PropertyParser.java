@@ -300,6 +300,7 @@ public class PropertyParser {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
+        final boolean staticColumn = isStaticColumn(field);
         boolean timeUUID = isTimeUUID(context, field);
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
@@ -309,6 +310,7 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels()).field(field).timeuuid(timeUUID)
+                .staticColumn(staticColumn)
                 .build(Void.class, field.getType());
 
         log.trace("Built simple property meta for property {} of entity class {} : {}", propertyMeta.getPropertyName(),
@@ -324,7 +326,7 @@ public class PropertyParser {
         Field field = context.getCurrentField();
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-
+        final boolean staticColumn = isStaticColumn(field);
         PropertyType type = PropertyType.COUNTER;
 
         CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass().getCanonicalName());
@@ -332,7 +334,7 @@ public class PropertyParser {
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
-                .counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels())
+                .counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels()).staticColumn(staticColumn)
                 .build(Void.class, field.getType());
 
         context.hasSimpleCounterType();
@@ -353,8 +355,9 @@ public class PropertyParser {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
-        boolean timeUUID = isTimeUUID(context, field);
-        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean timeUUID = isTimeUUID(context, field);
+        final boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean staticColumn = isStaticColumn(field);
         Class<V> valueClass;
         Type genericType = field.getGenericType();
         valueClass = inferValueClassForListOrSet(genericType, entityClass);
@@ -366,7 +369,8 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(Void.class, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
+                .build(Void.class, valueClass);
 
         log.trace("Built list property meta for property {} of entity class {} : {}", listMeta.getPropertyName(),
                 context.getCurrentEntityClass().getCanonicalName(), listMeta);
@@ -381,8 +385,9 @@ public class PropertyParser {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
-        boolean timeUUID = isTimeUUID(context, field);
-        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean timeUUID = isTimeUUID(context, field);
+        final boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean staticColumn = isStaticColumn(field);
         Class<V> valueClass;
         Type genericType = field.getGenericType();
 
@@ -394,7 +399,8 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(Void.class, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
+                .build(Void.class, valueClass);
 
         log.trace("Built set property meta for property {} of  entity class {} : {}", setMeta.getPropertyName(),
                 context.getCurrentEntityClass().getCanonicalName(), setMeta);
@@ -408,8 +414,9 @@ public class PropertyParser {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
-        boolean timeUUID = isTimeUUID(context, field);
-        boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean timeUUID = isTimeUUID(context, field);
+        final boolean emptyCollectionIfNull = mapNullCollectionAndMapToEmpty(field);
+        final boolean staticColumn = isStaticColumn(field);
         validator.validateMapGenerics(field, entityClass);
 
         Pair<Class<K>, Class<V>> types = determineMapGenericTypes(field);
@@ -423,7 +430,8 @@ public class PropertyParser {
                 .propertyName(context.getCurrentPropertyName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
-                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).build(keyClass, valueClass);
+                .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
+                .build(keyClass, valueClass);
 
         log.trace("Built map property meta for property {} of entity class {} : {}", mapMeta.getPropertyName(), context
                 .getCurrentEntityClass().getCanonicalName(), mapMeta);
@@ -491,6 +499,11 @@ public class PropertyParser {
 
     private boolean mapNullCollectionAndMapToEmpty(Field field) {
         return filter.hasAnnotation(field, EmptyCollectionIfNull.class) || filter.hasAnnotation(field, NotNull.class);
+    }
+
+    private boolean isStaticColumn(Field field) {
+        Column column = field.getAnnotation(Column.class);
+        return column!= null && column.staticColumn();
     }
 
 }

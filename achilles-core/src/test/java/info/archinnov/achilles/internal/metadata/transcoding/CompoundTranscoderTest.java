@@ -17,6 +17,8 @@ package info.archinnov.achilles.internal.metadata.transcoding;
 
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -29,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -68,10 +71,31 @@ public class CompoundTranscoderTest {
 		when(invoker.getValueFromField(compound, userIdField)).thenReturn(userId);
 		when(invoker.getValueFromField(compound, nameField)).thenReturn(name);
 
-		List<Object> actual = transcoder.encodeToComponents(pm, compound);
+		List<Object> actual = transcoder.encodeToComponents(pm, compound, false);
 
 		assertThat(actual).containsExactly(userId, name);
 	}
+
+    @Test
+    public void should_encode_to_components_for_static_columns() throws Exception {
+        Long userId = RandomUtils.nextLong();
+        String name = "name";
+        EmbeddedKey compound = new EmbeddedKey(userId, name);
+
+        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
+        Field nameField = EmbeddedKey.class.getDeclaredField("name");
+
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
+                .compClasses(Long.class, String.class)
+                .compFields(userIdField, nameField).build();
+
+        when(invoker.getValueFromField(compound, userIdField)).thenReturn(userId);
+
+        List<Object> actual = transcoder.encodeToComponents(pm, compound, true);
+
+        verify(invoker, never()).getValueFromField(compound, nameField);
+        assertThat(actual).containsExactly(userId);
+    }
 
 	@Test
 	public void should_encode_to_null_components() throws Exception {
@@ -81,7 +105,7 @@ public class CompoundTranscoderTest {
 
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
 				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
-		List<Object> actual = transcoder.encodeToComponents(pm, (Object) null);
+		List<Object> actual = transcoder.encodeToComponents(pm,null, true);
 
 		assertThat(actual).isEmpty();
 	}
@@ -94,7 +118,7 @@ public class CompoundTranscoderTest {
 		PropertyMeta pm = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
 				.compClasses(Long.class, String.class).compGetters(userIdGetter, nameGetter).build();
 
-		List<Object> actual = transcoder.encodeToComponents(pm, Arrays.<Object> asList());
+		List<Object> actual = transcoder.encodeToComponents(pm, Arrays.asList());
 
 		assertThat(actual).isEmpty();
 	}

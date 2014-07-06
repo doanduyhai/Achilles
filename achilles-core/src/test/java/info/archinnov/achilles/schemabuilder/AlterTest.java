@@ -173,4 +173,13 @@ public class AlterTest {
         SchemaBuilder.alterTable("test")
                 .dropColumn("add");
     }
+
+    @Test
+    public void should_add_static_column() throws Exception {
+        //When
+        final String alterTable = SchemaBuilder.alterTable("test").addStaticColumn("stat").type(DataType.text());
+
+        //Then
+        assertThat(alterTable).isEqualTo("\n\tALTER TABLE test ADD stat text static");
+    }
 }

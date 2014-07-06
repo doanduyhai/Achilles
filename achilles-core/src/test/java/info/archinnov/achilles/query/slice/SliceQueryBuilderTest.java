@@ -89,7 +89,7 @@ public class SliceQueryBuilderTest {
 		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, name);
 
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
-		when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(components);
+		when(transcoder.encodeToComponents(idMeta, embeddedKey, false)).thenReturn(components);
 
 		SliceQueryBuilder<ClusteredEntity>.SliceFromEmbeddedIdBuilder embeddedIdBuilder = builder
 				.fromEmbeddedId(embeddedKey);
@@ -104,7 +104,7 @@ public class SliceQueryBuilderTest {
 		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, name);
 
 		List<Object> components = Arrays.<Object> asList(partitionKey, name);
-		when(transcoder.encodeToComponents(idMeta, embeddedKey)).thenReturn(components);
+		when(transcoder.encodeToComponents(idMeta, embeddedKey, false)).thenReturn(components);
 
 		SliceQueryBuilder<ClusteredEntity>.SliceToEmbeddedIdBuilder embeddedIdBuilder = builder
 				.toEmbeddedId(embeddedKey);

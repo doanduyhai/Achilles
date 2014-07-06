@@ -263,7 +263,7 @@ public class AbstractTranscoderTest {
 		exception.expectMessage("Transcoder cannot encode from value '" + compound + "' to components for type '"
 				+ pm.type().name() + "'");
 
-		transcoder.encodeToComponents(pm, compound);
+		transcoder.encodeToComponents(pm, compound, true);
 	}
 
 	@Test

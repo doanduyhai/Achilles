@@ -118,7 +118,7 @@ public class SchemaUpdateIT {
 
         //When
         Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
-        final PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.builder(cluster)
+        PersistenceManagerFactoryBuilder.builder(cluster)
                 .withEntities(Arrays.<Class<?>>asList(EntityWithNewSimpleField.class))
                 .withKeyspaceName("schema_dynamic_update_fail")
                 .enableSchemaUpdate(true)

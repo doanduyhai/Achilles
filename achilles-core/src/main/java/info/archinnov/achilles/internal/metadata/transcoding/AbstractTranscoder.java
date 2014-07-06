@@ -70,7 +70,7 @@ public abstract class AbstractTranscoder implements DataTranscoder {
     }
 
     @Override
-    public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey) {
+    public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey, boolean onlyStaticColumns) {
         throw new AchillesException("Transcoder cannot encode from value '" + compoundKey
                 + "' to components for type '" + pm.type().name() + "'");
     }

@@ -59,7 +59,7 @@ public class SliceQueryBuilder<T> extends RootSliceQueryBuilder<T> {
 		PropertyMeta idMeta = meta.getIdMeta();
 		Validator.validateInstanceOf(fromEmbeddedId, embeddedIdClass, "fromEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
-		List<Object> components = idMeta.encodeToComponents(fromEmbeddedId);
+		List<Object> components = idMeta.encodeToComponents(fromEmbeddedId, false);
 		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
 		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 
@@ -84,7 +84,7 @@ public class SliceQueryBuilder<T> extends RootSliceQueryBuilder<T> {
 		Validator.validateInstanceOf(toEmbeddedId, embeddedIdClass, "toEmbeddedId should be of type '%s'",
 				embeddedIdClass.getCanonicalName());
 
-		List<Object> components = idMeta.encodeToComponents(toEmbeddedId);
+		List<Object> components = idMeta.encodeToComponents(toEmbeddedId,false);
 		List<Object> partitionComponents = idMeta.extractPartitionComponents(components);
 		List<Object> clusteringComponents = idMeta.extractClusteringComponents(components);
 

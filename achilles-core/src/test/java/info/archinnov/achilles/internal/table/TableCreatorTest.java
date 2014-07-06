@@ -244,6 +244,7 @@ public class TableCreatorTest {
                 .compTimeUUID("uuid").clusteringOrders(new ClusteringOrder("count", Sorting.DESC)).build();
 
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+        longColPM.setStaticColumn(true);
 
         meta = new EntityMeta();
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
@@ -260,7 +261,7 @@ public class TableCreatorTest {
                         + "\t\tindexCol bigint,\n"
                         + "\t\tcount int,\n"
                         + "\t\tuuid timeuuid,\n"
-                        + "\t\tlongCol bigint,\n"
+                        + "\t\tlongCol bigint static,\n"
                         + "\t\tPRIMARY KEY(indexCol, count, uuid))\n"
                         + "\tWITH comment = 'Create table for entity \"entityName\"' AND CLUSTERING ORDER BY(count DESC)");
 
@@ -274,6 +275,7 @@ public class TableCreatorTest {
 
         PropertyMeta counterColPM = PropertyMetaTestBuilder.keyValueClass(Void.class, Counter.class).type(COUNTER)
                 .field("counterCol").build();
+        counterColPM.setStaticColumn(true);
 
         meta = new EntityMeta();
         meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "counter", counterColPM));
@@ -293,7 +295,7 @@ public class TableCreatorTest {
                         + "\t\tindexCol bigint,\n"
                         + "\t\tcount int,\n"
                         + "\t\tuuid uuid,\n"
-                        + "\t\tcounterCol counter,\n"
+                        + "\t\tcounterCol counter static,\n"
                         + "\t\tPRIMARY KEY(indexCol, count, uuid))\n"
                         + "\tWITH comment = 'Create table for clustered counter entity \"entityName\"' AND CLUSTERING ORDER BY(count DESC)");
 

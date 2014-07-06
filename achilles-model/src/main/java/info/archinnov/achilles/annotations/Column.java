@@ -37,4 +37,10 @@ public @interface Column {
 	 * name.
 	 */
 	String name() default "";
+
+    /**
+     * (Optional) Whether this column is a <strong>static</strong> column or not
+     *
+     */
+    boolean staticColumn() default false;
 }

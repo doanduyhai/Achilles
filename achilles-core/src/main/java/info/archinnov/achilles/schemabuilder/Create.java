@@ -135,6 +135,24 @@ public class Create extends SchemaStatement {
     }
 
     /**
+     * Shorthand method which takes a boolean and calls either {@code info.archinnov.achilles.schemabuilder.Create.addStaticColumn}
+     * or {@code info.archinnov.achilles.schemabuilder.Create.addColumn}
+     *
+     * @param columnName  the name of the column to be added;
+     * @param dataType the data type of the column to be added.
+     * @param isStatic whether the column is static or not
+     * @return this INSERT statement.
+     */
+    public Create addColumn(String columnName, DataType dataType, boolean isStatic) {
+        if (isStatic) {
+            addStaticColumn(columnName, dataType);
+        } else {
+            addColumn(columnName, dataType);
+        }
+        return this;
+    }
+
+    /**
      * Adds a <strong>static</strong> columnName and dataType for a simple column.
      *
      * @param columnName the name of the <strong>static</strong> column to be added;

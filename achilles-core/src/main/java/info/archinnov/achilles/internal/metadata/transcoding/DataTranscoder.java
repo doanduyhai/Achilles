@@ -34,7 +34,7 @@ public interface DataTranscoder {
 
 	public Map<Object, Object> encode(PropertyMeta pm, Map<?, ?> entityValue);
 
-	public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey);
+	public List<Object> encodeToComponents(PropertyMeta pm, Object compoundKey, boolean onlyStaticColumns);
 
 	public List<Object> encodeToComponents(PropertyMeta pm, List<?> components);
 

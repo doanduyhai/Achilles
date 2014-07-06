@@ -85,8 +85,9 @@ public class EntityParser {
                 .schemaUpdateEnabled(context.isSchemaUpdateEnabled(tableName))
                 .build();
 
-        log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),
-                entityMeta);
+        validator.validateStaticColumns(entityMeta,idMeta);
+        log.trace("Entity meta built for entity class {} : {}", context.getCurrentEntityClass().getCanonicalName(),entityMeta);
+
         return entityMeta;
     }
 

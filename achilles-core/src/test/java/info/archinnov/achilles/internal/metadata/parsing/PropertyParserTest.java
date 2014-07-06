@@ -277,6 +277,31 @@ public class PropertyParserTest {
         assertThat(meta.getPropertyName()).isEqualTo("firstname");
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void should_parse_simple_static_property_string() throws Exception {
+
+        @SuppressWarnings("unused")
+        class Test {
+            @Column(staticColumn = true)
+            private String name;
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("name"));
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.isStaticColumn()).isTrue();
+    }
+
     @Test
     public void should_parse_simple_property_of_time_uuid_type() throws Exception {
 
@@ -348,6 +373,29 @@ public class PropertyParserTest {
         assertThat(meta.getCounterProperties()).isNotNull();
         assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
         assertThat(context.getCounterMetas().get(0)).isSameAs(meta);
+    }
+
+    @Test
+    public void should_parse_static_counter_property() throws Exception {
+        @SuppressWarnings("unused")
+        class Test {
+            @Column(staticColumn = true)
+            private Counter counter;
+
+            public Counter getCounter() {
+                return counter;
+            }
+
+            public void setCounter(Counter counter) {
+                this.counter = counter;
+            }
+
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("counter"));
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.isStaticColumn()).isTrue();
     }
 
     @Test
@@ -497,7 +545,7 @@ public class PropertyParserTest {
         @SuppressWarnings("unused")
         class Test {
             @EmptyCollectionIfNull
-            @Column
+            @Column(staticColumn = true)
             private List<String> friends;
 
             @NotNull
@@ -533,6 +581,7 @@ public class PropertyParserTest {
 
         assertThat(meta.type()).isEqualTo(PropertyType.LIST);
         assertThat(meta.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
+        assertThat(meta.isStaticColumn()).isTrue();
 
         PropertyParsingContext context2 = newContext(Test.class, Test.class.getDeclaredField("mates"));
         PropertyMeta meta2 = parser.parse(context2);
@@ -545,7 +594,7 @@ public class PropertyParserTest {
     public void should_parse_set() throws Exception {
         @SuppressWarnings("unused")
         class Test {
-            @Column
+            @Column(staticColumn = true)
             private Set<Long> followers;
 
             public Set<Long> getFollowers() {
@@ -568,6 +617,7 @@ public class PropertyParserTest {
         assertThat((Class<Set>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Set.class);
 
         assertThat(meta.type()).isEqualTo(PropertyType.SET);
+        assertThat(meta.isStaticColumn()).isTrue();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -575,7 +625,7 @@ public class PropertyParserTest {
     public void should_parse_map() throws Exception {
         @SuppressWarnings("unused")
         class Test {
-            @Column
+            @Column(staticColumn = true)
             private Map<Integer, String> preferences;
 
             public Map<Integer, String> getPreferences() {
@@ -599,6 +649,7 @@ public class PropertyParserTest {
         assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
         assertThat(meta.getSetter().getName()).isEqualTo("setPreferences");
         assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
+        assertThat(meta.isStaticColumn()).isTrue();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

@@ -23,6 +23,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.SELECT;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.cache.CacheManager;
@@ -293,7 +296,7 @@ public class DaoContextTest {
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(removePSs.get(CompleteBean.class)).thenReturn(of("table", ps));
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
-        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, false, EACH_QUORUM)).thenReturn(bsWrapper);
 
         daoContext.bindForRemoval(context, "table");
 
@@ -315,17 +318,23 @@ public class DaoContextTest {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
+        EntityMeta entityMeta = mock(EntityMeta.class);
 
-        // When
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
+
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(context.getEntityMeta()).thenReturn(entityMeta);
+        when(entityMeta.getAllMetasExceptId()).thenReturn(asList(pm));
         when(selectEagerPSs.get(CompleteBean.class)).thenReturn(ps);
         when(overrider.getReadLevel(context)).thenReturn(LOCAL_QUORUM);
-        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, LOCAL_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, false, LOCAL_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(asList(row));
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
-        // Then
+        // When
         Row actual = daoContext.loadEntity(context);
+
+        // Then
         assertThat(actual).isSameAs(row);
     }
 
@@ -338,8 +347,9 @@ public class DaoContextTest {
 
         // When
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
+        when(pm.isStaticColumn()).thenReturn(true);
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
-        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(asList(row));
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
@@ -356,9 +366,10 @@ public class DaoContextTest {
         PropertyMeta pm = mock(PropertyMeta.class);
 
         // When
+        when(pm.isStaticColumn()).thenReturn(true);
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
-        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(Lists.<Row>newLinkedList());
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
@@ -469,13 +480,13 @@ public class DaoContextTest {
     public void should_push_clustered_counter_increment() throws Exception {
         // Given
         PropertyMeta counterMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("count")
-                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+                .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).staticColumn(false).build();
 
         // When
         when(context.getTtl()).thenReturn(Optional.<Integer>absent());
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
         clusteredCounterQueryMap.put(CompleteBean.class, ImmutableMap.<CQLQueryType, Map<String, PreparedStatement>>of(INCR, of("count", ps)));
-        when(binder.bindForClusteredCounterIncrementDecrement(context, ps, 2L)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterIncrementDecrement(context, ps, counterMeta, 2L)).thenReturn(bsWrapper);
 
         daoContext.pushClusteredCounterIncrementStatement(context, counterMeta, 2L);
 
@@ -492,7 +503,7 @@ public class DaoContextTest {
 
         // When
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
-        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterSelect(context, ps, false, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
         when(resultSet.all()).thenReturn(asList(row));
 
@@ -507,6 +518,7 @@ public class DaoContextTest {
         // Given
         PropertyMeta counterMeta = mock(PropertyMeta.class);
         when(counterMeta.getPropertyName()).thenReturn("counter");
+        when(counterMeta.isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
@@ -517,7 +529,7 @@ public class DaoContextTest {
 
         // When
         when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
-        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterSelect(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
@@ -531,6 +543,7 @@ public class DaoContextTest {
         // Given
         PropertyMeta counterMeta = mock(PropertyMeta.class);
         when(counterMeta.getPropertyName()).thenReturn("counter");
+        when(counterMeta.isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
@@ -541,7 +554,7 @@ public class DaoContextTest {
 
         // When
         when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
-        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterSelect(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then
@@ -555,6 +568,7 @@ public class DaoContextTest {
         // Given
         PropertyMeta counterMeta = mock(PropertyMeta.class);
         when(counterMeta.getPropertyName()).thenReturn("counter");
+        when(counterMeta.isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
 
@@ -562,7 +576,7 @@ public class DaoContextTest {
 
         // When
         when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
-        when(binder.bindForClusteredCounterSelect(context, ps, EACH_QUORUM)).thenReturn(bsWrapper);
+        when(binder.bindForClusteredCounterSelect(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(resultSet);
 
         // Then

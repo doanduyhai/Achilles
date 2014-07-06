@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
@@ -43,7 +44,22 @@ public class PropertyMeta {
 
     private static final Logger log = LoggerFactory.getLogger(PropertyMeta.class);
 
-    private static final Function<String, String> toLowerCase = new Function<String, String>() {
+    public static final Predicate<PropertyMeta> STATIC_COLUMN_FILTER = new Predicate<PropertyMeta>() {
+        @Override
+        public boolean apply(PropertyMeta pm) {
+            return pm.isStaticColumn();
+        }
+    };
+
+    public static final Predicate<PropertyMeta> COUNTER_COLUMN_FILTER = new Predicate<PropertyMeta>() {
+        @Override
+        public boolean apply(PropertyMeta pm) {
+            return pm.isCounter();
+        }
+    };
+
+
+    private static final Function<String, String> TO_LOWER_CASE = new Function<String, String>() {
 
         @Override
         public String apply(String input) {
@@ -70,6 +86,7 @@ public class PropertyMeta {
     private boolean timeUUID = false;
     private DataTranscoder transcoder;
     private boolean emptyCollectionAndMapIfNull = false;
+    private boolean staticColumn = false;
     private ReflectionInvoker invoker = new ReflectionInvoker();
 
     public List<Field> getComponentFields() {
@@ -136,7 +153,7 @@ public class PropertyMeta {
 
     public List<String> getCQLComponentNames() {
         log.trace("Get CQL component names");
-        return FluentIterable.from(getComponentNames()).transform(toLowerCase).toList();
+        return FluentIterable.from(getComponentNames()).transform(TO_LOWER_CASE).toList();
     }
 
     public List<String> getClusteringComponentNames() {
@@ -325,8 +342,8 @@ public class PropertyMeta {
         return entityValue == null ? null : transcoder.encode(this, entityValue);
     }
 
-    public List<Object> encodeToComponents(Object compoundKey) {
-        return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey);
+    public List<Object> encodeToComponents(Object compoundKey, boolean onlyStaticColumns) {
+        return compoundKey == null ? null : transcoder.encodeToComponents(this, compoundKey, onlyStaticColumns);
     }
 
     public List<Object> encodeToComponents(List<Object> components) {
@@ -526,6 +543,14 @@ public class PropertyMeta {
 
     public void setEmptyCollectionAndMapIfNull(boolean emptyCollectionAndMapIfNull) {
         this.emptyCollectionAndMapIfNull = emptyCollectionAndMapIfNull;
+    }
+
+    public boolean isStaticColumn() {
+        return staticColumn;
+    }
+
+    public void setStaticColumn(boolean staticColumn) {
+        this.staticColumn = staticColumn;
     }
 
     public String getCQL3PropertyName() {

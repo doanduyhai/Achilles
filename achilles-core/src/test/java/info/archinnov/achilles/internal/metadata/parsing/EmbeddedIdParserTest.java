@@ -40,6 +40,7 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithInconsistentCom
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNegativeOrder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNoAnnotation;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithOnlyOneComponent;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithStaticColumn;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithTimeUUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -184,6 +185,15 @@ public class EmbeddedIdParserTest {
         exception.expectMessage("The composite partition key ordering is wrong for @EmbeddedId class '"
                 + EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName() + "'");
         parser.parseEmbeddedId(EmbeddedKeyWithInconsistentCompoundPartitionKey.class);
+    }
+
+    @Test
+    public void should_exception_when_embedded_id_has_static_column() throws Exception {
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(String.format("The property 'rank' of class '%s' cannot be a static column because it belongs to the primary key"
+                ,EmbeddedKeyWithStaticColumn.class.getCanonicalName()));
+
+        parser.parseEmbeddedId(EmbeddedKeyWithStaticColumn.class);
     }
 
     @Test

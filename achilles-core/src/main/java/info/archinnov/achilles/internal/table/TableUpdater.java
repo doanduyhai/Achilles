@@ -7,6 +7,7 @@ import static com.datastax.driver.core.DataType.set;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.internal.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
+import static info.archinnov.achilles.schemabuilder.SchemaBuilder.alterTable;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import info.archinnov.achilles.schemabuilder.SchemaBuilder;
 
 public class TableUpdater {
     private static final Logger log = LoggerFactory.getLogger(TableUpdater.class);
+    private static final Logger DML_LOG = LoggerFactory.getLogger(TableCreator.ACHILLES_DDL_SCRIPT);
 
     private static final Function<ColumnMetadata, String> COLUMN_NAME_EXTRACTOR = new Function<ColumnMetadata, String>() {
         @Override
@@ -36,12 +38,6 @@ public class TableUpdater {
         }
     };
 
-    private static final Predicate<String> NOT_BLANK = new Predicate<String>() {
-        @Override
-        public boolean apply(String input) {
-            return StringUtils.isNotBlank(input);
-        }
-    };
 
     public void updateTableForEntity(Session session, EntityMeta entityMeta, TableMetadata tableMetadata) {
         log.debug("Updating table for entityMeta {}", entityMeta.getClassName());
@@ -53,41 +49,56 @@ public class TableUpdater {
         List<ColumnMetadata> existingColumns = tableMetadata.getColumns();
         List<PropertyMeta> propertyMetas = entityMeta.getAllMetasExceptId();
         Set<String> columnNames = from(existingColumns).transform(COLUMN_NAME_EXTRACTOR).toSet();
-
-        final String tableName = normalizerAndValidateColumnFamilyName(tableMetadata.getName());
-        final Alter alterTable = SchemaBuilder.alterTable(tableName);
-        addNewPropertiesToBuilder(session, tableName,propertyMetas, columnNames, alterTable);
+        addNewPropertiesToBuilder(session, entityMeta,propertyMetas, columnNames);
     }
 
-    private void addNewPropertiesToBuilder(Session session,String tableName,List<PropertyMeta> propertyMetas, Set<String> columnNames, Alter alterTable) {
+    private void addNewPropertiesToBuilder(Session session,EntityMeta entityMeta,List<PropertyMeta> propertyMetas, Set<String> columnNames) {
+        final String tableName = normalizerAndValidateColumnFamilyName(entityMeta.getTableName());
+
         for (PropertyMeta propertyMeta : propertyMetas) {
             if (!columnNames.contains(propertyMeta.getPropertyName())) {
                 String propertyName = propertyMeta.getCQL3PropertyName();
                 Class<?> keyClass = propertyMeta.getKeyClass();
                 Class<?> valueClass = propertyMeta.getValueClassForTableCreation();
+                final boolean staticColumn = propertyMeta.isStaticColumn();
+                String alterTableScript = "";
                 switch (propertyMeta.type()) {
                     case SIMPLE:
-                        session.execute(alterTable.addColumn(propertyName).type(toCQLDataType(valueClass)));
+                        alterTableScript = alterTable(tableName).addColumn(propertyName, staticColumn).type(toCQLDataType(valueClass));
+                        session.execute(alterTableScript);
                         break;
                     case LIST:
-                        session.execute(alterTable.addColumn(propertyName).type(list(toCQLDataType(valueClass))));
+                        alterTableScript = alterTable(tableName).addColumn(propertyName, staticColumn).type(list(toCQLDataType(valueClass)));
+                        session.execute(alterTableScript);
                         break;
                     case SET:
-                        session.execute(alterTable.addColumn(propertyName).type(set(toCQLDataType(valueClass))));
+                        alterTableScript = alterTable(tableName).addColumn(propertyName, staticColumn).type(set(toCQLDataType(valueClass)));
+                        session.execute(alterTableScript);
                         break;
                     case MAP:
-                        session.execute(alterTable.addColumn(propertyName).type(map(toCQLDataType(keyClass),toCQLDataType(valueClass))));
+                        alterTableScript = alterTable(tableName).addColumn(propertyName, staticColumn).type(map(toCQLDataType(keyClass), toCQLDataType(valueClass)));
+                        session.execute(alterTableScript);
                         break;
                     case COUNTER:
-                        session.execute(alterTable.addColumn(propertyName).type(counter()));
+                        if (entityMeta.isClusteredCounter()) {
+                            alterTableScript = alterTable(tableName).addColumn(propertyName, staticColumn).type(counter());
+                            session.execute(alterTableScript);
+                        }
                         break;
                     default:
                         break;
                 }
+
+                if (StringUtils.isNotBlank(alterTableScript)) {
+                    DML_LOG.debug(alterTableScript);
+                }
+
                 if (propertyMeta.isIndexed()) {
                     final String optionalIndexName = propertyMeta.getIndexProperties().getIndexName();
                     final String indexName = isBlank(optionalIndexName) ? tableName + "_" + propertyName : optionalIndexName;
-                    session.execute(SchemaBuilder.createIndex(indexName).onTable(tableName).andColumn(propertyName));
+                    final String createIndexScript = SchemaBuilder.createIndex(indexName).onTable(tableName).andColumn(propertyName);
+                    session.execute(createIndexScript);
+                    DML_LOG.debug(createIndexScript);
                 }
             }
         }

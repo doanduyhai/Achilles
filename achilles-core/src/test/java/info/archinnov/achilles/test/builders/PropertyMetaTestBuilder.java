@@ -84,6 +84,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
     private ReflectionInvoker invoker;
     private List<String> compTimeUUID;
     private List<ClusteringOrder> clusteringOrders = new ArrayList<>();
+    private boolean staticColumn = false;
 
     public static <T, K, V> PropertyMetaTestBuilder<T, K, V> of(Class<T> clazz, Class<K> keyClass, Class<V> valueClass) {
         return new PropertyMetaTestBuilder<>(clazz, keyClass, valueClass);
@@ -148,6 +149,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
         pm.setConsistencyLevels(consistencyLevels);
         setTranscoder(pm);
         pm.setInvoker(invoker);
+        pm.setStaticColumn(staticColumn);
         return pm;
     }
 
@@ -337,6 +339,16 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
     public PropertyMetaTestBuilder<T, K, V> invoker(ReflectionInvoker invoker) {
         this.invoker = invoker;
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> staticColumn() {
+        this.staticColumn = true;
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> staticColumn(boolean staticColumn) {
+        this.staticColumn = staticColumn;
         return this;
     }
 }

@@ -53,7 +53,7 @@ public class EntityValidator {
     public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
         log.trace("Validate primary key {} for entity class {}", primaryKey, idMeta.getEntityClassName());
         if (idMeta.isEmbeddedId()) {
-            List<Object> components = idMeta.encodeToComponents(primaryKey);
+            List<Object> components = idMeta.encodeToComponents(primaryKey, false);
             for (Object component : components) {
                 Validator.validateNotNull(component, "The clustered key '%s' components should not be null", idMeta.getPropertyName());
             }

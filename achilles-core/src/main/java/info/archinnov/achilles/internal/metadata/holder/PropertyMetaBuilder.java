@@ -44,6 +44,7 @@ public class PropertyMetaBuilder {
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
     private boolean timeUUID = false;
     private boolean emptyCollectionAndMapIfNull = false;
+    private boolean staticColumn = false;
 
     public static PropertyMetaBuilder factory() {
         return new PropertyMetaBuilder();
@@ -83,6 +84,7 @@ public class PropertyMetaBuilder {
         meta.setTranscoder(determineTranscoder());
         meta.setTimeUUID(timeUUID);
         meta.setEmptyCollectionAndMapIfNull(emptyCollectionAndMapIfNull);
+        meta.setStaticColumn(staticColumn);
 
         return meta;
     }
@@ -122,6 +124,10 @@ public class PropertyMetaBuilder {
         return this;
     }
 
+    public PropertyMetaBuilder staticColumn(boolean staticColumn) {
+        this.staticColumn = staticColumn;
+        return this;
+    }
 
     public PropertyMetaBuilder emptyCollectionAndMapIfNull(boolean emptyCollectionAndMapIfNull) {
         this.emptyCollectionAndMapIfNull = emptyCollectionAndMapIfNull;

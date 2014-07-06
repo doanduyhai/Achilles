@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.context;
 
+import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DECR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
@@ -22,6 +23,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.SELEC
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import java.util.List;
@@ -36,6 +38,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.cache.Cache;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
@@ -115,7 +118,7 @@ public class DaoContext {
     public Row loadProperty(DaoOperations context, PropertyMeta pm) {
         log.debug("Load property '{}' for PersistenceContext '{}'", pm, context);
         PreparedStatement ps = cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm);
-        List<Row> rows = executeReadWithConsistency(context, ps);
+        List<Row> rows = executeReadWithConsistency(context, ps, pm.isStaticColumn());
         return returnFirstRowOrNull(rows);
     }
 
@@ -126,7 +129,7 @@ public class DaoContext {
 
         if (psMap.containsKey(tableName)) {
             ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
-            BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, psMap.get(tableName), consistencyLevel);
+            BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, psMap.get(tableName), false,consistencyLevel);
             context.pushStatement(bsWrapper);
         } else {
             throw new AchillesException("Cannot find prepared statement for deletion for table '" + tableName + "'");
@@ -176,7 +179,7 @@ public class DaoContext {
         log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta, context, increment);
 
         PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(INCR).get(counterMeta.getPropertyName());
-        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(context, ps, increment);
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(context, ps, counterMeta,increment);
         context.pushCounterStatement(bsWrapper);
     }
 
@@ -185,7 +188,7 @@ public class DaoContext {
         EntityMeta entityMeta = context.getEntityMeta();
         PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(SELECT_ALL.name());
         ConsistencyLevel consistencyLevel = overrider.getReadLevel(context);
-        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, consistencyLevel);
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, false,consistencyLevel);
         ResultSet resultSet = context.executeImmediate(bsWrapper);
 
         return returnFirstRowOrNull(resultSet.all());
@@ -197,7 +200,7 @@ public class DaoContext {
         final String counterColumnName = counterMeta.getPropertyName();
         PreparedStatement ps = clusteredCounterQueryMap.get(entityMeta.getEntityClass()).get(SELECT).get(counterColumnName);
         ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
-        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, readLevel);
+        BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterSelect(context, ps, counterMeta.isStaticColumn(),readLevel);
         Row row = context.executeImmediate(bsWrapper).one();
         Long counterValue = null;
         if (row != null && !row.isNull(counterColumnName)) {
@@ -219,13 +222,17 @@ public class DaoContext {
         Class<?> entityClass = context.getEntityClass();
         PreparedStatement ps = selectPSs.get(entityClass);
 
-        List<Row> rows = executeReadWithConsistency(context, ps);
+        final List<PropertyMeta> allMetasExceptId = context.getEntityMeta().getAllMetasExceptId();
+        final int staticColumnsCount = from(allMetasExceptId).filter(STATIC_COLUMN_FILTER).size();
+        final boolean onlyStaticColumns = staticColumnsCount>0 && allMetasExceptId.size() == staticColumnsCount;
+
+        List<Row> rows = executeReadWithConsistency(context, ps, onlyStaticColumns);
         return returnFirstRowOrNull(rows);
     }
 
-    private List<Row> executeReadWithConsistency(DaoOperations context, PreparedStatement ps) {
+    private List<Row> executeReadWithConsistency(DaoOperations context, PreparedStatement ps, boolean onlyStaticColumns) {
         ConsistencyLevel readLevel = overrider.getReadLevel(context);
-        BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, ps, readLevel);
+        BoundStatementWrapper bsWrapper = binder.bindStatementWithOnlyPKInWhereClause(context, ps, onlyStaticColumns, readLevel);
         return context.executeImmediate(bsWrapper).all();
     }
 

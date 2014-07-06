@@ -406,9 +406,9 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(regularStatements).hasSize(5);
         assertThat(regularStatements.get(0).getQueryString()).isEqualTo(
-                "UPDATE counterTable USING TTL :ttl SET count=count+:count WHERE id=:id;");
+                "UPDATE counterTable SET count=count+:count WHERE id=:id;");
         assertThat(regularStatements.get(1).getQueryString()).isEqualTo(
-                "UPDATE counterTable USING TTL :ttl SET count=count-:count WHERE id=:id;");
+                "UPDATE counterTable SET count=count-:count WHERE id=:id;");
         assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=:id;");
         assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=:id;");
         assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=:id;");
@@ -617,4 +617,6 @@ public class PreparedStatementGeneratorTest {
         assertThat(regularStatementCaptor.getValue().getQueryString())
                 .isEqualTo("UPDATE table USING TTL :ttl SET preferences[:key]=:nullValue WHERE id=:id;");
     }
+
+
 }

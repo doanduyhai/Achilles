@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -71,7 +72,8 @@ public class CounterPersister {
     private long retrieveCounterValue(Object counter) {
         long counterDelta;
         if (InternalCounterImpl.class.isInstance(counter)) {
-            counterDelta = ((InternalCounterImpl) counter).getInternalCounterDelta();
+            Long counterVale = ((InternalCounterImpl) counter).getInternalCounterDelta();
+            counterDelta = Optional.fromNullable(counterVale).or(0L);
         } else if (CounterImpl.class.isInstance(counter)) {
             counterDelta = ((CounterImpl) counter).get();
         } else {

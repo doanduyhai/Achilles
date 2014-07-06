@@ -67,7 +67,35 @@ public class Alter extends SchemaStatement {
     public AddColumn addColumn(String columnName) {
         validateNotEmpty(columnName, "Added column");
         validateNotKeyWord(columnName,String.format("The new column name '%s' is not allowed because it is a reserved keyword",columnName));
-        return new AddColumn(this, columnName);
+        return new AddColumn(this, columnName, false);
+    }
+
+    /**
+     * Add a new static column
+     *
+     * @param columnName the name of the column to be added;
+     * @return a new {@link Alter.AddColumn} instance.
+     */
+    public AddColumn addStaticColumn(String columnName) {
+        validateNotEmpty(columnName, "Added static column");
+        validateNotKeyWord(columnName,String.format("The new static column name '%s' is not allowed because it is a reserved keyword",columnName));
+        return new AddColumn(this, columnName, true);
+    }
+
+    /**
+     * Shorthand method which takes a boolean and calls either {@code info.archinnov.achilles.schemabuilder.Alter.addStaticColumn}
+     * or {@code info.archinnov.achilles.schemabuilder.Alter.addColumn}
+     *
+     * @param columnName the name of the column to be added
+     * @param isStatic  whether the column is static or not
+     * @return a new {@link Alter.AddColumn} instance.
+     */
+    public AddColumn addColumn(String columnName,boolean isStatic) {
+        if (isStatic) {
+            return addStaticColumn(columnName);
+        } else {
+            return addColumn(columnName);
+        }
     }
 
     /**
@@ -146,10 +174,12 @@ public class Alter extends SchemaStatement {
 
         private final Alter alter;
         private final String columnName;
+        private final boolean staticColumn;
 
-        AddColumn(Alter alter, String columnName) {
+        AddColumn(Alter alter, String columnName, boolean staticColumn) {
             this.alter = alter;
             this.columnName = columnName;
+            this.staticColumn = staticColumn;
         }
 
         /**
@@ -162,6 +192,11 @@ public class Alter extends SchemaStatement {
             statement.append(SPACE).append(ADD)
                     .append(SPACE).append(columnName)
                     .append(SPACE).append(type.toString());
+
+            if (staticColumn) {
+                statement.append(SPACE).append(STATIC);
+            }
+
             return statement.toString();
         }
     }

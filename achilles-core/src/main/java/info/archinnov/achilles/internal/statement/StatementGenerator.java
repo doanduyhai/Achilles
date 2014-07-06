@@ -111,7 +111,8 @@ public class StatementGenerator {
                 throw new AchillesException(String.format("Should not generate non-prepapred statement for collection/map change of type '%s'", operationType));
         }
 
-        final Pair<Update.Where, Object[]> whereClauseAndBoundValues = generateWhereClauseForUpdate(entity, meta.getIdMeta(), updateClauseAndBoundValues.left);
+        final Pair<Update.Where, Object[]> whereClauseAndBoundValues = generateWhereClauseForUpdate(entity, meta.getIdMeta(),
+                changeSet.getPropertyMeta(), updateClauseAndBoundValues.left);
         final Object[] boundValues = addAll(addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right), casEncodedValues.toArray());
         return Pair.create(whereClauseAndBoundValues.left, boundValues);
     }
@@ -126,14 +127,13 @@ public class StatementGenerator {
         return casEncodedValues;
     }
 
-    private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,
-            Assignments update) {
+    private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,PropertyMeta pm,Assignments update) {
         Update.Where where = null;
         Object[] boundValues;
         Object primaryKey = idMeta.getPrimaryKey(entity);
         if (idMeta.isEmbeddedId()) {
             List<String> componentNames = idMeta.getComponentNames();
-            List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey);
+            List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey,pm.isStaticColumn());
             boundValues = new Object[encodedComponents.size()];
             for (int i = 0; i < encodedComponents.size(); i++) {
                 String componentName = componentNames.get(i);
