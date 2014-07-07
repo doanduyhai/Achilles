@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,21 +45,21 @@ public class TypedQuery<T> {
     private Map<String, PropertyMeta> propertiesMap;
     private EntityMeta meta;
     private PersistenceContextFactory contextFactory;
-    private boolean managed;
+    private EntityState entityState;
     private Object[] encodedBoundValues;
 
     private EntityMapper mapper = new EntityMapper();
     private EntityProxifier proxifier = new EntityProxifier();
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
-            PersistenceContextFactory contextFactory, boolean managed, boolean shouldNormalizeQuery,
+            PersistenceContextFactory contextFactory, EntityState entityState, boolean shouldNormalizeQuery,
             Object[] encodedBoundValues) {
         this.daoContext = daoContext;
         this.encodedBoundValues = meta.encodeBoundValuesForTypedQueries(encodedBoundValues);
         this.normalizedQuery = shouldNormalizeQuery ? queryString.toLowerCase() : queryString;
         this.meta = meta;
         this.contextFactory = contextFactory;
-        this.managed = managed;
+        this.entityState = entityState;
         this.propertiesMap = transformPropertiesMap(meta);
     }
 
@@ -79,10 +80,10 @@ public class TypedQuery<T> {
         List<T> result = new ArrayList<>();
         List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).all();
         for (Row row : rows) {
-            T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
+            T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             if (entity != null) {
                 meta.intercept(entity, Event.POST_LOAD);
-                if (managed) {
+                if (entityState.isManaged()) {
                     entity = buildProxy(entity);
                 }
                 result.add(entity);
@@ -105,9 +106,9 @@ public class TypedQuery<T> {
         T entity = null;
         Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).one();
         if (row != null) {
-            entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, managed);
+            entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             meta.intercept(entity, Event.POST_LOAD);
-            if (entity != null && managed) {
+            if (entity != null && entityState.isManaged()) {
                 entity = buildProxy(entity);
             }
         }

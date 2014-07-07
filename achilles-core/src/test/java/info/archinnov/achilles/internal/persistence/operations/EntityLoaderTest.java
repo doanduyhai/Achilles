@@ -141,7 +141,7 @@ public class EntityLoaderTest {
         loader.loadPropertyIntoObject(context, entity, pm);
 
         // Then
-        verify(mapper).setPropertyToEntity(row, pm, entity);
+        verify(mapper).setPropertyToEntity(row, meta, pm, entity);
         verifyZeroInteractions(counterLoader);
     }
 

@@ -26,6 +26,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.ImmutableMap.of;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DECR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
@@ -100,7 +101,7 @@ public class PreparedStatementGenerator {
         } else {
             Selection select = prepareSelectField(pm, select());
             Select from = select.from(entityMeta.getTableName());
-            RegularStatement statement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(pm),from);
+            RegularStatement statement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(pm), from);
             return session.prepare(statement.getQueryString());
         }
     }
@@ -151,7 +152,12 @@ public class PreparedStatementGenerator {
         }
         Select from = select.from(entityMeta.getTableName());
 
-        RegularStatement statement = prepareWhereClauseForSelect(idMeta, Optional.<PropertyMeta>absent(), from);
+        Optional<PropertyMeta> staticMeta = Optional.absent();
+        if (entityMeta.hasOnlyStaticColumns()) {
+            staticMeta = Optional.fromNullable(entityMeta.getAllMetasExceptId().get(0));
+        }
+
+        RegularStatement statement = prepareWhereClauseForSelect(idMeta, staticMeta, from);
         return session.prepare(statement.getQueryString());
     }
 
@@ -205,7 +211,7 @@ public class PreparedStatementGenerator {
             RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(idMeta, update(tableName).with(decr(counterName, bindMarker(counterName))),
                     counterMeta.isStaticColumn(), noOptions());
 
-            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(counterMeta),select(counterName).from(tableName));
+            RegularStatement selectStatement = prepareWhereClauseForSelect(idMeta, Optional.fromNullable(counterMeta), select(counterName).from(tableName));
 
             incrStatementPerCounter.put(counterName, session.prepare(incrementStatement));
             decrStatementPerCounter.put(counterName, session.prepare(decrementStatement));
@@ -218,7 +224,7 @@ public class PreparedStatementGenerator {
         selectStatementPerCounter.put(SELECT_ALL.name(), session.prepare(selectStatement));
         clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
 
-        RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, QueryBuilder.delete().from(tableName));
+        RegularStatement deleteStatement = prepareWhereClauseForDelete(idMeta, false, QueryBuilder.delete().from(tableName));
         clusteredCounterPSMap.put(DELETE, of(DELETE_ALL.name(), session.prepare(deleteStatement)));
 
         return clusteredCounterPSMap;
@@ -246,26 +252,22 @@ public class PreparedStatementGenerator {
         }
     }
 
-    private RegularStatement prepareWhereClauseForSelect(PropertyMeta idMeta,Optional<PropertyMeta> pmO, Select from) {
+    private RegularStatement prepareWhereClauseForSelect(PropertyMeta idMeta, Optional<PropertyMeta> pmO, Select from) {
         RegularStatement statement;
         if (idMeta.isEmbeddedId()) {
             Select.Where where = null;
             int i = 0;
+            List<String> componentNames;
             if (pmO.isPresent() && pmO.get().isStaticColumn()) {
-                for (String partitionKey : idMeta.getPartitionComponentNames()) {
-                    if (i++ == 0) {
-                        where = from.where(eq(partitionKey, bindMarker(partitionKey)));
-                    } else {
-                        where.and(eq(partitionKey, bindMarker(partitionKey)));
-                    }
-                }
+                componentNames = idMeta.getPartitionComponentNames();
             } else {
-                for (String clusteredId : idMeta.getComponentNames()) {
-                    if (i ++== 0) {
-                        where = from.where(eq(clusteredId, bindMarker(clusteredId)));
-                    } else {
-                        where.and(eq(clusteredId, bindMarker(clusteredId)));
-                    }
+                componentNames = idMeta.getComponentNames();
+            }
+            for (String partitionKey : componentNames) {
+                if (i++ == 0) {
+                    where = from.where(eq(partitionKey, bindMarker(partitionKey)));
+                } else {
+                    where.and(eq(partitionKey, bindMarker(partitionKey)));
                 }
             }
             statement = where;
@@ -276,7 +278,7 @@ public class PreparedStatementGenerator {
         return statement;
     }
 
-    private RegularStatement prepareWhereClauseWithTTLForUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns,Options options) {
+    private RegularStatement prepareWhereClauseWithTTLForUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns, Options options) {
         Update.Where where = null;
         if (idMeta.isEmbeddedId()) {
             where = prepareCommonWhereClauseForUpdate(idMeta, assignments, onlyStaticColumns, where);
@@ -292,7 +294,7 @@ public class PreparedStatementGenerator {
         return updateOptions;
     }
 
-    private RegularStatement prepareWhereClauseForCounterUpdate(PropertyMeta idMeta, Assignments assignments,boolean onlyStaticColumns, Options options) {
+    private RegularStatement prepareWhereClauseForCounterUpdate(PropertyMeta idMeta, Assignments assignments, boolean onlyStaticColumns, Options options) {
         Update.Where where = null;
         if (idMeta.isEmbeddedId()) {
             where = prepareCommonWhereClauseForUpdate(idMeta, assignments, onlyStaticColumns, where);
@@ -320,7 +322,7 @@ public class PreparedStatementGenerator {
             }
         } else {
             for (String clusteredId : idMeta.getComponentNames()) {
-                if (i ++== 0) {
+                if (i++ == 0) {
                     where = assignments.where(eq(clusteredId, bindMarker(clusteredId)));
                 } else {
                     where.and(eq(clusteredId, bindMarker(clusteredId)));
@@ -339,24 +341,30 @@ public class PreparedStatementGenerator {
         Map<String, PreparedStatement> removePSs = new HashMap<>();
 
         Delete mainFrom = QueryBuilder.delete().from(entityMeta.getTableName());
-        RegularStatement mainStatement = prepareWhereClauseForDelete(idMeta, mainFrom);
+        RegularStatement mainStatement = prepareWhereClauseForDelete(idMeta, entityMeta.hasOnlyStaticColumns(),mainFrom);
         removePSs.put(entityMeta.getTableName(), session.prepare(mainStatement.getQueryString()));
 
         return removePSs;
     }
 
-    private RegularStatement prepareWhereClauseForDelete(PropertyMeta idMeta, Delete mainFrom) {
+    private RegularStatement prepareWhereClauseForDelete(PropertyMeta idMeta, boolean onlyStaticColumns, Delete mainFrom) {
         RegularStatement mainStatement;
         if (idMeta.isEmbeddedId()) {
             Delete.Where where = null;
+            List<String> componentNames;
+            if (onlyStaticColumns) {
+                componentNames = idMeta.getPartitionComponentNames();
+            } else {
+                componentNames = idMeta.getComponentNames();
+            }
+
             int i = 0;
-            for (String clusteredId : idMeta.getComponentNames()) {
-                if (i == 0) {
+            for (String clusteredId : componentNames) {
+                if (i ++== 0) {
                     where = mainFrom.where(eq(clusteredId, bindMarker(clusteredId)));
                 } else {
                     where.and(eq(clusteredId, bindMarker(clusteredId)));
                 }
-                i++;
             }
             mainStatement = where;
         } else {

@@ -18,6 +18,8 @@ package info.archinnov.achilles.persistence;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
@@ -531,7 +533,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, true,normalizeQuery, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED,normalizeQuery, boundValues);
     }
 
     /**
@@ -590,7 +592,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, false, true,
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, true,
                 boundValues);
     }
 

@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdAndCounterType;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdType;
@@ -97,6 +98,12 @@ public class EntityMetaBuilder {
             }
         }
         meta.setClusteredCounter(clusteredCounter);
+
+        final int staticColumnsCount = from(allMetasExceptId).filter(STATIC_COLUMN_FILTER).size();
+        if (staticColumnsCount > 0 && staticColumnsCount == allMetasExceptId.size()) {
+            meta.setHasOnlyStaticColumns(true);
+        }
+
         return meta;
     }
 

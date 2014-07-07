@@ -66,21 +66,25 @@ public class EntityParsingValidatorTest {
     }
 
     @Test
-    public void should_exception_when_static_counter_column_on_non_clustered_counter_entity() throws Exception {
+    public void should_exception_when_clustered_counter_entity_has_only_static_columns() throws Exception {
         //Given
         PropertyMeta idMeta = mock(PropertyMeta.class);
-        PropertyMeta pm = mock(PropertyMeta.class);
+        PropertyMeta pm1 = mock(PropertyMeta.class);
+        PropertyMeta pm2 = mock(PropertyMeta.class);
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
-        when(entityMeta.getPropertyMetas().values()).thenReturn(Arrays.asList(pm));
+        when(entityMeta.getPropertyMetas().values()).thenReturn(Arrays.asList(pm1,pm2));
+        when(entityMeta.getAllMetasExceptId().size()).thenReturn(2);
         when(entityMeta.getClassName()).thenReturn("myEntity");
-        when(entityMeta.isClusteredCounter()).thenReturn(false);
+        when(entityMeta.isClusteredCounter()).thenReturn(true);
         when(idMeta.isClustered()).thenReturn(true);
-        when(pm.isStaticColumn()).thenReturn(true);
-        when(pm.isCounter()).thenReturn(true);
+        when(pm1.isStaticColumn()).thenReturn(true);
+        when(pm2.isStaticColumn()).thenReturn(true);
+        when(pm1.isCounter()).thenReturn(true);
+        when(pm2.isCounter()).thenReturn(true);
 
         //When //Then
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The entity class 'myEntity' cannot have a static counter column if it is not a clustered entity with only counter properties");
+        exception.expectMessage("The entity class 'myEntity' is a clustered counter and thus cannot have only static counter column");
 
         validator.validateStaticColumns(entityMeta, idMeta);
     }

@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +37,15 @@ public class EntityMapper {
     public void setNonCounterPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
         log.debug("Set non-counter properties to entity class {} from fetched CQL row", entityMeta.getClassName());
         for (PropertyMeta pm : entityMeta.getAllMetasExceptCounters()) {
-            setPropertyToEntity(row, pm, entity);
+            setPropertyToEntity(row, entityMeta, pm, entity);
         }
     }
 
-    public void setPropertyToEntity(Row row, PropertyMeta pm, Object entity) {
+    public void setPropertyToEntity(Row row, EntityMeta meta,PropertyMeta pm, Object entity) {
         log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
         if (row != null) {
             if (pm.isEmbeddedId()) {
-                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true);
+                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, meta, pm, MANAGED);
                 pm.setValueToField(entity, compoundKey);
             } else {
                 Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
@@ -53,7 +55,7 @@ public class EntityMapper {
     }
 
     public <T> T mapRowToEntityWithPrimaryKey(EntityMeta meta, Row row,
-            Map<String, PropertyMeta> propertiesMap, boolean isEntityManaged) {
+            Map<String, PropertyMeta> propertiesMap, EntityState entityState) {
         log.debug("Map CQL row to entity of class {}", meta.getClassName());
         T entity = null;
         ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
@@ -69,7 +71,7 @@ public class EntityMapper {
             }
             PropertyMeta idMeta = meta.getIdMeta();
             if (idMeta.isEmbeddedId()) {
-                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, isEntityManaged);
+                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, meta, idMeta, entityState);
                 idMeta.setValueToField(entity, compoundKey);
             }
         }

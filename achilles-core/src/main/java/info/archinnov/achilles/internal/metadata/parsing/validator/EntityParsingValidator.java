@@ -19,6 +19,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.COUN
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.validation.Validator.validateBeanMappingTrue;
 import java.util.Collection;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
@@ -43,14 +44,15 @@ public class EntityParsingValidator {
     public void validateStaticColumns(EntityMeta entityMeta,PropertyMeta idMeta) {
         final String className = entityMeta.getClassName();
         final Collection<PropertyMeta> propertyMetas = entityMeta.getPropertyMetas().values();
-        final boolean hasStaticColumns = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).size()>0;
-        if (hasStaticColumns) {
+        final int staticColumnsCount = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).size();
+        if (staticColumnsCount>0) {
             validateBeanMappingTrue(idMeta.isClustered(), "The entity class '%s' cannot have a static column because it does not declare any clustering column", className);
         }
 
-        final boolean hasStaticCounters = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).filter(COUNTER_COLUMN_FILTER).size()>0;
-        if (hasStaticCounters) {
-            Validator.validateBeanMappingTrue(entityMeta.isClusteredCounter(),"The entity class '%s' cannot have a static counter column if it is not a clustered entity with only counter properties", className);
+        if (entityMeta.isClusteredCounter()) {
+            final int staticCountersCount = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).filter(COUNTER_COLUMN_FILTER).size();
+            final int propertyMetasCount = entityMeta.getAllMetasExceptId().size();
+            Validator.validateBeanMappingFalse(staticCountersCount == propertyMetasCount,"The entity class '%s' is a clustered counter and thus cannot have only static counter column", className);
         }
     }
 }

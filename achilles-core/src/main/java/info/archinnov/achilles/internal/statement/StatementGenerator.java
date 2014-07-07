@@ -17,6 +17,8 @@ package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.apache.commons.lang.ArrayUtils.addAll;
@@ -30,6 +32,7 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -92,10 +95,23 @@ public class StatementGenerator {
 
         final Object entity = context.getEntity();
         final EntityMeta meta = context.getEntityMeta();
+        final Optional<Integer> ttlO = context.getTtl();
+        final Optional<Long> timestampO = context.getTimestamp();
         final List<CASCondition> CASConditions = context.getCasConditions();
 
         final Update.Conditions conditions = update(meta.getTableName()).onlyIf();
         List<Object> casEncodedValues = addAndEncodeCasConditions(meta, CASConditions, conditions);
+
+        Object[] boundValues = new Object[] { };
+        if (ttlO.isPresent()) {
+            conditions.using(ttl(ttlO.get()));
+            boundValues = addAll(boundValues, new Object[] { ttlO.get() });
+        }
+
+        if (timestampO.isPresent()) {
+            conditions.using(timestamp(timestampO.get()));
+            boundValues = addAll(boundValues, new Object[] { timestampO.get() });
+        }
 
         final CollectionAndMapChangeType operationType = changeSet.getChangeType();
 
@@ -113,7 +129,7 @@ public class StatementGenerator {
 
         final Pair<Update.Where, Object[]> whereClauseAndBoundValues = generateWhereClauseForUpdate(entity, meta.getIdMeta(),
                 changeSet.getPropertyMeta(), updateClauseAndBoundValues.left);
-        final Object[] boundValues = addAll(addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right), casEncodedValues.toArray());
+        boundValues = addAll(addAll(boundValues, addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right)), casEncodedValues.toArray());
         return Pair.create(whereClauseAndBoundValues.left, boundValues);
     }
 
@@ -127,13 +143,13 @@ public class StatementGenerator {
         return casEncodedValues;
     }
 
-    private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta,PropertyMeta pm,Assignments update) {
+    private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta, PropertyMeta pm, Assignments update) {
         Update.Where where = null;
         Object[] boundValues;
         Object primaryKey = idMeta.getPrimaryKey(entity);
         if (idMeta.isEmbeddedId()) {
             List<String> componentNames = idMeta.getComponentNames();
-            List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey,pm.isStaticColumn());
+            List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey, pm.isStaticColumn());
             boundValues = new Object[encodedComponents.size()];
             for (int i = 0; i < encodedComponents.size(); i++) {
                 String componentName = componentNames.get(i);

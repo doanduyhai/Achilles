@@ -37,7 +37,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +73,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.StatementGenerator;
 import info.archinnov.achilles.internal.statement.cache.CacheManager;
@@ -298,7 +296,7 @@ public class DaoContextTest {
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, false, EACH_QUORUM)).thenReturn(bsWrapper);
 
-        daoContext.bindForRemoval(context, "table");
+        daoContext.bindForRemoval(context, entityMeta, "table");
 
         verify(context).pushStatement(bsWrapper);
     }
@@ -310,7 +308,7 @@ public class DaoContextTest {
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot find prepared statement for deletion for table 'table'");
 
-        daoContext.bindForRemoval(context, "table");
+        daoContext.bindForRemoval(context, entityMeta, "table");
     }
 
     @Test

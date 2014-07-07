@@ -17,6 +17,7 @@ package info.archinnov.achilles.internal.reflection;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.getRowMethod;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCompatibleJavaType;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 
@@ -70,7 +72,7 @@ public class RowMethodInvoker {
         return value;
     }
 
-    public Object extractCompoundPrimaryKeyFromRow(Row row, PropertyMeta pm, boolean isManagedEntity) {
+    public Object extractCompoundPrimaryKeyFromRow(Row row, EntityMeta meta,PropertyMeta pm, EntityState entityState) {
         log.trace("Extract compound primary key {} from CQL row for entity class {}", pm.getPropertyName(),
                 pm.getEntityClassName());
         List<String> componentNames = pm.getCQLComponentNames();
@@ -88,10 +90,9 @@ public class RowMethodInvoker {
                     rawValues.set(index, rawValue);
                 }
             }
-            if (isManagedEntity) {
+            if (entityState.isManaged() && !meta.hasOnlyStaticColumns()) {
                 for (int i = 0; i < componentNames.size(); i++) {
-                    Validator.validateNotNull(rawValues.get(i),
-                            "Error, the component '%s' from @EmbeddedId class '%s' cannot be found in Cassandra",
+                    Validator.validateNotNull(rawValues.get(i),"Error, the component '%s' from @EmbeddedId class '%s' cannot be found in Cassandra",
                             componentNames.get(i), pm.getValueClass());
                 }
             }

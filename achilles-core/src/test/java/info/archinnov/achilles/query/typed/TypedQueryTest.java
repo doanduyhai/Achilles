@@ -15,6 +15,9 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -98,10 +101,10 @@ public class TypedQueryTest {
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
         String queryString = "select * from test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
@@ -123,10 +126,10 @@ public class TypedQueryTest {
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
 
         String queryString = " select id, name   from  test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
@@ -140,10 +143,10 @@ public class TypedQueryTest {
     @Test
     public void should_get_all_skipping_null_entity() throws Exception {
         EntityMeta meta = buildEntityMeta();
-        initBuilder("select * from test", meta, meta.getPropertyMetas(), true);
+        initBuilder("select * from test", meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(null);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(null);
 
         List<CompleteBean> actual = builder.get();
 
@@ -158,10 +161,10 @@ public class TypedQueryTest {
         Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
 
         String queryString = "select * from test";
-        initBuilder(queryString, meta, propertyMetas, false);
+        initBuilder(queryString, meta, propertyMetas, NOT_MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).all()).thenReturn(Arrays.asList(row));
-        when(mapper.mapRowToEntityWithPrimaryKey(meta, row, propertyMetas, false)).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(meta, row, propertyMetas, NOT_MANAGED)).thenReturn(entity);
 
         List<CompleteBean> actual = builder.get();
 
@@ -181,10 +184,10 @@ public class TypedQueryTest {
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
         String queryString = "select id from test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), true);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
@@ -202,10 +205,10 @@ public class TypedQueryTest {
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
         String queryString = "select id from test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), NOT_MANAGED);
 
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(false))).thenReturn(entity);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(NOT_MANAGED))).thenReturn(entity);
 
         CompleteBean actual = builder.getFirst();
 
@@ -218,7 +221,7 @@ public class TypedQueryTest {
     public void should_return_null_when_null_row() throws Exception {
         EntityMeta meta = buildEntityMeta();
         String queryString = "select id from test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), NOT_MANAGED);
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(null);
         CompleteBean actual = builder.getFirst();
 
@@ -232,9 +235,9 @@ public class TypedQueryTest {
     public void should_return_null_when_cannot_map_entity() throws Exception {
         EntityMeta meta = buildEntityMeta();
         String queryString = "select id from test";
-        initBuilder(queryString, meta, meta.getPropertyMetas(), false);
+        initBuilder(queryString, meta, meta.getPropertyMetas(), NOT_MANAGED);
         when(daoContext.execute(any(AbstractStatementWrapper.class)).one()).thenReturn(row);
-        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(true))).thenReturn(null);
+        when(mapper.mapRowToEntityWithPrimaryKey(eq(meta), eq(row), Mockito.<Map<String, PropertyMeta>>any(), eq(MANAGED))).thenReturn(null);
 
         CompleteBean actual = builder.getFirst();
 
@@ -255,8 +258,8 @@ public class TypedQueryTest {
     }
 
     private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
-            boolean managed) {
-        builder = new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, managed, true, new Object[] { "a" });
+            EntityState entityState) {
+        builder = new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, entityState, true, new Object[] { "a" });
 
         Whitebox.setInternalState(builder, String.class, queryString);
         Whitebox.setInternalState(builder, Map.class, propertyMetas);

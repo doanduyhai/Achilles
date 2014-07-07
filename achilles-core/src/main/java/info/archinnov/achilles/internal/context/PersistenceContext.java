@@ -335,7 +335,7 @@ public class PersistenceContext {
         }
 
         public void bindForRemoval(String tableName) {
-            daoContext.bindForRemoval(daoFacade, tableName);
+            daoContext.bindForRemoval(daoFacade, entityMeta,tableName);
         }
 
         // Simple counter

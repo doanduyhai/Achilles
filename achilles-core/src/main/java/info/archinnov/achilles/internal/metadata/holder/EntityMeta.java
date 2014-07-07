@@ -40,6 +40,9 @@ import info.archinnov.achilles.type.Pair;
 
 public class EntityMeta {
 
+    public static final boolean IS_MANAGED = true;
+    public static final boolean IS_NOT_MANAGED = false;
+
     public static final Predicate<EntityMeta> CLUSTERED_COUNTER_FILTER = new Predicate<EntityMeta>() {
         @Override
         public boolean apply(EntityMeta meta) {
@@ -74,6 +77,7 @@ public class EntityMeta {
     private List<Interceptor<?>> interceptors = new ArrayList<>();
     private InsertStrategy insertStrategy;
     private boolean schemaUpdateEnabled = false;
+    private boolean hasOnlyStaticColumns = false;
 
     public Object getPrimaryKey(Object entity) {
         return idMeta.getPrimaryKey(entity);
@@ -276,6 +280,14 @@ public class EntityMeta {
         this.allMetasExceptCounters = allMetasExceptCounters;
     }
 
+    public boolean hasOnlyStaticColumns() {
+        return hasOnlyStaticColumns;
+    }
+
+    public void setHasOnlyStaticColumns(boolean hasOnlyStaticColumns) {
+        this.hasOnlyStaticColumns = hasOnlyStaticColumns;
+    }
+
     public List<PropertyMeta> getColumnsMetaToInsert() {
         if (clusteredCounter) {
             return allMetasExceptId;
@@ -367,5 +379,20 @@ public class EntityMeta {
                 .add("tableName/columnFamilyName", tableName)
                 .add("propertyMetas", StringUtils.join(propertyNames, ",")).add("idMeta", idMeta)
                 .add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+    }
+
+    public static enum EntityState {
+        MANAGED(true),
+        NOT_MANAGED(false);
+
+        private final boolean managed;
+
+        EntityState(boolean managed) {
+            this.managed = managed;
+        }
+
+        public boolean isManaged() {
+            return managed;
+        }
     }
 }

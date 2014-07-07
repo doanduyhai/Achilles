@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -132,7 +133,7 @@ public class EntityMapperTest {
     public void should_do_nothing_when_null_row() throws Exception {
         PropertyMeta pm = mock(PropertyMeta.class);
 
-        entityMapper.setPropertyToEntity(null, pm, entity);
+        entityMapper.setPropertyToEntity(null, entityMeta, pm, entity);
 
         verifyZeroInteractions(cqlRowInvoker);
     }
@@ -143,9 +144,9 @@ public class EntityMapperTest {
                 .type(EMBEDDED_ID).compNames("name").invoker(invoker).build();
 
         EmbeddedKey embeddedKey = new EmbeddedKey();
-        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, pm, true)).thenReturn(embeddedKey);
+        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, entityMeta, pm, MANAGED)).thenReturn(embeddedKey);
 
-        entityMapper.setPropertyToEntity(row, pm, entity);
+        entityMapper.setPropertyToEntity(row, entityMeta, pm, entity);
 
         verify(invoker).setValueToField(entity, pm.getField(), embeddedKey);
     }
@@ -172,7 +173,7 @@ public class EntityMapperTest {
         when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn("value");
         when(entityMeta.instanciate()).thenReturn(entity);
 
-        CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, true);
+        CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, MANAGED);
 
         assertThat(actual).isSameAs(entity);
         verify(idMeta).setValueToField(entity, id);
@@ -193,9 +194,9 @@ public class EntityMapperTest {
         when(columnDefs.iterator()).thenReturn(Arrays.<Definition>asList().iterator());
         when(entityMeta.instanciate()).thenReturn(entity);
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, idMeta, true)).thenReturn(embeddedKey);
+        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, entityMeta, idMeta, MANAGED)).thenReturn(embeddedKey);
 
-        ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, true);
+        ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, MANAGED);
 
         assertThat(actual).isSameAs(entity);
         verify(idMeta).setValueToField(entity, embeddedKey);
@@ -203,7 +204,7 @@ public class EntityMapperTest {
 
     @Test
     public void should_not_map_row_to_entity_with_primary_key_when_entity_null() {
-        ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, true);
+        ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, MANAGED);
 
         assertThat(actual).isNull();
     }
@@ -213,7 +214,7 @@ public class EntityMapperTest {
         when(row.getColumnDefinitions()).thenReturn(null);
         when(entityMeta.instanciate()).thenReturn(entity);
 
-        CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, true);
+        CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, MANAGED);
         assertThat(actual).isNull();
     }
 

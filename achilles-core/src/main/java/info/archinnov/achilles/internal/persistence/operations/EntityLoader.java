@@ -79,7 +79,7 @@ public class EntityLoader {
             counterLoader.loadCounter(context, realObject, pm);
         } else {
             Row row = context.loadProperty(pm);
-            mapper.setPropertyToEntity(row, pm, realObject);
+            mapper.setPropertyToEntity(row, context.getEntityMeta(), pm, realObject);
         }
 
     }

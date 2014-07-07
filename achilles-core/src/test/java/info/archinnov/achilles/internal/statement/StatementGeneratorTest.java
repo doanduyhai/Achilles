@@ -42,6 +42,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Where;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -55,6 +56,7 @@ import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -84,6 +86,9 @@ public class StatementGeneratorTest {
 
     @Captor
     private ArgumentCaptor<Select> selectCaptor;
+
+    @Captor
+    private ArgumentCaptor<Conditions> conditionsCaptor;
 
     @Captor
     private ArgumentCaptor<Delete> deleteCaptor;
@@ -158,16 +163,20 @@ public class StatementGeneratorTest {
         when(context.getEntity()).thenReturn(entity);
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getIdMeta()).thenReturn(idMeta);
+        when(context.getTtl()).thenReturn(Optional.fromNullable(10));
+        when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
 
         when(dirtyCheckChangeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
-        when(dirtyCheckChangeSet.generateUpdateForSetAtIndexElement(any(Conditions.class))).thenReturn(Pair.create(update(), boundValues));
+        when(dirtyCheckChangeSet.generateUpdateForSetAtIndexElement(conditionsCaptor.capture())).thenReturn(Pair.create(update(), boundValues));
 
         //When
         final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(context, dirtyCheckChangeSet);
 
         //Then
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL 10 AND TIMESTAMP 100;");
         assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table WHERE id=" + id + ";");
-        assertThat(pair.right[0]).isEqualTo("whatever");
+        assertThat(pair.right[0]).isEqualTo(10);
+        assertThat(pair.right[1]).isEqualTo(100L);
     }
 
     @Test
@@ -185,6 +194,8 @@ public class StatementGeneratorTest {
 
         CompleteBean entity = builder().id(id).buid();
 
+        when(context.getTtl()).thenReturn(Optional.<Integer>absent());
+        when(context.getTimestamp()).thenReturn(Optional.<Long>absent());
         when(context.getEntity()).thenReturn(entity);
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getCasConditions()).thenReturn(asList(new CASCondition("name", "John")));
