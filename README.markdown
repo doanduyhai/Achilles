@@ -27,17 +27,37 @@
 ```xml
 	<dependency>	
 		<groupId>info.archinnov</groupId>
-		<artifactId>achilles-core</artifactId>
-		<version>3.0.3</version>
+		<artifactId>achilles-model</artifactId>
+		<version>3.0.4</version>
 	</dependency>
- ```
+	
+	<dependency>	
+		<groupId>info.archinnov</groupId>
+		<artifactId>achilles-core</artifactId>
+		<version>3.0.4</version>
+	</dependency>
+```
+ 
+ For unit-testing with embedded Cassandra, add this dependency with **test** scope:
+
+```xml
+ 	<dependency>	
+ 		<groupId>info.archinnov</groupId>
+ 		<artifactId>achilles-junit</artifactId>
+ 		<version>3.0.4</version>
+ 		<scope>test</scope>
+ 	</dependency>
+```
  
  For now, **Achilles** depends on the following libraries:
  
- 1. cassandra 2.0.7
+ 1. cassandra 2.0.8
  2. cassandra-driver-core 2.0.2
  3. CGLIB nodep 2.2.2 for proxy building
- 4. Jackson asl, mapper & xc 1.9.3 
+ 4. Objenesis 2.1
+ 5. Jackson core, annotations, databind & module jaxb annotations 2.2.3
+ 6. org.reflections 0.9.9-RC1
+ 7. Guava 15.0 
    
   
 ## 5 minutes tutorial
