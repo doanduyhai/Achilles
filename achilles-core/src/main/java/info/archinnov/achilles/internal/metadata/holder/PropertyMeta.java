@@ -186,17 +186,31 @@ public class PropertyMeta {
                 .asList();
     }
 
-    public void validatePartitionComponents(List<Object> partitionComponents) {
+    public void validatePartitionComponents(Object...partitionComponents) {
         log.trace("Validate partition key components");
         if (embeddedIdProperties != null) {
             embeddedIdProperties.validatePartitionComponents(this.entityClassName, partitionComponents);
         }
     }
 
-    public void validateClusteringComponents(List<Object> clusteringComponents) {
+    public void validatePartitionComponentsIn(Object...partitionComponents) {
+        log.trace("Validate partition key components");
+        if (embeddedIdProperties != null) {
+            embeddedIdProperties.validatePartitionComponentsIn(this.entityClassName, partitionComponents);
+        }
+    }
+
+    public void validateClusteringComponents(Object...clusteringComponents) {
         log.trace("Validate clustering components");
         if (embeddedIdProperties != null) {
             embeddedIdProperties.validateClusteringComponents(this.entityClassName, clusteringComponents);
+        }
+    }
+
+    public void validateClusteringComponentsIn(Object...clusteringComponents) {
+        log.trace("Validate clustering components");
+        if (embeddedIdProperties != null) {
+            embeddedIdProperties.validateClusteringComponentsIn(this.entityClassName, clusteringComponents);
         }
     }
 

@@ -34,6 +34,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
 public class CacheManager {
     private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
@@ -121,6 +122,31 @@ public class CacheManager {
         PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
         if (ps == null) {
             ps = generator.prepareCollectionAndMapUpdate(session, context.getEntityMeta(), changeSet, context.getOptions());
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
+        }
+        return ps;
+    }
+
+    public PreparedStatement getCacheForSliceSelectAndIterator(Session session, Cache<StatementCacheKey,PreparedStatement> dynamicPSCache,
+            SliceQueryProperties sliceQueryProperties) {
+
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_SELECT, sliceQueryProperties);
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if (ps == null) {
+            ps = generator.prepareSelectSliceQuery(session, sliceQueryProperties);
+            dynamicPSCache.put(cacheKey, ps);
+            displayCacheStatistics(dynamicPSCache);
+        }
+        return ps;
+    }
+
+    public PreparedStatement getCacheForSliceDelete(Session session, Cache<StatementCacheKey,PreparedStatement> dynamicPSCache,
+            SliceQueryProperties sliceQueryProperties) {
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_DELETE, sliceQueryProperties);
+        PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
+        if (ps == null) {
+            ps = generator.prepareDeleteSliceQuery(session, sliceQueryProperties);
             dynamicPSCache.put(cacheKey, ps);
             displayCacheStatistics(dynamicPSCache);
         }

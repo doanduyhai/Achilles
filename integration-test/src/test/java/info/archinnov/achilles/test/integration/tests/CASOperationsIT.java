@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.BatchStatement;
@@ -327,7 +328,11 @@ public class CASOperationsIT {
         assertThat(actual.getFollowers()).containsOnly("Helen", "Andrew");
     }
 
-
+    /**
+     * Ignore until https://issues.apache.org/jira/browse/CASSANDRA-7499 is solved
+     * @throws Exception
+     */
+    @Ignore
     @Test
     public void should_update_list_at_index_with_cas_condition() throws Exception {
         //Given

@@ -62,6 +62,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.Pair;
 
@@ -425,4 +426,36 @@ public class PreparedStatementGenerator {
         final PreparedStatement preparedStatement = session.prepare(regularStatement);
         return preparedStatement;
     }
+
+    // Slice Queries
+    public PreparedStatement prepareSelectSliceQuery(Session session, SliceQueryProperties<?> sliceQueryProperties) {
+
+        log.trace("Generate SELECT statement for slice query");
+
+        EntityMeta entityMeta = sliceQueryProperties.getEntityMeta();
+
+        Selection select = select();
+
+        for (PropertyMeta pm : entityMeta.getColumnsMetaToLoad()) {
+            select = prepareSelectField(pm, select);
+        }
+
+        Select from = select.from(entityMeta.getTableName());
+
+        final Select whereClause = sliceQueryProperties.generateWhereClauseForSelect(from);
+
+        return session.prepare(whereClause.getQueryString());
+    }
+
+    public PreparedStatement prepareDeleteSliceQuery(Session session, SliceQueryProperties<?> sliceQueryProperties) {
+
+        log.trace("Generate DELETE statement for slice query");
+
+        final Delete delete = QueryBuilder.delete().from(sliceQueryProperties.getEntityMeta().getTableName());
+
+        final Delete.Where whereClause = sliceQueryProperties.generateWhereClauseForDelete(delete);
+
+        return session.prepare(whereClause.getQueryString());
+    }
+
 }

@@ -17,26 +17,36 @@ package info.archinnov.achilles.internal.statement.cache;
 
 import static info.archinnov.achilles.type.Options.CASCondition;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import com.google.common.base.Optional;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.type.Options;
 
 public class StatementCacheKey {
     private CacheType type;
 
-    private Set<String> fields;
+    private Set<String> fields = new LinkedHashSet<>();
 
     private Class<?> entityClass;
 
     private OptionsCacheKey optionsCacheKey;
+
+    private Optional<SliceQueryProperties> sliceQueryPropertiesO = Optional.absent();
 
     public StatementCacheKey(CacheType type, Set<String> fields, Class<?> entityClass, Options options) {
         this.type = type;
         this.entityClass = entityClass;
         this.fields = fields;
         this.optionsCacheKey = OptionsCacheKey.fromOptions(options);
+    }
+
+    public StatementCacheKey(CacheType type, SliceQueryProperties sliceQueryProperties) {
+        this.type = type;
+        this.entityClass = sliceQueryProperties.getEntityMeta().getEntityClass();
+        this.sliceQueryPropertiesO = Optional.fromNullable(sliceQueryProperties);
     }
 
     public CacheType getType() {
@@ -54,7 +64,7 @@ public class StatementCacheKey {
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityClass, fields, type, optionsCacheKey);
+        return Objects.hash(entityClass, fields, type, optionsCacheKey, sliceQueryPropertiesO);
     }
 
     @Override
@@ -71,7 +81,8 @@ public class StatementCacheKey {
         return Objects.equals(this.entityClass, other.entityClass) &&
                 Objects.equals(this.fields, other.fields) &&
                 Objects.equals(this.type, other.type) &&
-                Objects.equals(this.optionsCacheKey, other.optionsCacheKey);
+                Objects.equals(this.optionsCacheKey, other.optionsCacheKey) &&
+                Objects.equals(this.sliceQueryPropertiesO, other.sliceQueryPropertiesO);
     }
 
     private static class OptionsCacheKey {

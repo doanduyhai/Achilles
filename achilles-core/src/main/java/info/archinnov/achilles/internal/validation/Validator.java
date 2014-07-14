@@ -42,7 +42,14 @@ public class Validator {
 		}
 	}
 
-	public static void validateNotEmpty(Collection<?> arg, String message, Object... args) {
+    public static void validateNotEmpty(Object[] arg, String message, Object... args) {
+        if (arg == null || arg.length== 0) {
+            throw new AchillesException(format(message, args));
+        }
+    }
+
+
+    public static void validateNotEmpty(Collection<?> arg, String message, Object... args) {
 		if (arg == null || arg.isEmpty()) {
 			throw new AchillesException(format(message, args));
 		}

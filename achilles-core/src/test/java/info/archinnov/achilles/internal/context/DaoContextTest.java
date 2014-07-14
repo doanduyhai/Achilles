@@ -81,6 +81,7 @@ import info.archinnov.achilles.internal.statement.prepared.PreparedStatementBind
 import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -149,6 +150,9 @@ public class DaoContextTest {
 
     @Mock
     private ConsistencyOverrider overrider;
+
+    @Mock
+    private SliceQueryProperties<CompleteBean> sliceQueryProperties;
 
     @Captor
     ArgumentCaptor<Using> usingCaptor;
@@ -631,5 +635,45 @@ public class DaoContextTest {
 
         // Then
         verify(session).execute(batch);
+    }
+
+    @Test
+    public void should_bind_for_slice_query_select() throws Exception {
+        //Given
+        final Object[] boundValues = { 10 };
+        when(cacheManager.getCacheForSliceSelectAndIterator(session, dynamicPSCache, sliceQueryProperties)).thenReturn(ps);
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(sliceQueryProperties.getBoundValues()).thenReturn(boundValues);
+        when(sliceQueryProperties.getConsistencyLevelOr(EACH_QUORUM)).thenReturn(LOCAL_QUORUM);
+        when(ps.bind(boundValues)).thenReturn(bs);
+
+        //When
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, EACH_QUORUM);
+
+        //Then
+        assertThat(bsWrapper.getStatement()).isSameAs(bs);
+        assertThat(bsWrapper.getValues()).isSameAs(boundValues);
+
+        verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+    }
+
+    @Test
+    public void should_bind_for_slice_query_delete() throws Exception {
+        //Given
+        final Object[] boundValues = { 10 };
+        when(cacheManager.getCacheForSliceDelete(session, dynamicPSCache, sliceQueryProperties)).thenReturn(ps);
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(sliceQueryProperties.getBoundValues()).thenReturn(boundValues);
+        when(sliceQueryProperties.getConsistencyLevelOr(EACH_QUORUM)).thenReturn(LOCAL_QUORUM);
+        when(ps.bind(boundValues)).thenReturn(bs);
+
+        //When
+        final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQueryDelete(sliceQueryProperties, EACH_QUORUM);
+
+        //Then
+        assertThat(bsWrapper.getStatement()).isSameAs(bs);
+        assertThat(bsWrapper.getValues()).isSameAs(boundValues);
+
+        verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
     }
 }

@@ -38,7 +38,7 @@ public class PartitionComponentsTest {
 		partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, String.class), null, null,
 				null,null);
 
-		partitionComponents.validatePartitionComponents("classname", Arrays.<Object> asList(11L, "type"));
+		partitionComponents.validatePartitionComponents("classname", 11L, "type");
 	}
 
 	@Test
@@ -47,8 +47,7 @@ public class PartitionComponentsTest {
                                                       null,null);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
+		exception.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
 		partitionComponents.validatePartitionComponents("entityClass", null);
 	}
@@ -59,10 +58,9 @@ public class PartitionComponentsTest {
                                                       null,null);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
+		exception.expectMessage("There should be at least one partition key component provided for querying on entity 'entityClass'");
 
-		partitionComponents.validatePartitionComponents("entityClass", Arrays.<Object> asList());
+		partitionComponents.validatePartitionComponents("entityClass", new Object[]{});
 	}
 
 	@Test
@@ -71,9 +69,9 @@ public class PartitionComponentsTest {
                                                       null,null);
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("The '2th' partition component should not be null");
+		exception.expectMessage("The '2th' partition key component should not be null");
 
-		partitionComponents.validatePartitionComponents("entityClass", Arrays.<Object> asList(10L, null));
+		partitionComponents.validatePartitionComponents("entityClass", 10L, null);
 	}
 
 	@Test
@@ -82,10 +80,9 @@ public class PartitionComponentsTest {
                                                       null,null);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("There should be exactly '2' partition components for querying on entity 'entityClass'");
+		exception.expectMessage("The partition key components count should be less or equal to '2' for querying on entity 'entityClass'");
 
-		partitionComponents.validatePartitionComponents("entityClass", Arrays.<Object> asList(11L, "test", 11));
+		partitionComponents.validatePartitionComponents("entityClass", 11L, "test", 11);
 	}
 
 	@Test
@@ -94,9 +91,8 @@ public class PartitionComponentsTest {
                                                       null,null);
 
 		exception.expect(AchillesException.class);
-		exception
-				.expectMessage("The type 'java.lang.String' of partition key component 'name' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Long'");
+		exception.expectMessage("The type 'java.lang.String' of partition key component 'name' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Long'");
 
-		partitionComponents.validatePartitionComponents("entityClass", Arrays.<Object> asList(11L, "name"));
+		partitionComponents.validatePartitionComponents("entityClass", 11L, "name");
 	}
 }

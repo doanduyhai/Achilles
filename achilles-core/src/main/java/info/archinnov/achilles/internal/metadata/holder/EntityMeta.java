@@ -33,6 +33,7 @@ import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.schemabuilder.Create;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.InsertStrategy;
@@ -116,8 +117,51 @@ public class EntityMeta {
         };
     }
 
-    public Object getPartitionKey(Object compoundKey) {
-        return idMeta.getPartitionKey(compoundKey);
+
+    public void validatePartitionComponents(Object...partitionComponents) {
+        idMeta.validatePartitionComponents(partitionComponents);
+    }
+
+    public void validatePartitionComponentsIn(Object...partitionComponents) {
+        idMeta.validatePartitionComponentsIn(partitionComponents);
+    }
+
+    public void validateClusteringComponents(Object...clusteringComponents) {
+        idMeta.validateClusteringComponents(clusteringComponents);
+    }
+
+    public void validateClusteringComponentsIn(Object...clusteringComponents) {
+        idMeta.validateClusteringComponentsIn(clusteringComponents);
+    }
+
+    public List<String> getPartitionKeysName(int size) {
+        return idMeta.getPartitionComponentNames().subList(0,size);
+    }
+
+    public String getLastPartitionKeyName() {
+        final List<String> partitionComponentNames = idMeta.getPartitionComponentNames();
+        return partitionComponentNames.get(partitionComponentNames.size()-1);
+    }
+
+    public List<String> getClusteringKeysName(int size) {
+        return idMeta.getClusteringComponentNames().subList(0,size);
+    }
+
+    public String getLastClusteringKeyName() {
+        final List<String> clusteringComponentNames = idMeta.getClusteringComponentNames();
+        return clusteringComponentNames.get(clusteringComponentNames.size()-1);
+    }
+
+    public int getPartitionKeysSize() {
+        return idMeta.getPartitionComponentClasses().size();
+    }
+
+    public int getClusteringKeysSize() {
+        return idMeta.getClusteringComponentClasses().size();
+    }
+
+    public List<Create.Options.ClusteringOrder> getClusteringOrders() {
+        return idMeta.getClusteringOrders();
     }
 
     @SuppressWarnings("unchecked")

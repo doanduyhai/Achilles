@@ -148,38 +148,23 @@ public class ClusteredEntityWithCounterIT {
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
-				.partitionComponents(partitionKey).fromClusterings("name2").toClusterings("name4").get();
+                .forSelect()
+				.withPartitionComponents(partitionKey).fromClusterings("name2").toClusterings("name4").get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithCounter.class).partitionComponents(partitionKey)
-				.fromClusterings("name2").toClusterings("name4").get();
+		entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
+				.fromClusterings("name2")
+                .toClusterings("name4").get();
 
 		assertThat(entities).hasSize(3);
 
 		assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
 		assertThat(entities.get(0).getVersion().get()).isEqualTo(2);
-		assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
-		assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
-        assertThat(entities.get(1).getVersion().get()).isEqualTo(3);
-		assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
-		assertThat(entities.get(2).getCounter().get()).isEqualTo(4);
-        assertThat(entities.get(2).getVersion().get()).isEqualTo(4);
-		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
-
-		entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
-				.fromEmbeddedId(new ClusteredKey(partitionKey, "name2"))
-				.toEmbeddedId(new ClusteredKey(partitionKey, "name4")).get();
-
-		assertThat(entities).hasSize(3);
-
-		assertThat(entities.get(0).getCounter().get()).isEqualTo(2);
-        assertThat(entities.get(0).getVersion().get()).isEqualTo(2);
 		assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
 		assertThat(entities.get(1).getCounter().get()).isEqualTo(3);
@@ -198,7 +183,9 @@ public class ClusteredEntityWithCounterIT {
 		insertValues(partitionKey, 5);
 
 		Iterator<ClusteredEntityWithCounter> iter = manager.sliceQuery(ClusteredEntityWithCounter.class)
-				.partitionComponents(partitionKey).iterator();
+                .forIteration()
+				.withPartitionComponents(partitionKey)
+                .iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntityWithCounter next = iter.next();
@@ -244,15 +231,19 @@ public class ClusteredEntityWithCounterIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 3);
 
-		manager.sliceQuery(ClusteredEntityWithCounter.class).partitionComponents(partitionKey).fromClusterings("name2")
-				.toClusterings("name2").remove();
+		manager.sliceQuery(ClusteredEntityWithCounter.class)
+                .forDelete()
+                .withPartitionComponents(partitionKey)
+                .deleteMatching("name2");
 
 		// Wait until counter column is really removed because of absence of
 		// tombstone
 		Thread.sleep(100);
 
 		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
-				.partitionComponents(partitionKey).get(100);
+                .forSelect()
+				.withPartitionComponents(partitionKey)
+                .get(100);
 
 		assertThat(entities).hasSize(2);
 

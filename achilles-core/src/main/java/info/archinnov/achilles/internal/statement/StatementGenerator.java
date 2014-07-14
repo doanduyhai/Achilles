@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
@@ -26,10 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Select.Selection;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.base.Optional;
@@ -39,59 +34,14 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
-import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
 import info.archinnov.achilles.type.Pair;
 
 public class StatementGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(StatementGenerator.class);
 
-    private SliceQueryStatementGenerator sliceQueryGenerator = new SliceQueryStatementGenerator();
-
-    public RegularStatementWrapper generateSelectSliceQuery(CQLSliceQuery<?> sliceQuery) {
-
-        log.trace("Generate SELECT statement for slice query");
-        EntityMeta meta = sliceQuery.getMeta();
-
-        Select select = generateSelectEntityInternal(meta);
-        select = select.limit(sliceQuery.getLimit());
-        if (sliceQuery.getCQLOrdering() != null) {
-            select.orderBy(sliceQuery.getCQLOrdering());
-        }
-        select.setFetchSize(sliceQuery.getBatchSize());
-        return sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(sliceQuery, select);
-    }
-
-    public RegularStatementWrapper generateRemoveSliceQuery(CQLSliceQuery<?> sliceQuery) {
-
-        log.trace("Generate DELETE statement for slice query");
-
-        EntityMeta meta = sliceQuery.getMeta();
-
-        Delete delete = QueryBuilder.delete().from(meta.getTableName());
-        return sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(sliceQuery, delete);
-    }
-
-
-    protected Select generateSelectEntityInternal(EntityMeta entityMeta) {
-
-        log.trace("Generate SELECT statement for entity class {}", entityMeta.getClassName());
-
-        PropertyMeta idMeta = entityMeta.getIdMeta();
-
-        Selection select = select();
-
-        generateSelectForPrimaryKey(idMeta, select);
-
-        for (PropertyMeta pm : entityMeta.getColumnsMetaToInsert()) {
-            select.column(pm.getPropertyName());
-        }
-        return select.from(entityMeta.getTableName());
-    }
-
-
     public Pair<Update.Where, Object[]> generateCollectionAndMapUpdateOperation(PersistentStateHolder context, DirtyCheckChangeSet changeSet) {
+        log.trace("Generate collection/map update operation for dirty change set {}", changeSet);
 
         final Object entity = context.getEntity();
         final EntityMeta meta = context.getEntityMeta();
@@ -167,17 +117,6 @@ public class StatementGenerator {
             boundValues = new Object[] { id };
         }
         return Pair.create(where, boundValues);
-    }
-
-
-    private void generateSelectForPrimaryKey(PropertyMeta idMeta, Selection select) {
-        if (idMeta.isEmbeddedId()) {
-            for (String component : idMeta.getComponentNames()) {
-                select.column(component);
-            }
-        } else {
-            select.column(idMeta.getPropertyName());
-        }
     }
 
 }

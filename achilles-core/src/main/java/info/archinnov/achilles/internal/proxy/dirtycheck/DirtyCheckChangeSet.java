@@ -293,6 +293,18 @@ public class DirtyCheckChangeSet {
         return mapChanges;
     }
 
+    @Override
+    public String toString() {
+        return "DirtyCheckChangeSet{" +
+                "changeType=" + changeType +
+                ", propertyMeta=" + propertyMeta +
+                ", listChanges=" + listChanges +
+                ", listChangeAtIndex=" + listChangeAtIndex +
+                ", setChanges=" + setChanges +
+                ", mapChanges=" + mapChanges +
+                '}';
+    }
+
     public static class ElementAtIndex {
 
         private int index;
@@ -332,4 +344,6 @@ public class DirtyCheckChangeSet {
             return result;
         }
     }
+
+
 }

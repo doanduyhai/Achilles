@@ -130,30 +130,22 @@ public class ClusteredEntityWithObjectPropertyIT {
 	public void should_query_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong();
 		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionComponents(partitionKey).fromClusterings("name2").toClusterings("name4").get();
+                .forSelect()
+				.withPartitionComponents(partitionKey)
+                .fromClusterings("name2")
+                .toClusterings("name4")
+                .get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(partitionKey, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionComponents(partitionKey)
-				.fromClusterings("name2").toClusterings("name4").get();
-
-		assertThat(entities).hasSize(3);
-
-		assertThat(entities.get(0).getValue().getContent()).isEqualTo("name2");
-		assertThat(entities.get(0).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(0).getId().getName()).isEqualTo("name2");
-		assertThat(entities.get(1).getValue().getContent()).isEqualTo("name3");
-		assertThat(entities.get(1).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(1).getId().getName()).isEqualTo("name3");
-		assertThat(entities.get(2).getValue().getContent()).isEqualTo("name4");
-		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
-		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
-
 		entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.fromEmbeddedId(new ClusteredKey(partitionKey, "name2"))
-				.toEmbeddedId(new ClusteredKey(partitionKey, "name4")).get();
+                .forSelect()
+                .withPartitionComponents(partitionKey)
+				.fromClusterings("name2")
+                .toClusterings("name4")
+                .get();
 
 		assertThat(entities).hasSize(3);
 
@@ -166,7 +158,6 @@ public class ClusteredEntityWithObjectPropertyIT {
 		assertThat(entities.get(2).getValue().getContent()).isEqualTo("name4");
 		assertThat(entities.get(2).getId().getId()).isEqualTo(partitionKey);
 		assertThat(entities.get(2).getId().getName()).isEqualTo("name4");
-		;
 	}
 
 	@Test
@@ -175,7 +166,9 @@ public class ClusteredEntityWithObjectPropertyIT {
 		insertValues(partitionKey, 5);
 
 		Iterator<ClusteredEntityWithObjectValue> iter = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionComponents(partitionKey).iterator();
+                .forIteration()
+				.withPartitionComponents(partitionKey)
+                .iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntityWithObjectValue next = iter.next();
@@ -215,11 +208,15 @@ public class ClusteredEntityWithObjectPropertyIT {
 		long partitionKey = RandomUtils.nextLong();
 		insertValues(partitionKey, 3);
 
-		manager.sliceQuery(ClusteredEntityWithObjectValue.class).partitionComponents(partitionKey).fromClusterings("name2")
-				.toClusterings("name2").remove();
+		manager.sliceQuery(ClusteredEntityWithObjectValue.class)
+                .forDelete()
+                .withPartitionComponents(partitionKey)
+                .deleteMatching("name2");
 
 		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
-				.partitionComponents(partitionKey).get(100);
+                .forSelect()
+				.withPartitionComponents(partitionKey)
+                .get(100);
 
 		assertThat(entities).hasSize(2);
 

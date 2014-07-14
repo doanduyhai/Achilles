@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.querybuilder.Ordering;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 
@@ -256,7 +258,7 @@ public class Create extends SchemaStatement {
                 this.clusteringColumnName = clusteringColumnName;
             }
 
-            private String getClusteringColumnName() {
+            public String getClusteringColumnName() {
                 return clusteringColumnName;
             }
 

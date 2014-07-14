@@ -31,5 +31,7 @@ public enum CacheType {
     REMOVE_FROM_MAP,
     SELECT_FIELD,
     UPDATE_FIELDS,
-    INSERT;
+    INSERT,
+    SLICE_QUERY_SELECT,
+    SLICE_QUERY_DELETE;
 }

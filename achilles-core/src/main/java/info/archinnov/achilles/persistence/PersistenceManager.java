@@ -97,8 +97,9 @@ public class PersistenceManager {
      * @return proxified entity
      */
     public <T> T persist(final T entity, Options options) {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Persisting entity '{}' with options {} ", entity, options);
+        }
 
         entityValidator.validateEntity(entity, entityMetaMap);
 
@@ -115,8 +116,9 @@ public class PersistenceManager {
      *            Managed entity to be updated
      */
     public void update(Object entity) {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Updating entity '{}'", proxifier.getRealObject(entity));
+        }
         update(entity, noOptions());
     }
 
@@ -147,8 +149,9 @@ public class PersistenceManager {
      *            Entity to be removed
      */
     public void remove(Object entity) {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Removing entity '{}'", proxifier.getRealObject(entity));
+        }
         remove(entity, noOptions());
     }
 
@@ -203,8 +206,9 @@ public class PersistenceManager {
     public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
         Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
         Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
+        }
 
         PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(writeLevel));
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
@@ -261,8 +265,9 @@ public class PersistenceManager {
      *            Primary key (Cassandra row key) of the entity to initialize
      */
     public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
+        }
 
         return getProxy(entityClass, primaryKey, null);
     }
@@ -281,9 +286,10 @@ public class PersistenceManager {
      *            Consistency Level for read
      */
     public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
                     entityClass, primaryKey, readLevel);
+        }
 
         Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
         Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
@@ -306,8 +312,9 @@ public class PersistenceManager {
      *            Entity to be refreshed
      */
     public void refresh(Object entity) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
+        }
         refresh(entity, null);
     }
 
@@ -320,8 +327,9 @@ public class PersistenceManager {
      *            Consistency Level for read
      */
     public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
+        }
 
         proxifier.ensureProxy(entity);
         Object realObject = proxifier.getRealObject(entity);
@@ -533,7 +541,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED,normalizeQuery, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, normalizeQuery, boundValues);
     }
 
     /**

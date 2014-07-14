@@ -31,6 +31,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -45,6 +46,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
@@ -67,6 +69,9 @@ public class CacheManagerTest {
 
     @Mock
     private PreparedStatement ps;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private SliceQueryProperties<CompleteBean> sliceQueryProperties;
 
     @Captor
     ArgumentCaptor<StatementCacheKey> cacheKeyCaptor;
@@ -271,5 +276,69 @@ public class CacheManagerTest {
         assertThat(actual).isSameAs(ps);
         verify(cache, never()).put(cacheKey, ps);
         verifyZeroInteractions(generator);
+    }
+
+    @Test
+    public void should_get_select_for_slice_query_from_cache() throws Exception {
+        //Given
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_SELECT, sliceQueryProperties);
+
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForSliceSelectAndIterator(session, cache, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+    }
+
+    @Test
+    public void should_generate_select_for_slice_query() throws Exception {
+        //Given
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_SELECT, sliceQueryProperties);
+
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(null);
+        when(generator.prepareSelectSliceQuery(session,sliceQueryProperties)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForSliceSelectAndIterator(session, cache, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        verify(cache).put(cacheKey,ps);
+    }
+
+    @Test
+    public void should_get_delete_for_slice_query_from_cache() throws Exception {
+        //Given
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_DELETE, sliceQueryProperties);
+
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForSliceDelete(session, cache, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+    }
+
+    @Test
+    public void should_generate_delete_for_slice_query() throws Exception {
+        //Given
+        StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SLICE_QUERY_DELETE, sliceQueryProperties);
+
+        when(sliceQueryProperties.getEntityClass()).thenReturn(CompleteBean.class);
+        when(cache.getIfPresent(cacheKey)).thenReturn(null);
+        when(generator.prepareDeleteSliceQuery(session,sliceQueryProperties)).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = manager.getCacheForSliceDelete(session, cache, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        verify(cache).put(cacheKey,ps);
     }
 }

@@ -26,7 +26,6 @@ import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.apache.commons.lang.math.RandomUtils;
@@ -52,11 +51,8 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
-import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -64,13 +60,6 @@ public class StatementGeneratorTest {
 
     @InjectMocks
     private StatementGenerator generator;
-
-    @Mock
-    private SliceQueryStatementGenerator sliceQueryGenerator;
-
-
-    @Mock
-    private CQLSliceQuery<ClusteredEntity> sliceQuery;
 
     @Mock
     private DaoContext daoContext;
@@ -94,56 +83,6 @@ public class StatementGeneratorTest {
     private ArgumentCaptor<Delete> deleteCaptor;
 
     private ReflectionInvoker invoker = new ReflectionInvoker();
-
-
-    @Test
-    public void should_generate_slice_select_query() throws Exception {
-        EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
-        when(sliceQuery.getMeta()).thenReturn(meta);
-        when(sliceQuery.getCQLOrdering()).thenReturn(QueryBuilder.desc("comp1"));
-        when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-        when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture())).thenReturn(statementWrapper);
-        when(sliceQuery.getLimit()).thenReturn(98);
-        when(sliceQuery.getBatchSize()).thenReturn(101);
-        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery);
-
-        assertThat(actual).isSameAs(statementWrapper);
-
-        assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT id,comp1,comp2,age,name,label FROM table ORDER BY comp1 DESC LIMIT 98;");
-        assertThat(selectCaptor.getValue().getFetchSize()).isEqualTo(101);
-    }
-
-    @Test
-    public void should_generate_slice_select_query_without_ordering() throws Exception {
-        EntityMeta meta = prepareEntityMeta("id", "comp1", "comp2");
-        when(sliceQuery.getMeta()).thenReturn(meta);
-        when(sliceQuery.getCQLOrdering()).thenReturn(null);
-        when(sliceQuery.getConsistencyLevel()).thenReturn(com.datastax.driver.core.ConsistencyLevel.EACH_QUORUM);
-        when(sliceQueryGenerator.generateWhereClauseForSelectSliceQuery(eq(sliceQuery), selectCaptor.capture())).thenReturn(statementWrapper);
-        when(sliceQuery.getLimit()).thenReturn(98);
-        when(sliceQuery.getBatchSize()).thenReturn(101);
-
-        RegularStatementWrapper actual = generator.generateSelectSliceQuery(sliceQuery);
-
-        assertThat(actual).isSameAs(statementWrapper);
-        assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT id,comp1,comp2,age,name,label FROM table LIMIT 98;");
-        assertThat(selectCaptor.getValue().getFetchSize()).isEqualTo(101);
-    }
-
-    @Test
-    public void should_generate_slice_delete_query() throws Exception {
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-
-        when(sliceQuery.getMeta()).thenReturn(meta);
-        when(sliceQueryGenerator.generateWhereClauseForDeleteSliceQuery(eq(sliceQuery), deleteCaptor.capture())).thenReturn(statementWrapper);
-
-        RegularStatementWrapper actual = generator.generateRemoveSliceQuery(sliceQuery);
-
-        assertThat(actual).isSameAs(statementWrapper);
-        assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE  FROM table;");
-    }
-
 
     @Test
     public void should_generate_set_element_at_index_to_list_with_cas_conditions() throws Exception {

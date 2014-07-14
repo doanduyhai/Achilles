@@ -27,9 +27,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.ValuelessClusteredEntity.CompoundKey;
-import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.OptionsBuilder;
-import info.archinnov.achilles.type.OrderingMode;
 
 public class ValuelessClusteredEntityIT {
 
@@ -96,9 +94,15 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
-		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id)
-				.fromClusterings(name5).toClusterings(name2).bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY)
-				.ordering(OrderingMode.DESCENDING).limit(3).get();
+		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class)
+                .forSelect()
+                .withPartitionComponents(id)
+				.fromClusterings(name2)
+                .toClusterings(name5)
+                .fromExclusiveToInclusiveBounds()
+				.orderByDescending()
+                .limit(3)
+                .get();
 
 		assertThat(result).hasSize(3);
 		assertThat(result.get(0).getId().getName()).isEqualTo(name5);
@@ -122,8 +126,13 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
 		Iterator<ValuelessClusteredEntity> iterator = manager.sliceQuery(ValuelessClusteredEntity.class)
-				.partitionComponents(id).fromClusterings(name5).toClusterings(name2)
-				.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY).ordering(OrderingMode.DESCENDING).iterator();
+                .forIteration()
+				.withPartitionComponents(id)
+                .fromClusterings(name2)
+                .toClusterings(name5)
+				.fromExclusiveToInclusiveBounds()
+                .orderByDescending()
+                .iterator();
 
 		assertThat(iterator.hasNext()).isTrue();
 		assertThat(iterator.next().getId().getName()).isEqualTo(name5);
@@ -143,10 +152,14 @@ public class ValuelessClusteredEntityIT {
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
 		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
 
-		manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id).fromClusterings(name2).toClusterings(name2)
-				.remove();
+		manager.sliceQuery(ValuelessClusteredEntity.class)
+                .forDelete()
+                .withPartitionComponents(id)
+				.deleteMatching(name2);
 
-		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class).partitionComponents(id)
+		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class)
+                .forSelect()
+                .withPartitionComponents(id)
 				.get();
 
 		assertThat(result).hasSize(2);

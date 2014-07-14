@@ -147,7 +147,7 @@ public class ReflectionInvoker {
 		Object newInstance = instantiate(valueClass);
 		List<Field> fields = idMeta.getPartitionComponentFields();
 
-		for (int i = 0; i < fields.size(); i++) {
+		for (int i = 0; i < partitionComponents.size(); i++) {
 			Field field = fields.get(i);
 			Object component = partitionComponents.get(i);
 			setValueToField(newInstance, field, component);

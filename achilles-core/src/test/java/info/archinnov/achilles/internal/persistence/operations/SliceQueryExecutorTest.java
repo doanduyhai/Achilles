@@ -17,10 +17,8 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
-import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,7 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.Row;
@@ -46,12 +43,11 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.statement.StatementGenerator;
-import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.BoundStatementWrapper;
 import info.archinnov.achilles.iterator.SliceQueryIterator;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
-import info.archinnov.achilles.query.slice.SliceQuery;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
+import info.archinnov.achilles.type.ConsistencyLevel;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SliceQueryExecutorTest {
@@ -63,7 +59,7 @@ public class SliceQueryExecutorTest {
     private ConfigurationContext configContext;
 
     @Mock
-    private StatementGenerator generator;
+    private BoundStatementWrapper bsWrapper;
 
     @Mock
     private EntityMapper mapper;
@@ -92,7 +88,7 @@ public class SliceQueryExecutorTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
-    private SliceQuery<ClusteredEntity> sliceQuery;
+    private SliceQueryProperties<ClusteredEntity> sliceQueryProperties;
 
     @Mock
     private ClusteredEntity entity;
@@ -100,26 +96,22 @@ public class SliceQueryExecutorTest {
     private Long partitionKey = RandomUtils.nextLong();
 
     private List<Object> partitionComponents = Arrays.<Object>asList(partitionKey);
-    private List<Object> clusteringsFrom = Arrays.<Object>asList("name1");
-    private List<Object> clusteringsTo = Arrays.<Object>asList("name2");
-    private int limit = 98;
-    private int batchSize = 99;
+
+    private ConsistencyLevel defaultReadLevel = ConsistencyLevel.EACH_QUORUM;
+    private ConsistencyLevel defaultWriteLevel = ConsistencyLevel.LOCAL_QUORUM;
 
     @Before
     public void setUp() {
-        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(EACH_QUORUM);
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(defaultReadLevel);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(defaultWriteLevel);
         when(context.getEntityFacade()).thenReturn(entityFacade);
         when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getClusteringOrders()).thenReturn(asList(new ClusteringOrder("col", Sorting.ASC)));
 
-        when(idMeta.getComponentNames()).thenReturn(Arrays.asList("id", "name"));
-        when(idMeta.getClusteringOrders()).thenReturn(Arrays.asList(new ClusteringOrder("clust", Sorting.DESC)));
-        when(idMeta.getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class, String.class));
+        sliceQueryProperties = SliceQueryProperties.builder(meta,ClusteredEntity.class, SliceQueryProperties.SliceType.SELECT);
 
-        sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta, partitionComponents, clusteringsFrom, clusteringsTo,
-                ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, true);
+        executor = new SliceQueryExecutor(contextFactory,configContext,daoContext);
 
-        Whitebox.setInternalState(executor, StatementGenerator.class, generator);
-        Whitebox.setInternalState(executor, PersistenceContextFactory.class, contextFactory);
         Whitebox.setInternalState(executor, EntityProxifier.class, proxifier);
         Whitebox.setInternalState(executor, EntityMapper.class, mapper);
     }
@@ -127,18 +119,19 @@ public class SliceQueryExecutorTest {
     @Test
     public void should_get_clustered_entities() throws Exception {
 
-        RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
         Row row = mock(Row.class);
-        List<Row> rows = Arrays.asList(row);
+        List<Row> rows = asList(row);
 
-        when(generator.generateSelectSliceQuery(anySliceQuery())).thenReturn(regularWrapper);
-        when(daoContext.execute(regularWrapper).all()).thenReturn(rows);
+        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
+        when(daoContext.execute(bsWrapper).all()).thenReturn(rows);
 
         when(meta.instanciate()).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
-        List<ClusteredEntity> actual = executor.get(sliceQuery);
+        List<ClusteredEntity> actual = executor.get(sliceQueryProperties);
+
+        verify(daoContext).bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
 
         assertThat(actual).containsOnly(entity);
         verify(meta).intercept(entity, Event.POST_LOAD);
@@ -147,15 +140,14 @@ public class SliceQueryExecutorTest {
 
     @Test
     public void should_create_iterator_for_clustered_entities() throws Exception {
-        RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
-        when(generator.generateSelectSliceQuery(anySliceQuery())).thenReturn(regularWrapper);
-        when(daoContext.execute(regularWrapper).iterator()).thenReturn(iterator);
+        when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
+        when(daoContext.execute(bsWrapper).iterator()).thenReturn(iterator);
 
         when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
                 .thenReturn(context);
 
-        when(idMeta.getCQLComponentNames()).thenReturn(Arrays.asList("id", "comp1"));
-        Iterator<ClusteredEntity> iter = executor.iterator(sliceQuery);
+        when(idMeta.getCQLComponentNames()).thenReturn(asList("id", "comp1"));
+        Iterator<ClusteredEntity> iter = executor.iterator(sliceQueryProperties);
 
         assertThat(iter).isNotNull();
         assertThat(iter).isInstanceOf(SliceQueryIterator.class);
@@ -163,19 +155,11 @@ public class SliceQueryExecutorTest {
 
     @Test
     public void should_remove_clustered_entities() throws Exception {
-        sliceQuery = new SliceQuery<>(ClusteredEntity.class, meta, partitionComponents, Arrays.<Object>asList(),
-                Arrays.<Object>asList(), ASCENDING, EXCLUSIVE_BOUNDS, LOCAL_QUORUM, limit, batchSize, false);
+        when(daoContext.bindForSliceQueryDelete(sliceQueryProperties, defaultWriteLevel)).thenReturn(bsWrapper);
 
-        RegularStatementWrapper regularWrapper = mock(RegularStatementWrapper.class);
-        when(generator.generateRemoveSliceQuery(anySliceQuery())).thenReturn(regularWrapper);
+        executor.delete(sliceQueryProperties);
 
-        executor.remove(sliceQuery);
+        verify(daoContext).execute(bsWrapper);
 
-        verify(daoContext).execute(regularWrapper);
-
-    }
-
-    private CQLSliceQuery<ClusteredEntity> anySliceQuery() {
-        return Mockito.any();
     }
 }

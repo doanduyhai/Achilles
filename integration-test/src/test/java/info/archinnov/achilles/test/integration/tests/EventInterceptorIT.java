@@ -278,7 +278,9 @@ public class EventInterceptorIT {
 
         // When
         final List<ClusteredEntity> clusteredEntities = manager3.sliceQuery(ClusteredEntity.class)
-                .partitionComponents(id).get(10);
+                .forSelect()
+                .withPartitionComponents(id)
+                .get(10);
 
         // Then
         assertThat(clusteredEntities.get(0).getValue()).isEqualTo("postLoad");

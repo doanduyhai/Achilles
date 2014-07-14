@@ -16,7 +16,8 @@
 package info.archinnov.achilles.test.integration.entity;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
-
+import java.util.Comparator;
+import java.util.Objects;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
 import info.archinnov.achilles.annotations.Entity;
@@ -25,157 +26,159 @@ import info.archinnov.achilles.annotations.Order;
 @Entity(table = TABLE_NAME)
 public class ClusteredEntity {
 
-	public static final String TABLE_NAME = "clustered";
+    public static final String TABLE_NAME = "clustered";
 
-	@EmbeddedId
-	private ClusteredKey id;
+    @EmbeddedId
+    private ClusteredKey id;
 
-	@Column
-	private String value;
+    @Column
+    private String value;
 
-	public ClusteredEntity() {
-	}
+    public ClusteredEntity() {
+    }
 
-	public ClusteredEntity(Long id, Integer count, String name, String value) {
-		this.id = new ClusteredKey(id, count, name);
-		this.value = value;
-	}
+    public ClusteredEntity(Long id, Integer count, String name, String value) {
+        this.id = new ClusteredKey(id, count, name);
+        this.value = value;
+    }
 
-	public ClusteredEntity(ClusteredKey id, String value) {
-		this.id = id;
-		this.value = value;
-	}
+    public ClusteredEntity(ClusteredKey id, String value) {
+        this.id = id;
+        this.value = value;
+    }
 
-	public ClusteredKey getId() {
-		return id;
-	}
+    public ClusteredKey getId() {
+        return id;
+    }
 
-	public void setId(ClusteredKey id) {
-		this.id = id;
-	}
+    public void setId(ClusteredKey id) {
+        this.id = id;
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id, this.value);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ClusteredEntity other = (ClusteredEntity) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ClusteredEntity other = (ClusteredEntity) obj;
 
-	public static class ClusteredKey {
-		@Column
-		@Order(1)
-		private Long id;
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.value, other.value);
+    }
 
-		@Column
-		@Order(2)
-		private Integer count;
+    @Override
+    public String toString() {
+        return "ClusteredEntity{" +
+                "id=" + id +
+                ", value='" + value + '\'' +
+                '}';
+    }
 
-		@Column
-		@Order(3)
-		private String name;
+    public static class ClusteredKey {
+        @Column
+        @Order(1)
+        private Long id;
 
-		public ClusteredKey() {
-		}
+        @Column
+        @Order(2)
+        private Integer count;
 
-		public ClusteredKey(Long id, Integer count, String name) {
-			this.id = id;
-			this.count = count;
-			this.name = name;
-		}
+        @Column
+        @Order(3)
+        private String name;
 
-		public Long getId() {
-			return id;
-		}
+        public ClusteredKey() {
+        }
 
-		public void setId(Long id) {
-			this.id = id;
-		}
+        public ClusteredKey(Long id, Integer count, String name) {
+            this.id = id;
+            this.count = count;
+            this.name = name;
+        }
 
-		public Integer getCount() {
-			return count;
-		}
+        public Long getId() {
+            return id;
+        }
 
-		public void setCount(Integer count) {
-			this.count = count;
-		}
+        public void setId(Long id) {
+            this.id = id;
+        }
 
-		public String getName() {
-			return name;
-		}
+        public Integer getCount() {
+            return count;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public void setCount(Integer count) {
+            this.count = count;
+        }
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((count == null) ? 0 : count.hashCode());
-			result = prime * result + ((id == null) ? 0 : id.hashCode());
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			return result;
-		}
+        public String getName() {
+            return name;
+        }
 
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ClusteredKey other = (ClusteredKey) obj;
-			if (count == null) {
-				if (other.count != null)
-					return false;
-			} else if (!count.equals(other.count))
-				return false;
-			if (id == null) {
-				if (other.id != null)
-					return false;
-			} else if (!id.equals(other.id))
-				return false;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			return true;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-	}
+        @Override
+        public String toString() {
+            return "ClusteredKey{" +
+                    "id=" + id +
+                    ", count=" + count +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.id, this.count, this.name);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            ClusteredKey other = (ClusteredKey) obj;
+
+            return Objects.equals(this.id, other.id) &&
+                    Objects.equals(this.count, other.count) &&
+                    Objects.equals(this.name, other.name);
+        }
+
+    }
+
+    public static class ClusteredEntityComparator implements Comparator<ClusteredEntity> {
+
+        @Override
+        public int compare(ClusteredEntity o1, ClusteredEntity o2) {
+            return o1.id.id.compareTo(o2.id.id);
+        }
+    }
 
 }

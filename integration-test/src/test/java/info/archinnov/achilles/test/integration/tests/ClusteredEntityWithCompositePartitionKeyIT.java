@@ -16,9 +16,7 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithCompositePartitionKey.TABLE_NAME;
-import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
@@ -159,15 +157,21 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		Integer index1 = 10;
 		Integer index2 = 12;
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
 				.fromClusterings(index1).toClusterings(index2).get();
 
 		assertThat(entities).isEmpty();
 
 		insertValues(id, 5);
 
-		entities = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.fromClusterings(index1).toClusterings(index2).get();
+		entities = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+				.fromClusterings(index1)
+                .toClusterings(index2)
+                .get();
 
 		assertThat(entities).hasSize(2);
 
@@ -188,8 +192,11 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		insertValues(id, 1);
 
 		ClusteredEntityWithCompositePartitionKey clusteredEntity = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.getFirstOccurence();
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByAscending()
+				.getOne();
 
 		// Check for update
 		clusteredEntity.setValue("dirty");
@@ -217,25 +224,20 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		insertValues(id, 5);
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.fromClusterings(14).toClusterings(11).bounding(INCLUSIVE_END_BOUND_ONLY).ordering(DESCENDING).limit(2)
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+				.fromClusterings(11)
+                .toClusterings(14)
+                .fromInclusiveToExclusiveBounds()
+                .orderByDescending()
+                .limit(2)
 				.get();
 
 		assertThat(entities).hasSize(2);
 
 		assertThat(entities.get(0).getValue()).isEqualTo("value3");
 		assertThat(entities.get(1).getValue()).isEqualTo("value2");
-
-		entities = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
-				.fromEmbeddedId(new EmbeddedKey(id, "type", 14)).toEmbeddedId(new EmbeddedKey(id, "type", 11))
-				.bounding(INCLUSIVE_END_BOUND_ONLY).ordering(DESCENDING).limit(4).get();
-
-		assertThat(entities).hasSize(3);
-
-		assertThat(entities.get(0).getValue()).isEqualTo("value3");
-		assertThat(entities.get(1).getValue()).isEqualTo("value2");
-		assertThat(entities.get(2).getValue()).isEqualTo("value1");
-
 	}
 
 	@Test
@@ -246,28 +248,43 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		exception.expect(InvalidQueryException.class);
 		exception.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
 
-		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").fromClusterings(12)
-				.toClusterings(14).consistencyLevel(EACH_QUORUM).get();
+		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .fromClusterings(12)
+				.toClusterings(14)
+                .withConsistency(EACH_QUORUM)
+                .get();
 	}
 
 	@Test
 	public void should_query_with_getFirst() throws Exception {
 		long id = RandomUtils.nextLong();
 		ClusteredEntityWithCompositePartitionKey entity = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.getFirstOccurence();
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByAscending()
+				.getOne();
 
 		assertThat(entity).isNull();
 
 		insertValues(id, 5);
 
-		entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.getFirstOccurence();
+		entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByAscending()
+                .getOne();
 
 		assertThat(entity.getValue()).isEqualTo("value1");
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").getFirst(3);
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByAscending()
+                .get(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo("value1");
@@ -281,19 +298,30 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		long id = RandomUtils.nextLong();
 
 		ClusteredEntityWithCompositePartitionKey entity = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").getLastOccurence();
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByDescending()
+                .getOne();
 
 		assertThat(entity).isNull();
 
 		insertValues(id, 5);
 
-		entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.getLastOccurence();
+		entity = manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByDescending()
+                .getOne();
 
 		assertThat(entity.getValue()).isEqualTo("value5");
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").getLast(3);
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .orderByDescending()
+                .get(3);
 
 		assertThat(entities).hasSize(3);
 		assertThat(entities.get(0).getValue()).isEqualTo("value5");
@@ -307,7 +335,10 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		insertValues(id, 5);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").iterator();
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forIteration()
+                .withPartitionComponents(id, "type")
+                .iterator();
 
 		assertThat(iter.hasNext()).isTrue();
 		ClusteredEntityWithCompositePartitionKey next = iter.next();
@@ -357,7 +388,9 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		insertValues(id, 1);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").iterator();
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forIteration()
+                .withPartitionComponents(id, "type").iterator();
 
 		iter.hasNext();
 		ClusteredEntityWithCompositePartitionKey clusteredEntity = iter.next();
@@ -388,8 +421,11 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		insertValues(id, 5);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type")
-				.fromClusterings(12).iterator(2);
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forIteration()
+                .withPartitionComponents(id, "type")
+				.fromClusterings(12)
+                .iterator(2);
 
 		assertThat(iter.hasNext()).isTrue();
 		assertThat(iter.next().getValue()).isEqualTo("value2");
@@ -407,11 +443,16 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		long id = RandomUtils.nextLong();
 		insertValues(id, 3);
 
-		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").fromClusterings(12)
-				.toClusterings(12).remove();
+		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forDelete()
+                .withPartitionComponents(id, "type")
+                .deleteMatching(12);
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
-				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class).partitionComponents(id, "type").get(100);
+				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
+                .forSelect()
+                .withPartitionComponents(id, "type")
+                .get(100);
 
 		assertThat(entities).hasSize(2);
 

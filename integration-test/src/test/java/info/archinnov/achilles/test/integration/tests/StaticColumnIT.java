@@ -51,7 +51,8 @@ public class StaticColumnIT {
         manager.persist(parisStreet2);
 
         List<ClusteredEntityWithStaticColumn> found = manager.sliceQuery(ClusteredEntityWithStaticColumn.class)
-                .partitionComponents(partitionKey)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
                 .get(100);
 
         assertThat(found).hasSize(2);
@@ -65,7 +66,8 @@ public class StaticColumnIT {
         manager.persist(lyonStreet3);
 
         found = manager.sliceQuery(ClusteredEntityWithStaticColumn.class)
-                .partitionComponents(partitionKey)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
                 .get(100);
 
         assertThat(found).hasSize(3);
@@ -168,7 +170,8 @@ public class StaticColumnIT {
         manager.persist(location);
 
         List<ClusteredEntityWithOnlyStaticColumns> found = manager.sliceQuery(ClusteredEntityWithOnlyStaticColumns.class)
-                .partitionComponents(partitionKey)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
                 .get(100);
 
         assertThat(found).hasSize(1);
@@ -255,7 +258,8 @@ public class StaticColumnIT {
 
         //Then
         List<ClusteredEntityWithStaticCounter> found = manager.sliceQuery(ClusteredEntityWithStaticCounter.class)
-                .partitionComponents(partitionKey)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
                 .get(100);
 
         assertThat(found).hasSize(2);
@@ -269,7 +273,8 @@ public class StaticColumnIT {
         manager.persist(count3);
 
         found = manager.sliceQuery(ClusteredEntityWithStaticCounter.class)
-                .partitionComponents(partitionKey)
+                .forSelect()
+                .withPartitionComponents(partitionKey)
                 .get(100);
 
         assertThat(found).hasSize(3);

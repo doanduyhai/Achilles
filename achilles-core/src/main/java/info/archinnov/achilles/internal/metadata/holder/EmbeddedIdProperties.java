@@ -44,13 +44,21 @@ public class EmbeddedIdProperties extends AbstractComponentProperties {
 		this.timeUUIDComponents = timeUUIDComponents;
 	}
 
-	void validatePartitionComponents(String className, List<Object> partitionComponents) {
+	void validatePartitionComponents(String className,Object...partitionComponents) {
 		this.partitionComponents.validatePartitionComponents(className, partitionComponents);
 	}
 
-	void validateClusteringComponents(String className, List<Object> clusteringComponents) {
+    void validatePartitionComponentsIn(String className,Object...partitionComponents) {
+        this.partitionComponents.validatePartitionComponentsIn(className, partitionComponents);
+    }
+
+	void validateClusteringComponents(String className, Object...clusteringComponents) {
 		this.clusteringComponents.validateClusteringComponents(className, clusteringComponents);
 	}
+
+    void validateClusteringComponentsIn(String className, Object...clusteringComponents) {
+        this.clusteringComponents.validateClusteringComponentsIn(className, clusteringComponents);
+    }
 
 	String getVaryingComponentNameForQuery(int fixedComponentsSize) {
 		log.trace("Get varying component name for query");

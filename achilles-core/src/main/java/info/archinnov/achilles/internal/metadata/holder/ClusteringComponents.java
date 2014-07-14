@@ -19,7 +19,9 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
 
@@ -27,74 +29,80 @@ public class ClusteringComponents extends AbstractComponentProperties {
 
     private List<ClusteringOrder> clusteringOrders;
 
-    public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames,List<Field> componentFields,List<Method> componentGetters, List<Method> componentSetters,List<ClusteringOrder> clusteringOrders) {
-		super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
+    public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields, List<Method> componentGetters, List<Method> componentSetters, List<ClusteringOrder> clusteringOrders) {
+        super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
         this.clusteringOrders = clusteringOrders;
     }
 
-	void validateClusteringComponents(String className, List<Object> clusteringComponents) {
-		Validator.validateNotNull(clusteringComponents,
-				"There should be at least one clustering key provided for querying on entity '%s'", className);
+    void validateClusteringComponents(String className, Object... clusteringComponentsArray) {
 
-		int maxClusteringCount = componentClasses.size();
+        Validator.validateTrue(ArrayUtils.isNotEmpty(clusteringComponentsArray), "There should be at least one clustering key provided for querying on entity '%s'", className);
 
-		Validator.validateTrue(clusteringComponents.size() <= maxClusteringCount,
-				"There should be at most %s value(s) of clustering component(s) provided for querying on entity '%s'",
-				maxClusteringCount, className);
+        final List<Object> clusteringComponents = Arrays.asList(clusteringComponentsArray);
 
-		validateNoHoleAndReturnLastNonNullIndex(clusteringComponents);
+        int maxClusteringCount = componentClasses.size();
 
-		for (int i = 0; i < clusteringComponents.size(); i++) {
-			Object clusteringKey = clusteringComponents.get(i);
-			if (clusteringKey != null) {
-				Class<?> clusteringType = clusteringKey.getClass();
-				Class<?> expectedClusteringType = componentClasses.get(i);
+        Validator.validateTrue(clusteringComponents.size() <= maxClusteringCount,
+                "There should be at most %s value(s) of clustering component(s) provided for querying on entity '%s'",
+                maxClusteringCount, className);
 
-				Validator
-						.validateComparable(
-								clusteringType,
-								"The type '%s' of clustering key '%s' for querying on entity '%s' should implement the Comparable<T> interface",
-								clusteringType.getCanonicalName(), clusteringKey, className);
+        for (int i = 0; i < clusteringComponents.size(); i++) {
+            Object clusteringKey = clusteringComponents.get(i);
+            Validator.validateNotNull(clusteringKey, "The '%sth' clustering key should not be null", i + 1);
+            Class<?> clusteringType = clusteringKey.getClass();
+            Class<?> expectedClusteringType = componentClasses.get(i);
 
-				Validator
-						.validateTrue(
-								expectedClusteringType.equals(clusteringType),
-								"The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
-								clusteringType.getCanonicalName(), clusteringKey, className,
-								expectedClusteringType.getCanonicalName());
-			}
+            Validator.validateTrue(expectedClusteringType.equals(clusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                    clusteringType.getCanonicalName(), clusteringKey, className, expectedClusteringType.getCanonicalName());
+        }
+    }
 
-		}
-	}
+    void validateClusteringComponentsIn(String className, Object... clusteringComponentsInArray) {
 
-	String getOrderingComponent() {
-		return isClustered() ? componentNames.get(0) : null;
-	}
+        Validator.validateTrue(ArrayUtils.isNotEmpty(clusteringComponentsInArray), "There should be at least one clustering key IN provided for querying on entity '%s'", className);
 
-	boolean isClustered() {
-		return componentClasses.size() > 0;
-	}
+        final List<Object> clusteringComponentsIn = Arrays.asList(clusteringComponentsInArray);
+
+        Class<?> lastClusteringComponentType = componentClasses.get(componentClasses.size()-1);
+
+        for (int i = 0; i < clusteringComponentsIn.size(); i++) {
+            Object clusteringKey = clusteringComponentsIn.get(i);
+            Validator.validateNotNull(clusteringKey, "The '%sth' clustering key should not be null", i + 1);
+            Class<?> clusteringType = clusteringKey.getClass();
+
+            Validator.validateTrue(lastClusteringComponentType.equals(clusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                    clusteringType.getCanonicalName(), clusteringKey, className, lastClusteringComponentType.getCanonicalName());
+        }
+    }
+
+    String getOrderingComponent() {
+        return isClustered() ? componentNames.get(0) : null;
+    }
+
+    boolean isClustered() {
+        return componentClasses.size() > 0;
+    }
 
     public List<ClusteringOrder> getClusteringOrders() {
         return clusteringOrders;
     }
 
     private int validateNoHoleAndReturnLastNonNullIndex(List<Object> components) {
-		boolean nullFlag = false;
-		int lastNotNullIndex = 0;
-		for (Object component : components) {
-			if (component != null) {
-				if (nullFlag) {
-					throw new AchillesException(
-							"There should not be any null value between two non-null components of an @EmbeddedId");
-				}
-				lastNotNullIndex++;
-			} else {
-				nullFlag = true;
-			}
-		}
-		lastNotNullIndex--;
+        boolean nullFlag = false;
+        int lastNotNullIndex = 0;
+        for (Object component : components) {
+            if (component != null) {
+                if (nullFlag) {
+                    throw new AchillesException(
+                            "There should not be any null value between two non-null components of an @EmbeddedId");
+                }
+                lastNotNullIndex++;
+            } else {
+                nullFlag = true;
+            }
+        }
+        lastNotNullIndex--;
 
-		return lastNotNullIndex;
-	}
+        return lastNotNullIndex;
+    }
 }

@@ -39,7 +39,7 @@ public class ClusteringComponentsTest {
 	public void should_validate_clustering_components() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class), null,null,null, null, null);
 
-		clusteringComponents.validateClusteringComponents("entityClass", Arrays.<Object> asList("name", 13));
+		clusteringComponents.validateClusteringComponents("entityClass", "name", 13);
 	}
 
 	@Test
@@ -53,13 +53,13 @@ public class ClusteringComponentsTest {
 
 	@Test
 	public void should_exception_when_wrong_type_provided_for_clustering_components() throws Exception {
-		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,UUID.class), null, null, null,null,null);
+		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,UUID.class), null,
+                null, null,null,null);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("The type 'java.lang.Long' of clustering key '15' for querying on entity 'entityClass' is not valid. It should be 'java.lang.Integer'");
 
-		clusteringComponents.validateClusteringComponents("entityClass",
-				Arrays.<Object> asList("name", 15L, UUID.randomUUID()));
+		clusteringComponents.validateClusteringComponents("entityClass","name", 15L, UUID.randomUUID());
 	}
 
 	@Test
@@ -69,36 +69,16 @@ public class ClusteringComponentsTest {
 		exception.expect(AchillesException.class);
 		exception.expectMessage("There should be at most 3 value(s) of clustering component(s) provided for querying on entity 'entityClass'");
 
-		clusteringComponents.validateClusteringComponents("entityClass",Arrays.<Object> asList("name", 15L, UUID.randomUUID(), 15));
+		clusteringComponents.validateClusteringComponents("entityClass","name", 15L, UUID.randomUUID(), 15);
 	}
 
 	@Test
-	public void should_exception_when_null_value_between_clustering_components() throws Exception {
+	public void should_exception_when_null_value() throws Exception {
 		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,UUID.class),null, null, null, null,null);
 
 		exception.expect(AchillesException.class);
-		exception.expectMessage("There should not be any null value between two non-null components of an @EmbeddedId");
+		exception.expectMessage("The '2th' clustering key should not be null");
 
-		clusteringComponents.validateClusteringComponents("entityClass",Arrays.<Object> asList("name", null, UUID.randomUUID()));
+		clusteringComponents.validateClusteringComponents("entityClass","name", null, UUID.randomUUID());
 	}
-
-	@Test
-	public void should_exception_when_component_not_comparable_for_clustering_component() throws Exception {
-		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(String.class, Integer.class,UserBean.class),null, null, null, null,null);
-
-		UserBean userBean = new UserBean();
-		exception.expect(AchillesException.class);
-		exception.expectMessage("The type '" + UserBean.class.getCanonicalName() + "' of clustering key '" + userBean
-				+ "' for querying on entity 'entityClass' should implement the Comparable<T> interface");
-
-		clusteringComponents.validateClusteringComponents("entityClass", Arrays.asList("name", 15, userBean));
-	}
-
-	@Test
-	public void should_skip_validation_when_null_clustering_value() throws Exception {
-		clusteringComponents = new ClusteringComponents(Arrays.<Class<?>> asList(Long.class, String.class,Integer.class, UserBean.class), null,null, null, null,null);
-
-		clusteringComponents.validateClusteringComponents("entityClass", Arrays.<Object> asList(null, null, null));
-	}
-
 }

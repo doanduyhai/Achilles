@@ -24,7 +24,7 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
 public class SliceQueryIterator<T> implements Iterator<T> {
 
@@ -37,10 +37,10 @@ public class SliceQueryIterator<T> implements Iterator<T> {
     private EntityMapper mapper = new EntityMapper();
     private EntityProxifier proxifier = new EntityProxifier();
 
-    public SliceQueryIterator(CQLSliceQuery<T> sliceQuery, PersistenceContext context, Iterator<Row> iterator) {
+    public SliceQueryIterator(SliceQueryProperties<T> sliceQueryProperties, PersistenceContext context, Iterator<Row> iterator) {
         this.context = context;
         this.iterator = iterator;
-        this.meta = sliceQuery.getMeta();
+        this.meta = sliceQueryProperties.getEntityMeta();
     }
 
     @Override

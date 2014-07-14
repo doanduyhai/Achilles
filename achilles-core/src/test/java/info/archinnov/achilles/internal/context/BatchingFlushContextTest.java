@@ -98,7 +98,7 @@ public class BatchingFlushContextTest {
         context.statementWrappers = Arrays.asList(wrapper1, wrapper2);
         context.counterStatementWrappers = Arrays.asList(wrapper1, wrapper2);
         context.consistencyLevel= ConsistencyLevel.LOCAL_QUORUM;
-        context.serialConsistencyLevel = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+        context.serialConsistencyLevel = Optional.absent();
 
 
         //When
@@ -112,14 +112,14 @@ public class BatchingFlushContextTest {
 
         final BatchStatement batchStatement1 = batchCaptor.getAllValues().get(0);
         assertThat(batchStatement1.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(batchStatement1.getSerialConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+        assertThat(batchStatement1.getSerialConsistencyLevel()).isNull();
 
         final List<Statement> statements1 = WhiteboxImpl.getInternalState(batchStatement1, "statements");
         assertThat(statements1).contains(statement1, statement2);
 
         final BatchStatement batchStatement2 = batchCaptor.getAllValues().get(1);
         assertThat(batchStatement2.getConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
-        assertThat(batchStatement2.getSerialConsistencyLevel()).isSameAs(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
+        assertThat(batchStatement2.getSerialConsistencyLevel()).isNull();
 
         final List<Statement> statements2 = WhiteboxImpl.getInternalState(batchStatement2, "statements");
         assertThat(statements2).contains(statement1, statement2);

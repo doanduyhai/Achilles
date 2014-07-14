@@ -34,7 +34,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
-import info.archinnov.achilles.query.slice.CQLSliceQuery;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,7 +52,7 @@ public class SliceQueryIteratorTest {
     private EntityProxifier proxifier;
 
     @Mock
-    private CQLSliceQuery<ClusteredEntity> sliceQuery;
+    private SliceQueryProperties<ClusteredEntity> sliceQuery;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PersistenceContext context;
@@ -70,9 +70,7 @@ public class SliceQueryIteratorTest {
     @Before
     public void setUp() {
         when(sliceQuery.getEntityClass()).thenReturn(ClusteredEntity.class);
-        when(sliceQuery.getMeta()).thenReturn(meta);
-        when(sliceQuery.getVaryingComponentName()).thenReturn("name");
-        when(sliceQuery.getBatchSize()).thenReturn(batchSize);
+        when(sliceQuery.getEntityMeta()).thenReturn(meta);
         when(context.getEntityFacade()).thenReturn(entityFacade);
 
         sliceIterator = new SliceQueryIterator<>(sliceQuery, context, iterator);

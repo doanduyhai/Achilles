@@ -15,6 +15,9 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DECR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
@@ -30,6 +33,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
@@ -56,20 +60,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
+import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PreparedStatementGeneratorTest {
@@ -86,6 +96,12 @@ public class PreparedStatementGeneratorTest {
 
     @Mock
     private PreparedStatement ps2;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private SliceQueryProperties sliceQueryProperties;
+
+    @Mock
+    private EntityMeta meta;
 
     @Captor
     ArgumentCaptor<String> queryCaptor;
@@ -294,7 +310,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).hasSize(1);
         assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table WHERE id=:id;");
     }
 
     @Test
@@ -315,7 +331,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).hasSize(1);
         assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE  FROM table WHERE id=:id AND a=:a AND b=:b;");
+        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table WHERE id=:id AND a=:a AND b=:b;");
     }
 
     @Test
@@ -337,7 +353,7 @@ public class PreparedStatementGeneratorTest {
         assertThat(actual).hasSize(1);
         assertThat(actual).containsKey("table");
         assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getAllValues()).containsOnly("DELETE  FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getAllValues()).containsOnly("DELETE FROM table WHERE id=:id;");
     }
 
     @Test
@@ -371,7 +387,7 @@ public class PreparedStatementGeneratorTest {
                 "SELECT " + CQL_COUNTER_VALUE + " FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN
                         + "=? AND " + CQL_COUNTER_PRIMARY_KEY + "=? AND " + CQL_COUNTER_PROPERTY_NAME + "=?;");
         assertThat(queries.get(3)).isEqualTo(
-                "DELETE  FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN + "=? AND "
+                "DELETE FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN + "=? AND "
                         + CQL_COUNTER_PRIMARY_KEY + "=? AND " + CQL_COUNTER_PROPERTY_NAME + "=?;");
 
     }
@@ -411,7 +427,7 @@ public class PreparedStatementGeneratorTest {
                 "UPDATE counterTable SET count=count-:count WHERE id=:id;");
         assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=:id;");
         assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=:id;");
-        assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE  FROM counterTable WHERE id=:id;");
+        assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE FROM counterTable WHERE id=:id;");
     }
 
     @Test
@@ -618,5 +634,45 @@ public class PreparedStatementGeneratorTest {
                 .isEqualTo("UPDATE table USING TTL :ttl SET preferences[:key]=:nullValue WHERE id=:id;");
     }
 
+    @Test
+    public void should_prepare_select_slice_query() throws Exception {
+        //Given
+        final ArgumentCaptor<Select> selectCaptor = ArgumentCaptor.forClass(Select.class);
+        final ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        final Select select = select().from("test").where(eq("id", 10)).limit(1);
+        final PropertyMeta pm = completeBean(Void.class, Long.class).field("name").type(SIMPLE).build();
 
+        when(sliceQueryProperties.getEntityMeta()).thenReturn(meta);
+        when(meta.getColumnsMetaToLoad()).thenReturn(asList(pm));
+        when(meta.getTableName()).thenReturn("table");
+        when(sliceQueryProperties.generateWhereClauseForSelect(selectCaptor.capture())).thenReturn(select);
+        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = generator.prepareSelectSliceQuery(session, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT name FROM table;");
+        assertThat(queryCaptor.getValue()).isEqualTo("SELECT * FROM test WHERE id=10 LIMIT 1;");
+    }
+
+    @Test
+    public void should_prepare_for_delete_slice_query() throws Exception {
+        //Given
+        final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
+        final ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        final Delete.Where delete = delete().from("table").where();
+        when(sliceQueryProperties.getEntityMeta().getTableName()).thenReturn("table");
+        when(sliceQueryProperties.generateWhereClauseForDelete(deleteCaptor.capture())).thenReturn(delete);
+        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
+
+        //When
+        final PreparedStatement actual = generator.prepareDeleteSliceQuery(session, sliceQueryProperties);
+
+        //Then
+        assertThat(actual).isSameAs(ps);
+        assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE FROM table;");
+        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table;");
+    }
 }

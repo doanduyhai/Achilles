@@ -557,7 +557,6 @@ public class PersistenceManagerTest {
         // Then
         assertThat(Whitebox.getInternalState(builder, SliceQueryExecutor.class)).isSameAs(sliceQueryExecutor);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
-        assertThat(Whitebox.getInternalState(builder, PropertyMeta.class)).isSameAs(idMeta);
     }
 
     @Test
