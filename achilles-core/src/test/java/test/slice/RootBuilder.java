@@ -16,12 +16,10 @@
 
 package test.slice;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import info.archinnov.achilles.type.BoundingMode;
+import info.archinnov.achilles.query.slice.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.OrderingMode;
+import info.archinnov.achilles.query.slice.OrderingMode;
 
 public abstract class RootBuilder<TYPE,T extends RootBuilder<TYPE,T>> implements CommonProperties<T>{
 

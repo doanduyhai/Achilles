@@ -31,8 +31,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
@@ -79,7 +79,7 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.utils.ConfigMap;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.test.more.entity.Entity3;
 import info.archinnov.achilles.test.sample.entity.Entity1;
 import info.archinnov.achilles.test.sample.entity.Entity2;
@@ -99,7 +99,7 @@ public class ArgumentExtractorTest {
     private ObjectMapper mapper;
 
     @Mock
-    private ObjectMapperFactory factory;
+    private JacksonMapperFactory factory;
 
     @Mock
     private Cluster cluster;
@@ -180,7 +180,7 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_default_object_factory_mapper() throws Exception {
-        ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
+        JacksonMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
         assertThat(actual).isNotNull();
 
@@ -200,9 +200,9 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_object_mapper_factory_from_mapper() throws Exception {
-        configMap.put(OBJECT_MAPPER, mapper);
+        configMap.put(JACKSON_MAPPER, mapper);
 
-        ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
+        JacksonMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
         assertThat(actual).isNotNull();
         assertThat(actual.getMapper(Long.class)).isSameAs(mapper);
@@ -240,9 +240,9 @@ public class ArgumentExtractorTest {
 
     @Test
     public void should_init_object_mapper_factory() throws Exception {
-        configMap.put(OBJECT_MAPPER_FACTORY, factory);
+        configMap.put(JACKSON_MAPPER_FACTORY, factory);
 
-        ObjectMapperFactory actual = extractor.initObjectMapperFactory(configMap);
+        JacksonMapperFactory actual = extractor.initObjectMapperFactory(configMap);
 
         assertThat(actual).isSameAs(factory);
     }
@@ -370,7 +370,7 @@ public class ArgumentExtractorTest {
 
         // Then
         assertThat(configContext.isForceColumnFamilyCreation()).isTrue();
-        assertThat(configContext.getObjectMapperFactory()).isSameAs(factory);
+        assertThat(configContext.getJacksonMapperFactory()).isSameAs(factory);
         assertThat(configContext.getDefaultReadConsistencyLevel()).isEqualTo(ANY);
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);

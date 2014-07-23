@@ -50,6 +50,125 @@ import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
 
+/**
+ * <p>
+ * <strong>Stateless</strong> object to manage entity persistence.
+ * This class is totally <strong></strong>thread-safe</strong> and can be shared by many threads.
+ * You should normally have only one instance of PersistenceMananger across the application
+ *
+ * <br/>
+ * A PersistenceMananger is very cheap to create from an {@link info.archinnov.achilles.persistence.PersistenceManagerFactory}
+ * </p>
+ *
+ * <p>
+ *  <h3>I Persist transient entity</h3>
+ *  <pre class="code"><code class="java">
+ *      // Persist
+ *      MyEntity managedEntity = manager.persist(myEntity);
+ *  </code></pre>
+ *
+ *  <h3>II Update for modifications</h3>
+ *  <pre class="code"><code class="java">
+ *      User managedUser = manager.find(User.class,1L);
+ *      user.setFirstname("DuyHai");
+ *
+ *      manager.update(user);
+ *  </code></pre>
+ *
+ *  <h3>III Removing entities</h3>
+ *  <pre class="code"><code class="java">
+ *      // Simple removed
+ *      User managedUser = manager.find(User.class,1L);
+ *      manager.remove(managedUser);
+ *
+ *      // Direct remove without read-before-write
+ *      manager.removeById(User.class,1L);
+ *  </code></pre>
+ *
+ *  <h3>IV Loading entities</h3>
+ *  <pre class="code"><code class="java">
+ *      // Read data from Cassandra
+ *      User managedUser = manager.find(User.class,1L);
+ *  </code></pre>
+ *
+ *  <h3>V Creating proxy for update</h3>
+ *  <pre class="code"><code class="java">
+ *      // No data read from Cassandra
+ *      User managedUser = manager.getProxy(User.class,1L);
+ *      managedUser.setAge(30);
+ *
+ *      // Direct update, no read from Cassandra has been done
+ *      manager.update(managedUser);
+ *  </code></pre>
+ *
+ *  <h3>VI Reloading state for managed entities</h3>
+ *  <pre class="code"><code class="java">
+ *      // Read data from Cassandra
+ *      User managedUser = manager.find(User.class,1L);
+ *      ...
+ *      // Perform some logic
+ *
+ *      // Reload data from Cassandra into the managed entity
+ *      manager.refresh(managedUser);
+ *  </code></pre>
+ *
+ *  <h3>VII Initializing lazy fields for managed entity</h3>
+ *  <pre class="code"><code class="java">
+ *      // Create a proxy
+ *      User managedUser = manager.getProxy(User.class,1L);
+ *      ...
+ *      // Perform some logic
+ *
+ *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+ *      manager.initialize(managedUser);
+ *  </code></pre>
+ *
+ *  <h3>VIII Removing proxy from managed entities</h3>
+ *  <pre class="code"><code class="java">
+ *      // Create proxy
+ *      User managedUser = manager.getProxy(User.class,1L);
+ *      ...
+ *      // Perform some logic
+ *
+ *      // Removing proxy before passing it to client via serialization
+ *      User transientUser = manager.removeProxy(managedUser);
+ *  </code></pre>
+ *
+ *  <h3>IX Accessing native Session object</h3>
+ *  <pre class="code"><code class="java">
+ *      Session session = manager.getNativeSession();
+ *      ...
+ *
+ *      // Issue simple CQL3 queries
+ *      session.execute("UPDATE users SET age=:age WHERE id=:id",30,10);
+ *  </code></pre>
+ *
+ *  <h3>X JSON serialization/deserialization</h3>
+ *  <pre class="code"><code class="java">
+ *      // Serialize an object to JSON using the registered or default object mapper
+ *      String json = manager.jsonSerialize(myModel);
+ *      ...
+ *
+ *      // Deserialize a JSON string into an object  the registered or default object mapper
+ *      MyModel myModel = manager.deserializeJson(json);
+ *  </code></pre>
+ *
+ *  <h3>XI Initializing all lazy fields</h3>
+ *  <pre class="code"><code class="java">
+ *      // Create proxy
+ *      User userProxy = manager.getProxy(User.class,1L);
+ *      ...
+ *      // Perform some logic
+ *      ...
+ *
+ *      // Load all other lazy fields
+ *      manager.initialize(userProxy);
+ *  </code></pre>
+ * </p>
+ *
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Persistence-Manager-Operations" target="_blank">Persistence Manager operations</a>
+ */
 public class PersistenceManager {
     private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
 
@@ -78,6 +197,11 @@ public class PersistenceManager {
     /**
      * Persist an entity.
      *
+     *  <pre class="code"><code class="java">
+     *      // Persist
+     *      MyEntity managedEntity = manager.persist(myEntity);
+     *  </code></pre>
+     *
      * @param entity
      *            Entity to be persisted
      * @return proxified entity
@@ -90,10 +214,15 @@ public class PersistenceManager {
     /**
      * Persist an entity with the given options.
      *
+     *  <pre class="code"><code class="java">
+     *      // Persist
+     *      MyEntity managedEntity = manager.persist(myEntity, OptionsBuilder.withTtl(3600));
+     *  </code></pre>
+     *
      * @param entity
      *            Entity to be persisted
      * @param options
-     *            options for consistency level, ttl and timestamp
+     *            options
      * @return proxified entity
      */
     public <T> T persist(final T entity, Options options) {
@@ -112,6 +241,13 @@ public class PersistenceManager {
     /**
      * Update a "managed" entity
      *
+     *  <pre class="code"><code class="java">
+     *      User managedUser = manager.find(User.class,1L);
+     *      user.setFirstname("DuyHai");
+     *
+     *      manager.update(user);
+     *  </code></pre>
+     *
      * @param entity
      *            Managed entity to be updated
      */
@@ -125,10 +261,17 @@ public class PersistenceManager {
     /**
      * Update a "managed" entity
      *
+     *  <pre class="code"><code class="java">
+     *      User managedUser = manager.find(User.class,1L);
+     *      user.setFirstname("DuyHai");
+     *
+     *      manager.update(user, OptionsBuilder.withTtl(10));
+     *  </code></pre>
+     *
      * @param entity
      *            Managed entity to be updated
      * @param options
-     *            options for consistency level, ttl and timestamp
+     *            options
      */
     public void update(Object entity, Options options) {
         proxifier.ensureProxy(entity);
@@ -145,6 +288,12 @@ public class PersistenceManager {
     /**
      * Remove an entity.
      *
+     *  <pre class="code"><code class="java">
+     *      // Simple removed
+     *      User managedUser = manager.find(User.class,1L);
+     *      manager.remove(managedUser);
+     *  </code></pre>
+     *
      * @param entity
      *            Entity to be removed
      */
@@ -157,6 +306,11 @@ public class PersistenceManager {
 
     /**
      * Remove an entity by its id.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Direct remove without read-before-write
+     *      manager.removeById(User.class,1L);
+     *  </code></pre>
      *
      * @param entityClass
      *            Entity class
@@ -178,6 +332,12 @@ public class PersistenceManager {
     /**
      * Remove an entity with the given Consistency Level for write.
      *
+     *  <pre class="code"><code class="java">
+     *      // Simple removed
+     *      User managedUser = manager.find(User.class,1L);
+     *      manager.remove(managedUser, OptionsBuilder.withConsistency(QUORUM));
+     *  </code></pre>
+     *
      * @param entity
      *            Entity to be removed
      * @param options
@@ -197,26 +357,36 @@ public class PersistenceManager {
     /**
      * Remove an entity by its id with the given Consistency Level for write.
      *
+     *  <pre class="code"><code class="java">
+     *      // Direct remove without read-before-write
+     *      manager.removeById(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
+     *  </code></pre>
+     *
      * @param entityClass
      *            Entity class
      *
      * @param primaryKey
      *            Primary key
      */
-    public void removeById(Class<?> entityClass, Object primaryKey, ConsistencyLevel writeLevel) {
+    public void removeById(Class<?> entityClass, Object primaryKey, Options options) {
         Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
         Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
         if (log.isDebugEnabled()) {
             log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
         }
 
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(writeLevel));
+        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
         entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
         context.remove();
     }
 
     /**
      * Find an entity.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Read data from Cassandra
+     *      User managedUser = manager.find(User.class,1L);
+     *  </code></pre>
      *
      * @param entityClass
      *            Entity type
@@ -231,6 +401,11 @@ public class PersistenceManager {
 
     /**
      * Find an entity with the given Consistency Level for read
+     *
+     *  <pre class="code"><code class="java">
+     *      // Read data from Cassandra
+     *      User managedUser = manager.find(User.class,1L,QUORUM);
+     *  </code></pre>
      *
      * @param entityClass
      *            Entity type
@@ -259,6 +434,11 @@ public class PersistenceManager {
      * never returns null Use this method to perform direct update without
      * read-before-write
      *
+     *  <pre class="code"><code class="java">
+     *      // No data read from Cassandra
+     *      User managedUser = manager.getProxy(User.class,1L);
+     *  </code></pre>
+     *
      * @param entityClass
      *            Entity type
      * @param primaryKey
@@ -277,6 +457,11 @@ public class PersistenceManager {
      * populated with the provided primary key and then proxified. This method
      * never returns null Use this method to perform direct update without
      * read-before-write
+     *
+     *  <pre class="code"><code class="java">
+     *      // No data read from Cassandra
+     *      User managedUser = manager.getProxy(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
+     *  </code></pre>
      *
      * @param entityClass
      *            Entity type
@@ -308,6 +493,16 @@ public class PersistenceManager {
     /**
      * Refresh an entity.
      *
+     *  <pre class="code"><code class="java">
+     *      // Create a proxy
+     *      User managedUser = manager.getProxy(User.class,1L);
+     *      ...
+     *      // Perform some logic
+     *
+     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+     *      manager.initialize(managedUser);
+     *  </code></pre>
+     *
      * @param entity
      *            Entity to be refreshed
      */
@@ -320,6 +515,16 @@ public class PersistenceManager {
 
     /**
      * Refresh an entity with the given Consistency Level for read.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Create a proxy
+     *      User managedUser = manager.getProxy(User.class,1L);
+     *      ...
+     *      // Perform some logic
+     *
+     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+     *      manager.initialize(managedUser, QUORUM);
+     *  </code></pre>
      *
      * @param entity
      *            Entity to be refreshed
@@ -358,8 +563,17 @@ public class PersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a set of 'managed' entities, except
-     * WideMap/Counter fields.
+     * Initialize all lazy fields of a set of 'managed' entities
+     *
+     *  <pre class="code"><code class="java">
+     *      // Create a proxy
+     *      User userProxy = manager.getProxy(User.class,1L);
+     *      ...
+     *      // Perform some logic
+     *
+     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+     *      manager.initialize(userProxy);
+     *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
      *
@@ -373,8 +587,19 @@ public class PersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a list of 'managed' entities, except
-     * WideMap/Counter fields.
+     * Initialize all lazy fields of a list of 'managed' entities
+     *
+     *  <pre class="code"><code class="java">
+     *      // Create proxies
+     *      User userProxy1 = manager.getProxy(User.class,1L);
+     *      User userProxy2 = manager.getProxy(User.class,2L);
+     *      ...
+     *      // Perform some logic
+     *      ...
+     *
+     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+     *      manager.initialize(userProxy1, userProxy2);
+     *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
      *
@@ -414,9 +639,20 @@ public class PersistenceManager {
     /**
      * Remove the proxy of a 'managed' entity and return the underlying "raw"
      * entity
-     *
+     * <br/>
+     * <br/>
      * If the argument is not a proxy objet, return itself <br/>
      * Else, return the target object behind the proxy
+     *
+     *  <pre class="code"><code class="java">
+     *      // Create proxy
+     *      User managedUser = manager.getProxy(User.class,1L);
+     *      ...
+     *      // Perform some logic
+     *
+     *      // Removing proxy before passing it to client via serialization
+     *      User transientUser = manager.removeProxy(managedUser);
+     *  </code></pre>
      *
      * @param proxy
      * @return real object
@@ -461,6 +697,20 @@ public class PersistenceManager {
         return proxifier.removeProxy(proxies);
     }
 
+    /**
+     * Create a builder to start slice query DSL. The provided entity class <strong>must</strong> be:
+     *
+     * <ul>
+     *     <li>a entity type managed by <strong>Achilles</strong></li>
+     *     <li>a clustered entity, slicing is irrelevant for non-clustered entity</li>
+     * </ul>
+     *
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#slice-query" target="_blank">Slice query API</a>
+     *
+     * @param entityClass type of the clustered entity
+     * @param <T>: type of the clustered entity
+     * @return SliceQueryBuilder
+     */
     public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
         log.debug("Execute slice query for entity class {}", entityClass);
         EntityMeta meta = entityMetaMap.get(entityClass);
@@ -472,6 +722,26 @@ public class PersistenceManager {
 
     /**
      * Return a CQL native query builder
+     *
+     * <br/>
+     * <br/>
+     *
+     *  <h3>Native query without bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN(10,11) LIMIT 20";
+     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
+     *  </code></pre>
+     *
+     *  <br/>
+     *  <br/>
+     *
+     *  <h3>Native query with bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN ? LIMIT ?";
+     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
+     *  </code></pre>
+     *
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
      * @param queryString
      *            native CQL query string, including limit, ttl and consistency
@@ -512,7 +782,27 @@ public class PersistenceManager {
     /**
      * Return a CQL typed query builder
      *
-     * All found entities will be in 'managed' state
+     * All found entities will be in <strong>managed</strong> state
+     *
+     * <br/>
+     * <br/>
+     *
+     *  <h3>Typed query without bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String queryString = "SELECT * FROM MyEntity LIMIT 3";
+     *      List&lt;MyEntity> actual = manager.typedQuery(MyEntity.class, queryString).get();
+     *  </code></pre>
+     *
+     *  <br/>
+     *  <br/>
+     *
+     *  <h3>Typed query with bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String queryString = "SELECT * FROM MyEntity LIMIT ?";
+     *      List&lt;MyEntity&gt; actual = manager.typedQuery(MyEntity.class, queryString,3).get();
+     *  </code></pre>
+     *
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
      *
      * @param entityClass
      *            type of entity to be returned
@@ -577,6 +867,26 @@ public class PersistenceManager {
      *
      * All found entities will be returned as raw entities and not 'managed' by
      * Achilles
+     *
+     * <br/>
+     * <br/>
+     *
+     *  <h3>Raw typed query without bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String queryString = "SELECT * FROM MyEntity LIMIT 3";
+     *      List&lt;MyEntity> actual = manager.rawTypedQuery(MyEntity.class, queryString).get();
+     *  </code></pre>
+     *
+     *  <br/>
+     *  <br/>
+     *
+     *  <h3>Raw typed query with bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String queryString = "SELECT * FROM MyEntity LIMIT ?";
+     *      List&lt;MyEntity&gt; actual = manager.rawTypedQuery(MyEntity.class, queryString,3).get();
+     *  </code></pre>
+     *
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
      *
      * @param entityClass
      *            type of entity to be returned

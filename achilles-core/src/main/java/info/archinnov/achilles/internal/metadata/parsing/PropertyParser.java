@@ -139,8 +139,7 @@ public class PropertyParser {
     }
 
     public static String getIndexName(Field field) {
-        log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
-                .getCanonicalName());
+        log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass().getCanonicalName());
         String indexName = null;
         Index index = field.getAnnotation(Index.class);
         if (index != null) {

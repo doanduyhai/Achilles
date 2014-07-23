@@ -23,9 +23,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
+ *  <p>
  * Marks a class as an entity
- * 
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}Entity</strong>
+ *   public class User
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#entity" target="_blank">@Entity</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -33,9 +40,22 @@ import java.lang.annotation.Target;
 public @interface Entity {
 
 	/**
-	 * (Optional) The name of the table. Defaults to the short class name. <br/>
-	 * Ex: for the class "info.archinnov.achilles.entity.UserEntity", the
-	 * default table name is "UserEntity"
+	 * (<strong>Optional</strong>) The name of the table. Defaults to the short class name. <br/>
+     * Ex: for the class <em>info.archinnov.achilles.entity.UserEntity</em>, the
+     * default table name will be <strong>userentity</strong> if the attribute <em>table</em> is not set.
+     * <br/>
+     *
+     * <strong>Please note that table names by default are case-insensitive in Cassandra</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   package info.archinnov.achilles.entity
+     *
+     *   <strong>{@literal @}Entity(table = "user")</strong>
+     *   public class UserEntity {...}
+     *
+     * </code></pre>
+     *
 	 */
 	String table() default "";
 }

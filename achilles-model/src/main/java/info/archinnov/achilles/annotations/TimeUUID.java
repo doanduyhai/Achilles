@@ -24,9 +24,18 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Map this type to Cassandra timeuuid type. This annotation should be used
- * along side with java.util.UUID type
+ * Map this <strong>Java UUID</strong> type to Cassandra <strong>timeuuid</strong> type.
+ * This annotation has no effect on a field type different from java.util.UUID
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Column
+ *   <strong>{@literal @}TimeUUID</strong>
+ *   private UUID moment;
+ *
+ * </code></pre>
  * </p>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#time-uuid" target="_blank">@TimeUUID</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })

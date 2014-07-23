@@ -15,6 +15,51 @@
  */
 package info.archinnov.achilles.interceptor;
 
+/**
+ * <p/>
+ * Events representing entity lifecycle. Their name is self-explanatory.
+ * <p/>
+ * Each event is bound to one or several methods of the <strong>PersistenceManager</strong> object
+ * <br>
+ * <table border="1">
+ * <thead><tr>
+ * <th>Operation</th>
+ * <th>Possible Events</th>
+ * </tr></thead>
+ * <tbody>
+ * <tr>
+ * <td>persist()</td>
+ * <td>PRE_PERSIST/POST_PERSIST</td>
+ * </tr>
+ * <tr>
+ * <td>update()</td>
+ * <td>PRE_UPDATE/POST_UPDATE</td>
+ * </tr>
+ * <tr>
+ * <td>remove()</td>
+ * <td>PRE_REMOVE/POST_REMOVE</td>
+ * </tr>
+ * <tr>
+ * <td>find()</td>
+ * <td>POST_LOAD</td>
+ * </tr>
+ * <tr>
+ * <td>sliceQuery()</td>
+ * <td>POST_LOAD</td>
+ * </tr>
+ * <tr>
+ * <td>typedQuery()</td>
+ * <td>POST_LOAD</td>
+ * </tr>
+ * <tr>
+ * <td>rawTypedQuery()</td>
+ * <td>POST_LOAD</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Interceptors" target="_blank">Interceptors</a>
+ */
 public enum Event {
-	PRE_PERSIST, POST_PERSIST, PRE_UPDATE, POST_UPDATE, PRE_REMOVE, POST_REMOVE, POST_LOAD;
+    PRE_PERSIST, POST_PERSIST, PRE_UPDATE, POST_UPDATE, PRE_REMOVE, POST_REMOVE, POST_LOAD;
 }

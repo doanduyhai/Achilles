@@ -34,13 +34,51 @@ public class SelectDSL<TYPE> {
         this.sliceType = sliceType;
     }
 
-
+    /**
+     *
+     * Start the Select DSL with provided partition components
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=...
+     *
+     * @return slice DSL
+     */
     public SelectFromPartition<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
         final SelectFromPartition<TYPE> selectFromPartition = new SelectFromPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
         selectFromPartition.withPartitionComponentsInternal(partitionKeyComponents);
         return selectFromPartition;
     }
 
+    /**
+     *
+     * Start the Select DSL with provided partition components IN
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(MessageEntity.class)
+     *      .forSelect()
+     *      .withPartitionComponents(10L)
+     *      .andPartitionComponentsIN(2013, 2014)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)
+     *
+     * @return slice DSL
+     */
     public SelectWithPartition<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
         final SelectWithPartition<TYPE> selectWithPartition = new SelectWithPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
         selectWithPartition.withPartitionComponentsINInternal(partitionKeyComponents);

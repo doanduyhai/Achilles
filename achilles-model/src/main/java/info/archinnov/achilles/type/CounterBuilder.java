@@ -16,6 +16,39 @@
 
 package info.archinnov.achilles.type;
 
+/**
+ * <p>
+ *  Utility class to assign an initial counter value to a transient entity. Example
+ *
+ * <pre class="code"><code class="java">
+ *
+ *  {@literal @}Entity
+ *  public class UserEntity
+ *  {
+ *      {@literal @}Id
+ *      private Long userId;
+ *
+ *      ...
+ *
+ *      {@literal @}Column
+ *      private Counter
+ *
+ *      private UserEntity(Long userId,.....,Counter popularity)
+ *      {
+ *          this.userId = userId;
+ *          ...
+ *          this.popularity = popularity;
+ *      }
+ *      ...
+ *  }
+ *
+ *   // Creating a new user with initial popularity value set to 100
+ *   manager.persist(new UserEntity(10L,....,CounterBuilder.incr(100L));
+ *
+ * </code></pre>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Custom-Types#counterbuilder" target="_blank">CounterBuilder</a>
+ */
 public class CounterBuilder {
 
     public static Counter incr() {

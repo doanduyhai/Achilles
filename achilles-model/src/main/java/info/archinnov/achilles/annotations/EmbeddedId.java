@@ -23,21 +23,72 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
+ * <p>
  * Indicates that a property is a compound primary key <br/>
  * The compound primary key class should contain properties annotated with @Order
  * <br/>
  * For compound primary keys having composite partition key, use the @PartitionKey
  * annotation
- * 
+ * <br/>
+ * <br/>
+ *
+ * Clustered entity with <strong>simple partition key</strong>
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}EmbeddedId</strong>
+ *   private CompoundKey compoundKey;
+ *
+ *   ...
+ *
+ *   public static class CompoundKey {
+ *
+ *      // Partition key
+ *      {@literal @}Column
+ *      {@literal @}Order(1)
+ *      private Long userId;
+ *
+ *      // Clustering key
+ *      {@literal @}Column
+ *      {@literal @}Order(2)
+ *      private UUID time;
+ *   }
+ *
+ * </code></pre>
+ *
+ * <br/>
+ *
+ * Entity with <strong>composite partition key</strong>
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}EmbeddedId</strong>
+ *   private CompoundKey compoundKey;
+ *
+ *   ...
+ *
+ *   public static class CompoundKey {
+ *
+ *      // Partition key component 1
+ *      {@literal @}Column
+ *      {@literal @}Order(1)
+ *      <strong>{@literal @}PartitionKey</strong>
+ *      private Long userId;
+ *
+ *      // Partition key component 2. Date in YYYYMMDD
+ *      {@literal @}Column
+ *      {@literal @}Order(2)
+ *      <strong>{@literal @}PartitionKey</strong>
+ *      private int date;
+ *   }
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#embeddedid" target="_blank">@EmbeddedId</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
 public @interface EmbeddedId {
 	/**
-	 * (Optional) The name of the compound primary key. Defaults to the property
-	 * or field name.
+	 * (<strong>Optional</strong>) The name of the compound primary key. Defaults to the field name.
 	 */
 	String name() default "";
 }

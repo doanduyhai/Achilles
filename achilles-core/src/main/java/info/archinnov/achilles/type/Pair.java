@@ -18,6 +18,11 @@ package info.archinnov.achilles.type;
 
 import com.google.common.base.Objects;
 
+/**
+ * Utility class to create a pair
+ * @param <T1> left type
+ * @param <T2> right type
+ */
 public class Pair<T1, T2> {
 	public final T1 left;
 	public final T2 right;
@@ -48,6 +53,25 @@ public class Pair<T1, T2> {
 		return "(" + left + "," + right + ")";
 	}
 
+    /**
+     * Static factory method to create a pair.
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  // types automatically inferred by compiler
+     *  Pair&lt;String,Long&gt; pair = Pair.create("test",10L);
+     *
+     *  // force types to &lt;Object,Number&gt;
+     *  Pair&lt;Object,Number&gt; pair = Pair.&lt;Object,Number&gt;create("test",10L);
+     *
+     * </code></pre>
+     *
+     * @param x left object
+     * @param y right object
+     * @param <X> type of left object
+     * @param <Y> type of right object
+     * @return
+     */
 	public static <X, Y> Pair<X, Y> create(X x, Y y) {
 		return new Pair<X, Y>(x, y);
 	}

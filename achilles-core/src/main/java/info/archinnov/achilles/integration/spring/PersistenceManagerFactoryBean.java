@@ -27,8 +27,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
@@ -44,7 +44,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory.PersistenceManagerFactoryBuilder;
@@ -61,7 +61,7 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
     private Session session;
     private String keyspaceName;
 
-    private ObjectMapperFactory objectMapperFactory;
+    private JacksonMapperFactory jacksonMapperFactory;
     private ObjectMapper objectMapper;
 
     private ConsistencyLevel consistencyLevelReadDefault;
@@ -147,11 +147,11 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
 
     private void fillObjectMapper(Map<ConfigurationParameters, Object> configMap) {
-        if (objectMapperFactory != null) {
-            configMap.put(OBJECT_MAPPER_FACTORY, objectMapperFactory);
+        if (jacksonMapperFactory != null) {
+            configMap.put(JACKSON_MAPPER_FACTORY, jacksonMapperFactory);
         }
         if (objectMapper != null) {
-            configMap.put(OBJECT_MAPPER, objectMapper);
+            configMap.put(JACKSON_MAPPER, objectMapper);
         }
     }
 
@@ -217,8 +217,8 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         this.forceTableCreation = forceTableCreation;
     }
 
-    public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-        this.objectMapperFactory = objectMapperFactory;
+    public void setJacksonMapperFactory(JacksonMapperFactory jacksonMapperFactory) {
+        this.jacksonMapperFactory = jacksonMapperFactory;
     }
 
     public void setObjectMapper(ObjectMapper objectMapper) {

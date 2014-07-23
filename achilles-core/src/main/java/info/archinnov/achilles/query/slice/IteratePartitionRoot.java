@@ -16,12 +16,12 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.type.BoundingMode.EXCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_BOUNDS;
-import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
-import static info.archinnov.achilles.type.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
-import static info.archinnov.achilles.type.OrderingMode.ASCENDING;
-import static info.archinnov.achilles.type.OrderingMode.DESCENDING;
+import static info.archinnov.achilles.query.slice.BoundingMode.EXCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_BOUNDS;
+import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_END_BOUND_ONLY;
+import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
+import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
+import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
 import java.util.Iterator;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
@@ -33,59 +33,285 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
+    /**
+     *
+     * Iterate over selected entities without filtering clustering keys. If no limit has been set, the default LIMIT 100 applies
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .iterator();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public Iterator<TYPE> iterator() {
         return super.iteratorInternal();
     }
 
+    /**
+     *
+     * Iterate over selected entities without filtering clustering keys using provided fetch size
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .iterator(23);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public Iterator<TYPE> iterator(int batchSize) {
         super.properties.batchSize(batchSize);
         return super.iteratorInternal();
     }
 
+    /**
+     *
+     * Iterate over entities with matching clustering keys
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .iteratorWithMatching(2);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public Iterator<TYPE> iteratorWithMatching(Object... clusterings) {
         super.withClusteringsInternal(clusterings);
         return super.iteratorInternal();
     }
 
+    /**
+     *
+     * Iterate over entities with matching clustering keys and fetch size
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .iteratorWithMatchingAndBatchSize(10,2);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public Iterator<TYPE> iteratorWithMatchingAndBatchSize(int batchSize, Object... clusterings) {
         super.properties.batchSize(batchSize);
         super.withClusteringsInternal(clusterings);
         return super.iteratorInternal();
     }
 
+    /**
+     *
+     * Filter with lower bound clustering key(s)
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2,now)
+     *      .iterator();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... <strong>AND (rating,date)&gt;=(2,now)</strong> ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public IterateFromClusterings<TYPE> fromClusterings(Object... clusteringKeys) {
         super.fromClusteringsInternal(clusteringKeys);
         return new IterateFromClusterings<>();
     }
 
+    /**
+     *
+     * Filter with upper bound clustering key(s)
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .toClusterings(3)
+     *      .iterator();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public IterateEnd<TYPE> toClusterings(Object... clusteringKeys) {
         super.toClusteringsInternal(clusteringKeys);
         return new IterateEnd<>();
     }
 
+    /**
+     *
+     * Filter with matching clustering key(s)
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forIterate()
+     *      .withPartitionComponents(articleId)
+     *      .withClusterings(3)
+     *      .iterator();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=3</strong> ORDER BY rating ASC LIMIT 100
+     *
+     * @return slice DSL
+     */
     public IterateWithClusterings<TYPE> withClusterings(Object... clusteringKeys) {
         super.withClusteringsInternal(clusteringKeys);
         return new IterateWithClusterings<>();
     }
 
     public abstract class IterateClusteringsRootWithLimitation<ENTITY_TYPE, T extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, T>> {
+
+        /**
+         *
+         * Use ascending order for the first clustering key. This is the <strong>default</strong> ordering
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .orderByAscending()
+         *      .get(20);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating ASC</strong> LIMIT 20
+         * @return Slice DSL
+         */
         public T orderByAscending() {
             IteratePartitionRoot.super.properties.ordering(ASCENDING);
             return getThis();
         }
 
+        /**
+         *
+         * Use descending order for the first clustering key
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .orderByDescending()
+         *      .get(20);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating DESC</strong> LIMIT 20
+         * @return Slice DSL
+         */
         public T orderByDescending() {
             IteratePartitionRoot.super.properties.ordering(DESCENDING);
             return getThis();
         }
 
-
+        /**
+         *
+         * Set a limit to the query. <strong>A default limit of 100 is always set to avoid OutOfMemoryException</strong>
+         * You can remove it at your own risk using noLimit()
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .limit(5)
+         *      .get();
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 ORDER BY rating ASC <strong>LIMIT 5</strong>
+         * @return Slice DSL
+         */
         public T limit(int limit) {
             IteratePartitionRoot.super.properties.limit(limit);
             return getThis();
         }
 
+        /**
+         * Remove the default limit of 100 rows
+         *
+         * @return Slice DSL
+         */
+        public T noLimit() {
+            IteratePartitionRoot.super.properties.disableLimit();
+            return getThis();
+        }
 
+        /**
+         *
+         * Provide a consistency level for SELECT statement
+         *
+         * @param consistencyLevel
+         * @return Slice DSL
+         */
         public T withConsistency(ConsistencyLevel consistencyLevel) {
             IteratePartitionRoot.super.properties.consistency(consistencyLevel);
             return getThis();
@@ -93,10 +319,52 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
 
         protected abstract T getThis();
 
+        /**
+         *
+         * Iterate over entities with filtering clustering keys
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forIterate()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2)
+         *      .iterator();
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
+         *
+         * @return slice DSL
+         */
         public Iterator<TYPE> iterator() {
             return IteratePartitionRoot.super.iteratorInternal();
         }
 
+        /**
+         *
+         * Iterate over entities with filtering clustering keys and fetch zie
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forIterate()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2)
+         *      .iterator(12);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
+         *
+         * @return slice DSL
+         */
         public Iterator<TYPE> iterator(int batchSize) {
             IteratePartitionRoot.super.properties.batchSize(batchSize);
             return IteratePartitionRoot.super.iteratorInternal();
@@ -105,24 +373,110 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
 
     public abstract class IterateClusteringsRoot<ENTITY_TYPE, T extends IterateClusteringsRoot<ENTITY_TYPE, T>> extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, T> {
 
+        /**
+         *
+         * Use inclusive upper & lower bounds
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .withInclusiveBounds()
+         *      .get(20);
+         *
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
+         * @return Slice DSL
+         */
         public T withInclusiveBounds() {
             IteratePartitionRoot.super.properties.bounding(INCLUSIVE_BOUNDS);
             return getThis();
         }
 
-
+        /**
+         *
+         * Use exclusive upper & lower bounds
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .withExclusiveBounds()
+         *      .get(20);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
+         * @return Slice DSL
+         */
         public T withExclusiveBounds() {
             IteratePartitionRoot.super.properties.bounding(EXCLUSIVE_BOUNDS);
             return getThis();
         }
 
-
+        /**
+         *
+         * Use inclusive lower bound and exclusive upper bounds
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .withExclusiveBounds()
+         *      .get(20);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
+         * @return Slice DSL
+         */
         public T fromInclusiveToExclusiveBounds() {
             IteratePartitionRoot.super.properties.bounding(INCLUSIVE_START_BOUND_ONLY);
             return getThis();
         }
 
-
+        /**
+         *
+         * Use exclusive lower bound and inclusive upper bounds
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forSelect()
+         *      .withPartitionComponents(articleId)
+         *      .fromClusterings(2, now)
+         *      .toClusterings(4)
+         *      .withExclusiveBounds()
+         *      .get(20);
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
+         * @return Slice DSL
+         */
         public T fromExclusiveToInclusiveBounds() {
             IteratePartitionRoot.super.properties.bounding(INCLUSIVE_END_BOUND_ONLY);
             return getThis();
@@ -131,6 +485,27 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
 
     public class IterateFromClusterings<ENTITY_TYPE> extends IterateClusteringsRoot<ENTITY_TYPE, IterateFromClusterings<ENTITY_TYPE>> {
 
+        /**
+         *
+         * Filter with upper bound clustering key(s)
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forIterate()
+         *      .withPartitionComponents(articleId)
+         *      .toClusterings(3)
+         *      .iterator();
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
+         *
+         * @return slice DSL
+         */
         public IterateEnd<TYPE> toClusterings(Object... clusteringKeys) {
             IteratePartitionRoot.super.toClusteringsInternal(clusteringKeys);
             return new IterateEnd<>();
@@ -144,6 +519,28 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
 
     public class IterateWithClusterings<ENTITY_TYPE> extends IterateClusteringsRootWithLimitation<ENTITY_TYPE, IterateWithClusterings<ENTITY_TYPE>> {
 
+        /**
+         *
+         * Filter with clustering key(s) IN a list of provided values
+         *
+         * <pre class="code"><code class="java">
+         *
+         *  manager.sliceQuery(ArticleRating.class)
+         *      .forIterate()
+         *      .withPartitionComponents(articleId)
+         *      .withClusterings(3)
+         *      .andClusteringsIN(now,tomorrow,yesterday)
+         *      .iterator();
+         *
+         * </code></pre>
+         *
+         * Generated CQL3 query:
+         *
+         * <br/>
+         *  SELECT * FROM article_rating WHERE article_id=... AND rating=3 AND <strong>date IN (now,tomorrow,yesterday)</strong> ORDER BY rating ASC LIMIT 100
+         *
+         * @return slice DSL
+         */
         public IterateEndWithLimitation<TYPE> andClusteringsIN(Object... clusteringKeys) {
             IteratePartitionRoot.super.andClusteringsInInternal(clusteringKeys);
             return new IterateEndWithLimitation<>();

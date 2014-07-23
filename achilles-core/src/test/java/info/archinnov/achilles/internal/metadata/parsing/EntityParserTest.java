@@ -37,7 +37,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
@@ -69,7 +69,7 @@ public class EntityParserTest {
     @Mock
     private Map<Class<?>, EntityMeta> entityMetaMap;
 
-    private ObjectMapperFactory objectMapperFactory = new ObjectMapperFactory() {
+    private JacksonMapperFactory jacksonMapperFactory = new JacksonMapperFactory() {
         @Override
         public <T> ObjectMapper getMapper(Class<T> type) {
             return objectMapper;
@@ -84,7 +84,7 @@ public class EntityParserTest {
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
         configContext.setEnableSchemaUpdateForTables(ImmutableMap.<String, Boolean>of());
-        configContext.setObjectMapperFactory(objectMapperFactory);
+        configContext.setJacksonMapperFactory(jacksonMapperFactory);
         configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
     }
 

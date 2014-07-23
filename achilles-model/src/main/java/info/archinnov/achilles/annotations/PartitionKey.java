@@ -24,8 +24,33 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Indicates that this component is part of the partition key
+ * Indicates that this component is part of the partition key.Useful to define a <strong>composite partition key</strong>
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}EmbeddedId</strong>
+ *   private CompoundKey compoundKey;
+ *
+ *   ...
+ *
+ *   public static class CompoundKey {
+ *
+ *      // Partition key component 1
+ *      {@literal @}Column
+ *      {@literal @}Order(1)
+ *      <strong>{@literal @}PartitionKey</strong>
+ *      private Long userId;
+ *
+ *      // Partition key component 2. Date in YYYYMMDD
+ *      {@literal @}Column
+ *      {@literal @}Order(2)
+ *      <strong>{@literal @}PartitionKey</strong>
+ *      private int date;
+ *   }
+ *
+ * </code></pre>
  * </p>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#partitionkey" target="_blank">@PartitionKey</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
