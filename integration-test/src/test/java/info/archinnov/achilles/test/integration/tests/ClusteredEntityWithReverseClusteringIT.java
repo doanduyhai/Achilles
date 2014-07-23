@@ -119,6 +119,6 @@ public class ClusteredEntityWithReverseClusteringIT {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, count, name);
 		ClusteredEntityWithReverseClustering entity = new ClusteredEntityWithReverseClustering(embeddedId,
 				clusteredValue);
-		manager.persist(entity);
+		manager.insert(entity);
 	}
 }

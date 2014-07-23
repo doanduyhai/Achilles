@@ -77,7 +77,7 @@ public class SupportedTypesIT {
 		entity.setPrimitiveLong(10L);
 
 		// When
-		manager.persist(entity);
+		manager.insert(entity);
 		EntityWithAllTypes found = manager.find(EntityWithAllTypes.class, id);
 
 		// Then

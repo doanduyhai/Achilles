@@ -44,7 +44,7 @@ public class ValuelessClusteredEntityIT {
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ValuelessClusteredEntity found = manager.find(ValuelessClusteredEntity.class, compoundKey);
 
@@ -58,7 +58,7 @@ public class ValuelessClusteredEntityIT {
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ValuelessClusteredEntity found = manager.getProxy(ValuelessClusteredEntity.class, compoundKey);
 
@@ -72,7 +72,7 @@ public class ValuelessClusteredEntityIT {
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
 
-		manager.persist(entity, OptionsBuilder.withTtl(1));
+		manager.insert(entity, OptionsBuilder.withTtl(1));
 
 		Thread.sleep(1000);
 
@@ -88,11 +88,11 @@ public class ValuelessClusteredEntityIT {
 		String name4 = "name4";
 		String name5 = "name5";
 
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
 		List<ValuelessClusteredEntity> result = manager.sliceQuery(ValuelessClusteredEntity.class)
                 .forSelect()
@@ -119,11 +119,11 @@ public class ValuelessClusteredEntityIT {
 		String name4 = "name4";
 		String name5 = "name5";
 
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name4)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name5)));
 
 		Iterator<ValuelessClusteredEntity> iterator = manager.sliceQuery(ValuelessClusteredEntity.class)
                 .forIteration()
@@ -148,9 +148,9 @@ public class ValuelessClusteredEntityIT {
 		String name2 = "name2";
 		String name3 = "name3";
 
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
-		manager.persist(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name1)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name2)));
+		manager.insert(new ValuelessClusteredEntity(new CompoundKey(id, name3)));
 
 		manager.sliceQuery(ValuelessClusteredEntity.class)
                 .forDelete()

@@ -68,8 +68,8 @@ public class QueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(CounterBuilder.incr(17L)).buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
                 + entity1.getId() + "," + entity2.getId() + ")";
@@ -102,7 +102,7 @@ public class QueryIT {
     @Test
     public void should_return_rows_for_native_query_with_bound_values() throws Exception {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
 
@@ -119,7 +119,7 @@ public class QueryIT {
     public void should_return_count_for_native_query() throws Exception {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first().get("count");
 
@@ -132,7 +132,7 @@ public class QueryIT {
 
         Long timestamp = (System.currentTimeMillis() + 1234500) * 1000;
 
-        manager.persist(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
+        manager.insert(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
         Map<String, Object> result = manager.nativeQuery("SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
 
@@ -146,7 +146,7 @@ public class QueryIT {
         Long id = RandomUtils.nextLong();
         UUID date = UUIDGen.getTimeUUID();
 
-        manager.persist(new ClusteredEntityWithTimeUUID(id, date, "value"));
+        manager.insert(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
         Map<String, Object> result = manager.nativeQuery(
                 "SELECT now(),dateOf(date),unixTimestampOf(date) FROM " + ClusteredEntityWithTimeUUID.TABLE_NAME
@@ -166,8 +166,8 @@ public class QueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         String queryString = "SELECT * FROM CompleteBean LIMIT 3";
         List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
@@ -252,8 +252,8 @@ public class QueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
         List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
@@ -322,7 +322,7 @@ public class QueryIT {
     public void should_return_entity_for_typed_query_with_bound_values() throws Exception {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT id,name,friends FROM CompleteBean WHERE id = ?";
         List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString, entity.getId()).get();
@@ -345,8 +345,8 @@ public class QueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(counter2).buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         String queryString = "SELECT * FROM CompleteBean LIMIT :lim";
         List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
@@ -419,8 +419,8 @@ public class QueryIT {
                 .addFriends("qux", "twix").addFollowers("Isaac", "Lara").addPreference(1, "US")
                 .addPreference(2, "NewYork").version(counter2).buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         String queryString = "  SELECT id, name, friends   FROM CompleteBean LIMIT 3";
         List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
@@ -468,7 +468,7 @@ public class QueryIT {
     @Test
     public void should_return_raw_entity_for_raw_typed_query_with_bound_values() throws Exception {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT name FROM CompleteBean LIMIT ?";
         List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
@@ -483,7 +483,7 @@ public class QueryIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
         CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
@@ -513,7 +513,7 @@ public class QueryIT {
         Long id = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT * FROM " + TABLE_NAME + " LIMIT 3";
         ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
@@ -535,7 +535,7 @@ public class QueryIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
         CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, queryString).getFirst();
@@ -559,7 +559,7 @@ public class QueryIT {
         Long id = RandomUtils.nextLong();
 
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
-        manager.persist(entity);
+        manager.insert(entity);
 
         String queryString = "SELECT id,count,name,value FROM " + TABLE_NAME + " LIMIT 3";
         ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
@@ -579,7 +579,7 @@ public class QueryIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
         final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
@@ -596,7 +596,7 @@ public class QueryIT {
         // Given
         Tweet entity = TweetTestBuilder.tweet().randomId().content("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         final Select.Where select = QueryBuilder.select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
         final String queryString = select.getQueryString();
@@ -615,7 +615,7 @@ public class QueryIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
         final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());

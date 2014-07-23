@@ -158,7 +158,7 @@ public class PersistenceManagerTest {
         when(facade.persist(entity)).thenReturn(entity);
 
         // When
-        CompleteBean actual = manager.persist(entity);
+        CompleteBean actual = manager.insert(entity);
 
         // Then
         assertThat(actual).isSameAs(entity);
@@ -173,7 +173,7 @@ public class PersistenceManagerTest {
         when(facade.persist(entity)).thenReturn(entity);
 
         // When
-        CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
+        CompleteBean actual = manager.insert(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
                 .withTimestamp(100L));
 
         // Then

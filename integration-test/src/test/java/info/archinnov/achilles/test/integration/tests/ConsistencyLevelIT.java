@@ -38,7 +38,6 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
-import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.integration.entity.EntityWithTwoConsistency;
 import info.archinnov.achilles.test.integration.entity.EntityWithWriteOneAndReadThreeConsistency;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
@@ -67,14 +66,14 @@ public class ConsistencyLevelIT {
         expectedEx.expect(UnavailableException.class);
         expectedEx.expectMessage("Not enough replica available for query at consistency TWO (2 required but only 1 alive)");
 
-        manager.persist(bean);
+        manager.insert(bean);
     }
 
     @Test
     public void should_throw_exception_when_loading_entity_with_three_consistency() throws Exception {
         EntityWithWriteOneAndReadThreeConsistency bean = new EntityWithWriteOneAndReadThreeConsistency(id, "FN", "LN");
 
-        manager.persist(bean);
+        manager.insert(bean);
 
         expectedEx.expect(UnavailableException.class);
         expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
@@ -87,7 +86,7 @@ public class ConsistencyLevelIT {
         boolean exceptionCaught = false;
         EntityWithWriteOneAndReadThreeConsistency bean = new EntityWithWriteOneAndReadThreeConsistency(id, "FN", "LN");
         try {
-            manager.persist(bean);
+            manager.insert(bean);
             manager.find(EntityWithWriteOneAndReadThreeConsistency.class, id);
         } catch (UnavailableException e) {
             // Should recover from exception
@@ -100,7 +99,7 @@ public class ConsistencyLevelIT {
         newBean.setId(id);
         newBean.setName("name");
 
-        manager.persist(newBean);
+        manager.insert(newBean);
 
         newBean = manager.find(CompleteBean.class, newBean.getId());
 
@@ -113,7 +112,7 @@ public class ConsistencyLevelIT {
         CompleteBean entity = builder().randomId().name("name zerferg").buid();
 
         logAsserter.prepareLogLevel();
-        manager.persist(entity, withConsistency(EACH_QUORUM));
+        manager.insert(entity, withConsistency(EACH_QUORUM));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name zerferg");
         logAsserter.assertConsistencyLevels(EACH_QUORUM, ONE);
@@ -122,7 +121,7 @@ public class ConsistencyLevelIT {
     @Test
     public void should_update_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name zeruioze").buid();
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
         entity.setName("zeruioze");
 
         logAsserter.prepareLogLevel();
@@ -137,7 +136,7 @@ public class ConsistencyLevelIT {
     public void should_find_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         boolean exceptionCaught = false;
         CompleteBean entity = builder().randomId().name("name rtprt").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         try {
             manager.find(CompleteBean.class, entity.getId(), EACH_QUORUM);
@@ -158,7 +157,7 @@ public class ConsistencyLevelIT {
     public void should_refresh_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         boolean exceptionCaught = false;
         CompleteBean entity = builder().randomId().name("name").buid();
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         try {
             manager.refresh(entity, EACH_QUORUM);
@@ -177,7 +176,7 @@ public class ConsistencyLevelIT {
     @Test
     public void should_remove_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name").buid();
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         logAsserter.prepareLogLevel();
         manager.remove(entity, withConsistency(EACH_QUORUM));
@@ -189,7 +188,7 @@ public class ConsistencyLevelIT {
     public void should_reinit_consistency_level_after_exception() throws Exception {
         CompleteBean entity = builder().randomId().name("name qzerferf").buid();
         logAsserter.prepareLogLevel();
-        manager.persist(entity, withConsistency(EACH_QUORUM));
+        manager.insert(entity, withConsistency(EACH_QUORUM));
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
         assertThat(found.getName()).isEqualTo("name qzerferf");
         logAsserter.assertConsistencyLevels(EACH_QUORUM, ONE);
@@ -213,7 +212,7 @@ public class ConsistencyLevelIT {
         final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
         entity.setId(RandomUtils.nextLong());
 
-        pm.persist(entity);
+        pm.insert(entity);
         //Then
         assertThat(pm.find(EntityWithTwoConsistency.class, entity.getId())).isNotNull();
         logAsserter.assertConsistencyLevels(ONE, QUORUM);

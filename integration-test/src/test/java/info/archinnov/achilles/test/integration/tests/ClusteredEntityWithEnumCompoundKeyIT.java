@@ -48,7 +48,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithEnumCompoundKey found = manager.getProxy(ClusteredEntityWithEnumCompoundKey.class,
                                                                     compoundKey);
@@ -63,7 +63,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithEnumCompoundKey found = manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey);
 
@@ -78,7 +78,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -94,7 +94,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -110,7 +110,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and type = 'FILE'");

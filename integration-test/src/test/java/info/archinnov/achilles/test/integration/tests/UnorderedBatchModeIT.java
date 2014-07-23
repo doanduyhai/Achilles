@@ -43,9 +43,9 @@ public class UnorderedBatchModeIT {
         batchingPM.startBatch();
 
         entity.setName("name3");
-        batchingPM.persist(entity);
+        batchingPM.insert(entity);
         entity.setName("name1");
-        batchingPM.persist(entity);
+        batchingPM.insert(entity);
 
         batchingPM.endBatch();
         //Then
@@ -62,7 +62,7 @@ public class UnorderedBatchModeIT {
         PersistenceManager pm = pmf.createPersistenceManager();
         Batch batchingPM = pmf.createBatch();
 
-        CompleteBean managed = pm.persist(entity);
+        CompleteBean managed = pm.insert(entity);
 
         //When
         batchingPM.startBatch();

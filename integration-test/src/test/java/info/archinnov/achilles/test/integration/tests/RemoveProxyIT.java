@@ -42,7 +42,7 @@ public class RemoveProxyIT {
 		Tweet tweet = TweetTestBuilder.tweet().randomId().content("tweet").buid();
 		bean.setWelcomeTweet(tweet);
 
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		bean = manager.removeProxy(bean);
 

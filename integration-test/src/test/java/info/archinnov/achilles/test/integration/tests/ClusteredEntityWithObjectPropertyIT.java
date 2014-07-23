@@ -53,7 +53,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithObjectValue found = manager.find(ClusteredEntityWithObjectValue.class, compoundKey);
 
@@ -67,7 +67,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithObjectValue found = manager.getProxy(ClusteredEntityWithObjectValue.class, compoundKey);
 
@@ -83,7 +83,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.setValue(newHolder);
 		manager.update(entity);
@@ -99,7 +99,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -117,7 +117,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='" + mapper.writeValueAsString(newHolder) + "' where id="
 				+ partitionKey + " and name='name'");
@@ -227,7 +227,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	private void insertClusteredEntity(Long partitionKey, String name, Holder clusteredValue) {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
 		ClusteredEntityWithObjectValue entity = new ClusteredEntityWithObjectValue(embeddedId, clusteredValue);
-		manager.persist(entity);
+		manager.insert(entity);
 	}
 
 	private void insertValues(long partitionKey, int count) {

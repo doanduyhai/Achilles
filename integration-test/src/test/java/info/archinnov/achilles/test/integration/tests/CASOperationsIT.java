@@ -30,17 +30,10 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.junit.AchillesTestResource;
@@ -51,7 +44,6 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.CompleteBean;
 import info.archinnov.achilles.test.integration.entity.EntityWithEnum;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
 
 public class CASOperationsIT {
@@ -70,7 +62,7 @@ public class CASOperationsIT {
 
         //When
         logAsserter.prepareLogLevel();
-        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists().casLocalSerial());
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casLocalSerial());
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
@@ -99,7 +91,7 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
 
         //When
-        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
@@ -115,11 +107,11 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
         AchillesCASException casException = null;
-        manager.persist(entityWithEnum);
+        manager.insert(entityWithEnum);
 
         //When
         try {
-            manager.persist(entityWithEnum, OptionsBuilder.ifNotExists());
+            manager.insert(entityWithEnum, OptionsBuilder.ifNotExists());
         } catch (AchillesCASException ace) {
             casException = ace;
         }
@@ -146,9 +138,9 @@ public class CASOperationsIT {
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
-        manager.persist(entityWithEnum);
+        manager.insert(entityWithEnum);
 
-        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
 
         final CASResult casResult = atomicCASResult.get();
         assertThat(casResult.operation()).isEqualTo(INSERT);
@@ -173,9 +165,9 @@ public class CASOperationsIT {
         };
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
-        manager.persist(entityWithEnum);
+        manager.insert(entityWithEnum);
 
-        manager.persist(entityWithEnum, OptionsBuilder.ifNotExists()
+        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists()
                 .withTtl(100).casResultListener(listener));
 
         final CASResult casResult = atomicCASResult.get();
@@ -189,7 +181,7 @@ public class CASOperationsIT {
     public void should_update_with_cas_conditions_using_enum() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.persist(entityWithEnum);
+        final EntityWithEnum managed = manager.insert(entityWithEnum);
         managed.setName("Helen");
 
         //When
@@ -212,7 +204,7 @@ public class CASOperationsIT {
         entity.setAge(32L);
         entity.setName("John");
 
-        final CompleteBean managed = manager.persist(entity);
+        final CompleteBean managed = manager.insert(entity);
         managed.setName("Helen");
 
         //When
@@ -229,7 +221,7 @@ public class CASOperationsIT {
     public void should_exception_when_failing_cas_update() throws Exception {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.persist(entityWithEnum);
+        final EntityWithEnum managed = manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
         AchillesCASException casException = null;
         managed.setName("Helen");
@@ -263,7 +255,7 @@ public class CASOperationsIT {
         };
 
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.persist(entityWithEnum);
+        final EntityWithEnum managed = manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
         managed.setName("Helen");
 
@@ -295,7 +287,7 @@ public class CASOperationsIT {
         };
 
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
-        final EntityWithEnum managed = manager.persist(entityWithEnum);
+        final EntityWithEnum managed = manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
         managed.setName("Helen");
 
@@ -316,7 +308,7 @@ public class CASOperationsIT {
     public void should_update_set_with_cas_condition() throws Exception {
         //Given
         CompleteBean entity = builder().randomId().name("John").addFollowers("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.persist(entity);
+        final CompleteBean managed = manager.insert(entity);
         managed.getFollowers().add("Helen");
         managed.getFollowers().remove("Paul");
 
@@ -337,7 +329,7 @@ public class CASOperationsIT {
     public void should_update_list_at_index_with_cas_condition() throws Exception {
         //Given
         CompleteBean entity = builder().randomId().name("John").addFriends("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.persist(entity);
+        final CompleteBean managed = manager.insert(entity);
         managed.getFriends().set(0, "Helen");
         managed.getFriends().set(1, null);
 
@@ -366,7 +358,7 @@ public class CASOperationsIT {
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
 
         CompleteBean entity = builder().randomId().name("John").addFollowers("Paul", "Andrew").buid();
-        final CompleteBean managed = manager.persist(entity);
+        final CompleteBean managed = manager.insert(entity);
         managed.getFollowers().add("Helen");
 
         //When
@@ -397,7 +389,7 @@ public class CASOperationsIT {
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "name", "John");
 
         CompleteBean entity = builder().randomId().name("John").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         //When
         final NativeQuery nativeQuery = manager.nativeQuery("UPDATE CompleteBean SET name = 'Helen' WHERE id=" + entity.getId() + " IF name='Andrew'",

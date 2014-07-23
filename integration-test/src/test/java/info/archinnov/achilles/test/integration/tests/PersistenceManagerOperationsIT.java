@@ -51,7 +51,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").version(CounterBuilder.incr(15L)).buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         Row row = session.execute("select name,age_in_years,friends,followers,preferences from completebean where id = "+ entity.getId()).one();
 
@@ -81,7 +81,7 @@ public class PersistenceManagerOperationsIT {
     public void should_persist_empty_entity() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
@@ -98,14 +98,14 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar", "qux").addFollowers("John", "Helen").addPreference(1, "Paris")
                 .addPreference(2, "Ile de France").addPreference(3, "FRANCE").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         entity.getFriends().clear();
         entity.getFollowers().clear();
         entity.getPreferences().clear();
 
         // Should clean collections & maps before persisting again
-        manager.persist(entity);
+        manager.insert(entity);
 
         entity = manager.find(CompleteBean.class, entity.getId());
 
@@ -145,7 +145,7 @@ public class PersistenceManagerOperationsIT {
     public void should_find() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
@@ -158,7 +158,7 @@ public class PersistenceManagerOperationsIT {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
@@ -182,7 +182,7 @@ public class PersistenceManagerOperationsIT {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
-        manager.persist(entity);
+        manager.insert(entity);
 
         CompleteBean found = manager.find(CompleteBean.class, entity.getId());
 
@@ -208,7 +208,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         exception.expect(IllegalAccessException.class);
         exception.expectMessage("Cannot change primary key value for existing entity");
@@ -219,7 +219,7 @@ public class PersistenceManagerOperationsIT {
     @Test
     public void should_return_managed_entity_after_persist() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         assertThat(entity).isInstanceOf(Factory.class);
     }
@@ -230,7 +230,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         manager.remove(entity);
 
@@ -246,7 +246,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         manager.removeById(CompleteBean.class, entity.getId());
 
@@ -262,7 +262,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         manager.remove(entity);
 
@@ -275,7 +275,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         CompleteBean foundBean = manager.getProxy(CompleteBean.class, entity.getId());
 
@@ -321,7 +321,7 @@ public class PersistenceManagerOperationsIT {
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         entity.getFriends();
 
@@ -340,7 +340,7 @@ public class PersistenceManagerOperationsIT {
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         session.execute("DELETE FROM completebean WHERE id=" + entity.getId());
 
@@ -354,7 +354,7 @@ public class PersistenceManagerOperationsIT {
                 .label("label").age(35L).addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         assertThat(entity.getLabel()).isEqualTo("label");
     }
@@ -368,7 +368,7 @@ public class PersistenceManagerOperationsIT {
         entity.setFollowers(null);
         entity.setPreferences(null);
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         entity = manager.find(CompleteBean.class, entity.getId());
 

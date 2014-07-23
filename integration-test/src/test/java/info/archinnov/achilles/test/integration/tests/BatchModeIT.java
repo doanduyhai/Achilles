@@ -80,7 +80,7 @@ public class BatchModeIT {
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-        entity = batchEm.persist(entity);
+        entity = batchEm.insert(entity);
 
         entity.setLabel("label");
 
@@ -123,10 +123,10 @@ public class BatchModeIT {
         Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
-        batchEm.persist(bean);
-        batchEm.persist(tweet1);
-        batchEm.persist(tweet2);
-        batchEm.persist(user);
+        batchEm.insert(bean);
+        batchEm.insert(tweet1);
+        batchEm.insert(tweet2);
+        batchEm.insert(user);
 
         CompleteBean foundBean = batchEm.find(CompleteBean.class, bean.getId());
         Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
@@ -164,7 +164,7 @@ public class BatchModeIT {
         batchEm.startBatch();
 
         try {
-            batchEm.persist(tweet, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
+            batchEm.insert(tweet, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
         } catch (AchillesException e) {
             batchEm.cleanBatch();
             assertThatBatchContextHasBeenReset(batchEm);
@@ -173,14 +173,14 @@ public class BatchModeIT {
         }
 
         // batchEm should reinit batch context
-        batchEm.persist(user);
+        batchEm.insert(user);
         batchEm.endBatch();
 
         User foundUser = batchEm.find(User.class, user.getId());
         assertThat(foundUser.getFirstname()).isEqualTo("firstname");
         assertThat(foundUser.getLastname()).isEqualTo("lastname");
 
-        batchEm.persist(tweet);
+        batchEm.insert(tweet);
         batchEm.endBatch();
 
         Tweet foundTweet = batchEm.find(Tweet.class, tweet.getId());
@@ -197,7 +197,7 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
         Tweet tweet3 = TweetTestBuilder.tweet().randomId().content("simple_tweet3").buid();
 
-        manager.persist(tweet1);
+        manager.insert(tweet1);
 
         // Start batch
         Batch batchEm = pmf.createBatch();
@@ -211,8 +211,8 @@ public class BatchModeIT {
 
         assertThat(foundTweet1.getContent()).isEqualTo(tweet1.getContent());
 
-        batchEm.persist(tweet2);
-        batchEm.persist(tweet3);
+        batchEm.insert(tweet2);
+        batchEm.insert(tweet3);
 
         batchEm.endBatch();
 
@@ -226,14 +226,14 @@ public class BatchModeIT {
         Tweet tweet1 = TweetTestBuilder.tweet().randomId().content("simple_tweet1").buid();
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("simple_tweet2").buid();
 
-        manager.persist(tweet1);
+        manager.insert(tweet1);
 
         // Start batch
         Batch batchEm = pmf.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(TWO);
-        batchEm.persist(tweet2);
+        batchEm.insert(tweet2);
 
         try {
             batchEm.endBatch();
@@ -246,7 +246,7 @@ public class BatchModeIT {
 
         Thread.sleep(1000);
         logAsserter.prepareLogLevel();
-        batchEm.persist(tweet2);
+        batchEm.insert(tweet2);
         batchEm.endBatch();
         logAsserter.assertConsistencyLevels(ONE);
     }
@@ -260,7 +260,7 @@ public class BatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.persist(entity);
+        entity = batch.insert(entity);
         entity.setLabel("label");
         batch.update(entity);
 
@@ -282,7 +282,7 @@ public class BatchModeIT {
         //When
         batch.startBatch();
 
-        entity = batch.persist(entity);
+        entity = batch.insert(entity);
         entity.setName("name");
         batch.update(entity);
 

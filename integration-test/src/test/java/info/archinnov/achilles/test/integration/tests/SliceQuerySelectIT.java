@@ -20,7 +20,6 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TA
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
@@ -437,7 +436,7 @@ public class SliceQuerySelectIT {
     private void insertClusteredEntity(Long partitionKey, int count, String name, String clusteredValue) {
         ClusteredEntity.ClusteredKey embeddedId = new ClusteredEntity.ClusteredKey(partitionKey, count, name);
         ClusteredEntity entity = new ClusteredEntity(embeddedId, clusteredValue);
-        manager.persist(entity);
+        manager.insert(entity);
     }
 
     private void insertCompositeClusteredValues(long id, String bucket, int countValue, String name, int size) {
@@ -450,7 +449,7 @@ public class SliceQuerySelectIT {
     private void insertCompositeClusteredEntity(long id, String bucket, int count, String name, String clusteredValue) {
         CompositeClusteredEntity.ClusteredKey embeddedId = new CompositeClusteredEntity.ClusteredKey(id, bucket, count, name);
         CompositeClusteredEntity entity = new CompositeClusteredEntity(embeddedId, clusteredValue);
-        manager.persist(entity);
+        manager.insert(entity);
     }
 
 }

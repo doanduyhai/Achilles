@@ -43,7 +43,7 @@ public class CacheSizeIT {
         //Given
         CompleteBean bean = builder().id(RandomUtils.nextLong()).name("name").buid();
 
-        CompleteBean managed = pm.persist(bean);
+        CompleteBean managed = pm.insert(bean);
 
         //When
         managed.setAge(10L);

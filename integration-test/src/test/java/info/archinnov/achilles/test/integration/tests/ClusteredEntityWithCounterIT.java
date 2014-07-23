@@ -52,7 +52,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue), incr(versionValue));
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithCounter found = manager.find(ClusteredEntityWithCounter.class, compoundKey);
 
@@ -67,7 +67,7 @@ public class ClusteredEntityWithCounterIT {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithCounter found = manager.getProxy(ClusteredEntityWithCounter.class, compoundKey);
 
@@ -85,7 +85,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(initialValue),incr(initialValue));
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
         assertThat(entity.getCounter().get()).isEqualTo(initialValue);
 
@@ -107,7 +107,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -128,7 +128,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET counter = counter + " + incr + " WHERE id=" + partitionKey
 				+ " AND name='name'");
@@ -257,7 +257,7 @@ public class ClusteredEntityWithCounterIT {
 		ClusteredKey embeddedId = new ClusteredKey(partitionKey, name);
 		ClusteredEntityWithCounter entity = new ClusteredEntityWithCounter(embeddedId,
 				incr(counterValue),incr(counterValue));
-		manager.persist(entity);
+		manager.insert(entity);
 	}
 
 	private void insertValues(long partitionKey, int count) {

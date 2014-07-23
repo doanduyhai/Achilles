@@ -40,7 +40,7 @@ public class SerializationIT {
 	public void should_serialized_proxified_entity_with_Jackson() throws Exception {
 
 		CompleteBean bean = builder().randomId().name("DuyHai").version(CounterBuilder.incr(2L)).buid();
-		CompleteBean managedBean = manager.persist(bean);
+		CompleteBean managedBean = manager.insert(bean);
 
 		ObjectMapper mapper = new ObjectMapper();
 		String serialized = mapper.writeValueAsString(managedBean);

@@ -68,7 +68,7 @@ public class SchemaUpdateIT {
                 .build();
 
         final PersistenceManager pm = pmf.createPersistenceManager();
-        pm.persist(new EntityWithNewSimpleField(id, "existing", "new"));
+        pm.insert(new EntityWithNewSimpleField(id, "existing", "new"));
 
         //Then
         assertThat(pm.find(EntityWithNewSimpleField.class, id)).isNotNull();
@@ -98,7 +98,7 @@ public class SchemaUpdateIT {
                 .build();
 
         final PersistenceManager pm = pmf.createPersistenceManager();
-        pm.persist(new ClusteredCounterEntityWithNewCounterField(id, date, CounterBuilder.incr(12L)));
+        pm.insert(new ClusteredCounterEntityWithNewCounterField(id, date, CounterBuilder.incr(12L)));
 
         //Then
         assertThat(pm.find(ClusteredCounterEntityWithNewCounterField.class, new ClusteredCounterEntityWithNewCounterField.Compound(id, date))).isNotNull();

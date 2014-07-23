@@ -46,7 +46,7 @@ public class InitializeIT {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").label("label").age(45L)
 				.addFriends("foo", "bar").welcomeTweet(tweet).version(CounterBuilder.incr(11L)).buid();
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		CompleteBean foundEntity = manager.find(CompleteBean.class, entity.getId());
 
@@ -65,7 +65,7 @@ public class InitializeIT {
 	public void should_initialize_counter_value() throws Exception {
 		CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.getVersion().incr(2L);
 

@@ -50,7 +50,7 @@ public class CounterIT {
 	public void should_persist_counter() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").version(CounterBuilder.incr(2L)).buid();
 
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		Row row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
@@ -63,7 +63,7 @@ public class CounterIT {
 	public void should_set_counter_on_managed_entity() throws Exception {
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		bean.getVersion().incr(2L);
 
@@ -81,7 +81,7 @@ public class CounterIT {
 		long version = 10L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 		bean.getVersion().incr(version);
 
 		manager.update(bean);
@@ -98,7 +98,7 @@ public class CounterIT {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		bean.getVersion().incr(version);
 
@@ -132,7 +132,7 @@ public class CounterIT {
 	@Test
 	public void should_get_counter_from_managed__entity_after_setting_value() throws Exception {
 		CompleteBean bean = builder().randomId().buid();
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		bean.getVersion().incr(5L);
 
@@ -142,7 +142,7 @@ public class CounterIT {
 	@Test
 	public void should_get_counter_from_refreshed_entity() throws Exception {
 		CompleteBean bean = builder().randomId().buid();
-		bean = manager.persist(bean);
+		bean = manager.insert(bean);
 
 		Counter version = bean.getVersion();
 		version.incr(5L);

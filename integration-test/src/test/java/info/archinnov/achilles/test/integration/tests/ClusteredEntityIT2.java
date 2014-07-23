@@ -57,7 +57,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		manager.persist(tweet);
+		manager.insert(tweet);
 
 		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
@@ -77,7 +77,7 @@ public class ClusteredEntityIT2 {
 		ClusteredTweetId id = new ClusteredTweetId(userId, tweetId, creationDate);
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
-		tweet = manager.persist(tweet);
+		tweet = manager.insert(tweet);
 
 		tweet.setContent("this is a new tweet2");
 		tweet.setIsARetweet(true);
@@ -102,7 +102,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.persist(tweet);
+		tweet = manager.insert(tweet);
 
 		manager.remove(tweet);
 
@@ -123,7 +123,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredTweetEntity tweet = new ClusteredTweetEntity(id, "this is a tweet", userId, false);
 
-		tweet = manager.persist(tweet);
+		tweet = manager.insert(tweet);
 
 		session.execute("update " + CLUSTERED_TWEET_TABLE + " set content='New tweet',original_author_id="
 				+ originalAuthorId + ",is_a_retweet=true where user_id=" + userId + " and tweet_id=" + tweetId
@@ -145,7 +145,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "a message");
 
-		manager.persist(message);
+		manager.insert(message);
 
 		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 
@@ -161,7 +161,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
 
-		message = manager.persist(message);
+		message = manager.insert(message);
 
 		message.setLabel("a JPEG image");
 
@@ -179,7 +179,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
 
-		message = manager.persist(message);
+		message = manager.insert(message);
 
 		manager.remove(message);
 
@@ -198,7 +198,7 @@ public class ClusteredEntityIT2 {
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);
 
-		message = manager.persist(message);
+		message = manager.insert(message);
 
 		String updateQuery = "update " + CLUSTERED_MESSAGE_TABLE + " set label='" + newLabel + "' where id=" + id
 				+ " and type='FILE'";

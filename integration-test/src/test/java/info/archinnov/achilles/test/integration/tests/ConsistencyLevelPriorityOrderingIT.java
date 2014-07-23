@@ -64,7 +64,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setId(id);
         entity.setName("name");
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         Batch batchEm = pmf.createBatch();
         batchEm.startBatch(ONE);
@@ -88,7 +88,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
         entity.setId(RandomUtils.nextLong());
         entity.setName("name sdfsdf");
-        manager.persist(entity);
+        manager.insert(entity);
 
         Batch batchEm = pmf.createBatch();
 
@@ -108,7 +108,7 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setId(RandomUtils.nextLong());
         entity.setName("name");
         entity.setCount(CounterBuilder.incr());
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
 
         logAsserter.prepareLogLevel();
         Counter counter = entity.getCount();
@@ -126,7 +126,7 @@ public class ConsistencyLevelPriorityOrderingIT {
 
         Batch batchEm = pmf.createBatch();
         batchEm.startBatch(THREE);
-        entity = batchEm.persist(entity);
+        entity = batchEm.insert(entity);
 
         expectedEx.expect(UnavailableException.class);
         expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
