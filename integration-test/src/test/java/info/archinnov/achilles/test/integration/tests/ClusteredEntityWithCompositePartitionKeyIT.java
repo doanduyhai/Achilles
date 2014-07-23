@@ -56,7 +56,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithCompositePartitionKey found = manager.find(ClusteredEntityWithCompositePartitionKey.class,
 				compoundKey);
@@ -73,7 +73,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntityWithCompositePartitionKey found = manager.getProxy(
                 ClusteredEntityWithCompositePartitionKey.class, compoundKey);
@@ -90,7 +90,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -108,7 +108,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -124,7 +124,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.removeById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
 
@@ -140,7 +140,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = new ClusteredEntityWithCompositePartitionKey(id, "type", index, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_clustered_value' WHERE id=" + id
 				+ " AND type='type' AND indexes=11");
@@ -469,6 +469,6 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	private void insertClusteredEntity(Long id, Integer index, String clusteredValue) {
 		ClusteredEntityWithCompositePartitionKey entity = new ClusteredEntityWithCompositePartitionKey(id, "type",
 				index, clusteredValue);
-		manager.persist(entity);
+		manager.insert(entity);
 	}
 }

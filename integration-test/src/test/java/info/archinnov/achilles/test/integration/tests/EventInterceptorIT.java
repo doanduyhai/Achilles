@@ -180,7 +180,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         Row row = session.execute("select name,label from CompleteBean where id = " + entity.getId()).one();
 
@@ -196,7 +196,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().buid();
 
-        entity = manager.persist(entity);
+        entity = manager.insert(entity);
         entity.setName("DuyHai");
         entity.setLabel("label");
 
@@ -235,7 +235,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         entity = manager.find(CompleteBean.class, entity.getId());
 
@@ -251,7 +251,7 @@ public class EventInterceptorIT {
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         // When
-        batchingPM.persist(entity);
+        batchingPM.insert(entity);
 
         // Then
         assertThat(entity.getName()).isEqualTo("DuyHai");
@@ -274,7 +274,7 @@ public class EventInterceptorIT {
         String value = "value_before_load";
         ClusteredEntity entity = new ClusteredEntity(id, count, name, value);
 
-        manager3.persist(entity);
+        manager3.insert(entity);
 
         // When
         final List<ClusteredEntity> clusteredEntities = manager3.sliceQuery(ClusteredEntity.class)
@@ -291,7 +291,7 @@ public class EventInterceptorIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         // When
         final CompleteBean actual = manager.typedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?",
@@ -306,7 +306,7 @@ public class EventInterceptorIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.persist(entity);
+        manager.insert(entity);
 
         // When
         final CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?",

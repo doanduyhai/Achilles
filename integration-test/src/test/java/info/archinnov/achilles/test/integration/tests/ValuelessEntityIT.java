@@ -38,7 +38,7 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ValuelessEntity found = manager.find(ValuelessEntity.class, id);
 
@@ -50,7 +50,7 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ValuelessEntity found = manager.getProxy(ValuelessEntity.class, id);
 
@@ -62,7 +62,7 @@ public class ValuelessEntityIT {
 		Long id = RandomUtils.nextLong();
 		ValuelessEntity entity = new ValuelessEntity(id);
 
-		manager.persist(entity, OptionsBuilder.withTtl(1));
+		manager.insert(entity, OptionsBuilder.withTtl(1));
 
 		Thread.sleep(1000);
 

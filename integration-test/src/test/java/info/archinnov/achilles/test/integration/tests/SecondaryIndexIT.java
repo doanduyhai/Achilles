@@ -49,8 +49,8 @@ public class SecondaryIndexIT {
         CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
         CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("John DOO").buid();
 
-        manager.persist(entity1);
-        manager.persist(entity2);
+        manager.insert(entity1);
+        manager.insert(entity2);
 
         IndexCondition condition = new IndexCondition("name", "John DOO");
         List<CompleteBean> actual = manager.indexedQuery(CompleteBean.class, condition).get();
@@ -69,9 +69,9 @@ public class SecondaryIndexIT {
         EntityWithSecondaryIndexOnEnum entity2 = new EntityWithSecondaryIndexOnEnum(11L, EACH_QUORUM);
         EntityWithSecondaryIndexOnEnum entity3 = new EntityWithSecondaryIndexOnEnum(13L, LOCAL_QUORUM);
 
-        manager.persist(entity1);
-        manager.persist(entity2);
-        manager.persist(entity3);
+        manager.insert(entity1);
+        manager.insert(entity2);
+        manager.insert(entity3);
 
         //When
         IndexCondition condition = new IndexCondition("consistencyLevel", EACH_QUORUM);

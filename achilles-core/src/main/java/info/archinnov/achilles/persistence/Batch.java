@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.consistency.ConsistencyConverter;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -101,12 +100,12 @@ public class Batch extends PersistenceManager {
     }
 
     @Override
-    public <T> T persist(final T entity, Options options) {
+    public <T> T insert(final T entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
             flushContext = flushContext.duplicateWithNoData();
             throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
-            return super.persist(entity, maybeAddTimestampToStatement(options));
+            return super.insert(entity, maybeAddTimestampToStatement(options));
         }
     }
 

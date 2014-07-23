@@ -64,7 +64,7 @@ import info.archinnov.achilles.type.Options;
  *  <h3>I Persist transient entity</h3>
  *  <pre class="code"><code class="java">
  *      // Persist
- *      MyEntity managedEntity = manager.persist(myEntity);
+ *      MyEntity managedEntity = manager.insert(myEntity);
  *  </code></pre>
  *
  *  <h3>II Update for modifications</h3>
@@ -199,16 +199,16 @@ public class PersistenceManager {
      *
      *  <pre class="code"><code class="java">
      *      // Persist
-     *      MyEntity managedEntity = manager.persist(myEntity);
+     *      MyEntity managedEntity = manager.insert(myEntity);
      *  </code></pre>
      *
      * @param entity
      *            Entity to be persisted
      * @return proxified entity
      */
-    public <T> T persist(T entity) {
+    public <T> T insert(T entity) {
         log.debug("Persisting entity '{}'", entity);
-        return persist(entity, noOptions());
+        return insert(entity, noOptions());
     }
 
     /**
@@ -216,7 +216,7 @@ public class PersistenceManager {
      *
      *  <pre class="code"><code class="java">
      *      // Persist
-     *      MyEntity managedEntity = manager.persist(myEntity, OptionsBuilder.withTtl(3600));
+     *      MyEntity managedEntity = manager.insert(myEntity, OptionsBuilder.withTtl(3600));
      *  </code></pre>
      *
      * @param entity
@@ -225,7 +225,7 @@ public class PersistenceManager {
      *            options
      * @return proxified entity
      */
-    public <T> T persist(final T entity, Options options) {
+    public <T> T insert(final T entity, Options options) {
         if (log.isDebugEnabled()) {
             log.debug("Persisting entity '{}' with options {} ", entity, options);
         }
@@ -293,8 +293,6 @@ public class PersistenceManager {
      *
      * @param entity
      *            Managed entity to be updated
-     * @param options
-     *            options
      */
     public void insertOrUpdate(Object entity) {
         entityValidator.validateEntity(entity, entityMetaMap);
@@ -306,7 +304,7 @@ public class PersistenceManager {
         if (proxifier.isProxy(entity)) {
             this.update(entity, noOptions());
         } else {
-            this.persist(entity, noOptions());
+            this.insert(entity, noOptions());
         }
     }
 
@@ -330,7 +328,7 @@ public class PersistenceManager {
         if (proxifier.isProxy(entity)) {
             this.update(entity, options);
         } else {
-            this.persist(entity, options);
+            this.insert(entity, options);
         }
     }
 
@@ -896,11 +894,10 @@ public class PersistenceManager {
      * @return TypedQuery<T>
      */
     public <T> TypedQuery<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
-        return typedQueryInternal(entityClass, queryString, true, boundValues);
+        return typedQueryInternal(entityClass, queryString, boundValues);
     }
 
-    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString,
-            boolean normalizeQuery, Object... boundValues) {
+    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString, Object... boundValues) {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
@@ -910,7 +907,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, normalizeQuery, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, boundValues);
     }
 
     /**
@@ -938,7 +935,7 @@ public class PersistenceManager {
 
         String indexColumnName = indexCondition.getColumnName();
         final Select.Where query = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
-        return typedQueryInternal(entityClass, query.getQueryString(), false, indexCondition.getColumnValue());
+        return typedQueryInternal(entityClass, query.getQueryString(), indexCondition.getColumnValue());
     }
 
     /**
@@ -989,8 +986,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, true,
-                boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     /**

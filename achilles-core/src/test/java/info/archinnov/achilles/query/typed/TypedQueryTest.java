@@ -259,7 +259,7 @@ public class TypedQueryTest {
 
     private void initBuilder(String queryString, EntityMeta meta, Map<String, PropertyMeta> propertyMetas,
             EntityState entityState) {
-        builder = new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, entityState, true, new Object[] { "a" });
+        builder = new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, entityState, new Object[] { "a" });
 
         Whitebox.setInternalState(builder, String.class, queryString);
         Whitebox.setInternalState(builder, Map.class, propertyMetas);

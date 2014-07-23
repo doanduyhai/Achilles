@@ -56,11 +56,11 @@ public class InsertStrategyIT {
         entity.setAge(33L);
 
         //When
-        manager1.persist(entity);
+        manager1.insert(entity);
         entity.setName("Helen");
         entity.setAge(null);
 
-        manager1.persist(entity);
+        manager1.insert(entity);
 
         //Then
         final CompleteBean found = manager1.find(CompleteBean.class, id);
@@ -79,10 +79,10 @@ public class InsertStrategyIT {
         entity.setLabel("label");
 
         //When
-        manager1.persist(entity);
+        manager1.insert(entity);
         entity.setLabel(null);
 
-        manager1.persist(entity);
+        manager1.insert(entity);
 
         //Then
         final EntityWithNotNullInsertStrategy found = manager1.find(EntityWithNotNullInsertStrategy.class, id);
@@ -101,11 +101,11 @@ public class InsertStrategyIT {
         entity.setAge(33L);
 
         //When
-        manager2.persist(entity);
+        manager2.insert(entity);
         entity.setName("Helen");
         entity.setAge(null);
 
-        manager2.persist(entity);
+        manager2.insert(entity);
 
         //Then
         final CompleteBean found = manager2.find(CompleteBean.class, id);

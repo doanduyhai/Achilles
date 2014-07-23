@@ -16,17 +16,12 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import java.util.Iterator;
-import java.util.List;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.exceptions.InvalidQueryException;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
@@ -53,7 +48,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntity found = manager.find(ClusteredEntity.class, compoundKey);
 
@@ -67,7 +62,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.persist(entity, OptionsBuilder.withTtl(1));
+		manager.insert(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -82,7 +77,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		ClusteredEntity found = manager.getProxy(ClusteredEntity.class, compoundKey);
 
@@ -94,7 +89,7 @@ public class ClusteredEntityIT {
 	public void should_update_with_ttl() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
-		entity = manager.persist(entity, OptionsBuilder.withTtl(1));
+		entity = manager.insert(entity, OptionsBuilder.withTtl(1));
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNotNull();
 
@@ -109,7 +104,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.setValue("new_clustered_value");
 		manager.update(entity);
@@ -125,7 +120,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -139,7 +134,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.removeById(ClusteredEntity.class, entity.getId());
 
@@ -157,7 +152,7 @@ public class ClusteredEntityIT {
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("update " + TABLE_NAME + " set value='new_clustered_value' where id=" + partitionKey
 				+ " and count=" + count + " and name='" + name + "'");

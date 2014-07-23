@@ -45,7 +45,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		Row row = session.execute("SELECT * FROM " + TABLE_NAME + " WHERE id=" + id + " AND type='type'").one();
 
@@ -60,7 +60,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
@@ -79,7 +79,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		EntityWithCompositePartitionKey found = manager.getProxy(EntityWithCompositePartitionKey.class,
                                                                  compositeRowKey);
@@ -93,7 +93,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		entity.setValue("value2");
 		manager.update(entity);
@@ -108,7 +108,7 @@ public class EntityWithCompositePartitionKeyIT {
 		Long id = RandomUtils.nextLong();
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		manager.remove(entity);
 
@@ -124,7 +124,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
 
-		manager.persist(entity);
+		manager.insert(entity);
 
 		manager.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
 
@@ -138,7 +138,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
-		entity = manager.persist(entity);
+		entity = manager.insert(entity);
 
 		session.execute("UPDATE " + TABLE_NAME + " SET value='new_value' WHERE id=" + id + " AND type='type'");
 

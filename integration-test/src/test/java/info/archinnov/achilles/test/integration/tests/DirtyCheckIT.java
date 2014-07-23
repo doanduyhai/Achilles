@@ -59,7 +59,7 @@ public class DirtyCheckIT {
                 .addFollowers("George", "Paul").addPreference(1, "FR").addPreference(2, "Paris")
                 .addPreference(3, "75014").buid();
 
-        bean = manager.persist(bean);
+        bean = manager.insert(bean);
     }
 
     /*

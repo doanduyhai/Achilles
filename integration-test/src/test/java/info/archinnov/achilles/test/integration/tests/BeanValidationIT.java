@@ -57,7 +57,7 @@ public class BeanValidationIT {
         EntityWithFieldLevelConstraint entity = new EntityWithFieldLevelConstraint();
         entity.setId(id);
         entity.setName("name");
-        manager.persist(entity);
+        manager.insert(entity);
 
         // When
         EntityWithFieldLevelConstraint found = manager.find(EntityWithFieldLevelConstraint.class, id);
@@ -74,7 +74,7 @@ public class BeanValidationIT {
         EntityWithPropertyLevelConstraint entity = new EntityWithPropertyLevelConstraint();
         entity.setId(id);
         entity.setName("name");
-        manager.persist(entity);
+        manager.insert(entity);
 
         // When
         EntityWithPropertyLevelConstraint found = manager.find(EntityWithPropertyLevelConstraint.class, id);
@@ -92,7 +92,7 @@ public class BeanValidationIT {
         entity.setId(id);
         entity.setFirstname("firstname");
         entity.setLastname("lastname");
-        manager.persist(entity);
+        manager.insert(entity);
 
         // When
         EntityWithClassLevelConstraint found = manager.find(EntityWithClassLevelConstraint.class, id);
@@ -117,7 +117,7 @@ public class BeanValidationIT {
 
         try {
             // When
-            manager.persist(entity);
+            manager.insert(entity);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());
@@ -138,7 +138,7 @@ public class BeanValidationIT {
         StringBuilder errorMessage = new StringBuilder("Bean validation error : \n");
         errorMessage.append("\tproperty 'name' of class '");
         errorMessage.append(EntityWithFieldLevelConstraint.class.getCanonicalName()).append("'");
-        EntityWithFieldLevelConstraint managedEntity = manager.persist(entity);
+        EntityWithFieldLevelConstraint managedEntity = manager.insert(entity);
 
         try {
             // When
@@ -167,7 +167,7 @@ public class BeanValidationIT {
 
         try {
             // When
-            manager.persist(entity);
+            manager.insert(entity);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());
@@ -188,7 +188,7 @@ public class BeanValidationIT {
         StringBuilder errorMessage = new StringBuilder("Bean validation error : \n");
         errorMessage.append("\tproperty 'name' of class '");
         errorMessage.append(EntityWithPropertyLevelConstraint.class.getCanonicalName()).append("'");
-        EntityWithPropertyLevelConstraint managedEntity = manager.persist(entity);
+        EntityWithPropertyLevelConstraint managedEntity = manager.insert(entity);
 
         try {
             // When
@@ -217,7 +217,7 @@ public class BeanValidationIT {
 
         try {
             // When
-            manager.persist(entity);
+            manager.insert(entity);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());
@@ -240,7 +240,7 @@ public class BeanValidationIT {
         errorMessage.append("\tfirstname and lastname should not be blank for class '");
         errorMessage.append(EntityWithClassLevelConstraint.class.getCanonicalName()).append("'");
 
-        EntityWithClassLevelConstraint managedEntity = manager.persist(entity);
+        EntityWithClassLevelConstraint managedEntity = manager.insert(entity);
 
         try {
             // When
@@ -282,7 +282,7 @@ public class BeanValidationIT {
 
         try {
             // When
-            manager.persist(entity);
+            manager.insert(entity);
         } catch (AchillesBeanValidationException ex) {
             // Then
             assertThat(ex.getMessage()).contains(errorMessage.toString());

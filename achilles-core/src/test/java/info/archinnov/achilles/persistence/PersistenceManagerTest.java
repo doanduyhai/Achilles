@@ -158,7 +158,7 @@ public class PersistenceManagerTest {
         when(facade.persist(entity)).thenReturn(entity);
 
         // When
-        CompleteBean actual = manager.persist(entity);
+        CompleteBean actual = manager.insert(entity);
 
         // Then
         assertThat(actual).isSameAs(entity);
@@ -173,7 +173,7 @@ public class PersistenceManagerTest {
         when(facade.persist(entity)).thenReturn(entity);
 
         // When
-        CompleteBean actual = manager.persist(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
+        CompleteBean actual = manager.insert(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(150)
                 .withTimestamp(100L));
 
         // Then
@@ -588,7 +588,7 @@ public class PersistenceManagerTest {
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
     }
 
     @Test
@@ -608,7 +608,7 @@ public class PersistenceManagerTest {
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
     }
 
     @Test
