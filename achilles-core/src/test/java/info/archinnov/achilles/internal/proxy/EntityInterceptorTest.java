@@ -24,6 +24,7 @@ import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.comp
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -144,7 +145,7 @@ public class EntityInterceptorTest {
 
         //Then
         assertThat(name).isEqualTo("name");
-        verify(proxy).invokeSuper(target, args);
+        verify(proxy,never()).invokeSuper(target, args);
     }
 
     @Test

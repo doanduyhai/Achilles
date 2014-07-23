@@ -655,6 +655,7 @@ public class DaoContextTest {
         assertThat(bsWrapper.getValues()).isSameAs(boundValues);
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        verify(sliceQueryProperties).setFetchSizeToStatement(bs);
     }
 
     @Test
@@ -675,5 +676,6 @@ public class DaoContextTest {
         assertThat(bsWrapper.getValues()).isSameAs(boundValues);
 
         verify(bs).setConsistencyLevel(com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM);
+        verify(sliceQueryProperties).setFetchSizeToStatement(bs);
     }
 }

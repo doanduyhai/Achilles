@@ -146,11 +146,11 @@ import info.archinnov.achilles.type.Options;
  *  <h3>X JSON serialization/deserialization</h3>
  *  <pre class="code"><code class="java">
  *      // Serialize an object to JSON using the registered or default object mapper
- *      String json = manager.jsonSerialize(myModel);
+ *      String json = manager.serializeToJSON(myModel);
  *      ...
  *
  *      // Deserialize a JSON string into an object  the registered or default object mapper
- *      MyModel myModel = manager.deserializeJson(json);
+ *      MyModel myModel = manager.deserializeFromJSON(json);
  *  </code></pre>
  *
  *  <h3>XI Initializing all lazy fields</h3>
@@ -283,6 +283,55 @@ public class PersistenceManager {
         optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, options);
         PersistenceManagerOperations context = initPersistenceContext(realObject, options);
         context.update(entity);
+    }
+
+
+    /**
+     * Insert a "transient" entity or update a "managed" entity.
+     *
+     * Shorthand to insert() or update()
+     *
+     * @param entity
+     *            Managed entity to be updated
+     * @param options
+     *            options
+     */
+    public void insertOrUpdate(Object entity) {
+        entityValidator.validateEntity(entity, entityMetaMap);
+        Object realObject = proxifier.getRealObject(entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Inserting or updating entity '{}'", realObject);
+        }
+
+        if (proxifier.isProxy(entity)) {
+            this.update(entity, noOptions());
+        } else {
+            this.persist(entity, noOptions());
+        }
+    }
+
+    /**
+     * Insert a "transient" entity or update a "managed" entity.
+     *
+     * Shorthand to insert() or update()
+     *
+     * @param entity
+     *            Managed entity to be updated
+     * @param options
+     *            options
+     */
+    public void insertOrUpdate(Object entity, Options options) {
+        entityValidator.validateEntity(entity, entityMetaMap);
+        Object realObject = proxifier.getRealObject(entity);
+        if (log.isDebugEnabled()) {
+            log.debug("Inserting or updating entity '{}' with options {}", realObject, options);
+        }
+
+        if (proxifier.isProxy(entity)) {
+            this.update(entity, options);
+        } else {
+            this.persist(entity, options);
+        }
     }
 
     /**
@@ -950,7 +999,7 @@ public class PersistenceManager {
      * @return serialized entity in JSON
      * @throws IOException
      */
-    public String jsonSerialize(Object entity) throws IOException {
+    public String serializeToJSON(Object entity) throws IOException {
         Validator.validateNotNull(entity, "Cannot serialize to JSON null entity");
         final ObjectMapper objectMapper = configContext.getMapperFor(entity.getClass());
         return objectMapper.writeValueAsString(entity);
@@ -964,7 +1013,7 @@ public class PersistenceManager {
      * @return deserialized entity from JSON
      * @throws IOException
      */
-    public <T> T deserializeJson(Class<T> type, String serialized) throws IOException {
+    public <T> T deserializeFromJSON(Class<T> type, String serialized) throws IOException {
         Validator.validateNotNull(type, "Cannot deserialize from JSON if target type is null");
         final ObjectMapper objectMapper = configContext.getMapperFor(type);
         return objectMapper.readValue(serialized, type);

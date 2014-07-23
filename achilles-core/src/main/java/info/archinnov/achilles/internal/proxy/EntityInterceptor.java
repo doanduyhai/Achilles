@@ -74,7 +74,6 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
         } else if (this.setterMetas.containsKey(method)) {
             interceptSetter(method, obj, args);
         } else {
-            proxy.invokeSuper(obj, args);
             result = proxy.invoke(target, args);
         }
         return result;

@@ -32,6 +32,11 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.BindMarker;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
@@ -42,6 +47,8 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class SliceQueryProperties<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(SliceQueryProperties.class);
 
     public static final int DEFAULT_LIMIT = 100;
     public static final int DEFAULT_BATCH_SIZE = 100;
@@ -58,9 +65,9 @@ public class SliceQueryProperties<T> {
     private final SliceType sliceType;
 
     private Optional<Integer> limitO = Optional.fromNullable(DEFAULT_LIMIT);
-    protected int batchSize = DEFAULT_BATCH_SIZE;
+    protected Optional<Integer> fetchSizeO = Optional.absent();
     private BoundingMode boundingMode = BoundingMode.INCLUSIVE_BOUNDS;
-    private OrderingMode orderingMode = OrderingMode.ASCENDING;
+    private Optional<OrderingMode> orderingModeO = Optional.fromNullable(OrderingMode.ASCENDING);
 
     private Optional<ConsistencyLevel> consistencyLevelO = Optional.absent();
 
@@ -90,102 +97,106 @@ public class SliceQueryProperties<T> {
         return new SliceQueryProperties<>(entityMeta, entityClass, sliceType);
     }
 
-    protected SliceQueryProperties limit(int limit) {
+    protected SliceQueryProperties<T>  limit(int limit) {
         Validator.validateTrue(limit > 0, "The limit '%s' should be strictly positive", limit);
         this.limitO = Optional.fromNullable(limit);
         return this;
     }
 
-    protected SliceQueryProperties disableLimit() {
+    protected SliceQueryProperties<T>  disableLimit() {
         this.limitO = Optional.absent();
         return this;
     }
 
-    protected SliceQueryProperties batchSize(int batchSize) {
-        Validator.validateTrue(batchSize > 0, "The batchSize '%s' should be strictly positive", batchSize);
-        this.batchSize = batchSize;
+    protected SliceQueryProperties<T>  fetchSize(int fetchSize) {
+        Validator.validateTrue(fetchSize > 0, "The fetchSize '%s' should be strictly positive", fetchSize);
+        this.fetchSizeO = Optional.fromNullable(fetchSize);
+        if (CollectionUtils.isNotEmpty(partitionKeysIn)) {
+            this.orderingModeO = Optional.absent();
+            log.warn("Cannot page queries with both ORDER BY and a IN restriction on the partition key; you must either remove the ORDER BY or the IN and sort client side, or disable paging for this query");
+        }
         return this;
     }
 
-    protected SliceQueryProperties bounding(BoundingMode boundingMode) {
+    protected SliceQueryProperties<T>  bounding(BoundingMode boundingMode) {
         this.boundingMode = boundingMode;
         return this;
     }
 
-    protected SliceQueryProperties ordering(OrderingMode orderingMode) {
-        this.orderingMode = orderingMode;
+    protected SliceQueryProperties<T>  ordering(OrderingMode orderingMode) {
+        this.orderingModeO = Optional.fromNullable(orderingMode);
         return this;
     }
 
-    protected SliceQueryProperties consistency(ConsistencyLevel consistencyLevel) {
+    protected SliceQueryProperties<T>  consistency(ConsistencyLevel consistencyLevel) {
         Validator.validateNotNull(consistencyLevel, "The consistency level should not be null");
         this.consistencyLevelO = Optional.fromNullable(consistencyLevel);
         return this;
     }
 
-    protected SliceQueryProperties partitionKeys(List<Object> partitionKeys) {
+    protected SliceQueryProperties<T>  partitionKeys(List<Object> partitionKeys) {
         this.partitionKeys = partitionKeys;
         return this;
     }
 
-    protected SliceQueryProperties partitionKeysName(List<String> partitionKeysName) {
+    protected SliceQueryProperties<T>  partitionKeysName(List<String> partitionKeysName) {
         this.partitionKeysName = partitionKeysName;
         return this;
     }
 
-    protected SliceQueryProperties partitionKeysIn(List<Object> partitionKeysIn) {
+    protected SliceQueryProperties<T>  partitionKeysIn(List<Object> partitionKeysIn) {
         this.partitionKeysIn = partitionKeysIn;
         return this;
     }
 
-    protected SliceQueryProperties lastPartitionKeyName(String lastPartitionKeyName) {
+    protected SliceQueryProperties<T>  lastPartitionKeyName(String lastPartitionKeyName) {
         this.lastPartitionKeyName = lastPartitionKeyName;
         return this;
     }
 
-    protected SliceQueryProperties fromClusteringKeys(List<Object> fromClusteringKeys) {
+    protected SliceQueryProperties<T>  fromClusteringKeys(List<Object> fromClusteringKeys) {
         this.fromClusteringKeys = fromClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties fromClusteringKeysName(List<String> fromClusteringKeysName) {
+    protected SliceQueryProperties<T>  fromClusteringKeysName(List<String> fromClusteringKeysName) {
         this.fromClusteringKeysName = fromClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties toClusteringKeys(List<Object> toClusteringKeys) {
+    protected SliceQueryProperties<T>  toClusteringKeys(List<Object> toClusteringKeys) {
         this.toClusteringKeys = toClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties toClusteringKeysName(List<String> toClusteringKeysName) {
+    protected SliceQueryProperties<T>  toClusteringKeysName(List<String> toClusteringKeysName) {
         this.toClusteringKeysName = toClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties withClusteringKeys(List<Object> withClusteringKeys) {
+    protected SliceQueryProperties<T>  withClusteringKeys(List<Object> withClusteringKeys) {
         this.withClusteringKeys = withClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties withClusteringKeysName(List<String> withClusteringKeysName) {
+    protected SliceQueryProperties<T>  withClusteringKeysName(List<String> withClusteringKeysName) {
         this.withClusteringKeysName = withClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties andClusteringKeysIn(List<Object> clusteringsKeysIn) {
+    protected SliceQueryProperties<T>  andClusteringKeysIn(List<Object> clusteringsKeysIn) {
         this.clusteringsKeysIn = clusteringsKeysIn;
         return this;
     }
 
-    protected SliceQueryProperties lastClusteringKeyName(String lastClusteringKeyName) {
+    protected SliceQueryProperties<T>  lastClusteringKeyName(String lastClusteringKeyName) {
         this.lastClusteringKeyName = lastClusteringKeyName;
         return this;
     }
 
     // Public access
 
-    public Select generateWhereClauseForSelect(Select from) {
+    public RegularStatement generateWhereClauseForSelect(Select from) {
         final Select.Where where = from.where();
 
         // Partition keys
@@ -194,7 +205,7 @@ public class SliceQueryProperties<T> {
         }
 
         if (isNotBlank(lastPartitionKeyName)) {
-            where.and(in(lastPartitionKeyName,bindMarker("partitionComponentsIn")));
+            where.and(in(lastPartitionKeyName, bindMarker("partitionComponentsIn")));
         }
 
         // Clustering keys
@@ -224,19 +235,31 @@ public class SliceQueryProperties<T> {
             }
         }
 
-        final Select orderBy;
         // ORDER BY
-        if (orderingMode.isReverse()) {
-            orderBy = where.orderBy(desc(clusteringOrder.getClusteringColumnName()));
-        } else {
-            orderBy = where.orderBy(asc(clusteringOrder.getClusteringColumnName()));
-        }
+        if (orderingModeO.isPresent()) {
 
-        // LIMIT
-        if (limitO.isPresent()) {
-            orderBy.limit(bindMarker("limitSize"));
+            final Select statement;
+            final OrderingMode orderingMode = orderingModeO.get();
+            if (orderingMode.isReverse()) {
+                statement = where.orderBy(desc(clusteringOrder.getClusteringColumnName()));
+            } else {
+                statement = where.orderBy(asc(clusteringOrder.getClusteringColumnName()));
+            }
+            // LIMIT
+            if (limitO.isPresent()) {
+                statement.limit(bindMarker("limitSize"));
+            }
+
+            return statement;
+        } else {
+            // LIMIT
+            if (limitO.isPresent()) {
+                where.limit(bindMarker("limitSize"));
+            }
+
+            return where;
+
         }
-        return orderBy;
     }
 
     public Delete.Where generateWhereClauseForDelete(Delete delete) {
@@ -294,6 +317,12 @@ public class SliceQueryProperties<T> {
         return boundValues.toArray();
     }
 
+    public void setFetchSizeToStatement(Statement statement) {
+        if (fetchSizeO.isPresent()) {
+            statement.setFetchSize(fetchSizeO.get());
+        }
+    }
+
     public ConsistencyLevel getConsistencyLevelOr(ConsistencyLevel defaultConsistencyLevel) {
         return consistencyLevelO.or(defaultConsistencyLevel);
     }
@@ -334,7 +363,7 @@ public class SliceQueryProperties<T> {
                 Objects.equals(this.withClusteringKeysName, that.withClusteringKeysName) &&
                 Objects.equals(this.lastClusteringKeyName, that.lastClusteringKeyName) &&
                 Objects.equals(this.boundingMode, that.boundingMode) &&
-                Objects.equals(this.orderingMode, that.orderingMode) &&
+                Objects.equals(this.orderingModeO, that.orderingModeO) &&
                 Objects.equals(this.limitO, that.limitO);
     }
 
@@ -349,7 +378,7 @@ public class SliceQueryProperties<T> {
                 this.withClusteringKeysName,
                 this.lastClusteringKeyName,
                 this.boundingMode,
-                this.orderingMode,
+                this.orderingModeO,
                 this.limitO);
     }
 
