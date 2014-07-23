@@ -97,18 +97,18 @@ public class SliceQueryProperties<T> {
         return new SliceQueryProperties<>(entityMeta, entityClass, sliceType);
     }
 
-    protected SliceQueryProperties limit(int limit) {
+    protected SliceQueryProperties<T>  limit(int limit) {
         Validator.validateTrue(limit > 0, "The limit '%s' should be strictly positive", limit);
         this.limitO = Optional.fromNullable(limit);
         return this;
     }
 
-    protected SliceQueryProperties disableLimit() {
+    protected SliceQueryProperties<T>  disableLimit() {
         this.limitO = Optional.absent();
         return this;
     }
 
-    protected SliceQueryProperties fetchSize(int fetchSize) {
+    protected SliceQueryProperties<T>  fetchSize(int fetchSize) {
         Validator.validateTrue(fetchSize > 0, "The fetchSize '%s' should be strictly positive", fetchSize);
         this.fetchSizeO = Optional.fromNullable(fetchSize);
         if (CollectionUtils.isNotEmpty(partitionKeysIn)) {
@@ -118,78 +118,78 @@ public class SliceQueryProperties<T> {
         return this;
     }
 
-    protected SliceQueryProperties bounding(BoundingMode boundingMode) {
+    protected SliceQueryProperties<T>  bounding(BoundingMode boundingMode) {
         this.boundingMode = boundingMode;
         return this;
     }
 
-    protected SliceQueryProperties ordering(OrderingMode orderingMode) {
+    protected SliceQueryProperties<T>  ordering(OrderingMode orderingMode) {
         this.orderingModeO = Optional.fromNullable(orderingMode);
         return this;
     }
 
-    protected SliceQueryProperties consistency(ConsistencyLevel consistencyLevel) {
+    protected SliceQueryProperties<T>  consistency(ConsistencyLevel consistencyLevel) {
         Validator.validateNotNull(consistencyLevel, "The consistency level should not be null");
         this.consistencyLevelO = Optional.fromNullable(consistencyLevel);
         return this;
     }
 
-    protected SliceQueryProperties partitionKeys(List<Object> partitionKeys) {
+    protected SliceQueryProperties<T>  partitionKeys(List<Object> partitionKeys) {
         this.partitionKeys = partitionKeys;
         return this;
     }
 
-    protected SliceQueryProperties partitionKeysName(List<String> partitionKeysName) {
+    protected SliceQueryProperties<T>  partitionKeysName(List<String> partitionKeysName) {
         this.partitionKeysName = partitionKeysName;
         return this;
     }
 
-    protected SliceQueryProperties partitionKeysIn(List<Object> partitionKeysIn) {
+    protected SliceQueryProperties<T>  partitionKeysIn(List<Object> partitionKeysIn) {
         this.partitionKeysIn = partitionKeysIn;
         return this;
     }
 
-    protected SliceQueryProperties lastPartitionKeyName(String lastPartitionKeyName) {
+    protected SliceQueryProperties<T>  lastPartitionKeyName(String lastPartitionKeyName) {
         this.lastPartitionKeyName = lastPartitionKeyName;
         return this;
     }
 
-    protected SliceQueryProperties fromClusteringKeys(List<Object> fromClusteringKeys) {
+    protected SliceQueryProperties<T>  fromClusteringKeys(List<Object> fromClusteringKeys) {
         this.fromClusteringKeys = fromClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties fromClusteringKeysName(List<String> fromClusteringKeysName) {
+    protected SliceQueryProperties<T>  fromClusteringKeysName(List<String> fromClusteringKeysName) {
         this.fromClusteringKeysName = fromClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties toClusteringKeys(List<Object> toClusteringKeys) {
+    protected SliceQueryProperties<T>  toClusteringKeys(List<Object> toClusteringKeys) {
         this.toClusteringKeys = toClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties toClusteringKeysName(List<String> toClusteringKeysName) {
+    protected SliceQueryProperties<T>  toClusteringKeysName(List<String> toClusteringKeysName) {
         this.toClusteringKeysName = toClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties withClusteringKeys(List<Object> withClusteringKeys) {
+    protected SliceQueryProperties<T>  withClusteringKeys(List<Object> withClusteringKeys) {
         this.withClusteringKeys = withClusteringKeys;
         return this;
     }
 
-    protected SliceQueryProperties withClusteringKeysName(List<String> withClusteringKeysName) {
+    protected SliceQueryProperties<T>  withClusteringKeysName(List<String> withClusteringKeysName) {
         this.withClusteringKeysName = withClusteringKeysName;
         return this;
     }
 
-    protected SliceQueryProperties andClusteringKeysIn(List<Object> clusteringsKeysIn) {
+    protected SliceQueryProperties<T>  andClusteringKeysIn(List<Object> clusteringsKeysIn) {
         this.clusteringsKeysIn = clusteringsKeysIn;
         return this;
     }
 
-    protected SliceQueryProperties lastClusteringKeyName(String lastClusteringKeyName) {
+    protected SliceQueryProperties<T>  lastClusteringKeyName(String lastClusteringKeyName) {
         this.lastClusteringKeyName = lastClusteringKeyName;
         return this;
     }
