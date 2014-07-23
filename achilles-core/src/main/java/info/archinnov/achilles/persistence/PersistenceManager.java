@@ -1031,6 +1031,41 @@ public class PersistenceManager {
         return daoContext.getSession();
     }
 
+    /**
+     * Create a new state-full Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full PersistenceManager
+     */
+    public Batch createBatch() {
+        log.debug("Spawn new BatchingPersistenceManager");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    }
+
+
+    /**
+     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full PersistenceManager
+     */
+    public Batch createOrderedBatch() {
+        log.debug("Spawn new BatchingPersistenceManager");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
+    }
+
     protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
         return entityMetaMap;
     }
