@@ -116,6 +116,32 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
+    public void should_insert_or_update() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").buid();
+
+        //When
+        manager.insertOrUpdate(entity);
+
+        final CompleteBean found = manager.find(CompleteBean.class, entity.getId());
+
+        //Then
+        assertThat(found).isNotNull();
+        assertThat(found.getName()).isEqualTo("DuyHai");
+
+        //When
+        found.setName("Paul");
+        manager.insertOrUpdate(found);
+
+        final CompleteBean updated = manager.find(CompleteBean.class, entity.getId());
+
+        //Then
+        assertThat(updated).isNotNull();
+        assertThat(found.getName()).isEqualTo("Paul");
+
+    }
+
+    @Test
     public void should_find() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").buid();
 

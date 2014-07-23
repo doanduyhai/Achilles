@@ -654,7 +654,7 @@ public class PersistenceManagerTest {
         CompleteBean entity = CompleteBeanTestBuilder.builder().id(10L).name("name").buid();
 
         //When
-        final String serialized = manager.jsonSerialize(entity);
+        final String serialized = manager.serializeToJSON(entity);
 
         //Then
         assertThat(serialized).isEqualTo("{\"id\":10,\"name\":\"name\",\"friends\":[],\"followers\":[],\"preferences\":{}}");
@@ -669,7 +669,7 @@ public class PersistenceManagerTest {
         when(configContext.getMapperFor(CompleteBean.class)).thenReturn(mapper);
 
         //When
-        final CompleteBean actual = manager.deserializeJson(CompleteBean.class, "{\"id\":10,\"name\":\"name\"}");
+        final CompleteBean actual = manager.deserializeFromJSON(CompleteBean.class, "{\"id\":10,\"name\":\"name\"}");
 
         //Then
         assertThat(actual.getId()).isEqualTo(10L);
