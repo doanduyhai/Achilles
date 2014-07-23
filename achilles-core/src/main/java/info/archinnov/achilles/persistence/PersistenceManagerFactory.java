@@ -192,7 +192,7 @@ public class PersistenceManagerFactory {
      * @return serialized entity in JSON
      * @throws IOException
      */
-    public String jsonSerialize(Object entity) throws IOException {
+    public String serializeToJSON(Object entity) throws IOException {
         Validator.validateNotNull(entity, "Cannot serialize to JSON null entity");
         final ObjectMapper objectMapper = configContext.getMapperFor(entity.getClass());
         return objectMapper.writeValueAsString(entity);
@@ -206,7 +206,7 @@ public class PersistenceManagerFactory {
      * @return deserialized entity from JSON
      * @throws IOException
      */
-    public <T> T deserializeJson(Class<T> type, String serialized) throws IOException {
+    public <T> T deserializeFromJSON(Class<T> type, String serialized) throws IOException {
         Validator.validateNotNull(type, "Cannot deserialize from JSON if target type is null");
         final ObjectMapper objectMapper = configContext.getMapperFor(type);
         return objectMapper.readValue(serialized, type);

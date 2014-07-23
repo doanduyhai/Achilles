@@ -16,10 +16,13 @@
 
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -44,8 +47,9 @@ public class EntityLessIT {
 
     @Test
     public void should_bootstrap_achilles_without_entity_package_for_native_query() throws Exception {
-        Map<String, Object> keyspaceMap = manager.nativeQuery(
-                "SELECT keyspace_name from system.schema_keyspaces where keyspace_name='system'").first();
+        RegularStatement statement = select("keyspace_name").from("system","schema_keyspaces").where(eq("keyspace_name","system"));
+
+        Map<String, Object> keyspaceMap = manager.nativeQuery(statement).first();
 
         assertThat(keyspaceMap).hasSize(1);
         assertThat(keyspaceMap.get("keyspace_name")).isEqualTo("system");

@@ -15,6 +15,9 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
@@ -34,6 +37,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.ImmutableMap;
@@ -293,9 +297,10 @@ public class EventInterceptorIT {
 
         manager.insert(entity);
 
+        RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
+
         // When
-        final CompleteBean actual = manager.typedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?",
-                entity.getId()).getFirst();
+        final CompleteBean actual = manager.typedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
 
         // Then
         assertThat(actual.getLabel()).isEqualTo("postLoad");
@@ -308,9 +313,10 @@ public class EventInterceptorIT {
 
         manager.insert(entity);
 
+        RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
+
         // When
-        final CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, "SELECT * FROM CompleteBean WHERE id=?",
-                entity.getId()).getFirst();
+        final CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
 
         // Then
         assertThat(actual.getLabel()).isEqualTo("postLoad");

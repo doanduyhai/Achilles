@@ -16,6 +16,10 @@
 
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.INSERT;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation.UPDATE;
@@ -34,6 +38,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.junit.AchillesTestResource;
@@ -391,9 +396,11 @@ public class CASOperationsIT {
         CompleteBean entity = builder().randomId().name("John").buid();
         manager.insert(entity);
 
+        final RegularStatement statement = update("CompleteBean").with(set("name","Helen"))
+                .where(eq("id",entity.getId())).onlyIf(eq("name","Andrew"));
+
         //When
-        final NativeQuery nativeQuery = manager.nativeQuery("UPDATE CompleteBean SET name = 'Helen' WHERE id=" + entity.getId() + " IF name='Andrew'",
-                casResultListener(listener));
+        final NativeQuery nativeQuery = manager.nativeQuery(statement,casResultListener(listener));
         nativeQuery.execute();
 
         //Then

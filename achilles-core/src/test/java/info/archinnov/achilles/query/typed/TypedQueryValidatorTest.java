@@ -15,11 +15,15 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -41,14 +45,13 @@ public class TypedQueryValidatorTest {
         meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
         meta.setTableName("table");
 
-        String queryString = "SELECT * from test";
+        final Select statement = select().from("test");
 
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("The typed query [SELECT * from test] should contain the ' from table' clause if type is '"
-                        + CompleteBean.class.getCanonicalName() + "'");
+        exception.expectMessage("The typed query [SELECT * FROM test;] should contain the ' from table' clause if type is '"
+                + CompleteBean.class.getCanonicalName() + "'");
 
-        validator.validateRawTypedQuery(CompleteBean.class, queryString, meta);
+        validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
     }
 
     @Test
@@ -60,12 +63,12 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        String queryString = "SELECT name,age from table";
+        final Select statement = select("name","age").from("table");
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [SELECT name,age from table] should contain the id column 'id'");
+        exception.expectMessage("The typed query [select name,age from table;] should contain the id column 'id'");
 
-        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+        validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
 
     @Test
@@ -78,14 +81,13 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        String queryString = "SELECT id,age from table";
+        final Select statement = select("id","age").from("table");
 
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("The typed query [SELECT id,age from table] should contain the component column 'name' for embedded id type '"
-                        + EmbeddedKey.class.getCanonicalName() + "'");
+        exception.expectMessage("The typed query [select id,age from table;] should contain the component column 'name' for embedded id type '"
+                + EmbeddedKey.class.getCanonicalName() + "'");
 
-        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+        validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
 
     @Test
@@ -98,9 +100,9 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        String queryString = "SELECT * from table";
+        final Select statement = select().from("table");
 
-        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+        validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
 
     @Test
@@ -113,8 +115,22 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        String queryString = "SELECT * from table";
+        final Select statement = select().from("table");
 
-        validator.validateTypedQuery(CompleteBean.class, queryString, meta);
+        validator.validateTypedQuery(CompleteBean.class, statement, meta);
+    }
+
+    @Test(expected = AchillesException.class)
+    public void should_exception_when_not_SELECT_statement() throws Exception {
+        //Given
+        EntityMeta meta = new EntityMeta();
+        meta.setTableName("table");
+        RegularStatement statement = QueryBuilder.insertInto("test");
+
+        //When
+        validator.validateRawTypedQuery(CompleteBean.class,statement,meta);
+
+        //Then
+
     }
 }

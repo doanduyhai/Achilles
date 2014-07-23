@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
@@ -27,9 +29,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
@@ -90,25 +94,25 @@ public class BatchModeIT {
         entity.getVersion().incr(10L);
         batchEm.update(entity);
 
-        Map<String, Object> result = manager.nativeQuery("SELECT label from CompleteBean where id=" + entity.getId())
-                .first();
+        final RegularStatement selectLabel = select("label").from("CompleteBean").where(eq("id", entity.getId()));
+        Map<String, Object> result = manager.nativeQuery(selectLabel).first();
         assertThat(result).isNull();
 
-        result = manager.nativeQuery(
-                "SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
-                        + "' and primary_key='" + entity.getId() + "' and property_name='version'").first();
+        RegularStatement statement = select("counter_value").from("achilles_counter_table")
+                .where(eq("fqcn", CompleteBean.class.getCanonicalName()))
+                .and(eq("primary_key", entity.getId().toString()))
+                .and(eq("property_name", "version"));
+
+        result = manager.nativeQuery(statement).first();
         assertThat(result).isNull();
 
         // Flush
         batchEm.endBatch();
 
-        Statement statement = new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId());
-        Row row = manager.getNativeSession().execute(statement).one();
+        Row row = manager.getNativeSession().execute(new SimpleStatement("SELECT label from CompleteBean where id=" + entity.getId())).one();
         assertThat(row.getString("label")).isEqualTo("label");
 
-        result = manager.nativeQuery(
-                "SELECT counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()
-                        + "' and primary_key='" + entity.getId() + "' and property_name='version'").first();
+        result = manager.nativeQuery(statement).first();
         assertThat(result.get("counter_value")).isEqualTo(10L);
         assertThatBatchContextHasBeenReset(batchEm);
     }

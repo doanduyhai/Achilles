@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -787,7 +788,7 @@ public class PersistenceManager {
      *
      *  <h3>Native query without bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN(10,11) LIMIT 20";
+     *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",Arrays.asList(10,11))).limit(20);
      *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
      *  </code></pre>
      *
@@ -796,14 +797,14 @@ public class PersistenceManager {
      *
      *  <h3>Native query with bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN ? LIMIT ?";
+     *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",bindMarker())).limit(bindMarker());
      *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param queryString
-     *            native CQL query string, including limit, ttl and consistency
+     * @param regularStatement
+     *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -811,8 +812,8 @@ public class PersistenceManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(String queryString, Object... boundValues) {
-        return this.nativeQuery(queryString, noOptions(), boundValues);
+    public NativeQuery nativeQuery(RegularStatement regularStatement, Object... boundValues) {
+        return this.nativeQuery(regularStatement, noOptions(), boundValues);
     }
 
     /**
@@ -823,7 +824,7 @@ public class PersistenceManager {
      *
      *  <h3>Native query without bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN(10,11) LIMIT 20";
+     *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",Arrays.asList(10,11))).limit(20);
      *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
      *  </code></pre>
      *
@@ -832,7 +833,7 @@ public class PersistenceManager {
      *
      *  <h3>Native query with bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN ? LIMIT ?";
+     *      RegularStatement nativeQuery = select("name",age_in_years").from("UserEntity").where(in("id",bindMarker())).limit(bindMarker());
      *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
      *  </code></pre>
      *
@@ -850,10 +851,10 @@ public class PersistenceManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(String queryString, Options options, Object... boundValues) {
-        log.debug("Execute native query {}", queryString);
-        Validator.validateNotBlank(queryString, "The query string for native query should not be blank");
-        return new NativeQuery(daoContext, queryString, options, boundValues);
+    public NativeQuery nativeQuery(RegularStatement regularStatement, Options options, Object... boundValues) {
+        log.debug("Execute native query {}", regularStatement);
+        Validator.validateNotNull(regularStatement, "The regularStatement for native query should not be null");
+        return new NativeQuery(daoContext, regularStatement, options, boundValues);
     }
 
     /**
@@ -866,8 +867,8 @@ public class PersistenceManager {
      *
      *  <h3>Typed query without bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String queryString = "SELECT * FROM MyEntity LIMIT 3";
-     *      List&lt;MyEntity> actual = manager.typedQuery(MyEntity.class, queryString).get();
+     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
+     *      List&lt;MyEntity> actual = manager.typedQuery(MyEntity.class, nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -875,8 +876,8 @@ public class PersistenceManager {
      *
      *  <h3>Typed query with bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String queryString = "SELECT * FROM MyEntity LIMIT ?";
-     *      List&lt;MyEntity&gt; actual = manager.typedQuery(MyEntity.class, queryString,3).get();
+     *      RegularStatement statement = select().from("MyEntity").limit(bindMarker());
+     *      List&lt;MyEntity&gt; actual = manager.typedQuery(MyEntity.class, statement,3).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
@@ -884,8 +885,8 @@ public class PersistenceManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param queryString
-     *            native CQL query string, including limit, ttl and consistency
+     * @param regularStatement
+     *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -893,21 +894,21 @@ public class PersistenceManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
-        return typedQueryInternal(entityClass, queryString, boundValues);
+    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
+        return typedQueryInternal(entityClass, regularStatement, boundValues);
     }
 
-    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString, Object... boundValues) {
+    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
-        Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
+        Validator.validateNotNull(regularStatement, "The regularStatement for typed query should not be null");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
                 entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, boundValues);
+        typedQueryValidator.validateTypedQuery(entityClass, regularStatement, meta);
+        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, MANAGED, boundValues);
     }
 
     /**
@@ -934,8 +935,8 @@ public class PersistenceManager {
         entityMeta.encodeIndexConditionValue(indexCondition);
 
         String indexColumnName = indexCondition.getColumnName();
-        final Select.Where query = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
-        return typedQueryInternal(entityClass, query.getQueryString(), indexCondition.getColumnValue());
+        final Select.Where statement = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
+        return typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
     }
 
     /**
@@ -949,8 +950,8 @@ public class PersistenceManager {
      *
      *  <h3>Raw typed query without bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String queryString = "SELECT * FROM MyEntity LIMIT 3";
-     *      List&lt;MyEntity> actual = manager.rawTypedQuery(MyEntity.class, queryString).get();
+     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(3);
+     *      List&lt;MyEntity> actual = manager.rawTypedQuery(MyEntity.class, nativeQuery).get();
      *  </code></pre>
      *
      *  <br/>
@@ -958,8 +959,8 @@ public class PersistenceManager {
      *
      *  <h3>Raw typed query with bound values</h3>
      *  <pre class="code"><code class="java">
-     *      String queryString = "SELECT * FROM MyEntity LIMIT ?";
-     *      List&lt;MyEntity&gt; actual = manager.rawTypedQuery(MyEntity.class, queryString,3).get();
+     *      RegularStatement nativeQuery = select().from("MyEntity").where().limit(bindMarker());
+     *      List&lt;MyEntity&gt; actual = manager.rawTypedQuery(MyEntity.class, nativeQuery,3).get();
      *  </code></pre>
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#typed-query" target="_blank">Typed query API</a>
@@ -967,8 +968,8 @@ public class PersistenceManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param queryString
-     *            native CQL query string, including limit, ttl and consistency
+     * @param regularStatement
+     *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
      * @param boundValues
@@ -976,17 +977,17 @@ public class PersistenceManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
+    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
-        Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
+        Validator.validateNotNull(regularStatement, "The regularStatement for typed query should not be null");
         Validator.validateTrue(entityMetaMap.containsKey(entityClass),
                 "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
                 entityClass.getCanonicalName());
 
         EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, boundValues);
+        typedQueryValidator.validateRawTypedQuery(entityClass, regularStatement, meta);
+        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     /**
@@ -1029,6 +1030,41 @@ public class PersistenceManager {
      */
     public Session getNativeSession() {
         return daoContext.getSession();
+    }
+
+    /**
+     * Create a new state-full Batch <br/>
+     * <br/>
+     * <p/>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full PersistenceManager
+     */
+    public Batch createBatch() {
+        log.debug("Spawn new BatchingPersistenceManager");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
+    }
+
+
+    /**
+     * Create a new state-full <strong>ordered</strong> Batch <br/>
+     * <br/>
+     * <p>
+     * This Batch respect insertion order by generating increasing timestamp with micro second resolution.
+     * If you use ordered Batch in multiple clients, do not forget to synchronize the clock between those clients
+     * to avoid statements interleaving
+     * </p>
+     * <strong>WARNING : This Batch is state-full and not
+     * thread-safe. In case of exception, you MUST not re-use it but create
+     * another one</strong>
+     *
+     * @return a new state-full PersistenceManager
+     */
+    public Batch createOrderedBatch() {
+        log.debug("Spawn new BatchingPersistenceManager");
+        return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
     }
 
     protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
