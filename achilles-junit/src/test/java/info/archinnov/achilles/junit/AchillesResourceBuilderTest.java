@@ -16,14 +16,19 @@
 
 package info.archinnov.achilles.junit;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Map;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.test.integration.entity.User;
@@ -67,11 +72,11 @@ public class AchillesResourceBuilderTest {
         //Given
         AchillesResource resource = AchillesResourceBuilder.noEntityPackages("test_keyspace");
         final PersistenceManager manager = resource.getPersistenceManager();
+        RegularStatement regularStatement = select().countAll().from("system","schema_keyspaces")
+                .where(eq("keyspace_name","test_keyspace"));
 
         //When
-        final Map<String,Object> map = manager
-                .nativeQuery("SELECT count(1) FROM system.schema_keyspaces WHERE keyspace_name='test_keyspace'")
-                .first();
+        final Map<String,Object> map = manager.nativeQuery(regularStatement).first();
 
         //Then
         assertThat(map.get("count")).isEqualTo(1L);

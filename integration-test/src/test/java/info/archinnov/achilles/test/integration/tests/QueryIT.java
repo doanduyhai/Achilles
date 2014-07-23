@@ -15,10 +15,14 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.column;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
-
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +33,7 @@ import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.counter.AchillesCounter;
@@ -71,10 +76,10 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        String nativeQuery = "SELECT name,age_in_years,friends,followers,preferences FROM CompleteBean WHERE id IN("
-                + entity1.getId() + "," + entity2.getId() + ")";
+        RegularStatement statement = select("name", "age_in_years", "friends", "followers", "preferences")
+                .from("CompleteBean").where(in("id", entity1.getId(), entity2.getId()));
 
-        List<TypedMap> actual = manager.nativeQuery(nativeQuery).get();
+        List<TypedMap> actual = manager.nativeQuery(statement).get();
 
         assertThat(actual).hasSize(2);
 
@@ -104,9 +109,9 @@ public class QueryIT {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
         manager.insert(entity);
 
-        String nativeQuery = "SELECT name FROM CompleteBean WHERE id = ?";
+        RegularStatement statement = select("name").from("CompleteBean").where(eq("id", bindMarker()));
 
-        List<TypedMap> actual = manager.nativeQuery(nativeQuery, entity.getId()).get();
+        List<TypedMap> actual = manager.nativeQuery(statement, entity.getId()).get();
 
         assertThat(actual).hasSize(1);
 
@@ -121,7 +126,9 @@ public class QueryIT {
 
         manager.insert(entity);
 
-        Long count = (Long) manager.nativeQuery("SELECT COUNT(*) FROM CompleteBean WHERE id=" + entity.getId()).first().get("count");
+        RegularStatement statement = select().countAll().from("CompleteBean").where(eq("id", entity.getId()));
+
+        Long count = (Long) manager.nativeQuery(statement).first().get("count");
 
         assertThat(count).isEqualTo(1L);
     }
@@ -134,7 +141,10 @@ public class QueryIT {
 
         manager.insert(entity, OptionsBuilder.withTtl(1000).withTimestamp(timestamp));
 
-        Map<String, Object> result = manager.nativeQuery("SELECT ttl(name),WRITETIME(age_in_years) FROM CompleteBean WHERE id=" + entity.getId()).first();
+        RegularStatement statement = select().fcall("ttl", column("name")).fcall("writetime",column("age_in_years"))
+                .from("CompleteBean").where(eq("id",entity.getId()));
+
+        Map<String, Object> result = manager.nativeQuery(statement).first();
 
         assertThat((Integer) result.get("ttl(name)")).isLessThanOrEqualTo(1000);
         assertThat(result.get("writetime(age_in_years)")).isEqualTo(timestamp);
@@ -148,9 +158,14 @@ public class QueryIT {
 
         manager.insert(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
-        Map<String, Object> result = manager.nativeQuery(
-                "SELECT now(),dateOf(date),unixTimestampOf(date) FROM " + ClusteredEntityWithTimeUUID.TABLE_NAME
-                        + " WHERE id=" + id).first();
+        RegularStatement statement = select()
+                .fcall("now")
+                .fcall("dateOf",column("date"))
+                .fcall("unixTimestampOf",column("date"))
+                .from(ClusteredEntityWithTimeUUID.TABLE_NAME)
+                .where(eq("id",id));
+
+        Map<String, Object> result = manager.nativeQuery(statement).first();
         assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
         assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
         assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
@@ -169,8 +184,9 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        String queryString = "SELECT * FROM CompleteBean LIMIT 3";
-        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
+        RegularStatement statement = select().from("CompleteBean").limit(3);
+
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).get();
 
         assertThat(actual).hasSize(2);
 
@@ -255,8 +271,8 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString).get();
+        RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement).get();
 
         assertThat(actual).hasSize(2);
 
@@ -324,8 +340,8 @@ public class QueryIT {
 
         manager.insert(entity);
 
-        String queryString = "SELECT id,name,friends FROM CompleteBean WHERE id = ?";
-        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, queryString, entity.getId()).get();
+        RegularStatement statement = select("id","name","friends").from("CompleteBean").where(eq("id",bindMarker()));
+        List<CompleteBean> actual = manager.typedQuery(CompleteBean.class, statement, entity.getId()).get();
 
         assertThat(actual).hasSize(1);
 
@@ -348,8 +364,8 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        String queryString = "SELECT * FROM CompleteBean LIMIT :lim";
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
+        RegularStatement statement = select().from("CompleteBean").limit(bindMarker("lim"));
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement, 3).get();
 
         assertThat(actual).hasSize(2);
 
@@ -422,8 +438,8 @@ public class QueryIT {
         manager.insert(entity1);
         manager.insert(entity2);
 
-        String queryString = "  SELECT id, name, friends   FROM CompleteBean LIMIT 3";
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString).get();
+        RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement).get();
 
         assertThat(actual).hasSize(2);
 
@@ -471,7 +487,8 @@ public class QueryIT {
         manager.insert(entity);
 
         String queryString = "SELECT name FROM CompleteBean LIMIT ?";
-        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, queryString, 3).get();
+        RegularStatement statement = select("name").from("CompleteBean").limit(bindMarker());
+        List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement, 3).get();
 
         assertThat(actual).hasSize(1);
         assertThat(actual.get(0).getName()).isEqualTo(entity.getName());
@@ -485,8 +502,8 @@ public class QueryIT {
 
         manager.insert(entity);
 
-        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-        CompleteBean actual = manager.typedQuery(CompleteBean.class, queryString).getFirst();
+        RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
+        CompleteBean actual = manager.typedQuery(CompleteBean.class, statement).getFirst();
 
         Factory factory1 = (Factory) actual;
         @SuppressWarnings("unchecked")
@@ -515,8 +532,8 @@ public class QueryIT {
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
         manager.insert(entity);
 
-        String queryString = "SELECT * FROM " + TABLE_NAME + " LIMIT 3";
-        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, queryString).getFirst();
+        RegularStatement statement = select().from(TABLE_NAME).limit(3);
+        ClusteredEntity actual = manager.typedQuery(ClusteredEntity.class, statement).getFirst();
 
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Factory.class);
@@ -537,8 +554,8 @@ public class QueryIT {
 
         manager.insert(entity);
 
-        String queryString = "SELECT id,name,friends FROM CompleteBean LIMIT 3";
-        CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, queryString).getFirst();
+        RegularStatement statement = select("id","name","friends").from("CompleteBean").limit(3);
+        CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, statement).getFirst();
 
         assertThat(Factory.class.isAssignableFrom(actual.getClass())).isFalse();
 
@@ -561,8 +578,8 @@ public class QueryIT {
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
         manager.insert(entity);
 
-        String queryString = "SELECT id,count,name,value FROM " + TABLE_NAME + " LIMIT 3";
-        ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, queryString).getFirst();
+        RegularStatement statement = select("id","count","name","value").from(TABLE_NAME).limit(3);
+        ClusteredEntity actual = manager.rawTypedQuery(ClusteredEntity.class, statement).getFirst();
 
         assertThat(actual).isNotNull();
 
@@ -581,8 +598,8 @@ public class QueryIT {
 
         manager.insert(entity);
 
-        final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
+        final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, select.getValues());
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();
@@ -592,16 +609,15 @@ public class QueryIT {
     }
 
     @Test
-    public void should_apply_null_heap_byte_buffer(){
+    public void should_apply_null_heap_byte_buffer() {
         // Given
         Tweet entity = TweetTestBuilder.tweet().randomId().content("label").buid();
 
         manager.insert(entity);
 
-        final Select.Where select = QueryBuilder.select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
-        final String queryString = select.getQueryString();
+        final Select.Where select = select().from("Tweet").where(QueryBuilder.eq("id", entity.getId()));
         final ByteBuffer[] values = select.getValues();
-        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, queryString, values);
+        final TypedQuery<Tweet> queryBuilder = manager.typedQuery(Tweet.class, select, values);
 
         // When
         final Tweet actual = queryBuilder.getFirst();
@@ -611,14 +627,14 @@ public class QueryIT {
     }
 
     @Test
-    public void should_apply_null_bounded_values(){
+    public void should_apply_null_bounded_values() {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         manager.insert(entity);
 
-        final Select.Where select = QueryBuilder.select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
-        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select.getQueryString(), select.getValues());
+        final Select.Where select = select().from("CompleteBean").where(QueryBuilder.eq("id", entity.getId()));
+        final TypedQuery<CompleteBean> queryBuilder = manager.typedQuery(CompleteBean.class, select, select.getValues());
 
         // When
         final CompleteBean actual = queryBuilder.getFirst();

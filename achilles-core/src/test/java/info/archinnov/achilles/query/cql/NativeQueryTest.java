@@ -29,13 +29,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
@@ -44,7 +45,6 @@ import info.archinnov.achilles.type.TypedMap;
 @RunWith(MockitoJUnitRunner.class)
 public class NativeQueryTest {
 
-    @InjectMocks
     private NativeQuery query;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -58,12 +58,18 @@ public class NativeQueryTest {
     @Mock
     private Row row;
 
+    @Mock
+    private RegularStatement regularStatement;
+
+    private Object[] boundValues = new Object[] { 1 };
+
     @Captor
-    private ArgumentCaptor<SimpleStatementWrapper> simpleStatementCaptor;
+    private ArgumentCaptor<NativeStatementWrapper> simpleStatementCaptor;
 
     @Before
     public void setUp() {
-        query.queryString = queryString;
+
+        query = new NativeQuery(daoContext, regularStatement, OptionsBuilder.noOptions(), boundValues);
         Whitebox.setInternalState(query, NativeQueryMapper.class, mapper);
     }
 
@@ -111,10 +117,10 @@ public class NativeQueryTest {
     @Test
     public void should_execute_upserts() throws Exception {
         //Given
-        final Object[] boundValues = { "test" };
         final Options options = OptionsBuilder.ifNotExists();
         query.boundValues = boundValues;
         query.options = options;
+        when(regularStatement.getQueryString()).thenReturn(queryString);
 
         //When
         query.execute();
@@ -122,7 +128,7 @@ public class NativeQueryTest {
         //Then
         verify(daoContext).execute(simpleStatementCaptor.capture());
 
-        final SimpleStatementWrapper actual = simpleStatementCaptor.getValue();
+        final NativeStatementWrapper actual = simpleStatementCaptor.getValue();
         assertThat(actual.getStatement().getQueryString()).isEqualTo(queryString);
         assertThat(actual.getValues()).isEqualTo(boundValues);
 

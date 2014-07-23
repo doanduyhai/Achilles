@@ -15,11 +15,15 @@
  */
 package info.archinnov.achilles.persistence;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +46,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +62,7 @@ import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
 import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQuery;
@@ -562,13 +568,14 @@ public class PersistenceManagerTest {
     @Test
     public void should_return_native_query_builder() throws Exception {
         // When
-        NativeQuery builder = manager.nativeQuery("queryString");
+        RegularStatement statement = select().from("test");
+        NativeQuery builder = manager.nativeQuery(statement);
 
         assertThat(builder).isNotNull();
 
         // Then
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
+        assertThat(Whitebox.getInternalState(builder, NativeStatementWrapper.class).getStatement()).isSameAs(statement);
     }
 
     @Test
@@ -578,17 +585,18 @@ public class PersistenceManagerTest {
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(meta);
         when(meta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta>());
 
-        TypedQuery<CompleteBean> builder = manager.typedQuery(CompleteBean.class, "queryString");
+        RegularStatement statement = select().from("test");
+        TypedQuery<CompleteBean> builder = manager.typedQuery(CompleteBean.class, statement);
 
         // Then
         assertThat(builder).isNotNull();
 
-        verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "queryString", meta);
+        verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, statement, meta);
 
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
+        assertThat(Whitebox.getInternalState(builder, NativeStatementWrapper.class).getStatement()).isSameAs(statement);
     }
 
     @Test
@@ -598,17 +606,18 @@ public class PersistenceManagerTest {
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(meta);
         when(meta.getPropertyMetas()).thenReturn(new HashMap<String, PropertyMeta>());
 
-        TypedQuery<CompleteBean> builder = manager.rawTypedQuery(CompleteBean.class, "queryString");
+        RegularStatement statement = select().from("test");
+        TypedQuery<CompleteBean> builder = manager.rawTypedQuery(CompleteBean.class, statement);
 
         // Then
         assertThat(builder).isNotNull();
 
-        verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class, "queryString", meta);
+        verify(typedQueryValidator).validateRawTypedQuery(CompleteBean.class, statement, meta);
 
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
+        assertThat(Whitebox.getInternalState(builder, NativeStatementWrapper.class).getStatement()).isSameAs(statement);
     }
 
     @Test
@@ -635,13 +644,16 @@ public class PersistenceManagerTest {
         when(meta.getTableName()).thenReturn("table");
         when(meta.encodeBoundValuesForTypedQueries(any(Object[].class))).thenReturn(new Object[] { "value" });
 
+        ArgumentCaptor<RegularStatement> captor = ArgumentCaptor.forClass(RegularStatement.class);
+
+        RegularStatement statement = select().from("table").where(eq("column", bindMarker("column")));
         TypedQuery<CompleteBean> typedQuery = manager.indexedQuery(CompleteBean.class, indexCondition);
 
         // Then
         assertThat(Whitebox.<Object[]>getInternalState(typedQuery, "encodedBoundValues")).contains("value");
         verify(meta).encodeIndexConditionValue(indexCondition);
-        verify(typedQueryValidator).validateTypedQuery(CompleteBean.class, "SELECT * FROM table WHERE column=:column;",
-                meta);
+        verify(typedQueryValidator).validateTypedQuery(eq(CompleteBean.class), captor.capture(), eq(meta));
+        assertThat(captor.getValue().getQueryString()).isEqualTo(statement.getQueryString());
     }
 
     @Test

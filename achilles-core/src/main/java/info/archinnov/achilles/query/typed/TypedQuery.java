@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.interceptor.Event;
@@ -33,15 +34,14 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
 
 public class TypedQuery<T> {
     private static final Logger log = LoggerFactory.getLogger(TypedQuery.class);
-    private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
+    private final NativeStatementWrapper nativeStatementWrapper;
 
     private DaoContext daoContext;
-    private String queryString;
     private Map<String, PropertyMeta> propertiesMap;
     private EntityMeta meta;
     private PersistenceContextFactory contextFactory;
@@ -51,11 +51,11 @@ public class TypedQuery<T> {
     private EntityMapper mapper = new EntityMapper();
     private EntityProxifier proxifier = new EntityProxifier();
 
-    public TypedQuery(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
+    public TypedQuery(Class<T> entityClass, DaoContext daoContext, RegularStatement regularStatement, EntityMeta meta,
             PersistenceContextFactory contextFactory, EntityState entityState, Object[] encodedBoundValues) {
         this.daoContext = daoContext;
         this.encodedBoundValues = meta.encodeBoundValuesForTypedQueries(encodedBoundValues);
-        this.queryString = queryString;
+        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, regularStatement, this.encodedBoundValues, Optional.<CASResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.entityState = entityState;
@@ -64,20 +64,19 @@ public class TypedQuery<T> {
 
     /**
      * Executes the query and returns entities
-     *
+     * <p/>
      * Matching CQL rows are mapped to entities by reflection. All un-mapped
      * columns are ignored.
-     *
+     * <p/>
      * The size of the list is equal or lesser than the number of matching CQL
      * row, because some null or empty rows are ignored and filtered out
      *
      * @return List<T> list of found entities or empty list
-     *
      */
     public List<T> get() {
-        log.debug("Get results for typed query {}", queryString);
+        log.debug("Get results for typed query {}", nativeStatementWrapper.getStatement());
         List<T> result = new ArrayList<>();
-        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, encodedBoundValues, NO_LISTENER)).all();
+        List<Row> rows = daoContext.execute(nativeStatementWrapper).all();
         for (Row row : rows) {
             T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             if (entity != null) {
@@ -93,17 +92,16 @@ public class TypedQuery<T> {
 
     /**
      * Executes the query and returns first entity
-     *
+     * <p/>
      * Matching CQL row is mapped to entity by reflection. All un-mapped columns
      * are ignored.
      *
      * @return T first found entity or null
-     *
      */
     public T getFirst() {
-        log.debug("Get first result for typed query {}", queryString);
+        log.debug("Get first result for typed query {}", nativeStatementWrapper.getStatement());
         T entity = null;
-        Row row = daoContext.execute(new SimpleStatementWrapper(queryString, encodedBoundValues, NO_LISTENER)).one();
+        Row row = daoContext.execute(nativeStatementWrapper).one();
         if (row != null) {
             entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             meta.intercept(entity, Event.POST_LOAD);

@@ -14,25 +14,7 @@
  *  limitations under the License.
  */
 
-package test.use.slice;
+package info.archinnov.achilles.internal.statement.wrapper;
 
-public class Child<CLASS> extends SimpleRoot<CLASS,Child<CLASS>> {
-
-    public Child(Class<CLASS> clazz) {
-        super(clazz);
-    }
-
-    public Child<CLASS> doSomething() {
-        return Child.this;
-    }
-
-    public Child<CLASS> thenSomething() {
-        return Child.this;
-    }
-
-
-    @Override
-    protected Child<CLASS> getThis() {
-        return Child.this;
-    }
+public class NativeQueryLog {
 }

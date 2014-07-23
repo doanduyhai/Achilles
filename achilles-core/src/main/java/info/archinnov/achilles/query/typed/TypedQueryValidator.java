@@ -18,6 +18,8 @@ package info.archinnov.achilles.query.typed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -25,37 +27,44 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class TypedQueryValidator {
     private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
 
-    public void validateTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
-        log.debug("Validate typed query {}",queryString);
+    public void validateTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
+        log.debug("Validate typed query {}",regularStatement.getQueryString());
 		PropertyMeta idMeta = meta.getIdMeta();
-		String normalizedQuery = queryString.toLowerCase();
+		String queryString = regularStatement.getQueryString().toLowerCase();
 
-		validateRawTypedQuery(entityClass, queryString, meta);
+		validateRawTypedQuery(entityClass, regularStatement, meta);
 
-		if (!normalizedQuery.contains("select *")) {
+		if (!queryString.contains("select *")) {
 			if (idMeta.isEmbeddedId()) {
 
 				for (String component : idMeta.getCQLComponentNames()) {
-					Validator.validateTrue(normalizedQuery.contains(component),
+					Validator.validateTrue(queryString.contains(component),
 							"The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
 							queryString, component, idMeta.getValueClass().getCanonicalName());
 				}
 			} else {
 				String idColumn = idMeta.getPropertyName();
-				Validator.validateTrue(normalizedQuery.contains(idColumn.toLowerCase()),
+				Validator.validateTrue(queryString.contains(idColumn.toLowerCase()),
 						"The typed query [%s] should contain the id column '%s'", queryString, idColumn);
 			}
 		}
 	}
 
-	public void validateRawTypedQuery(Class<?> entityClass, String queryString, EntityMeta meta) {
-        log.debug("Validate raw typed query {}",queryString);
+	public void validateRawTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
+        log.debug("Validate raw typed query {}",regularStatement);
         String tableName = meta.getTableName().toLowerCase();
-		String normalizedQuery = queryString.toLowerCase();
+        final String queryString = regularStatement.getQueryString();
+        String normalizedQuery = queryString.toLowerCase();
 
-		Validator.validateTrue(normalizedQuery.contains(" from " + tableName),
+        final boolean isASelect = regularStatement instanceof Select || regularStatement instanceof Select.Where;
+
+        Validator.validateTrue(isASelect,"The typed query [%s] should be a SELECT statement",queryString);
+
+
+        Validator.validateTrue(normalizedQuery.contains(" from " + tableName),
 				"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
+
 
 	}
 }

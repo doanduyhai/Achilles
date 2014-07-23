@@ -18,10 +18,14 @@ package info.archinnov.achilles.query.cql;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.Options;
@@ -42,20 +46,18 @@ import info.archinnov.achilles.type.TypedMap;
 public class NativeQuery {
     private static final Logger log = LoggerFactory.getLogger(NativeQuery.class);
 
-    private static final Optional<CASResultListener> NO_CAS_LISTENER = Optional.absent();
-
     private DaoContext daoContext;
+
     private NativeQueryMapper mapper = new NativeQueryMapper();
-
-    protected String queryString;
-
     protected Object[] boundValues;
+
+    protected NativeStatementWrapper nativeStatementWrapper;
 
     protected Options options;
 
-    public NativeQuery(DaoContext daoContext, String queryString, Options options, Object... boundValues) {
+    public NativeQuery(DaoContext daoContext, RegularStatement regularStatement, Options options, Object... boundValues) {
         this.daoContext = daoContext;
-        this.queryString = queryString;
+        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, regularStatement, boundValues, options.getCasResultListener());
         this.options = options;
         this.boundValues = boundValues;
     }
@@ -69,8 +71,8 @@ public class NativeQuery {
      * @return List<TypedMap>
      */
     public List<TypedMap> get() {
-        log.debug("Get results for native query {}", queryString);
-        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, NO_CAS_LISTENER)).all();
+        log.debug("Get results for native query {}", nativeStatementWrapper.getStatement());
+        List<Row> rows = daoContext.execute(nativeStatementWrapper).all();
         return mapper.mapRows(rows);
     }
 
@@ -82,8 +84,8 @@ public class NativeQuery {
      * @return TypedMap
      */
     public TypedMap first() {
-        log.debug("Get first result for native query {}", queryString);
-        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, NO_CAS_LISTENER)).all();
+        log.debug("Get first result for native query {}", nativeStatementWrapper.getStatement());
+        List<Row> rows = daoContext.execute(nativeStatementWrapper).all();
         List<TypedMap> result = mapper.mapRows(rows);
         if (result.isEmpty())
             return null;
@@ -96,7 +98,7 @@ public class NativeQuery {
      * INSERT/UPDATE/DELETE and DDL statements
      */
     public void execute() {
-        log.debug("Execute native query {}", queryString);
-        daoContext.execute(new SimpleStatementWrapper(queryString, boundValues, options.getCasResultListener()));
+        log.debug("Execute native query {}", nativeStatementWrapper.getStatement());
+        daoContext.execute(nativeStatementWrapper);
     }
 }
