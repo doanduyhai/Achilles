@@ -544,11 +544,19 @@ public class PersistenceManager {
     }
 
     /**
-     * Initialize all lazy fields of a 'managed' entity, except WideMap/Counter
-     * fields.
+     * Initialize all lazy fields of a set of 'managed' entities
      *
-     * Raise an <strong>IllegalStateException</strong> if the entity is not
-     * 'managed'
+     *  <pre class="code"><code class="java">
+     *      // Create a proxy
+     *      User userProxy = manager.getProxy(User.class,1L);
+     *      ...
+     *      // Perform some logic
+     *
+     *      // Initialize all fields not yet loaded into the managed entity, including counter fields
+     *      manager.initialize(userProxy);
+     *  </code></pre>
+     *
+     * Raise an IllegalStateException if an entity is not 'managed'
      *
      */
     public <T> T initialize(final T entity) {
@@ -562,17 +570,21 @@ public class PersistenceManager {
         return context.initialize(entity);
     }
 
+
+
     /**
-     * Initialize all lazy fields of a set of 'managed' entities
+     * Initialize all lazy fields of a list of 'managed' entities
      *
      *  <pre class="code"><code class="java">
-     *      // Create a proxy
-     *      User userProxy = manager.getProxy(User.class,1L);
+     *      // Create proxies
+     *      User userProxy1 = manager.getProxy(User.class,1L);
+     *      User userProxy2 = manager.getProxy(User.class,2L);
      *      ...
      *      // Perform some logic
+     *      ...
      *
      *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(userProxy);
+     *      manager.initialize(Sets.newHashSet(userProxy1, userProxy2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -598,7 +610,7 @@ public class PersistenceManager {
      *      ...
      *
      *      // Initialize all fields not yet loaded into the managed entity, including counter fields
-     *      manager.initialize(userProxy1, userProxy2);
+     *      manager.initialize(Arrays.asList(userProxy1, userProxy2));
      *  </code></pre>
      *
      * Raise an IllegalStateException if an entity is not 'managed'
@@ -759,14 +771,32 @@ public class PersistenceManager {
     /**
      * Return a CQL native query builder
      *
+     * <br/>
+     * <br/>
+     *
+     *  <h3>Native query without bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN(10,11) LIMIT 20";
+     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery).get();
+     *  </code></pre>
+     *
+     *  <br/>
+     *  <br/>
+     *
+     *  <h3>Native query with bound values</h3>
+     *  <pre class="code"><code class="java">
+     *      String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN ? LIMIT ?";
+     *      List&lt;TypedMap&gt; actual = manager.nativeQuery(nativeQuery,Arrays.asList(10,11),20).get();
+     *  </code></pre>
+     *
+     * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
+     *
      * @param queryString
      *            native CQL query string, including limit, ttl and consistency
      *            options
      *
      * @param options
-     *            options for the query. <strong>Only CAS Result listener passed as option is taken
-     *            into account</strong>. For timestamp, TTL and CAS conditions you must specify them
-     *            directly in the query string
+     *            options
      *
      * @param boundValues
      *            values to be bind to the parameterized query, if any
@@ -948,6 +978,10 @@ public class PersistenceManager {
         return contextFactory.newContext(entity, options).getPersistenceManagerFacade();
     }
 
+    /**
+     * Return Session object from Java Driver
+     * @return Session
+     */
     public Session getNativeSession() {
         return daoContext.getSession();
     }
