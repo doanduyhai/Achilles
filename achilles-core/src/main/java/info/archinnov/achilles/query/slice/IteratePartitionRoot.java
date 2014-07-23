@@ -75,10 +75,16 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... ORDER BY rating ASC ASC LIMIT 100
      *
+     * <br/>
+     * <em><strong>
+     * Note: if the fetch size is set, then you won't be able to use IN clause for partition components together ORDER BY.
+     * In this case, Achilles will remove automatically the ORDER BY clause
+     * </em></strong>
+     *
      * @return slice DSL
      */
     public Iterator<TYPE> iterator(int batchSize) {
-        super.properties.batchSize(batchSize);
+        super.properties.fetchSize(batchSize);
         return super.iteratorInternal();
     }
 
@@ -125,10 +131,15 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating=2</strong> ORDER BY rating ASC LIMIT 100
      *
+     * <em><strong>
+     * Note: if the fetch size is set, then you won't be able to use IN clause for partition components together ORDER BY.
+     * In this case, Achilles will remove automatically the ORDER BY clause
+     * </em></strong>
+     *
      * @return slice DSL
      */
     public Iterator<TYPE> iteratorWithMatchingAndBatchSize(int batchSize, Object... clusterings) {
-        super.properties.batchSize(batchSize);
+        super.properties.fetchSize(batchSize);
         super.withClusteringsInternal(clusterings);
         return super.iteratorInternal();
     }
@@ -363,10 +374,15 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... AND rating&gt;=2 ORDER BY rating ASC LIMIT 100
          *
+         * <em><strong>
+         * Note: if the fetch size is set, then you won't be able to use IN clause for partition components together ORDER BY.
+         * In this case, Achilles will remove automatically the ORDER BY clause
+         * </em></strong>
+         *
          * @return slice DSL
          */
         public Iterator<TYPE> iterator(int batchSize) {
-            IteratePartitionRoot.super.properties.batchSize(batchSize);
+            IteratePartitionRoot.super.properties.fetchSize(batchSize);
             return IteratePartitionRoot.super.iteratorInternal();
         }
     }

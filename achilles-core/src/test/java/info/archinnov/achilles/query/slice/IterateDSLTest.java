@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -65,12 +66,12 @@ public class IterateDSLTest {
 
         start.limit(3).iterator();
 
-        final Select whereClause = start.properties.generateWhereClauseForSelect(select);
+        final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
         assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 3);
-        assertThat(start.properties.batchSize).isEqualTo(DEFAULT_BATCH_SIZE);
+        assertThat(start.properties.fetchSizeO.isPresent()).isFalse();
     }
 
     @Test
@@ -81,14 +82,14 @@ public class IterateDSLTest {
         //When
         final IterateWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
 
-        start.fromClusterings("A", "B").limit(3).iterator();
+        start.fromClusterings("A", "B").limit(3).iterator(10);
 
-        final Select whereClause = start.properties.generateWhereClauseForSelect(select);
+        final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE bucket IN :partitionComponentsIn AND (col1,col2)>=(:col1,:col2) ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE bucket IN :partitionComponentsIn AND (col1,col2)>=(:col1,:col2) LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence(asList("a", "b"), "A", "B", 3);
-        assertThat(start.properties.batchSize).isEqualTo(DEFAULT_BATCH_SIZE);
+        assertThat(start.properties.fetchSizeO.get()).isEqualTo(10);
     }
 
     @Test
@@ -101,12 +102,12 @@ public class IterateDSLTest {
 
         start.limit(3).iterator(120);
 
-        final Select whereClause = start.properties.generateWhereClauseForSelect(select);
+        final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
         assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 3);
-        assertThat(start.properties.batchSize).isEqualTo(120);
+        assertThat(start.properties.fetchSizeO.get()).isEqualTo(120);
     }
 
     @Test
@@ -119,12 +120,12 @@ public class IterateDSLTest {
 
         start.limit(3).iteratorWithMatching("A", "B");
 
-        final Select whereClause = start.properties.generateWhereClauseForSelect(select);
+        final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
         assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 ORDER BY col1 ASC LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B", 3);
-        assertThat(start.properties.batchSize).isEqualTo(DEFAULT_BATCH_SIZE);
+        assertThat(start.properties.fetchSizeO.isPresent()).isFalse();
     }
 
     @Test
@@ -137,12 +138,12 @@ public class IterateDSLTest {
 
         start.limit(3).iteratorWithMatchingAndBatchSize(123, "A", "B");
 
-        final Select whereClause = start.properties.generateWhereClauseForSelect(select);
+        final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
         assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 ORDER BY col1 ASC LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B", 3);
-        assertThat(start.properties.batchSize).isEqualTo(123);
+        assertThat(start.properties.fetchSizeO.get()).isEqualTo(123);
     }
 
 }

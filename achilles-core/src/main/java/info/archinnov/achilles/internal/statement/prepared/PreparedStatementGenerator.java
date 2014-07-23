@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -442,7 +443,7 @@ public class PreparedStatementGenerator {
 
         Select from = select.from(entityMeta.getTableName());
 
-        final Select whereClause = sliceQueryProperties.generateWhereClauseForSelect(from);
+        final RegularStatement whereClause = sliceQueryProperties.generateWhereClauseForSelect(from);
 
         return session.prepare(whereClause.getQueryString());
     }

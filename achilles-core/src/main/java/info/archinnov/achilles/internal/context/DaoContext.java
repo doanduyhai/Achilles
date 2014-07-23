@@ -242,6 +242,8 @@ public class DaoContext {
     private BoundStatementWrapper buildBSForSliceQuery(SliceQueryProperties<?> sliceQueryProperties, ConsistencyLevel defaultReadConsistencyLevel, PreparedStatement ps) {
         final Object[] boundValues = sliceQueryProperties.getBoundValues();
         final BoundStatement bs = ps.bind(boundValues);
+        sliceQueryProperties.setFetchSizeToStatement(bs);
+
         final ConsistencyLevel readLevel =  sliceQueryProperties.getConsistencyLevelOr(defaultReadConsistencyLevel);
 
         return new BoundStatementWrapper(sliceQueryProperties.getEntityClass(),bs,boundValues, getCQLLevel(readLevel),
