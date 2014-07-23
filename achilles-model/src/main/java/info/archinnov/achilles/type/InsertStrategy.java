@@ -16,6 +16,26 @@
 
 package info.archinnov.achilles.type;
 
+/**
+ * <p>
+ * Define a strategy for insertion. Available values are :
+ * <ul>
+ *     <li>{@code info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS}</li>
+ *     <li>{@code info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS}</li>
+ * </ul>
+ * <br/>
+ * Default value = {@code info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS}
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Entity(table = "users")
+ *   <strong>{@literal @}Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)</strong>
+ *   public class UserEntity;
+ *
+ * </code></pre>
+ * </p>
+ * @see <a href="http://github.com/doanduyhai/Achilles/wiki/Insert-Strategy" target="_blank">Achilles Insert Strategies</a>
+ */
 public enum InsertStrategy {
     ALL_FIELDS, NOT_NULL_FIELDS;
 }

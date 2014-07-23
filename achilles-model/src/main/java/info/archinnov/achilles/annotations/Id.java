@@ -23,17 +23,31 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
- * Partition key
- * 
+ *  <p>
+ * Define a simple partition key for an entity
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}Id</strong>
+ *   private Long userId;
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#id" target="_blank">@Id</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
 public @interface Id {
 	/**
-	 * (Optional) The name of the partition key. Defaults to the property or
-	 * field name.
+	 * (<strong>Optional</strong>) The name of the partition key. Defaults to the field name.
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Id(<strong>name = "user_id"</strong>)
+     *   private Long userId;
+     *
+     * </code></pre>
+     *
 	 */
 	String name() default "";
 }

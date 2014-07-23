@@ -30,8 +30,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
 import java.io.IOException;
@@ -56,10 +56,17 @@ import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
+/**
+ * <p>
+ * <strong>Stateless</strong> factory to create persistence manager.
+ * This class is totally <strong></strong>thread-safe</strong> and can be shared by many threads.
+ * You should normally have only one instance of PersistenceManagerFactory across the application
+ *
+ */
 public class PersistenceManagerFactory {
     private static final Logger log = LoggerFactory.getLogger(PersistenceManagerFactory.class);
 
@@ -80,12 +87,7 @@ public class PersistenceManagerFactory {
     private ProxyClassFactory proxyClassFactory = new ProxyClassFactory();
     private Cluster cluster;
 
-    /**
-     * Create a new PersistenceManagerFactory with a configuration map
-     *
-     * @param configurationMap Check documentation for more details on configuration
-     *                         parameters
-     */
+
     PersistenceManagerFactory(Cluster cluster, Map<ConfigurationParameters, Object> configurationMap) {
         this.cluster = cluster;
         Validator.validateNotNull(configurationMap, "Configuration map for PersistenceManagerFactory should not be null");
@@ -226,8 +228,12 @@ public class PersistenceManagerFactory {
          * Create a new PersistenceManagerFactory with the given configuration
          * map
          *
-         * @param cluster pre-configured {@code com.datastax.driver.core.Cluster}
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#parameters" target="_blank">Configuration parameters</a>
+         *
+         * @param cluster pre-configured {@link com.datastax.driver.core.Cluster}
          * @param configurationMap configuration map
+         * @return new PersistenceManagerFactory
+         *
          */
         public static PersistenceManagerFactory build(Cluster cluster, Map<ConfigurationParameters, Object> configurationMap) {
             return new PersistenceManagerFactory(cluster, configurationMap).bootstrap();
@@ -236,9 +242,8 @@ public class PersistenceManagerFactory {
         /**
          * Create a new builder to configure each parameter
          *
+         * @param cluster pre-configured {@link com.datastax.driver.core.Cluster}
          * @return PersistenceManagerFactoryBuilder
-         *
-         * @param cluster pre-configured {@code com.datastax.driver.core.Cluster}
          */
         public static PersistenceManagerFactoryBuilder builder(Cluster cluster) {
             return new PersistenceManagerFactoryBuilder(cluster);
@@ -248,6 +253,8 @@ public class PersistenceManagerFactory {
          * Define entity packages to scan for '@Entity' classes The packages
          * should be comma-separated
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#entity-parsing" target="_blank">Entity parsing</a>
+         *
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withEntityPackages(String entityPackages) {
@@ -256,7 +263,9 @@ public class PersistenceManagerFactory {
         }
 
         /**
-         * Define entities
+         * Define list of entities to be managed by Achilles
+         *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#entity-parsing" target="_blank">Entity parsing</a>
          *
          * @return PersistenceManagerFactoryBuilder
          */
@@ -269,10 +278,11 @@ public class PersistenceManagerFactory {
          * Define a pre-configured Jackson Object Mapper for serialization of
          * non-primitive types
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#json-serialization" target="_blank">JSON serialization</a>
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withObjectMapper(ObjectMapper objectMapper) {
-            configMap.put(OBJECT_MAPPER, objectMapper);
+        public PersistenceManagerFactoryBuilder withJacksonMapper(ObjectMapper objectMapper) {
+            configMap.put(JACKSON_MAPPER, objectMapper);
             return this;
         }
 
@@ -280,10 +290,11 @@ public class PersistenceManagerFactory {
          * Define a pre-configured map of Jackson Object Mapper for
          * serialization of non-primitive types
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#json-serialization" target="_blank">JSON serialization</a>
          * @return PersistenceManagerFactoryBuilder
          */
-        public PersistenceManagerFactoryBuilder withObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-            configMap.put(OBJECT_MAPPER_FACTORY, objectMapperFactory);
+        public PersistenceManagerFactoryBuilder withJacksonMapperFactory(JacksonMapperFactory jacksonMapperFactory) {
+            configMap.put(JACKSON_MAPPER_FACTORY, jacksonMapperFactory);
             return this;
         }
 
@@ -291,6 +302,7 @@ public class PersistenceManagerFactory {
          * Define the default Consistency level to be used for all READ
          * operations
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultReadConsistency(ConsistencyLevel defaultReadConsistency) {
@@ -302,6 +314,7 @@ public class PersistenceManagerFactory {
          * Define the default Consistency level to be used for all WRITE
          * operations
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultWriteConsistency(ConsistencyLevel defaultWriteConsistency) {
@@ -314,6 +327,7 @@ public class PersistenceManagerFactory {
          * operations The map keys represent table names and values represent
          * the corresponding consistency level
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultReadConsistencyMap(Map<String, ConsistencyLevel> readConsistencyMap) {
@@ -326,6 +340,7 @@ public class PersistenceManagerFactory {
          * operations The map keys represent table names and values represent
          * the corresponding consistency level
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#consistency-level" target="_blank">Consistency configuration</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withDefaultWriteConsistencyMap(Map<String, ConsistencyLevel> writeConsistencyMap) {
@@ -338,6 +353,7 @@ public class PersistenceManagerFactory {
          * exist in the keyspace This flag is useful for dev only. <strong>It
          * should be disabled in production</strong>
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#ddl" target="_blank">Table generation</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder forceTableCreation(boolean forceTableCreation) {
@@ -347,9 +363,9 @@ public class PersistenceManagerFactory {
 
         /**
          * Whether Achilles should force update table if entities have new fields and table not.
-         * This flag is useful for dev only. <strong>It
-         * should be disabled in production</strong>
+         * This flag is useful for dev only. <strong>It is strongly advised to disable this feature in production</strong>
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#lossless-schema-update" target="_blank">Lossless Schema Updae</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder enableSchemaUpdate(boolean forceTableUpdate) {
@@ -359,9 +375,9 @@ public class PersistenceManagerFactory {
 
         /**
          * Map to allow table schema update, same as
-         * {@link #enableSchemaUpdate(boolean)} per table. <strong>It should be
-         * disabled in production</strong>
+         * {@link #enableSchemaUpdate(boolean)} per table. <strong>It is strongly advised to disable this feature in production</strong>
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#lossless-schema-update" target="_blank">Lossless Schema Update</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder enableSchemaUpdateForTables(Map<String, Boolean> tables) {
@@ -373,6 +389,7 @@ public class PersistenceManagerFactory {
          * Define the pre-configured {@code com.datastax.driver.core.Session} object to
          * be used instead of creating a new one
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#native-session" target="_blank">Native Session</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withNativeSession(Session nativeSession) {
@@ -386,6 +403,7 @@ public class PersistenceManagerFactory {
          * build as many PersistenceManagerFactory as different keyspaces to be
          * used
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#keyspace" target="_blank">Keyspace</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withKeyspaceName(String keyspaceName) {
@@ -396,6 +414,7 @@ public class PersistenceManagerFactory {
         /**
          * Provide a list of event interceptors
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#events-interceptors" target="_blank">Event interceptors</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withEventInterceptors(List<Interceptor<?>> interceptors) {
@@ -406,6 +425,7 @@ public class PersistenceManagerFactory {
         /**
          * Activate Bean Validation (JSR303)
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#bean-validation" target="_blank">Bean validation</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder enableBeanValidation(boolean enableBeanValidation) {
@@ -416,6 +436,7 @@ public class PersistenceManagerFactory {
         /**
          * Provide custom validator for Bean Validation (JSR303)
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#bean-validation" target="_blank">Bean validation</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withBeanValidator(javax.validation.Validator validator) {
@@ -434,6 +455,7 @@ public class PersistenceManagerFactory {
          * For information, only selects on counter fields and updates are put into the cache because they cannot be
          * prepared before hand since the updated properties are not known in advance.
          *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#prepared-statements-cache" target="_blank">Prepared statements cache</a>
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder withMaxPreparedStatementCacheSize(int maxPreparedStatementCacheSize) {
@@ -445,7 +467,6 @@ public class PersistenceManagerFactory {
          * Whether to disable proxies warm up or not.
          *
          * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#proxies" target="_blank">Proxies Warm Up</a>
-         *
          * @param disableProxiesWarmUp
          *
          * @return PersistenceManagerFactoryBuilder
@@ -460,7 +481,6 @@ public class PersistenceManagerFactory {
          * Define the global insert strategy
          *
          * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Insert-Strategy" target="_blank">Insert Strategy</a>
-         *
          * @param globalInsertStrategy
          *
          * @return PersistenceManagerFactoryBuilder

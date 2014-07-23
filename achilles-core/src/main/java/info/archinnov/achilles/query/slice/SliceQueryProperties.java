@@ -29,7 +29,6 @@ import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -40,9 +39,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.BoundingMode;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.OrderingMode;
 
 public class SliceQueryProperties<T> {
 

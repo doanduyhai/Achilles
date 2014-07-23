@@ -19,8 +19,6 @@ package info.archinnov.achilles.query.slice;
 import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.type.BoundingMode;
-import info.archinnov.achilles.type.OrderingMode;
 
 public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExtended<TYPE,T>> extends SliceQueryRoot<TYPE,T> {
 
@@ -28,38 +26,205 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
+    /**
+     *
+     * Use inclusive upper & lower bounds
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .withInclusiveBounds()
+     *      .get(20);
+     *
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
+     * @return Slice DSL
+     */
     public T withInclusiveBounds() {
         super.properties.bounding(BoundingMode.INCLUSIVE_BOUNDS);
         return getThis();
     }
 
+    /**
+     *
+     * Use exclusive upper & lower bounds
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .withExclusiveBounds()
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
+     * @return Slice DSL
+     */
     public T withExclusiveBounds() {
         super.properties.bounding(BoundingMode.EXCLUSIVE_BOUNDS);
         return getThis();
     }
 
+    /**
+     *
+     * Use inclusive lower bound and exclusive upper bounds
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .withExclusiveBounds()
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;=(2,now)</strong> AND <strong>(rating)&lt;4</strong> ORDER BY rating ASC LIMIT 20
+     * @return Slice DSL
+     */
     public T fromInclusiveToExclusiveBounds() {
         super.properties.bounding(BoundingMode.INCLUSIVE_START_BOUND_ONLY);
         return getThis();
     }
 
+    /**
+     *
+     * Use exclusive lower bound and inclusive upper bounds
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .withExclusiveBounds()
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND <strong>(rating,date)&gt;(2,now)</strong> AND <strong>(rating)&lt;=4</strong> ORDER BY rating ASC LIMIT 20
+     * @return Slice DSL
+     */
     public T fromExclusiveToInclusiveBounds() {
         super.properties.bounding(BoundingMode.INCLUSIVE_END_BOUND_ONLY);
         return getThis();
     }
 
+    /**
+     *
+     * Use ascending order for the first clustering key. This is the <strong>default</strong> ordering
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .orderByAscending()
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating ASC</strong> LIMIT 20
+     * @return Slice DSL
+     */
     public T orderByAscending() {
         super.properties.ordering(OrderingMode.ASCENDING);
         return getThis();
     }
 
+
+    /**
+     *
+     * Use descending order for the first clustering key
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .orderByDescending()
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 <strong>ORDER BY rating DESC</strong> LIMIT 20
+     * @return Slice DSL
+     */
     public T orderByDescending() {
         super.properties.ordering(OrderingMode.DESCENDING);
         return getThis();
     }
 
+    /**
+     *
+     * Set a limit to the query. <strong>A default limit of 100 is always set to avoid OutOfMemoryException</strong>
+     * You can remove it at your own risk using noLimit()
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withPartitionComponents(articleId)
+     *      .fromClusterings(2, now)
+     *      .toClusterings(4)
+     *      .limit(5)
+     *      .get();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND (rating,date)&gt;=(2,now) AND (rating)&lt;=4 ORDER BY rating ASC <strong>LIMIT 5</strong>
+     * @return Slice DSL
+     */
     public T limit(int limit) {
         super.properties.limit(limit);
+        return getThis();
+    }
+
+    /**
+     * Remove the default limit of 100 rows
+     *
+     * @return Slice DSL
+     */
+    public T noLimit() {
+        super.properties.disableLimit();
         return getThis();
     }
 }

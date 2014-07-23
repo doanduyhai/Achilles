@@ -31,8 +31,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
@@ -59,8 +59,8 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.json.DefaultObjectMapperFactory;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
@@ -120,7 +120,7 @@ public class ArgumentExtractor {
         configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
         configContext.setEnableSchemaUpdate(initForceTableUpdate(configurationMap));
         configContext.setEnableSchemaUpdateForTables(initForceTableUpdateMap(configurationMap));
-        configContext.setObjectMapperFactory(initObjectMapperFactory(configurationMap));
+        configContext.setJacksonMapperFactory(initObjectMapperFactory(configurationMap));
         configContext.setDefaultReadConsistencyLevel(initDefaultReadConsistencyLevel(configurationMap));
         configContext.setDefaultWriteConsistencyLevel(initDefaultWriteConsistencyLevel(configurationMap));
         configContext.setReadConsistencyLevelMap(initReadConsistencyMap(configurationMap));
@@ -148,24 +148,24 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(ENABLE_SCHEMA_UPDATE_FOR_TABLES, ImmutableMap.<String, Boolean>of());
     }
 
-    ObjectMapperFactory initObjectMapperFactory(ConfigMap configurationMap) {
+    JacksonMapperFactory initObjectMapperFactory(ConfigMap configurationMap) {
         log.trace("Extract object mapper factory from configuration map");
 
-        ObjectMapperFactory objectMapperFactory = configurationMap.getTyped(OBJECT_MAPPER_FACTORY);
-        if (objectMapperFactory == null) {
-            ObjectMapper mapper = configurationMap.getTyped(OBJECT_MAPPER);
+        JacksonMapperFactory jacksonMapperFactory = configurationMap.getTyped(JACKSON_MAPPER_FACTORY);
+        if (jacksonMapperFactory == null) {
+            ObjectMapper mapper = configurationMap.getTyped(JACKSON_MAPPER);
             if (mapper != null) {
-                objectMapperFactory = factoryFromMapper(mapper);
+                jacksonMapperFactory = factoryFromMapper(mapper);
             } else {
-                objectMapperFactory = new DefaultObjectMapperFactory();
+                jacksonMapperFactory = new DefaultJacksonMapperFactory();
             }
         }
 
-        return objectMapperFactory;
+        return jacksonMapperFactory;
     }
 
-    protected static ObjectMapperFactory factoryFromMapper(final ObjectMapper mapper) {
-        return new ObjectMapperFactory() {
+    protected static JacksonMapperFactory factoryFromMapper(final ObjectMapper mapper) {
+        return new JacksonMapperFactory() {
             @Override
             public <T> ObjectMapper getMapper(Class<T> type) {
                 return mapper;

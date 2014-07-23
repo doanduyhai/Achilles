@@ -21,7 +21,7 @@ import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 
@@ -32,7 +32,7 @@ public class ConfigurationContext {
 
     private Map<String, Boolean> enableSchemaUpdateForTables;
 
-    private ObjectMapperFactory objectMapperFactory;
+    private JacksonMapperFactory jacksonMapperFactory;
 
     private ConsistencyLevel defaultReadConsistencyLevel;
 
@@ -76,12 +76,12 @@ public class ConfigurationContext {
         this.enableSchemaUpdate = enableSchemaUpdate;
     }
 
-    public ObjectMapperFactory getObjectMapperFactory() {
-        return objectMapperFactory;
+    public JacksonMapperFactory getJacksonMapperFactory() {
+        return jacksonMapperFactory;
     }
 
-    public void setObjectMapperFactory(ObjectMapperFactory objectMapperFactory) {
-        this.objectMapperFactory = objectMapperFactory;
+    public void setJacksonMapperFactory(JacksonMapperFactory jacksonMapperFactory) {
+        this.jacksonMapperFactory = jacksonMapperFactory;
     }
 
     public ConsistencyLevel getDefaultReadConsistencyLevel() {
@@ -153,7 +153,7 @@ public class ConfigurationContext {
 
 
     public ObjectMapper getMapperFor(Class<?> type) {
-        return objectMapperFactory.getMapper(type);
+        return jacksonMapperFactory.getMapper(type);
     }
 
     public ClassLoader selectClassLoader(Class<?> entityClass) {

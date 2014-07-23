@@ -20,6 +20,13 @@ import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
+/**
+ * Builder for slice query
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#slice-query" target="_blank">Slice Query DSL</a>
+ *
+ * @param <TYPE>: type of clustered entity
+ */
 public class SliceQueryBuilder<TYPE> {
 
     private final SliceQueryExecutor sliceQueryExecutor;
@@ -32,14 +39,29 @@ public class SliceQueryBuilder<TYPE> {
         this.meta = meta;
     }
 
+    /**
+     * Create a builder DSL for a SELECT statement
+     *
+     * @return SelectDSL
+     */
     public SelectDSL<TYPE> forSelect() {
         return new SelectDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.SELECT);
     }
 
+    /**
+     * Create a builder DSL for iteration on a SELECT statement
+     *
+     * @return IterateDSL
+     */
     public IterateDSL<TYPE> forIteration() {
         return new IterateDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.ITERATE);
     }
 
+    /**
+     * Create a builder DSL for a DELETE statement
+     *
+     * @return DeleteDSL
+     */
     public DeleteDSL<TYPE> forDelete() {
         return new DeleteDSL<>(sliceQueryExecutor, entityClass, meta, SliceType.DELETE);
     }

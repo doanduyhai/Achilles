@@ -24,26 +24,51 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * <p>
+ * Define the consistency level for an Entity
+ * For the PersistenceManager, the consistency level applies on all the fields on the entity
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Entity(table = "user")
+ *   <strong>{@literal @}Consistency(read = ConsistencyLevel.ONE, write = ConsistencyLevel.ALL)</strong>
+ *   public class User
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#consistency" target="_blank">@Consistency</a>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD })
 @Documented
-/**
- * <p>
- * Define the consistency level for an Entity 
- * For PersistenceManager, the consistency level applies on all the fields on the entity
- * </p>
- */
 public @interface Consistency {
 	/**
 	 * <p>
-	 * Consistency level for read operations
+	 * Consistency level for read operations. Default = <strong>ConsistencyLevel.ONE</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Entity(table = "user")
+     *   {@literal @}Consistency(<strong>read = ConsistencyLevel.ONE</strong>)
+     *   public class User
+     *
+     * </code></pre>
 	 * </p>
 	 */
 	ConsistencyLevel read() default ConsistencyLevel.ONE;
 
 	/**
 	 * <p>
-	 * Consistency level for write operations
+	 * Consistency level for write operations. Default = <strong>ConsistencyLevel.ONE</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Entity(table = "user")
+     *   {@literal @}Consistency(<strong>write = ConsistencyLevel.QUORUM</strong>)
+     *   public class User
+     *
+     * </code></pre>
+     *
 	 * </p>
 	 */
 	ConsistencyLevel write() default ConsistencyLevel.ONE;

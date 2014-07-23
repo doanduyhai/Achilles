@@ -15,6 +15,23 @@
  */
 package info.archinnov.achilles.counter;
 
+/**
+ * Interface defining the structure of internal Achilles Counter table
+ *
+ * This table creation script is
+ *
+ * <pre class="code"><code class="sql">
+ *
+ *   CREATE TABLE achilles_counter_table (
+ *      fqcn text,
+ *      primary_key text,
+ *      property_name text,
+ *      counter_value counter,
+ *      PRIMARY KEY((fqcn,primary_key),property_name));
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Counters#simple-counters-mapping" target="_blank">Simple counter support</a>
+ */
 public interface AchillesCounter {
 
 	public static final String CQL_COUNTER_TABLE = "achilles_counter_table";

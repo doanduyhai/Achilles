@@ -19,6 +19,17 @@ package info.archinnov.achilles.type;
 import com.google.common.base.Objects;
 import info.archinnov.achilles.internal.validation.Validator;
 
+/**
+ * <p>
+ * Simple index condition for indexed query
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   List<UserEntity> = manager.indexedQuery(UserEntity.class, new IndexCondition("name","John")).get();
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#indexed-query" target="_blank">Indexed queries</a>
+ */
 public class IndexCondition {
 
     private final String columnName;

@@ -283,7 +283,7 @@ public class PersistenceManagerTest {
 
         when(facade.getIdMeta()).thenReturn(idMeta);
 
-        manager.removeById(CompleteBean.class, primaryKey, LOCAL_QUORUM);
+        manager.removeById(CompleteBean.class, primaryKey, OptionsBuilder.withConsistency(LOCAL_QUORUM));
 
         // Then
         verify(entityValidator).validatePrimaryKey(idMeta, primaryKey);

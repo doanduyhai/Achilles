@@ -28,7 +28,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.FORC
 import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OBJECT_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
@@ -49,7 +49,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.InsertStrategy;
@@ -73,7 +73,7 @@ public class PersistenceManagerJavaConfigSample {
     private Session session;
 
     @Autowired
-    private ObjectMapperFactory objecMapperFactory;
+    private JacksonMapperFactory objecMapperFactory;
 
     @Autowired
     private List<Interceptor<?>> eventInterceptors;
@@ -137,7 +137,7 @@ public class PersistenceManagerJavaConfigSample {
         }
 
         configMap.put(KEYSPACE_NAME, keyspaceName);
-        configMap.put(OBJECT_MAPPER_FACTORY, objecMapperFactory);
+        configMap.put(JACKSON_MAPPER_FACTORY, objecMapperFactory);
 
         if (isNotBlank(consistencyLevelReadDefault)) {
             configMap.put(CONSISTENCY_LEVEL_READ_DEFAULT, consistencyLevelReadDefault);

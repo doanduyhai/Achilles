@@ -113,6 +113,13 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         SliceQueryRoot.this.properties.lastClusteringKeyName(meta.getLastClusteringKeyName());
     }
 
+    /**
+     *
+     * Provide a consistency level for SELECT/DELETE statement
+     *
+     * @param consistencyLevel
+     * @return Slice DSL
+     */
     public T withConsistency(ConsistencyLevel consistencyLevel) {
         this.properties.consistency(consistencyLevel);
         return getThis();

@@ -34,12 +34,51 @@ public class DeleteDSL<TYPE> {
         this.sliceType = sliceType;
     }
 
+    /**
+     *
+     * Start the Delete DSL with provided partition components
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forDelete()
+     *      .withPartitionComponents(articleId)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  DELETE FROM article_rating WHERE article_id=...
+     *
+     * @return slice DSL
+     */
     public DeleteFromPartition<TYPE> withPartitionComponents(Object... partitionKeyComponents) {
         final DeleteFromPartition<TYPE> delete = new DeleteFromPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
         delete.withPartitionComponentsInternal(partitionKeyComponents);
         return delete;
     }
 
+    /**
+     *
+     * Start the Delete DSL with provided partition components IN
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(MessageEntity.class)
+     *      .forDelete()
+     *      .withPartitionComponents(10L)
+     *      .andPartitionComponentsIN(2013, 2014)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  DELETE FROM messages WHERE user_id=10 AND year IN (2013,2014)
+     *
+     * @return slice DSL
+     */
     public DeleteWithPartition<TYPE> withPartitionComponentsIN(Object... partitionKeyComponents) {
         final DeleteWithPartition<TYPE> delete = new DeleteWithPartition<>(sliceQueryExecutor, entityClass, meta, sliceType);
         delete.withPartitionComponentsINInternal(partitionKeyComponents);

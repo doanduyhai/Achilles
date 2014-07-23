@@ -24,8 +24,15 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Simple column
- * </p>
+ * Annotation for simple column. Example
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}Column</strong>
+ *   private String userFirstname;
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#column" target="_blank">@Column</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -33,13 +40,27 @@ import java.lang.annotation.Target;
 public @interface Column {
 
 	/**
-	 * (Optional) The name of the column. Defaults to the property or field
-	 * name.
+	 * (<strong>Optional</strong>) The name of the column in <strong>CQL3</strong>. Defaults to the field name.
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Column(<strong>name = "user_name"</strong>)
+     *   private String userFirstname;
+     *
+     * </code></pre>
+     *
 	 */
 	String name() default "";
 
     /**
-     * (Optional) Whether this column is a <strong>static</strong> column or not
+     * (<strong>Optional</strong>) Whether this column is a <strong>static</strong> column or not. Default = <strong>false</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Column(<strong>staticColumn = true</strong>)
+     *   private String userFirstname;
+     *
+     * </code></pre>
      *
      */
     boolean staticColumn() default false;

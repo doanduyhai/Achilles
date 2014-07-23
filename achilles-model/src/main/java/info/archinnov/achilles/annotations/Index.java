@@ -22,14 +22,34 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * <p>
+ * Annotation for secondary index. Example
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   <strong>{@literal @}Index</strong>
+ *   {@literal @}Column
+ *   private String countryCode;
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#index" target="_blank">@Index</a>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
 public @interface Index {
 	/**
 	 * <p>
-	 * Index property. This property is a secondary index. (ie. Ability to
-	 * retrieve keys based on this field's value)
+	 * Define the name of the secondary index. If not set, defaults to <strong>table name_field name</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   {@literal @}Index(<strong>name = "user_country_code_index"</strong>)
+     *   {@literal @}Column
+     *   private String countryCode;
+     *
+     * </code></pre>
 	 * </p>
 	 */
 	String name() default "";

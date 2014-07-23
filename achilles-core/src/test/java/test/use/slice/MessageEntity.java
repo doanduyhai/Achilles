@@ -13,11 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.json;
 
+package test.use.slice;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public interface ObjectMapperFactory {
-    public <T> ObjectMapper getMapper(Class<T> type);
+public class MessageEntity {
 }

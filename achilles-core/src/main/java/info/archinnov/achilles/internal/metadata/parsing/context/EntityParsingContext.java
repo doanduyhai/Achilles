@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
-import static com.google.common.base.Optional.fromNullable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +23,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
@@ -86,8 +85,8 @@ public class EntityParsingContext {
         return currentConsistencyLevels;
     }
 
-    public ObjectMapperFactory getObjectMapperFactory() {
-        return configContext.getObjectMapperFactory();
+    public JacksonMapperFactory getObjectMapperFactory() {
+        return configContext.getJacksonMapperFactory();
     }
 
 

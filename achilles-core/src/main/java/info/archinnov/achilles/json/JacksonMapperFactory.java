@@ -13,21 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.type;
+package info.archinnov.achilles.json;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * <p>
- *     List all available consistency levels
- *     <br>
- *     <br>
- *     Please note that <strong>SERIAL</strong> and <strong>LOCAL_SERIAL</strong> levels only
- *     apply to CAS operations
- *     <br>
- *     <br>
- *     All levels having <strong>LOCAL</strong> in their name apply to a multi-datacenters cluster
- * </p>
- * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Consistency-Level" target="_blank">ConsistencyLevel</a>
+ * Interface to be implemented to define your own Jackson Object Mapper for each class
+ *
  */
-public enum ConsistencyLevel {
-    ANY, ONE, TWO, THREE, QUORUM, EACH_QUORUM, LOCAL_QUORUM, ALL, SERIAL, LOCAL_SERIAL, LOCAL_ONE;
+public interface JacksonMapperFactory {
+    public <T> ObjectMapper getMapper(Class<T> type);
 }

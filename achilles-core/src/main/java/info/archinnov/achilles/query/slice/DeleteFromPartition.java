@@ -30,6 +30,26 @@ public class DeleteFromPartition<TYPE> extends DeletePartitionRoot<TYPE,DeleteFr
         return DeleteFromPartition.this;
     }
 
+    /**
+     *
+     * Start the Delete DSL with provided partition components IN
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(MessageEntity.class)
+     *      .forDelete()
+     *      .withPartitionComponents(10L)
+     *      .andPartitionComponentsIN(2013, 2014)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  DELETE FROM messages WHERE user_id=10 AND year IN (2013,2014)
+     *
+     * @return slice DSL
+     */
     public DeleteFromPartition<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
         super.andPartitionKeysINInternal(partitionKeyComponentsIn);
         return DeleteFromPartition.this;

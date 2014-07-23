@@ -17,10 +17,61 @@ package info.archinnov.achilles.interceptor;
 
 import java.util.List;
 
+/**
+ * <p/>
+ * Interface to define an entity interceptor.
+ * <br>
+ * The "<em>List&lt;Event&gt; events()</em>" method returns a list of {@link info.archinnov.achilles.interceptor.Event}
+ * in the entity lifecycle to be intercepted.
+ * <br>
+ * <br>
+ * The "<em>void onEvent(T entity)</em>" method is called upon interception. This is where interception logic takes place.
+ * A <em>raw</em> instance of the entity is injected as parameter for this method and its state
+ * may be modified according to some functional logic
+ * <br>
+ * <br>
+ * <strong>Please note that during interception, the interceptor should NOT remove the primary key.
+ * A verification is performed by Achilles after entity interception to guarantee that the primary key
+ * and/or all its components are not null.
+ * <br>
+ * <br>
+ * However it is possible to modify the primary key, although it is strongly discouraged to do so. It may
+ * result in unexpected error and/or data corruption in Cassandra
+ * </strong>
+ * <br>
+ * <br>
+ * Below is an example of an interceptor on the <em>User</em> entity to set the <em>biography</em>
+ * field with "TO DO" when it is not set. This interception occurs before persist and update operations
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   public class UserInterceptor extends Interceptor&lt;User&gt;
+ *   {
+ *
+ *       public void onEvent(User entity) {
+ *          if(entity.getBiography() == null) {
+ *              entity.setBiography("TO DO");
+ *          }
+ *       }
+ *
+ *       public List&lt;Event&gt; events() {
+ *          return Arrays.asList(PRE_PERSIST,PRE_UPDATE);
+ *          }
+ *    }
+ *
+ * </code></pre>
+ *
+ * <p/>
+
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Interceptors" target="_blank">Interceptors</a>
+ *
+ * @param <T> : type of entity to which this interceptor applies
+ */
 public interface Interceptor<T> {
 
-	public void onEvent(T entity);
+	void onEvent(T entity);
 
-	public List<Event> events();
+	List<Event> events();
 
 }

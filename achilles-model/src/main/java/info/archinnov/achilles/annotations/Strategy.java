@@ -32,6 +32,14 @@ import info.archinnov.achilles.type.InsertStrategy;
  * </ul>
  * <br/>
  * Default value = {@code info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS}
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Entity(table = "users")
+ *   <strong>{@literal @}Strategy(insert = InsertStrategy.NOT_NULL_FIELDS)</strong>
+ *   public class UserEntity;
+ *
+ * </code></pre>
  * </p>
  * @see <a href="http://github.com/doanduyhai/Achilles/wiki/Insert-Strategy" target="_blank">Achilles Insert Strategies</a>
  */

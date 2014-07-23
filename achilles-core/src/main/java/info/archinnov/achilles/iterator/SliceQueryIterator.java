@@ -26,6 +26,12 @@ import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
+/**
+ *
+ * Implementation of an Iterator&lt;T&gt; that uses <strong>CQL3</strong> paging feature to fetch results by batches
+ *
+ * @param <T>: type of entity to iterate on
+ */
 public class SliceQueryIterator<T> implements Iterator<T> {
 
     private static final Logger log = LoggerFactory.getLogger(SliceQueryIterator.class);

@@ -25,12 +25,51 @@ public abstract class DeletePartitionRoot<TYPE, T extends DeletePartitionRoot<TY
         super(sliceQueryExecutor, entityClass, meta, sliceType);
     }
 
+    /**
+     *
+     * Delete entities without filtering clustering keys.
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forDelete()
+     *      .withPartitionComponents(articleId)
+     *      .delete();
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  DELETE FROM article_rating WHERE article_id=...
+     *
+     * @return slice DSL
+     */
     public void delete() {
         super.properties.disableLimit();
         super.deleteInternal();
     }
 
-
+    /**
+     *
+     * Delete entities with matching clustering keys
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forDelete()
+     *      .withPartitionComponents(articleId)
+     *      .deleteMatching(2);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  DELETE FROM article_rating WHERE article_id=... <strong>AND rating=2</strong>
+     *
+     * @return slice DSL
+     */
     public void deleteMatching(Object... clusterings) {
         super.properties.disableLimit();
         super.withClusteringsInternal(clusterings);

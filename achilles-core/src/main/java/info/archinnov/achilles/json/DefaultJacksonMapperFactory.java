@@ -24,10 +24,29 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-public class DefaultObjectMapperFactory implements ObjectMapperFactory {
+/**
+ * Default Jackson object mapper factory if none is configured with parameter {@link info.archinnov.achilles.configuration.ConfigurationParameters}.JACKSON_MAPPER_FACTORY
+ *
+ * The object mapper is configured by default as follow:
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   ObjectMapper mapper = new ObjectMapper();
+ *   <strong>
+ *
+ *   mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+ *   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+ *   AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
+ *   AnnotationIntrospector secondary = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
+ *   mapper.setAnnotationIntrospector(AnnotationIntrospector.pair(primary, secondary));
+ *   </strong>
+ * </code></pre>
+ *
+ */
+public class DefaultJacksonMapperFactory implements JacksonMapperFactory {
     private ObjectMapper mapper;
 
-    public DefaultObjectMapperFactory() {
+    public DefaultJacksonMapperFactory() {
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

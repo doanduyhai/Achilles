@@ -24,11 +24,27 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * In Cassandra there is no difference between an empty collection/map and a null value for collection/map
+ * In Cassandra there is no difference between an empty collection/map
+ * and a null value for collection/map
  * <br/>
- * In Java we do make the difference. This annotations allows mapping null values into empty collection & map
+ * <br/>
+ * In Java we do make the difference. This annotations allows mapping null values from
+ * <strong>Cassandra</strong> into empty collection & map.
+ * <br/>
+ * <br/>
+ * Empty list will default to <strong>ArrayList</strong>.<br/>
+ * Empty set will default to <strong>HashSet</strong>.<br/>
+ * Empty map will default to <strong>HashMap</strong>.<br/>
  *
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Column
+ *   <strong>{@literal @}EmptyCollectionIfNull</strong>
+ *   private List<String> friends
+ *
+ * </code></pre>
  * </p>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#emptycollectionifnull" target="_blank">@EmptyCollectionIfNull</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

@@ -20,7 +20,20 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import info.archinnov.achilles.json.CounterDeserializer;
 import info.archinnov.achilles.json.CounterSerializer;
 
-
+/**
+ * <p>
+ *     Abstraction representing a distributed counter in Cassandra
+ *     <br>
+ *     <br>
+ *     This counter interface only exposes operations to increment/decrement and read counter values
+ *     and is consistent with the way counters should be accessed in Cassandra
+ *     <br>
+ *     <br>
+ *     Counter <strong>removal</strong> is not exposed because it is officially not recommended and is subject
+ *     to subtle bugs
+ * </p>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Counters" target="_blank">Counter</a>
+ */
 @JsonDeserialize(using = CounterDeserializer.class)
 @JsonSerialize(using = CounterSerializer.class)
 public interface Counter {

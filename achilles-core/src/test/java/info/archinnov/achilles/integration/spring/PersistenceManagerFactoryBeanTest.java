@@ -31,7 +31,7 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.InsertStrategy;
 
@@ -47,7 +47,7 @@ public class PersistenceManagerFactoryBeanTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private ObjectMapperFactory objectMapperFactory;
+    private JacksonMapperFactory jacksonMapperFactory;
 
     @Mock
     private Cluster cluster;
@@ -90,7 +90,7 @@ public class PersistenceManagerFactoryBeanTest {
         factory.setKeyspaceName("keyspace");
 
         factory.setObjectMapper(objectMapper);
-        factory.setObjectMapperFactory(objectMapperFactory);
+        factory.setJacksonMapperFactory(jacksonMapperFactory);
         factory.setConsistencyLevelReadDefault(ONE);
         factory.setConsistencyLevelWriteDefault(ONE);
         factory.setConsistencyLevelReadMap(ImmutableMap.of("entity", ONE));

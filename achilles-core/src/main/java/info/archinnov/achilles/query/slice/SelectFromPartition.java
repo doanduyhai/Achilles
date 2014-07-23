@@ -30,6 +30,26 @@ public class SelectFromPartition<TYPE> extends SelectPartitionRoot<TYPE, SelectF
         return SelectFromPartition.this;
     }
 
+    /**
+     *
+     * Start the Select DSL with provided partition components IN
+     *
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(MessageEntity.class)
+     *      .forSelect()
+     *      .withPartitionComponents(10L)
+     *      .andPartitionComponentsIN(2013, 2014)
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM messages WHERE user_id=10 AND year IN (2013,2014)
+     *
+     * @return slice DSL
+     */
     public SelectFromPartition<TYPE> andPartitionComponentsIN(Object... partitionKeyComponentsIn) {
         super.andPartitionKeysINInternal(partitionKeyComponentsIn);
         return SelectFromPartition.this;

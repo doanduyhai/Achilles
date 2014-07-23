@@ -25,7 +25,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.json.ObjectMapperFactory;
+import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithFieldLevelConstraint;
 
@@ -36,7 +36,7 @@ public class ConfigurationContextTest {
     private Validator validator;
 
     @Mock
-    private ObjectMapperFactory factory;
+    private JacksonMapperFactory factory;
 
     @Test
     public void should_detect_constrained_class() throws Exception {
@@ -65,7 +65,7 @@ public class ConfigurationContextTest {
     public void should_get_mapper_for_type() throws Exception {
         //Given
         ConfigurationContext context = new ConfigurationContext();
-        context.setObjectMapperFactory(factory);
+        context.setJacksonMapperFactory(factory);
         ObjectMapper mapper = new ObjectMapper();
 
         when(factory.getMapper(String.class)).thenReturn(mapper);

@@ -14,16 +14,7 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.type;
+package test.use.slice;
 
-/**
- * Defines a secondary index relation for query. Right now only equality ( = ) is supported
- */
-public enum IndexRelation {
-	EQUAL{
-		@Override
-		public String toString(){
-			return "=";
-		}
-	};
+public class ArticleRating {
 }

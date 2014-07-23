@@ -21,42 +21,159 @@ import java.util.List;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.listener.CASResultListener;
 
+/**
+ * <p>
+ * Simple class to build Achilles options
+ *
+ * <pre class="code"><code class="java">
+ *
+ * Options options;
+ *
+ * // Consistency
+ * options = OptionsBuilder.withConsistency(QUORUM);
+ *
+ * // TTL
+ * options = OptionsBuilder.withTtl(10);
+ *
+ * // Timestamp
+ * options = OptionsBuilder.withTimestamp(100L);
+ *
+ *
+ * // CAS 'IF NOT EXISTS'
+ * options = OptionsBuilder.ifNotExists();
+ *
+ * // CAS update conditions
+ * options = OptionsBuilder.ifConditions(Arrays.asList(
+ *              new CASCondition("name","John"),
+ *              new CASCondition("age_in_years",33L));
+ *
+ * // CAS result listener
+ * options = OptionsBuilder.casResultListener(listener);
+ *
+ * // CAS LOCAL_SERIAL instead of the default SERIAL value
+ * options = OptionsBuilder.casLocalSerial();
+ *
+ * // Multiple options at a time
+ * options = OptionsBuilder.withTtl(11)
+ *                 .withConsistency(ANY)
+ *                 .withTimestamp(111L);
+ *
+ * </code></pre>
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Custom-Types#optionsbuilder" target="_blank">OptionsBuilder</a>
+ */
 public class OptionsBuilder {
 
     private static final NoOptions noOptions = new NoOptions();
 
+    /**
+     * Build an empty option
+     * @return NoOptions
+     */
     public static NoOptions noOptions() {
         return noOptions;
     }
 
-    public static InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
-        return new InternalOptionsBuilder(consistencyLevel);
+    /**
+     * Use provided consistency level
+     * @param consistencyLevel
+     * @return BuiltOptions
+     */
+    public static BuiltOptions withConsistency(ConsistencyLevel consistencyLevel) {
+        return new BuiltOptions(consistencyLevel);
     }
 
-    public static InternalOptionsBuilder withTtl(Integer ttl) {
-        return new InternalOptionsBuilder(ttl);
+    /**
+     * Use provided time to live <strong>in seconds</strong>
+     * @param ttl
+     * @return BuiltOptions
+     */
+    public static BuiltOptions withTtl(Integer ttl) {
+        return new BuiltOptions(ttl);
     }
 
-    public static InternalOptionsBuilder withTimestamp(Long timestamp) {
-        return new InternalOptionsBuilder(timestamp);
+    /**
+     * Use provided timestamp <strong>in micro seconds</strong>
+     * @param timestamp
+     * @return BuiltOptions
+     */
+    public static BuiltOptions withTimestamp(Long timestamp) {
+        return new BuiltOptions(timestamp);
     }
 
-    public static InternalOptionsBuilder ifNotExists() {
-        return new InternalOptionsBuilder(true);
+    /**
+     * Use IF NOT EXISTS clause for INSERT operations. This has no effect on statements other than INSERT
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifNotExists() {
+        return new BuiltOptions(true);
     }
 
-    public static InternalOptionsBuilder ifConditions(CASCondition... CASConditions) {
-        return new InternalOptionsBuilder(CASConditions);
+    /**
+     * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+     *
+     * <pre class="code"><code class="java">
+     *
+     * Options options = OptionsBuilder.ifConditions(Arrays.asList(
+     *              new CASCondition("name","John"),
+     *              new CASCondition("age_in_years",33L));
+     * </code></pre>
+     *
+     * @param  CASConditions list of CASConditions
+     * @return BuiltOptions
+     */
+    public static BuiltOptions ifConditions(CASCondition... CASConditions) {
+        return new BuiltOptions(CASConditions);
     }
 
-    public static InternalOptionsBuilder casResultListener(CASResultListener listener) {
-        return new InternalOptionsBuilder(listener);
+    /**
+     * Inject a CAS result listener for all CAS operations
+     *
+     * <pre class="code"><code class="java">
+     *
+     * CASResultListener casListener = new CASResultListener() {
+     *
+     *     public void onCASSuccess() {
+     *         // Do something on success
+     *     }
+     *
+     *     public void onCASError(CASResult casResult) {
+     *
+     *         //Get type of CAS operation that fails
+     *         CASResult.Operation operation = casResult.operation();
+     *
+     *         // Print out current values
+     *         TypedMap currentValues = casResult.currentValues();
+     *         for(Entry<String,Object> entry: currentValues.entrySet()) {
+     *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
+     *         }
+     *     }
+     * };
+     *
+     * persistenceManager.update(user, OptionsBuilder.
+     *         ifConditions(Arrays.asList(
+     *             new CASCondition("login","jdoe")))
+     *         .casResultListener(casListener));
+     * </code></pre>
+     *
+     * @param listener CASResultListener
+     * @return BuiltOptions
+     */
+    public static BuiltOptions casResultListener(CASResultListener listener) {
+        return new BuiltOptions(listener);
     }
 
-    public static InternalOptionsBuilder casLocalSerial() {
-        return new InternalOptionsBuilder(Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
+    /**
+     * Force LOCAL_SERIAL consistency for all CAS operations.
+     * By default CAS operations are performed using SERIAL serial consistency level
+     * @return BuiltOptions
+     */
+    public static BuiltOptions casLocalSerial() {
+        return new BuiltOptions(Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL));
     }
 
+    /**
+     * Empty options
+     */
     public static class NoOptions extends Options {
         protected NoOptions() {
         }
@@ -67,82 +184,182 @@ public class OptionsBuilder {
         }
     }
 
-    public static class InternalOptionsBuilder extends Options {
-        protected InternalOptionsBuilder(ConsistencyLevel consistencyLevel) {
+    /**
+     * Built options
+     */
+    public static class BuiltOptions extends Options {
+        protected BuiltOptions(ConsistencyLevel consistencyLevel) {
             super.consistency = consistencyLevel;
         }
 
-        protected InternalOptionsBuilder(Integer ttl) {
+        protected BuiltOptions(Integer ttl) {
             super.ttl = ttl;
         }
 
-        protected InternalOptionsBuilder(Long timestamp) {
+        protected BuiltOptions(Long timestamp) {
             super.timestamp = timestamp;
         }
 
-        protected InternalOptionsBuilder(boolean ifNotExists) {
+        protected BuiltOptions(boolean ifNotExists) {
             super.ifNotExists = ifNotExists;
         }
 
-        protected InternalOptionsBuilder(CASCondition... CASConditions) {
+        protected BuiltOptions(CASCondition... CASConditions) {
             super.CASConditions = Arrays.asList(CASConditions);
         }
 
-        protected InternalOptionsBuilder(CASResultListener listener) {
+        protected BuiltOptions(CASResultListener listener) {
             super.CASResultListenerO = Optional.fromNullable(listener);
         }
 
-        protected InternalOptionsBuilder(Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO) {
+        protected BuiltOptions(Optional<com.datastax.driver.core.ConsistencyLevel> serialConsistencyO) {
             super.serialConsistencyO = serialConsistencyO;
         }
 
 
-        public InternalOptionsBuilder withConsistency(ConsistencyLevel consistencyLevel) {
+        /**
+         * Use provided consistency level
+         * @param consistencyLevel
+         * @return BuiltOptions
+         */
+        public BuiltOptions withConsistency(ConsistencyLevel consistencyLevel) {
             super.consistency = consistencyLevel;
             return this;
         }
 
-        public InternalOptionsBuilder withTtl(Integer ttl) {
+        /**
+         * Use provided time to live <strong>in seconds</strong>
+         * @param ttl
+         * @return BuiltOptions
+         */
+        public BuiltOptions withTtl(Integer ttl) {
             super.ttl = ttl;
             return this;
         }
 
-        public InternalOptionsBuilder withTimestamp(Long timestamp) {
+
+        /**
+         * Use provided timestamp <strong>in micro seconds</strong>
+         * @param timestamp
+         * @return BuiltOptions
+         */
+        public BuiltOptions withTimestamp(Long timestamp) {
             super.timestamp = timestamp;
             return this;
         }
 
-        public InternalOptionsBuilder ifNotExists() {
+        /**
+         * Use IF NOT EXISTS clause for INSERT operations. This has no effect on statements other than INSERT
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifNotExists() {
             super.ifNotExists = true;
             return this;
         }
 
-        public InternalOptionsBuilder casResultListener(CASResultListener listener) {
-            super.CASResultListenerO = Optional.fromNullable(listener);
-            return this;
-        }
-
-        public InternalOptionsBuilder ifNotExists(boolean ifNotExists) {
+        /**
+         * Use IF NOT EXISTS clause for INSERT operations. This has no effect on statements other than INSERT
+         *
+         * @param ifNotExists whether to use IF NOT EXISTS clause
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifNotExists(boolean ifNotExists) {
             super.ifNotExists = ifNotExists;
             return this;
         }
 
-        public InternalOptionsBuilder ifConditions(CASCondition... CASConditions) {
+        /**
+         * Inject a CAS result listener for all CAS operations
+         *
+         * <pre class="code"><code class="java">
+         *
+         * CASResultListener casListener = new CASResultListener() {
+         *
+         *     public void onCASSuccess() {
+         *         // Do something on success
+         *     }
+         *
+         *     public void onCASError(CASResult casResult) {
+         *
+         *         //Get type of CAS operation that fails
+         *         CASResult.Operation operation = casResult.operation();
+         *
+         *         // Print out current values
+         *         TypedMap currentValues = casResult.currentValues();
+         *         for(Entry<String,Object> entry: currentValues.entrySet()) {
+         *             System.out.println(String.format("%s = %s",entry.getKey(), entry.getValue()));
+         *         }
+         *     }
+         * };
+         *
+         * persistenceManager.update(user, OptionsBuilder.
+         *         ifConditions(Arrays.asList(
+         *             new CASCondition("login","jdoe")))
+         *         .casResultListener(casListener));
+         * </code></pre>
+         *
+         * @param listener CASResultListener
+         * @return BuiltOptions
+         */
+        public BuiltOptions casResultListener(CASResultListener listener) {
+            super.CASResultListenerO = Optional.fromNullable(listener);
+            return this;
+        }
+
+        /**
+         * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder.ifConditions(Arrays.asList(
+         *              new CASCondition("name","John"),
+         *              new CASCondition("age_in_years",33L));
+         * </code></pre>
+         *
+         * @param CASConditions varargs of CASConditions
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifConditions(CASCondition... CASConditions) {
             super.CASConditions = Arrays.asList(CASConditions);
             return this;
         }
 
-        public InternalOptionsBuilder ifConditions(List<CASCondition> CASConditions) {
+        /**
+         * Use CAS conditions for UPDATE operations. This has no effect on statements other than UPDATE
+         *
+         * <pre class="code"><code class="java">
+         *
+         * Options options = OptionsBuilder.ifConditions(Arrays.asList(
+         *              new CASCondition("name","John"),
+         *              new CASCondition("age_in_years",33L));
+         * </code></pre>
+         *
+         * @param CASConditions list of CASConditions
+         * @return BuiltOptions
+         */
+        public BuiltOptions ifConditions(List<CASCondition> CASConditions) {
             super.CASConditions = CASConditions;
             return this;
         }
 
-        public InternalOptionsBuilder casLocalSerial() {
+        /**
+         * Force LOCAL_SERIAL consistency for all CAS operations.
+         * By default CAS operations are performed using SERIAL serial consistency level
+         * @return BuiltOptions
+         */
+        public BuiltOptions casLocalSerial() {
             super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             return this;
         }
 
-        InternalOptionsBuilder casLocalSerial(boolean localSerial) {
+        /**
+         * Force LOCAL_SERIAL consistency for all CAS operations.
+         * By default CAS operations are performed using SERIAL serial consistency level
+         *
+         * @param localSerial whether to use LOCAL_SERIAL
+         * @return BuiltOptions
+         */
+        BuiltOptions casLocalSerial(boolean localSerial) {
             if (localSerial) {
                 super.serialConsistencyO = Optional.fromNullable(com.datastax.driver.core.ConsistencyLevel.LOCAL_SERIAL);
             }

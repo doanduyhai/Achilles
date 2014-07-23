@@ -27,6 +27,18 @@ import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.TypedMap;
 
+/**
+ * Class to wrap CQL3 native query
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   String nativeQuery = "SELECT name,age_in_years FROM UserEntity WHERE id IN(?,?)";
+ *   List<TypedMap> actual = manager.nativeQuery(nativeQuery,10L,11L).get();
+ *
+ * </code></pre>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query</a>
+ */
 public class NativeQuery {
     private static final Logger log = LoggerFactory.getLogger(NativeQuery.class);
 
