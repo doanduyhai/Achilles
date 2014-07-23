@@ -41,7 +41,7 @@ public class TypedQuery<T> {
     private static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
 
     private DaoContext daoContext;
-    private String normalizedQuery;
+    private String queryString;
     private Map<String, PropertyMeta> propertiesMap;
     private EntityMeta meta;
     private PersistenceContextFactory contextFactory;
@@ -52,11 +52,10 @@ public class TypedQuery<T> {
     private EntityProxifier proxifier = new EntityProxifier();
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, String queryString, EntityMeta meta,
-            PersistenceContextFactory contextFactory, EntityState entityState, boolean shouldNormalizeQuery,
-            Object[] encodedBoundValues) {
+            PersistenceContextFactory contextFactory, EntityState entityState, Object[] encodedBoundValues) {
         this.daoContext = daoContext;
         this.encodedBoundValues = meta.encodeBoundValuesForTypedQueries(encodedBoundValues);
-        this.normalizedQuery = shouldNormalizeQuery ? queryString.toLowerCase() : queryString;
+        this.queryString = queryString;
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.entityState = entityState;
@@ -76,9 +75,9 @@ public class TypedQuery<T> {
      *
      */
     public List<T> get() {
-        log.debug("Get results for typed query {}", normalizedQuery);
+        log.debug("Get results for typed query {}", queryString);
         List<T> result = new ArrayList<>();
-        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).all();
+        List<Row> rows = daoContext.execute(new SimpleStatementWrapper(queryString, encodedBoundValues, NO_LISTENER)).all();
         for (Row row : rows) {
             T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             if (entity != null) {
@@ -102,9 +101,9 @@ public class TypedQuery<T> {
      *
      */
     public T getFirst() {
-        log.debug("Get first result for typed query {}", normalizedQuery);
+        log.debug("Get first result for typed query {}", queryString);
         T entity = null;
-        Row row = daoContext.execute(new SimpleStatementWrapper(normalizedQuery, encodedBoundValues, NO_LISTENER)).one();
+        Row row = daoContext.execute(new SimpleStatementWrapper(queryString, encodedBoundValues, NO_LISTENER)).one();
         if (row != null) {
             entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             meta.intercept(entity, Event.POST_LOAD);

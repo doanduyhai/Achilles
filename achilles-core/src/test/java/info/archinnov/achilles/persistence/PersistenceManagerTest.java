@@ -588,7 +588,7 @@ public class PersistenceManagerTest {
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
     }
 
     @Test
@@ -608,7 +608,7 @@ public class PersistenceManagerTest {
         assertThat(Whitebox.getInternalState(builder, DaoContext.class)).isSameAs(daoContext);
         assertThat(Whitebox.getInternalState(builder, EntityMeta.class)).isSameAs(meta);
         assertThat(Whitebox.getInternalState(builder, PersistenceContextFactory.class)).isSameAs(contextFactory);
-        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("querystring");
+        assertThat(Whitebox.getInternalState(builder, String.class)).isEqualTo("queryString");
     }
 
     @Test

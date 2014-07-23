@@ -293,8 +293,6 @@ public class PersistenceManager {
      *
      * @param entity
      *            Managed entity to be updated
-     * @param options
-     *            options
      */
     public void insertOrUpdate(Object entity) {
         entityValidator.validateEntity(entity, entityMetaMap);
@@ -896,11 +894,10 @@ public class PersistenceManager {
      * @return TypedQuery<T>
      */
     public <T> TypedQuery<T> typedQuery(Class<T> entityClass, String queryString, Object... boundValues) {
-        return typedQueryInternal(entityClass, queryString, true, boundValues);
+        return typedQueryInternal(entityClass, queryString, boundValues);
     }
 
-    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString,
-            boolean normalizeQuery, Object... boundValues) {
+    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, String queryString, Object... boundValues) {
         log.debug("Execute typed query for entity class {}", entityClass);
         Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
         Validator.validateNotBlank(queryString, "The query string for typed query should not be blank");
@@ -910,7 +907,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, normalizeQuery, boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, MANAGED, boundValues);
     }
 
     /**
@@ -938,7 +935,7 @@ public class PersistenceManager {
 
         String indexColumnName = indexCondition.getColumnName();
         final Select.Where query = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
-        return typedQueryInternal(entityClass, query.getQueryString(), false, indexCondition.getColumnValue());
+        return typedQueryInternal(entityClass, query.getQueryString(), indexCondition.getColumnValue());
     }
 
     /**
@@ -989,8 +986,7 @@ public class PersistenceManager {
 
         EntityMeta meta = entityMetaMap.get(entityClass);
         typedQueryValidator.validateRawTypedQuery(entityClass, queryString, meta);
-        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, true,
-                boundValues);
+        return new TypedQuery<>(entityClass, daoContext, queryString, meta, contextFactory, NOT_MANAGED, boundValues);
     }
 
     /**
