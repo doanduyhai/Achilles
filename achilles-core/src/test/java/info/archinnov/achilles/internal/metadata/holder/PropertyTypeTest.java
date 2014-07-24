@@ -65,4 +65,15 @@ public class PropertyTypeTest {
 		assertThat(PropertyType.MAP.isValidClusteredValueType()).isFalse();
 		assertThat(PropertyType.EMBEDDED_ID.isValidClusteredValueType()).isFalse();
 	}
+
+    @Test
+    public void should_test_is_collection_and_map() throws Exception {
+        assertThat(PropertyType.ID.isCollectionAndMap()).isFalse();
+        assertThat(PropertyType.SIMPLE.isCollectionAndMap()).isFalse();
+        assertThat(PropertyType.LIST.isCollectionAndMap()).isTrue();
+        assertThat(PropertyType.SET.isCollectionAndMap()).isTrue();
+        assertThat(PropertyType.MAP.isCollectionAndMap()).isTrue();
+        assertThat(PropertyType.COUNTER.isCollectionAndMap()).isFalse();
+        assertThat(PropertyType.EMBEDDED_ID.isCollectionAndMap()).isFalse();
+    }
 }

@@ -276,6 +276,10 @@ public class PropertyMeta {
         return isClustered;
     }
 
+    public boolean isCollectionAndMap() {
+        return type.isCollectionAndMap();
+    }
+
     public ConsistencyLevel getReadConsistencyLevel() {
         return consistencyLevels != null ? consistencyLevels.left : null;
     }

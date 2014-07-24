@@ -16,6 +16,7 @@
 package info.archinnov.achilles.internal.persistence.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -24,8 +25,10 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.PersistenceContext;
@@ -133,7 +136,7 @@ public class EntityLoaderTest {
     @Test
     public void should_load_properties_into_object() throws Exception {
         // Given
-        when(pm.type()).thenReturn(PropertyType.SIMPLE);
+        when(pm.isCounter()).thenReturn(false);
         Row row = mock(Row.class);
         when(context.loadProperty(pm)).thenReturn(row);
 
@@ -146,9 +149,28 @@ public class EntityLoaderTest {
     }
 
     @Test
+    public void should_switch_null_with_NullRow_for_collection_and_map() throws Exception {
+        // Given
+        ArgumentCaptor<Row> rowCaptor = ArgumentCaptor.forClass(Row.class);
+        when(pm.isCounter()).thenReturn(false);
+        when(pm.isCollectionAndMap()).thenReturn(true);
+
+        when(context.loadProperty(pm)).thenReturn(null);
+
+        // When
+        loader.loadPropertyIntoObject(context, entity, pm);
+
+        // Then
+        verify(mapper).setPropertyToEntity(rowCaptor.capture(), eq(meta), eq(pm), eq(entity));
+        assertThat(rowCaptor.getValue()).isInstanceOf(NullRow.class);
+
+        verifyZeroInteractions(counterLoader);
+    }
+
+    @Test
     public void should_load_counter_properties_into_object() throws Exception {
         // Given
-        when(pm.type()).thenReturn(PropertyType.COUNTER);
+        when(pm.isCounter()).thenReturn(true);
 
         // When
         loader.loadPropertyIntoObject(context, entity, pm);

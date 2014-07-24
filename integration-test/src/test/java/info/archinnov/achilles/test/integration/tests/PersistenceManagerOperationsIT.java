@@ -378,4 +378,18 @@ public class PersistenceManagerOperationsIT {
         assertThat(entity.getLabel()).isNull();
         assertThat(entity.getAge()).isNull();
     }
+
+    @Test
+    public void should_return_empty_list_instead_of_null_for_field_annotated_with_emptyIfNullCollection() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong();
+
+        final CompleteBean proxy = manager.getProxy(CompleteBean.class, id);
+
+        //When
+        final List<String> friends = proxy.getFriends();
+
+        //Then
+        assertThat(friends).isNotNull().isEmpty();
+    }
 }

@@ -45,6 +45,10 @@ public enum PropertyType {
         return (this == SIMPLE || this == COUNTER);
     }
 
+    public boolean isCollectionAndMap() {
+        return (this == LIST || this == SET || this == MAP);
+    }
+
     public static final PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
 
     public static final PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
