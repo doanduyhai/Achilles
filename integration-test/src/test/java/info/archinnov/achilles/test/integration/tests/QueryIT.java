@@ -19,7 +19,9 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.column;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -29,16 +31,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.counter.AchillesCounter;
 import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.typed.TypedQuery;
 import info.archinnov.achilles.test.builders.TweetTestBuilder;
@@ -118,6 +124,45 @@ public class QueryIT {
         TypedMap row = actual.get(0);
 
         assertThat(row.get("name")).isEqualTo("DuyHai");
+    }
+
+    @Test
+    public void should_execute_native_query_with_CAS() throws Exception {
+        //Given
+        CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
+
+        manager.insert(entity);
+
+        final Insert statement = insertInto("CompleteBean").ifNotExists().value("id", bindMarker("id")).value("name", bindMarker("name"));
+
+        final AtomicBoolean error = new AtomicBoolean(false);
+        final AtomicReference<CASResult> result = new AtomicReference<>(null);
+
+        CASResultListener listener = new CASResultListener() {
+            @Override
+            public void onCASSuccess() {
+
+            }
+
+            @Override
+            public void onCASError(CASResult casResult) {
+                error.getAndSet(true);
+                result.getAndSet(casResult);
+            }
+        };
+
+        //When
+        manager.nativeQuery(statement,OptionsBuilder.casResultListener(listener),entity.getId(),"DuyHai").execute();
+
+        //Then
+        assertThat(error.get()).isTrue();
+        assertThat(result.get()).isNotNull();
+
+        final TypedMap currentValues = result.get().currentValues();
+
+        assertThat(currentValues.<Long>getTyped("id")).isEqualTo(entity.getId());
+        assertThat(currentValues.<String>getTyped("name")).isEqualTo(entity.getName());
+        assertThat(currentValues.<String>getTyped("label")).isEqualTo(entity.getLabel());
     }
 
     @Test
