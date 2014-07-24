@@ -54,7 +54,7 @@ public class OptionsValidatorTest {
         CompleteBean entity = new CompleteBean();
 
         //When
-        optionsValidator.validateOptionsForInsert(entity, entityMetaMap, withTtl(10));
+        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, withTtl(10));
 
         //Then
         verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
@@ -69,31 +69,8 @@ public class OptionsValidatorTest {
         exception.expectMessage("Cannot provide custom timestamp for CAS insert operations");
 
         //When
-        optionsValidator.validateOptionsForInsert(entity, entityMetaMap, ifNotExists().withTimestamp(100L));
+        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, ifNotExists().withTimestamp(100L));
     }
 
-    @Test
-    public void should_validate_options_for_update() throws Exception {
-        //Given
-        CompleteBean entity = new CompleteBean();
 
-        //When
-        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, withTtl(10));
-
-        //Then
-        verify(entityValidator).validateNotClusteredCounter(entity, entityMetaMap);
-    }
-
-    @Test
-    public void should_exception_when_updating_with_timestamp_and_cas_condition() throws Exception {
-        //Given
-        CompleteBean entity = new CompleteBean();
-
-        exception.expect(AchillesException.class);
-        exception.expectMessage("Cannot provide custom timestamp for CAS update operations");
-
-        //When
-        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, ifConditions(new Options.CASCondition("name", "John"))
-                .withTimestamp(100L));
-    }
 }

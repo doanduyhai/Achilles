@@ -19,13 +19,18 @@ import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 
 public abstract class AbstractFlushContext {
@@ -56,10 +61,14 @@ public abstract class AbstractFlushContext {
 			BatchStatement batch = new BatchStatement(batchType);
 			AbstractStatementWrapper.writeDMLStartBatch(batchType);
 			for (AbstractStatementWrapper statementWrapper : statementWrappers) {
-				batch.add(statementWrapper.getStatement());
-				statementWrapper.logDMLStatement("\t");
-			}
-			AbstractStatementWrapper.writeDMLEndBatch(batchType,consistencyLevel);
+                if (statementWrapper instanceof NativeStatementWrapper) {
+                    batch.add(((NativeStatementWrapper) statementWrapper).buildParameterizedStatement());
+                } else {
+                    batch.add(statementWrapper.getStatement());
+                }
+                statementWrapper.logDMLStatement("\t");
+            }
+            AbstractStatementWrapper.writeDMLEndBatch(batchType,consistencyLevel);
 			if (consistencyLevel != null) {
 				batch.setConsistencyLevel(getCQLLevel(consistencyLevel));
 			}

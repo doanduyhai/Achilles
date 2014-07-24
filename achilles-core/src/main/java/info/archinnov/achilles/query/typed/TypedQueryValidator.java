@@ -23,9 +23,12 @@ import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 
 public class TypedQueryValidator {
     private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
+
+    private NativeQueryValidator validator = new NativeQueryValidator();
 
     public void validateTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
         log.debug("Validate typed query {}",regularStatement.getQueryString());
@@ -56,15 +59,10 @@ public class TypedQueryValidator {
         final String queryString = regularStatement.getQueryString();
         String normalizedQuery = queryString.toLowerCase();
 
-        final boolean isASelect = regularStatement instanceof Select || regularStatement instanceof Select.Where;
-
-        Validator.validateTrue(isASelect,"The typed query [%s] should be a SELECT statement",queryString);
-
+        validator.validateSelect(regularStatement);
 
         Validator.validateTrue(normalizedQuery.contains(" from " + tableName),
 				"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
-
-
 	}
 }
