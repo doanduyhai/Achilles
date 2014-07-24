@@ -178,8 +178,9 @@ public class PersistenceManager {
     protected PersistenceContextFactory contextFactory;
 
     protected EntityProxifier proxifier = new EntityProxifier();
+    protected OptionsValidator optionsValidator = new OptionsValidator();
+
     private EntityValidator entityValidator = new EntityValidator();
-    private OptionsValidator optionsValidator = new OptionsValidator();
     private TypedQueryValidator typedQueryValidator = new TypedQueryValidator();
 
     private SliceQueryExecutor sliceQueryExecutor;
@@ -233,7 +234,7 @@ public class PersistenceManager {
 
         entityValidator.validateEntity(entity, entityMetaMap);
 
-        optionsValidator.validateOptionsForInsert(entity, entityMetaMap, options);
+        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
         proxifier.ensureNotProxy(entity);
         PersistenceManagerOperations context = initPersistenceContext(entity, options);
         return context.persist(entity);
@@ -281,7 +282,7 @@ public class PersistenceManager {
             log.debug("Updating entity '{}' with options {} ", realObject, options);
         }
         entityValidator.validateEntity(realObject, entityMetaMap);
-        optionsValidator.validateOptionsForUpdate(entity, entityMetaMap, options);
+        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
         PersistenceManagerOperations context = initPersistenceContext(realObject, options);
         context.update(entity);
     }

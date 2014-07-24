@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.persistence;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -26,9 +28,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -36,6 +41,9 @@ import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
+import info.archinnov.achilles.query.cql.NativeQuery;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -47,7 +55,7 @@ public class BatchTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private Batch manager;
+    private Batch batch;
 
     @Mock
     private PersistenceContextFactory contextFactory;
@@ -64,11 +72,16 @@ public class BatchTest {
     @Mock
     private PersistenceManagerFactory pmf;
 
+    @Mock
+    private NativeQueryValidator validator;
+
     @Before
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-        manager = new Batch(null, contextFactory, daoContext, configContext,true);
-        Whitebox.setInternalState(manager, BatchingFlushContext.class, flushContext);
+        batch = new Batch(null, contextFactory, daoContext, configContext,true);
+
+        batch.flushContext = flushContext;
+        batch.validator = validator;
     }
 
     @Test
@@ -78,10 +91,10 @@ public class BatchTest {
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
         //When
-        manager.startBatch();
+        batch.startBatch();
 
         //Then
-        assertThat(manager.flushContext).isSameAs(newFlushContext);
+        assertThat(batch.flushContext).isSameAs(newFlushContext);
 
     }
 
@@ -92,10 +105,10 @@ public class BatchTest {
         when(flushContext.duplicateWithNoData(EACH_QUORUM)).thenReturn(newFlushContext);
 
         //When
-        manager.startBatch(EACH_QUORUM);
+        batch.startBatch(EACH_QUORUM);
 
         //Then
-        assertThat(manager.flushContext).isSameAs(newFlushContext);
+        assertThat(batch.flushContext).isSameAs(newFlushContext);
     }
 
     @Test
@@ -105,11 +118,11 @@ public class BatchTest {
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
         //When
-        manager.endBatch();
+        batch.endBatch();
 
         //Then
         verify(flushContext).endBatch();
-        assertThat(manager.flushContext).isSameAs(newFlushContext);
+        assertThat(batch.flushContext).isSameAs(newFlushContext);
     }
 
 
@@ -120,10 +133,10 @@ public class BatchTest {
         when(flushContext.duplicateWithNoData(ONE)).thenReturn(newFlushContext);
 
         //When
-        manager.cleanBatch();
+        batch.cleanBatch();
 
         //Then
-        assertThat(manager.flushContext).isSameAs(newFlushContext);
+        assertThat(batch.flushContext).isSameAs(newFlushContext);
     }
 
     @Test
@@ -131,7 +144,7 @@ public class BatchTest {
         exception.expect(AchillesException.class);
         exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.insert(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+        batch.insert(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test
@@ -140,7 +153,7 @@ public class BatchTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+        batch.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test
@@ -149,7 +162,7 @@ public class BatchTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
+        batch.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test
@@ -158,7 +171,7 @@ public class BatchTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.find(CompleteBean.class, 11L, ONE);
+        batch.find(CompleteBean.class, 11L, ONE);
     }
 
     @Test
@@ -167,7 +180,7 @@ public class BatchTest {
         exception
                 .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.getProxy(CompleteBean.class, 11L, ONE);
+        batch.getProxy(CompleteBean.class, 11L, ONE);
     }
 
     @Test
@@ -175,7 +188,7 @@ public class BatchTest {
         exception.expect(AchillesException.class);
         exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        manager.refresh(new CompleteBean(), ONE);
+        batch.refresh(new CompleteBean(), ONE);
     }
 
     @Test
@@ -190,7 +203,7 @@ public class BatchTest {
         when(context.getPersistenceManagerFacade()).thenReturn(operations);
 
         // When
-        PersistenceManagerOperations actual = manager.initPersistenceContext(entity, options);
+        PersistenceManagerOperations actual = batch.initPersistenceContext(entity, options);
 
         // Then
         assertThat(actual).isSameAs(operations);
@@ -208,9 +221,25 @@ public class BatchTest {
         when(context.getPersistenceManagerFacade()).thenReturn(operations);
 
         // When
-        PersistenceManagerOperations actual = manager.initPersistenceContext(Object.class, primaryKey, options);
+        PersistenceManagerOperations actual = batch.initPersistenceContext(Object.class, primaryKey, options);
 
         // Then
         assertThat(actual).isSameAs(operations);
+    }
+
+    @Test
+    public void should_add_native_statement_to_batch() throws Exception {
+        //Given
+        final Insert statement = insertInto("test").value("id", bindMarker("id"));
+        ArgumentCaptor<NativeStatementWrapper> statementCaptor = ArgumentCaptor.forClass(NativeStatementWrapper.class);
+
+        //When
+        batch.batchNativeStatement(statement,10L);
+
+        //Then
+        verify(validator).validateUpsert(statement);
+        verify(flushContext).pushStatement(statementCaptor.capture());
+        assertThat(statementCaptor.getValue().getStatement()).isSameAs(statement);
+        assertThat(statementCaptor.getValue().getValues()).contains(10L);
     }
 }

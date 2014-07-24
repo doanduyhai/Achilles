@@ -23,7 +23,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -186,7 +185,7 @@ public class PersistenceManagerTest {
         Options options = optionsCaptor.getValue();
         assertThat(actual).isSameAs(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(optionsValidator).validateOptionsForInsert(entity, entityMetaMap, options);
+        verify(optionsValidator).validateOptionsForUpsert(entity, entityMetaMap, options);
         verify(proxifier).ensureNotProxy(entity);
         verify(facade).persist(entity);
 
@@ -227,7 +226,7 @@ public class PersistenceManagerTest {
         Options options = optionsCaptor.getValue();
         verify(proxifier).ensureProxy(entity);
         verify(entityValidator).validateEntity(entity, entityMetaMap);
-        verify(optionsValidator).validateOptionsForUpdate(entity, entityMetaMap, options);
+        verify(optionsValidator).validateOptionsForUpsert(entity, entityMetaMap, options);
         verify(facade).update(entity);
 
         assertThat(options.getConsistencyLevel().get()).isEqualTo(EACH_QUORUM);

@@ -15,8 +15,11 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
@@ -34,6 +37,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
@@ -296,6 +300,33 @@ public class BatchModeIT {
         Statement statement = new SimpleStatement("SELECT name from CompleteBean where id=" + entity.getId());
         Row row = manager.getNativeSession().execute(statement).one();
         assertThat(row.getString("name")).isEqualTo("name");
+    }
+
+    @Test
+    public void should_mix_batch_with_native_statement() throws Exception {
+        //Given
+        CompleteBean entity1 = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
+        CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
+
+        manager.insert(entity2);
+
+        final Batch batch = pmf.createBatch();
+
+        batch.startBatch();
+
+        batch.insert(entity1);
+
+        final Update.Where statement = update(CompleteBean.TABLE_NAME).with(set("name", bindMarker("name")))
+                .where(eq("id", bindMarker("id")));
+
+        //When
+        batch.batchNativeStatement(statement,"DuyHai",entity2.getId());
+        batch.endBatch();
+
+        //Then
+        Statement select = new SimpleStatement("SELECT name from CompleteBean where id=" + entity2.getId());
+        Row row = manager.getNativeSession().execute(select).one();
+        assertThat(row.getString("name")).isEqualTo("DuyHai");
     }
 
     private void assertThatBatchContextHasBeenReset(Batch batchEm) {

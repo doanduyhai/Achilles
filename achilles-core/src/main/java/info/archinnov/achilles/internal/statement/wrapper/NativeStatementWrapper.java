@@ -20,6 +20,8 @@ import org.apache.commons.lang.ArrayUtils;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.listener.CASResultListener;
 
@@ -64,5 +66,18 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
                     .getConsistencyLevel().name();
             writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
         }
+    }
+
+    public SimpleStatement buildParameterizedStatement() {
+        final SimpleStatement statement = new SimpleStatement(regularStatement.getQueryString(), values);
+
+        if (regularStatement.getConsistencyLevel() != null) {
+            statement.setConsistencyLevel(regularStatement.getConsistencyLevel());
+        }
+
+        if (regularStatement.getSerialConsistencyLevel() != null) {
+            statement.setSerialConsistencyLevel(regularStatement.getSerialConsistencyLevel());
+        }
+        return statement;
     }
 }

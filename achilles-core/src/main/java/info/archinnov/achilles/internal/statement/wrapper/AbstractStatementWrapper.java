@@ -32,6 +32,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.QueryTrace;
 import com.datastax.driver.core.ResultSet;
@@ -144,7 +145,24 @@ public abstract class AbstractStatementWrapper {
                 TreeMap<String, Object> currentValues = new TreeMap<>();
                 for (Definition columnDef : casResult.getColumnDefinitions()) {
                     final String columnDefName = columnDef.getName();
-                    final Object columnValue = invoker.invokeOnRowForType(casResult, columnDef.getType().asJavaClass(), columnDefName);
+                    final DataType dataType = columnDef.getType();
+                    final DataType.Name name = dataType.getName();
+
+                    Object columnValue;
+                    switch (name) {
+                        case LIST:
+                            columnValue = casResult.getList(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            break;
+                        case SET:
+                            columnValue = casResult.getSet(columnDefName, dataType.getTypeArguments().get(0).asJavaClass());
+                            break;
+                        case MAP:
+                            final List<DataType> typeArguments = dataType.getTypeArguments();
+                            columnValue = casResult.getMap(columnDefName, typeArguments.get(0).asJavaClass(), typeArguments.get(1).asJavaClass());
+                            break;
+                        default:
+                            columnValue = invoker.invokeOnRowForType(casResult, name.asJavaClass(), columnDefName);
+                    }
                     currentValues.put(columnDefName, columnValue);
                 }
 

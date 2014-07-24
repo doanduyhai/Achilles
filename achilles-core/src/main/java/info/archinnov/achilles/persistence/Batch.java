@@ -19,6 +19,7 @@ import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.datastax.driver.core.RegularStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
@@ -28,7 +29,11 @@ import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.internal.utils.UUIDGen;
+import info.archinnov.achilles.listener.CASResultListener;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
@@ -37,6 +42,7 @@ public class Batch extends PersistenceManager {
     private static final Logger log = LoggerFactory.getLogger(Batch.class);
 
     protected BatchingFlushContext flushContext;
+    protected NativeQueryValidator validator = new NativeQueryValidator();
     private final ConsistencyLevel defaultConsistencyLevel;
     private final boolean orderedBatch;
 
@@ -157,6 +163,43 @@ public class Batch extends PersistenceManager {
         } else {
             super.refresh(entity, null);
         }
+    }
+
+    /**
+     *
+     * Add a native CQL3 statement to the current batch.
+     * <br/>
+     * <br/>
+     * <strong>This statement should be an INSERT or UPDATE</strong>, otherwise Achilles will raise an exception
+     *
+     *  <pre class="code"><code class="java">
+     *      RegularStatement statement = insertInto("MyEntity").value("id",bindMarker()).value("name",bindMarker());
+     *      batch.batchNativeStatement(statement,10,"John");
+     *  </code></pre>
+     *
+     * @param regularStatement native CQL3 statement
+     * @param boundValues optional bound values
+     */
+    public void batchNativeStatement(RegularStatement regularStatement, Object ... boundValues) {
+       this.batchNativeStatementWithCASListener(regularStatement, null, boundValues);
+    }
+
+    /**
+     *
+     *  <pre class="code"><code class="java">
+     *      CASResultListener listener = ...
+     *      RegularStatement statement = insertInto("MyEntity").value("id",bindMarker()).value("name",bindMarker());
+     *      batch.batchNativeStatementWithCASListener(statement,listener,10,"John");
+     *  </code></pre>
+     *
+     * @param regularStatement native CQL3 statement
+     * @param casResultListener result listener for CAS operation
+     * @param boundValues optional bound values
+     */
+    public void batchNativeStatementWithCASListener(RegularStatement regularStatement, CASResultListener casResultListener, Object... boundValues) {
+        validator.validateUpsert(regularStatement);
+        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, regularStatement, boundValues, Optional.fromNullable(casResultListener));
+        flushContext.pushStatement(nativeStatementWrapper);
     }
 
     @Override

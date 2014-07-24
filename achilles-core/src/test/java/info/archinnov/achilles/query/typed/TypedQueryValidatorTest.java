@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
+import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
 import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -45,10 +47,10 @@ public class TypedQueryValidatorTest {
         meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
         meta.setTableName("table");
 
-        final Select statement = select().from("test");
+        final RegularStatement statement = select().from("test").where(eq("id",10L));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [SELECT * FROM test;] should contain the ' from table' clause if type is '"
+        exception.expectMessage("The typed query [SELECT * FROM test WHERE id=10;] should contain the ' from table' clause if type is '"
                 + CompleteBean.class.getCanonicalName() + "'");
 
         validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
@@ -63,10 +65,10 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        final Select statement = select("name","age").from("table");
+        final RegularStatement statement = select("name","age").from("table").where(eq("col", 10L));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [select name,age from table;] should contain the id column 'id'");
+        exception.expectMessage("The typed query [select name,age from table where col=10;] should contain the id column 'id'");
 
         validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
@@ -81,10 +83,10 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        final Select statement = select("id","age").from("table");
+        final RegularStatement statement = select("id","age").from("table").where(eq("id", 10L));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [select id,age from table;] should contain the component column 'name' for embedded id type '"
+        exception.expectMessage("The typed query [select id,age from table where id=10;] should contain the component column 'name' for embedded id type '"
                 + EmbeddedKey.class.getCanonicalName() + "'");
 
         validator.validateTypedQuery(CompleteBean.class, statement, meta);
@@ -100,7 +102,7 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        final Select statement = select().from("table");
+        final RegularStatement statement = select().from("table").where(eq("id",10L));
 
         validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
@@ -115,7 +117,7 @@ public class TypedQueryValidatorTest {
         meta.setTableName("table");
         meta.setIdMeta(idMeta);
 
-        final Select statement = select().from("table");
+        final RegularStatement statement = select().from("table").where(eq("id", 10L));
 
         validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }

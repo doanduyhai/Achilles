@@ -25,17 +25,12 @@ public class OptionsValidator {
 
     protected EntityValidator entityValidator = new EntityValidator();
 
-    public void validateOptionsForInsert(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
+    public void validateOptionsForUpsert(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
         validateNoTtlForClusteredCounter(entity, entityMetaMap, options);
-        validateNoCasConditionsAndTtl(options);
+        validateNoCasConditionsAndTimestamp(options);
     }
 
-    public void validateOptionsForUpdate(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
-        validateNoTtlForClusteredCounter(entity, entityMetaMap, options);
-        validateNoCasConditionsAndTtl(options);
-    }
-
-    private void validateNoCasConditionsAndTtl(Options options) {
+    public void validateNoCasConditionsAndTimestamp(Options options) {
         Validator.validateFalse(options.isIfNotExists() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS insert operations");
         Validator.validateFalse(options.hasCasConditions() && options.getTimestamp().isPresent(), "Cannot provide custom timestamp for CAS update operations");
     }
