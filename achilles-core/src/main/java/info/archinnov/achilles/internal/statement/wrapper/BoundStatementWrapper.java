@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import org.slf4j.Logger;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
@@ -55,7 +56,7 @@ public class BoundStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public void logDMLStatement(String indentation) {
-        if (dmlLogger.isDebugEnabled()) {
+        if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
             PreparedStatement ps = boundStatement.preparedStatement();
             String queryType = "Prepared statement";
             String queryString = ps.getQueryString();

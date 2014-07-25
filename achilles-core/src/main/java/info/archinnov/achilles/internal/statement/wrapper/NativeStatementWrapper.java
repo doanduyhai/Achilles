@@ -21,7 +21,6 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.listener.CASResultListener;
 
@@ -59,7 +58,7 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public void logDMLStatement(String indentation) {
-        if (dmlLogger.isDebugEnabled()) {
+        if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
             String queryType = "Parameterized statement";
             String queryString = regularStatement.getQueryString();
             String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement

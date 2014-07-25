@@ -37,7 +37,6 @@ import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
-import info.archinnov.achilles.internal.statement.wrapper.SimpleStatementWrapper;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
 import info.archinnov.achilles.type.TypedMap;
@@ -49,8 +48,6 @@ public class NativeQueryTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private DaoContext daoContext;
-
-    private String queryString = "query";
 
     @Mock
     private NativeQueryMapper mapper;
@@ -76,7 +73,7 @@ public class NativeQueryTest {
     @Test
     public void should_get() throws Exception {
         List<Row> rows = Arrays.asList(row);
-        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+        when(daoContext.execute(any(NativeStatementWrapper.class)).all()).thenReturn(rows);
 
         List<TypedMap> result = new ArrayList<>();
         when(mapper.mapRows(rows)).thenReturn(result);
@@ -90,7 +87,7 @@ public class NativeQueryTest {
     public void should_get_one() throws Exception {
 
         List<Row> rows = Arrays.asList(row);
-        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+        when(daoContext.execute(any(NativeStatementWrapper.class)).all()).thenReturn(rows);
 
         List<TypedMap> result = new ArrayList<>();
         TypedMap line = new TypedMap();
@@ -105,7 +102,7 @@ public class NativeQueryTest {
     public void should_return_null_when_no_row() throws Exception {
 
         List<Row> rows = Arrays.asList(row);
-        when(daoContext.execute(any(SimpleStatementWrapper.class)).all()).thenReturn(rows);
+        when(daoContext.execute(any(NativeStatementWrapper.class)).all()).thenReturn(rows);
 
         List<TypedMap> result = new ArrayList<>();
         when(mapper.mapRows(rows)).thenReturn(result);
@@ -120,7 +117,7 @@ public class NativeQueryTest {
         final Options options = OptionsBuilder.ifNotExists();
         query.boundValues = boundValues;
         query.options = options;
-        when(regularStatement.getQueryString()).thenReturn(queryString);
+        when(regularStatement.getQueryString()).thenReturn("queryString");
 
         //When
         query.execute();
@@ -129,7 +126,7 @@ public class NativeQueryTest {
         verify(daoContext).execute(simpleStatementCaptor.capture());
 
         final NativeStatementWrapper actual = simpleStatementCaptor.getValue();
-        assertThat(actual.getStatement().getQueryString()).isEqualTo(queryString);
+        assertThat(actual.getStatement().getQueryString()).isEqualTo("queryString");
         assertThat(actual.getValues()).isEqualTo(boundValues);
 
     }

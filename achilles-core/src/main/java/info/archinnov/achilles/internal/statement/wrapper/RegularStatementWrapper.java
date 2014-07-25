@@ -55,7 +55,7 @@ public class RegularStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public void logDMLStatement(String indentation) {
-        if (dmlLogger.isDebugEnabled()) {
+        if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
             String queryType = "Parameterized statement";
             String queryString = regularStatement.getQueryString();
             String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement
