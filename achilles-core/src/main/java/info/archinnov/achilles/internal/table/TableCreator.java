@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.DataType;
@@ -139,7 +140,9 @@ public class TableCreator {
         buildPrimaryKey(idMeta, createTable);
         final Create.Options tableOptions = createTable.withOptions();
         addClusteringOrder(idMeta, tableOptions);
-        tableOptions.comment("Create table for entity \"" + entityMeta.getClassName() + "\"");
+        if (StringUtils.isNotBlank(entityMeta.getTableComment())) {
+            tableOptions.comment(entityMeta.getTableComment());
+        }
 
         final String createTableScript = tableOptions.build();
         session.execute(createTableScript);

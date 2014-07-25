@@ -64,7 +64,7 @@ public class EntityMetaBuilderTest {
         eagerMetas.add(simpleMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean")
-                .columnFamilyName("cfName").propertyMetas(propertyMetas).build();
+                .tableName("cfName").propertyMetas(propertyMetas).build();
 
         assertThat(meta.<CompleteBean>getEntityClass()).isEqualTo(CompleteBean.class);
         assertThat(meta.getClassName()).isEqualTo("Bean");
@@ -97,7 +97,7 @@ public class EntityMetaBuilderTest {
         eagerMetas.add(simpleMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
-                .columnFamilyName("toto").build();
+                .tableName("toto").build();
 
         assertThat(meta.getClassName()).isEqualTo("Bean");
         assertThat(meta.getTableName()).isEqualTo("toto");
@@ -115,7 +115,7 @@ public class EntityMetaBuilderTest {
                 ConsistencyLevel.TWO);
 
         EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
-                .columnFamilyName("toto").consistencyLevels(consistencyLevels).build();
+                .tableName("toto").consistencyLevels(consistencyLevels).build();
 
         assertThat(meta.getConsistencyLevels()).isSameAs(consistencyLevels);
     }
@@ -137,7 +137,7 @@ public class EntityMetaBuilderTest {
         List<PropertyMeta> eagerMetas = new ArrayList<>();
         eagerMetas.add(counterMeta);
 
-        EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean").columnFamilyName("cfName").propertyMetas(propertyMetas).build();
+        EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean").tableName("cfName").propertyMetas(propertyMetas).build();
 
         assertThat(meta.isClusteredEntity()).isTrue();
         assertThat(meta.isClusteredCounter()).isTrue();

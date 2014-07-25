@@ -64,6 +64,7 @@ public class EntityMeta {
     private Class<?> entityClass;
     private String className;
     private String tableName;
+    private String tableComment;
     private Class<?> idClass;
     private Map<String, PropertyMeta> propertyMetas;
     private List<PropertyMeta> allMetasExceptCounters;
@@ -197,6 +198,14 @@ public class EntityMeta {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public String getTableComment() {
+        return tableComment;
+    }
+
+    public void setTableComment(String tableComment) {
+        this.tableComment = tableComment;
     }
 
     public Map<String, PropertyMeta> getPropertyMetas() {
@@ -420,7 +429,7 @@ public class EntityMeta {
         final ArrayList<String> propertyNames = new ArrayList<>(propertyMetas.keySet());
         Collections.sort(propertyNames);
         return Objects.toStringHelper(this.getClass()).add("className", className)
-                .add("tableName/columnFamilyName", tableName)
+                .add("tableName/tableName", tableName)
                 .add("propertyMetas", StringUtils.join(propertyNames, ",")).add("idMeta", idMeta)
                 .add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
     }

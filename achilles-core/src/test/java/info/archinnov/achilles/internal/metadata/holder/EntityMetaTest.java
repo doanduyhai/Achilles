@@ -69,7 +69,7 @@ public class EntityMetaTest {
 
         StringBuilder toString = new StringBuilder();
         toString.append("EntityMeta{className=className, ");
-        toString.append("tableName/columnFamilyName=cfName, ");
+        toString.append("tableName/tableName=cfName, ");
         toString.append("propertyMetas=age,name, ");
         toString.append("idMeta=").append(idMeta.toString()).append(", ");
         toString.append("clusteredEntity=true, ");

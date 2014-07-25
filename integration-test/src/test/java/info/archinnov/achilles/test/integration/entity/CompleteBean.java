@@ -25,7 +25,7 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.type.Counter;
 
-@Entity(table = CompleteBean.TABLE_NAME)
+@Entity(table = CompleteBean.TABLE_NAME, comment = "Table for testing main operations: 'insert', 'update', 'delete', 'find'")
 public class CompleteBean {
 
     public static final String TABLE_NAME = "CompleteBean";

@@ -48,6 +48,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
+import info.archinnov.achilles.test.parser.entity.BeanWithComment;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
@@ -326,6 +327,18 @@ public class EntityIntrospectorTest {
     @Test
     public void should_not_get_inherited_field_by_annotation_and_name_when_no_match() throws Exception {
         assertThat(introspector.getInheritedPrivateFields(ChildBean.class, TimeUUID.class, "address")).isNull();
+    }
+
+    @Test
+    public void should_infer_table_comment_from_annotation() throws Exception {
+        String comment = introspector.inferTableComment(BeanWithComment.class, "default comment");
+        assertThat(comment).isEqualTo("Table BeanWithComment");
+    }
+
+    @Test
+    public void should_infer_table_comment_from_default_value() throws Exception {
+        String comment = introspector.inferTableComment(BeanWithColumnFamilyName.class, "default comment");
+        assertThat(comment).isEqualTo("default comment");
     }
 
     @Test

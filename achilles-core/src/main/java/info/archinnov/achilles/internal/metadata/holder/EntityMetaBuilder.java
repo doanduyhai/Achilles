@@ -40,7 +40,8 @@ public class EntityMetaBuilder {
     private PropertyMeta idMeta;
     private Class<?> entityClass;
     private String className;
-    private String columnFamilyName;
+    private String tableName;
+    private String tableComment;
     private Map<String, PropertyMeta> propertyMetas;
     private Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels;
     private InsertStrategy insertStrategy;
@@ -59,7 +60,7 @@ public class EntityMetaBuilder {
 
         Validator.validateNotNull(idMeta, "idMeta should not be null for entity meta creation");
         Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty for entity meta creation");
-        Validator.validateRegExp(columnFamilyName, TABLE_PATTERN, "columnFamilyName for entity meta creation");
+        Validator.validateRegExp(tableName, TABLE_PATTERN, "tableName for entity meta creation");
 
         EntityMeta meta = new EntityMeta();
 
@@ -67,7 +68,8 @@ public class EntityMetaBuilder {
         meta.setIdClass(idMeta.getValueClass());
         meta.setEntityClass(entityClass);
         meta.setClassName(className);
-        meta.setTableName(columnFamilyName);
+        meta.setTableName(tableName);
+        meta.setTableComment(tableComment);
         meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
         meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
         meta.setSetterMetas(Collections.unmodifiableMap(extractSetterMetas(propertyMetas)));
@@ -133,8 +135,13 @@ public class EntityMetaBuilder {
         return this;
     }
 
-    public EntityMetaBuilder columnFamilyName(String columnFamilyName) {
-        this.columnFamilyName = columnFamilyName;
+    public EntityMetaBuilder tableName(String tableName) {
+        this.tableName = tableName;
+        return this;
+    }
+
+    public EntityMetaBuilder tableComment(String tableComment) {
+        this.tableComment = tableComment;
         return this;
     }
 

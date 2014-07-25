@@ -139,6 +139,7 @@ public class TableCreatorTest {
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
         meta.setClassName("entityName");
+        meta.setTableComment("test table");
 
         creator.createTableForEntity(session, meta, true);
 
@@ -150,7 +151,7 @@ public class TableCreatorTest {
                         + "\t\tlongCol bigint,\n"
                         + "\t\tlongListCol list<bigint>,\n" + "\t\tlongSetCol set<bigint>,\n"
                         + "\t\tlongMapCol map<int,bigint>,\n" + "\t\tPRIMARY KEY(id))\n"
-                        + "\tWITH comment = 'Create table for entity \"entityName\"'");
+                        + "\tWITH comment = 'test table'");
     }
 
     @Test
@@ -180,6 +181,7 @@ public class TableCreatorTest {
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
+        meta.setTableComment("table comment");
         meta.setClassName("entityName");
 
         creator.createTableForEntity(session, meta, true);
@@ -192,7 +194,7 @@ public class TableCreatorTest {
                         + "\t\tname text,\n"
                         + "\t\tlongCol bigint,\n"
                         + "\t\tPRIMARY KEY(id, name))\n"
-                        + "\tWITH comment = 'Create table for entity \"entityName\"'"
+                        + "\tWITH comment = 'table comment'"
                         + " AND CLUSTERING ORDER BY(name DESC)");
     }
 
@@ -250,6 +252,7 @@ public class TableCreatorTest {
         meta.setAllMetasExceptIdAndCounters(asList(longColPM));
         meta.setIdMeta(idMeta);
         meta.setTableName("tableName");
+        meta.setTableComment("table comment");
         meta.setClassName("entityName");
 
         creator.createTableForEntity(session, meta, true);
@@ -263,7 +266,7 @@ public class TableCreatorTest {
                         + "\t\tuuid timeuuid,\n"
                         + "\t\tlongCol bigint static,\n"
                         + "\t\tPRIMARY KEY(indexCol, count, uuid))\n"
-                        + "\tWITH comment = 'Create table for entity \"entityName\"' AND CLUSTERING ORDER BY(count DESC)");
+                        + "\tWITH comment = 'table comment' AND CLUSTERING ORDER BY(count DESC)");
 
     }
 

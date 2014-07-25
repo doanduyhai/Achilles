@@ -147,8 +147,19 @@ public class EntityIntrospector {
             columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
         }
 
-        log.debug("Inferred columnFamilyName for entity {} : {}", canonicalName, columnFamilyName);
+        log.debug("Inferred tableName for entity {} : {}", canonicalName, columnFamilyName);
         return columnFamilyName;
+    }
+
+    public String inferTableComment(Class<?> entity, String defaultComment) {
+        String comment = defaultComment;
+        Entity annotation = entity.getAnnotation(Entity.class);
+        if (annotation != null) {
+            if (StringUtils.isNotBlank(annotation.comment())) {
+                comment = annotation.comment().trim().replaceAll("'","''");
+            }
+        }
+        return comment;
     }
 
     public <T> Pair<ConsistencyLevel, ConsistencyLevel> findConsistencyLevels(Class<T> entity, String tableName, ConfigurationContext configContext) {

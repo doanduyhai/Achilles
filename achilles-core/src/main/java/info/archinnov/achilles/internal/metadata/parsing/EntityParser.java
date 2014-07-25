@@ -49,6 +49,7 @@ public class EntityParser {
         validateEntityAndGetObjectMapper(context);
 
         String tableName = introspector.inferTableName(entityClass, entityClass.getName());
+        String tableComment = introspector.inferTableComment(entityClass, "Create table for entity \"" + entityClass.getName() + "\"");
         Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass, tableName, context.getConfigContext());
         final InsertStrategy insertStrategy = introspector.getInsertStrategy(entityClass, context);
 
@@ -79,7 +80,8 @@ public class EntityParser {
         completeCounterPropertyMeta(context, idMeta);
 
         EntityMeta entityMeta = entityMetaBuilder(idMeta).entityClass(entityClass)
-                .className(entityClass.getCanonicalName()).columnFamilyName(tableName)
+                .className(entityClass.getCanonicalName())
+                .tableName(tableName).tableComment(tableComment)
                 .propertyMetas(context.getPropertyMetas()).consistencyLevels(context.getCurrentConsistencyLevels())
                 .insertStrategy(insertStrategy)
                 .schemaUpdateEnabled(context.isSchemaUpdateEnabled(tableName))
