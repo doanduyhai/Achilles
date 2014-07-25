@@ -34,6 +34,9 @@ public class ClusteredEntityWithTimeUUID {
     @Column
     private String value;
 
+    public ClusteredEntityWithTimeUUID() {
+    }
+
     public ClusteredEntityWithTimeUUID(Long id, UUID date, String value) {
         this.id = new ClusteredKey(id, date);
         this.value = value;

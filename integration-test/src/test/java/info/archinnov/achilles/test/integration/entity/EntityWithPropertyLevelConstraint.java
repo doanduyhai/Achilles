@@ -32,7 +32,10 @@ public class EntityWithPropertyLevelConstraint {
 	@Column
 	private String name;
 
-	public Long getId() {
+    public EntityWithPropertyLevelConstraint() {
+    }
+
+    public Long getId() {
 		return id;
 	}
 

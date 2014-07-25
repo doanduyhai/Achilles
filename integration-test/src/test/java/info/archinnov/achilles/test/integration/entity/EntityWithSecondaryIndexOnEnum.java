@@ -33,6 +33,8 @@ public class EntityWithSecondaryIndexOnEnum {
     @Column
     private ConsistencyLevel consistencyLevel;
 
+    public EntityWithSecondaryIndexOnEnum() {
+    }
 
     public EntityWithSecondaryIndexOnEnum(Long id, ConsistencyLevel consistencyLevel) {
         this.id = id;

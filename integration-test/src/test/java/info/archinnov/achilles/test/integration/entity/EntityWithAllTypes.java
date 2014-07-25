@@ -86,7 +86,10 @@ public class EntityWithAllTypes {
 	@Column
 	private long primitiveLong;
 
-	public Long getId() {
+    public EntityWithAllTypes() {
+    }
+
+    public Long getId() {
 		return id;
 	}
 

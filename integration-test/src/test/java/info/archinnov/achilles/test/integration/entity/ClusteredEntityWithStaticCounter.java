@@ -36,6 +36,8 @@ public class ClusteredEntityWithStaticCounter {
 	@Column
 	private Counter count;
 
+    public ClusteredEntityWithStaticCounter() {
+    }
 
     public ClusteredEntityWithStaticCounter(ClusteredKeyForCounter id, Counter version, Counter count) {
 		this.id = id;

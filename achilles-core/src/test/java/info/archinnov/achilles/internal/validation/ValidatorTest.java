@@ -83,22 +83,22 @@ public class ValidatorTest {
 	}
 
 
-	@Test(expected = AchillesBeanMappingException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_interface() throws Exception {
 		Validator.validateInstantiable(TestInterface.class);
 	}
 
-	@Test(expected = AchillesBeanMappingException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_abstract_class() throws Exception {
 		Validator.validateInstantiable(AbstractClass.class);
 	}
 
-	@Test(expected = AchillesBeanMappingException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_when_primitive() throws Exception {
 		Validator.validateInstantiable(long.class);
 	}
 
-	@Test(expected = AchillesBeanMappingException.class)
+	@Test(expected = AchillesException.class)
 	public void should_exception_array_type() throws Exception {
 		String[] array = new String[2];
 		Validator.validateInstantiable(array.getClass());

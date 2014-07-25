@@ -275,6 +275,10 @@ public class PropertyParser {
 
         Class<?> entityClass = context.getCurrentEntityClass();
         Field field = context.getCurrentField();
+        final Class<?> embeddedIdClass = field.getType();
+
+        Validator.validateInstantiable(embeddedIdClass);
+
         EmbeddedId embeddedId = field.getAnnotation(EmbeddedId.class);
         String propertyName = StringUtils.isNotBlank(embeddedId.name()) ? embeddedId.name() : context
                 .getCurrentPropertyName();
@@ -282,11 +286,11 @@ public class PropertyParser {
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
         PropertyType type = EMBEDDED_ID;
 
-        EmbeddedIdProperties embeddedIdProperties = extractEmbeddedIdProperties(field.getType());
+        EmbeddedIdProperties embeddedIdProperties = extractEmbeddedIdProperties(embeddedIdClass);
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
                 .propertyName(propertyName).embeddedIdProperties(embeddedIdProperties)
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
-                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, field.getType());
+                .consistencyLevels(context.getCurrentConsistencyLevels()).build(Void.class, embeddedIdClass);
 
         log.trace("Built embedded id property meta for property {} of entity class {} : {}",
                 propertyMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName(), propertyMeta);

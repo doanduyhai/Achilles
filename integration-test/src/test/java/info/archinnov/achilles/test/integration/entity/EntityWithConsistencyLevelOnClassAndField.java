@@ -38,6 +38,9 @@ public class EntityWithConsistencyLevelOnClassAndField {
     @Consistency(read = ONE, write = ONE)
     private Counter count;
 
+    public EntityWithConsistencyLevelOnClassAndField() {
+    }
+
     public Long getId() {
         return id;
     }

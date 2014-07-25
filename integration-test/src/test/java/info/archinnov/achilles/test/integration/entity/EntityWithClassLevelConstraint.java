@@ -48,7 +48,10 @@ public class EntityWithClassLevelConstraint {
 	@Column
 	private String lastname;
 
-	public Long getId() {
+    public EntityWithClassLevelConstraint() {
+    }
+
+    public Long getId() {
 		return id;
 	}
 

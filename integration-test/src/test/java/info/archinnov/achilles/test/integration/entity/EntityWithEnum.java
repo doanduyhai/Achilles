@@ -34,6 +34,9 @@ public class EntityWithEnum {
     @Column(name = "consistency_level")
     private ConsistencyLevel consistencyLevel;
 
+    public EntityWithEnum() {
+    }
+
     public EntityWithEnum(Long id, String name, ConsistencyLevel consistencyLevel) {
         this.id = id;
         this.name = name;

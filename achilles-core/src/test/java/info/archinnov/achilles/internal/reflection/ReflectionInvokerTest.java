@@ -302,8 +302,12 @@ public class ReflectionInvokerTest {
 		}
 	}
 
-	public class BeanWithoutPublicConstructor {
-		public BeanWithoutPublicConstructor(String name) {
+	public static class BeanWithoutPublicConstructor {
+
+        public BeanWithoutPublicConstructor() {
+        }
+
+        public BeanWithoutPublicConstructor(String name) {
 
 		}
 	}

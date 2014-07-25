@@ -33,7 +33,6 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKeyAsCompoundPartition
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild1;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild3;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyIncorrectType;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyNotInstantiable;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithCompoundPartitionKey;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithDuplicateOrder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithInconsistentCompoundPartitionKey;
@@ -145,14 +144,6 @@ public class EmbeddedIdParserTest {
         parser.parseEmbeddedId(EmbeddedKeyWithDuplicateOrder.class);
     }
 
-    @Test
-    public void should_exception_when_embedded_id_no_pulic_default_constructor() throws Exception {
-        exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The @EmbeddedId class '" + EmbeddedKeyNotInstantiable.class.getCanonicalName()
-                + "' should have a public default constructor");
-
-        parser.parseEmbeddedId(EmbeddedKeyNotInstantiable.class);
-    }
 
     @Test
     public void should_exception_when_embedded_id_has_only_one_component() throws Exception {

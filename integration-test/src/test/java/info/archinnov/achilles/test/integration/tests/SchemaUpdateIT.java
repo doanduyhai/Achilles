@@ -71,7 +71,12 @@ public class SchemaUpdateIT {
         pm.insert(new EntityWithNewSimpleField(id, "existing", "new"));
 
         //Then
-        assertThat(pm.find(EntityWithNewSimpleField.class, id)).isNotNull();
+        final EntityWithNewSimpleField found = pm.find(EntityWithNewSimpleField.class, id);
+
+        assertThat(found).isNotNull();
+        assertThat(found.getUnmappedField()).isEqualTo("UNMAPPED");
+
+        assertThat(pm.getProxy(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
     }
 
     @Test
@@ -136,6 +141,8 @@ public class SchemaUpdateIT {
         @Column(name = "existing_field")
         private String existingField;
 
+        private String unmappedField = "UNMAPPED";
+
         @Column(name = "new_field")
         private String newField;
 
@@ -147,6 +154,9 @@ public class SchemaUpdateIT {
 
         @Column(name = "new_map")
         private Map<Integer, String> newMap;
+
+        public EntityWithNewSimpleField() {
+        }
 
         public EntityWithNewSimpleField(Long id, String existingField, String newField) {
             this.id = id;
@@ -168,6 +178,14 @@ public class SchemaUpdateIT {
 
         public void setExistingField(String existingField) {
             this.existingField = existingField;
+        }
+
+        public String getUnmappedField() {
+            return unmappedField;
+        }
+
+        public void setUnmappedField(String unmappedField) {
+            this.unmappedField = unmappedField;
         }
 
         public String getNewField() {
@@ -218,6 +236,8 @@ public class SchemaUpdateIT {
         @Column(name = "new_counter_2")
         private Counter newCounter2;
 
+        public ClusteredCounterEntityWithNewCounterField() {
+        }
 
         public ClusteredCounterEntityWithNewCounterField(Long id, UUID date, Counter existingCounter) {
             this.id = new Compound(id, date);

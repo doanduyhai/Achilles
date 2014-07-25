@@ -44,7 +44,10 @@ public class EntityWithGroupConstraint {
 	@NotNull(groups = CustomValidationGroup.class)
 	private String name;
 
-	public Long getId() {
+    public EntityWithGroupConstraint() {
+    }
+
+    public Long getId() {
 		return id;
 	}
 

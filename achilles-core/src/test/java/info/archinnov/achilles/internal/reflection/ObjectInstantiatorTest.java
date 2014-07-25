@@ -30,14 +30,18 @@ public class ObjectInstantiatorTest {
     @Test
     public void should_instantiate_class_without_public_constructor() throws Exception {
         //When
-        BeanWithoutPublicConstructor instance = instantiator.instantiate(BeanWithoutPublicConstructor.class);
+        BeanWithPublicConstructor instance = instantiator.instantiate(BeanWithPublicConstructor.class);
 
         //Then
-        assertThat(instance).isInstanceOf(BeanWithoutPublicConstructor.class);
+        assertThat(instance).isInstanceOf(BeanWithPublicConstructor.class);
     }
 
-    public class BeanWithoutPublicConstructor {
-        public BeanWithoutPublicConstructor(String name) {
+    public static class BeanWithPublicConstructor {
+
+        public BeanWithPublicConstructor() {
+        }
+
+        public BeanWithPublicConstructor(String name) {
 
         }
     }

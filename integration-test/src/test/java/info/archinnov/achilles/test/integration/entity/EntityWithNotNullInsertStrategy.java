@@ -37,6 +37,9 @@ public class EntityWithNotNullInsertStrategy {
     @Column
     private String label;
 
+    public EntityWithNotNullInsertStrategy() {
+    }
+
     public Long getId() {
         return id;
     }

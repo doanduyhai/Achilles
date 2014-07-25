@@ -16,23 +16,18 @@
 
 package info.archinnov.achilles.internal.reflection;
 
-import org.objenesis.ObjenesisStd;
+import info.archinnov.achilles.exception.AchillesException;
 
 public class ObjectInstantiator {
 
-    /*
-    * make property useCache of Objenesis configurable
-    */
-    private ObjenesisStd objenesisStd = new ObjenesisStd();
-
-    /*
-     * Warning !!!
-     * Instance init code block and constructor logic
-     * will not be executed when creating instance
-     * with Objenesis
-     */
     public <T> T instantiate(Class<T> entityClass) {
-        return objenesisStd.newInstance(entityClass);
+        try {
+            return entityClass.newInstance();
+        } catch (InstantiationException e) {
+            throw new AchillesException("Cannot instantiate class of type " + entityClass.getCanonicalName()+", did you forget to declare a default constructor ?",e);
+        } catch (IllegalAccessException e) {
+            throw new AchillesException("Cannot instantiate class of type " + entityClass.getCanonicalName()+", did you forget to declare a default constructor ?",e);
+        }
     }
 
 }

@@ -35,7 +35,10 @@ public class ClusteredEntityWithStaticColumn {
     @Column
     private String street;
 
-	public ClusteredEntityWithStaticColumn(ClusteredKey id, String city, String street) {
+    public ClusteredEntityWithStaticColumn() {
+    }
+
+    public ClusteredEntityWithStaticColumn(ClusteredKey id, String city, String street) {
 		this.id = id;
         this.city = city;
         this.street = street;

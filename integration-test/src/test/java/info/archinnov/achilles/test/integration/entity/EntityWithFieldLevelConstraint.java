@@ -33,7 +33,10 @@ public class EntityWithFieldLevelConstraint {
 	@NotNull
 	private String name;
 
-	public Long getId() {
+    public EntityWithFieldLevelConstraint() {
+    }
+
+    public Long getId() {
 		return id;
 	}
 

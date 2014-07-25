@@ -34,6 +34,9 @@ public class EntityWithTwoConsistency {
     @Column
     private String name;
 
+    public EntityWithTwoConsistency() {
+    }
+
     public Long getId() {
         return id;
     }

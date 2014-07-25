@@ -56,8 +56,6 @@ public class EmbeddedIdParser {
     public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass) {
         log.debug("Parse embedded id class {} ", embeddedIdClass.getCanonicalName());
 
-        checkForDefaultConstructor(embeddedIdClass);
-
         Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
         validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
         final List<ClusteringOrder> clusteringOrders = extractClusteredOrder(embeddedIdClass);
@@ -250,15 +248,5 @@ public class EmbeddedIdParser {
             throw new AchillesBeanMappingException(String.format("The property '%s' of class '%s' cannot be a static column because it belongs to the primary key",componentName,compositeKeyField.getDeclaringClass().getCanonicalName()));
         }
         return componentName;
-    }
-
-    private void checkForDefaultConstructor(Class<?> embeddedIdClass) {
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        Set<Constructor> defaultConstructors = getAllConstructors(embeddedIdClass, withParametersCount(0));
-
-        Validator.validateBeanMappingFalse(defaultConstructors.isEmpty(),
-                "The @EmbeddedId class '%s' should have a public default constructor",
-                embeddedIdClass.getCanonicalName());
-
     }
 }

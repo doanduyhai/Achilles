@@ -52,6 +52,7 @@ import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.annotations.Index;
 import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -768,6 +769,44 @@ public class PropertyParserTest {
     @Test
     public void should_infer_entity_class_from_interceptor() throws Exception {
         assertThat(parser.inferEntityClassFromInterceptor(longInterceptor)).isEqualTo((Class) Long.class);
+    }
+
+    @Test
+    public void should_exception_when_no_default_constructor_for_embeddedid() throws Exception {
+        //Given
+         class TestWithEmbeddedId {
+            @EmbeddedId
+            private Embedded id;
+
+
+             public Embedded getId() {
+                 return id;
+             }
+
+             public void setId(Embedded id) {
+                 this.id = id;
+             }
+
+             class Embedded {
+
+                public Embedded(String text) {
+
+                }
+            }
+
+        }
+        PropertyParsingContext context = newContext(TestWithEmbeddedId.class, TestWithEmbeddedId.class.getDeclaredField("id"));
+        context.setEmbeddedId(true);
+
+        expectedEx.expect(AchillesException.class);
+        expectedEx.expectMessage("Cannot instantiate class of type null, did you forget to declare a default constructor ?");
+
+
+        //When
+        parser.parse(context);
+
+        //Then
+
     }
 
     private Interceptor<Long> longInterceptor = new Interceptor<Long>() {
