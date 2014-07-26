@@ -55,6 +55,7 @@ public class SchemaUpdateIT {
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
         session.execute("CREATE TABLE new_simple_field(id bigint PRIMARY KEY, existing_field text)");
+        session.execute("CREATE INDEX field_index ON schema_dynamic_update.new_simple_field(existing_field)");
 
         final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
 
@@ -65,6 +66,7 @@ public class SchemaUpdateIT {
                 .withKeyspaceName("schema_dynamic_update")
                 .enableSchemaUpdate(false)
                 .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", true))
+                .relaxIndexValidation(true)
                 .build();
 
         final PersistenceManager pm = pmf.createPersistenceManager();
@@ -128,6 +130,30 @@ public class SchemaUpdateIT {
                 .withKeyspaceName("schema_dynamic_update_fail")
                 .enableSchemaUpdate(true)
                 .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", false))
+                .build();
+
+    }
+
+    @Test(expected = AchillesInvalidTableException.class)
+    public void should_fail_bootstrapping_if_index_validation_fails() throws Exception {
+        //Given
+        final Session session = CassandraEmbeddedServerBuilder
+                .noEntityPackages().withKeyspaceName("index_validation_fail")
+                .cleanDataFilesAtStartup(true)
+                .buildNativeSessionOnly();
+        session.execute("CREATE TABLE entity_with_index(id bigint PRIMARY KEY, name text)");
+        session.execute("CREATE INDEX name_index ON index_validation_fail.entity_with_index(name)");
+
+        final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
+
+        //When
+        Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
+        PersistenceManagerFactoryBuilder.builder(cluster)
+                .withEntities(Arrays.<Class<?>>asList(EntityWithNewSimpleField.class))
+                .withKeyspaceName("schema_dynamic_update_fail")
+                .enableSchemaUpdate(true)
+                .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", false))
+                .relaxIndexValidation(false)
                 .build();
 
     }
@@ -310,5 +336,31 @@ public class SchemaUpdateIT {
             }
         }
 
+    }
+
+    @Entity(table = "entity_with_index")
+    public static class EntityWithIndex {
+
+        @Id
+        private Long id;
+
+        @Column
+        private String name;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

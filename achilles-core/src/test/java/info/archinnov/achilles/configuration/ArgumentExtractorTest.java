@@ -36,6 +36,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.JACK
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RELAX_INDEX_VALIDATION;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
@@ -476,5 +477,22 @@ public class ArgumentExtractorTest {
 
         //Then
         assertThat(actual).isSameAs(this.getClass().getClassLoader());
+    }
+
+    @Test
+    public void should_init_relax_index_validation() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+        params.put(RELAX_INDEX_VALIDATION, true);
+
+        //When
+        final boolean actual = extractor.initRelaxIndexValidation(params);
+
+        //Then
+        assertThat(actual).isTrue();
+        assertThat(extractor.initRelaxIndexValidation(new ConfigMap())).isFalse();
+
+
+
     }
 }

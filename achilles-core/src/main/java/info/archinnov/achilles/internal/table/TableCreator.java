@@ -36,6 +36,7 @@ import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -65,12 +66,12 @@ public class TableCreator {
         return tableMetas;
     }
 
-    public void createTableForEntity(Session session, EntityMeta entityMeta, boolean forceColumnFamilyCreation) {
+    public void createTableForEntity(Session session, EntityMeta entityMeta, ConfigurationContext configContext) {
 
         log.debug("Create table for entity {}", entityMeta);
 
         String tableName = entityMeta.getTableName().toLowerCase();
-        if (forceColumnFamilyCreation) {
+        if (configContext.isForceColumnFamilyCreation()) {
             log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
             createTableForEntity(session, entityMeta);
         } else {
@@ -87,10 +88,10 @@ public class TableCreator {
         }
     }
 
-    public void createTableForCounter(Session session, boolean forceColumnFamilyCreation) {
+    public void createTableForCounter(Session session, ConfigurationContext configContext) {
         log.debug("Create table for Achilles counters");
 
-        if (forceColumnFamilyCreation) {
+        if (configContext.isForceColumnFamilyCreation()) {
             final String createTable = SchemaBuilder.createTable(CQL_COUNTER_TABLE)
                     .addPartitionKey(CQL_COUNTER_FQCN, DataType.text())
                     .addPartitionKey(CQL_COUNTER_PRIMARY_KEY, DataType.text())

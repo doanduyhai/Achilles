@@ -146,7 +146,7 @@ public class PersistenceManagerFactoryTest {
         assertThat(Whitebox.getInternalState(schemaContext, Session.class)).isSameAs(session);
         assertThat(Whitebox.getInternalState(schemaContext, "entityMetaMap")).isSameAs(entityMetaMap);
         assertThat(Whitebox.getInternalState(schemaContext, "keyspaceName")).isEqualTo("keyspace");
-        assertThat((Boolean) Whitebox.getInternalState(schemaContext, "forceColumnFamilyCreation")).isTrue();
+        assertThat((ConfigurationContext) Whitebox.getInternalState(schemaContext, "configContext")).isSameAs(configContext);
         assertThat((Boolean) Whitebox.getInternalState(schemaContext, "hasCounter")).isTrue();
     }
 

@@ -31,6 +31,7 @@ import com.datastax.driver.core.ColumnMetadata;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -43,26 +44,26 @@ public class TableValidator {
 
     private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
 
-    public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata) {
+    public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata, ConfigurationContext configContext) {
         log.debug("Validate existing table {} for {}", tableMetadata.getName(), entityMeta);
-        PropertyMeta idMeta = entityMeta.getIdMeta();
-        validateTable(entityMeta, tableMetadata, idMeta);
+
+        validateTable(entityMeta, tableMetadata, configContext);
 
     }
 
-    private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, PropertyMeta idMeta) {
-        if (idMeta.isEmbeddedId()) {
+    private void validateTable(EntityMeta entityMeta, TableMetadata tableMetadata, ConfigurationContext configContext) {
+        PropertyMeta idMeta = entityMeta.getIdMeta();
+        if (entityMeta.isEmbeddedId()) {
             validatePrimaryKeyComponents(tableMetadata, idMeta, true);
             validatePrimaryKeyComponents(tableMetadata, idMeta, false);
         } else {
-            validateColumn(tableMetadata, idMeta.getCQL3PropertyName(), idMeta.getValueClassForTableCreation(), idMeta.isIndexed(), entityMeta.isSchemaUpdateEnabled());
+            validateColumn(tableMetadata, entityMeta, idMeta, configContext);
         }
 
         for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
             switch (pm.type()) {
                 case SIMPLE:
-                    validateColumn(tableMetadata, pm.getCQL3PropertyName(), pm.getValueClassForTableCreation(),
-                            pm.isIndexed(), entityMeta.isSchemaUpdateEnabled());
+                    validateColumn(tableMetadata, entityMeta, pm, configContext);
                     break;
                 case LIST:
                 case SET:
@@ -124,37 +125,6 @@ public class TableValidator {
                         .getName(), counterTypeName);
     }
 
-    private void validateColumn(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType,
-            boolean indexed, boolean schemaUpdateEnabled) {
-
-        log.debug("Validate existing column {} from table {} against type {}", columnName, tableMetaData.getName(),
-                columnJavaType);
-
-        String tableName = tableMetaData.getName();
-        ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
-        Name expectedType = toCQLType(columnJavaType);
-
-        if (schemaUpdateEnabled && columnMetadata == null) {
-            // will be created in updater
-            return;
-        } else {
-            Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName, tableName);
-        }
-
-        boolean columnIsIndexed = columnMetadata.getIndex() != null;
-
-        Validator.validateTableFalse((columnIsIndexed ^ indexed),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",columnName, tableName);
-        Name realType = columnMetadata.getType().getName();
-
-		/*
-         * See JIRA
-		 */
-        if (realType == Name.CUSTOM) {
-            realType = Name.BLOB;
-        }
-        Validator.validateTableTrue(expectedType == realType,"Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName,realType, expectedType);
-    }
-
     private void validateCounterColumnForClusteredCounters(TableMetadata tableMetaData, PropertyMeta propertyMeta, boolean schemaUpdateEnabled) {
         String columnName = propertyMeta.getPropertyName().toLowerCase();
 
@@ -176,30 +146,30 @@ public class TableValidator {
                 realType, Name.COUNTER);
     }
 
-
     private void validatePartitionComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 
-        log.debug("Validate existing partition key component {} from table {} against type {}", columnName,
-                tableMetaData.getName(), columnJavaType);
+        final String tableName = tableMetaData.getName();
+        log.debug("Validate existing partition key component {} from table {} against type {}", columnName,tableName, columnJavaType);
 
         // no ALTER's for partition components
-        validateColumn(tableMetaData, columnName, columnJavaType, false, false);
         ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
+        validateColumnType(tableName, columnName, columnMetadata, columnJavaType);
 
         Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), columnMetadata),
-                "Column '%s' of table '%s' should be a partition key component", columnName, tableMetaData.getName());
+                "Column '%s' of table '%s' should be a partition key component", columnName, tableName);
     }
+
 
     private void validateClusteringComponent(TableMetadata tableMetaData, String columnName, Class<?> columnJavaType) {
 
-        log.debug("Validate existing clustering column {} from table {} against type {}", columnName,
-                tableMetaData.getName(), columnJavaType);
+        final String tableName = tableMetaData.getName();
+        log.debug("Validate existing clustering column {} from table {} against type {}", columnName,tableName, columnJavaType);
 
         // no ALTER's for clustering components
-        validateColumn(tableMetaData, columnName, columnJavaType, false, false);
         ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
+        validateColumnType(tableName, columnName, columnMetadata, columnJavaType);
         Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringColumns(), columnMetadata),
-                "Column '%s' of table '%s' should be a clustering key component", columnName, tableMetaData.getName());
+                "Column '%s' of table '%s' should be a clustering key component", columnName, tableName);
     }
 
     private void validateCollectionAndMapColumn(TableMetadata tableMetadata, PropertyMeta pm, boolean schemaUpdateEnabled) {
@@ -296,5 +266,45 @@ public class TableValidator {
             fqcnColumnMatches = fqcnColumnMatches || columnMetaDataComparator.isEqual(fqcnColumn, columnMetadata);
         }
         return fqcnColumnMatches;
+    }
+
+    private void validateColumn(TableMetadata tableMetaData, EntityMeta entityMeta, PropertyMeta propertyMeta,  ConfigurationContext configContext) {
+
+        final String columnName = propertyMeta.getCQL3PropertyName();
+        final Class<?> columnJavaType = propertyMeta.getValueClassForTableCreation();
+        final boolean schemaUpdateEnabled = entityMeta.isSchemaUpdateEnabled();
+        String tableName = tableMetaData.getName();
+
+        log.debug("Validate existing column {} from table {} against type {}", columnName, tableName, columnJavaType);
+
+        ColumnMetadata columnMetadata = tableMetaData.getColumn(columnName);
+
+
+        if (schemaUpdateEnabled && columnMetadata == null) {
+            // will be created in updater
+            return;
+        } else {
+            Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", columnName, tableName);
+        }
+
+        validateColumnType(tableName, columnName, columnMetadata, columnJavaType);
+
+
+        if (!configContext.isRelaxIndexValidation()) {
+            boolean columnIsIndexed = columnMetadata.getIndex() != null;
+            Validator.validateTableFalse((columnIsIndexed ^ propertyMeta.isIndexed()),"Column '%s' in the table '%s' is indexed (or not) whereas metadata indicates it is (or not)",columnName, tableName);
+        }
+    }
+
+    private void validateColumnType(String tableName, String columnName, ColumnMetadata columnMetadata, Class<?> columnJavaType) {
+        Name expectedType = toCQLType(columnJavaType);
+        Name realType = columnMetadata.getType().getName();
+		/*
+         * See JIRA
+		 */
+        if (realType == Name.CUSTOM) {
+            realType = Name.BLOB;
+        }
+        Validator.validateTableTrue(expectedType == realType, "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", columnName, tableName, realType, expectedType);
     }
 }

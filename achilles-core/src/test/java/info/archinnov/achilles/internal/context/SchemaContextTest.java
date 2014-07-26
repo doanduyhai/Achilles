@@ -67,15 +67,20 @@ public class SchemaContextTest {
     @Mock
     private TableValidator tableValidator;
 
+    @Mock
+    private ConfigurationContext configContext;
+
 
     private String keyspaceName = "keyspace";
 
     @Before
     public void setUp() {
-        context = new SchemaContext(true, session, keyspaceName, cluster, new ParsingResult(entityMetaMap, true));
-        Whitebox.setInternalState(context, TableCreator.class, tableCreator);
-		Whitebox.setInternalState(context, TableUpdater.class, tableUpdater);
-		Whitebox.setInternalState(context, TableValidator.class, tableValidator);
+        when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
+        context = new SchemaContext(configContext, session, keyspaceName, cluster, new ParsingResult(entityMetaMap, true));
+
+        context.tableCreator=tableCreator;
+        context.tableUpdater=tableUpdater;
+        context.tableValidator=tableValidator;
     }
 
     @Test
@@ -115,7 +120,7 @@ public class SchemaContextTest {
         context.validateForEntity(entityMeta, tableMetaData);
 
         // Then
-        verify(tableValidator).validateForEntity(entityMeta, tableMetaData);
+        verify(tableValidator).validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -134,7 +139,7 @@ public class SchemaContextTest {
     @Test
     public void should_fetch_table_metas() throws Exception {
         // Given
-        Map<String, TableMetadata> expected = new HashMap<String, TableMetadata>();
+        Map<String, TableMetadata> expected = new HashMap<>();
         KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
 
         // When
@@ -156,7 +161,7 @@ public class SchemaContextTest {
         context.createTableForEntity(entityMeta);
 
         // Then
-        verify(tableCreator).createTableForEntity(session, entityMeta, true);
+        verify(tableCreator).createTableForEntity(session, entityMeta, configContext);
     }
 
     @Test
@@ -179,6 +184,6 @@ public class SchemaContextTest {
         context.createTableForCounter();
 
         // Then
-        verify(tableCreator).createTableForCounter(session, true);
+        verify(tableCreator).createTableForCounter(session, configContext);
     }
 }

@@ -41,9 +41,6 @@ import info.archinnov.achilles.type.Pair;
 
 public class EntityMeta {
 
-    public static final boolean IS_MANAGED = true;
-    public static final boolean IS_NOT_MANAGED = false;
-
     public static final Predicate<EntityMeta> CLUSTERED_COUNTER_FILTER = new Predicate<EntityMeta>() {
         @Override
         public boolean apply(EntityMeta meta) {
@@ -432,6 +429,10 @@ public class EntityMeta {
                 .add("tableName/tableName", tableName)
                 .add("propertyMetas", StringUtils.join(propertyNames, ",")).add("idMeta", idMeta)
                 .add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
+    }
+
+    public boolean isEmbeddedId() {
+        return idMeta.isEmbeddedId();
     }
 
     public static enum EntityState {

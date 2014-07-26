@@ -58,6 +58,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -90,6 +91,9 @@ public class TableCreatorTest {
     @Mock
     private TableMetadata tableMeta;
 
+    @Mock
+    private ConfigurationContext configContext;
+
     @Captor
     private ArgumentCaptor<String> stringCaptor;
 
@@ -101,7 +105,9 @@ public class TableCreatorTest {
     public void setUp() {
         when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
         when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
+        when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
         creator = new TableCreator();
+
     }
 
     @Test
@@ -141,7 +147,8 @@ public class TableCreatorTest {
         meta.setClassName("entityName");
         meta.setTableComment("test table");
 
-        creator.createTableForEntity(session, meta, true);
+
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session).execute(stringCaptor.capture());
 
@@ -184,7 +191,7 @@ public class TableCreatorTest {
         meta.setTableComment("table comment");
         meta.setClassName("entityName");
 
-        creator.createTableForEntity(session, meta, true);
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session).execute(stringCaptor.capture());
 
@@ -211,7 +218,7 @@ public class TableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
-        creator.createTableForEntity(session, meta, true);
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
@@ -232,7 +239,7 @@ public class TableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
-        creator.createTableForEntity(session, meta, true);
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session, new Times(2)).execute(stringCaptor.capture());
 
@@ -255,7 +262,7 @@ public class TableCreatorTest {
         meta.setTableComment("table comment");
         meta.setClassName("entityName");
 
-        creator.createTableForEntity(session, meta, true);
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session).execute(stringCaptor.capture());
 
@@ -289,7 +296,7 @@ public class TableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
-        creator.createTableForEntity(session, meta, true);
+        creator.createTableForEntity(session, meta, configContext);
 
         verify(session).execute(stringCaptor.capture());
 
@@ -310,15 +317,17 @@ public class TableCreatorTest {
         meta.setTableName("tableName");
         meta.setClassName("entityName");
 
+        when(configContext.isForceColumnFamilyCreation()).thenReturn(false);
+
         exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The required table 'tablename' does not exist for entity 'entityName'");
 
-        creator.createTableForEntity(session, meta, false);
+        creator.createTableForEntity(session, meta, configContext);
     }
 
     @Test
     public void should_create_achilles_counter_table() throws Exception {
-        creator.createTableForCounter(session, true);
+        creator.createTableForCounter(session, configContext);
 
         verify(session).execute(stringCaptor.capture());
 
@@ -334,9 +343,10 @@ public class TableCreatorTest {
     @Test
     public void should_exception_when_achilles_counter_table_does_not_exist() throws Exception {
 
+        when(configContext.isForceColumnFamilyCreation()).thenReturn(false);
         exception.expect(AchillesInvalidTableException.class);
         exception.expectMessage("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
 
-        creator.createTableForCounter(session, false);
+        creator.createTableForCounter(session, configContext);
     }
 }

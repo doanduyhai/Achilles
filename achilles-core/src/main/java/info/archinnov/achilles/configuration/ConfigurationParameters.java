@@ -188,7 +188,9 @@ public enum ConfigurationParameters {
 
     INSERT_STRATEGY("achilles.insert.strategy"),
 
-    OSGI_CLASS_LOADER("achilles.osgi.class.loader");
+    OSGI_CLASS_LOADER("achilles.osgi.class.loader"),
+
+    RELAX_INDEX_VALIDATION("achilles.relax.index.validation");
 
     private String label;
 

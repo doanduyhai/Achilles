@@ -29,7 +29,7 @@ import info.archinnov.achilles.internal.table.TableUpdater;
 import info.archinnov.achilles.internal.table.TableValidator;
 
 public class SchemaContext {
-    private boolean forceColumnFamilyCreation;
+    private ConfigurationContext configContext;
 
     private Cluster cluster;
 
@@ -41,15 +41,14 @@ public class SchemaContext {
 
     private boolean hasCounter;
 
-    private TableCreator tableCreator = new TableCreator();
+    protected TableCreator tableCreator = new TableCreator();
 
-    private TableValidator tableValidator = new TableValidator();
+    protected TableValidator tableValidator = new TableValidator();
 
-    private TableUpdater tableUpdater = new TableUpdater();
+    protected TableUpdater tableUpdater = new TableUpdater();
 
-    public SchemaContext(boolean forceColumnFamilyCreation, Session session, String keyspaceName, Cluster cluster,
-                         ParsingResult parsingResult) {
-        this.forceColumnFamilyCreation = forceColumnFamilyCreation;
+    public SchemaContext(ConfigurationContext configContext, Session session, String keyspaceName, Cluster cluster, ParsingResult parsingResult) {
+        this.configContext = configContext;
         this.session = session;
         this.keyspaceName = keyspaceName;
         this.cluster = cluster;
@@ -70,7 +69,7 @@ public class SchemaContext {
     }
 
     public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetaData) {
-        tableValidator.validateForEntity(entityMeta, tableMetaData);
+        tableValidator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     public void validateAchillesCounter() {
@@ -82,11 +81,11 @@ public class SchemaContext {
     }
 
     public void createTableForEntity(EntityMeta entityMeta) {
-        tableCreator.createTableForEntity(session, entityMeta, forceColumnFamilyCreation);
+        tableCreator.createTableForEntity(session, entityMeta, configContext);
     }
 
     public void createTableForCounter() {
-        tableCreator.createTableForCounter(session, forceColumnFamilyCreation);
+        tableCreator.createTableForCounter(session, configContext);
     }
 
     public void updateForEntity(EntityMeta entityMeta, TableMetadata tableMetaData) {

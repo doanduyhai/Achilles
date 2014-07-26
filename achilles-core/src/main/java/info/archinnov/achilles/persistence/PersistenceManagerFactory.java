@@ -34,6 +34,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.JACK
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RELAX_INDEX_VALIDATION;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -111,8 +112,7 @@ public class PersistenceManagerFactory {
 
         bootstrapper.addInterceptorsToEntityMetas(interceptors, parsingResult.getMetaMap());
 
-        SchemaContext schemaContext = new SchemaContext(configContext.isForceColumnFamilyCreation(), session,
-                keyspaceName, cluster, parsingResult);
+        SchemaContext schemaContext = new SchemaContext(configContext, session, keyspaceName, cluster, parsingResult);
         bootstrapper.validateOrCreateTables(schemaContext);
 
         daoContext = bootstrapper.buildDaoContext(session, parsingResult, configContext);
@@ -487,6 +487,19 @@ public class PersistenceManagerFactory {
          */
         public PersistenceManagerFactoryBuilder globalInsertStrategy(InsertStrategy globalInsertStrategy) {
             configMap.put(INSERT_STRATEGY, globalInsertStrategy);
+            return this;
+        }
+
+        /**
+         * Whether to relax constraint on existing secondary indices validation
+         *
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Configuration-Parameters#index-validation" target="_blank">Index Validation</a>
+         * @param relaxIndexValidation
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder relaxIndexValidation(boolean relaxIndexValidation) {
+            configMap.put(RELAX_INDEX_VALIDATION, relaxIndexValidation);
             return this;
         }
 

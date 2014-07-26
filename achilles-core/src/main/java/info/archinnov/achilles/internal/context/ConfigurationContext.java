@@ -52,6 +52,8 @@ public class ConfigurationContext {
 
     private ClassLoader OSGIClassLoader;
 
+    private boolean relaxIndexValidation;
+
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
     }
@@ -170,5 +172,13 @@ public class ConfigurationContext {
 
     public void setWriteConsistencyLevelMap(Map<String, ConsistencyLevel> writeConsistencyLevelMap) {
         this.writeConsistencyLevelMap = writeConsistencyLevelMap;
+    }
+
+    public boolean isRelaxIndexValidation() {
+        return relaxIndexValidation;
+    }
+
+    public void setRelaxIndexValidation(boolean relaxIndexValidation) {
+        this.relaxIndexValidation = relaxIndexValidation;
     }
 }

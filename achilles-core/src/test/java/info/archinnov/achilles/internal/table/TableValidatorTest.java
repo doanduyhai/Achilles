@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -82,6 +83,9 @@ public class TableValidatorTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private ColumnMetadata columnMetadataForField;
+
+    @Mock
+    private ConfigurationContext configContext;
 
     private String keyspaceName = "keyspace";
 
@@ -114,7 +118,7 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -148,7 +152,7 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("string")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -182,7 +186,7 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.text());
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -203,11 +207,11 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("name")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.text());
         when(columnMetadataForField.getIndex()).thenReturn(null);
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
 
         pm = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
         entityMeta.setPropertyMetas(ImmutableMap.of("name", pm));
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -233,7 +237,7 @@ public class TableValidatorTest {
         when(indexMetadata.getIndexedColumn()).thenReturn(columnMetadataForField);
 
         when(columnMetadataForField.getIndex()).thenReturn(indexMetadata);
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
 
     }
 
@@ -255,11 +259,11 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("friends")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.list(DataType.text()));
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
 
         pm = completeBean(Void.class, String.class).field("friends").type(LIST).build();
         entityMeta.setPropertyMetas(ImmutableMap.of("friends", pm));
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -280,7 +284,7 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("followers")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.set(DataType.text()));
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -301,12 +305,12 @@ public class TableValidatorTest {
         when(tableMetaData.getColumn("preferences")).thenReturn(columnMetadataForField);
         when(columnMetadataForField.getType()).thenReturn(DataType.map(DataType.cint(), DataType.text()));
 
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
 
         pm = completeBean(Integer.class, String.class).field("preferences").type(MAP)
                 .build();
         entityMeta.setPropertyMetas(ImmutableMap.of("preferences", pm));
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
     }
 
     @Test
@@ -333,7 +337,7 @@ public class TableValidatorTest {
         when(columnMetadataForField.getIndex()).thenReturn(null);
 
         //When
-        validator.validateForEntity(entityMeta, tableMetaData);
+        validator.validateForEntity(entityMeta, tableMetaData, configContext);
 
         //Then
 

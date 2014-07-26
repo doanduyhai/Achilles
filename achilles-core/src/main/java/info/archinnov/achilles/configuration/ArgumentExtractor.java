@@ -36,6 +36,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.JACK
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.RELAX_INDEX_VALIDATION;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +76,8 @@ public class ArgumentExtractor {
     static final boolean DEFAULT_ENABLE_BEAN_VALIDATION = false;
 
     static final boolean DEFAULT_PROXIES_WARM_UP_DISABLED = true;
+
+    static final boolean DEFAULT_INDEX_RELAX_VALIDATION = false;
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
 
@@ -129,6 +132,7 @@ public class ArgumentExtractor {
         configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
         configContext.setInsertStrategy(initInsertStrategy(configurationMap));
         configContext.setOSGIClassLoader(initOSGIClassLoader(configurationMap));
+        configContext.setRelaxIndexValidation(initRelaxIndexValidation(configurationMap));
         return configContext;
     }
 
@@ -243,5 +247,9 @@ public class ArgumentExtractor {
 
     public ClassLoader initOSGIClassLoader(ConfigMap configMap) {
         return configMap.getTyped(OSGI_CLASS_LOADER);
+    }
+
+    public boolean initRelaxIndexValidation(ConfigMap configMap) {
+        return configMap.getTypedOr(RELAX_INDEX_VALIDATION, DEFAULT_INDEX_RELAX_VALIDATION);
     }
 }
