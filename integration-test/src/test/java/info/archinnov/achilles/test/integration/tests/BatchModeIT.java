@@ -17,15 +17,19 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,11 +40,13 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
@@ -54,6 +60,7 @@ import info.archinnov.achilles.test.integration.entity.User;
 import info.archinnov.achilles.test.integration.utils.CassandraLogAsserter;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.OptionsBuilder;
+import info.archinnov.achilles.type.TypedMap;
 
 public class BatchModeIT {
 
@@ -63,8 +70,6 @@ public class BatchModeIT {
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "CompleteBean",
             "Tweet", "User");
-
-    private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
 
     private PersistenceManager manager = resource.getPersistenceManager();
 
@@ -82,7 +87,7 @@ public class BatchModeIT {
     @Test
     public void should_batch_counters() throws Exception {
         // Start batch
-        Batch batchEm = pmf.createBatch();
+        Batch batchEm = manager.createBatch();
         batchEm.startBatch();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
@@ -127,7 +132,7 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        Batch batch = pmf.createBatch();
+        Batch batch = manager.createBatch();
         batch.startBatch();
 
         batch.insert(bean);
@@ -169,7 +174,7 @@ public class BatchModeIT {
         user = manager.insert(user);
 
         // Start batch
-        Batch batch = pmf.createBatch();
+        Batch batch = manager.createBatch();
         batch.startBatch();
 
         boolean exceptionCaught = false;
@@ -213,7 +218,7 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batch = pmf.createBatch();
+        Batch batch = manager.createBatch();
         batch.startBatch();
 
         batch.startBatch(QUORUM);
@@ -242,7 +247,7 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batchEm = pmf.createBatch();
+        Batch batchEm = manager.createBatch();
         batchEm.startBatch();
 
         batchEm.startBatch(TWO);
@@ -268,7 +273,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column_with_insert_and_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name").buid();
-        final Batch batch = pmf.createOrderedBatch();
+        final Batch batch = manager.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -290,7 +295,7 @@ public class BatchModeIT {
     public void should_order_batch_operations_on_the_same_column() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
-        final Batch batch = pmf.createOrderedBatch();
+        final Batch batch = manager.createOrderedBatch();
 
         //When
         batch.startBatch();
@@ -315,7 +320,7 @@ public class BatchModeIT {
 
         manager.insert(entity2);
 
-        final Batch batch = pmf.createBatch();
+        final Batch batch = manager.createBatch();
 
         batch.startBatch();
 
@@ -332,6 +337,45 @@ public class BatchModeIT {
         Statement select = new SimpleStatement("SELECT name from CompleteBean where id=" + entity2.getId());
         Row row = manager.getNativeSession().execute(select).one();
         assertThat(row.getString("name")).isEqualTo("DuyHai");
+    }
+
+    @Test
+    public void should_batch_native_statement_with_CAS_result_listener() throws Exception {
+        //Given
+        CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("name1000").buid();
+        manager.insert(entity);
+        final Batch batch = manager.createBatch();
+        final Insert statement = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
+
+        final AtomicBoolean error = new AtomicBoolean(false);
+        final AtomicReference<CASResult> result = new AtomicReference<>(null);
+
+        CASResultListener listener = new CASResultListener() {
+            @Override
+            public void onCASSuccess() {
+
+            }
+
+            @Override
+            public void onCASError(CASResult casResult) {
+                error.getAndSet(true);
+                result.getAndSet(casResult);
+            }
+        };
+
+        //When
+        batch.batchNativeStatementWithCASListener(statement,listener, entity.getId(),"name");
+        batch.endBatch();
+
+        //Then
+        assertThat(error.get()).isTrue();
+        assertThat(result.get()).isNotNull();
+
+        final TypedMap currentValues = result.get().currentValues();
+
+        assertThat(currentValues.getTyped("id")).isEqualTo(entity.getId());
+        assertThat(currentValues.getTyped("name")).isEqualTo("name1000");
+
     }
 
     private void assertThatBatchContextHasBeenReset(Batch batchEm) {
