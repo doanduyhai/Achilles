@@ -41,7 +41,7 @@ import java.util.List;
  * <br>
  * <br>
  * Below is an example of an interceptor on the <em>User</em> entity to set the <em>biography</em>
- * field with "TO DO" when it is not set. This interception occurs before persist and update operations
+ * field with "TO DO" when it is not set. This interception occurs before insert and update operations
  *
  * <pre class="code"><code class="java">
  *

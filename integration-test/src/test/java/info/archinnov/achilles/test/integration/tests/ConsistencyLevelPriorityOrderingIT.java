@@ -35,6 +35,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.Batch;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
+import info.archinnov.achilles.schemabuilder.Alter;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
 import info.archinnov.achilles.test.integration.entity.EntityWithConsistencyLevelOnClassAndField;
@@ -64,41 +65,25 @@ public class ConsistencyLevelPriorityOrderingIT {
         entity.setId(id);
         entity.setName("name");
 
-        manager.insert(entity);
+        final EntityWithConsistencyLevelOnClassAndField managed = manager.insert(entity);
 
-        Batch batchEm = pmf.createBatch();
-        batchEm.startBatch(ONE);
+        Batch batch = pmf.createBatch();
+        batch.startBatch(ONE);
+        managed.setName("changed_name");
         logAsserter.prepareLogLevel();
 
-        entity = batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
+        batch.update(managed);
 
+        batch.endBatch();
         logAsserter.assertConsistencyLevels(ONE);
-        batchEm.endBatch();
+        assertThatBatchContextHasBeenReset(batch);
 
-        assertThatBatchContextHasBeenReset(batchEm);
-        assertThat(entity.getName()).isEqualTo("name");
+        entity = manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
+        assertThat(entity.getName()).isEqualTo("changed_name");
 
         expectedEx.expect(UnavailableException.class);
         expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
         manager.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId());
-    }
-
-    @Test
-    public void should_not_override_batch_mode_level_by_runtime_value_for_normal_type() throws Exception {
-        EntityWithConsistencyLevelOnClassAndField entity = new EntityWithConsistencyLevelOnClassAndField();
-        entity.setId(RandomUtils.nextLong());
-        entity.setName("name sdfsdf");
-        manager.insert(entity);
-
-        Batch batchEm = pmf.createBatch();
-
-        batchEm.startBatch(EACH_QUORUM);
-
-        expectedEx.expect(AchillesException.class);
-        expectedEx
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-
-        batchEm.find(EntityWithConsistencyLevelOnClassAndField.class, entity.getId(), ONE);
     }
 
     // Counter type
@@ -132,22 +117,6 @@ public class ConsistencyLevelPriorityOrderingIT {
         expectedEx.expectMessage("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
 
         entity.getCount();
-    }
-
-    @Test
-    public void should_override_batch_level_by_runtime_value_for_slice_query() throws Exception {
-
-        Batch batch = pmf.createBatch();
-        batch.startBatch(ONE);
-
-        expectedEx.expect(InvalidQueryException.class);
-        expectedEx.expectMessage("EACH_QUORUM ConsistencyLevel is only supported for writes");
-
-        batch.sliceQuery(ClusteredEntity.class)
-                .forSelect()
-                .withPartitionComponents(11L)
-                .withConsistency(EACH_QUORUM)
-                .get(10);
     }
 
     private void assertThatBatchContextHasBeenReset(Batch batchEm) {

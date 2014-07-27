@@ -150,8 +150,7 @@ public class BatchTest {
     @Test
     public void should_exception_when_merge_with_consistency() throws Exception {
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+        exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
         batch.update(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
@@ -159,36 +158,9 @@ public class BatchTest {
     @Test
     public void should_exception_when_remove_with_consistency() throws Exception {
         exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-
-        batch.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
-    }
-
-    @Test
-    public void should_exception_when_find_with_consistency() throws Exception {
-        exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-
-        batch.find(CompleteBean.class, 11L, ONE);
-    }
-
-    @Test
-    public void should_exception_when_getReference_with_consistency() throws Exception {
-        exception.expect(AchillesException.class);
-        exception
-                .expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-
-        batch.getProxy(CompleteBean.class, 11L, ONE);
-    }
-
-    @Test
-    public void should_exception_when_refresh_with_consistency() throws Exception {
-        exception.expect(AchillesException.class);
         exception.expectMessage("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
 
-        batch.refresh(new CompleteBean(), ONE);
+        batch.remove(new CompleteBean(), OptionsBuilder.withConsistency(ONE));
     }
 
     @Test

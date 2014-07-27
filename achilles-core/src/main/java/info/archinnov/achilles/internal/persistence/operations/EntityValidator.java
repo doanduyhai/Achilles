@@ -39,8 +39,7 @@ public class EntityValidator {
 
     public void validateEntity(Object entity, EntityMeta entityMeta) {
         log.trace("Validate entity {}", entity);
-        Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass()
-                .getCanonicalName());
+        Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass().getCanonicalName());
 
         Object rawEntity = proxifier.getRealObject(entity);
         Object id = entityMeta.getPrimaryKey(rawEntity);

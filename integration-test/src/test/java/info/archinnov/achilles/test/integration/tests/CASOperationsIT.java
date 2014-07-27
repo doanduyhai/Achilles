@@ -96,7 +96,7 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
 
         //When
-        manager.insert(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
+        manager.insertOrUpdate(entityWithEnum, OptionsBuilder.ifNotExists().casResultListener(listener));
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);
 
         //Then
@@ -190,7 +190,7 @@ public class CASOperationsIT {
         managed.setName("Helen");
 
         //When
-        manager.update(managed, ifConditions(new CASCondition("name", "John"), new CASCondition("consistency_level", EACH_QUORUM)));
+        manager.insertOrUpdate(managed, ifConditions(new CASCondition("name", "John"), new CASCondition("consistency_level", EACH_QUORUM)));
 
         //Then
         final EntityWithEnum found = manager.find(EntityWithEnum.class, 10L);

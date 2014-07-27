@@ -15,13 +15,7 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -30,23 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Select;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.persistence.operations.EntityValidator;
-import info.archinnov.achilles.internal.persistence.operations.OptionsValidator;
-import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
-import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQuery;
-import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
@@ -62,7 +47,7 @@ import info.archinnov.achilles.type.Options;
  * </p>
  *
  * <p>
- *  <h3>I Persist transient entity</h3>
+ *  <h3>I Insert transient entity</h3>
  *  <pre class="code"><code class="java">
  *      // Persist
  *      MyEntity managedEntity = manager.insert(myEntity);
@@ -170,264 +155,14 @@ import info.archinnov.achilles.type.Options;
  *
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Persistence-Manager-Operations" target="_blank">Persistence Manager operations</a>
  */
-public class PersistenceManager {
+public class PersistenceManager extends CommonPersistenceManager {
     private static final Logger log = LoggerFactory.getLogger(PersistenceManager.class);
-
-    protected Map<Class<?>, EntityMeta> entityMetaMap;
-    protected ConfigurationContext configContext;
-    protected PersistenceContextFactory contextFactory;
-
-    protected EntityProxifier proxifier = new EntityProxifier();
-    protected OptionsValidator optionsValidator = new OptionsValidator();
-
-    private EntityValidator entityValidator = new EntityValidator();
-    private TypedQueryValidator typedQueryValidator = new TypedQueryValidator();
-
-    private SliceQueryExecutor sliceQueryExecutor;
-
-    protected DaoContext daoContext;
 
     protected PersistenceManager(Map<Class<?>, EntityMeta> entityMetaMap, //
             PersistenceContextFactory contextFactory, DaoContext daoContext, ConfigurationContext configContext) {
-        this.entityMetaMap = entityMetaMap;
-        this.configContext = configContext;
-        this.daoContext = daoContext;
-        this.contextFactory = contextFactory;
-        this.sliceQueryExecutor = new SliceQueryExecutor(contextFactory, configContext, daoContext);
+      super(entityMetaMap,contextFactory,daoContext,configContext);
     }
 
-    /**
-     * Persist an entity.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Persist
-     *      MyEntity managedEntity = manager.insert(myEntity);
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be persisted
-     * @return proxified entity
-     */
-    public <T> T insert(T entity) {
-        log.debug("Persisting entity '{}'", entity);
-        return insert(entity, noOptions());
-    }
-
-    /**
-     * Persist an entity with the given options.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Persist
-     *      MyEntity managedEntity = manager.insert(myEntity, OptionsBuilder.withTtl(3600));
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be persisted
-     * @param options
-     *            options
-     * @return proxified entity
-     */
-    public <T> T insert(final T entity, Options options) {
-        if (log.isDebugEnabled()) {
-            log.debug("Persisting entity '{}' with options {} ", entity, options);
-        }
-
-        entityValidator.validateEntity(entity, entityMetaMap);
-
-        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
-        proxifier.ensureNotProxy(entity);
-        PersistenceManagerOperations context = initPersistenceContext(entity, options);
-        return context.persist(entity);
-    }
-
-    /**
-     * Update a "managed" entity
-     *
-     *  <pre class="code"><code class="java">
-     *      User managedUser = manager.find(User.class,1L);
-     *      user.setFirstname("DuyHai");
-     *
-     *      manager.update(user);
-     *  </code></pre>
-     *
-     * @param entity
-     *            Managed entity to be updated
-     */
-    public void update(Object entity) {
-        if (log.isDebugEnabled()) {
-            log.debug("Updating entity '{}'", proxifier.getRealObject(entity));
-        }
-        update(entity, noOptions());
-    }
-
-    /**
-     * Update a "managed" entity
-     *
-     *  <pre class="code"><code class="java">
-     *      User managedUser = manager.find(User.class,1L);
-     *      user.setFirstname("DuyHai");
-     *
-     *      manager.update(user, OptionsBuilder.withTtl(10));
-     *  </code></pre>
-     *
-     * @param entity
-     *            Managed entity to be updated
-     * @param options
-     *            options
-     */
-    public void update(Object entity, Options options) {
-        proxifier.ensureProxy(entity);
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Updating entity '{}' with options {} ", realObject, options);
-        }
-        entityValidator.validateEntity(realObject, entityMetaMap);
-        optionsValidator.validateOptionsForUpsert(entity, entityMetaMap, options);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
-        context.update(entity);
-    }
-
-
-    /**
-     * Insert a "transient" entity or update a "managed" entity.
-     *
-     * Shorthand to insert() or update()
-     *
-     * @param entity
-     *            Managed entity to be updated
-     */
-    public void insertOrUpdate(Object entity) {
-        entityValidator.validateEntity(entity, entityMetaMap);
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Inserting or updating entity '{}'", realObject);
-        }
-
-        if (proxifier.isProxy(entity)) {
-            this.update(entity, noOptions());
-        } else {
-            this.insert(entity, noOptions());
-        }
-    }
-
-    /**
-     * Insert a "transient" entity or update a "managed" entity.
-     *
-     * Shorthand to insert() or update()
-     *
-     * @param entity
-     *            Managed entity to be updated
-     * @param options
-     *            options
-     */
-    public void insertOrUpdate(Object entity, Options options) {
-        entityValidator.validateEntity(entity, entityMetaMap);
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Inserting or updating entity '{}' with options {}", realObject, options);
-        }
-
-        if (proxifier.isProxy(entity)) {
-            this.update(entity, options);
-        } else {
-            this.insert(entity, options);
-        }
-    }
-
-    /**
-     * Remove an entity.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Simple removed
-     *      User managedUser = manager.find(User.class,1L);
-     *      manager.remove(managedUser);
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be removed
-     */
-    public void remove(Object entity) {
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity '{}'", proxifier.getRealObject(entity));
-        }
-        remove(entity, noOptions());
-    }
-
-    /**
-     * Remove an entity by its id.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Direct remove without read-before-write
-     *      manager.removeById(User.class,1L);
-     *  </code></pre>
-     *
-     * @param entityClass
-     *            Entity class
-     *
-     * @param primaryKey
-     *            Primary key
-     */
-    public void removeById(Class<?> entityClass, Object primaryKey) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        }
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, noOptions());
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.remove();
-    }
-
-    /**
-     * Remove an entity with the given Consistency Level for write.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Simple removed
-     *      User managedUser = manager.find(User.class,1L);
-     *      manager.remove(managedUser, OptionsBuilder.withConsistency(QUORUM));
-     *  </code></pre>
-     *
-     * @param entity
-     *            Entity to be removed
-     * @param options
-     *            options for consistency level and timestamp
-     */
-    public void remove(final Object entity, Options options) {
-        Object realObject = proxifier.getRealObject(entity);
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity '{}' with options {}", realObject, options);
-        }
-
-        entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, options);
-        context.remove();
-    }
-
-    /**
-     * Remove an entity by its id with the given Consistency Level for write.
-     *
-     *  <pre class="code"><code class="java">
-     *      // Direct remove without read-before-write
-     *      manager.removeById(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
-     *  </code></pre>
-     *
-     * @param entityClass
-     *            Entity class
-     *
-     * @param primaryKey
-     *            Primary key
-     */
-    public void removeById(Class<?> entityClass, Object primaryKey, Options options) {
-        Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
-        Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
-        if (log.isDebugEnabled()) {
-            log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        }
-
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        context.remove();
-    }
 
     /**
      * Find an entity.
@@ -444,8 +179,7 @@ public class PersistenceManager {
      */
     public <T> T find(Class<T> entityClass, Object primaryKey) {
         log.debug("Find entity class '{}' with primary key {}", entityClass, primaryKey);
-        T entity = find(entityClass, primaryKey, null);
-        return entity;
+        return super.find(entityClass, primaryKey, null);
     }
 
     /**
@@ -464,17 +198,8 @@ public class PersistenceManager {
      *            Consistency Level for read
      */
     public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey,
-                readLevel);
-        Validator.validateNotNull(entityClass, "Entity class should not be null for find by id");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for find by id");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        return context.find(entityClass);
+        log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+        return super.find(entityClass, primaryKey, readLevel);
     }
 
     /**
@@ -494,11 +219,8 @@ public class PersistenceManager {
      *            Primary key (Cassandra row key) of the entity to initialize
      */
     public <T> T getProxy(Class<T> entityClass, Object primaryKey) {
-        if (log.isDebugEnabled()) {
-            log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
-        }
-
-        return getProxy(entityClass, primaryKey, null);
+        log.debug("Get reference for entity class '{}' with primary key {}", entityClass, primaryKey);
+        return super.getProxy(entityClass, primaryKey, null);
     }
 
     /**
@@ -520,23 +242,8 @@ public class PersistenceManager {
      *            Consistency Level for read
      */
     public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        if (log.isDebugEnabled()) {
-            log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",
-                    entityClass, primaryKey, readLevel);
-        }
-
-        Validator.validateNotNull(entityClass, "Entity class should not be null for get reference");
-        Validator.validateNotNull(primaryKey, "Entity primaryKey should not be null for get reference");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "The entity class '%s' is not managed by Achilles", entityClass.getCanonicalName());
-
-        PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, withConsistency(readLevel));
-        entityValidator.validatePrimaryKey(context.getIdMeta(), primaryKey);
-        T entity = context.getProxy(entityClass);
-        return entity;
+        log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",entityClass, primaryKey, readLevel);
+        return super.getProxy(entityClass, primaryKey, readLevel);
     }
 
     /**
@@ -556,10 +263,8 @@ public class PersistenceManager {
      *            Entity to be refreshed
      */
     public void refresh(Object entity) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled()) {
-            log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
-        }
-        refresh(entity, null);
+        log.debug("Refreshing entity '{}'", proxifier.removeProxy(entity));
+        super.refresh(entity, null);
     }
 
     /**
@@ -581,15 +286,8 @@ public class PersistenceManager {
      *            Consistency Level for read
      */
     public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        if (log.isDebugEnabled()) {
-            log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
-        }
-
-        proxifier.ensureProxy(entity);
-        Object realObject = proxifier.getRealObject(entity);
-        entityValidator.validateEntity(realObject, entityMetaMap);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, withConsistency(readLevel));
-        context.refresh(entity);
+        log.debug("Refreshing entity '{}' with read consistency level {}", proxifier.removeProxy(entity), readLevel);
+        super.refresh(entity, readLevel);
     }
 
     /**
@@ -613,10 +311,7 @@ public class PersistenceManager {
         if (log.isDebugEnabled()) {
             log.debug("Force lazy fields initialization for entity {}", proxifier.removeProxy(entity));
         }
-        proxifier.ensureProxy(entity);
-        T realObject = proxifier.getRealObject(entity);
-        PersistenceManagerOperations context = initPersistenceContext(realObject, noOptions());
-        return context.initialize(entity);
+        return super.initialize(entity);
     }
 
 
@@ -642,7 +337,7 @@ public class PersistenceManager {
     public <T> Set<T> initialize(final Set<T> entities) {
         log.debug("Force lazy fields initialization for entity set {}", entities);
         for (T entity : entities) {
-            initialize(entity);
+            super.initialize(entity);
         }
         return entities;
     }
@@ -668,7 +363,7 @@ public class PersistenceManager {
     public <T> List<T> initialize(final List<T> entities) {
         log.debug("Force lazy fields initialization for entity set {}", entities);
         for (T entity : entities) {
-            initialize(entity);
+            super.initialize(entity);
         }
         return entities;
     }
@@ -678,7 +373,7 @@ public class PersistenceManager {
      *
      */
     public <T> T initAndRemoveProxy(T entity) {
-        return removeProxy(initialize(entity));
+        return super.removeProxy(super.initialize(entity));
     }
 
     /**
@@ -686,7 +381,7 @@ public class PersistenceManager {
      *
      */
     public <T> Set<T> initAndRemoveProxy(Set<T> entities) {
-        return removeProxy(initialize(entities));
+        return super.removeProxy(super.initialize(entities));
     }
 
     /**
@@ -694,7 +389,7 @@ public class PersistenceManager {
      *
      */
     public <T> List<T> initAndRemoveProxy(List<T> entities) {
-        return removeProxy(initialize(entities));
+        return super.removeProxy(super.initialize(entities));
     }
 
     /**
@@ -720,10 +415,7 @@ public class PersistenceManager {
      */
     public <T> T removeProxy(T proxy) {
         log.debug("Removing proxy for entity {}", proxy);
-
-        T realObject = proxifier.removeProxy(proxy);
-
-        return realObject;
+        return super.removeProxy(proxy);
     }
 
     /**
@@ -738,8 +430,7 @@ public class PersistenceManager {
      */
     public <T> List<T> removeProxy(List<T> proxies) {
         log.debug("Removing proxy for a list of entities {}", proxies);
-
-        return proxifier.removeProxy(proxies);
+        return super.removeProxy(proxies);
     }
 
     /**
@@ -754,8 +445,7 @@ public class PersistenceManager {
      */
     public <T> Set<T> removeProxy(Set<T> proxies) {
         log.debug("Removing proxy for a set of entities {}", proxies);
-
-        return proxifier.removeProxy(proxies);
+        return super.removeProxy(proxies);
     }
 
     /**
@@ -774,11 +464,7 @@ public class PersistenceManager {
      */
     public <T> SliceQueryBuilder<T> sliceQuery(Class<T> entityClass) {
         log.debug("Execute slice query for entity class {}", entityClass);
-        EntityMeta meta = entityMetaMap.get(entityClass);
-        Validator.validateTrue(meta.isClusteredEntity(),
-                "Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",
-                meta.getClassName());
-        return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
+        return super.sliceQuery(entityClass);
     }
 
     /**
@@ -814,7 +500,7 @@ public class PersistenceManager {
      * @return NativeQuery
      */
     public NativeQuery nativeQuery(RegularStatement regularStatement, Object... boundValues) {
-        return this.nativeQuery(regularStatement, noOptions(), boundValues);
+        return super.nativeQuery(regularStatement, noOptions(), boundValues);
     }
 
     /**
@@ -840,7 +526,7 @@ public class PersistenceManager {
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param queryString
+     * @param regularStatement
      *            native CQL query string, including limit, ttl and consistency
      *            options
      *
@@ -854,8 +540,7 @@ public class PersistenceManager {
      */
     public NativeQuery nativeQuery(RegularStatement regularStatement, Options options, Object... boundValues) {
         log.debug("Execute native query {}", regularStatement);
-        Validator.validateNotNull(regularStatement, "The regularStatement for native query should not be null");
-        return new NativeQuery(daoContext, regularStatement, options, boundValues);
+        return super.nativeQuery(regularStatement, options, boundValues);
     }
 
     /**
@@ -896,21 +581,10 @@ public class PersistenceManager {
      * @return TypedQuery<T>
      */
     public <T> TypedQuery<T> typedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
-        return typedQueryInternal(entityClass, regularStatement, boundValues);
+        return super.typedQueryInternal(entityClass, regularStatement, boundValues);
     }
 
-    private <T> TypedQuery<T> typedQueryInternal(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
-        log.debug("Execute typed query for entity class {}", entityClass);
-        Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
-        Validator.validateNotNull(regularStatement, "The regularStatement for typed query should not be null");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
-                entityClass.getCanonicalName());
 
-        EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateTypedQuery(entityClass, regularStatement, meta);
-        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, MANAGED, boundValues);
-    }
 
     /**
      * Return a CQL typed query builder
@@ -927,17 +601,7 @@ public class PersistenceManager {
      */
     public <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         log.debug("Execute indexed query for entity class {}", entityClass);
-
-        EntityMeta entityMeta = entityMetaMap.get(entityClass);
-
-        Validator.validateFalse(entityMeta.isClusteredEntity(), "Index query is not supported for clustered entity. Please use typed query/native query");
-        Validator.validateNotNull(indexCondition, "Index condition should not be null");
-
-        entityMeta.encodeIndexConditionValue(indexCondition);
-
-        String indexColumnName = indexCondition.getColumnName();
-        final Select.Where statement = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
-        return typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
+        return super.indexedQuery(entityClass, indexCondition);
     }
 
     /**
@@ -980,15 +644,7 @@ public class PersistenceManager {
      */
     public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
-        Validator.validateNotNull(entityClass, "The entityClass for typed query should not be null");
-        Validator.validateNotNull(regularStatement, "The regularStatement for typed query should not be null");
-        Validator.validateTrue(entityMetaMap.containsKey(entityClass),
-                "Cannot perform typed query because the entityClass '%s' is not managed by Achilles",
-                entityClass.getCanonicalName());
-
-        EntityMeta meta = entityMetaMap.get(entityClass);
-        typedQueryValidator.validateRawTypedQuery(entityClass, regularStatement, meta);
-        return new TypedQuery<>(entityClass, daoContext, regularStatement, meta, contextFactory, NOT_MANAGED, boundValues);
+        return super.rawTypedQuery(entityClass, regularStatement, boundValues);
     }
 
     /**
@@ -998,9 +654,8 @@ public class PersistenceManager {
      * @throws IOException
      */
     public String serializeToJSON(Object entity) throws IOException {
-        Validator.validateNotNull(entity, "Cannot serialize to JSON null entity");
-        final ObjectMapper objectMapper = configContext.getMapperFor(entity.getClass());
-        return objectMapper.writeValueAsString(entity);
+        log.debug("Serialize the entity {} to JSON", entity);
+        return super.serializeToJSON(entity);
     }
 
     /**
@@ -1012,17 +667,8 @@ public class PersistenceManager {
      * @throws IOException
      */
     public <T> T deserializeFromJSON(Class<T> type, String serialized) throws IOException {
-        Validator.validateNotNull(type, "Cannot deserialize from JSON if target type is null");
-        final ObjectMapper objectMapper = configContext.getMapperFor(type);
-        return objectMapper.readValue(serialized, type);
-    }
-
-    protected PersistenceManagerOperations initPersistenceContext(Class<?> entityClass, Object primaryKey, Options options) {
-        return contextFactory.newContext(entityClass, primaryKey, options).getPersistenceManagerFacade();
-    }
-
-    protected PersistenceManagerOperations initPersistenceContext(Object entity, Options options) {
-        return contextFactory.newContext(entity, options).getPersistenceManagerFacade();
+        log.debug("Deserialize the the JSON {} into type {}", serialized, type);
+        return super.deserializeFromJSON(type, serialized);
     }
 
     /**
@@ -1030,7 +676,7 @@ public class PersistenceManager {
      * @return Session
      */
     public Session getNativeSession() {
-        return daoContext.getSession();
+        return super.getNativeSession();
     }
 
     /**
@@ -1044,7 +690,7 @@ public class PersistenceManager {
      * @return a new state-full PersistenceManager
      */
     public Batch createBatch() {
-        log.debug("Spawn new BatchingPersistenceManager");
+        log.debug("Create new Batch instance");
         return new Batch(entityMetaMap, contextFactory, daoContext, configContext, false);
     }
 
@@ -1064,23 +710,7 @@ public class PersistenceManager {
      * @return a new state-full PersistenceManager
      */
     public Batch createOrderedBatch() {
-        log.debug("Spawn new BatchingPersistenceManager");
+        log.debug("Create new ordered Batch");
         return new Batch(entityMetaMap, contextFactory, daoContext, configContext, true);
-    }
-
-    protected Map<Class<?>, EntityMeta> getEntityMetaMap() {
-        return entityMetaMap;
-    }
-
-    protected ConfigurationContext getConfigContext() {
-        return configContext;
-    }
-
-    protected void setEntityMetaMap(Map<Class<?>, EntityMeta> entityMetaMap) {
-        this.entityMetaMap = entityMetaMap;
-    }
-
-    protected void setConfigContext(ConfigurationContext configContext) {
-        this.configContext = configContext;
     }
 }

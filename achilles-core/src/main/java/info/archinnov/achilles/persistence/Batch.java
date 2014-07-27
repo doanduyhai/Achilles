@@ -16,13 +16,13 @@
 package info.archinnov.achilles.persistence;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -37,7 +37,47 @@ import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 
-public class Batch extends PersistenceManager {
+/**
+ * <p>
+ * Create a Batch session to perform
+ * <ul>
+ *     <li>
+ *         <em>insert()</em>
+ *     </li>
+ *     <li>
+ *         <em>update()</em>
+ *     </li>
+ *     <li>
+ *         <em>remove()</em>
+ *     </li>
+ *     <li>
+ *         <em>removeById()</em>
+ *     </li>
+ * </ul>
+ *
+ * This Batch is a <strong>state-full</strong> object that stacks up all operations. They will be flushed upon call to
+ * <em>flushBatch()</em>
+ *
+ * <br/>
+ * <br/>
+ *
+ * There are 2 types of batch: <strong>ordered</strong> and <strong>unordered</strong>. Ordered batches will automatically add
+ * increasing generated timestamp for each statement so that their ordering is guaranteed.
+ *
+ * <pre class="code"><code class="java">
+ *
+ *   Batch batch = manager.createBatch();
+ *
+ *   batch.insert(new User(10L, "John","LENNNON")); // nothing happens here
+ *
+ *   batch.flushBatch(); // send the INSERT statement to Cassandra
+ *
+ * </code></pre>
+ *
+ * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Batch-Mode" target="_blank">Batch Mode</a>
+ *
+ */
+public class Batch extends CommonPersistenceManager {
 
     private static final Logger log = LoggerFactory.getLogger(Batch.class);
 
@@ -105,6 +145,49 @@ public class Batch extends PersistenceManager {
         flushContext = flushContext.duplicateWithNoData(defaultConsistencyLevel);
     }
 
+    /**
+     * Batch insert an entity.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Insert
+     *      Batch batch = manager.createBatch();
+     *
+     *      MyEntity managedEntity = batch.insert(myEntity);
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Entity to be inserted
+     * @return proxified entity
+     */
+    @Override
+    public <T> T insert(final T entity) {
+        return super.insert(entity, maybeAddTimestampToStatement(noOptions()));
+    }
+
+    /**
+     * Batch insert an entity with the given options.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Insert
+     *      Batch batch = manager.createBatch();
+     *
+     *      MyEntity managedEntity = batch.insert(myEntity, OptionsBuilder.withTtl(3600));
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Entity to be inserted
+     * @param options
+     *            options
+     * @return proxified entity
+     */
     @Override
     public <T> T insert(final T entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
@@ -115,6 +198,51 @@ public class Batch extends PersistenceManager {
         }
     }
 
+    /**
+     * Batch update a "managed" entity
+     *
+     *  <pre class="code"><code class="java">
+     *      Batch batch = manager.createBatch();
+     *      User managedUser = manager.find(User.class,1L);
+     *
+     *      user.setFirstname("DuyHai");
+     *
+     *      batch.update(user);
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Managed entity to be updated
+     */
+    @Override
+    public void update(Object entity) {
+        super.update(entity, maybeAddTimestampToStatement(noOptions()));
+    }
+
+    /**
+     * Update a "managed" entity with options
+     *
+     *  <pre class="code"><code class="java">
+     *      Batch batch = manager.createBatch();
+     *      User managedUser = manager.find(User.class,1L);
+     *
+     *      user.setFirstname("DuyHai");
+     *
+     *      batch.update(user, OptionsBuilder.withTtl(10));
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Managed entity to be updated
+     * @param options
+     *            options
+     */
     @Override
     public void update(Object entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
@@ -125,6 +253,90 @@ public class Batch extends PersistenceManager {
         }
     }
 
+    /**
+     * Batch insert a "transient" entity or update a "managed" entity.
+     *
+     * Shorthand to insert() or update()
+     *
+     * @param entity
+     *            Managed entity to be inserted/updated
+     *
+     * @return proxified entity
+     */
+    public <T> T insertOrUpdate(T entity) {
+        return this.insertOrUpdate(entity,noOptions());
+    }
+
+    /**
+     * Batch insert a "transient" entity or update a "managed" entity with options.
+     *
+     * Shorthand to insert() or update()
+     *
+     * @param entity
+     *            Managed entity to be inserted/updated
+     * @param options
+     *            options
+     */
+    public <T> T insertOrUpdate(T entity, Options options) {
+        log.debug("Inserting or updating entity '{}' with options {}", proxifier.getRealObject(entity), options);
+        if (options.getConsistencyLevel().isPresent()) {
+            flushContext = flushContext.duplicateWithNoData();
+            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
+        } else {
+            entityValidator.validateEntity(entity, entityMetaMap);
+
+            if (proxifier.isProxy(entity)) {
+                super.update(entity, maybeAddTimestampToStatement(options));
+                return entity;
+            } else {
+                return super.insert(entity, maybeAddTimestampToStatement(options));
+            }
+        }
+    }
+
+    /**
+     * Batch remove an entity.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Simple removal
+     *      Batch batch = manager.createBatch();
+     *      User managedUser = manager.find(User.class,1L);
+     *
+     *      batch.remove(managedUser);
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Entity to be removed
+     */
+    @Override
+    public void remove(final Object entity) {
+        super.remove(entity, maybeAddTimestampToStatement(noOptions()));
+    }
+
+    /**
+     * Batch remove an entity with the given options.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Removal with option
+     *      Batch batch = manager.createBatch();
+     *      User managedUser = manager.find(User.class,1L);
+     *
+     *      batch.remove(managedUser, OptionsBuilder.withTimestamp(20292382030L));
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entity
+     *            Entity to be removed
+     * @param options
+     *            options for consistency level and timestamp
+     */
     @Override
     public void remove(final Object entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
@@ -135,34 +347,52 @@ public class Batch extends PersistenceManager {
         }
     }
 
+    /**
+     * Batch remove an entity by its id.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Direct remove without read-before-write
+     *      Batch batch = manager.createBatch();
+     *      batch.removeById(User.class,1L);
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entityClass
+     *            Entity class
+     *
+     * @param primaryKey
+     *            Primary key
+     */
     @Override
-    public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        if (readLevel != null) {
-            flushContext = flushContext.duplicateWithNoData();
-            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-        } else {
-            return super.find(entityClass, primaryKey, null);
-        }
+    public void removeById(Class<?> entityClass, Object primaryKey) {
+        super.removeById(entityClass, primaryKey, maybeAddTimestampToStatement(noOptions()));
     }
 
+    /**
+     * Batch remove an entity by its id with the given options.
+     *
+     *  <pre class="code"><code class="java">
+     *      // Direct remove without read-before-write
+     *      Batch batch = manager.createBatch();
+     *      batch.removeById(User.class,1L, Options.withTimestamp(32234424234L));
+     *
+     *      ...
+     *
+     *      batch.flushBatch();
+     *  </code></pre>
+     *
+     * @param entityClass
+     *            Entity class
+     *
+     * @param primaryKey
+     *            Primary key
+     */
     @Override
-    public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        if (readLevel != null) {
-            flushContext = flushContext.duplicateWithNoData();
-            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-        } else {
-            return super.getProxy(entityClass, primaryKey, null);
-        }
-    }
-
-    @Override
-    public void refresh(final Object entity, ConsistencyLevel readLevel) throws AchillesStaleObjectStateException {
-        if (readLevel != null) {
-            flushContext = flushContext.duplicateWithNoData();
-            throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
-        } else {
-            super.refresh(entity, null);
-        }
+    public void removeById(Class<?> entityClass, Object primaryKey, Options options) {
+        super.removeById(entityClass, primaryKey, maybeAddTimestampToStatement(options));
     }
 
     /**

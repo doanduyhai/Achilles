@@ -27,30 +27,30 @@ import info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder;
 
 public class UnorderedBatchModeIT {
 
-    private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
+    private PersistenceManager manager = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class).withKeyspaceName("unordered_batch")
             .cleanDataFilesAtStartup(true)
-            .buildPersistenceManagerFactory();
+            .buildPersistenceManager();
 
 
     @Test
     public void should_not_order_batch_statements_for_insert() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        Batch batchingPM = pmf.createBatch();
+        Batch batch = manager.createBatch();
 
         //When
-        batchingPM.startBatch();
+        batch.startBatch();
 
         entity.setName("name3");
-        batchingPM.insert(entity);
+        batch.insert(entity);
         entity.setName("name1");
-        batchingPM.insert(entity);
+        batch.insert(entity);
 
-        batchingPM.endBatch();
+        batch.endBatch();
         //Then
 
-        CompleteBean actual = batchingPM.find(CompleteBean.class, entity.getId());
+        CompleteBean actual = manager.find(CompleteBean.class, entity.getId());
 
         assertThat(actual.getName()).isEqualTo("name3");
     }
@@ -59,23 +59,22 @@ public class UnorderedBatchModeIT {
     public void should_not_order_batch_statements_for_update() throws Exception {
         //Given
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().buid();
-        PersistenceManager pm = pmf.createPersistenceManager();
-        Batch batchingPM = pmf.createBatch();
+        Batch batch = manager.createBatch();
 
-        CompleteBean managed = pm.insert(entity);
+        CompleteBean managed = manager.insert(entity);
 
         //When
-        batchingPM.startBatch();
+        batch.startBatch();
 
         managed.setName("name3");
-        batchingPM.update(managed);
+        batch.update(managed);
         managed.setName("name1");
-        batchingPM.update(managed);
+        batch.update(managed);
 
-        batchingPM.endBatch();
+        batch.endBatch();
 
         //Then
-        pm.refresh(managed);
+        manager.refresh(managed);
 
         assertThat(managed.getName()).isEqualTo("name3");
     }

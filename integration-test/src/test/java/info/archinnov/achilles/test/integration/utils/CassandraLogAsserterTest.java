@@ -53,6 +53,16 @@ public class CassandraLogAsserterTest {
         logAsserter.assertConsistencyLevels(ONE, EACH_QUORUM);
     }
 
+    @Test
+    public void should_check_batch_consistency() throws Exception {
+        //Given //When
+        logAsserter.logStream = logStream;
+        when(logStream.toString()).thenReturn("writing request EXECUTE [cl=ONE]\n writing request Batch at consistency EACH_QUORUM");
+
+        //Then
+        logAsserter.assertConsistencyLevels(ONE, EACH_QUORUM);
+    }
+
     @Test(expected = ComparisonFailure.class)
     public void should_fail_when_consistency_not_in_order() throws Exception {
         //Given //When

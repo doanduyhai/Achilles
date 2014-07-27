@@ -36,7 +36,6 @@ import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
-import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
@@ -128,18 +127,18 @@ public class BatchModeIT {
         Tweet tweet2 = TweetTestBuilder.tweet().randomId().content("tweet2").buid();
 
         // Start batch
-        Batch batchEm = pmf.createBatch();
-        batchEm.startBatch();
+        Batch batch = pmf.createBatch();
+        batch.startBatch();
 
-        batchEm.insert(bean);
-        batchEm.insert(tweet1);
-        batchEm.insert(tweet2);
-        batchEm.insert(user);
+        batch.insert(bean);
+        batch.insert(tweet1);
+        batch.insert(tweet2);
+        batch.insert(user);
 
-        CompleteBean foundBean = batchEm.find(CompleteBean.class, bean.getId());
-        Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
-        Tweet foundTweet2 = batchEm.find(Tweet.class, tweet2.getId());
-        User foundUser = batchEm.find(User.class, user.getId());
+        CompleteBean foundBean = manager.find(CompleteBean.class, bean.getId());
+        Tweet foundTweet1 = manager.find(Tweet.class, tweet1.getId());
+        Tweet foundTweet2 = manager.find(Tweet.class, tweet2.getId());
+        User foundUser = manager.find(User.class, user.getId());
 
         assertThat(foundBean).isNull();
         assertThat(foundTweet1).isNull();
@@ -147,19 +146,19 @@ public class BatchModeIT {
         assertThat(foundUser).isNull();
 
         // Flush
-        batchEm.endBatch();
+        batch.endBatch();
 
-        foundBean = batchEm.find(CompleteBean.class, bean.getId());
-        foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
-        foundTweet2 = batchEm.find(Tweet.class, tweet2.getId());
-        foundUser = batchEm.find(User.class, user.getId());
+        foundBean = manager.find(CompleteBean.class, bean.getId());
+        foundTweet1 = manager.find(Tweet.class, tweet1.getId());
+        foundTweet2 = manager.find(Tweet.class, tweet2.getId());
+        foundUser = manager.find(User.class, user.getId());
 
         assertThat(foundBean.getName()).isEqualTo("name");
         assertThat(foundTweet1.getContent()).isEqualTo("tweet1");
         assertThat(foundTweet2.getContent()).isEqualTo("tweet2");
         assertThat(foundUser.getFirstname()).isEqualTo("fn");
         assertThat(foundUser.getLastname()).isEqualTo("ln");
-        assertThatBatchContextHasBeenReset(batchEm);
+        assertThatBatchContextHasBeenReset(batch);
     }
 
     @Test
@@ -167,36 +166,42 @@ public class BatchModeIT {
         User user = UserTestBuilder.user().id(123456494L).firstname("firstname").lastname("lastname").buid();
         Tweet tweet = TweetTestBuilder.tweet().randomId().content("simple_tweet").creator(user).buid();
 
+        user = manager.insert(user);
+
         // Start batch
-        Batch batchEm = pmf.createBatch();
-        batchEm.startBatch();
+        Batch batch = pmf.createBatch();
+        batch.startBatch();
+
+        boolean exceptionCaught = false;
 
         try {
-            batchEm.insert(tweet, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
+            batch.insert(tweet, OptionsBuilder.withConsistency(ConsistencyLevel.EACH_QUORUM));
         } catch (AchillesException e) {
-            batchEm.cleanBatch();
-            assertThatBatchContextHasBeenReset(batchEm);
-
-            assertThat(batchEm.find(Tweet.class, tweet.getId())).isNull();
+            exceptionCaught = true;
+            batch.cleanBatch();
+            assertThatBatchContextHasBeenReset(batch);
+            assertThat(manager.find(Tweet.class, tweet.getId())).isNull();
         }
 
-        // batchEm should reinit batch context
-        batchEm.insert(user);
-        batchEm.endBatch();
+        assertThat(exceptionCaught).isTrue();
 
-        User foundUser = batchEm.find(User.class, user.getId());
+        // batch should reinit batch context
+        batch.insertOrUpdate(user);
+        batch.endBatch();
+
+        User foundUser = manager.find(User.class, user.getId());
         assertThat(foundUser.getFirstname()).isEqualTo("firstname");
         assertThat(foundUser.getLastname()).isEqualTo("lastname");
 
-        batchEm.insert(tweet);
-        batchEm.endBatch();
+        batch.insert(tweet);
+        batch.endBatch();
 
-        Tweet foundTweet = batchEm.find(Tweet.class, tweet.getId());
+        Tweet foundTweet = manager.find(Tweet.class, tweet.getId());
         assertThat(foundTweet.getContent()).isEqualTo("simple_tweet");
         assertThat(foundTweet.getCreator().getId()).isEqualTo(foundUser.getId());
         assertThat(foundTweet.getCreator().getFirstname()).isEqualTo("firstname");
         assertThat(foundTweet.getCreator().getLastname()).isEqualTo("lastname");
-        assertThatBatchContextHasBeenReset(batchEm);
+        assertThatBatchContextHasBeenReset(batch);
     }
 
     @Test
@@ -208,24 +213,24 @@ public class BatchModeIT {
         manager.insert(tweet1);
 
         // Start batch
-        Batch batchEm = pmf.createBatch();
-        batchEm.startBatch();
+        Batch batch = pmf.createBatch();
+        batch.startBatch();
 
-        batchEm.startBatch(QUORUM);
+        batch.startBatch(QUORUM);
 
-        logAsserter.prepareLogLevel();
-
-        Tweet foundTweet1 = batchEm.find(Tweet.class, tweet1.getId());
+        Tweet foundTweet1 = manager.find(Tweet.class, tweet1.getId());
 
         assertThat(foundTweet1.getContent()).isEqualTo(tweet1.getContent());
 
-        batchEm.insert(tweet2);
-        batchEm.insert(tweet3);
+        batch.insert(tweet2);
+        batch.insert(tweet3);
 
-        batchEm.endBatch();
+        logAsserter.prepareLogLevel();
+
+        batch.endBatch();
 
         logAsserter.assertConsistencyLevels(QUORUM);
-        assertThatBatchContextHasBeenReset(batchEm);
+        assertThatBatchContextHasBeenReset(batch);
     }
 
     @Test
@@ -241,7 +246,7 @@ public class BatchModeIT {
         batchEm.startBatch();
 
         batchEm.startBatch(TWO);
-        batchEm.insert(tweet2);
+        batchEm.insertOrUpdate(tweet2);
 
         try {
             batchEm.endBatch();

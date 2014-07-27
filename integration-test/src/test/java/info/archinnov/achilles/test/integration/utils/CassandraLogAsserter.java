@@ -37,7 +37,7 @@ public class CassandraLogAsserter {
     private Logger storageProxyLogger = Logger.getLogger(DRIVER_CONNECTION_LOGGER);
     private WriterAppender writerAppender;
     protected ByteArrayOutputStream logStream;
-    private Pattern pattern = Pattern.compile("writing request [A-Z]+.+\\[cl=");
+    private Pattern pattern = Pattern.compile("writing request [A-Z]+");
 
     public void prepareLogLevel() {
         logStream = new ByteArrayOutputStream();
@@ -62,7 +62,7 @@ public class CassandraLogAsserter {
             while (standardOutputs.hasNext()) {
                 final String logLine = standardOutputs.next();
 
-                if (pattern.matcher(logLine).find() && logLine.contains("cl=" + consistencyLevel.name())) {
+                if (pattern.matcher(logLine).find() && checkForConsistency(consistencyLevel, logLine)) {
                     founds.add(consistencyLevel);
                     if (clIterator.hasNext()) {
                         consistencyLevel = clIterator.next();
@@ -79,6 +79,10 @@ public class CassandraLogAsserter {
             storageProxyLogger.setLevel(Level.WARN);
             storageProxyLogger.removeAppender(writerAppender);
         }
+    }
+
+    protected boolean checkForConsistency(ConsistencyLevel consistencyLevel, String logLine) {
+        return logLine.contains("cl=" + consistencyLevel.name()) || logLine.contains("at consistency "+consistencyLevel.name());
     }
 
     public void assertSerialConsistencyLevels(ConsistencyLevel serialConsistencyLevel, ConsistencyLevel... consistencyLevels) {
