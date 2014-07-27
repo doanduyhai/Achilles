@@ -69,7 +69,7 @@ public class AchillesResourceBuilder {
 	/**
 	 * Tables to be truncated during unit tests
 	 * 
-	 * @param tables
+	 * @param tablesToCleanUp
 	 *            list of tables to truncate before and/or after tests
 	 */
 	public AchillesResourceBuilder tablesToTruncate(String... tablesToCleanUp) {

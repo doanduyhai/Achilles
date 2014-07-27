@@ -46,6 +46,31 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.persistence.PersistenceManagerFactory;
 import info.archinnov.achilles.type.TypedMap;
 
+/**
+ * Builder for embedded Cassandra server
+ *
+ * <pre class="code"><code class="java">
+ *
+ * CassandraEmbeddedServerBuilder
+ *   .withEntityPackages("test")
+ *   .withClusterName("Test Cluster")
+ *   .withDataFolder("/home/user/cassandra/data")
+ *   .withCommitLogFolder("/home/user/cassandra/commitlog")
+ *   .withSavedCachesFolder("/home/user/cassandra/saved_caches")
+ *   .cleanDataFilesAtStartup(true)
+ *   .withConfigYamlFile("/home/user/cassandra/cassandra.yaml")
+ *   .withClusterName("Test Cluster")
+ *   .withKeyspaceName("achilles_test")
+ *   .withCQLPort(9042)
+ *   .withThriftPort(9160)
+ *   .withStoragePort(7990)
+ *   .withStorageSSLPort(7999)
+ *   .withDurableWrite(true)
+ *   .buildPersistenceManager();
+ *
+ * </code></pre>
+ *
+ */
 public class CassandraEmbeddedServerBuilder {
 
     private String entityPackages;
