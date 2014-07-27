@@ -83,7 +83,7 @@
  For any question, bug encountered, you can use the **[mailing list]** 
 
 ## License
-Copyright 2012 DuyHai DOAN
+Copyright 2012-2014 DuyHai DOAN
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this application except in compliance with the License. You may obtain a copy of the License at
 
