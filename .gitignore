@@ -24,3 +24,5 @@ release.properties
 test-output
 target
 target/*
+.DS_Store
+*.swp
