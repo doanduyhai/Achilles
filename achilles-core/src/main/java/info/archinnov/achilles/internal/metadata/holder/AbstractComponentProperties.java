@@ -16,52 +16,65 @@
 
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.internal.helper.LoggerHelper.fqcnToStringFn;
+import static com.google.common.collect.FluentIterable.from;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
-
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
+import org.apache.commons.lang.ClassUtils;
 
 public abstract class AbstractComponentProperties {
 
-	protected final List<Class<?>> componentClasses;
-	protected final List<String> componentNames;
-	protected final List<Field> componentFields;
-	protected final List<Method> componentGetters;
-	protected final List<Method> componentSetters;
+    private static final Function<PropertyMeta, Class<?>> GET_CLASS = new Function<PropertyMeta, Class<?>>() {
+        @Override
+        public Class<?> apply(PropertyMeta meta) {
+            return meta.getValueClass();
+        }
+    };
 
-	protected AbstractComponentProperties(List<Class<?>> componentClasses, List<String> componentNames,
-			List<Field> componentFields,List<Method> componentGetters, List<Method> componentSetters) {
-		this.componentClasses = componentClasses;
-		this.componentNames = componentNames;
-        this.componentFields = componentFields;
-        this.componentGetters = componentGetters;
-		this.componentSetters = componentSetters;
-	}
+    private static final Function<PropertyMeta, String> GET_NAME = new Function<PropertyMeta, String>() {
+        @Override
+        public String apply(PropertyMeta meta) {
+            return meta.getPropertyName();
+        }
+    };
+
+    private static final Function<PropertyMeta, String> GET_CQL3_NAME = new Function<PropertyMeta, String>() {
+        @Override
+        public String apply(PropertyMeta meta) {
+            return meta.getCQL3ColumnName();
+        }
+    };
+
+    private static final Function<PropertyMeta, Field> GET_FIELD = new Function<PropertyMeta, Field>() {
+        @Override
+        public Field apply(PropertyMeta meta) {
+            return meta.getField();
+        }
+    };
+
+    protected final List<PropertyMeta> propertyMetas;
+
+	protected AbstractComponentProperties(List<PropertyMeta> propertyMetas) {
+        this.propertyMetas = propertyMetas;
+    }
 
 	public List<Class<?>> getComponentClasses() {
-		return componentClasses;
-	}
-
-    public List<String> getComponentNames() {
-		return componentNames;
-	}
-
-    public List<Method> getComponentGetters() {
-		return componentGetters;
-	}
-
-    public List<Method> getComponentSetters() {
-		return componentSetters;
+		return from(propertyMetas).transform(GET_CLASS).toList();
 	}
 
     public List<Field> getComponentFields() {
-        return componentFields;
+        return from(propertyMetas).transform(GET_FIELD).toList();
+    }
+
+    public List<String> getComponentNames() {
+		return from(propertyMetas).transform(GET_NAME).toList();
+	}
+
+    public List<String> getCQL3ComponentNames() {
+        return from(propertyMetas).transform(GET_CQL3_NAME).toList();
     }
 
     protected static boolean isCompatibleClass(Class<?> expected, Class<?> given)
@@ -69,13 +82,9 @@ public abstract class AbstractComponentProperties {
         expected= ClassUtils.primitiveToWrapper(expected);
         return (expected==given || expected.isAssignableFrom(given));
     }
-
     @Override
 	public String toString() {
-
-		return Objects.toStringHelper(this.getClass())
-				.add("componentClasses", StringUtils.join(Lists.transform(componentClasses, fqcnToStringFn), ","))
-				.add("componentNames", componentNames).toString();
+		return Objects.toStringHelper(this.getClass()).add("propertyMetas", propertyMetas).toString();
 
 	}
 }

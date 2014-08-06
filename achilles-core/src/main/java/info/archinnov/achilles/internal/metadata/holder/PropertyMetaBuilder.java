@@ -17,15 +17,15 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
+import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.metadata.transcoding.codec.ListCodec;
+import info.archinnov.achilles.internal.metadata.transcoding.codec.MapCodec;
+import info.archinnov.achilles.internal.metadata.transcoding.codec.SetCodec;
+import info.archinnov.achilles.internal.metadata.transcoding.codec.SimpleCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.internal.metadata.transcoding.CompoundTranscoder;
-import info.archinnov.achilles.internal.metadata.transcoding.DataTranscoder;
-import info.archinnov.achilles.internal.metadata.transcoding.ListTranscoder;
-import info.archinnov.achilles.internal.metadata.transcoding.MapTranscoder;
-import info.archinnov.achilles.internal.metadata.transcoding.SetTranscoder;
-import info.archinnov.achilles.internal.metadata.transcoding.SimpleTranscoder;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -45,6 +45,10 @@ public class PropertyMetaBuilder {
     private boolean timeUUID = false;
     private boolean emptyCollectionAndMapIfNull = false;
     private boolean staticColumn = false;
+    private SimpleCodec simpleCodec;
+    private ListCodec listCodec;
+    private SetCodec setCodec;
+    private MapCodec mapCodec;
 
     public static PropertyMetaBuilder factory() {
         return new PropertyMetaBuilder();
@@ -78,14 +82,15 @@ public class PropertyMetaBuilder {
         meta.setGetter(accessors[0]);
         meta.setSetter(accessors[1]);
         meta.setEmbeddedIdProperties(embeddedIdProperties);
-
         meta.setCounterProperties(counterProperties);
         meta.setConsistencyLevels(consistencyLevels);
-        meta.setTranscoder(determineTranscoder());
         meta.setTimeUUID(timeUUID);
         meta.setEmptyCollectionAndMapIfNull(emptyCollectionAndMapIfNull);
         meta.setStaticColumn(staticColumn);
-
+        meta.setSimpleCodec(Optional.fromNullable(simpleCodec).orNull());
+        meta.setListCodec(Optional.fromNullable(listCodec).orNull());
+        meta.setSetCodec(Optional.fromNullable(setCodec).orNull());
+        meta.setMapCodec(Optional.fromNullable(mapCodec).orNull());
         return meta;
     }
 
@@ -134,24 +139,23 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    private DataTranscoder determineTranscoder() {
-        switch (type) {
-            case EMBEDDED_ID:
-                return new CompoundTranscoder(objectMapper);
-            case ID:
-            case COUNTER:
-            case SIMPLE:
-                return new SimpleTranscoder(objectMapper);
-            case LIST:
-                return new ListTranscoder(objectMapper);
-            case SET:
-                return new SetTranscoder(objectMapper);
-            case MAP:
-                return new MapTranscoder(objectMapper);
-
-            default:
-                return null;
-        }
+    public PropertyMetaBuilder simpleCodec(SimpleCodec simpleCodec) {
+        this.simpleCodec = simpleCodec;
+        return this;
     }
 
+    public PropertyMetaBuilder listCodec(ListCodec listCodec) {
+        this.listCodec = listCodec;
+        return this;
+    }
+
+    public PropertyMetaBuilder setCodec(SetCodec setCodec) {
+        this.setCodec = setCodec;
+        return this;
+    }
+
+    public PropertyMetaBuilder mapCodec(MapCodec mapCodec) {
+        this.mapCodec = mapCodec;
+        return this;
+    }
 }

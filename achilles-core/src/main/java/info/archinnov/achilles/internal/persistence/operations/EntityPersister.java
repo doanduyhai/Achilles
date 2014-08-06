@@ -31,7 +31,7 @@ public class EntityPersister {
 
         log.debug("Persisting transient entity {}", entity);
 
-        if (entityMeta.isClusteredCounter()) {
+        if (entityMeta.structure().isClusteredCounter()) {
             counterPersister.persistClusteredCounters(context);
         } else {
             context.pushInsertStatement();
@@ -42,10 +42,10 @@ public class EntityPersister {
     public void remove(EntityOperations context) {
         log.trace("Removing entity using PersistenceContext {}", context);
         EntityMeta entityMeta = context.getEntityMeta();
-        if (entityMeta.isClusteredCounter()) {
+        if (entityMeta.structure().isClusteredCounter()) {
             context.bindForClusteredCounterRemoval();
         } else {
-            context.bindForRemoval(entityMeta.getTableName());
+            context.bindForRemoval(entityMeta.config().getTableName());
             counterPersister.removeRelatedCounters(context);
         }
     }

@@ -30,7 +30,7 @@ public class EntityInitializer {
 		log.debug("Initializing lazy fields for entity {} of class {}", entity, entityMeta.getClassName());
 
 		for (PropertyMeta propertyMeta : entityMeta.getAllCounterMetas()) {
-				propertyMeta.invokeGetter(entity);
+				propertyMeta.forValues().forceLoad(entity);
 		}
 	}
 }

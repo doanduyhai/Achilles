@@ -80,7 +80,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
     @Override
     public void triggerInterceptor(EntityMeta meta, Object entity, Event event) {
         if(event == Event.POST_LOAD) {
-            meta.intercept(entity,Event.POST_LOAD);
+            meta.forInterception().intercept(entity,Event.POST_LOAD);
         } else {
             this.eventHolders.add(new EventHolder(meta,entity,event));
         }

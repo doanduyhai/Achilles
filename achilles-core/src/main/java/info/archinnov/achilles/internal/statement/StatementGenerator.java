@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.internal.statement;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
@@ -31,7 +30,6 @@ import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.facade.PersistentStateHolder;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.type.Pair;
@@ -49,7 +47,7 @@ public class StatementGenerator {
         final Optional<Long> timestampO = context.getTimestamp();
         final List<CASCondition> CASConditions = context.getCasConditions();
 
-        final Update.Conditions conditions = update(meta.getTableName()).onlyIf();
+        final Update.Conditions conditions = update(meta.config().getTableName()).onlyIf();
         List<Object> casEncodedValues = addAndEncodeCasConditions(meta, CASConditions, conditions);
 
         Object[] boundValues = new Object[] { };
@@ -74,49 +72,22 @@ public class StatementGenerator {
                 updateClauseAndBoundValues = changeSet.generateUpdateForRemovedAtIndexElement(conditions);
                 break;
             default:
-                throw new AchillesException(String.format("Should not generate non-prepapred statement for collection/map change of type '%s'", operationType));
+                throw new AchillesException(String.format("Should not generate non-prepared statement for collection/map change of type '%s'", operationType));
         }
 
-        final Pair<Update.Where, Object[]> whereClauseAndBoundValues = generateWhereClauseForUpdate(entity, meta.getIdMeta(),
-                changeSet.getPropertyMeta(), updateClauseAndBoundValues.left);
+        final Pair<Update.Where, Object[]> whereClauseAndBoundValues = meta.getIdMeta().forStatementGeneration().generateWhereClauseForUpdate(entity, changeSet.getPropertyMeta(), updateClauseAndBoundValues.left);
         boundValues = addAll(addAll(boundValues, addAll(updateClauseAndBoundValues.right, whereClauseAndBoundValues.right)), casEncodedValues.toArray());
         return Pair.create(whereClauseAndBoundValues.left, boundValues);
     }
 
     private List<Object> addAndEncodeCasConditions(EntityMeta entityMeta, List<CASCondition> CASConditions, Update.Conditions conditions) {
         List<Object> casEncodedValues = new ArrayList<>();
-        for (CASCondition CASCondition : CASConditions) {
-            final Object encodedValue = entityMeta.encodeCasConditionValue(CASCondition);
+        for (CASCondition casCondition : CASConditions) {
+            final Object encodedValue = entityMeta.forTranscoding().encodeCasConditionValue(casCondition);
             casEncodedValues.add(encodedValue);
-            conditions.and(CASCondition.toClause());
+            conditions.and(casCondition.toClause());
         }
         return casEncodedValues;
-    }
-
-    private Pair<Update.Where, Object[]> generateWhereClauseForUpdate(Object entity, PropertyMeta idMeta, PropertyMeta pm, Assignments update) {
-        Update.Where where = null;
-        Object[] boundValues;
-        Object primaryKey = idMeta.getPrimaryKey(entity);
-        if (idMeta.isEmbeddedId()) {
-            List<String> componentNames = idMeta.getComponentNames();
-            List<Object> encodedComponents = idMeta.encodeToComponents(primaryKey, pm.isStaticColumn());
-            boundValues = new Object[encodedComponents.size()];
-            for (int i = 0; i < encodedComponents.size(); i++) {
-                String componentName = componentNames.get(i);
-                Object componentValue = encodedComponents.get(i);
-                if (i == 0) {
-                    where = update.where(eq(componentName, componentValue));
-                } else {
-                    where.and(eq(componentName, componentValue));
-                }
-                boundValues[i] = componentValue;
-            }
-        } else {
-            Object id = idMeta.encode(primaryKey);
-            where = update.where(eq(idMeta.getPropertyName(), id));
-            boundValues = new Object[] { id };
-        }
-        return Pair.create(where, boundValues);
     }
 
 }

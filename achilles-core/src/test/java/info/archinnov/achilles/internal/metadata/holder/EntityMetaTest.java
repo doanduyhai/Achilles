@@ -43,7 +43,6 @@ import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Pair;
@@ -83,7 +82,7 @@ public class EntityMetaTest {
         PropertyMeta pm1 = new PropertyMeta();
         PropertyMeta pm2 = new PropertyMeta();
 
-        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+        Map<String, PropertyMeta> propertyMetas = new HashMap<>();
         propertyMetas.put("name", pm1);
         propertyMetas.put("age", pm2);
 
@@ -103,7 +102,7 @@ public class EntityMetaTest {
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.of("count", counterMeta));
 
-        assertThat(entityMeta.isClusteredCounter()).isFalse();
+        assertThat(entityMeta.structure().isClusteredCounter()).isFalse();
     }
 
     @Test
@@ -121,7 +120,7 @@ public class EntityMetaTest {
         entityMeta.setClusteredEntity(true);
         entityMeta.setPropertyMetas(ImmutableMap.of("name", nameMeta, "count", counterMeta));
 
-        assertThat(entityMeta.isClusteredCounter()).isFalse();
+        assertThat(entityMeta.structure().isClusteredCounter()).isFalse();
     }
 
     @Test
@@ -133,7 +132,7 @@ public class EntityMetaTest {
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
 
-        assertThat(entityMeta.isClusteredCounter()).isFalse();
+        assertThat(entityMeta.structure().isClusteredCounter()).isFalse();
     }
 
     @Test
@@ -148,7 +147,7 @@ public class EntityMetaTest {
         entityMeta.setClusteredEntity(true);
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta, "nameMeta", nameMeta));
 
-        assertThat(entityMeta.isClusteredCounter()).isFalse();
+        assertThat(entityMeta.structure().isClusteredCounter()).isFalse();
     }
 
     @Test
@@ -160,7 +159,7 @@ public class EntityMetaTest {
 
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
 
-        assertThat(entityMeta.isValueless()).isTrue();
+        assertThat(entityMeta.structure().isValueless()).isTrue();
     }
 
     @Test
@@ -170,21 +169,7 @@ public class EntityMetaTest {
         EntityMeta meta = new EntityMeta();
         meta.setIdMeta(idMeta);
 
-        assertThat(meta.hasEmbeddedId()).isTrue();
-    }
-
-    @Test
-    public void should_return_allMetasExceptIdAndCounters_for_columnsMetaToInsert() throws Exception {
-        //Given
-        final ArrayList<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>();
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
-
-        //When
-        meta.setClusteredCounter(false);
-
-        //Then
-        assertThat(meta.getColumnsMetaToInsert()).isEqualTo(allMetasExceptIdAndCounters);
+        assertThat(meta.structure().hasEmbeddedId()).isTrue();
     }
 
     @Test
@@ -202,7 +187,7 @@ public class EntityMetaTest {
         meta.setClusteredCounter(true);
 
         //Then
-        assertThat(meta.getColumnsMetaToLoad()).containsExactly(propertyMeta);
+        assertThat(meta.forOperations().getColumnsMetaToLoad()).containsExactly(propertyMeta);
     }
 
     @Test
@@ -216,109 +201,9 @@ public class EntityMetaTest {
         meta.setClusteredCounter(false);
 
         //Then
-        assertThat(meta.getColumnsMetaToLoad()).isEqualTo(allMetasExceptCounters);
+        assertThat(meta.forOperations().getColumnsMetaToLoad()).isEqualTo(allMetasExceptCounters);
     }
 
-    @Test
-    public void should_encode_bound_values_for_native_type() throws Exception {
-        //Given
-        EntityMeta meta = new EntityMeta();
-
-        //When
-        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { "test" });
-
-        //Then
-        assertThat(encoded).hasSize(1);
-        assertThat(encoded[0]).isEqualTo("test");
-    }
-
-    @Test
-    public void should_encode_bound_values_for_enum_type() throws Exception {
-        //Given
-        EntityMeta meta = new EntityMeta();
-
-        //When
-        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { PropertyType.COUNTER });
-
-        //Then
-        assertThat(encoded).hasSize(1);
-        assertThat(encoded[0]).isEqualTo("COUNTER");
-    }
-
-    @Test
-    public void should_not_encode_null_value() throws Exception {
-        //Given
-        EntityMeta meta = new EntityMeta();
-
-        //When
-        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(new Object[] { null });
-
-        //Then
-        assertThat(encoded).hasSize(1);
-        assertThat(encoded[0]).isEqualTo(null);
-    }
-
-    @Test
-    public void should_not_encode_null_varargs() throws Exception {
-        //Given
-        EntityMeta meta = new EntityMeta();
-
-        //When
-        final Object[] encoded = meta.encodeBoundValuesForTypedQueries(null);
-
-        //Then
-        assertThat(encoded).hasSize(0);
-    }
-
-    @Test(expected = AchillesException.class)
-    public void should_exception_trying_to_encode_non_supported_type_for_typed_query() throws Exception {
-        //Given
-        EntityMeta meta = new EntityMeta();
-
-        //When
-        meta.encodeBoundValuesForTypedQueries(new Object[] { new CompleteBean() });
-        //Then
-    }
-
-    @Test
-    public void should_encode_CAS_condition_value() throws Exception {
-        //Given
-        final CASCondition CASCondition = new CASCondition("name", PropertyType.COUNTER);
-        PropertyMeta nameMeta = mock(PropertyMeta.class);
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(nameMeta));
-
-        when(nameMeta.getCQL3PropertyName()).thenReturn("name");
-        when(nameMeta.encode(PropertyType.COUNTER)).thenReturn("COUNTER");
-
-        //When
-        final Object encoded = meta.encodeCasConditionValue(CASCondition);
-
-        //Then
-        verify(nameMeta).encode(PropertyType.COUNTER);
-        assertThat(encoded).isInstanceOf(String.class).isEqualTo("COUNTER");
-        assertThat(CASCondition.getValue()).isEqualTo("COUNTER");
-    }
-
-    @Test
-    public void should_encode_index_condition_value() throws Exception {
-        //Given
-        final IndexCondition indexCondition = new IndexCondition("name", PropertyType.COUNTER);
-        PropertyMeta nameMeta = mock(PropertyMeta.class);
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptCounters(asList(nameMeta));
-
-        when(nameMeta.getCQL3PropertyName()).thenReturn("name");
-        when(nameMeta.encode(PropertyType.COUNTER)).thenReturn("COUNTER");
-
-        //When
-        final Object encoded = meta.encodeIndexConditionValue(indexCondition);
-
-        //Then
-        verify(nameMeta).encode(PropertyType.COUNTER);
-        assertThat(encoded).isInstanceOf(String.class).isEqualTo("COUNTER");
-        assertThat(indexCondition.getColumnValue()).isEqualTo("COUNTER");
-    }
 
 
     @Test
@@ -329,12 +214,12 @@ public class EntityMetaTest {
         Interceptor<String> prePersistInterceptor = createInterceptor(PRE_PERSIST);
 
         // When
-        entityMeta.addInterceptor(postPersistInterceptor);
-        entityMeta.addInterceptor(prePersistInterceptor);
+        entityMeta.forInterception().addInterceptor(postPersistInterceptor);
+        entityMeta.forInterception().addInterceptor(prePersistInterceptor);
 
         // Then
-        assertThat(entityMeta.getInterceptorsForEvent(POST_PERSIST)).containsExactly(postPersistInterceptor);
-        assertThat(entityMeta.getInterceptorsForEvent(PRE_PERSIST)).containsExactly(prePersistInterceptor);
+        assertThat(entityMeta.forInterception().getInterceptorsForEvent(POST_PERSIST)).containsExactly(postPersistInterceptor);
+        assertThat(entityMeta.forInterception().getInterceptorsForEvent(PRE_PERSIST)).containsExactly(prePersistInterceptor);
     }
 
     @Test
@@ -346,12 +231,12 @@ public class EntityMetaTest {
                 .type(PropertyType.EMBEDDED_ID).accessors().build();
         idMeta.setInvoker(new ReflectionInvoker());
         entityMeta.setIdMeta(idMeta);
-        entityMeta.addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
-        entityMeta.addInterceptor(createInterceptorForCompleteBean(POST_PERSIST, 35L));
+        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
+        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(POST_PERSIST, 35L));
 
-        entityMeta.intercept(bean, PRE_PERSIST);
+        entityMeta.forInterception().intercept(bean, PRE_PERSIST);
         Assertions.assertThat(bean.getAge()).isEqualTo(30L);
-        entityMeta.intercept(bean, POST_PERSIST);
+        entityMeta.forInterception().intercept(bean, POST_PERSIST);
         Assertions.assertThat(bean.getAge()).isEqualTo(35L);
     }
 
@@ -364,32 +249,10 @@ public class EntityMetaTest {
         entityMeta.setInsertStrategy(ALL_FIELDS);
 
         //When
-        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(new CompleteBean());
+        final List<PropertyMeta> propertyMetas = entityMeta.forOperations().retrievePropertyMetasForInsert(new CompleteBean());
 
         //Then
         assertThat(propertyMetas).isSameAs(pms);
-    }
-
-    @Test
-    public void should_retrieve_not_null_properties_meta_for_insert() throws Exception {
-        //Given
-        PropertyMeta pm1 = mock(PropertyMeta.class);
-        PropertyMeta pm2 = mock(PropertyMeta.class);
-
-        EntityMeta entityMeta = new EntityMeta();
-        entityMeta.setInsertStrategy(NOT_NULL_FIELDS);
-        List<PropertyMeta> pms = asList(pm1, pm2);
-        entityMeta.setAllMetasExceptIdAndCounters(pms);
-        CompleteBean entity = new CompleteBean();
-
-        when(pm1.getValueFromField(entity)).thenReturn(null);
-        when(pm2.getValueFromField(entity)).thenReturn("not null");
-
-        //When
-        final List<PropertyMeta> propertyMetas = entityMeta.retrievePropertyMetasForInsert(entity);
-
-        //Then
-        assertThat(propertyMetas).containsExactly(pm2);
     }
 
     private Interceptor<String> createInterceptor(final Event event) {

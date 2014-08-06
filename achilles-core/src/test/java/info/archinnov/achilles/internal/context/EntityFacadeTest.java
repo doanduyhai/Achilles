@@ -16,10 +16,11 @@
 
 package info.archinnov.achilles.internal.context;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -101,9 +102,9 @@ public class EntityFacadeTest {
     @Test
     public void should_push_insert() throws Exception {
         //Given
-        EntityMeta meta = new EntityMeta();
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         List<PropertyMeta> pms = new ArrayList<>();
-        meta.setAllMetasExceptIdAndCounters(pms);
+        when(meta.getAllMetasExceptIdAndCounters()).thenReturn(pms);
         context.entityMeta = meta;
         when(configurationContext.getInsertStrategy()).thenReturn(ALL_FIELDS);
 
@@ -153,7 +154,7 @@ public class EntityFacadeTest {
 
         Row row = mock(Row.class);
         when(daoContext.getSimpleCounter(context.daoFacade, counterMeta, LOCAL_QUORUM)).thenReturn(row);
-        when(row.getLong(CQL_COUNTER_VALUE)).thenReturn(11L);
+        when(row.getLong(ACHILLES_COUNTER_VALUE)).thenReturn(11L);
 
         Long counterValue = facade.getSimpleCounter(counterMeta, LOCAL_QUORUM);
 

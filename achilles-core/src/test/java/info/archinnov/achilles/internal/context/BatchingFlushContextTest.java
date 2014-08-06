@@ -17,6 +17,7 @@ package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -144,31 +145,31 @@ public class BatchingFlushContextTest {
     @Test
     public void should_trigger_interceptor_immediately_for_POST_LOAD_event() throws Exception {
         //Given
-        EntityMeta meta = mock(EntityMeta.class);
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         Object entity = new Object();
 
         //When
         context.triggerInterceptor(meta, entity, Event.POST_LOAD);
 
         //Then
-        verify(meta).intercept(entity, Event.POST_LOAD);
+        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
     }
 
     @Test
     public void should_push_interceptor_to_list() throws Exception {
         //Given
-        EntityMeta meta = mock(EntityMeta.class);
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         Object entity = new Object();
 
         //When
         context.triggerInterceptor(meta, entity, Event.POST_PERSIST);
 
         //Then
-        verify(meta, never()).intercept(entity, Event.POST_PERSIST);
+        verify(meta.forInterception(), never()).intercept(entity, Event.POST_PERSIST);
         assertThat(context.eventHolders).hasSize(1);
         final EventHolder eventHolder = context.eventHolders.get(0);
         eventHolder.triggerInterception();
-        verify(meta).intercept(entity, Event.POST_PERSIST);
+        verify(meta.forInterception()).intercept(entity, Event.POST_PERSIST);
     }
 
     @Test

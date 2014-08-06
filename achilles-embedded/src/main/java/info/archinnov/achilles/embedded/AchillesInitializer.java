@@ -136,7 +136,7 @@ public class AchillesInitializer {
         final Row row = session.execute(
                 "SELECT count(1) FROM schema_keyspaces WHERE keyspace_name='" + keyspaceName + "'").one();
         if (row.getLong(0) != 1) {
-            StringBuilder createKeyspaceStatement = new StringBuilder("CREATE keyspace ");
+            StringBuilder createKeyspaceStatement = new StringBuilder("CREATE keyspace IF NOT EXISTS ");
             createKeyspaceStatement.append(keyspaceName);
             createKeyspaceStatement.append(" WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1}");
             if (!keyspaceDurableWrite) {

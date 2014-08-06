@@ -62,7 +62,7 @@ public class IndexCondition {
         return columnValue;
     }
 
-    public void encodeValue(Object encodedValue) {
+    public void encodedValue(Object encodedValue) {
         this.columnValue = encodedValue;
     }
 

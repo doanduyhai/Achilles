@@ -16,13 +16,7 @@
 package info.archinnov.achilles.json;
 
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 /**
  * Default Jackson object mapper factory if none is configured with parameter {@link info.archinnov.achilles.configuration.ConfigurationParameters}.JACKSON_MAPPER_FACTORY
@@ -44,20 +38,10 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
  *
  */
 public class DefaultJacksonMapperFactory implements JacksonMapperFactory {
-    private ObjectMapper mapper;
-
-    public DefaultJacksonMapperFactory() {
-        mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        AnnotationIntrospector primary = new JacksonAnnotationIntrospector();
-        AnnotationIntrospector secondary = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
-        mapper.setAnnotationIntrospector(AnnotationIntrospector.pair(primary, secondary));
-    }
 
     @Override
     public <T> ObjectMapper getMapper(Class<T> type) {
-        return mapper;
+        return DefaultJacksonMapper.INSTANCE.get();
     }
 
 }

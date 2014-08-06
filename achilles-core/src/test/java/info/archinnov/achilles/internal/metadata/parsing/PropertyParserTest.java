@@ -26,7 +26,6 @@ import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -176,49 +175,6 @@ public class PropertyParserTest {
 
     }
 
-    @Test
-    public void should_parse_embedded_id() throws Exception {
-        @SuppressWarnings("unused")
-        class Test {
-
-            @EmbeddedId
-            private EmbeddedKey id;
-
-            public EmbeddedKey getId() {
-                return id;
-            }
-
-            public void setId(EmbeddedKey id) {
-                this.id = id;
-            }
-
-        }
-
-        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("id"));
-        context.setEmbeddedId(true);
-
-        PropertyMeta meta = parser.parse(context);
-
-        Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
-        Method userIdGetter = EmbeddedKey.class.getDeclaredMethod("getUserId");
-        Method userIdSetter = EmbeddedKey.class.getDeclaredMethod("setUserId", Long.class);
-
-        Field nameField = EmbeddedKey.class.getDeclaredField("name");
-        Method nameGetter = EmbeddedKey.class.getDeclaredMethod("getName");
-        Method nameSetter = EmbeddedKey.class.getDeclaredMethod("setName", String.class);
-
-        assertThat(meta.getPropertyName()).isEqualTo("id");
-        assertThat(meta.<EmbeddedKey>getValueClass()).isEqualTo(EmbeddedKey.class);
-        EmbeddedIdProperties embeddedIdProperties = meta.getEmbeddedIdProperties();
-        assertThat(embeddedIdProperties).isNotNull();
-        assertThat(embeddedIdProperties.getComponentClasses()).contains(Long.class, String.class);
-        assertThat(embeddedIdProperties.getComponentNames()).contains("id", "name");
-        assertThat(embeddedIdProperties.getComponentFields()).contains(userIdField, nameField);
-        assertThat(embeddedIdProperties.getComponentGetters()).contains(userIdGetter, nameGetter);
-        assertThat(embeddedIdProperties.getComponentSetters()).contains(userIdSetter, nameSetter);
-        assertThat(context.getPropertyMetas()).hasSize(1);
-
-    }
 
     @SuppressWarnings("unchecked")
     @Test
@@ -300,7 +256,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.isStaticColumn()).isTrue();
+        assertThat(meta.structure().isStaticColumn()).isTrue();
     }
 
     @Test
@@ -325,7 +281,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.isTimeUUID()).isTrue();
+//        assertThat(meta.timeUUID).isTrue();
     }
 
     @Test
@@ -371,8 +327,8 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
-        assertThat(meta.getCounterProperties()).isNotNull();
-        assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
+//        assertThat(meta.getCounterProperties()).isNotNull();
+//        assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
         assertThat(context.getCounterMetas().get(0)).isSameAs(meta);
     }
 
@@ -396,7 +352,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.isStaticColumn()).isTrue();
+        assertThat(meta.structure().isStaticColumn()).isTrue();
     }
 
     @Test
@@ -422,8 +378,8 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
-        assertThat(meta.getReadConsistencyLevel()).isEqualTo(ONE);
-        assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(meta.structure().getReadConsistencyLevel()).isEqualTo(ONE);
+        assertThat(meta.structure().getWriteConsistencyLevel()).isEqualTo(ALL);
     }
 
     @Test
@@ -537,7 +493,7 @@ public class PropertyParserTest {
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("firstname"));
         PropertyMeta meta = parser.parse(context);
-        assertThat(meta.isIndexed()).isTrue();
+        assertThat(meta.structure().isIndexed()).isTrue();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -581,13 +537,13 @@ public class PropertyParserTest {
         assertThat((Class<List>) meta.getSetter().getParameterTypes()[0]).isEqualTo(List.class);
 
         assertThat(meta.type()).isEqualTo(PropertyType.LIST);
-        assertThat(meta.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
-        assertThat(meta.isStaticColumn()).isTrue();
+        assertThat(meta.forValues().nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
+        assertThat(meta.structure().isStaticColumn()).isTrue();
 
         PropertyParsingContext context2 = newContext(Test.class, Test.class.getDeclaredField("mates"));
         PropertyMeta meta2 = parser.parse(context2);
         assertThat(meta2.type()).isEqualTo(PropertyType.LIST);
-        assertThat(meta2.nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
+        assertThat(meta2.forValues().nullValueForCollectionAndMap()).isNotNull().isInstanceOf(List.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -618,7 +574,7 @@ public class PropertyParserTest {
         assertThat((Class<Set>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Set.class);
 
         assertThat(meta.type()).isEqualTo(PropertyType.SET);
-        assertThat(meta.isStaticColumn()).isTrue();
+        assertThat(meta.structure().isStaticColumn()).isTrue();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -650,7 +606,7 @@ public class PropertyParserTest {
         assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
         assertThat(meta.getSetter().getName()).isEqualTo("setPreferences");
         assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
-        assertThat(meta.isStaticColumn()).isTrue();
+        assertThat(meta.structure().isStaticColumn()).isTrue();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -683,52 +639,6 @@ public class PropertyParserTest {
         assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
         assertThat(meta.getSetter().getName()).isEqualTo("setMap");
         assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
-    }
-
-    @Test
-    public void should_infer_value_class_from_list() throws Exception {
-        @SuppressWarnings("unused")
-        class Test {
-            private List<String> friends;
-        }
-
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
-
-        Class<String> infered = parser.inferValueClassForListOrSet(type, Test.class);
-
-        assertThat(infered).isEqualTo(String.class);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Test
-    public void should_infer_parameterized_value_class_from_list() throws Exception {
-        @SuppressWarnings("unused")
-        class Test {
-            private List<Class<Void>> friends;
-        }
-
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
-
-        Class infered = parser.inferValueClassForListOrSet(type, Test.class);
-
-        assertThat(infered).isEqualTo(Class.class);
-    }
-
-    @Test
-    public void should_exception_when_infering_value_type_from_raw_list() throws Exception {
-        @SuppressWarnings({ "rawtypes", "unused" })
-        class Test {
-            private List friends;
-        }
-
-        Type type = Test.class.getDeclaredField("friends").getGenericType();
-
-        expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The type '" + type.getClass().getCanonicalName()
-                + "' of the entity 'null' should be parameterized");
-
-        parser.inferValueClassForListOrSet(type, Test.class);
-
     }
 
     @Test

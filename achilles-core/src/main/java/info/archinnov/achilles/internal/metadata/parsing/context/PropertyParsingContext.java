@@ -19,11 +19,16 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PropertyParsingContext {
+    private static final Logger log = LoggerFactory.getLogger(PropertyParsingContext.class);
     private EntityParsingContext context;
     private Field currentField;
     private String currentPropertyName;
@@ -31,10 +36,10 @@ public class PropertyParsingContext {
     private boolean primaryKey = false;
     private boolean embeddedId = false;
 
-    public PropertyParsingContext(EntityParsingContext context, //
-            Field currentField) {
+    public PropertyParsingContext(EntityParsingContext context, Field currentField) {
         this.context = context;
         this.currentField = currentField;
+        this.currentPropertyName = inferPropertyName();
     }
 
     public ObjectMapper getCurrentObjectMapper() {
@@ -70,9 +75,6 @@ public class PropertyParsingContext {
         return context.getCurrentConsistencyLevels();
     }
 
-
-
-
     public boolean isCustomConsistencyLevels() {
         return isCustomConsistencyLevels;
     }
@@ -104,4 +106,17 @@ public class PropertyParsingContext {
         this.embeddedId = embeddedId;
     }
 
+    public String inferPropertyName() {
+        log.trace("Inferring property name for property {}", currentField.getName());
+        Column column = currentField.getAnnotation(Column.class);
+        if (column != null) {
+            return StringUtils.isNotBlank(column.name()) ? column.name() : currentField.getName();
+        } else {
+            return currentField.getName();
+        }
+    }
+
+    public PropertyParsingContext duplicateForField(Field field) {
+        return new PropertyParsingContext(context.duplicateForClass(field.getDeclaringClass()), field);
+    }
 }

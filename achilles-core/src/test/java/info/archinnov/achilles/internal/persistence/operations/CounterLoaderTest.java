@@ -23,9 +23,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
+
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaValues;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -50,10 +53,10 @@ public class CounterLoaderTest {
     @Mock
     private PersistenceContext.EntityFacade context;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
     @Mock
@@ -67,14 +70,15 @@ public class CounterLoaderTest {
     public void should_load_clustered_counters() throws Exception {
         // Given
         Row row = mock(Row.class);
+        PropertyMetaValues forValues = mock(PropertyMetaValues.class);
 
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getReadLevel(context)).thenReturn(ONE);
         when(context.getClusteredCounter()).thenReturn(row);
 
-        when(meta.instanciate()).thenReturn(entity);
-        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.forOperations().instanciate()).thenReturn(entity);
+        when(meta.getIdMeta().forValues()).thenReturn(forValues);
 
         when(context.getAllCountersMeta()).thenReturn(Arrays.asList(counterMeta));
 
@@ -84,7 +88,7 @@ public class CounterLoaderTest {
 
         // Then
         assertThat(actual).isSameAs(entity);
-
+        verify(forValues).setValueToField(entity, primaryKey);
         verify(mapper).setCounterToEntity(counterMeta, entity, row);
     }
 

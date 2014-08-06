@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_SERIAL;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType;
@@ -123,14 +122,14 @@ public class ImmediateFlushContextTest {
     @Test
     public void should_trigger_interceptor() throws Exception {
         //Given
-        EntityMeta meta = mock(EntityMeta.class);
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         Object entity = new Object();
 
         //When
         context.triggerInterceptor(meta,entity, Event.POST_PERSIST);
 
         //Then
-        verify(meta).intercept(entity,Event.POST_PERSIST);
+        verify(meta.forInterception()).intercept(entity,Event.POST_PERSIST);
 
     }
 }

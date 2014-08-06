@@ -21,6 +21,7 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -29,9 +30,13 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.sun.org.apache.bcel.internal.generic.RET;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -48,7 +53,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.ClusteredEntity;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -71,8 +76,11 @@ public class EntityMapperTest {
     @Mock
     private ColumnDefinitions columnDefs;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta entityMeta;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private PropertyMeta pm;
 
     @Captor
     private ArgumentCaptor<InternalCounterImpl> counterCaptor;
@@ -84,25 +92,25 @@ public class EntityMapperTest {
 
     @Test
     public void should_set_non_counter_properties_to_entity() throws Exception {
-        PropertyMeta pm = mock(PropertyMeta.class);
-        when(pm.isEmbeddedId()).thenReturn(false);
+
+        when(pm.structure().isEmbeddedId()).thenReturn(false);
         when(pm.getPropertyName()).thenReturn("name");
         when(entityMeta.getAllMetasExceptCounters()).thenReturn(asList(pm));
 
         when(row.isNull("name")).thenReturn(false);
-        when(cqlRowInvoker.invokeOnRowForFields(row, pm)).thenReturn("value");
+        when(pm.forRowExtraction().invokeOnRowForFields(row)).thenReturn("value");
 
         entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
 
-        verify(pm).setValueToField(entity, "value");
+        verify(pm.forValues()).setValueToField(entity, "value");
     }
 
     @Test
     public void should_set_value_to_clustered_counter_entity() throws Exception {
         //Given
         Long counterValue = 10L;
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
         when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(cqlRowInvoker.invokeOnRowForType(row, Long.class, "counter")).thenReturn(counterValue);
 
@@ -110,29 +118,26 @@ public class EntityMapperTest {
         entityMapper.setValuesToClusteredCounterEntity(row, entityMeta, entity);
 
         //Then
-        verify(counterMeta).setValueToField(eq(entity), counterCaptor.capture());
+        verify(counterMeta.forValues()).setValueToField(eq(entity), counterCaptor.capture());
 
         assertThat(counterCaptor.getValue().get()).isEqualTo(counterValue);
     }
 
     @Test
     public void should_set_null_to_entity_when_no_value_from_row() throws Exception {
-        PropertyMeta pm = mock(PropertyMeta.class);
-        when(pm.isEmbeddedId()).thenReturn(false);
+        when(pm.structure().isEmbeddedId()).thenReturn(false);
         when(pm.getPropertyName()).thenReturn("name");
 
         when(row.isNull("name")).thenReturn(true);
 
         entityMapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
 
-        verify(pm, never()).setValueToField(eq(entity), any());
+        verify(pm.forValues(), never()).setValueToField(eq(entity), any());
         verifyZeroInteractions(cqlRowInvoker);
     }
 
     @Test
     public void should_do_nothing_when_null_row() throws Exception {
-        PropertyMeta pm = mock(PropertyMeta.class);
-
         entityMapper.setPropertyToEntity(null, entityMeta, pm, entity);
 
         verifyZeroInteractions(cqlRowInvoker);
@@ -140,24 +145,27 @@ public class EntityMapperTest {
 
     @Test
     public void should_set_compound_key_to_entity() throws Exception {
-        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
-                .type(EMBEDDED_ID).compNames("name").invoker(invoker).build();
-
+        //Given
         EmbeddedKey embeddedKey = new EmbeddedKey();
-        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, entityMeta, pm, MANAGED)).thenReturn(embeddedKey);
+        PropertyMetaRowExtractor rowExtractor = mock(PropertyMetaRowExtractor.class);
+        when(pm.forRowExtraction()).thenReturn(rowExtractor);
+        when(pm.structure().isEmbeddedId()).thenReturn(true);
+        when(rowExtractor.extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(embeddedKey);
 
+        //When
         entityMapper.setPropertyToEntity(row, entityMeta, pm, entity);
 
-        verify(invoker).setValueToField(entity, pm.getField(), embeddedKey);
+        //Then
+        verify(pm.forValues()).setValueToField(entity, embeddedKey);
     }
 
     @Test
     public void should_map_row_to_entity() throws Exception {
         Long id = RandomUtils.nextLong();
-        PropertyMeta idMeta = mock(PropertyMeta.class);
-        PropertyMeta valueMeta = mock(PropertyMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta valueMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        when(idMeta.isEmbeddedId()).thenReturn(false);
+        when(idMeta.structure().isEmbeddedId()).thenReturn(false);
 
         Map<String, PropertyMeta> propertiesMap = ImmutableMap.of("id", idMeta, "value", valueMeta);
 
@@ -168,38 +176,38 @@ public class EntityMapperTest {
         when(columnDefs.iterator()).thenReturn(asList(def1, def2).iterator());
 
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(entityMeta.instanciate()).thenReturn(entity);
-        when(cqlRowInvoker.invokeOnRowForFields(row, idMeta)).thenReturn(id);
-        when(cqlRowInvoker.invokeOnRowForFields(row, valueMeta)).thenReturn("value");
-        when(entityMeta.instanciate()).thenReturn(entity);
+        when(entityMeta.forOperations().instanciate()).thenReturn(entity);
+        when(idMeta.forRowExtraction().invokeOnRowForFields(row)).thenReturn(id);
+        when(valueMeta.forRowExtraction().invokeOnRowForFields(row)).thenReturn("value");
+        when(entityMeta.forOperations().instanciate()).thenReturn(entity);
 
         CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, MANAGED);
 
         assertThat(actual).isSameAs(entity);
-        verify(idMeta).setValueToField(entity, id);
-        verify(valueMeta).setValueToField(entity, "value");
+        verify(idMeta.forValues()).setValueToField(entity, id);
+        verify(valueMeta.forValues()).setValueToField(entity, "value");
     }
 
     @Test
     public void should_map_row_to_entity_with_primary_key() throws Exception {
         ClusteredEntity entity = new ClusteredEntity();
         EmbeddedKey embeddedKey = new EmbeddedKey();
-        PropertyMeta idMeta = mock(PropertyMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        when(idMeta.isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
 
-        Map<String, PropertyMeta> propertiesMap = new HashMap<String, PropertyMeta>();
+        Map<String, PropertyMeta> propertiesMap = new HashMap<>();
 
         when(row.getColumnDefinitions()).thenReturn(columnDefs);
         when(columnDefs.iterator()).thenReturn(Arrays.<Definition>asList().iterator());
-        when(entityMeta.instanciate()).thenReturn(entity);
+        when(entityMeta.forOperations().instanciate()).thenReturn(entity);
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
-        when(cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, entityMeta, idMeta, MANAGED)).thenReturn(embeddedKey);
+        when(idMeta.forRowExtraction().extractCompoundPrimaryKeyFromRow(row, entityMeta, MANAGED)).thenReturn(embeddedKey);
 
         ClusteredEntity actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, propertiesMap, MANAGED);
 
         assertThat(actual).isSameAs(entity);
-        verify(idMeta).setValueToField(entity, embeddedKey);
+        verify(idMeta.forValues()).setValueToField(entity, embeddedKey);
     }
 
     @Test
@@ -212,7 +220,7 @@ public class EntityMapperTest {
     @Test
     public void should_return_null_when_no_column_found() throws Exception {
         when(row.getColumnDefinitions()).thenReturn(null);
-        when(entityMeta.instanciate()).thenReturn(entity);
+        when(entityMeta.forOperations().instanciate()).thenReturn(entity);
 
         CompleteBean actual = entityMapper.mapRowToEntityWithPrimaryKey(entityMeta, row, null, MANAGED);
         assertThat(actual).isNull();

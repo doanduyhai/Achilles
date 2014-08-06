@@ -38,7 +38,7 @@ public class CounterIT {
 
 	@Rule
 	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource("CompleteBean",
-			AchillesCounter.CQL_COUNTER_TABLE);
+			AchillesCounter.ACHILLES_COUNTER_TABLE);
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 

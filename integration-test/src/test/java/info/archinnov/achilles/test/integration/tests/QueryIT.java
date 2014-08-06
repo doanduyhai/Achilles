@@ -65,7 +65,7 @@ public class QueryIT {
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST,
             CompleteBean.class.getSimpleName(), TABLE_NAME, ClusteredEntityWithTimeUUID.TABLE_NAME,
-            AchillesCounter.CQL_COUNTER_TABLE);
+            AchillesCounter.ACHILLES_COUNTER_TABLE);
 
     private PersistenceManager manager = resource.getPersistenceManager();
 

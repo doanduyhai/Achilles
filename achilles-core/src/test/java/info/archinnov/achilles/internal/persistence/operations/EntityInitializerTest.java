@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -43,7 +44,7 @@ public class EntityInitializerTest {
 	@Mock
 	private EntityMeta meta;
 
-	@Mock
+	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta counterMeta;
 
 	private CompleteBean bean = new CompleteBean();
@@ -55,7 +56,7 @@ public class EntityInitializerTest {
 
 		initializer.initializeEntity(bean, meta);
 
-		verify(counterMeta).invokeGetter(bean);
+		verify(counterMeta.forValues()).forceLoad(bean);
 
 	}
 

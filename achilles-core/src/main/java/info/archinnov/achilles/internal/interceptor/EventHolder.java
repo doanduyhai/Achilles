@@ -32,7 +32,7 @@ public class EventHolder {
     }
 
     public void triggerInterception() {
-        meta.intercept(entity,event);
+        meta.forInterception().intercept(entity,event);
     }
 
 }

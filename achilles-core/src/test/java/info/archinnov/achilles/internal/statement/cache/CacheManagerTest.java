@@ -18,16 +18,19 @@ package info.archinnov.achilles.internal.statement.cache;
 import static com.google.common.collect.Sets.newHashSet;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
-import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import java.util.List;
+
+import org.fest.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +50,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -84,7 +87,7 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_simple_field() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(SIMPLE)
                 .build();
@@ -105,13 +108,11 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_clustered_id() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").compNames("id", "a", "b")
-                .type(PropertyType.EMBEDDED_ID).build();
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
+        when(pm.forCache().extractClusteredFieldsIfNecessary()).thenReturn(Sets.newLinkedHashSet("id", "a", "b"));
         when(cache.getIfPresent(cacheKeyCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = manager.getCacheForFieldSelect(session, cache, context, pm);
@@ -124,7 +125,7 @@ public class CacheManagerTest {
     @Test
     public void should_generate_select_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(SIMPLE)
                 .build();
@@ -144,7 +145,7 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_entity_insert() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
@@ -165,7 +166,7 @@ public class CacheManagerTest {
     @Test
     public void should_generate_insert_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
 
@@ -190,7 +191,7 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_fields_update() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
@@ -211,7 +212,7 @@ public class CacheManagerTest {
     @Test
     public void should_generate_update_prepared_statement_when_not_found_in_cache() throws Exception {
         EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
+//        meta.setTableName("table");
 
         PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
         PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();

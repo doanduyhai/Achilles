@@ -16,9 +16,6 @@
 
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
-import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
-import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import org.junit.Test;
@@ -28,8 +25,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Pair;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityParsingContextTest {

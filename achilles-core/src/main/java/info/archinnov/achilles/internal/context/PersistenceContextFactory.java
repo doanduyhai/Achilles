@@ -92,8 +92,7 @@ public class PersistenceContextFactory {
 				"Build new PersistenceContext for slice query on entity class '{}' with partition key components '{}' and Consistency Level '{}'",
 				entityClass, partitionComponents, cl);
 		EntityMeta meta = entityMetaMap.get(entityClass);
-		PropertyMeta idMeta = meta.getIdMeta();
-		Object embeddedId = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents);
+        Object embeddedId = meta.getIdMeta().forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents);
 
 		ImmediateFlushContext flushContext = buildImmediateFlushContext(OptionsBuilder.withConsistency(cl));
 

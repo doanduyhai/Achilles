@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Lists;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.DaoContext;
@@ -64,9 +63,9 @@ public class SliceQueryExecutor {
         List<Row> rows = daoContext.execute(bsWrapper).all();
 
         for (Row row : rows) {
-            T clusteredEntity = meta.instanciate();
+            T clusteredEntity = meta.forOperations().instanciate();
             mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
-            meta.intercept(clusteredEntity, Event.POST_LOAD);
+            meta.forInterception().intercept(clusteredEntity, Event.POST_LOAD);
             clusteredEntities.add(clusteredEntity);
         }
 

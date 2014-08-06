@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -33,36 +32,24 @@ public class TypedQueryValidator {
     public void validateTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
         log.debug("Validate typed query {}",regularStatement.getQueryString());
 		PropertyMeta idMeta = meta.getIdMeta();
-		String queryString = regularStatement.getQueryString().toLowerCase();
+		String queryString = regularStatement.getQueryString().toLowerCase().trim();
 
 		validateRawTypedQuery(entityClass, regularStatement, meta);
 
 		if (!queryString.contains("select *")) {
-			if (idMeta.isEmbeddedId()) {
-
-				for (String component : idMeta.getCQLComponentNames()) {
-					Validator.validateTrue(queryString.contains(component),
-							"The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
-							queryString, component, idMeta.getValueClass().getCanonicalName());
-				}
-			} else {
-				String idColumn = idMeta.getPropertyName();
-				Validator.validateTrue(queryString.contains(idColumn.toLowerCase()),
-						"The typed query [%s] should contain the id column '%s'", queryString, idColumn);
-			}
+			idMeta.forTypedQuery().validateTypedQuery(queryString);
 		}
 	}
 
 	public void validateRawTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
         log.debug("Validate raw typed query {}",regularStatement);
-        String tableName = meta.getTableName().toLowerCase();
+        String tableName = meta.config().getTableName().toLowerCase();
         final String queryString = regularStatement.getQueryString();
         String normalizedQuery = queryString.toLowerCase();
 
         validator.validateSelect(regularStatement);
 
-        Validator.validateTrue(normalizedQuery.contains(" from " + tableName),
-				"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
+        Validator.validateTrue(normalizedQuery.contains(" from " + tableName),"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
 	}
 }

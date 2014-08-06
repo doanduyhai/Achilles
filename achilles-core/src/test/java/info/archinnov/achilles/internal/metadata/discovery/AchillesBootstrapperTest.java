@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internal.metadata.discovery;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -29,6 +29,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -67,7 +68,7 @@ public class AchillesBootstrapperTest {
     @Mock
     private SchemaContext schemaContext;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
     @Mock
@@ -127,7 +128,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.getTableName()).thenReturn("UserBean");
+        when(meta.config().getTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
@@ -142,11 +143,11 @@ public class AchillesBootstrapperTest {
     public void should_create_tables() throws Exception {
         // Given
         Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
-        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of();
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.of();
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.getTableName()).thenReturn("UserBean");
+        when(meta.config().getTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
@@ -160,12 +161,11 @@ public class AchillesBootstrapperTest {
     public void should_validate_counter_table() throws Exception {
         // Given
         Map<Class<?>, EntityMeta> metas = ImmutableMap.<Class<?>, EntityMeta>of(UserBean.class, meta);
-        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.<String, TableMetadata>of(CQL_COUNTER_TABLE,
-                tableMeta);
+        Map<String, TableMetadata> tableMetaDatas = ImmutableMap.of(ACHILLES_COUNTER_TABLE,tableMeta);
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.getTableName()).thenReturn("UserBean");
+        when(meta.config().getTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
@@ -183,7 +183,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.getTableName()).thenReturn("UserBean");
+        when(meta.config().getTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
@@ -211,17 +211,15 @@ public class AchillesBootstrapperTest {
         // Given
         final EntityMeta metaString = new EntityMeta();
         final EntityMeta metaLong = new EntityMeta();
-        final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(stringInterceptor1,
-                stringInterceptor2, longInterceptor);
-        final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(String.class,
-                metaString, Long.class, metaLong);
+        final List<Interceptor<?>> interceptors = Arrays.<Interceptor<?>>asList(stringInterceptor1,stringInterceptor2, longInterceptor);
+        final Map<Class<?>, EntityMeta> entityMetaMap = ImmutableMap.<Class<?>, EntityMeta>of(String.class,metaString, Long.class, metaLong);
 
         // When
         bootstrapper.addInterceptorsToEntityMetas(interceptors, entityMetaMap);
 
         // Then
-        assertThat(metaString.getInterceptors()).contains(stringInterceptor1, stringInterceptor2);
-        assertThat(metaLong.getInterceptors()).contains(longInterceptor);
+        assertThat(metaString.forInterception().getInterceptors()).contains(stringInterceptor1, stringInterceptor2);
+        assertThat(metaLong.forInterception().getInterceptors()).contains(longInterceptor);
     }
 
     private Interceptor<String> stringInterceptor1 = new Interceptor<String>() {

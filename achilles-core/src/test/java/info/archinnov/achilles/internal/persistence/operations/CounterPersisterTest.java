@@ -22,15 +22,20 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import info.archinnov.achilles.type.CounterBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.Counter;
+
+import java.util.ArrayList;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CounterPersisterTest {
@@ -40,16 +45,16 @@ public class CounterPersisterTest {
     @Mock
     private PersistenceContext.EntityFacade context;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta counterMeta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta counterMeta2;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta counterMeta3;
 
     private Object entity = new Object();
@@ -65,7 +70,7 @@ public class CounterPersisterTest {
         //Given
         final long delta = 10L;
         final Counter counter = InternalCounterBuilder.incr(delta);
-        when(counterMeta.getValueFromField(entity)).thenReturn(counter);
+        when(counterMeta.forValues().getValueFromField(entity)).thenReturn(counter);
 
         //When
         persister.persistCounters(context, asList(counterMeta));
@@ -78,6 +83,7 @@ public class CounterPersisterTest {
     @Test
     public void should_not_persist_counters_if_null_counter() throws Exception {
         //When
+        when(counterMeta.forValues().getValueFromField(entity)).thenReturn(CounterBuilder.incr(0L));
         persister.persistCounters(context, asList(counterMeta));
 
         //Then
@@ -89,7 +95,7 @@ public class CounterPersisterTest {
         //Given
         final long delta = 0L;
         final Counter counter = InternalCounterBuilder.incr(delta);
-        when(counterMeta.getValueFromField(entity)).thenReturn(counter);
+        when(counterMeta.forValues().getValueFromField(entity)).thenReturn(counter);
 
         //When
         persister.persistCounters(context, asList(counterMeta));
@@ -102,9 +108,9 @@ public class CounterPersisterTest {
     public void should_persist_clustered_counters() throws Exception {
         //Given
         final long delta = 10L;
-        final Counter counter = InternalCounterBuilder.incr(delta);
-        when(counterMeta.getValueFromField(entity)).thenReturn(counter);
-        when(counterMeta3.getValueFromField(entity)).thenReturn(InternalCounterBuilder.incr(0L));
+        when(counterMeta.forValues().getValueFromField(entity)).thenReturn(InternalCounterBuilder.incr(delta));
+        when(counterMeta2.forValues().getValueFromField(entity)).thenReturn(InternalCounterBuilder.incr(1L));
+        when(counterMeta3.forValues().getValueFromField(entity)).thenReturn(InternalCounterBuilder.incr(0L));
         when(context.getAllCountersMeta()).thenReturn(asList(counterMeta, counterMeta2, counterMeta3));
 
         //When
@@ -117,7 +123,7 @@ public class CounterPersisterTest {
     @Test(expected = IllegalStateException.class)
     public void should_exception_when_persisting_null_clustered_counters() throws Exception {
         //Given
-        when(context.getAllCountersMeta()).thenReturn(asList(counterMeta, counterMeta));
+        when(context.getAllCountersMeta()).thenReturn(new ArrayList<PropertyMeta>());
 
         //When
         persister.persistClusteredCounters(context);

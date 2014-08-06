@@ -106,7 +106,7 @@ public class SliceQueryExecutorTest {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(defaultWriteLevel);
         when(context.getEntityFacade()).thenReturn(entityFacade);
         when(meta.getIdMeta()).thenReturn(idMeta);
-        when(meta.getClusteringOrders()).thenReturn(asList(new ClusteringOrder("col", Sorting.ASC)));
+        when(meta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new ClusteringOrder("col", Sorting.ASC));
 
         sliceQueryProperties = SliceQueryProperties.builder(meta,ClusteredEntity.class, SliceQueryProperties.SliceType.SELECT);
 
@@ -125,7 +125,7 @@ public class SliceQueryExecutorTest {
         when(daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel)).thenReturn(bsWrapper);
         when(daoContext.execute(bsWrapper).all()).thenReturn(rows);
 
-        when(meta.instanciate()).thenReturn(entity);
+        when(meta.forOperations().instanciate()).thenReturn(entity);
         when(contextFactory.newContext(entity)).thenReturn(context);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, entityFacade)).thenReturn(entity);
 
@@ -134,7 +134,7 @@ public class SliceQueryExecutorTest {
         verify(daoContext).bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
 
         assertThat(actual).containsOnly(entity);
-        verify(meta).intercept(entity, Event.POST_LOAD);
+        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
         verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
     }
 
@@ -146,7 +146,6 @@ public class SliceQueryExecutorTest {
         when(contextFactory.newContextForSliceQuery(ClusteredEntity.class, partitionComponents, LOCAL_QUORUM))
                 .thenReturn(context);
 
-        when(idMeta.getCQLComponentNames()).thenReturn(asList("id", "comp1"));
         Iterator<ClusteredEntity> iter = executor.iterator(sliceQueryProperties);
 
         assertThat(iter).isNotNull();

@@ -71,6 +71,6 @@ public class ImmediateFlushContext extends AbstractFlushContext {
 
     @Override
     public void triggerInterceptor(EntityMeta meta, Object entity, Event event) {
-        meta.intercept(entity,event);
+        meta.forInterception().intercept(entity,event);
     }
 }

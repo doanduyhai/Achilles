@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -79,12 +78,12 @@ public class EntityProxifier {
 
         EntityMeta meta = context.getEntityMeta();
         for (PropertyMeta pm : meta.getAllMetasExceptCounters()) {
-            Object value = pm.getValueFromField(entity);
-            pm.setValueToField(instance, value);
+            Object value = pm.forValues().getValueFromField(entity);
+            pm.forValues().setValueToField(instance, value);
         }
 
         for (PropertyMeta pm : meta.getAllCounterMetas()) {
-            pm.setValueToField(entity,null);
+            pm.forValues().setValueToField(entity,null);
         }
 
         ((Factory) instance).setCallbacks(new Callback[] { buildInterceptor(context, entity, alreadyLoaded) });

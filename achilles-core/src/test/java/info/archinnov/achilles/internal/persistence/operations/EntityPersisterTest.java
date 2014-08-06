@@ -45,10 +45,10 @@ public class EntityPersisterTest {
     @Mock
     private CounterPersister counterPersister;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta entityMeta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta counterMeta;
 
     private Object entity = new Object();
@@ -62,7 +62,7 @@ public class EntityPersisterTest {
     @Test
     public void should_persist() throws Exception {
         // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(false);
+        when(entityMeta.structure().isClusteredCounter()).thenReturn(false);
         final List<PropertyMeta> counterMetas = asList(counterMeta);
         when(entityMeta.getAllCounterMetas()).thenReturn(counterMetas);
 
@@ -77,7 +77,7 @@ public class EntityPersisterTest {
     @Test
     public void should_persist_clustered_counter() throws Exception {
         // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.structure().isClusteredCounter()).thenReturn(true);
         when(entityMeta.getAllCounterMetas()).thenReturn(asList(counterMeta));
 
         // When
@@ -90,8 +90,8 @@ public class EntityPersisterTest {
     @Test
     public void should_remove() throws Exception {
         // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(false);
-        when(entityMeta.getTableName()).thenReturn("table");
+        when(entityMeta.structure().isClusteredCounter()).thenReturn(false);
+        when(entityMeta.config().getTableName()).thenReturn("table");
 
         // When
         persister.remove(context);
@@ -104,7 +104,7 @@ public class EntityPersisterTest {
     @Test
     public void should_remove_clustered_counter() throws Exception {
         // Given
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
+        when(entityMeta.structure().isClusteredCounter()).thenReturn(true);
 
         // When
         persister.remove(context);

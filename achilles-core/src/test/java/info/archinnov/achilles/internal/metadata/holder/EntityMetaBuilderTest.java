@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -40,7 +40,7 @@ import info.archinnov.achilles.type.Pair;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaBuilderTest {
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
     @Test
@@ -68,7 +68,7 @@ public class EntityMetaBuilderTest {
 
         assertThat(meta.<CompleteBean>getEntityClass()).isEqualTo(CompleteBean.class);
         assertThat(meta.getClassName()).isEqualTo("Bean");
-        assertThat(meta.getTableName()).isEqualTo("cfName");
+        assertThat(meta.config().getTableName()).isEqualTo("cfName");
         assertThat(meta.getIdMeta()).isSameAs(idMeta);
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
         assertThat(meta.getPropertyMetas()).containsKey("name");
@@ -84,7 +84,7 @@ public class EntityMetaBuilderTest {
     }
 
     @Test
-    public void should_build_meta_with_column_family_name() throws Exception {
+    public void should_build_meta_with_custom_table_name_and_comment() throws Exception {
 
         Map<String, PropertyMeta> propertyMetas = new HashMap<>();
         PropertyMeta simpleMeta = new PropertyMeta();
@@ -97,10 +97,11 @@ public class EntityMetaBuilderTest {
         eagerMetas.add(simpleMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
-                .tableName("toto").build();
+                .tableName("table").tableComment("comment").build();
 
         assertThat(meta.getClassName()).isEqualTo("Bean");
-        assertThat(meta.getTableName()).isEqualTo("toto");
+        assertThat(meta.config().getTableName()).isEqualTo("table");
+        assertThat(meta.config().getTableComment()).isEqualTo("comment");
     }
 
     @Test
@@ -117,7 +118,7 @@ public class EntityMetaBuilderTest {
         EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
                 .tableName("toto").consistencyLevels(consistencyLevels).build();
 
-        assertThat(meta.getConsistencyLevels()).isSameAs(consistencyLevels);
+        assertThat(meta.config().getConsistencyLevels()).isSameAs(consistencyLevels);
     }
 
     @Test
@@ -132,15 +133,16 @@ public class EntityMetaBuilderTest {
 
         when(idMeta.type()).thenReturn(EMBEDDED_ID);
         when(idMeta.<Long>getValueClass()).thenReturn(Long.class);
-        when(idMeta.isEmbeddedId()).thenReturn(true);
-        when(idMeta.getClusteringComponentClasses()).thenReturn(Arrays.<Class<?>>asList(String.class));
+        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.structure().isClustered()).thenReturn(true);
+        when(idMeta.getEmbeddedIdProperties().getClusteringComponents().getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(String.class));
         List<PropertyMeta> eagerMetas = new ArrayList<>();
         eagerMetas.add(counterMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean").tableName("cfName").propertyMetas(propertyMetas).build();
 
-        assertThat(meta.isClusteredEntity()).isTrue();
-        assertThat(meta.isClusteredCounter()).isTrue();
+        assertThat(meta.structure().isClusteredEntity()).isTrue();
+        assertThat(meta.structure().isClusteredCounter()).isTrue();
     }
 
 }

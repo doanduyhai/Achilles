@@ -115,7 +115,7 @@ public class EntityParser {
             log.debug("Add id Meta {} to counter meta {} of entity class {}", idMeta.getPropertyName(),
                     counterMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
-            counterMeta.getCounterProperties().setIdMeta(idMeta);
+            counterMeta.setIdMetaForCounterProperties(idMeta);
         }
     }
 }

@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internal.metadata.discovery;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class AchillesBootstrapper {
             EntityMeta entityMeta = entityParser.parseEntity(context);
             entityMetaMap.put(entityClass, entityMeta);
 
-            hasSimpleCounter = hasSimpleCounter || (context.hasSimpleCounter() && !entityMeta.isClusteredCounter());
+            hasSimpleCounter = hasSimpleCounter || (context.hasSimpleCounter() && !entityMeta.structure().isClusteredCounter());
             boolean shouldValidateBean = configContext.isClassConstrained(entityClass);
             if (shouldValidateBean) {
                 configContext.addBeanValidationInterceptor(entityMeta);
@@ -70,7 +70,7 @@ public class AchillesBootstrapper {
 
         for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
             EntityMeta entityMeta = entry.getValue();
-            String tableName = entityMeta.getTableName().toLowerCase();
+            String tableName = entityMeta.config().getTableName().toLowerCase();
 
             if (tableMetaDatas.containsKey(tableName)) {
                 TableMetadata tableMetaData = tableMetaDatas.get(tableName);
@@ -82,7 +82,7 @@ public class AchillesBootstrapper {
         }
 
         if (schemaContext.hasSimpleCounter()) {
-            if (tableMetaDatas.containsKey(CQL_COUNTER_TABLE)) {
+            if (tableMetaDatas.containsKey(ACHILLES_COUNTER_TABLE)) {
                 schemaContext.validateAchillesCounter();
             } else {
                 schemaContext.createTableForCounter();
@@ -103,7 +103,7 @@ public class AchillesBootstrapper {
             EntityMeta entityMeta = entityMetaMap.get(entityClass);
             Validator.validateBeanMappingTrue(entityMeta != null, "The entity class '%s' is not found",
                     entityClass.getCanonicalName());
-            entityMeta.addInterceptor(interceptor);
+            entityMeta.forInterception().addInterceptor(interceptor);
         }
     }
 }

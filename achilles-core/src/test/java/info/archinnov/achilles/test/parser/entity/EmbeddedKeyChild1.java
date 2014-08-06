@@ -22,7 +22,7 @@ import info.archinnov.achilles.annotations.Order;
 public class EmbeddedKeyChild1 extends EmbeddedKeyParent {
 
     @Order(2)
-    @Column(name = "clustering")
+    @Column(name = "clustering_key")
     protected Long clustering;
 
     public Long getClustering() {

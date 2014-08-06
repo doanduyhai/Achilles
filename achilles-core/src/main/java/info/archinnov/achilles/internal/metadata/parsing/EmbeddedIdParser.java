@@ -24,13 +24,13 @@ import static org.reflections.ReflectionUtils.withParametersCount;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,17 +49,21 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class EmbeddedIdParser {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedIdParser.class);
-    protected EntityIntrospector entityIntrospector = new EntityIntrospector();
-
     private PropertyFilter filter = new PropertyFilter();
 
-    public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass) {
+    private final PropertyParsingContext context;
+
+    public EmbeddedIdParser(PropertyParsingContext context) {
+        this.context = context;
+    }
+
+    public EmbeddedIdProperties parseEmbeddedId(Class<?> embeddedIdClass, PropertyParser propertyParser) {
         log.debug("Parse embedded id class {} ", embeddedIdClass.getCanonicalName());
 
         Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
         validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
         final List<ClusteringOrder> clusteringOrders = extractClusteredOrder(embeddedIdClass);
-        EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(embeddedIdClass, components, clusteringOrders);
+        EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(propertyParser,embeddedIdClass, components, clusteringOrders);
 
         log.trace("Built embeddedId properties : {}", embeddedIdProperties);
         return embeddedIdProperties;
@@ -145,8 +149,7 @@ public class EmbeddedIdParser {
 
         log.debug("Validate component ordering for @EmbeddedId class {} ", embeddedIdClassName);
 
-        Validator.validateBeanMappingTrue(orderSum == check,
-                "The component ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
+        Validator.validateBeanMappingTrue(orderSum == check, "The component ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
     }
 
     private void validateConsistentPartitionKeys(Map<Integer, Field> componentsOrdering, String embeddedIdClassName) {
@@ -165,72 +168,39 @@ public class EmbeddedIdParser {
         Validator.validateBeanMappingTrue(orderSum == check, "The composite partition key ordering is wrong for @EmbeddedId class '%s'", embeddedIdClassName);
     }
 
-    private EmbeddedIdProperties buildComponentMetas(Class<?> embeddedIdClass, Map<Integer, Field> components,
-            List<ClusteringOrder> clusteringOrders) {
+    private EmbeddedIdProperties buildComponentMetas(PropertyParser propertyParser, Class<?> embeddedIdClass, Map<Integer, Field> components, List<ClusteringOrder> clusteringOrders) {
 
         log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
         EmbeddedIdPropertiesBuilder partitionKeysBuilder = new EmbeddedIdPropertiesBuilder();
         EmbeddedIdPropertiesBuilder clusteringKeysBuilder = new EmbeddedIdPropertiesBuilder();
         clusteringKeysBuilder.setClusteringOrders(clusteringOrders);
-        EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder = new EmbeddedIdPropertiesBuilder();
 
-        boolean hasPartitionKeyAnnotation = buildPartitionAndClusteringKeys(embeddedIdClass, components,
-                partitionKeysBuilder, clusteringKeysBuilder, embeddedIdPropertiesBuilder);
+        buildPartitionAndClusteringKeys(propertyParser, embeddedIdClass, components,partitionKeysBuilder, clusteringKeysBuilder);
 
-        if (!hasPartitionKeyAnnotation) {
-            partitionKeysBuilder.addComponentName(clusteringKeysBuilder.removeFirstComponentName());
-            partitionKeysBuilder.addComponentClass(clusteringKeysBuilder.removeFirstComponentClass());
-            partitionKeysBuilder.addComponentField(clusteringKeysBuilder.removeFirstComponentField());
-            partitionKeysBuilder.addComponentGetter(clusteringKeysBuilder.removeFirstComponentGetter());
-            partitionKeysBuilder.addComponentSetter(clusteringKeysBuilder.removeFirstComponentSetter());
-        }
-
-        return embeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionKeysBuilder.buildPartitionKeys(),
-                clusteringKeysBuilder.buildClusteringKeys());
+        return EmbeddedIdPropertiesBuilder.buildEmbeddedIdProperties(partitionKeysBuilder.buildPartitionKeys(), clusteringKeysBuilder.buildClusteringKeys(), context.getCurrentEntityClass().getCanonicalName());
     }
 
-    private boolean buildPartitionAndClusteringKeys(Class<?> embeddedIdClass, Map<Integer, Field> components,
-            EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder,
-            EmbeddedIdPropertiesBuilder embeddedIdPropertiesBuilder) {
+    private void buildPartitionAndClusteringKeys(PropertyParser propertyParser, Class<?> embeddedIdClass, Map<Integer, Field> components,
+            EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder) {
         log.debug("Build Components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
 
-        boolean hasPartitionKeyAnnotation = false;
         for (Integer order : components.keySet()) {
             Field compositeKeyField = components.get(order);
-            Class<?> componentClass = compositeKeyField.getType();
-            String componentName;
-            Method componentGetter = entityIntrospector.findGetter(embeddedIdClass, compositeKeyField);
-            Method componentSetter = entityIntrospector.findSetter(embeddedIdClass, compositeKeyField);
 
-            componentName = extractColumnName(compositeKeyField);
-
-            embeddedIdPropertiesBuilder.addComponentName(componentName);
-            embeddedIdPropertiesBuilder.addComponentClass(componentClass);
-            embeddedIdPropertiesBuilder.addComponentField(compositeKeyField);
-            embeddedIdPropertiesBuilder.addComponentGetter(componentGetter);
-            embeddedIdPropertiesBuilder.addComponentSetter(componentSetter);
-
-            if (filter.hasAnnotation(compositeKeyField, TimeUUID.class)) {
-                embeddedIdPropertiesBuilder.addTimeUUIDComponent(componentName);
-            }
+            final PropertyMeta propertyMeta = propertyParser.parseSimpleProperty(context.duplicateForField(compositeKeyField));
 
             if (filter.hasAnnotation(compositeKeyField, PartitionKey.class)) {
-                partitionKeysBuilder.addComponentName(componentName);
-                partitionKeysBuilder.addComponentClass(componentClass);
-                partitionKeysBuilder.addComponentField(compositeKeyField);
-                partitionKeysBuilder.addComponentGetter(componentGetter);
-                partitionKeysBuilder.addComponentSetter(componentSetter);
-                hasPartitionKeyAnnotation = true;
+                partitionKeysBuilder.addPropertyMeta(propertyMeta);
             } else {
-                clusteringKeysBuilder.addComponentName(componentName);
-                clusteringKeysBuilder.addComponentClass(componentClass);
-                clusteringKeysBuilder.addComponentField(compositeKeyField);
-                clusteringKeysBuilder.addComponentGetter(componentGetter);
-                clusteringKeysBuilder.addComponentSetter(componentSetter);
+                clusteringKeysBuilder.addPropertyMeta(propertyMeta);
             }
-
         }
-        return hasPartitionKeyAnnotation;
+
+        // If not @PartitionKey annotation found, take the first field as default partition key
+        if (partitionKeysBuilder.getPropertyMetas().isEmpty()) {
+            final PropertyMeta partitionMeta = clusteringKeysBuilder.getPropertyMetas().remove(0);
+            partitionKeysBuilder.addPropertyMeta(partitionMeta);
+        }
     }
 
     private String extractColumnName(Field compositeKeyField) {

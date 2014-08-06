@@ -54,16 +54,14 @@ public class CacheManager {
         }
     };
 
-    public PreparedStatement getCacheForFieldSelect(Session session,
-            Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
+    public PreparedStatement getCacheForFieldSelect(Session session,Cache<StatementCacheKey, PreparedStatement> dynamicPSCache,
             PersistentStateHolder context, PropertyMeta pm) {
 
-        log.trace("Get cache for SELECT property {} from entity class {}", pm.getPropertyName(), pm
-                .getEntityClassName());
+        log.trace("Get cache for SELECT property {} from entity class {}", pm.getPropertyName(), pm.getEntityClassName());
 
         Class<?> entityClass = context.getEntityClass();
         EntityMeta entityMeta = context.getEntityMeta();
-        Set<String> clusteredFields = extractClusteredFieldsIfNecessary(pm);
+        Set<String> clusteredFields = pm.forCache().extractClusteredFieldsIfNecessary();
         StatementCacheKey cacheKey = new StatementCacheKey(CacheType.SELECT_FIELD, clusteredFields, entityClass, noOptions());
         PreparedStatement ps = dynamicPSCache.getIfPresent(cacheKey);
         if (ps == null) {
@@ -151,14 +149,6 @@ public class CacheManager {
             displayCacheStatistics(dynamicPSCache);
         }
         return ps;
-    }
-
-    private Set<String> extractClusteredFieldsIfNecessary(PropertyMeta pm) {
-        if (pm.isEmbeddedId()) {
-            return new HashSet<>(pm.getComponentNames());
-        } else {
-            return Sets.newHashSet(pm.getPropertyName());
-        }
     }
 
     private void displayCacheStatistics(Cache<StatementCacheKey, PreparedStatement> dynamicPSCache) {

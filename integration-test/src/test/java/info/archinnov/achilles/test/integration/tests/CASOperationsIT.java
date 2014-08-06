@@ -34,6 +34,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -54,7 +56,7 @@ import info.archinnov.achilles.type.OptionsBuilder;
 public class CASOperationsIT {
 
     @Rule
-    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(AchillesTestResource.Steps.AFTER_TEST, EntityWithEnum.TABLE_NAME, CompleteBean.TABLE_NAME);
+    public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.BOTH, EntityWithEnum.TABLE_NAME, CompleteBean.TABLE_NAME);
 
     private PersistenceManager manager = resource.getPersistenceManager();
 

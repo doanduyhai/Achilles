@@ -125,7 +125,7 @@ public class Options {
             this.value = value;
         }
 
-        public void encodeValue(Object encodedValue) {
+        public void encodedValue(Object encodedValue) {
             this.value = encodedValue;
         }
 

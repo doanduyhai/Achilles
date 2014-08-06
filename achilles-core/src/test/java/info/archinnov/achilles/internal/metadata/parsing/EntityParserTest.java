@@ -96,7 +96,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.getClassName()).isEqualTo("info.archinnov.achilles.test.parser.entity.Bean");
-        assertThat(meta.getTableName()).isEqualTo("Bean");
+        assertThat(meta.config().getTableName()).isEqualTo("Bean");
         assertThat(meta.getIdMeta().<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
@@ -124,39 +124,39 @@ public class EntityParserTest {
         assertThat(id.getPropertyName()).isEqualTo("id");
         assertThat(id.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(id.type()).isEqualTo(ID);
-        assertThat(id.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(id.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(id.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(id.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(name.getPropertyName()).isEqualTo("name");
         assertThat(name.<String>getValueClass()).isEqualTo(String.class);
         assertThat(name.type()).isEqualTo(SIMPLE);
-        assertThat(name.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(name.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(name.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(name.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(age.getPropertyName()).isEqualTo("age_in_year");
         assertThat(age.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(age.type()).isEqualTo(SIMPLE);
-        assertThat(age.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(age.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(age.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(age.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(friends.getPropertyName()).isEqualTo("friends");
         assertThat(friends.<String>getValueClass()).isEqualTo(String.class);
         assertThat(friends.type()).isEqualTo(PropertyType.LIST);
-        assertThat(friends.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(friends.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(friends.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(friends.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(followers.getPropertyName()).isEqualTo("followers");
         assertThat(followers.<String>getValueClass()).isEqualTo(String.class);
         assertThat(followers.type()).isEqualTo(PropertyType.SET);
-        assertThat(followers.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(followers.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(followers.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(followers.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(preferences.getPropertyName()).isEqualTo("preferences");
         assertThat(preferences.<String>getValueClass()).isEqualTo(String.class);
         assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
         assertThat(preferences.<Integer>getKeyClass()).isEqualTo(Integer.class);
-        assertThat(preferences.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(preferences.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(preferences.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(preferences.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(creator.getPropertyName()).isEqualTo("creator");
         assertThat(creator.<UserBean>getValueClass()).isEqualTo(UserBean.class);
@@ -166,14 +166,14 @@ public class EntityParserTest {
         assertThat(count.<Counter>getValueClass()).isEqualTo(Counter.class);
         assertThat(count.type()).isEqualTo(COUNTER);
 
-        assertThat(meta.getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(meta.getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(meta.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(meta.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(meta.getAllMetasExceptIdAndCounters()).hasSize(6).containsOnly(name, age, friends, followers, preferences, creator);
         assertThat(meta.getAllMetasExceptCounters()).hasSize(7).containsOnly(id, name, age, friends, followers, preferences, creator);
 
-        assertThat(meta.getInsertStrategy()).isEqualTo(InsertStrategy.ALL_FIELDS);
-        assertThat(meta.isSchemaUpdateEnabled()).isTrue();
+        assertThat(meta.config().getInsertStrategy()).isEqualTo(InsertStrategy.ALL_FIELDS);
+        assertThat(meta.config().isSchemaUpdateEnabled()).isTrue();
     }
 
     @Test
@@ -187,10 +187,9 @@ public class EntityParserTest {
         assertThat(meta.<EmbeddedKey>getIdClass()).isEqualTo(EmbeddedKey.class);
         PropertyMeta idMeta = meta.getIdMeta();
 
-        assertThat(idMeta.isEmbeddedId()).isTrue();
-        assertThat(idMeta.getComponentClasses()).containsExactly(Long.class, String.class);
+        assertThat(idMeta.structure().isEmbeddedId()).isTrue();
 
-        assertThat(meta.getPropertyMetas().get("name").isStaticColumn()).isTrue();
+        assertThat(meta.getPropertyMetas().get("name").structure().isStaticColumn()).isTrue();
     }
 
     @Test
@@ -201,7 +200,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta).isNotNull();
-        assertThat(meta.getTableName()).isEqualTo("myOwnCF");
+        assertThat(meta.config().getTableName()).isEqualTo("myOwnCF");
     }
 
     @Test
@@ -228,7 +227,7 @@ public class EntityParserTest {
         PropertyMeta counterMeta = meta.getPropertyMetas().get("counter");
         assertThat(counterMeta).isNotNull();
 
-        CounterProperties counterProperties = counterMeta.getCounterProperties();
+        CounterProperties counterProperties = meta.getAllCounterMetas().get(0).getCounterProperties();
 
         assertThat(counterProperties).isNotNull();
         assertThat(counterProperties.getFqcn()).isEqualTo(BeanWithSimpleCounter.class.getCanonicalName());
@@ -291,7 +290,7 @@ public class EntityParserTest {
         initEntityParsingContext(ClusteredEntity.class);
         EntityMeta meta = parser.parseEntity(entityContext);
 
-        assertThat(meta.isClusteredEntity()).isTrue();
+        assertThat(meta.structure().isClusteredEntity()).isTrue();
 
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.getIdMeta().<EmbeddedKey>getValueClass()).isEqualTo(EmbeddedKey.class);
@@ -299,7 +298,7 @@ public class EntityParserTest {
         assertThat(meta.getPropertyMetas()).hasSize(2);
         assertThat(meta.getPropertyMetas().get("id").type()).isEqualTo(EMBEDDED_ID);
         assertThat(meta.getPropertyMetas().get("value").type()).isEqualTo(SIMPLE);
-        assertThat(meta.getPropertyMetas().get("value").isStaticColumn()).isTrue();
+        assertThat(meta.getPropertyMetas().get("value").structure().isStaticColumn()).isTrue();
     }
 
     @Test
@@ -311,7 +310,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         //Then
-        assertThat(meta.getInsertStrategy()).isEqualTo(InsertStrategy.NOT_NULL_FIELDS);
+        assertThat(meta.config().getInsertStrategy()).isEqualTo(InsertStrategy.NOT_NULL_FIELDS);
 
     }
 
@@ -323,7 +322,7 @@ public class EntityParserTest {
         configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("BeanWithClusteredId", true));
         EntityMeta meta = parser.parseEntity(entityContext);
 
-        assertThat(meta.isSchemaUpdateEnabled()).isTrue();
+        assertThat(meta.config().isSchemaUpdateEnabled()).isTrue();
     }
 
     private <T> void initEntityParsingContext(Class<T> entityClass) {

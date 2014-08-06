@@ -32,7 +32,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
@@ -84,7 +84,7 @@ public class StateHolderFacadeTest {
         PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors().build();
         PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Counter.class).field("count").accessors().build();
 
-        when(meta.isClusteredCounter()).thenReturn(true);
+        when(meta.structure().isClusteredCounter()).thenReturn(true);
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(meta.getAllMetasExceptCounters()).thenReturn(asList(nameMeta));
 

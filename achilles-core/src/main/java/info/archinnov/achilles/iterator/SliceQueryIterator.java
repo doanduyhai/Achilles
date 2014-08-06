@@ -62,14 +62,14 @@ public class SliceQueryIterator<T> implements Iterator<T> {
         T clusteredEntity = null;
         Row row = iterator.next();
         if (row != null) {
-            clusteredEntity = meta.instanciate();
+            clusteredEntity = meta.forOperations().instanciate();
             if (context.getStateHolderFacade().isClusteredCounter()) {
                 mapper.setValuesToClusteredCounterEntity(row, meta, clusteredEntity);
                 mapper.setPropertyToEntity(row, meta, meta.getIdMeta(), clusteredEntity);
             } else {
                 mapper.setNonCounterPropertiesToEntity(row, meta, clusteredEntity);
             }
-            meta.intercept(clusteredEntity, Event.POST_LOAD);
+            meta.forInterception().intercept(clusteredEntity, Event.POST_LOAD);
             clusteredEntity = proxify(clusteredEntity);
         }
         return clusteredEntity;

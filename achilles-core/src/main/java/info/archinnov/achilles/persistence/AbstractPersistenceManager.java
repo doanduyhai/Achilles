@@ -16,6 +16,19 @@
 
 package info.archinnov.achilles.persistence;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
+import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
+import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
+import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select;
@@ -38,19 +51,6 @@ import info.archinnov.achilles.query.typed.TypedQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 
 abstract class AbstractPersistenceManager {
 
@@ -165,7 +165,7 @@ abstract class AbstractPersistenceManager {
         Validator.validateNotNull(entityClass,"The entityClass should be provided for slice query");
         EntityMeta meta = entityMetaMap.get(entityClass);
         Validator.validateNotNull(meta, "The entity '%s' is not managed by achilles", entityClass.getName());
-        Validator.validateTrue(meta.isClusteredEntity(),"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",meta.getClassName());
+        Validator.validateTrue(meta.structure().isClusteredEntity(),"Cannot perform slice query on entity type '%s' because it is " + "not a clustered entity",meta.getClassName());
         return new SliceQueryBuilder<>(sliceQueryExecutor, entityClass, meta);
     }
 
@@ -198,13 +198,13 @@ abstract class AbstractPersistenceManager {
     protected <T> TypedQuery<T> indexedQuery(Class<T> entityClass, IndexCondition indexCondition) {
         EntityMeta entityMeta = entityMetaMap.get(entityClass);
 
-        Validator.validateFalse(entityMeta.isClusteredEntity(), "Index query is not supported for clustered entity. Please use typed query/native query");
+        Validator.validateFalse(entityMeta.structure().isClusteredEntity(), "Index query is not supported for clustered entity. Please use typed query/native query");
         Validator.validateNotNull(indexCondition, "Index condition should not be null");
 
-        entityMeta.encodeIndexConditionValue(indexCondition);
+        entityMeta.forTranscoding().encodeIndexConditionValue(indexCondition);
 
         String indexColumnName = indexCondition.getColumnName();
-        final Select.Where statement = select().from(entityMeta.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
+        final Select.Where statement = select().from(entityMeta.config().getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
         return this.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
     }
 

@@ -102,7 +102,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
             case COUNTER:
                 if (rawValue == null) {
                     final Counter counter = InternalCounterBuilder.initialValue(null);
-                    propertyMeta.setValueToField(target, counter);
+                    propertyMeta.forValues().setValueToField(target, counter);
                 }
                 result = rawValue;
                 break;
@@ -196,8 +196,7 @@ public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializabl
         if (args.length > 0) {
             value = args[0];
         }
-        propertyMeta.setValueToField(obj, value);
-        propertyMeta.setValueToField(target, value);
+        propertyMeta.forValues().setValueToField(target, value);
     }
 
     @Override

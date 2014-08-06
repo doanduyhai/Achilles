@@ -90,7 +90,7 @@ public class SliceQueryProperties<T> {
         this.entityMeta = entityMeta;
         this.entityClass = entityClass;
         this.sliceType = sliceType;
-        this.clusteringOrder = entityMeta.getClusteringOrders().get(0);
+        this.clusteringOrder = entityMeta.forSliceQuery().getClusteringOrderForSliceQuery();
     }
 
     public static <T> SliceQueryProperties<T> builder(EntityMeta entityMeta, Class<T> entityClass, SliceType sliceType) {

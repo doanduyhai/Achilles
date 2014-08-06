@@ -15,15 +15,28 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing;
 
-import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting.DESC;
+import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
-import java.lang.reflect.Method;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.UUID;
+
+import info.archinnov.achilles.internal.metadata.holder.ClusteringComponents;
+import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
+import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
+import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyChild2;
+import info.archinnov.achilles.test.parser.entity.EmbeddedKeyParent;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
@@ -40,7 +53,6 @@ import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNegativeOrder;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithNoAnnotation;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithOnlyOneComponent;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithStaticColumn;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKeyWithTimeUUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EmbeddedIdParserTest {
@@ -51,196 +63,307 @@ public class EmbeddedIdParserTest {
     @InjectMocks
     private EmbeddedIdParser parser;
 
+    private PropertyParser propertyParser = new PropertyParser();
+
+    @Mock
+    private EntityParsingContext context;
+
+    @Mock
+    private PropertyParsingContext propertyParsingContext;
+
+    @Captor
+    private ArgumentCaptor<Field> fieldArgumentCaptor;
+
+    @Before
+    public void setUp() {
+        parser = new EmbeddedIdParser(propertyParsingContext);
+    }
+
     @Test
     public void should_parse_embedded_id() throws Exception {
-        Method nameGetter = CorrectEmbeddedKey.class.getMethod("getName");
-        Method nameSetter = CorrectEmbeddedKey.class.getMethod("setName", String.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedKey.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedKey.class);
 
-        Method rankGetter = CorrectEmbeddedKey.class.getMethod("getRank");
-        Method rankSetter = CorrectEmbeddedKey.class.getMethod("setRank", int.class);
+        final Field nameField = CorrectEmbeddedKey.class.getDeclaredField("name");
+        final Field rankField = CorrectEmbeddedKey.class.getDeclaredField("rank");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedKey.class);
 
-        assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter);
-        assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter);
-        assertThat(props.getComponentClasses()).containsExactly(String.class, int.class);
-        assertThat(props.getComponentNames()).containsExactly("name", "rank");
-        assertThat(props.getOrderingComponent()).isEqualTo("rank");
-        assertThat(props.getClusteringComponentNames()).containsExactly("rank");
-        assertThat(props.getClusteringComponentClasses()).containsExactly(int.class);
-        assertThat(props.getPartitionComponentNames()).containsExactly("name");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(String.class);
+        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedKey.class, propertyParser);
+
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(nameField);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("name");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("name");
+
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).containsExactly(int.class);
+        assertThat(clusteringComponents.getComponentFields()).containsExactly(rankField);
+        assertThat(clusteringComponents.getComponentNames()).containsExactly("rank");
+        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("rank");
+        assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("rank", Sorting.ASC));
     }
 
     @Test
     public void should_parse_embedded_id_with_reversed_key() throws Exception {
-        Method nameGetter = CorrectEmbeddedReversedKey.class.getMethod("getName");
-        Method nameSetter = CorrectEmbeddedReversedKey.class.getMethod("setName", String.class);
 
-        Method rankGetter = CorrectEmbeddedReversedKey.class.getMethod("getRank");
-        Method rankSetter = CorrectEmbeddedReversedKey.class.getMethod("setRank", int.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedReversedKey.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) CorrectEmbeddedReversedKey.class);
 
-        Method countGetter = CorrectEmbeddedReversedKey.class.getMethod("getCount");
-        Method countSetter = CorrectEmbeddedReversedKey.class.getMethod("setCount", int.class);
+        final Field nameField = CorrectEmbeddedReversedKey.class.getDeclaredField("name");
+        final Field rankField = CorrectEmbeddedReversedKey.class.getDeclaredField("rank");
+        final Field countField = CorrectEmbeddedReversedKey.class.getDeclaredField("count");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+        when(propertyParsingContext.duplicateForField(countField)).thenReturn(new PropertyParsingContext(context, countField));
 
+        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedReversedKey.class, propertyParser);
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(CorrectEmbeddedReversedKey.class);
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(nameField);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("name");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("name");
 
-        assertThat(props.getComponentGetters()).containsExactly(nameGetter, rankGetter, countGetter);
-        assertThat(props.getComponentSetters()).containsExactly(nameSetter, rankSetter, countSetter);
-        assertThat(props.getComponentClasses()).containsExactly(String.class, int.class, int.class);
-        assertThat(props.getComponentNames()).containsExactly("name", "rank", "count");
-        assertThat(props.getOrderingComponent()).isEqualTo("rank");
-        assertThat(props.getClusteringComponentNames()).containsExactly("rank","count");
-        assertThat(props.getClusteringComponentClasses()).containsExactly(int.class,int.class);
-        assertThat(props.getPartitionComponentNames()).containsExactly("name");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(String.class);
-        assertThat(props.getCluseringOrders().get(0).getSorting()).isEqualTo(DESC);
-        assertThat(props.getCluseringOrders().get(1).getSorting()).isEqualTo(DESC);
-    }
-
-    @Test
-    public void should_parse_embedded_id_with_time_uuid() throws Exception {
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyWithTimeUUID.class);
-
-        assertThat(props.getTimeUUIDComponents()).containsExactly("date");
-        assertThat(props.getComponentNames()).containsExactly("date", "ranking");
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).containsExactly(int.class, int.class);
+        assertThat(clusteringComponents.getComponentFields()).containsExactly(rankField, countField);
+        assertThat(clusteringComponents.getComponentNames()).containsExactly("rank", "count");
+        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("rank", "count");
+        assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("rank", Sorting.DESC), new ClusteringOrder("count", Sorting.DESC));
     }
 
     @Test
     public void should_exception_when_embedded_id_incorrect_type() throws Exception {
-        exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The class 'java.util.List' is not a valid component type for the @EmbeddedId class '"
-                + EmbeddedKeyIncorrectType.class.getCanonicalName() + "'");
 
-        parser.parseEmbeddedId(EmbeddedKeyIncorrectType.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyIncorrectType.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyIncorrectType.class);
+
+        final Field nameField = EmbeddedKeyIncorrectType.class.getDeclaredField("name");
+        final Field rankField = EmbeddedKeyIncorrectType.class.getDeclaredField("rank");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(format("The class '%s' is not a valid component type for the @EmbeddedId class '%s'",
+                List.class.getCanonicalName(), EmbeddedKeyIncorrectType.class.getCanonicalName()));
+
+        parser.parseEmbeddedId(EmbeddedKeyIncorrectType.class, propertyParser);
     }
 
     @Test
     public void should_exception_when_embedded_id_wrong_key_order() throws Exception {
-        exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The component ordering is wrong for @EmbeddedId class '"
-                + EmbeddedKeyWithNegativeOrder.class.getCanonicalName() + "'");
 
-        parser.parseEmbeddedId(EmbeddedKeyWithNegativeOrder.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNegativeOrder.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNegativeOrder.class);
+
+        final Field nameField = EmbeddedKeyIncorrectType.class.getDeclaredField("name");
+        final Field rankField = EmbeddedKeyIncorrectType.class.getDeclaredField("rank");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(format("The component ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithNegativeOrder.class.getCanonicalName()));
+
+        parser.parseEmbeddedId(EmbeddedKeyWithNegativeOrder.class, propertyParser);
     }
 
     @Test
     public void should_exception_when_embedded_id_has_no_annotation() throws Exception {
-        exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '"
-                + EmbeddedKeyWithNoAnnotation.class.getCanonicalName() + "'");
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNoAnnotation.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithNoAnnotation.class);
 
-        parser.parseEmbeddedId(EmbeddedKeyWithNoAnnotation.class);
+        final Field nameField = EmbeddedKeyWithNoAnnotation.class.getDeclaredField("name");
+        final Field rankField = EmbeddedKeyWithNoAnnotation.class.getDeclaredField("rank");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(format("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",EmbeddedKeyWithNoAnnotation.class.getCanonicalName()));
+
+        parser.parseEmbeddedId(EmbeddedKeyWithNoAnnotation.class, propertyParser);
     }
 
     @Test
     public void should_exception_when_embedded_id_has_duplicate_order() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithDuplicateOrder.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithDuplicateOrder.class);
+
+        final Field nameField = EmbeddedKeyWithDuplicateOrder.class.getDeclaredField("name");
+        final Field rankField = EmbeddedKeyWithDuplicateOrder.class.getDeclaredField("rank");
+        final Field dateField = EmbeddedKeyWithDuplicateOrder.class.getDeclaredField("date");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+        when(propertyParsingContext.duplicateForField(dateField)).thenReturn(new PropertyParsingContext(context, dateField));
+
         exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(format("The order '1' is duplicated in @EmbeddedId class '%s",EmbeddedKeyWithDuplicateOrder.class.getCanonicalName()));
 
-        exception.expectMessage("The order '1' is duplicated in @EmbeddedId class '"
-                + EmbeddedKeyWithDuplicateOrder.class.getCanonicalName() + "'");
-
-        parser.parseEmbeddedId(EmbeddedKeyWithDuplicateOrder.class);
+        parser.parseEmbeddedId(EmbeddedKeyWithDuplicateOrder.class, propertyParser);
     }
 
 
     @Test
     public void should_exception_when_embedded_id_has_only_one_component() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithOnlyOneComponent.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithOnlyOneComponent.class);
+
+        final Field userField = EmbeddedKeyWithOnlyOneComponent.class.getDeclaredField("userId");
+        when(propertyParsingContext.duplicateForField(userField)).thenReturn(new PropertyParsingContext(context, userField));
+
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '"
-                + EmbeddedKeyWithOnlyOneComponent.class.getCanonicalName() + "'");
-        parser.parseEmbeddedId(EmbeddedKeyWithOnlyOneComponent.class);
+        exception.expectMessage(format("There should be at least 2 fields annotated with @Order for the @EmbeddedId class '%s'",EmbeddedKeyWithOnlyOneComponent.class.getCanonicalName()));
+        parser.parseEmbeddedId(EmbeddedKeyWithOnlyOneComponent.class, propertyParser);
     }
 
     @Test
     public void should_parse_embedded_id_with_compound_partition_key() throws Exception {
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyWithCompoundPartitionKey.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithCompoundPartitionKey.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithCompoundPartitionKey.class);
 
-        assertThat(props.isCompositePartitionKey()).isTrue();
-        assertThat(props.getPartitionComponentNames()).containsExactly("id", "type");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(Long.class, String.class);
+        final Field idField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("id");
+        final Field typeField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("type");
+        final Field dateField = EmbeddedKeyWithCompoundPartitionKey.class.getDeclaredField("date");
+        when(propertyParsingContext.duplicateForField(idField)).thenReturn(new PropertyParsingContext(context, idField));
+        when(propertyParsingContext.duplicateForField(typeField)).thenReturn(new PropertyParsingContext(context, typeField));
+        when(propertyParsingContext.duplicateForField(dateField)).thenReturn(new PropertyParsingContext(context, dateField));
 
-        assertThat(props.getClusteringComponentNames()).containsExactly("date");
-        assertThat(props.getClusteringComponentClasses()).containsExactly(UUID.class);
+        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyWithCompoundPartitionKey.class, propertyParser);
 
-        assertThat(props.getComponentClasses()).containsExactly(Long.class, String.class, UUID.class);
-        assertThat(props.getComponentNames()).containsExactly("id", "type", "date");
-        assertThat(props.getComponentGetters()).hasSize(3);
-        assertThat(props.getComponentSetters()).hasSize(3);
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(idField, typeField);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("id", "type");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("id", "type");
+
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).containsExactly(UUID.class);
+        assertThat(clusteringComponents.getComponentFields()).containsExactly(dateField);
+        assertThat(clusteringComponents.getComponentNames()).containsExactly("date");
+        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("date");
+        assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("date", Sorting.ASC));
+
     }
 
     @Test
     public void should_exception_when_embedded_id_has_inconsistent_compound_partition_key() throws Exception {
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithInconsistentCompoundPartitionKey.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithInconsistentCompoundPartitionKey.class);
+
+        final Field idField = EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getDeclaredField("id");
+        final Field typeField = EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getDeclaredField("type");
+        final Field dateField = EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getDeclaredField("date");
+        when(propertyParsingContext.duplicateForField(idField)).thenReturn(new PropertyParsingContext(context, idField));
+        when(propertyParsingContext.duplicateForField(typeField)).thenReturn(new PropertyParsingContext(context, typeField));
+        when(propertyParsingContext.duplicateForField(dateField)).thenReturn(new PropertyParsingContext(context, dateField));
+
+
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The composite partition key ordering is wrong for @EmbeddedId class '"
-                + EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName() + "'");
-        parser.parseEmbeddedId(EmbeddedKeyWithInconsistentCompoundPartitionKey.class);
+        exception.expectMessage(format("The composite partition key ordering is wrong for @EmbeddedId class '%s'",EmbeddedKeyWithInconsistentCompoundPartitionKey.class.getCanonicalName()));
+        parser.parseEmbeddedId(EmbeddedKeyWithInconsistentCompoundPartitionKey.class, propertyParser);
     }
 
     @Test
     public void should_exception_when_embedded_id_has_static_column() throws Exception {
-        exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(String.format("The property 'rank' of class '%s' cannot be a static column because it belongs to the primary key"
-                ,EmbeddedKeyWithStaticColumn.class.getCanonicalName()));
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithStaticColumn.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyWithStaticColumn.class);
 
-        parser.parseEmbeddedId(EmbeddedKeyWithStaticColumn.class);
+        final Field nameField = EmbeddedKeyWithStaticColumn.class.getDeclaredField("name");
+        final Field rankField = EmbeddedKeyWithStaticColumn.class.getDeclaredField("rank");
+        when(propertyParsingContext.duplicateForField(nameField)).thenReturn(new PropertyParsingContext(context, nameField));
+        when(propertyParsingContext.duplicateForField(rankField)).thenReturn(new PropertyParsingContext(context, rankField));
+
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage(format("The property 'rank' of class '%s' cannot be a static column because it belongs to the primary key", EmbeddedKeyWithStaticColumn.class.getCanonicalName()));
+
+        parser.parseEmbeddedId(EmbeddedKeyWithStaticColumn.class, propertyParser);
     }
 
     @Test
     public void should_parse_embedded_id_as_compound_partition_key() throws Exception {
 
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyAsCompoundPartitionKey.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyAsCompoundPartitionKey.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyAsCompoundPartitionKey.class);
 
-        assertThat(props.isCompositePartitionKey()).isTrue();
-        assertThat(props.getPartitionComponentNames()).containsExactly("id", "type");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(Long.class, String.class);
+        final Field idField = EmbeddedKeyAsCompoundPartitionKey.class.getDeclaredField("id");
+        final Field typeField = EmbeddedKeyAsCompoundPartitionKey.class.getDeclaredField("type");
+        when(propertyParsingContext.duplicateForField(idField)).thenReturn(new PropertyParsingContext(context, idField));
+        when(propertyParsingContext.duplicateForField(typeField)).thenReturn(new PropertyParsingContext(context, typeField));
 
-        assertThat(props.getClusteringComponentNames()).isEmpty();
-        assertThat(props.getClusteringComponentClasses()).isEmpty();
+        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyAsCompoundPartitionKey.class, propertyParser);
 
-        assertThat(props.getComponentClasses()).containsExactly(Long.class, String.class);
-        assertThat(props.getComponentNames()).containsExactly("id", "type");
-        assertThat(props.getComponentGetters()).hasSize(2);
-        assertThat(props.getComponentSetters()).hasSize(2);
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(Long.class, String.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(idField, typeField);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("id", "type");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("id", "type");
+
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).isEmpty();
+        assertThat(clusteringComponents.getComponentFields()).isEmpty();
+        assertThat(clusteringComponents.getComponentNames()).isEmpty();
+        assertThat(clusteringComponents.getCQL3ComponentNames()).isEmpty();
+        assertThat(clusteringComponents.getClusteringOrders()).isEmpty();
     }
 
     @Test
     public void should_parse_embedded_key_with_inheritance() throws Exception {
         //When
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild1.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild1.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild1.class);
+
+        final Field partitionKeyField = EmbeddedKeyParent.class.getDeclaredField("partitionKey");
+        final Field clusteringKeyField = EmbeddedKeyChild1.class.getDeclaredField("clustering");
+        when(propertyParsingContext.duplicateForField(partitionKeyField)).thenReturn(new PropertyParsingContext(context, partitionKeyField));
+        when(propertyParsingContext.duplicateForField(clusteringKeyField)).thenReturn(new PropertyParsingContext(context, clusteringKeyField));
+
+        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild1.class, propertyParser);
 
         //Then
-        assertThat(props.isCompositePartitionKey()).isFalse();
-        assertThat(props.getPartitionComponentNames()).containsExactly("partition_key");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(String.class);
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(partitionKeyField);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("partition_key");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("partition_key");
 
-        assertThat(props.getClusteringComponentNames()).containsExactly("clustering");
-        assertThat(props.getClusteringComponentClasses()).containsExactly(Long.class);
-
-        assertThat(props.getComponentClasses()).containsExactly(String.class, Long.class);
-        assertThat(props.getComponentNames()).containsExactly("partition_key", "clustering");
-        assertThat(props.getComponentGetters()).hasSize(2);
-        assertThat(props.getComponentSetters()).hasSize(2);
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).containsExactly(Long.class);
+        assertThat(clusteringComponents.getComponentFields()).containsExactly(clusteringKeyField);
+        assertThat(clusteringComponents.getComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("clustering_key", Sorting.ASC));
     }
 
     @Test
     public void should_parse_embedded_key_with_complicated_inheritance() throws Exception {
         //When
-        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild3.class);
+        when(context.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild3.class);
+        when(propertyParsingContext.getCurrentEntityClass()).thenReturn((Class) EmbeddedKeyChild3.class);
+
+        final Field partitionKey1Field = EmbeddedKeyParent.class.getDeclaredField("partitionKey");
+        final Field partitionKey2Field = EmbeddedKeyChild2.class.getDeclaredField("partitionKey2");
+        final Field clusteringKeyField = EmbeddedKeyChild3.class.getDeclaredField("clustering");
+        when(propertyParsingContext.duplicateForField(partitionKey1Field)).thenReturn(new PropertyParsingContext(context, partitionKey1Field));
+        when(propertyParsingContext.duplicateForField(partitionKey2Field)).thenReturn(new PropertyParsingContext(context, partitionKey2Field));
+        when(propertyParsingContext.duplicateForField(clusteringKeyField)).thenReturn(new PropertyParsingContext(context, clusteringKeyField));
+
+        EmbeddedIdProperties props = parser.parseEmbeddedId(EmbeddedKeyChild3.class, propertyParser);
 
         //Then
-        assertThat(props.isCompositePartitionKey()).isTrue();
-        assertThat(props.getPartitionComponentNames()).containsExactly("partition_key", "partition_key2");
-        assertThat(props.getPartitionComponentClasses()).containsExactly(String.class, Long.class);
+        final PartitionComponents partitionComponents = props.getPartitionComponents();
+        assertThat(partitionComponents.getComponentClasses()).containsExactly(String.class, Long.class);
+        assertThat(partitionComponents.getComponentFields()).containsExactly(partitionKey1Field, partitionKey2Field);
+        assertThat(partitionComponents.getComponentNames()).containsExactly("partition_key", "partition_key2");
+        assertThat(partitionComponents.getCQL3ComponentNames()).containsExactly("partition_key", "partition_key2");
 
-        assertThat(props.getClusteringComponentNames()).containsExactly("clustering");
-        assertThat(props.getClusteringComponentClasses()).containsExactly(UUID.class);
-
-        assertThat(props.getComponentClasses()).containsExactly(String.class, Long.class, UUID.class);
-        assertThat(props.getComponentNames()).containsExactly("partition_key", "partition_key2", "clustering");
-        assertThat(props.getComponentGetters()).hasSize(3);
-        assertThat(props.getComponentSetters()).hasSize(3);
+        final ClusteringComponents clusteringComponents = props.getClusteringComponents();
+        assertThat(clusteringComponents.getComponentClasses()).containsExactly(UUID.class);
+        assertThat(clusteringComponents.getComponentFields()).containsExactly(clusteringKeyField);
+        assertThat(clusteringComponents.getComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getCQL3ComponentNames()).containsExactly("clustering_key");
+        assertThat(clusteringComponents.getClusteringOrders()).containsExactly(new ClusteringOrder("clustering_key", Sorting.ASC));
     }
 
 }

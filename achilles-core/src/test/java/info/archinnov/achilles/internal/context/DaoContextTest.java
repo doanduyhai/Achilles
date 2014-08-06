@@ -33,6 +33,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,7 +84,7 @@ import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrappe
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
@@ -175,10 +176,9 @@ public class DaoContextTest {
         daoContext.statementGenerator = statementGenerator;
         daoContext.overrider = overrider;
         clusteredCounterQueryMap.clear();
-        entityMeta = new EntityMeta();
-        entityMeta.setEntityClass(CompleteBean.class);
-        entityMeta.setConsistencyLevels(Pair.create(ONE, EACH_QUORUM));
-
+        entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(entityMeta.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
+        when(entityMeta.config().getConsistencyLevels()).thenReturn(Pair.create(ONE, EACH_QUORUM));
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntity()).thenReturn(entity);
@@ -192,7 +192,7 @@ public class DaoContextTest {
     @Test
     public void should_push_insert() throws Exception {
         // Given
-        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
+//        entityMeta.setConsistencyLevels(Pair.create(ONE, ALL));
         List<PropertyMeta> pms = new ArrayList<>();
 
         when(cacheManager.getCacheForEntityInsert(session, dynamicPSCache, context, pms)).thenReturn(ps);
@@ -320,10 +320,11 @@ public class DaoContextTest {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        EntityMeta entityMeta = mock(EntityMeta.class);
+        EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
 
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).build();
 
+        when(entityMeta.structure().hasOnlyStaticColumns()).thenReturn(false);
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(entityMeta.getAllMetasExceptId()).thenReturn(asList(pm));
@@ -343,13 +344,13 @@ public class DaoContextTest {
     @Test
     public void should_load_property() throws Exception {
         // Given
-        PropertyMeta pm = mock(PropertyMeta.class);
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
 
         // When
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
-        when(pm.isStaticColumn()).thenReturn(true);
+        when(pm.structure().isStaticColumn()).thenReturn(true);
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(resultSet.all()).thenReturn(asList(row));
@@ -365,10 +366,10 @@ public class DaoContextTest {
     public void should_return_null_when_loading_property() throws Exception {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
-        PropertyMeta pm = mock(PropertyMeta.class);
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         // When
-        when(pm.isStaticColumn()).thenReturn(true);
+        when(pm.structure().isStaticColumn()).thenReturn(true);
         when(cacheManager.getCacheForFieldSelect(session, dynamicPSCache, context, pm)).thenReturn(ps);
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
@@ -518,9 +519,9 @@ public class DaoContextTest {
     @Test
     public void should_get_clustered_counter_column() throws Exception {
         // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
-        when(counterMeta.isStaticColumn()).thenReturn(true);
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
+        when(counterMeta.structure().isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
@@ -543,9 +544,9 @@ public class DaoContextTest {
     @Test
     public void should_get_null_clustered_counter_column() throws Exception {
         // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
-        when(counterMeta.isStaticColumn()).thenReturn(true);
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
+        when(counterMeta.structure().isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
@@ -568,9 +569,9 @@ public class DaoContextTest {
     @Test
     public void should_get_null_clustered_counter_column_when_not_found() throws Exception {
         // Given
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
-        when(counterMeta.getPropertyName()).thenReturn("counter");
-        when(counterMeta.isStaticColumn()).thenReturn(true);
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(counterMeta.getCQL3ColumnName()).thenReturn("counter");
+        when(counterMeta.structure().isStaticColumn()).thenReturn(true);
 
         ResultSet resultSet = mock(ResultSet.class);
 

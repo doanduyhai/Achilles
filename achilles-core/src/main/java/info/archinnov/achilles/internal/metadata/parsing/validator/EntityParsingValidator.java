@@ -19,15 +19,12 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.COUN
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
 import static info.archinnov.achilles.internal.validation.Validator.validateBeanMappingTrue;
 import java.util.Collection;
-import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 public class EntityParsingValidator {
@@ -46,10 +43,10 @@ public class EntityParsingValidator {
         final Collection<PropertyMeta> propertyMetas = entityMeta.getPropertyMetas().values();
         final int staticColumnsCount = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).size();
         if (staticColumnsCount>0) {
-            validateBeanMappingTrue(idMeta.isClustered(), "The entity class '%s' cannot have a static column because it does not declare any clustering column", className);
+            validateBeanMappingTrue(idMeta.structure().isClustered(), "The entity class '%s' cannot have a static column because it does not declare any clustering column", className);
         }
 
-        if (entityMeta.isClusteredCounter()) {
+        if (entityMeta.structure().isClusteredCounter()) {
             final int staticCountersCount = FluentIterable.from(propertyMetas).filter(STATIC_COLUMN_FILTER).filter(COUNTER_COLUMN_FILTER).size();
             final int propertyMetasCount = entityMeta.getAllMetasExceptId().size();
             Validator.validateBeanMappingFalse(staticCountersCount == propertyMetasCount,"The entity class '%s' is a clustered counter and thus cannot have only static counter column", className);

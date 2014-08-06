@@ -49,68 +49,68 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
     protected void withPartitionComponentsInternal(Object... partitionKeyComponents) {
         log.trace("Add partition key components {}", partitionKeyComponents);
         Validator.validateNotEmpty(partitionKeyComponents, "Partition key components should not be empty");
-        meta.validatePartitionComponents(partitionKeyComponents);
+        meta.forSliceQuery().validatePartitionComponents(partitionKeyComponents);
         SliceQueryRoot.this.properties.partitionKeys(asList(partitionKeyComponents));
-        SliceQueryRoot.this.properties.partitionKeysName(meta.getPartitionKeysName(partitionKeyComponents.length));
+        SliceQueryRoot.this.properties.partitionKeysName(meta.forSliceQuery().getPartitionKeysName(partitionKeyComponents.length));
     }
 
     protected void withPartitionComponentsINInternal(Object... partitionKeyComponentsIn) {
         log.trace("Add partition key components for IN clause {}", partitionKeyComponentsIn);
 
-        meta.validatePartitionComponentsIn(partitionKeyComponentsIn);
+        meta.forSliceQuery().validatePartitionComponentsIn(partitionKeyComponentsIn);
         SliceQueryRoot.this.properties.partitionKeysIn(asList(partitionKeyComponentsIn));
-        SliceQueryRoot.this.properties.lastPartitionKeyName(meta.getLastPartitionKeyName());
+        SliceQueryRoot.this.properties.lastPartitionKeyName(meta.forSliceQuery().getLastPartitionKeyName());
     }
 
     protected void andPartitionKeysINInternal(Object... partitionKeyComponentsIn) {
         log.trace("Add partition key components for IN clause {}", partitionKeyComponentsIn);
 
         final List<Object> partitionKeys = SliceQueryRoot.this.properties.getPartitionKeys();
-        final int correctPartitionKeysSize = this.meta.getPartitionKeysSize() - 1;
+        final int correctPartitionKeysSize = this.meta.forSliceQuery().getPartitionKeysSize() - 1;
 
         Validator.validateNotEmpty(partitionKeys, "Before adding partition key components for IN clause, you should define first partition key components for query using withPartitionKeys(Object... partitionKeyComponentsIn)");
         Validator.validateNotEmpty(partitionKeyComponentsIn, "Partition key components for IN clause should not be empty");
         Validator.validateTrue(partitionKeys.size() == correctPartitionKeysSize, "To use the IN clause, you must provide '%s' partition keys components first", correctPartitionKeysSize);
 
-        meta.validatePartitionComponentsIn(partitionKeyComponentsIn);
+        meta.forSliceQuery().validatePartitionComponentsIn(partitionKeyComponentsIn);
         SliceQueryRoot.this.properties.partitionKeysIn(asList(partitionKeyComponentsIn));
-        SliceQueryRoot.this.properties.lastPartitionKeyName(meta.getLastPartitionKeyName());
+        SliceQueryRoot.this.properties.lastPartitionKeyName(meta.forSliceQuery().getLastPartitionKeyName());
     }
 
     protected void fromClusteringsInternal(Object... clusteringKeys) {
         log.trace("Add from clustering components {}", clusteringKeys);
         Validator.validateNotEmpty(clusteringKeys, "Clustering key components should not be empty");
-        meta.validateClusteringComponents(clusteringKeys);
+        meta.forSliceQuery().validateClusteringComponents(clusteringKeys);
         SliceQueryRoot.this.properties.fromClusteringKeys(asList(clusteringKeys));
-        SliceQueryRoot.this.properties.fromClusteringKeysName(meta.getClusteringKeysName(clusteringKeys.length));
+        SliceQueryRoot.this.properties.fromClusteringKeysName(meta.forSliceQuery().getClusteringKeysName(clusteringKeys.length));
     }
 
     protected void toClusteringsInternal(Object... clusteringKeys) {
         log.trace("Add to clustering components {}", clusteringKeys);
         Validator.validateNotEmpty(clusteringKeys, "Clustering key components should not be empty");
-        meta.validateClusteringComponents(clusteringKeys);
+        meta.forSliceQuery().validateClusteringComponents(clusteringKeys);
         SliceQueryRoot.this.properties.toClusteringKeys(asList(clusteringKeys));
-        SliceQueryRoot.this.properties.toClusteringKeysName(meta.getClusteringKeysName(clusteringKeys.length));
+        SliceQueryRoot.this.properties.toClusteringKeysName(meta.forSliceQuery().getClusteringKeysName(clusteringKeys.length));
     }
 
     protected void withClusteringsInternal(Object... clusteringKeys) {
         Validator.validateNotEmpty(clusteringKeys, "Clustering key components should not be empty");
-        meta.validateClusteringComponents(clusteringKeys);
+        meta.forSliceQuery().validateClusteringComponents(clusteringKeys);
         SliceQueryRoot.this.properties.withClusteringKeys(asList(clusteringKeys));
-        SliceQueryRoot.this.properties.withClusteringKeysName(meta.getClusteringKeysName(clusteringKeys.length));
+        SliceQueryRoot.this.properties.withClusteringKeysName(meta.forSliceQuery().getClusteringKeysName(clusteringKeys.length));
     }
 
     protected void andClusteringsInInternal(Object... clusteringKeys) {
         final List<Object> withClusteringKeys = SliceQueryRoot.this.properties.getWithClusteringKeys();
-        final int correctWithClusteringKeysSize = this.meta.getClusteringKeysSize() - 1;
+        final int correctWithClusteringKeysSize = this.meta.forSliceQuery().getClusteringKeysSize() - 1;
 
         Validator.validateNotEmpty(withClusteringKeys, "Before adding clustering key components for IN clause, you should define first clustering key components for query using withClusteringKeys(Object... partitionKeys)");
         Validator.validateNotEmpty(clusteringKeys, "Clustering key components for IN clause should not be empty");
         Validator.validateTrue(withClusteringKeys.size() == correctWithClusteringKeysSize, "To use the IN clause, you must provide '%s' clustering keys components first", correctWithClusteringKeysSize);
 
-        meta.validateClusteringComponentsIn(clusteringKeys);
+        meta.forSliceQuery().validateClusteringComponentsIn(clusteringKeys);
         SliceQueryRoot.this.properties.andClusteringKeysIn(asList(clusteringKeys));
-        SliceQueryRoot.this.properties.lastClusteringKeyName(meta.getLastClusteringKeyName());
+        SliceQueryRoot.this.properties.lastClusteringKeyName(meta.forSliceQuery().getLastClusteringKeyName());
     }
 
     /**

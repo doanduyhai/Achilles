@@ -23,7 +23,7 @@ import info.archinnov.achilles.annotations.Order;
 public class EmbeddedKeyChild3 extends EmbeddedKeyChild2 {
 
     @Order(3)
-    @Column(name = "clustering")
+    @Column(name = "clustering_key")
     private UUID clustering;
 
     public UUID getClustering() {

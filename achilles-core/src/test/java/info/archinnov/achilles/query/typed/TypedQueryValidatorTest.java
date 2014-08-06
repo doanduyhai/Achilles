@@ -17,53 +17,65 @@ package info.archinnov.achilles.query.typed;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static java.lang.String.format;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.internal.statement.wrapper.RegularStatementWrapper;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TypedQueryValidatorTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private EntityMeta meta;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private PropertyMeta idMeta;
+
     private TypedQueryValidator validator = new TypedQueryValidator();
+
+    @Before
+    public void setUp() {
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.config().getTableName()).thenReturn("table");
+    }
 
     @Test
     public void should_exception_when_wrong_table() throws Exception {
-        EntityMeta meta = new EntityMeta();
-        meta.setPropertyMetas(new HashMap<String, PropertyMeta>());
-        meta.setTableName("table");
-
         final RegularStatement statement = select().from("test").where(eq("id",10L));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [SELECT * FROM test WHERE id=10;] should contain the ' from table' clause if type is '"
-                + CompleteBean.class.getCanonicalName() + "'");
+        exception.expectMessage(format("The typed query [SELECT * FROM test WHERE id=10;] should contain the ' from table' clause if type is '%s'", CompleteBean.class.getCanonicalName()));
 
         validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
     }
 
     @Test
     public void should_exception_when_missing_id_column() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
 
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
+        when(meta.getIdMeta()).thenReturn(idMeta);
 
         final RegularStatement statement = select("name","age").from("table").where(eq("col", 10L));
 
@@ -74,59 +86,20 @@ public class TypedQueryValidatorTest {
     }
 
     @Test
-    public void should_exception_when_missing_component_column_for_embedded_id() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
-                .type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-
-        final RegularStatement statement = select("id","age").from("table").where(eq("id", 10L));
-
-        exception.expect(AchillesException.class);
-        exception.expectMessage("The typed query [select id,age from table where id=10;] should contain the component column 'name' for embedded id type '"
-                + EmbeddedKey.class.getCanonicalName() + "'");
-
-        validator.validateTypedQuery(CompleteBean.class, statement, meta);
-    }
-
-    @Test
     public void should_skip_id_column_validation_when_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
-                .type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
 
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
+        when(meta.getIdMeta()).thenReturn(idMeta);
 
         final RegularStatement statement = select().from("table").where(eq("id",10L));
 
         validator.validateTypedQuery(CompleteBean.class, statement, meta);
     }
 
-    @Test
-    public void should_skip_component_column_validation_when_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, EmbeddedKey.class).field("id")
-                .type(PropertyType.EMBEDDED_ID).compNames("id", "name").build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setAllMetasExceptIdAndCounters(new ArrayList<PropertyMeta>());
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-
-        final RegularStatement statement = select().from("table").where(eq("id", 10L));
-
-        validator.validateTypedQuery(CompleteBean.class, statement, meta);
-    }
 
     @Test(expected = AchillesException.class)
     public void should_exception_when_not_SELECT_statement() throws Exception {
         //Given
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
         RegularStatement statement = QueryBuilder.insertInto("test");
 
         //When

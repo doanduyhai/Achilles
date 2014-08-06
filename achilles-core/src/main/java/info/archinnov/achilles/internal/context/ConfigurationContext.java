@@ -142,7 +142,7 @@ public class ConfigurationContext {
         if (beanValidationInterceptor == null) {
             beanValidationInterceptor = new DefaultBeanValidationInterceptor(beanValidator);
         }
-        meta.addInterceptor(beanValidationInterceptor);
+        meta.forInterception().addInterceptor(beanValidationInterceptor);
     }
 
     public ConsistencyLevel getReadConsistencyLevelForTable(String tableName) {

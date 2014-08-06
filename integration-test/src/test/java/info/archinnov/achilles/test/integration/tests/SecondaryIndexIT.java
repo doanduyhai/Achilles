@@ -74,7 +74,7 @@ public class SecondaryIndexIT {
         manager.insert(entity3);
 
         //When
-        IndexCondition condition = new IndexCondition("consistencyLevel", EACH_QUORUM);
+        IndexCondition condition = new IndexCondition("consistencylevel", EACH_QUORUM);
         final List<EntityWithSecondaryIndexOnEnum> actual = manager.indexedQuery(EntityWithSecondaryIndexOnEnum.class, condition).get();
 
         //Then

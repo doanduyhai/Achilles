@@ -25,6 +25,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
@@ -46,10 +47,10 @@ public class ConsistencyOverriderTest {
     @Mock
     private PersistenceContext.StateHolderFacade context;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta pm;
 
     private static final Optional<ConsistencyLevel> NO_CONSISTENCY = Optional.absent();
@@ -103,7 +104,7 @@ public class ConsistencyOverriderTest {
         //Given
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getConsistencyLevel()).thenReturn(NO_CONSISTENCY);
-        when(meta.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+        when(meta.config().getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
         final ConsistencyLevel actual = overrider.getReadLevel(context);
@@ -117,7 +118,7 @@ public class ConsistencyOverriderTest {
         //Given
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getConsistencyLevel()).thenReturn(fromNullable(EACH_QUORUM));
-        when(meta.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+        when(meta.config().getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
         final ConsistencyLevel actual = overrider.getWriteLevel(context);
@@ -131,7 +132,7 @@ public class ConsistencyOverriderTest {
         //Given
         when(context.getConsistencyLevel()).thenReturn(NO_CONSISTENCY);
         when(context.getEntityMeta()).thenReturn(meta);
-        when(meta.getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+        when(meta.config().getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
         final ConsistencyLevel actual = overrider.getWriteLevel(context);
@@ -157,7 +158,7 @@ public class ConsistencyOverriderTest {
     public void should_get_read_level_from_property_meta() throws Exception {
         //Given
         when(context.getConsistencyLevel()).thenReturn(noOptions.getConsistencyLevel());
-        when(pm.getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+        when(pm.structure().getReadConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
         final ConsistencyLevel actual = overrider.getReadLevel(context, pm);
@@ -182,7 +183,7 @@ public class ConsistencyOverriderTest {
     public void should_get_write_level_from_property_meta() throws Exception {
         //Given
         when(context.getConsistencyLevel()).thenReturn(noOptions.getConsistencyLevel());
-        when(pm.getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
+        when(pm.structure().getWriteConsistencyLevel()).thenReturn(LOCAL_QUORUM);
 
         //When
         final ConsistencyLevel actual = overrider.getWriteLevel(context, pm);

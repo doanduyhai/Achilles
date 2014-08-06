@@ -32,7 +32,7 @@ public class CounterPersister {
         log.trace("Persisting counters using PersistenceContext {}", context);
         Object entity = context.getEntity();
         for (PropertyMeta counterMeta : counterMetas) {
-            Object counter = counterMeta.getValueFromField(entity);
+            Object counter = counterMeta.forValues().getValueFromField(entity);
             if (counter != null) {
 
                 final long counterDelta = retrieveCounterValue(counter);
@@ -50,7 +50,7 @@ public class CounterPersister {
         int nullCount = 0;
         final List<PropertyMeta> allCountersMeta = context.getAllCountersMeta();
         for (PropertyMeta counterMeta : allCountersMeta) {
-            Object counter = counterMeta.getValueFromField(entity);
+            Object counter = counterMeta.forValues().getValueFromField(entity);
             if (counter != null) {
 
                 final long counterDelta = retrieveCounterValue(counter);

@@ -418,43 +418,6 @@
                                 </formats>
                                 <maxmem>256m</maxmem>
                                 <aggregate>true</aggregate>
-                                <instrumentation>
-                                    <ignores>
-                                        <ignore>info.archinnov.achilles.test.*</ignore>
-                                        <ignore>info.archinnov.achilles.**.FlushContext</ignore>
-                                        <ignore>info.archinnov.achilles.counter.*</ignore>
-                                        <ignore>info.archinnov.achilles.exception.*</ignore>
-                                        <ignore>info.archinnov.achilles.integration.spring.*JavaConfigSample</ignore>
-                                        <ignore>info.archinnov.achilles.embedded.*</ignore>
-                                        <ignore>info.archinnov.achilles.persistence.*PersistenceManagerFactoryBuilder
-                                        </ignore>
-                                        <ignore>info.archinnov.achilles.type.ConsistencyLevel</ignore>
-                                        <ignore>info.archinnov.achilles.type.Counter*</ignore>
-                                        <ignore>info.archinnov.achilles.type.Index*</ignore>
-                                        <ignore>info.archinnov.achilles.type.OptionsBuilder*</ignore>
-                                        <ignore>info.archinnov.achilles.type.OrderingMode</ignore>
-                                        <ignore>info.archinnov.achilles.type.Pair</ignore>
-                                        <ignore>info.archinnov.achilles.interceptor.*</ignore>
-                                    </ignores>
-                                    <excludes>
-                                        <exclude>info/archinnov/**/*Test.class</exclude>
-                                        <exclude>info/archinnov/achilles/**/FlushContext.class</exclude>
-                                        <exclude>info/archinnov/achilles/counter/*</exclude>
-                                        <exclude>info/archinnov/achilles/exception/*</exclude>
-                                        <exclude>info/archinnov/achilles/integration/spring/*JavaConfigSample.class
-                                        </exclude>
-                                        <exclude>info/archinnov/achilles/embedded/*</exclude>
-                                        <exclude>info/archinnov/achilles/persistence/*PersistenceManagerFactoryBuilder
-                                        </exclude>
-                                        <exclude>info/archinnov/achilles/type/ConsistencyLevel</exclude>
-                                        <exclude>info/archinnov/achilles/type/Counter*</exclude>
-                                        <exclude>info/archinnov/achilles/type/Index*</exclude>
-                                        <exclude>info/archinnov/achilles/type/OptionsBuilder*</exclude>
-                                        <exclude>info/archinnov/achilles/type/OrderingMode</exclude>
-                                        <exclude>info/archinnov/achilles/type/Pair</exclude>
-                                        <exclude>info/archinnov/achilles/interceptor/*</exclude>
-                                    </excludes>
-                                </instrumentation>
                             </configuration>
                         </plugin>
                     </reportPlugins>
@@ -499,24 +462,6 @@
                     </formats>
                     <maxmem>256m</maxmem>
                     <aggregate>true</aggregate>
-                    <instrumentation>
-                        <ignores>
-                            <ignore>info.archinnov.achilles.test.*</ignore>
-                            <ignore>info.archinnov.achilles.**.FlushContext</ignore>
-                            <ignore>info.archinnov.achilles.counter.*</ignore>
-                            <ignore>info.archinnov.achilles.exception.*</ignore>
-                            <ignore>info.archinnov.achilles.integration.spring.*JavaConfigSample</ignore>
-                            <ignore>info.archinnov.achilles.embedded.*</ignore>
-                        </ignores>
-                        <excludes>
-                            <exclude>info/archinnov/**/*Test.class</exclude>
-                            <exclude>info/archinnov/achilles/**/FlushContext.class</exclude>
-                            <exclude>info/archinnov/achilles/counter/*</exclude>
-                            <exclude>info/archinnov/achilles/exception/*</exclude>
-                            <exclude>info/archinnov/achilles/integration/spring/*JavaConfigSample.class</exclude>
-                            <exclude>info/archinnov/achilles/embedded/*</exclude>
-                        </excludes>
-                    </instrumentation>
                 </configuration>
             </plugin>
             <!--<plugin> -->

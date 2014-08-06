@@ -63,7 +63,7 @@ public class SliceQueryIteratorTest {
     @Mock
     private Iterator<Row> iterator;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
     private int batchSize = 99;
 
@@ -98,7 +98,7 @@ public class SliceQueryIteratorTest {
         Row row = mock(Row.class);
 
         when(meta.<ClusteredEntity>getEntityClass()).thenReturn(ClusteredEntity.class);
-        when(meta.instanciate()).thenReturn(entity);
+        when(meta.forOperations().instanciate()).thenReturn(entity);
 
         when(iterator.next()).thenReturn(row);
 
@@ -110,7 +110,7 @@ public class SliceQueryIteratorTest {
         ClusteredEntity actual = sliceIterator.next();
 
         assertThat(actual).isSameAs(entity);
-        verify(meta).intercept(entity, Event.POST_LOAD);
+        verify(meta.forInterception()).intercept(entity, Event.POST_LOAD);
         verify(mapper).setNonCounterPropertiesToEntity(row, meta, entity);
     }
 

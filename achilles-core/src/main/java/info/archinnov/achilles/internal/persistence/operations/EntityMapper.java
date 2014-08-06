@@ -18,6 +18,8 @@ package info.archinnov.achilles.internal.persistence.operations;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -44,35 +46,35 @@ public class EntityMapper {
     public void setPropertyToEntity(Row row, EntityMeta meta,PropertyMeta pm, Object entity) {
         log.debug("Set property {} value from fetched CQL row", pm.getPropertyName());
         if (row != null) {
-            if (pm.isEmbeddedId()) {
-                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, meta, pm, MANAGED);
-                pm.setValueToField(entity, compoundKey);
+            final PropertyMetaRowExtractor rowExtractor = pm.forRowExtraction();
+            if (pm.structure().isEmbeddedId()) {
+                Object compoundKey = rowExtractor.extractCompoundPrimaryKeyFromRow(row, meta, MANAGED);
+                pm.forValues().setValueToField(entity, compoundKey);
             } else {
-                Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
-                pm.setValueToField(entity, value);
+                Object value = rowExtractor.invokeOnRowForFields(row);
+                pm.forValues().setValueToField(entity, value);
             }
         }
     }
 
-    public <T> T mapRowToEntityWithPrimaryKey(EntityMeta meta, Row row,
-            Map<String, PropertyMeta> propertiesMap, EntityState entityState) {
+    public <T> T mapRowToEntityWithPrimaryKey(EntityMeta meta, Row row, Map<String, PropertyMeta> propertiesMap, EntityState entityState) {
         log.debug("Map CQL row to entity of class {}", meta.getClassName());
         T entity = null;
         ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
         if (columnDefinitions != null) {
-            entity = meta.instanciate();
+            entity = meta.forOperations().instanciate();
             for (Definition column : columnDefinitions) {
                 String columnName = column.getName();
                 PropertyMeta pm = propertiesMap.get(columnName);
                 if (pm != null) {
-                    Object value = cqlRowInvoker.invokeOnRowForFields(row, pm);
-                    pm.setValueToField(entity, value);
+                    Object value = pm.forRowExtraction().invokeOnRowForFields(row);
+                    pm.forValues().setValueToField(entity, value);
                 }
             }
             PropertyMeta idMeta = meta.getIdMeta();
-            if (idMeta.isEmbeddedId()) {
-                Object compoundKey = cqlRowInvoker.extractCompoundPrimaryKeyFromRow(row, meta, idMeta, entityState);
-                idMeta.setValueToField(entity, compoundKey);
+            if (idMeta.structure().isEmbeddedId()) {
+                Object compoundKey = idMeta.forRowExtraction().extractCompoundPrimaryKeyFromRow(row, meta, entityState);
+                idMeta.forValues().setValueToField(entity, compoundKey);
             }
         }
         return entity;
@@ -88,12 +90,12 @@ public class EntityMapper {
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Long counterValue) {
         log.debug("Set counter value {} to property {} of entity class {}", counterValue, counterMeta.getPropertyName(), counterMeta.getEntityClassName());
         final Counter counter = InternalCounterBuilder.initialValue(counterValue);
-        counterMeta.setValueToField(entity, counter);
+        counterMeta.forValues().setValueToField(entity, counter);
     }
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Row row) {
         log.debug("Set counter value to property {} of entity class {} from CQL row", counterMeta.getPropertyName(), counterMeta.getEntityClassName());
-        Long counterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getPropertyName());
+        Long counterValue = cqlRowInvoker.invokeOnRowForType(row, Long.class, counterMeta.getCQL3ColumnName());
         setCounterToEntity(counterMeta, entity, counterValue);
     }
 

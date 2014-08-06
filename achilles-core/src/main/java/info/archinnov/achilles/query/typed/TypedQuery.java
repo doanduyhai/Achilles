@@ -42,20 +42,20 @@ public class TypedQuery<T> {
     private final NativeStatementWrapper nativeStatementWrapper;
 
     private DaoContext daoContext;
-    private Map<String, PropertyMeta> propertiesMap;
+    Map<String, PropertyMeta> propertiesMap;
     private EntityMeta meta;
     private PersistenceContextFactory contextFactory;
     private EntityState entityState;
-    private Object[] encodedBoundValues;
+    private Object[] boundValues;
 
-    private EntityMapper mapper = new EntityMapper();
-    private EntityProxifier proxifier = new EntityProxifier();
+    EntityMapper mapper = new EntityMapper();
+    EntityProxifier proxifier = new EntityProxifier();
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, RegularStatement regularStatement, EntityMeta meta,
-            PersistenceContextFactory contextFactory, EntityState entityState, Object[] encodedBoundValues) {
+            PersistenceContextFactory contextFactory, EntityState entityState, Object[] boundValues) {
         this.daoContext = daoContext;
-        this.encodedBoundValues = meta.encodeBoundValuesForTypedQueries(encodedBoundValues);
-        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, regularStatement, this.encodedBoundValues, Optional.<CASResultListener>absent());
+        this.boundValues = boundValues;
+        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, regularStatement, this.boundValues, Optional.<CASResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.entityState = entityState;
@@ -80,7 +80,7 @@ public class TypedQuery<T> {
         for (Row row : rows) {
             T entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
             if (entity != null) {
-                meta.intercept(entity, Event.POST_LOAD);
+                meta.forInterception().intercept(entity, Event.POST_LOAD);
                 if (entityState.isManaged()) {
                     entity = buildProxy(entity);
                 }
@@ -104,7 +104,7 @@ public class TypedQuery<T> {
         Row row = daoContext.execute(nativeStatementWrapper).one();
         if (row != null) {
             entity = mapper.mapRowToEntityWithPrimaryKey(meta, row, propertiesMap, entityState);
-            meta.intercept(entity, Event.POST_LOAD);
+            meta.forInterception().intercept(entity, Event.POST_LOAD);
             if (entity != null && entityState.isManaged()) {
                 entity = buildProxy(entity);
             }
@@ -114,9 +114,9 @@ public class TypedQuery<T> {
 
     private Map<String, PropertyMeta> transformPropertiesMap(EntityMeta meta) {
         Map<String, PropertyMeta> propertiesMap = new HashMap<>();
-        for (Entry<String, PropertyMeta> entry : meta.getPropertyMetas().entrySet()) {
-            String propertyName = entry.getKey().toLowerCase();
-            propertiesMap.put(propertyName, entry.getValue());
+        for (PropertyMeta pm : meta.getPropertyMetas().values()) {
+            String cql3ColumnName = pm.getCQL3ColumnName();
+            propertiesMap.put(cql3ColumnName, pm);
         }
         return propertiesMap;
     }

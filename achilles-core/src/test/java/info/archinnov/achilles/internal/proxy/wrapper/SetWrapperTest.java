@@ -22,7 +22,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +71,7 @@ public class SetWrapperTest {
                 .type(PropertyType.SIMPLE).accessors().build();
 
         entityMeta = new EntityMeta();
-        entityMeta.setIdMeta(idMeta);
+//        entityMeta.setIdMeta(idMeta);
         dirtyMap = new HashMap<>();
     }
 

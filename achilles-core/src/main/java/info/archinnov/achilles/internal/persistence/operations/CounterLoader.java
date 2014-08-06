@@ -35,8 +35,8 @@ public class CounterLoader {
         T entity = null;
         Row row = context.getClusteredCounter();
         if (row != null) {
-            entity = entityMeta.instanciate();
-            entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+            entity = entityMeta.forOperations().instanciate();
+            entityMeta.getIdMeta().forValues().setValueToField(entity, primaryKey);
 
             for (PropertyMeta counterMeta : context.getAllCountersMeta()) {
                 mapper.setCounterToEntity(counterMeta, entity, row);

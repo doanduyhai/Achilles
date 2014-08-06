@@ -15,122 +15,34 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
-import info.archinnov.achilles.internal.validation.Validator;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 
 public class EmbeddedIdProperties extends AbstractComponentProperties {
 
-	private static final Logger log = LoggerFactory.getLogger(EmbeddedIdProperties.class);
+    private final PartitionComponents partitionComponents;
+    private final ClusteringComponents clusteringComponents;
+    final String entityClassName;
 
-	private final PartitionComponents partitionComponents;
-	private final ClusteringComponents clusteringComponents;
-	private final List<String> timeUUIDComponents;
-
-	public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents,
-			List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields,
-			List<Method> componentGetters, List<Method> componentSetters, List<String> timeUUIDComponents) {
-		super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
+    public EmbeddedIdProperties(PartitionComponents partitionComponents, ClusteringComponents clusteringComponents, List<PropertyMeta> keyMetas, String entityClassName) {
+		super(keyMetas);
 		this.partitionComponents = partitionComponents;
 		this.clusteringComponents = clusteringComponents;
-		this.timeUUIDComponents = timeUUIDComponents;
-	}
-
-	void validatePartitionComponents(String className,Object...partitionComponents) {
-		this.partitionComponents.validatePartitionComponents(className, partitionComponents);
-	}
-
-    void validatePartitionComponentsIn(String className,Object...partitionComponents) {
-        this.partitionComponents.validatePartitionComponentsIn(className, partitionComponents);
+        this.entityClassName = entityClassName;
     }
 
-	void validateClusteringComponents(String className, Object...clusteringComponents) {
-		this.clusteringComponents.validateClusteringComponents(className, clusteringComponents);
-	}
-
-    void validateClusteringComponentsIn(String className, Object...clusteringComponents) {
-        this.clusteringComponents.validateClusteringComponentsIn(className, clusteringComponents);
-    }
-
-	String getVaryingComponentNameForQuery(int fixedComponentsSize) {
-		log.trace("Get varying component name for query");
-		if (fixedComponentsSize > 0)
-			return getComponentNames().get(fixedComponentsSize);
-		else
-			return getClusteringComponentNames().get(0);
-	}
-
-	public boolean isCompositePartitionKey() {
-		return partitionComponents.isComposite();
-	}
-
-	public boolean isClustered() {
-		return clusteringComponents.isClustered();
-	}
-
-	public String getOrderingComponent() {
-		return clusteringComponents.getOrderingComponent();
-	}
-
-	public List<ClusteringOrder> getCluseringOrders() {
-		return clusteringComponents.getClusteringOrders();
-	}
-
-	public List<String> getClusteringComponentNames() {
-		return clusteringComponents.getComponentNames();
-	}
-
-	public List<Class<?>> getClusteringComponentClasses() {
-		return clusteringComponents.getComponentClasses();
-	}
-
-	public List<String> getPartitionComponentNames() {
-		return partitionComponents.getComponentNames();
-	}
-
-	public List<Class<?>> getPartitionComponentClasses() {
-		return partitionComponents.getComponentClasses();
-	}
-
-	public List<Field> getPartitionComponentFields() {
-		return partitionComponents.getComponentFields();
-	}
-
-	public List<String> getTimeUUIDComponents() {
-		return timeUUIDComponents;
-	}
 
 	@Override
 	public String toString() {
-
-		return Objects.toStringHelper(this.getClass()).add("partitionComponents", partitionComponents)
-				.add("clusteringComponents", clusteringComponents).toString();
-
+		return Objects.toStringHelper(this.getClass()).add("partitionComponents", partitionComponents).add("clusteringComponents", clusteringComponents).toString();
 	}
 
-	List<Object> extractPartitionComponents(List<Object> components) {
-		log.trace("Extract partition key components from {}", components);
-		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
+    public PartitionComponents getPartitionComponents() {
+        return partitionComponents;
+    }
 
-		Validator.validateTrue(components.size() >= partitionComponentsCount,
-				"Cannot extract composite partition key components from components list '%s'", components);
-		return components.subList(0, partitionComponentsCount);
-	}
-
-	List<Object> extractClusteringComponents(List<Object> components) {
-		log.trace("Extract clustering components from {}", components);
-		int partitionComponentsCount = partitionComponents.getComponentClasses().size();
-
-		Validator.validateTrue(components.size() >= partitionComponentsCount,
-				"Cannot extract clustering components from components list '%s'", components);
-		return components.subList(partitionComponentsCount, components.size());
-	}
+    public ClusteringComponents getClusteringComponents() {
+        return clusteringComponents;
+    }
 }

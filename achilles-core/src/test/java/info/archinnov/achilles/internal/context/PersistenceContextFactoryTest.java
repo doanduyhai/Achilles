@@ -83,7 +83,7 @@ public class PersistenceContextFactoryTest {
         CompleteBean entity = new CompleteBean(primaryKey);
 
         when(proxifier.<CompleteBean>deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-        when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(meta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
 
         PersistenceContext actual = pmf.newContext(entity, OptionsBuilder.withConsistency(EACH_QUORUM).withTtl(95));
 
@@ -101,7 +101,7 @@ public class PersistenceContextFactoryTest {
         CompleteBean entity = new CompleteBean(primaryKey);
 
         when(proxifier.<CompleteBean>deriveBaseClass(entity)).thenReturn(CompleteBean.class);
-        when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(meta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
 
         PersistenceContext actual = pmf.newContext(entity);
 
@@ -132,7 +132,7 @@ public class PersistenceContextFactoryTest {
     public void should_create_new_context_for_slice_query() throws Exception {
         Long primaryKey = RandomUtils.nextLong();
         List<Object> partitionComponents = Arrays.<Object>asList(primaryKey);
-        when(invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta, partitionComponents)).thenReturn(primaryKey);
+        when(idMeta.forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents)).thenReturn(primaryKey);
 
         PersistenceContext actual = pmf.newContextForSliceQuery(CompleteBean.class, partitionComponents, EACH_QUORUM);
 

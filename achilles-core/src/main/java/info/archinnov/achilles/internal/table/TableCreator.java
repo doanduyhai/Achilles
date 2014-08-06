@@ -15,15 +15,15 @@
  */
 package info.archinnov.achilles.internal.table;
 
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
-import static info.archinnov.achilles.schemabuilder.SchemaBuilder.createIndex;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static java.lang.String.format;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +38,6 @@ import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.schemabuilder.Create;
@@ -70,18 +69,18 @@ public class TableCreator {
 
         log.debug("Create table for entity {}", entityMeta);
 
-        String tableName = entityMeta.getTableName().toLowerCase();
+        String tableName = entityMeta.config().getTableName();
         if (configContext.isForceColumnFamilyCreation()) {
             log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
             createTableForEntity(session, entityMeta);
         } else {
-            throw new AchillesInvalidTableException("The required table '" + tableName + "' does not exist for entity '" + entityMeta.getClassName() + "'");
+            throw new AchillesInvalidTableException(format("The required table '%s' does not exist for entity '%s'", tableName, entityMeta.getClassName()));
         }
     }
 
     private void createTableForEntity(Session session, EntityMeta entityMeta) {
         log.debug("Creating table for entityMeta {}", entityMeta.getClassName());
-        if (entityMeta.isClusteredCounter()) {
+        if (entityMeta.structure().isClusteredCounter()) {
             createTableForClusteredCounter(session, entityMeta);
         } else {
             createTable(session, entityMeta);
@@ -92,46 +91,44 @@ public class TableCreator {
         log.debug("Create table for Achilles counters");
 
         if (configContext.isForceColumnFamilyCreation()) {
-            final String createTable = SchemaBuilder.createTable(CQL_COUNTER_TABLE)
-                    .addPartitionKey(CQL_COUNTER_FQCN, DataType.text())
-                    .addPartitionKey(CQL_COUNTER_PRIMARY_KEY, DataType.text())
-                    .addClusteringKey(CQL_COUNTER_PROPERTY_NAME, DataType.text())
-                    .addColumn(CQL_COUNTER_VALUE, DataType.counter())
-                    .withOptions().comment("Create default Achilles counter table \"" + CQL_COUNTER_TABLE + "\"")
+            final String createTable = SchemaBuilder.createTable(ACHILLES_COUNTER_TABLE)
+                    .addPartitionKey(ACHILLES_COUNTER_FQCN, DataType.text())
+                    .addPartitionKey(ACHILLES_COUNTER_PRIMARY_KEY, DataType.text())
+                    .addClusteringKey(ACHILLES_COUNTER_PROPERTY_NAME, DataType.text())
+                    .addColumn(ACHILLES_COUNTER_VALUE, DataType.counter())
+                    .withOptions().comment("Create default Achilles counter table \"" + ACHILLES_COUNTER_TABLE + "\"")
                     .build();
 
             session.execute(createTable);
         } else {
-            throw new AchillesInvalidTableException("The required generic table '" + CQL_COUNTER_TABLE + "' does not exist");
+            throw new AchillesInvalidTableException("The required generic table '" + ACHILLES_COUNTER_TABLE + "' does not exist");
         }
     }
 
     private void createTable(Session session, EntityMeta entityMeta) {
-        String tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(entityMeta.getTableName());
+        String tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(entityMeta.config().getTableName());
         final List<String> indexes = new LinkedList<>();
         final Create createTable = SchemaBuilder.createTable(tableName);
         for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
-            String propertyName = pm.getCQL3PropertyName();
-            Class<?> keyClass = pm.getKeyClass();
-            Class<?> valueClass = pm.getValueClassForTableCreation();
-            final boolean staticColumn = pm.isStaticColumn();
+            String cql3ColumnName = pm.getCQL3ColumnName();
+            Class<?> keyClass = pm.forTableCreation().getKeyClassForTableCreationAndValidation();
+            Class<?> valueClass = pm.forTableCreation().getValueClassForTableCreationAndValidation();
+            final boolean staticColumn = pm.structure().isStaticColumn();
             switch (pm.type()) {
                 case SIMPLE:
-                    createTable.addColumn(propertyName, toCQLDataType(valueClass), staticColumn);
-                    if (pm.isIndexed()) {
-                        final String optionalIndexName = pm.getIndexProperties().getIndexName();
-                        final String indexName = isBlank(optionalIndexName) ? tableName + "_" + propertyName : optionalIndexName;
-                        indexes.add(createIndex(indexName).onTable(tableName).andColumn(propertyName));
+                    createTable.addColumn(cql3ColumnName, toCQLDataType(valueClass), staticColumn);
+                    if (pm.structure().isIndexed()) {
+                        indexes.add(pm.forTableCreation().createNewIndexScript(tableName));
                     }
                     break;
                 case LIST:
-                    createTable.addColumn(propertyName, DataType.list(toCQLDataType(valueClass)), staticColumn);
+                    createTable.addColumn(cql3ColumnName, DataType.list(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case SET:
-                    createTable.addColumn(propertyName, DataType.set(toCQLDataType(valueClass)), staticColumn);
+                    createTable.addColumn(cql3ColumnName, DataType.set(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case MAP:
-                    createTable.addColumn(propertyName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
+                    createTable.addColumn(cql3ColumnName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
                     break;
                 default:
                     break;
@@ -140,9 +137,10 @@ public class TableCreator {
         final PropertyMeta idMeta = entityMeta.getIdMeta();
         buildPrimaryKey(idMeta, createTable);
         final Create.Options tableOptions = createTable.withOptions();
-        addClusteringOrder(idMeta, tableOptions);
-        if (StringUtils.isNotBlank(entityMeta.getTableComment())) {
-            tableOptions.comment(entityMeta.getTableComment());
+        idMeta.forTableCreation().addClusteringOrder(tableOptions);
+        final String tableComment = entityMeta.config().getTableComment();
+        if (StringUtils.isNotBlank(tableComment)) {
+            tableOptions.comment(tableComment);
         }
 
         final String createTableScript = tableOptions.build();
@@ -161,60 +159,32 @@ public class TableCreator {
     private void createTableForClusteredCounter(Session session, EntityMeta meta) {
         log.debug("Creating table for clustered counter entity {}", meta.getClassName());
 
-        final Create createTable = SchemaBuilder.createTable(TableNameNormalizer.normalizerAndValidateColumnFamilyName(meta.getTableName()));
+        final Create createTable = SchemaBuilder.createTable(TableNameNormalizer.normalizerAndValidateColumnFamilyName(meta.config().getTableName()));
 
         PropertyMeta idMeta = meta.getIdMeta();
         buildPrimaryKey(idMeta, createTable);
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
-            createTable.addColumn(counterMeta.getCQL3PropertyName(), DataType.counter(),counterMeta.isStaticColumn());
+            createTable.addColumn(counterMeta.getCQL3ColumnName(), DataType.counter(),counterMeta.structure().isStaticColumn());
         }
         final Create.Options tableOptions = createTable.withOptions();
-        addClusteringOrder(idMeta, tableOptions);
-        tableOptions.comment("Create table for clustered counter entity \"" + meta.getClassName() + "\"");
+        idMeta.forTableCreation().addClusteringOrder(tableOptions);
+        tableOptions.comment(meta.config().getTableComment());
 
         final String createTableScript = tableOptions.build();
         session.execute(createTableScript);
         DML_LOG.debug(createTableScript);
     }
 
-    private void addClusteringOrder(PropertyMeta idMeta, Create.Options tableOptions) {
-        if (idMeta.isClustered()) {
-            final List<ClusteringOrder> clusteringOrders = idMeta.getClusteringOrders();
-            tableOptions.clusteringOrder(clusteringOrders.toArray(new ClusteringOrder[clusteringOrders.size()]));
-        }
-    }
-
     private List<ClusteringOrder> buildPrimaryKey(PropertyMeta pm, Create createTable) {
         List<ClusteringOrder> clusteringOrders = new LinkedList<>();
 
-        if (pm.isEmbeddedId()) {
-            addPartitionKeys(pm, createTable);
-            addClusteringKeys(pm, createTable);
+        if (pm.structure().isEmbeddedId()) {
+            pm.forTableCreation().addPartitionKeys(createTable);
+            pm.forTableCreation().addClusteringKeys(createTable);
         } else {
-            String columnName = pm.getPropertyName();
-            createTable.addPartitionKey(columnName, toCQLDataType(pm.getValueClassForTableCreation()));
+            String cql3ColumnName = pm.getCQL3ColumnName();
+            createTable.addPartitionKey(cql3ColumnName, toCQLDataType(pm.forTableCreation().getValueClassForTableCreationAndValidation()));
         }
         return clusteringOrders;
-    }
-
-    private void addPartitionKeys(PropertyMeta pm, Create createTable) {
-        List<String> componentNames = pm.getPartitionComponentNames();
-        List<Class<?>> componentClasses = pm.getPartitionComponentClasses();
-        for (int i = 0; i < componentNames.size(); i++) {
-            String componentName = componentNames.get(i);
-            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class : componentClasses.get(i);
-            createTable.addPartitionKey(componentName, toCQLDataType(javaType));
-        }
-    }
-
-    private void addClusteringKeys(PropertyMeta pm, Create createTable) {
-        List<String> componentNames = pm.getClusteringComponentNames();
-        List<Class<?>> componentClasses = pm.getClusteringComponentClasses();
-        for (int i = 0; i < componentNames.size(); i++) {
-            String componentName = componentNames.get(i);
-            Class<?> javaType = pm.isPrimaryKeyTimeUUID(componentName) ? InternalTimeUUID.class : componentClasses.get(i);
-            createTable.addClusteringKey(componentName, toCQLDataType(javaType));
-
-        }
     }
 }

@@ -15,24 +15,25 @@
  */
 package info.archinnov.achilles.internal.statement.prepared;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.decr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.incr;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DECR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.DELETE;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.INCR;
 import static info.archinnov.achilles.counter.AchillesCounter.CQLQueryType.SELECT;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_FQCN;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PRIMARY_KEY;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_PROPERTY_NAME;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_TABLE;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_FQCN;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PRIMARY_KEY;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_PROPERTY_NAME;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_TABLE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.DELETE_ALL;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.MAP;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SET;
+import static info.archinnov.achilles.counter.AchillesCounter.ClusteredCounterStatement.SELECT_ALL;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
@@ -44,18 +45,27 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
-import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static info.archinnov.achilles.type.OptionsBuilder.ifConditions;
-import static info.archinnov.achilles.type.OptionsBuilder.ifNotExists;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+
+import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.querybuilder.Select.Selection;
+import com.datastax.driver.core.querybuilder.Update.Assignments;
+import com.datastax.driver.core.querybuilder.Update.Conditions;
+import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -66,18 +76,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
 
@@ -100,8 +106,14 @@ public class PreparedStatementGeneratorTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SliceQueryProperties sliceQueryProperties;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private PropertyMeta idMeta;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private DirtyCheckChangeSet changeSet;
 
     @Captor
     ArgumentCaptor<String> queryCaptor;
@@ -109,53 +121,35 @@ public class PreparedStatementGeneratorTest {
     @Captor
     ArgumentCaptor<RegularStatement> regularStatementCaptor;
 
+    @Captor
+    ArgumentCaptor<Conditions> conditionsCaptor;
+
+    @Before
+    public void setUp() {
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.config().getTableName()).thenReturn("table");
+    }
+
     @Test
     public void should_prepare_insert_ps() throws Exception {
-
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(nameMeta.getCQL3ColumnName()).thenReturn("name");
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareInsert(session, meta, asList(nameMeta), noOptions());
 
         assertThat(actual).isSameAs(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(id,name) VALUES (:id,:name) USING TTL :ttl;");
-    }
-
-    @Test
-    public void should_prepare_insert_ps_with_clustered_id_and_options() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
-                .type(PropertyType.EMBEDDED_ID).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-        PreparedStatement actual = generator.prepareInsert(session, meta, asList(nameMeta), ifNotExists().withTimestamp(100L));
-
-        assertThat(actual).isSameAs(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo(
-                "INSERT INTO table(id,a,b,name) VALUES (:id,:a,:b,:name) IF NOT EXISTS USING TTL :ttl AND TIMESTAMP :timestamp;");
+        verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class));
+        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(name) VALUES (:name) USING TTL :ttl;");
     }
 
     @Test
     public void should_prepare_select_field_ps() throws Exception {
-
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(nameMeta.structure().isCounter()).thenReturn(false);
+        when(nameMeta.forStatementGeneration().prepareSelectField(isA(Selection.class))).thenReturn(select().column("name"));
+        when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(fromNullable(nameMeta)), isA(Select.class)))
+                .thenReturn(select("name").from("table").where(eq("id",bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -167,37 +161,29 @@ public class PreparedStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_select_field_ps_for_clustered_id() throws Exception {
+    public void should_exception_when_preparing_select_for_counter_type() throws Exception {
 
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.EMBEDDED_ID)
-                .compNames("id", "a", "b").build();
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(nameMeta.structure().isCounter()).thenReturn(true);
+        when(nameMeta.getPropertyName()).thenReturn("count");
+        when(meta.getClassName()).thenReturn("entity");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Cannot prepare statement for property 'count' of entity 'entity' because it is a counter type");
 
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-        PreparedStatement actual = generator.prepareSelectField(session, meta, idMeta);
-
-        assertThat(actual).isSameAs(ps);
-
-        assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b FROM table WHERE id=:id AND a=:a AND b=:b;");
+        generator.prepareSelectField(session, meta, nameMeta);
     }
 
     @Test
     public void should_prepare_update_fields_ps() throws Exception {
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta ageMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        final Assignments assignments = update("table").with();
 
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-
+        when(nameMeta.structure().isStaticColumn()).thenReturn(false);
+        when(ageMeta.structure().isStaticColumn()).thenReturn(false);
+        when(nameMeta.forStatementGeneration().prepareUpdateField(conditionsCaptor.capture())).thenReturn(assignments);
+        when(ageMeta.forStatementGeneration().prepareUpdateField(isA(Assignments.class))).thenReturn(assignments);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, false)).thenReturn(assignments.where(eq("id", bindMarker("id"))));
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta),
@@ -205,62 +191,19 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
 
-        assertThat(queryCaptor.getValue()).isEqualTo(
-                "UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp SET name=:name,age=:age WHERE id=:id IF name=:name;");
-    }
-
-    @Test
-    public void should_prepare_update_fields_with_clustered_id_ps() throws Exception {
-
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
-                .type(PropertyType.EMBEDDED_ID).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-        PreparedStatement actual = generator.prepareUpdateFields(session, meta, asList(nameMeta, ageMeta), noOptions());
-
-        assertThat(actual).isSameAs(ps);
-
-        assertThat(queryCaptor.getValue()).isEqualTo(
-                "UPDATE table USING TTL :ttl SET name=:name,age=:age WHERE id=:id AND a=:a AND b=:b;");
-    }
-
-    @Test
-    public void should_exception_when_preparing_select_for_counter_type() throws Exception {
-
-        PropertyMeta nameMeta = completeBean(Void.class, Long.class).field("count").type(PropertyType.COUNTER).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setClassName("entity");
-
-        exception.expect(IllegalArgumentException.class);
-        exception
-                .expectMessage("Cannot prepare statement for property 'count' of entity 'entity' because it is a counter type");
-
-        generator.prepareSelectField(session, meta, nameMeta);
-
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table IF name=:name;");
+        assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp WHERE id=:id;");
     }
 
     @Test
     public void should_prepare_select_eager_ps_with_single_key() throws Exception {
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setAllMetasExceptIdAndCounters(asList(nameMeta));
-        meta.setAllMetasExceptCounters(asList(nameMeta));
+        when(meta.forOperations().getColumnsMetaToLoad()).thenReturn(asList(nameMeta));
+        when(nameMeta.forStatementGeneration().prepareSelectField(isA(Selection.class))).thenReturn(select().column("name"));
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
+        when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(Optional.<PropertyMeta>absent()), isA(Select.class)))
+                .thenReturn(select("name").from("table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -271,38 +214,32 @@ public class PreparedStatementGeneratorTest {
     }
 
     @Test
-    public void should_prepare_select_eager_ps_with_clustered_key() throws Exception {
+    public void should_prepare_select_eager_ps_with_static_columns() throws Exception {
+        PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
-                .type(PropertyType.EMBEDDED_ID).build();
+        when(meta.forOperations().getColumnsMetaToLoad()).thenReturn(asList(nameMeta));
+        when(nameMeta.forStatementGeneration().prepareSelectField(isA(Selection.class))).thenReturn(select().column("name"));
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(nameMeta));
 
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setAllMetasExceptCounters(asList(idMeta, nameMeta));
-        meta.setClusteredCounter(false);
+        when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(Optional.fromNullable(nameMeta)), isA(Select.class)))
+                .thenReturn(select("name").from("table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareSelectAll(session, meta);
 
         assertThat(actual).isSameAs(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("SELECT id,a,b,name FROM table WHERE id=:id AND a=:a AND b=:b;");
+        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
     }
+
 
     @Test
     public void should_remove_entity_having_single_key() throws Exception {
+        when(meta.structure().hasOnlyStaticColumns()).thenReturn(true);
 
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "name", nameMeta));
+        when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(true), isA(Delete.class)))
+                .thenReturn(delete().from("table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -311,49 +248,6 @@ public class PreparedStatementGeneratorTest {
         assertThat(actual).hasSize(1);
         assertThat(actual).containsValue(ps);
         assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table WHERE id=:id;");
-    }
-
-    @Test
-    public void should_remove_entity_having_clustered_key() throws Exception {
-
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").compNames("id", "a", "b")
-                .type(PropertyType.EMBEDDED_ID).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(PropertyType.SIMPLE).build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps);
-
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
-
-        assertThat(actual).hasSize(1);
-        assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table WHERE id=:id AND a=:a AND b=:b;");
-    }
-
-    @Test
-    public void should_remove_entity_having_counter() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(PropertyType.SIMPLE).build();
-
-        PropertyMeta nameMeta = completeBean(UUID.class, String.class).field("count").type(PropertyType.COUNTER)
-                .build();
-
-        EntityMeta meta = new EntityMeta();
-        meta.setTableName("table");
-        meta.setIdMeta(idMeta);
-        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
-
-        when(session.prepare(queryCaptor.capture())).thenReturn(ps, ps2);
-
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
-
-        assertThat(actual).hasSize(1);
-        assertThat(actual).containsKey("table");
-        assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getAllValues()).containsOnly("DELETE FROM table WHERE id=:id;");
     }
 
     @Test
@@ -376,71 +270,91 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(queries).hasSize(4);
         assertThat(queries.get(0)).isEqualTo(
-                "UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + "=" + CQL_COUNTER_VALUE + "+? WHERE "
-                        + CQL_COUNTER_FQCN + "=? AND " + CQL_COUNTER_PRIMARY_KEY + "=? AND "
-                        + CQL_COUNTER_PROPERTY_NAME + "=?;");
+                        update(ACHILLES_COUNTER_TABLE)
+                        .with(incr(ACHILLES_COUNTER_VALUE, bindMarker()))
+                        .where(eq(ACHILLES_COUNTER_FQCN, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PRIMARY_KEY, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString());
+
         assertThat(queries.get(1)).isEqualTo(
-                "UPDATE " + CQL_COUNTER_TABLE + " SET " + CQL_COUNTER_VALUE + "=" + CQL_COUNTER_VALUE + "-? WHERE "
-                        + CQL_COUNTER_FQCN + "=? AND " + CQL_COUNTER_PRIMARY_KEY + "=? AND "
-                        + CQL_COUNTER_PROPERTY_NAME + "=?;");
+                        update(ACHILLES_COUNTER_TABLE)
+                        .with(decr(ACHILLES_COUNTER_VALUE, bindMarker()))
+                        .where(eq(ACHILLES_COUNTER_FQCN, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PRIMARY_KEY, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString());
+
         assertThat(queries.get(2)).isEqualTo(
-                "SELECT " + CQL_COUNTER_VALUE + " FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN
-                        + "=? AND " + CQL_COUNTER_PRIMARY_KEY + "=? AND " + CQL_COUNTER_PROPERTY_NAME + "=?;");
+                        select().column(ACHILLES_COUNTER_VALUE)
+                        .from(ACHILLES_COUNTER_TABLE)
+                        .where(eq(ACHILLES_COUNTER_FQCN, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PRIMARY_KEY, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString());
+
         assertThat(queries.get(3)).isEqualTo(
-                "DELETE FROM " + CQL_COUNTER_TABLE + " WHERE " + CQL_COUNTER_FQCN + "=? AND "
-                        + CQL_COUNTER_PRIMARY_KEY + "=? AND " + CQL_COUNTER_PROPERTY_NAME + "=?;");
+                        delete()
+                        .from(ACHILLES_COUNTER_TABLE)
+                        .where(eq(ACHILLES_COUNTER_FQCN, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PRIMARY_KEY, bindMarker()))
+                        .and(eq(ACHILLES_COUNTER_PROPERTY_NAME, bindMarker())).getQueryString());
 
     }
 
     @Test
     public void should_prepare_clustered_counter_queries() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMetaStatementGenerator statementGenerator = mock(PropertyMetaStatementGenerator.class, RETURNS_DEEP_STUBS);
 
-        PropertyMeta counterMeta = completeBean(Void.class, String.class).field("count").type(COUNTER).build();
+        when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
+        when(counterMeta.forStatementGeneration()).thenReturn(statementGenerator);
+        when(counterMeta.getCQL3ColumnName()).thenReturn("count");
+        when(counterMeta.structure().isStaticColumn()).thenReturn(false);
 
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("counterTable");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "counter", counterMeta));
+
+        when(statementGenerator.prepareCommonWhereClauseForUpdate(update("table").with(incr("count", bindMarker("count"))), false))
+                .thenReturn(update("table").where());
+        when(statementGenerator.prepareCommonWhereClauseForUpdate(update("table").with(decr("count", bindMarker("count"))), false))
+                .thenReturn(update("table").where());
+        when(statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select("count").from("table")))
+                .thenReturn(select("count").from("table").where(eq("id", bindMarker("id"))));
+        when(statementGenerator.generateWhereClauseForSelect(Optional.<PropertyMeta>absent(), select().from("table")))
+                .thenReturn(select().from("table"));
+        when(statementGenerator.generateWhereClauseForDelete(false, delete().from("table")))
+                .thenReturn(delete().from("table"));
+
 
         PreparedStatement incrPs = mock(PreparedStatement.class);
         PreparedStatement decrPs = mock(PreparedStatement.class);
         PreparedStatement selectPs = mock(PreparedStatement.class);
+        PreparedStatement selectAllPs = mock(PreparedStatement.class);
         PreparedStatement deletePs = mock(PreparedStatement.class);
 
-        when(session.prepare(regularStatementCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, deletePs);
+        when(session.prepare(regularStatementCaptor.capture())).thenReturn(incrPs, decrPs, selectPs, selectAllPs, deletePs);
 
-        Map<CQLQueryType, Map<String, PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session,
-                meta);
+        Map<CQLQueryType, Map<String, PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session,meta);
 
         assertThat(actual.get(INCR).get("count")).isSameAs(incrPs);
         assertThat(actual.get(DECR).get("count")).isSameAs(decrPs);
         assertThat(actual.get(SELECT).get("count")).isSameAs(selectPs);
+        assertThat(actual.get(SELECT).get(SELECT_ALL.name())).isSameAs(selectAllPs);
         assertThat(actual.get(DELETE).get(DELETE_ALL.name())).isSameAs(deletePs);
 
         List<RegularStatement> regularStatements = regularStatementCaptor.getAllValues();
 
         assertThat(regularStatements).hasSize(5);
-        assertThat(regularStatements.get(0).getQueryString()).isEqualTo(
-                "UPDATE counterTable SET count=count+:count WHERE id=:id;");
-        assertThat(regularStatements.get(1).getQueryString()).isEqualTo(
-                "UPDATE counterTable SET count=count-:count WHERE id=:id;");
-        assertThat(regularStatements.get(2).getQueryString()).isEqualTo("SELECT count FROM counterTable WHERE id=:id;");
-        assertThat(regularStatements.get(3).getQueryString()).isEqualTo("SELECT * FROM counterTable WHERE id=:id;");
-        assertThat(regularStatements.get(4).getQueryString()).isEqualTo("DELETE FROM counterTable WHERE id=:id;");
+
     }
 
     @Test
     public void should_prepare_statement_to_remove_all_collection_and_map_with_options() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta setMeta = completeBean(Void.class, String.class).field("followers").type(SET).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(REMOVE_COLLECTION_OR_MAP);
+        when(changeSet.generateUpdateForRemoveAll(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, REMOVE_COLLECTION_OR_MAP);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet,
@@ -448,128 +362,120 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp SET followers=:followers WHERE id=:id IF name=:name;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table IF name=:name;");
 
     }
 
     @Test
     public void should_prepare_statement_to_add_elements_to_set() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta setMeta = completeBean(Void.class, String.class).field("followers").type(SET).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
+        when(changeSet.generateUpdateForAddedElements(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, ADD_TO_SET);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET followers=followers+:followers WHERE id=:id;");
-
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
     public void should_prepare_statement_to_remove_elements_from_set() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta setMeta = completeBean(Void.class, String.class).field("followers").type(SET).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "followers", setMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_SET);
+        when(changeSet.generateUpdateForRemovedElements(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(setMeta, REMOVE_FROM_SET);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET followers=followers-:followers WHERE id=:id;");
-
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
     public void should_prepare_statement_to_append_elements_to_list() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(APPEND_TO_LIST);
+        when(changeSet.generateUpdateForAppendedElements(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, APPEND_TO_LIST);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET friends=friends+:friends WHERE id=:id;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
     public void should_prepare_statement_to_prepend_elements_to_list() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(PREPEND_TO_LIST);
+        when(changeSet.generateUpdateForPrependedElements(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, PREPEND_TO_LIST);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET friends=:friends+friends WHERE id=:id;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
     public void should_prepare_statement_to_remove_elements_from_list() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST);
+        when(changeSet.generateUpdateForRemoveListElements(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, REMOVE_FROM_LIST);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl SET friends=friends-:friends WHERE id=:id;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test(expected = IllegalStateException.class)
     public void should_not_prepare_statement_to_set_element_at_index_from_list() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
-        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, SET_TO_LIST_AT_INDEX);
+        when(changeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
 
         //When
         generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
@@ -578,14 +484,7 @@ public class PreparedStatementGeneratorTest {
     @Test(expected = IllegalStateException.class)
     public void should_not_prepare_statement_to_remove_element_at_index_from_list() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "friends", listMeta));
-        when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(listMeta, REMOVE_FROM_LIST_AT_INDEX);
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
 
         //When
         generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
@@ -594,44 +493,43 @@ public class PreparedStatementGeneratorTest {
     @Test
     public void should_prepare_statement_to_add_entries_to_map() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta mapMeta = completeBean(Integer.class, String.class).field("preferences").type(MAP).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "preferences", mapMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(ADD_TO_MAP);
+        when(changeSet.generateUpdateForAddedEntries(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(mapMeta, ADD_TO_MAP);
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET preferences=preferences+:preferences WHERE id=:id;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
     public void should_prepare_statement_to_remove_entry_from_map() throws Exception {
         //Given
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-        PropertyMeta mapMeta = completeBean(Integer.class, String.class).field("preferences").type(MAP).build();
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setTableName("table");
-        meta.setPropertyMetas(ImmutableMap.of("id", idMeta, "preferences", mapMeta));
+        final Assignments assignments = update("table").with();
+
+        when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_MAP);
+        when(changeSet.generateUpdateForRemovedKey(conditionsCaptor.capture())).thenReturn(assignments);
+        when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
-        DirtyCheckChangeSet changeSet = new DirtyCheckChangeSet(mapMeta, REMOVE_FROM_MAP);
-        Whitebox.setInternalState(changeSet, "mapChanges", ImmutableMap.of(1, "a"));
 
         //When
         final PreparedStatement actual = generator.prepareCollectionAndMapUpdate(session, meta, changeSet, noOptions());
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString())
-                .isEqualTo("UPDATE table USING TTL :ttl SET preferences[:key]=:nullValue WHERE id=:id;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
     }
 
     @Test
@@ -643,8 +541,8 @@ public class PreparedStatementGeneratorTest {
         final PropertyMeta pm = completeBean(Void.class, Long.class).field("name").type(SIMPLE).build();
 
         when(sliceQueryProperties.getEntityMeta()).thenReturn(meta);
-        when(meta.getColumnsMetaToLoad()).thenReturn(asList(pm));
-        when(meta.getTableName()).thenReturn("table");
+        when(meta.forOperations().getColumnsMetaToLoad()).thenReturn(asList(pm));
+        when(meta.config().getTableName()).thenReturn("table");
         when(sliceQueryProperties.generateWhereClauseForSelect(selectCaptor.capture())).thenReturn(select);
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -663,7 +561,7 @@ public class PreparedStatementGeneratorTest {
         final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
         final ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
         final Delete.Where delete = delete().from("table").where();
-        when(sliceQueryProperties.getEntityMeta().getTableName()).thenReturn("table");
+        when(sliceQueryProperties.getEntityMeta().config().getTableName()).thenReturn("table");
         when(sliceQueryProperties.generateWhereClauseForDelete(deleteCaptor.capture())).thenReturn(delete);
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 

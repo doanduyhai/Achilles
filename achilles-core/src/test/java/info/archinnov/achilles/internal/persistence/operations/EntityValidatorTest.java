@@ -54,8 +54,8 @@ public class EntityValidatorTest {
 	@Mock
 	private Map<Class<?>, EntityMeta> entityMetaMap;
 
-	@Mock
-	private EntityMeta entityMeta;
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private EntityMeta entityMeta;
 
 	@Mock(answer = Answers.RETURNS_DEEP_STUBS)
 	private PropertyMeta idMeta;
@@ -75,7 +75,7 @@ public class EntityValidatorTest {
 		when(proxifier.<CompleteBean> deriveBaseClass(bean)).thenReturn(CompleteBean.class);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
+        when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(12L);
 
 		entityValidator.validateEntity(bean, entityMetaMap);
 	}
@@ -87,7 +87,7 @@ public class EntityValidatorTest {
 		when(proxifier.<CompleteBean> deriveBaseClass(bean)).thenReturn(CompleteBean.class);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
         when(entityMetaMap.get(CompleteBean.class)).thenReturn(entityMeta);
-        when(entityMeta.getPrimaryKey(bean)).thenReturn(null);
+        when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(null);
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Cannot get primary key for entity " + CompleteBean.class.getCanonicalName());
@@ -100,10 +100,10 @@ public class EntityValidatorTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 		EmbeddedKey clusteredId = new EmbeddedKey(11L, "name");
 
-		when(entityMeta.getPrimaryKey(bean)).thenReturn(clusteredId);
+		when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(clusteredId);
         when(proxifier.getRealObject(bean)).thenReturn(bean);
-		when(idMeta.isEmbeddedId()).thenReturn(true);
-		when(idMeta.encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "name"));
+		when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+		when(idMeta.forTranscoding().encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "name"));
 
 		entityValidator.validateEntity(bean, entityMeta);
 	}
@@ -113,8 +113,8 @@ public class EntityValidatorTest {
 		CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
 
         when(proxifier.getRealObject(bean)).thenReturn(bean);
-		when(entityMeta.getPrimaryKey(bean)).thenReturn(12L);
-		when(idMeta.isEmbeddedId()).thenReturn(false);
+		when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(12L);
+		when(idMeta.structure().isEmbeddedId()).thenReturn(false);
 
 		entityValidator.validateEntity(bean, entityMeta);
 	}
@@ -125,7 +125,7 @@ public class EntityValidatorTest {
 		when(proxifier.<ClusteredEntityWithCounter> deriveBaseClass(entity)).thenReturn(
 				ClusteredEntityWithCounter.class);
 		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
-		when(entityMeta.isClusteredCounter()).thenReturn(false);
+		when(entityMeta.structure().isClusteredCounter()).thenReturn(false);
 		entityValidator.validateNotClusteredCounter(entity, entityMetaMap);
 	}
 
@@ -135,7 +135,7 @@ public class EntityValidatorTest {
 		when(proxifier.<ClusteredEntityWithCounter> deriveBaseClass(entity)).thenReturn(
 				ClusteredEntityWithCounter.class);
 		when(entityMetaMap.get(ClusteredEntityWithCounter.class)).thenReturn(entityMeta);
-		when(entityMeta.isClusteredCounter()).thenReturn(true);
+		when(entityMeta.structure().isClusteredCounter()).thenReturn(true);
 
 		exception.expect(AchillesException.class);
 		exception.expectMessage("The entity '" + entity

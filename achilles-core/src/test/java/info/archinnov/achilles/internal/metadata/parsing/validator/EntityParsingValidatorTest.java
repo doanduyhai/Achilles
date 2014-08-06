@@ -22,16 +22,11 @@ import java.util.Arrays;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.internal.metadata.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Answers;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 public class EntityParsingValidatorTest {
 	@Rule
@@ -50,13 +45,13 @@ public class EntityParsingValidatorTest {
     @Test
     public void should_exception_when_static_column_on_non_clustered_entity() throws Exception {
         //Given
-        PropertyMeta idMeta = mock(PropertyMeta.class);
-        PropertyMeta pm = mock(PropertyMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         when(entityMeta.getPropertyMetas().values()).thenReturn(Arrays.asList(pm));
+        when(pm.structure().isStaticColumn()).thenReturn(true);
         when(entityMeta.getClassName()).thenReturn("myEntity");
-        when(idMeta.isClustered()).thenReturn(false);
-        when(pm.isStaticColumn()).thenReturn(true);
+        when(idMeta.structure().isClustered()).thenReturn(false);
 
         //When //Then
         exception.expect(AchillesBeanMappingException.class);
@@ -68,19 +63,19 @@ public class EntityParsingValidatorTest {
     @Test
     public void should_exception_when_clustered_counter_entity_has_only_static_columns() throws Exception {
         //Given
-        PropertyMeta idMeta = mock(PropertyMeta.class);
-        PropertyMeta pm1 = mock(PropertyMeta.class);
-        PropertyMeta pm2 = mock(PropertyMeta.class);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta pm1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta pm2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         when(entityMeta.getPropertyMetas().values()).thenReturn(Arrays.asList(pm1,pm2));
         when(entityMeta.getAllMetasExceptId().size()).thenReturn(2);
         when(entityMeta.getClassName()).thenReturn("myEntity");
-        when(entityMeta.isClusteredCounter()).thenReturn(true);
-        when(idMeta.isClustered()).thenReturn(true);
-        when(pm1.isStaticColumn()).thenReturn(true);
-        when(pm2.isStaticColumn()).thenReturn(true);
-        when(pm1.isCounter()).thenReturn(true);
-        when(pm2.isCounter()).thenReturn(true);
+        when(entityMeta.structure().isClusteredCounter()).thenReturn(true);
+        when(idMeta.structure().isClustered()).thenReturn(true);
+        when(pm1.structure().isStaticColumn()).thenReturn(true);
+        when(pm2.structure().isStaticColumn()).thenReturn(true);
+        when(pm1.structure().isCounter()).thenReturn(true);
+        when(pm2.structure().isCounter()).thenReturn(true);
 
         //When //Then
         exception.expect(AchillesBeanMappingException.class);

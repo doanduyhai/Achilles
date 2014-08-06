@@ -68,7 +68,7 @@ public class PersistenceContextTest {
     public void should_duplicate_for_new_entity() throws Exception {
         CompleteBean entity = new CompleteBean();
         entity.setId(primaryKey);
-        when(meta.getPrimaryKey(entity)).thenReturn(primaryKey);
+        when(meta.forOperations().getPrimaryKey(entity)).thenReturn(primaryKey);
         when(flushContext.duplicate()).thenReturn(flushContext);
 
         PersistenceContext duplicateContext = context.duplicate(entity);

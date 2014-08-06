@@ -19,6 +19,7 @@ package info.archinnov.achilles.internal.persistence.operations;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -109,8 +110,8 @@ public class EntityProxifierTest {
     public void should_build_proxy_with_all_fields_loaded() throws Exception {
 
         long primaryKey = RandomUtils.nextLong();
-        PropertyMeta pm = mock(PropertyMeta.class);
-        PropertyMeta counterMeta = mock(PropertyMeta.class);
+        PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         Object value = new Object();
 
         CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).name("name").buid();
@@ -121,7 +122,7 @@ public class EntityProxifierTest {
         when(entityMeta.getIdMeta()).thenReturn(idMeta);
         when(entityMeta.getAllMetasExceptCounters()).thenReturn(Arrays.asList(pm));
         when(entityMeta.getAllCounterMetas()).thenReturn(Arrays.asList(counterMeta));
-        when(pm.getValueFromField(entity)).thenReturn(value);
+        when(pm.forValues().getValueFromField(entity)).thenReturn(value);
         when(context.getConfigContext()).thenReturn(configContext);
         when(factory.createProxyClass(entity.getClass(), configContext)).thenReturn((Class) entity.getClass());
         when(instantiator.instantiate(Mockito.<Class<Factory>>any())).thenReturn(realProxy);
@@ -135,9 +136,9 @@ public class EntityProxifierTest {
         assertThat(factory.getCallbacks()).hasSize(1);
         assertThat(factory.getCallback(0)).isInstanceOf(EntityInterceptor.class);
 
-        verify(pm).getValueFromField(entity);
-        verify(pm).setValueToField(realProxy, value);
-        verify(counterMeta).setValueToField(entity,null);
+        verify(pm.forValues()).getValueFromField(entity);
+        verify(pm.forValues()).setValueToField(realProxy, value);
+        verify(counterMeta.forValues()).setValueToField(entity,null);
     }
 
     @Test
@@ -251,7 +252,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_unproxy_real_entryset() throws Exception {
-        Map<Integer, CompleteBean> map = new HashMap<Integer, CompleteBean>();
+        Map<Integer, CompleteBean> map = new HashMap<>();
         CompleteBean completeBean = new CompleteBean();
         map.put(1, completeBean);
         Map.Entry<Integer, CompleteBean> entry = map.entrySet().iterator().next();
@@ -265,7 +266,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_unproxy_entryset_containing_proxy() throws Exception {
-        Map<Integer, Factory> map = new HashMap<Integer, Factory>();
+        Map<Integer, Factory> map = new HashMap<>();
         map.put(1, realProxy);
         Map.Entry<Integer, Factory> entry = map.entrySet().iterator().next();
 
@@ -278,7 +279,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_unproxy_collection_of_entities() throws Exception {
-        Collection<Factory> proxies = new ArrayList<Factory>();
+        Collection<Factory> proxies = new ArrayList<>();
         proxies.add(realProxy);
 
         when(interceptor.getTarget()).thenReturn(realProxy);
@@ -290,7 +291,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_unproxy_list_of_entities() throws Exception {
-        List<Factory> proxies = new ArrayList<Factory>();
+        List<Factory> proxies = new ArrayList<>();
         proxies.add(realProxy);
 
         when(interceptor.getTarget()).thenReturn(realProxy);
@@ -302,7 +303,7 @@ public class EntityProxifierTest {
 
     @Test
     public void should_unproxy_set_of_entities() throws Exception {
-        Set<Factory> proxies = new HashSet<Factory>();
+        Set<Factory> proxies = new HashSet<>();
         proxies.add(realProxy);
 
         when(interceptor.getTarget()).thenReturn(realProxy);

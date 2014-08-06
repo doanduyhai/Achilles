@@ -35,7 +35,7 @@ import info.archinnov.achilles.type.TypedMap;
 
 public class AchillesInternalCQLResource extends AchillesTestResource {
 
-    private static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
+    public static final String CLEAN_DATA_FILES_PROPERTY = "clean.data.files";
 
     private static final String ACHILLES_ENTITY_PACKAGES = "info.archinnov.achilles.test.integration.entity";
 

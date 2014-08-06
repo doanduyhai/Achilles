@@ -16,13 +16,13 @@
 
 package info.archinnov.achilles.query.slice;
 
-import static info.archinnov.achilles.query.slice.SliceQueryProperties.DEFAULT_BATCH_SIZE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.RegularStatement;
@@ -38,22 +38,22 @@ public class IterateDSLTest {
     @Mock
     private SliceQueryExecutor executor;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta entityMeta;
 
     private Select select = QueryBuilder.select().from("table");
 
     @Before
     public void setUp() {
-        when(entityMeta.getClusteringOrders()).thenReturn(asList(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC)));
-        when(entityMeta.getPartitionKeysSize()).thenReturn(2);
-        when(entityMeta.getClusteringKeysSize()).thenReturn(3);
+        when(entityMeta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC));
+        when(entityMeta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
+        when(entityMeta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
 
-        when(entityMeta.getPartitionKeysName(1)).thenReturn(asList("id"));
-        when(entityMeta.getLastPartitionKeyName()).thenReturn("bucket");
-        when(entityMeta.getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
-        when(entityMeta.getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
-        when(entityMeta.getLastClusteringKeyName()).thenReturn("col3");
+        when(entityMeta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
+        when(entityMeta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
+        when(entityMeta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
+        when(entityMeta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
+        when(entityMeta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
     }
 
     @Test

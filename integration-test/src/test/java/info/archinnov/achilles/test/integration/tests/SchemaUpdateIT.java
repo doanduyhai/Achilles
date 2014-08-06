@@ -54,6 +54,8 @@ public class SchemaUpdateIT {
                 .noEntityPackages().withKeyspaceName("schema_dynamic_update")
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
+        session.execute("DROP TABLE IF EXISTS new_simple_field");
+        session.execute("DROP INDEX IF EXISTS field_index");
         session.execute("CREATE TABLE new_simple_field(id bigint PRIMARY KEY, existing_field text)");
         session.execute("CREATE INDEX field_index ON schema_dynamic_update.new_simple_field(existing_field)");
 
@@ -92,6 +94,7 @@ public class SchemaUpdateIT {
                 .withKeyspaceName("schema_dynamic_update_counter")
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
+        session.execute("DROP TABLE IF EXISTS new_counter_field");
         session.execute("CREATE TABLE new_counter_field(id bigint, date timeuuid, existing_counter counter, PRIMARY KEY(id,date))");
 
         final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
@@ -119,6 +122,7 @@ public class SchemaUpdateIT {
                 .noEntityPackages().withKeyspaceName("schema_dynamic_update_fail")
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
+        session.execute("DROP TABLE IF EXISTS new_simple_field");
         session.execute("CREATE TABLE new_simple_field(id bigint PRIMARY KEY, existing_field text)");
 
         final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
@@ -141,6 +145,9 @@ public class SchemaUpdateIT {
                 .noEntityPackages().withKeyspaceName("index_validation_fail")
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
+        session.execute("DROP TABLE IF EXISTS entity_with_index");
+        session.execute("DROP INDEX IF EXISTS name_index");
+
         session.execute("CREATE TABLE entity_with_index(id bigint PRIMARY KEY, name text)");
         session.execute("CREATE INDEX name_index ON index_validation_fail.entity_with_index(name)");
 
@@ -250,7 +257,7 @@ public class SchemaUpdateIT {
     @Entity(table = "new_counter_field")
     public static class ClusteredCounterEntityWithNewCounterField {
 
-        @EmbeddedId(name = "id")
+        @EmbeddedId
         private Compound id;
 
         @Column(name = "existing_counter")

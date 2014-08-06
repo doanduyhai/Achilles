@@ -27,7 +27,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.ColumnMetadataBuilder;
+import com.datastax.driver.core.DataType;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +52,7 @@ import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.IndexProperties;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.type.Counter;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -76,6 +81,7 @@ public class TableUpdaterTest {
 
     private String keyspaceName = "achilles";
 
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private EntityMeta meta;
 
     @Before
@@ -84,13 +90,15 @@ public class TableUpdaterTest {
         when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
         when(keyspaceMeta.getTables()).thenReturn(asList(tableMeta));
         when(tableMeta.getName()).thenReturn("tableName");
+        when(meta.config().getTableName()).thenReturn("tableName");
+        when(meta.config().isSchemaUpdateEnabled()).thenReturn(true);
+
     }
 
     @Test
     public void should_not_update_if_schema_update_disabled() throws Exception {
         //Given
-        meta = new EntityMeta();
-        meta.setSchemaUpdateEnabled(false);
+        when(meta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
         //When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -103,22 +111,18 @@ public class TableUpdaterTest {
     public void should_update_table_with_new_simple_field() throws Exception {
         // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
-        longColPM.setStaticColumn(true);
+        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").staticColumn().build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(longColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(longColPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
 
         // Then
         verify(session).execute(stringCaptor.capture());
-        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint static");
+        assertThat(stringCaptor.getValue()).isEqualTo("\n\tALTER TABLE tableName ADD longcol bigint static");
     }
 
     @Test
@@ -128,12 +132,10 @@ public class TableUpdaterTest {
         PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
         longColPM.setIndexProperties(new IndexProperties("long_index", "longCol"));
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(longColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(longColPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
+
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -141,8 +143,8 @@ public class TableUpdaterTest {
         // Then
         verify(session, Mockito.times(2)).execute(stringCaptor.capture());
         final List<String> updates = stringCaptor.getAllValues();
-        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longCol bigint");
-        assertThat(updates.get(1)).isEqualTo("\n\tCREATE INDEX long_index ON tableName(longCol)");
+        assertThat(updates.get(0)).isEqualTo("\n\tALTER TABLE tableName ADD longcol bigint");
+        assertThat(updates.get(1)).isEqualTo("\n\tCREATE INDEX long_index ON tableName(longcol)");
     }
 
     @Test
@@ -151,12 +153,9 @@ public class TableUpdaterTest {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
         PropertyMeta listStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(LIST).field("list_string").build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(listStringPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(listStringPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -170,14 +169,11 @@ public class TableUpdaterTest {
     public void should_update_table_with_new_set_field() throws Exception {
         // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta listStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(SET).field("set_string").build();
+        PropertyMeta setStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(SET).field("set_string").build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(listStringPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(setStringPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -191,14 +187,11 @@ public class TableUpdaterTest {
     public void should_update_table_with_new_map_field() throws Exception {
         // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta listStringPM = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).type(MAP).field("preferences").build();
+        PropertyMeta mapStringPM = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).type(MAP).field("preferences").build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(listStringPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(mapStringPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -209,18 +202,15 @@ public class TableUpdaterTest {
     }
 
     @Test
-    public void should_update_table_with_new_counter_field() throws Exception {
+    public void should_update_table_with_new_clustered_counter_field() throws Exception {
         // Given
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
+        PropertyMeta counterPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(longColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
-        meta.setClusteredCounter(true);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(counterPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
+        when(meta.structure().isClusteredCounter()).thenReturn(true);
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);
@@ -233,15 +223,12 @@ public class TableUpdaterTest {
     @Test
     public void should_not_add_counter_field_if_non_clustered_counter_entity() throws Exception {
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
+        PropertyMeta counterPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
 
-        meta = new EntityMeta();
-        meta.setAllMetasExceptId(asList(longColPM));
-        meta.setIdMeta(idMeta);
-        meta.setTableName("tableName");
-        meta.setClassName("entityName");
-        meta.setSchemaUpdateEnabled(true);
-        meta.setClusteredCounter(false);
+        when(meta.getAllMetasExceptId()).thenReturn(asList(counterPM));
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(tableMeta.getColumns()).thenReturn(Arrays.<ColumnMetadata>asList());
+        when(meta.structure().isClusteredCounter()).thenReturn(false);
 
         // When
         updater.updateTableForEntity(session, meta, tableMeta);

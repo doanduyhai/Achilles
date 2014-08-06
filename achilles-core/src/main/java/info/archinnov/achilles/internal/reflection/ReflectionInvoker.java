@@ -52,20 +52,6 @@ public class ReflectionInvoker {
 		return null;
 	}
 
-	public Object getPartitionKey(Object compoundKey, PropertyMeta idMeta) {
-		if (idMeta.isEmbeddedId()) {
-			final Field partitionKeyField = idMeta.getPartitionKeyField();
-			try {
-				return accessor.getValueFromField(partitionKeyField, compoundKey);
-			} catch (IllegalAccessException | IllegalArgumentException e) {
-				throw new AchillesException("Cannot get partition key from field '" + partitionKeyField.getName()
-						+ "' of type '" + partitionKeyField.getDeclaringClass().getCanonicalName()
-						+ "' from compoundKey '" + compoundKey + "'", e);
-			}
-		}
-		return null;
-	}
-
 	public <T> T getValueFromField(Object target, Field field) {
 		log.trace("Get value from field {} from instance {} of class {}", field.getName(), target, field
 				.getDeclaringClass().getCanonicalName());
@@ -138,20 +124,5 @@ public class ReflectionInvoker {
 	public <T> T instantiate(Class<T> entityClass) {
 		log.trace("Instantiate entity class {}", entityClass);
 		return instantiator.instantiate(entityClass);
-	}
-
-	public Object instantiateEmbeddedIdWithPartitionComponents(PropertyMeta idMeta, List<Object> partitionComponents) {
-		log.trace("Instantiate entity class {} with partition key components {}", idMeta.getValueClass(),
-				partitionComponents);
-		Class<?> valueClass = idMeta.getValueClass();
-		Object newInstance = instantiate(valueClass);
-		List<Field> fields = idMeta.getPartitionComponentFields();
-
-		for (int i = 0; i < partitionComponents.size(); i++) {
-			Field field = fields.get(i);
-			Object component = partitionComponents.get(i);
-			setValueToField(newInstance, field, component);
-		}
-		return newInstance;
 	}
 }

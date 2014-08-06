@@ -21,7 +21,6 @@ import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.validation.Validator;
 
 public class EntityLoader {
@@ -43,12 +42,12 @@ public class EntityLoader {
 
         T entity = null;
 
-        if (entityMeta.isClusteredCounter()) {
+        if (entityMeta.structure().isClusteredCounter()) {
             entity = counterLoader.loadClusteredCounters(context);
         } else {
             Row row = context.loadEntity();
             if (row != null) {
-                entity = entityMeta.instanciate();
+                entity = entityMeta.forOperations().instanciate();
                 mapper.setNonCounterPropertiesToEntity(row, entityMeta, entity);
             }
         }
@@ -66,19 +65,19 @@ public class EntityLoader {
         Validator
                 .validateNotNull(entityMeta, "Entity meta for '%s' should not be null", entityClass.getCanonicalName());
 
-        T entity = entityMeta.instanciate();
-        entityMeta.getIdMeta().setValueToField(entity, primaryKey);
+        T entity = entityMeta.forOperations().instanciate();
+        entityMeta.getIdMeta().forValues().setValueToField(entity, primaryKey);
 
         return entity;
     }
 
     public void loadPropertyIntoObject(EntityOperations context, Object realObject, PropertyMeta pm) {
         log.trace("Loading property {} into object {}", pm.getPropertyName(), realObject);
-        if (pm.isCounter()) {
+        if (pm.structure().isCounter()) {
             counterLoader.loadCounter(context, realObject, pm);
         } else {
             Row row = context.loadProperty(pm);
-            if (row == null && pm.isCollectionAndMap()) {
+            if (row == null && pm.structure().isCollectionAndMap()) {
                 row = new NullRow();
             }
             mapper.setPropertyToEntity(row, context.getEntityMeta(), pm, realObject);

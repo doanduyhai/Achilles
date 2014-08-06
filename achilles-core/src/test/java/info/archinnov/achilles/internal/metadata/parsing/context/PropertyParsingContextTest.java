@@ -17,11 +17,18 @@
 package info.archinnov.achilles.internal.metadata.parsing.context;
 
 import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.lang.reflect.Field;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyParsingContextTest {
@@ -29,7 +36,11 @@ public class PropertyParsingContextTest {
     @Test
     public void should_set_primaryKey_to_true_when_embedded_id() throws Exception {
         //Given
-        PropertyParsingContext context = new PropertyParsingContext(null,null);
+        EntityParsingContext entityContext = mock(EntityParsingContext.class, RETURNS_DEEP_STUBS);
+        when(entityContext.getCurrentEntityClass()).thenReturn((Class) CompleteBean.class);
+        Field field = CompleteBean.class.getDeclaredField("age");
+
+        PropertyParsingContext context = new PropertyParsingContext(entityContext, field);
 
         //When
         context.setEmbeddedId(true);
@@ -37,5 +48,7 @@ public class PropertyParsingContextTest {
         //Then
         assertThat(context.isEmbeddedId()).isTrue();
         assertThat(context.isPrimaryKey()).isTrue();
+        assertThat(context.<CompleteBean>getCurrentEntityClass()).isEqualTo(CompleteBean.class);
+        assertThat(context.getCurrentPropertyName()).isEqualTo("age_in_years");
     }
 }

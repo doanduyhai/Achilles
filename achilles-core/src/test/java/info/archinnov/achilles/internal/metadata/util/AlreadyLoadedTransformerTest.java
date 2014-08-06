@@ -29,7 +29,7 @@ import com.google.common.collect.FluentIterable;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

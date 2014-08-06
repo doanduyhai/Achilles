@@ -16,6 +16,8 @@
 package info.archinnov.achilles.internal.proxy;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -27,7 +29,7 @@ import com.google.common.collect.Sets;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -43,17 +45,17 @@ public class EntityInterceptorBuilderTest {
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setClassName("classname");
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getClassName()).thenReturn("classname");
+        when(meta.getGetterMetas()).thenReturn(new HashMap<Method, PropertyMeta>());
+        when(meta.getSetterMetas()).thenReturn(new HashMap<Method, PropertyMeta>());
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
 
-        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean>builder(context, entity)
+        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.builder(context, entity)
                 .alreadyLoaded(Sets.newHashSet(idMeta.getGetter())).build();
 
         assertThat(interceptor.getEntityOperations()).isSameAs(context);
@@ -67,11 +69,11 @@ public class EntityInterceptorBuilderTest {
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
 
-        EntityMeta meta = new EntityMeta();
-        meta.setIdMeta(idMeta);
-        meta.setClassName("classname");
-        meta.setGetterMetas(new HashMap<Method, PropertyMeta>());
-        meta.setSetterMetas(new HashMap<Method, PropertyMeta>());
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getIdMeta()).thenReturn(idMeta);
+        when(meta.getClassName()).thenReturn("classname");
+        when(meta.getGetterMetas()).thenReturn(new HashMap<Method, PropertyMeta>());
+        when(meta.getSetterMetas()).thenReturn(new HashMap<Method, PropertyMeta>());
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);

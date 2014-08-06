@@ -19,8 +19,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static org.fest.assertions.api.Assertions.assertThat;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 
@@ -196,64 +195,11 @@ public class ReflectionInvokerTest {
 	}
 
 	@Test
-	public void should_get_partition_key() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
-		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(userIdField)
-				.type(PropertyType.EMBEDDED_ID).build();
-
-		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
-
-		assertThat(invoker.getPartitionKey(embeddedKey, idMeta)).isEqualTo(partitionKey);
-	}
-
-	@Test
-	public void should_exception_when_getting_partition_key() throws Exception {
-
-		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(userIdField)
-				.type(PropertyType.EMBEDDED_ID).build();
-
-		exception.expect(AchillesException.class);
-		exception.expectMessage("Cannot get partition key from field 'userId' of type '"
-				+ EmbeddedKey.class.getCanonicalName() + "' from compoundKey 'compound'");
-
-		invoker.getPartitionKey("compound", idMeta);
-	}
-
-	@Test
-	public void should_return_null_for_partition_key_if_not_embedded_id() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
-		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(userIdField)
-				.type(PropertyType.ID).build();
-
-		EmbeddedKey embeddedKey = new EmbeddedKey(partitionKey, "name");
-		assertThat(invoker.getPartitionKey(embeddedKey, idMeta)).isNull();
-	}
-
-	@Test
 	public void should_instanciate_entity_from_class() throws Exception {
 		EmbeddedKey actual = invoker.instantiate(EmbeddedKey.class);
 		assertThat(actual).isNotNull();
 		assertThat(actual.getUserId()).isNull();
 		assertThat(actual.getName()).isNull();
-	}
-
-	@Test
-	public void should_instanciate_embedded_id_with_partition_key_using_default_constructor() throws Exception {
-		Long partitionKey = RandomUtils.nextLong();
-
-		Field userIdField = EmbeddedKey.class.getDeclaredField("userId");
-		PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class).compFields(userIdField).build();
-
-		Object actual = invoker.instantiateEmbeddedIdWithPartitionComponents(idMeta,
-				Arrays.<Object> asList(partitionKey));
-
-		assertThat(actual).isNotNull();
-		EmbeddedKey embeddedKey = (EmbeddedKey) actual;
-		assertThat(embeddedKey.getUserId()).isEqualTo(partitionKey);
-		assertThat(embeddedKey.getName()).isNull();
 	}
 
 	@Test

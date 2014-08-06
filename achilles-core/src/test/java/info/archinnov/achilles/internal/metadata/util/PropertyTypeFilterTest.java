@@ -23,8 +23,7 @@ import org.junit.Test;
 import com.google.common.collect.Collections2;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.util.PropertyTypeFilter;
-import info.archinnov.achilles.test.builders.PropertyMetaTestBuilder;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 
 public class PropertyTypeFilterTest {
 

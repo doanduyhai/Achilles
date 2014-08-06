@@ -87,8 +87,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Documented
 public @interface EmbeddedId {
-	/**
-	 * (<strong>Optional</strong>) The name of the compound primary key. Defaults to the field name.
-	 */
-	String name() default "";
+
 }

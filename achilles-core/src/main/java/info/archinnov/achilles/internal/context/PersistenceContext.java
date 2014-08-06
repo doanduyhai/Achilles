@@ -16,7 +16,7 @@
 package info.archinnov.achilles.internal.context;
 
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.counter.AchillesCounter.CQL_COUNTER_VALUE;
+import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
 import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
 import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
@@ -118,7 +118,7 @@ public class PersistenceContext {
         Validator.validateNotNull(entity,
                 "The entity of type '{}' should not be null for persistence context creation",
                 entityMeta.getClassName());
-        this.primaryKey = entityMeta.getPrimaryKey(entity);
+        this.primaryKey = entityMeta.forOperations().getPrimaryKey(entity);
         Validator.validateNotNull(primaryKey,
                 "The primary key for the entity class '{}' should not be null for persistence context creation",
                 entityMeta.getClassName());
@@ -167,7 +167,7 @@ public class PersistenceContext {
         }
 
         public boolean isClusteredCounter() {
-            return entityMeta.isClusteredCounter();
+            return entityMeta.structure().isClusteredCounter();
         }
 
         public EntityMeta getEntityMeta() {
@@ -322,7 +322,7 @@ public class PersistenceContext {
         }
 
         public void pushInsertStatement() {
-            final List<PropertyMeta> pms = entityMeta.retrievePropertyMetasForInsert(entity);
+            final List<PropertyMeta> pms = entityMeta.forOperations().retrievePropertyMetasForInsert(entity);
             daoContext.pushInsertStatement(daoFacade, pms);
         }
 
@@ -348,7 +348,7 @@ public class PersistenceContext {
 
             Row row = daoContext.getSimpleCounter(daoFacade, counterMeta, consistency);
             if (row != null) {
-                return row.getLong(CQL_COUNTER_VALUE);
+                return row.getLong(ACHILLES_COUNTER_VALUE);
             }
             return null;
         }

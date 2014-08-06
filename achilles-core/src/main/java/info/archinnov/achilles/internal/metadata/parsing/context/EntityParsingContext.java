@@ -44,6 +44,12 @@ public class EntityParsingContext {
         this.currentEntityClass = currentEntityClass;
     }
 
+    private EntityParsingContext(ConfigurationContext configContext, Class<?> currentEntityClass, ObjectMapper currentObjectMapper) {
+        this.configContext = configContext;
+        this.currentEntityClass = currentEntityClass;
+        this.currentObjectMapper = currentObjectMapper;
+    }
+
     public PropertyParsingContext newPropertyContext(Field currentField) {
         return new PropertyParsingContext(this, currentField);
     }
@@ -104,5 +110,9 @@ public class EntityParsingContext {
 
     public ConfigurationContext getConfigContext() {
         return configContext;
+    }
+
+    public EntityParsingContext duplicateForClass(Class<?> entityClass) {
+        return new EntityParsingContext(configContext, entityClass, currentObjectMapper);
     }
 }

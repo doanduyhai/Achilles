@@ -17,6 +17,9 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -24,27 +27,33 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClusteringComponents extends AbstractComponentProperties {
 
+    private static final Logger log = LoggerFactory.getLogger(ClusteringComponents.class);
+
     private List<ClusteringOrder> clusteringOrders;
 
-    public ClusteringComponents(List<Class<?>> componentClasses, List<String> componentNames, List<Field> componentFields, List<Method> componentGetters, List<Method> componentSetters, List<ClusteringOrder> clusteringOrders) {
-        super(componentClasses, componentNames, componentFields, componentGetters, componentSetters);
+    public ClusteringComponents(List<PropertyMeta> clusteringKeyMetas, List<ClusteringOrder> clusteringOrders) {
+        super(clusteringKeyMetas);
         this.clusteringOrders = clusteringOrders;
     }
 
     void validateClusteringComponents(String className, Object... clusteringComponentsArray) {
+        Validator.validateTrue(isNotEmpty(clusteringComponentsArray), "There should be at least one clustering key provided for querying on entity '%s'", className);
 
-        Validator.validateTrue(ArrayUtils.isNotEmpty(clusteringComponentsArray), "There should be at least one clustering key provided for querying on entity '%s'", className);
+        final List<Object> clusteringComponents = asList(clusteringComponentsArray);
 
-        final List<Object> clusteringComponents = Arrays.asList(clusteringComponentsArray);
+        log.trace("Validate clustering components {} for slice query on entity class {}", clusteringComponents, className);
+
+        final List<Class<?>> componentClasses = getComponentClasses();
 
         int maxClusteringCount = componentClasses.size();
 
         Validator.validateTrue(clusteringComponents.size() <= maxClusteringCount,
-                "There should be at most %s value(s) of clustering component(s) provided for querying on entity '%s'",
-                maxClusteringCount, className);
+                "There should be at most %s value(s) of clustering component(s) provided for querying on entity '%s'",maxClusteringCount, className);
 
         for (int i = 0; i < clusteringComponents.size(); i++) {
             Object clusteringKey = clusteringComponents.get(i);
@@ -58,10 +67,13 @@ public class ClusteringComponents extends AbstractComponentProperties {
     }
 
     void validateClusteringComponentsIn(String className, Object... clusteringComponentsInArray) {
+        final List<Class<?>> componentClasses = getComponentClasses();
 
-        Validator.validateTrue(ArrayUtils.isNotEmpty(clusteringComponentsInArray), "There should be at least one clustering key IN provided for querying on entity '%s'", className);
+        Validator.validateTrue(isNotEmpty(clusteringComponentsInArray), "There should be at least one clustering key IN provided for querying on entity '%s'", className);
 
-        final List<Object> clusteringComponentsIn = Arrays.asList(clusteringComponentsInArray);
+        final List<Object> clusteringComponentsIn = asList(clusteringComponentsInArray);
+
+        log.trace("Validate clustering components IN {} for slice query on entity class {}", clusteringComponentsIn, className);
 
         Class<?> lastClusteringComponentType = componentClasses.get(componentClasses.size() - 1);
 
@@ -75,12 +87,8 @@ public class ClusteringComponents extends AbstractComponentProperties {
         }
     }
 
-    String getOrderingComponent() {
-        return isClustered() ? componentNames.get(0) : null;
-    }
-
     boolean isClustered() {
-        return componentClasses.size() > 0;
+        return getComponentClasses().size() > 0;
     }
 
     public List<ClusteringOrder> getClusteringOrders() {

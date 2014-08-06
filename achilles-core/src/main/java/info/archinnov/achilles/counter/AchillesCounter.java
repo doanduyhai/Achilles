@@ -34,11 +34,11 @@ package info.archinnov.achilles.counter;
  */
 public interface AchillesCounter {
 
-	public static final String CQL_COUNTER_TABLE = "achilles_counter_table";
-	public static final String CQL_COUNTER_FQCN = "fqcn";
-	public static final String CQL_COUNTER_PRIMARY_KEY = "primary_key";
-	public static final String CQL_COUNTER_PROPERTY_NAME = "property_name";
-	public static final String CQL_COUNTER_VALUE = "counter_value";
+	public static final String ACHILLES_COUNTER_TABLE = "achilles_counter_table";
+	public static final String ACHILLES_COUNTER_FQCN = "fqcn";
+	public static final String ACHILLES_COUNTER_PRIMARY_KEY = "primary_key";
+	public static final String ACHILLES_COUNTER_PROPERTY_NAME = "property_name";
+	public static final String ACHILLES_COUNTER_VALUE = "counter_value";
 
 	public static enum CQLQueryType {
 		INCR, DECR, SELECT, DELETE;

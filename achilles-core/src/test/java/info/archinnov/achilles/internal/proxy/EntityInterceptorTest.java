@@ -20,7 +20,7 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ASSIGN_VALUE_TO_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_COLLECTION_OR_MAP;
-import static info.archinnov.achilles.test.builders.PropertyMetaTestBuilder.completeBean;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -89,7 +89,7 @@ public class EntityInterceptorTest {
     @Mock
     private MethodProxy proxy;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta pm;
 
     private Object[] args = new Object[] { };
@@ -314,7 +314,7 @@ public class EntityInterceptorTest {
         assertThat(dirtyChecker.getPropertyMeta()).isEqualTo(pm);
         assertThat(dirtyChecker.isSimpleField()).isTrue();
 
-        verify(pm, times(2)).setValueToField(target, rawValue);
+        verify(pm.forValues()).setValueToField(target, rawValue);
     }
 
     @Test
@@ -342,7 +342,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_LIST);
         assertThat(changeSet.getRawListChanges()).isSameAs(list);
 
-        verify(pm, times(2)).setValueToField(target, list);
+        verify(pm.forValues()).setValueToField(target, list);
     }
 
     @Test
@@ -370,7 +370,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
         assertThat(changeSet.getRawListChanges()).isEmpty();
 
-        verify(pm, times(2)).setValueToField(target, list);
+        verify(pm.forValues()).setValueToField(target, list);
     }
 
     @Test
@@ -398,7 +398,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_SET);
         assertThat(changeSet.getRawSetChanges()).isSameAs(set);
 
-        verify(pm, times(2)).setValueToField(target, set);
+        verify(pm.forValues()).setValueToField(target, set);
     }
 
     @Test
@@ -426,7 +426,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
         assertThat(changeSet.getRawSetChanges()).isEmpty();
 
-        verify(pm, times(2)).setValueToField(target, set);
+        verify(pm.forValues()).setValueToField(target, set);
     }
 
 
@@ -455,7 +455,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(ASSIGN_VALUE_TO_MAP);
         assertThat(changeSet.getRawMapChanges()).isSameAs(map);
 
-        verify(pm, times(2)).setValueToField(target, map);
+        verify(pm.forValues()).setValueToField(target, map);
     }
 
     @Test
@@ -483,7 +483,7 @@ public class EntityInterceptorTest {
         assertThat(changeSet.getChangeType()).isEqualTo(REMOVE_COLLECTION_OR_MAP);
         assertThat(changeSet.getRawMapChanges()).isEmpty();
 
-        verify(pm, times(2)).setValueToField(target, map);
+        verify(pm.forValues()).setValueToField(target, map);
     }
 
     @Test
