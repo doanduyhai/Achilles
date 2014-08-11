@@ -26,8 +26,12 @@ import info.archinnov.achilles.internal.validation.Validator;
 
 public class NativeQueryValidator {
 
-    public void validateUpsert(RegularStatement regularStatement) {
-        Validator.validateTrue(isUpsertStatement(regularStatement),"The statement '%s' should be an INSERT or UPDATE",regularStatement.getQueryString());
+    public void validateUpsertOrDelete(RegularStatement regularStatement) {
+        Validator.validateTrue(
+                isUpsertStatement(regularStatement) || isDeleteStatement(regularStatement),
+                "The statement '%s' should be an INSERT, an UPDATE or a DELETE",
+                regularStatement.getQueryString()
+        );
     }
 
     public void validateSelect(RegularStatement regularStatement) {

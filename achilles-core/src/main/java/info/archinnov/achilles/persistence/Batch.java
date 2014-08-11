@@ -15,11 +15,6 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
-import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
@@ -36,6 +31,13 @@ import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.query.cql.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
+import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
+import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 
 /**
  * <p>
@@ -427,7 +429,7 @@ public class Batch extends CommonPersistenceManager {
      * @param boundValues optional bound values
      */
     public void batchNativeStatementWithCASListener(RegularStatement regularStatement, CASResultListener casResultListener, Object... boundValues) {
-        validator.validateUpsert(regularStatement);
+        validator.validateUpsertOrDelete(regularStatement);
         final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, regularStatement, boundValues, Optional.fromNullable(casResultListener));
         flushContext.pushStatement(nativeStatementWrapper);
     }

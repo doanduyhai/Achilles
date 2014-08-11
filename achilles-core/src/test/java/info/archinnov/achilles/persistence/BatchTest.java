@@ -15,14 +15,17 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.querybuilder.Insert;
+import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.context.*;
+import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
+import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
+import info.archinnov.achilles.query.cql.NativeQueryValidator;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.Options;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,23 +34,13 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.internal.context.BatchingFlushContext;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.context.PersistenceContext;
-import info.archinnov.achilles.internal.context.PersistenceContextFactory;
-import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
-import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
-import info.archinnov.achilles.query.cql.NativeQuery;
-import info.archinnov.achilles.query.cql.NativeQueryValidator;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.Options;
-import info.archinnov.achilles.type.OptionsBuilder;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
+import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BatchTest {
@@ -78,7 +71,7 @@ public class BatchTest {
     @Before
     public void setUp() {
         when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
-        batch = new Batch(null, contextFactory, daoContext, configContext,true);
+        batch = new Batch(null, contextFactory, daoContext, configContext, true);
 
         batch.flushContext = flushContext;
         batch.validator = validator;
@@ -206,10 +199,26 @@ public class BatchTest {
         ArgumentCaptor<NativeStatementWrapper> statementCaptor = ArgumentCaptor.forClass(NativeStatementWrapper.class);
 
         //When
-        batch.batchNativeStatement(statement,10L);
+        batch.batchNativeStatement(statement, 10L);
 
         //Then
-        verify(validator).validateUpsert(statement);
+        verify(validator).validateUpsertOrDelete(statement);
+        verify(flushContext).pushStatement(statementCaptor.capture());
+        assertThat(statementCaptor.getValue().getStatement()).isSameAs(statement);
+        assertThat(statementCaptor.getValue().getValues()).contains(10L);
+    }
+
+    @Test
+    public void should_support_delete_native_statement_to_batch() throws Exception {
+        //Given
+        final RegularStatement statement = delete().from("test").where(eq("id", bindMarker("id")));
+        ArgumentCaptor<NativeStatementWrapper> statementCaptor = ArgumentCaptor.forClass(NativeStatementWrapper.class);
+
+        //When
+        batch.batchNativeStatement(statement, 10L);
+
+        //Then
+        verify(validator).validateUpsertOrDelete(statement);
         verify(flushContext).pushStatement(statementCaptor.capture());
         assertThat(statementCaptor.getValue().getStatement()).isSameAs(statement);
         assertThat(statementCaptor.getValue().getValues()).contains(10L);
