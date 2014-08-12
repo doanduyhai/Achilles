@@ -16,24 +16,16 @@
 
 package info.archinnov.achilles.query.cql;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.delete;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static org.fest.assertions.api.Assertions.*;
-
+import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.querybuilder.*;
+import info.archinnov.achilles.exception.AchillesException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.querybuilder.Delete;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
-import com.datastax.driver.core.querybuilder.Update;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeQueryValidatorTest {
@@ -132,5 +124,46 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isDeleteStatement(statement10)).isTrue();
         assertThat(validator.isDeleteStatement(statement11)).isTrue();
         assertThat(validator.isDeleteStatement(statement12)).isTrue();
+    }
+
+    @Test
+    public void should_detect_upsert_statement() throws Exception {
+        assertThat(validator.isUpsertStatement(statement1)).isFalse();
+        assertThat(validator.isUpsertStatement(statement2)).isFalse();
+        assertThat(validator.isUpsertStatement(statement3)).isFalse();
+
+        assertThat(validator.isUpsertStatement(statement4)).isTrue();
+        assertThat(validator.isUpsertStatement(statement5)).isTrue();
+        assertThat(validator.isUpsertStatement(statement6)).isTrue();
+
+        assertThat(validator.isUpsertStatement(statement7)).isTrue();
+        assertThat(validator.isUpsertStatement(statement8)).isTrue();
+        assertThat(validator.isUpsertStatement(statement9)).isTrue();
+
+        assertThat(validator.isUpsertStatement(statement10)).isFalse();
+        assertThat(validator.isUpsertStatement(statement11)).isFalse();
+        assertThat(validator.isUpsertStatement(statement12)).isFalse();
+    }
+
+    @Test
+    public void should_invalidate_select_statements() throws Exception {
+        try { validator.validateUpsertOrDelete(statement1); fail(); } catch (AchillesException ae) { assertThat(ae).hasMessageContaining("should be an INSERT, an UPDATE or a DELETE"); }
+        try { validator.validateUpsertOrDelete(statement2); fail(); } catch (AchillesException ae) { assertThat(ae).hasMessageContaining("should be an INSERT, an UPDATE or a DELETE"); }
+        try { validator.validateUpsertOrDelete(statement3); fail(); } catch (AchillesException ae) { assertThat(ae).hasMessageContaining("should be an INSERT, an UPDATE or a DELETE"); }
+    }
+
+    @Test
+    public void should_validate_upsert_and_delete_statements() throws Exception {
+        validator.validateUpsertOrDelete(statement4);
+        validator.validateUpsertOrDelete(statement5);
+        validator.validateUpsertOrDelete(statement6);
+
+        validator.validateUpsertOrDelete(statement7);
+        validator.validateUpsertOrDelete(statement8);
+        validator.validateUpsertOrDelete(statement9);
+
+        validator.validateUpsertOrDelete(statement10);
+        validator.validateUpsertOrDelete(statement11);
+        validator.validateUpsertOrDelete(statement12);
     }
 }
