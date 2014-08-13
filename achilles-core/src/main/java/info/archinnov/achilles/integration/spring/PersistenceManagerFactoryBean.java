@@ -71,6 +71,10 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
     private boolean forceTableCreation = false;
 
+    private boolean enableSchemaUpdate = false;
+    
+    private Map<String,Boolean> enableSchemaUpdateForTables;
+    
     private boolean enableBeanValidation = false;
 
     private Validator beanValidator;
@@ -102,6 +106,12 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         fillConsistencyLevels(configMap);
 
         configMap.put(FORCE_TABLE_CREATION, forceTableCreation);
+        
+        configMap.put(ConfigurationParameters.ENABLE_SCHEMA_UPDATE, enableSchemaUpdate);
+        
+        if (enableSchemaUpdateForTables!=null) {
+            configMap.put(ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES, enableSchemaUpdateForTables);
+        }
 
         fillBeanValidation(configMap);
 
@@ -215,6 +225,14 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
     public void setForceTableCreation(boolean forceTableCreation) {
         this.forceTableCreation = forceTableCreation;
+    }
+    
+    public void setEnableSchemaUpdate(boolean enableSchemaUpdate) {
+        this.enableSchemaUpdate = enableSchemaUpdate;
+    }
+    
+    public void setEnableSchemaUpdateForTables(Map<String, Boolean> enableSchemaUpdateForTables) {
+        this.enableSchemaUpdateForTables = enableSchemaUpdateForTables;
     }
 
     public void setJacksonMapperFactory(JacksonMapperFactory jacksonMapperFactory) {
