@@ -22,10 +22,13 @@ import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_END_BOU
 import static info.archinnov.achilles.query.slice.BoundingMode.INCLUSIVE_START_BOUND_ONLY;
 import static info.archinnov.achilles.query.slice.OrderingMode.ASCENDING;
 import static info.archinnov.achilles.query.slice.OrderingMode.DESCENDING;
+
 import java.util.Iterator;
+
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
 
 public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<TYPE,T>> extends SliceQueryRootExtended<TYPE, T> {
 
@@ -195,7 +198,7 @@ public abstract class IteratePartitionRoot<TYPE, T extends IteratePartitionRoot<
         super.toClusteringsInternal(clusteringKeys);
         return new IterateEnd<>();
     }
-
+    
     /**
      *
      * Filter with matching clustering key(s)

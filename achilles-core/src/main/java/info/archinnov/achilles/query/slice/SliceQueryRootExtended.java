@@ -19,6 +19,7 @@ package info.archinnov.achilles.query.slice;
 import static info.archinnov.achilles.query.slice.SliceQueryProperties.SliceType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
+import info.archinnov.achilles.type.IndexCondition;
 
 public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExtended<TYPE,T>> extends SliceQueryRoot<TYPE,T> {
 
@@ -135,6 +136,31 @@ public abstract class SliceQueryRootExtended<TYPE, T extends SliceQueryRootExten
         return getThis();
     }
 
+    /**
+     * Use an extra index condition for this query.
+     * 
+     * <pre class="code"><code class="java">
+     *
+     *  manager.sliceQuery(ArticleRating.class)
+     *      .forSelect()
+     *      .withIndexCondition("state","active")
+     *      .withPartitionComponents(articleId)
+     *      .get(20);
+     *
+     * </code></pre>
+     *
+     * Generated CQL3 query:
+     *
+     * <br/>
+     *  SELECT * FROM article_rating WHERE article_id=... AND <strong>state='active'</strong> LIMIT 20
+     * @return Slice DSL
+     */
+    public T withIndexCondition(IndexCondition indexCondition)
+    {
+        super.withIndexConditionInternal(indexCondition);
+        return getThis();
+    }
+    
     /**
      *
      * Use ascending order for the first clustering key. This is the <strong>default</strong> ordering
