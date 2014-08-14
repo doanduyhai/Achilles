@@ -25,16 +25,24 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.in;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.lt;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static com.google.common.collect.FluentIterable.from;
-import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.IndexCondition;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.BindMarker;
@@ -42,9 +50,6 @@ import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Select;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class SliceQueryProperties<T> {
 
@@ -86,6 +91,8 @@ public class SliceQueryProperties<T> {
 
     private ClusteringOrder clusteringOrder;
 
+    private IndexCondition withIndexCondition;
+    
     private SliceQueryProperties(EntityMeta entityMeta, Class<T> entityClass, SliceType sliceType) {
         this.entityMeta = entityMeta;
         this.entityClass = entityClass;
@@ -193,6 +200,11 @@ public class SliceQueryProperties<T> {
         this.lastClusteringKeyName = lastClusteringKeyName;
         return this;
     }
+    
+    public SliceQueryProperties<T> withIndexCondition(IndexCondition withIndexCondition) {
+        this.withIndexCondition = withIndexCondition;
+        return this;
+    }
 
     // Public access
 
@@ -234,6 +246,15 @@ public class SliceQueryProperties<T> {
                 }
             }
         }
+        
+        // Index condition
+        if (withIndexCondition!=null) {
+            String indexColumnName = withIndexCondition.getColumnName();
+            where.and(eq(indexColumnName, bindMarker(indexColumnName)));
+            if (orderingModeO.isPresent()) { // Disable ordering
+                this.orderingModeO = Optional.absent();
+            }
+        }
 
         // ORDER BY
         if (orderingModeO.isPresent()) {
@@ -249,7 +270,7 @@ public class SliceQueryProperties<T> {
             if (limitO.isPresent()) {
                 statement.limit(bindMarker("limitSize"));
             }
-
+            
             return statement;
         } else {
             // LIMIT
@@ -280,6 +301,14 @@ public class SliceQueryProperties<T> {
                 where.and(eq(withClusteringName, bindMarker(withClusteringName)));
             }
         }
+        
+        // Index condition
+        if (withIndexCondition!=null) {
+            entityMeta.encodeIndexConditionValue(withIndexCondition);
+            String indexColumnName = withIndexCondition.getColumnName();
+            where.and(eq(indexColumnName, bindMarker(indexColumnName)));
+        }
+        
         return where;
     }
 
@@ -307,6 +336,11 @@ public class SliceQueryProperties<T> {
             if (isNotEmpty(toClusteringKeys)) {
                 boundValues.addAll(toClusteringKeys);
             }
+        }
+        
+        if (withIndexCondition!=null) {
+            entityMeta.encodeIndexConditionValue(withIndexCondition);
+            boundValues.add(withIndexCondition.getColumnValue());
         }
 
         // LIMIT
@@ -343,6 +377,10 @@ public class SliceQueryProperties<T> {
         return withClusteringKeys;
     }
 
+    public IndexCondition getWithIndexCondition() {
+        return withIndexCondition;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -362,6 +400,7 @@ public class SliceQueryProperties<T> {
                 Objects.equals(this.toClusteringKeysName, that.toClusteringKeysName) &&
                 Objects.equals(this.withClusteringKeysName, that.withClusteringKeysName) &&
                 Objects.equals(this.lastClusteringKeyName, that.lastClusteringKeyName) &&
+                Objects.equals(this.withIndexCondition, that.withIndexCondition) &&
                 Objects.equals(this.boundingMode, that.boundingMode) &&
                 Objects.equals(this.orderingModeO, that.orderingModeO) &&
                 Objects.equals(this.limitO, that.limitO);
@@ -377,6 +416,7 @@ public class SliceQueryProperties<T> {
                 this.toClusteringKeysName,
                 this.withClusteringKeysName,
                 this.lastClusteringKeyName,
+                this.withIndexCondition,
                 this.boundingMode,
                 this.orderingModeO,
                 this.limitO);
