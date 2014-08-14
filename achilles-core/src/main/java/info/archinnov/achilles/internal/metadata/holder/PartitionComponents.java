@@ -49,7 +49,7 @@ public class PartitionComponents extends AbstractComponentProperties {
 			Class<?> currentPartitionComponentType = partitionKeyComponent.getClass();
 			Class<?> expectedPartitionComponentType = componentClasses.get(i);
 
-			Validator.validateTrue(currentPartitionComponentType.equals(expectedPartitionComponentType),
+			Validator.validateTrue(expectedPartitionComponentType.isAssignableFrom(currentPartitionComponentType),
 							"The type '%s' of partition key component '%s' for querying on entity '%s' is not valid. It should be '%s'",
 							currentPartitionComponentType.getCanonicalName(), partitionKeyComponent, className,
 							expectedPartitionComponentType.getCanonicalName());
@@ -70,7 +70,7 @@ public class PartitionComponents extends AbstractComponentProperties {
 
             Class<?> currentPartitionComponentType = partitionKeyComponent.getClass();
 
-            Validator.validateTrue(currentPartitionComponentType.equals(lastPartitionComponentType),
+            Validator.validateTrue(lastPartitionComponentType.isAssignableFrom(currentPartitionComponentType),
                     "The type '%s' of partition key component '%s' for querying on entity '%s' is not valid. It should be '%s'",
                     currentPartitionComponentType.getCanonicalName(), partitionKeyComponent, className,
                     lastPartitionComponentType.getCanonicalName());
