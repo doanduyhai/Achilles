@@ -95,4 +95,21 @@ public class PartitionComponentsTest {
 
 		partitionComponents.validatePartitionComponents("entityClass", 11L, "name");
 	}
+    
+    @Test
+    public void should_validate_partition_components_for_primitives() throws Exception {
+        partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.TYPE, String.class), null, null,
+                null,null);
+
+        partitionComponents.validatePartitionComponents("classname", 11L, "type");
+    }
+    
+    @Test
+    public void should_validate_partition_components_for_superclasse() throws Exception {
+        partitionComponents = new PartitionComponents(Arrays.<Class<?>> asList(Long.class, java.util.Date.class), null, null,
+                null,null);
+
+        partitionComponents.validatePartitionComponents("classname", 11L, new java.sql.Timestamp(System.currentTimeMillis()));
+    }
+	
 }
