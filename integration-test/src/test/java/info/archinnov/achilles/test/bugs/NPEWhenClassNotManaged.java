@@ -7,13 +7,11 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class NPEWhenClassManaged {
+public class NPEWhenClassNotManaged {
 
     @Rule
     public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(
-            AchillesTestResource.Steps.AFTER_TEST,
-            "CompleteBean",
-            "Tweet");
+            AchillesTestResource.Steps.AFTER_TEST,"CompleteBean");
 
     private PersistenceManager manager = resource.getPersistenceManager();
 
