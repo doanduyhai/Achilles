@@ -20,9 +20,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import info.archinnov.achilles.internal.validation.Validator;
 
 public class PartitionComponents extends AbstractComponentProperties {
@@ -49,7 +52,7 @@ public class PartitionComponents extends AbstractComponentProperties {
 			Class<?> currentPartitionComponentType = partitionKeyComponent.getClass();
 			Class<?> expectedPartitionComponentType = componentClasses.get(i);
 
-			Validator.validateTrue(currentPartitionComponentType.equals(expectedPartitionComponentType),
+			Validator.validateTrue(isCompatibleClass(expectedPartitionComponentType, currentPartitionComponentType),
 							"The type '%s' of partition key component '%s' for querying on entity '%s' is not valid. It should be '%s'",
 							currentPartitionComponentType.getCanonicalName(), partitionKeyComponent, className,
 							expectedPartitionComponentType.getCanonicalName());
@@ -70,13 +73,17 @@ public class PartitionComponents extends AbstractComponentProperties {
 
             Class<?> currentPartitionComponentType = partitionKeyComponent.getClass();
 
-            Validator.validateTrue(currentPartitionComponentType.equals(lastPartitionComponentType),
+            Validator.validateTrue(isCompatibleClass(lastPartitionComponentType, currentPartitionComponentType),
                     "The type '%s' of partition key component '%s' for querying on entity '%s' is not valid. It should be '%s'",
                     currentPartitionComponentType.getCanonicalName(), partitionKeyComponent, className,
                     lastPartitionComponentType.getCanonicalName());
         }
-
-
+    }
+    
+    static boolean isCompatibleClass(Class<?> expected, Class<?> given)
+    {
+        expected=ClassUtils.primitiveToWrapper(expected);
+        return (expected==given || expected.isAssignableFrom(given));
     }
 
 	boolean isComposite() {
