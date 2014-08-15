@@ -21,6 +21,8 @@ import static info.archinnov.achilles.internal.helper.LoggerHelper.fqcnToStringF
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -60,6 +62,12 @@ public abstract class AbstractComponentProperties {
 
     public List<Field> getComponentFields() {
         return componentFields;
+    }
+
+    protected static boolean isCompatibleClass(Class<?> expected, Class<?> given)
+    {
+        expected= ClassUtils.primitiveToWrapper(expected);
+        return (expected==given || expected.isAssignableFrom(given));
     }
 
     @Override

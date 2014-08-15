@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,11 +79,6 @@ public class PartitionComponents extends AbstractComponentProperties {
         }
     }
     
-    static boolean isCompatibleClass(Class<?> expected, Class<?> given)
-    {
-        expected=ClassUtils.primitiveToWrapper(expected);
-        return (expected==given || expected.isAssignableFrom(given));
-    }
 
 	boolean isComposite() {
 		return this.componentClasses.size() > 1;

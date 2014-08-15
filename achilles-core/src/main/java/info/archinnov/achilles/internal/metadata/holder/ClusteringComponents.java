@@ -49,11 +49,11 @@ public class ClusteringComponents extends AbstractComponentProperties {
         for (int i = 0; i < clusteringComponents.size(); i++) {
             Object clusteringKey = clusteringComponents.get(i);
             Validator.validateNotNull(clusteringKey, "The '%sth' clustering key should not be null", i + 1);
-            Class<?> clusteringType = clusteringKey.getClass();
+            Class<?> currentClusteringType = clusteringKey.getClass();
             Class<?> expectedClusteringType = componentClasses.get(i);
 
-            Validator.validateTrue(expectedClusteringType.equals(clusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
-                    clusteringType.getCanonicalName(), clusteringKey, className, expectedClusteringType.getCanonicalName());
+            Validator.validateTrue(isCompatibleClass(expectedClusteringType,currentClusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                    currentClusteringType.getCanonicalName(), clusteringKey, className, expectedClusteringType.getCanonicalName());
         }
     }
 
@@ -63,15 +63,15 @@ public class ClusteringComponents extends AbstractComponentProperties {
 
         final List<Object> clusteringComponentsIn = Arrays.asList(clusteringComponentsInArray);
 
-        Class<?> lastClusteringComponentType = componentClasses.get(componentClasses.size()-1);
+        Class<?> lastClusteringComponentType = componentClasses.get(componentClasses.size() - 1);
 
         for (int i = 0; i < clusteringComponentsIn.size(); i++) {
             Object clusteringKey = clusteringComponentsIn.get(i);
             Validator.validateNotNull(clusteringKey, "The '%sth' clustering key should not be null", i + 1);
-            Class<?> clusteringType = clusteringKey.getClass();
+            Class<?> currentClusteringType = clusteringKey.getClass();
 
-            Validator.validateTrue(lastClusteringComponentType.equals(clusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
-                    clusteringType.getCanonicalName(), clusteringKey, className, lastClusteringComponentType.getCanonicalName());
+            Validator.validateTrue(isCompatibleClass(lastClusteringComponentType,currentClusteringType), "The type '%s' of clustering key '%s' for querying on entity '%s' is not valid. It should be '%s'",
+                    currentClusteringType.getCanonicalName(), clusteringKey, className, lastClusteringComponentType.getCanonicalName());
         }
     }
 
@@ -87,22 +87,4 @@ public class ClusteringComponents extends AbstractComponentProperties {
         return clusteringOrders;
     }
 
-    private int validateNoHoleAndReturnLastNonNullIndex(List<Object> components) {
-        boolean nullFlag = false;
-        int lastNotNullIndex = 0;
-        for (Object component : components) {
-            if (component != null) {
-                if (nullFlag) {
-                    throw new AchillesException(
-                            "There should not be any null value between two non-null components of an @EmbeddedId");
-                }
-                lastNotNullIndex++;
-            } else {
-                nullFlag = true;
-            }
-        }
-        lastNotNullIndex--;
-
-        return lastNotNullIndex;
-    }
 }
