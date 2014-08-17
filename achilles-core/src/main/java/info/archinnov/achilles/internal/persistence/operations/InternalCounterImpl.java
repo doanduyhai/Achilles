@@ -16,15 +16,18 @@
 
 package info.archinnov.achilles.internal.persistence.operations;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import info.archinnov.achilles.type.Counter;
 
 /**
  * <strong>Class internal to Achilles, DO NOT USE</strong>
  */
 public class InternalCounterImpl implements Counter {
-
+    @JsonIgnore
 	private Long initialValue;
 
+    @JsonIgnore
 	private transient Long delta;
 
 	protected InternalCounterImpl(long delta) {
@@ -36,6 +39,7 @@ public class InternalCounterImpl implements Counter {
 		this.initialValue = initialValue;
 	}
 
+    @JsonProperty(value="counter")
 	@Override
 	public Long get() {
 		Long value;
@@ -80,6 +84,7 @@ public class InternalCounterImpl implements Counter {
 	 * @return delta between the initial counter value and the
 	 *         <strong>current</strong> counter value
 	 */
+    @JsonIgnore
 	public Long getInternalCounterDelta() {
 		return delta;
 	}

@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.type;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * <p>
  *  Utility class to assign an initial counter value to a transient entity. Example
@@ -67,8 +69,10 @@ public class CounterBuilder {
         return new CounterImpl(-1L * decr);
     }
 
+
     public static class CounterImpl implements Counter {
 
+        @JsonProperty
         private long counterValue;
 
         private CounterImpl(long counterValue) {
