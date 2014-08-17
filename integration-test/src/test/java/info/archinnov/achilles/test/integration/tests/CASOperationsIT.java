@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Ignore;
@@ -42,8 +43,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.exception.AchillesCASException;
-import info.archinnov.achilles.junit.AchillesTestResource;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.query.cql.NativeQuery;
@@ -113,13 +112,13 @@ public class CASOperationsIT {
         //Given
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "name", EACH_QUORUM);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("id", 10L, "[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "name");
-        AchillesCASException casException = null;
+        AchillesLightWeightTransactionException casException = null;
         manager.insert(entityWithEnum);
 
         //When
         try {
             manager.insert(entityWithEnum, OptionsBuilder.ifNotExists());
-        } catch (AchillesCASException ace) {
+        } catch (AchillesLightWeightTransactionException ace) {
             casException = ace;
         }
 
@@ -230,13 +229,13 @@ public class CASOperationsIT {
         final EntityWithEnum entityWithEnum = new EntityWithEnum(10L, "John", EACH_QUORUM);
         final EntityWithEnum managed = manager.insert(entityWithEnum);
         Map<String, Object> expectedCurrentValues = ImmutableMap.<String, Object>of("[applied]", false, "consistency_level", EACH_QUORUM.name(), "name", "John");
-        AchillesCASException casException = null;
+        AchillesLightWeightTransactionException casException = null;
         managed.setName("Helen");
 
         //When
         try {
             manager.update(managed, ifConditions(new CASCondition("name", "name"), new CASCondition("consistency_level", EACH_QUORUM)));
-        } catch (AchillesCASException ace) {
+        } catch (AchillesLightWeightTransactionException ace) {
             casException = ace;
         }
 

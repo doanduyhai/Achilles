@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeMap;
+
+import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +43,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.TraceRetrievalException;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -182,7 +183,7 @@ public abstract class AbstractStatementWrapper {
         if (casResultListener.isPresent()) {
             casResultListener.get().onCASError(casResult);
         } else {
-            throw new AchillesCASException(casResult);
+            throw new AchillesLightWeightTransactionException(casResult);
         }
     }
 

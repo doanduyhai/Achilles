@@ -33,6 +33,8 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import org.fest.assertions.data.MapEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +52,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Optional;
-import info.archinnov.achilles.exception.AchillesCASException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -191,11 +192,11 @@ public class RegularStatementWrapperTest {
         when(invoker.invokeOnRowForType(row, DataType.cboolean().asJavaClass(), "[applied]")).thenReturn(false);
         when(invoker.invokeOnRowForType(row, DataType.bigint().asJavaClass(), "id")).thenReturn(10L);
 
-        AchillesCASException caughtEx = null;
+        AchillesLightWeightTransactionException caughtEx = null;
         //When
         try {
             wrapper.execute(session);
-        } catch (AchillesCASException ace) {
+        } catch (AchillesLightWeightTransactionException ace) {
             caughtEx = ace;
         }
 
