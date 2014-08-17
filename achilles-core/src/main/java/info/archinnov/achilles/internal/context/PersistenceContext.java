@@ -254,7 +254,7 @@ public class PersistenceContext {
             flushContext.triggerInterceptor(entityMeta, entity, PRE_UPDATE);
             updater.update(entityFacade, proxifiedEntity);
             flush();
-            flushContext.triggerInterceptor(entityMeta, entity, POST_UPDATE);
+            flushContext.triggerInterceptor(entityMeta, proxifiedEntity, POST_UPDATE);
         }
 
         public void remove() {

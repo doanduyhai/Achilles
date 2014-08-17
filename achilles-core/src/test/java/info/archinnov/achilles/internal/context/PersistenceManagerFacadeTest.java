@@ -157,7 +157,7 @@ public class PersistenceManagerFacadeTest {
         inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, PRE_UPDATE);
         inOrder.verify(updater).update(context.entityFacade, entity);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(flushContext).triggerInterceptor(meta, rawEntity, POST_UPDATE);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_UPDATE);
     }
 
     @Test
