@@ -16,8 +16,6 @@
 
 package info.archinnov.achilles.internal.metadata.holder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 
 import java.util.ArrayList;

@@ -18,19 +18,13 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.reflections.ReflectionUtils.getAllConstructors;
 import static org.reflections.ReflectionUtils.getAllFields;
-import static org.reflections.ReflectionUtils.withParametersCount;
-import java.lang.reflect.Constructor;
+
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.internal.metadata.holder.PartitionComponents;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +33,6 @@ import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Order;
 import info.archinnov.achilles.annotations.PartitionKey;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdPropertiesBuilder;
@@ -62,7 +55,7 @@ public class EmbeddedIdParser {
 
         Map<Integer, Field> components = extractComponentsOrdering(embeddedIdClass);
         validateConsistentPartitionKeys(components, embeddedIdClass.getCanonicalName());
-        final List<ClusteringOrder> clusteringOrders = extractClusteredOrder(embeddedIdClass);
+        final List<ClusteringOrder> clusteringOrders = extractClusteringOrder(embeddedIdClass);
         EmbeddedIdProperties embeddedIdProperties = buildComponentMetas(propertyParser,embeddedIdClass, components, clusteringOrders);
 
         log.trace("Built embeddedId properties : {}", embeddedIdProperties);
@@ -98,7 +91,7 @@ public class EmbeddedIdParser {
 
     }
 
-    private List<ClusteringOrder> extractClusteredOrder(Class<?> embeddedIdClass) {
+    private List<ClusteringOrder> extractClusteringOrder(Class<?> embeddedIdClass) {
         log.debug("Extract clustering component order from embedded id class {} ",embeddedIdClass.getCanonicalName());
 
         List<ClusteringOrder> sortOrders = new LinkedList<>();
@@ -208,10 +201,10 @@ public class EmbeddedIdParser {
         Column column = compositeKeyField.getAnnotation(Column.class);
 
         if (column != null && isNotBlank(column.name())) {
-            componentName = column.name();
+            componentName = column.name().toLowerCase();
         }
         else {
-            componentName = compositeKeyField.getName();
+            componentName = compositeKeyField.getName().toLowerCase();
         }
 
         if (column != null && column.staticColumn()) {
