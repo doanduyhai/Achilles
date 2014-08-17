@@ -14,6 +14,9 @@ import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+/**
+ *  Test case for bug #119: Validation of PartitionComponents fails for simple types
+ */
 public class SliceQueryValidationOnPrimitiveAndSubTypes {
 
     @Rule

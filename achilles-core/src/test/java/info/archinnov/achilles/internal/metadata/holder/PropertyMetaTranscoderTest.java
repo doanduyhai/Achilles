@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -275,6 +276,86 @@ public class PropertyMetaTranscoderTest {
 
         //Then
         assertThat(json).isEqualTo("test");
+    }
+
+    @Test
+    public void should_encode_partition_components() throws Exception {
+        //Given
+        final Long id = RandomUtils.nextLong();
+        final int bucket = 10;
+
+        when(meta.type()).thenReturn(EMBEDDED_ID);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta anotherMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta, anotherMeta)));
+        when(idMeta.forTranscoding().encodeToCassandra(id)).thenReturn(id);
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket)).thenReturn(bucket);
+
+        //When
+        final List<Object> encoded = view.encodePartitionComponents(Arrays.<Object>asList(id, bucket));
+
+        //Then
+        assertThat(encoded).containsExactly(id, bucket);
+    }
+
+    @Test
+    public void should_encode_partition_components_IN() throws Exception {
+        //Given
+        final int bucket1 = 10, bucket2 = 11;
+
+        when(meta.type()).thenReturn(EMBEDDED_ID);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(new PartitionComponents(asList(idMeta, bucketMeta)));
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket1)).thenReturn(bucket1);
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket2)).thenReturn(bucket2);
+
+        //When
+        final List<Object> encoded = view.encodePartitionComponentsIN(Arrays.<Object>asList(bucket1, bucket2));
+
+        //Then
+        assertThat(encoded).containsExactly(bucket1, bucket2);
+    }
+
+
+    @Test
+    public void should_encode_clustering_components() throws Exception {
+        //Given
+        final Long id = RandomUtils.nextLong();
+        final int bucket = 10;
+
+        when(meta.type()).thenReturn(EMBEDDED_ID);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getEmbeddedIdProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
+        when(idMeta.forTranscoding().encodeToCassandra(id)).thenReturn(id);
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket)).thenReturn(bucket);
+
+        //When
+        final List<Object> encoded = view.encodeClusteringKeys(Arrays.<Object>asList(id, bucket));
+
+        //Then
+        assertThat(encoded).containsExactly(id, bucket);
+    }
+
+    @Test
+    public void should_encode_clustering_components_IN() throws Exception {
+        //Given
+        final int bucket1 = 10, bucket2 = 11;
+
+        when(meta.type()).thenReturn(EMBEDDED_ID);
+        PropertyMeta idMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta bucketMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        when(meta.getEmbeddedIdProperties().getClusteringComponents()).thenReturn(new ClusteringComponents(asList(idMeta, bucketMeta), Arrays.<ClusteringOrder>asList()));
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket1)).thenReturn(bucket1);
+        when(bucketMeta.forTranscoding().encodeToCassandra(bucket2)).thenReturn(bucket2);
+
+        //When
+        final List<Object> encoded = view.encodeClusteringKeysIN(Arrays.<Object>asList(bucket1, bucket2));
+
+        //Then
+        assertThat(encoded).containsExactly(bucket1, bucket2);
     }
 
 }

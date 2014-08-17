@@ -7,6 +7,9 @@ import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import org.junit.Rule;
 import org.junit.Test;
 
+/**
+ * Test case for bug #116: Fixes NPE when entity not managed
+ */
 public class NPEWhenClassNotManaged {
 
     @Rule

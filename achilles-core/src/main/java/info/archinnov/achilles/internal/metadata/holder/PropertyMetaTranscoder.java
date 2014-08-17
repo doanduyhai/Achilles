@@ -105,6 +105,54 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
         return encoded;
     }
 
+    List<Object> encodePartitionComponents(List<Object> rawPartitionComponents) {
+        log.trace("Encode {} to CQL partition components", rawPartitionComponents);
+        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponents, meta.propertyName);
+        final List<PropertyMeta> partitionMetas = meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas;
+        Validator.validateTrue(rawPartitionComponents.size() <= partitionMetas.size(),"There should be no more than '%s' partition components to be encoded for class '%s'", rawPartitionComponents, meta.getEntityClassName());
+        return encodeElements(rawPartitionComponents, partitionMetas);
+    }
+
+    List<Object> encodePartitionComponentsIN(List<Object> rawPartitionComponentsIN) {
+        log.trace("Encode {} to CQL partition components IN", rawPartitionComponentsIN);
+        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode partition components '%s' for the property '%s' which is not a compound primary key", rawPartitionComponentsIN, meta.propertyName);
+        final List<PropertyMeta> partitionMetas = meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas;
+        final PropertyMeta lastPartitionComponentMeta = partitionMetas.get(partitionMetas.size() - 1);
+        return encodeLastComponent(rawPartitionComponentsIN, lastPartitionComponentMeta);
+    }
+
+    List<Object> encodeClusteringKeys(List<Object> rawClusteringKeys) {
+        log.trace("Encode {} to CQL clustering keys", rawClusteringKeys);
+        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeys, meta.propertyName);
+        final List<PropertyMeta> clusteringMetas = meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas;
+        Validator.validateTrue(rawClusteringKeys.size() <= clusteringMetas.size(),"There should be no more than '%s' clustering components to be encoded for class '%s'", rawClusteringKeys, meta.getEntityClassName());
+        return encodeElements(rawClusteringKeys, clusteringMetas);
+    }
+
+    List<Object> encodeClusteringKeysIN(List<Object> rawClusteringKeysIN) {
+        log.trace("Encode {} to CQL clustering keys IN", rawClusteringKeysIN);
+        Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot encode clustering components '%s' for the property '%s' which is not a compound primary key", rawClusteringKeysIN, meta.propertyName);
+        final List<PropertyMeta> clusteringMetas = meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas;
+        final PropertyMeta lastClusteringKeyMeta = clusteringMetas.get(clusteringMetas.size() - 1);
+        return encodeLastComponent(rawClusteringKeysIN, lastClusteringKeyMeta);
+    }
+
+    private List<Object> encodeElements(List<Object> rawPartitionComponents, List<PropertyMeta> propertyMetas) {
+        List<Object> encoded = new ArrayList<>();
+        for (int i = 0; i < rawPartitionComponents.size(); i++) {
+            final PropertyMeta componentMeta = propertyMetas.get(i);
+            encoded.add(componentMeta.forTranscoding().encodeToCassandra(rawPartitionComponents.get(i)));
+        }
+        return encoded;
+    }
+
+    private List<Object> encodeLastComponent(List<Object> rawPartitionComponentsIN, PropertyMeta lastComponentMeta) {
+        List<Object> encoded = new ArrayList<>();
+        for (Object rawPartitionComponentIN : rawPartitionComponentsIN) {
+            encoded.add(lastComponentMeta.forTranscoding().encodeToCassandra(rawPartitionComponentIN));
+        }
+        return encoded;
+    }
 
     public String forceEncodeToJSONForCounter(Object object) {
         log.trace("Force encode {} to JSON for property {} of entity class {}", object, meta.getPropertyName(), meta.getEntityClassName());

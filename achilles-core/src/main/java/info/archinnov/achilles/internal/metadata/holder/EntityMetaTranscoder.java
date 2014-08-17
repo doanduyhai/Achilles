@@ -4,6 +4,8 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options.CASCondition;
 
+import java.util.List;
+
 public class EntityMetaTranscoder extends EntityMetaView {
     protected EntityMetaTranscoder(EntityMeta meta) {
         super(meta);
@@ -25,7 +27,21 @@ public class EntityMetaTranscoder extends EntityMetaView {
         return encodedValue;
     }
 
+    public List<Object> encodePartitionComponents(List<Object> rawPartitionComponents) {
+        return meta.getIdMeta().forTranscoding().encodePartitionComponents(rawPartitionComponents);
+    }
 
+    public List<Object> encodePartitionComponentsIN(List<Object> rawPartitionComponentsIN) {
+        return meta.getIdMeta().forTranscoding().encodePartitionComponentsIN(rawPartitionComponentsIN);
+    }
+
+    public List<Object> encodeClusteringKeys(List<Object> rawClusteringKeys) {
+        return meta.getIdMeta().forTranscoding().encodeClusteringKeys(rawClusteringKeys);
+    }
+
+    public List<Object> encodeClusteringKeysIN(List<Object> rawClusteringKeysIN) {
+        return meta.getIdMeta().forTranscoding().encodeClusteringKeysIN(rawClusteringKeysIN);
+    }
 
     private Object encodeValueForProperty(String columnName, Object rawValue) {
         Object encodedValue = rawValue;

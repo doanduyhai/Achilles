@@ -58,7 +58,7 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         log.trace("Add partition key components for IN clause {}", partitionKeyComponentsIn);
 
         meta.forSliceQuery().validatePartitionComponentsIn(partitionKeyComponentsIn);
-        SliceQueryRoot.this.properties.partitionKeysIn(asList(partitionKeyComponentsIn));
+        SliceQueryRoot.this.properties.andPartitionKeysIn(asList(partitionKeyComponentsIn));
         SliceQueryRoot.this.properties.lastPartitionKeyName(meta.forSliceQuery().getLastPartitionKeyName());
     }
 
@@ -73,7 +73,7 @@ public abstract class SliceQueryRoot<TYPE, T extends SliceQueryRoot<TYPE, T>> {
         Validator.validateTrue(partitionKeys.size() == correctPartitionKeysSize, "To use the IN clause, you must provide '%s' partition keys components first", correctPartitionKeysSize);
 
         meta.forSliceQuery().validatePartitionComponentsIn(partitionKeyComponentsIn);
-        SliceQueryRoot.this.properties.partitionKeysIn(asList(partitionKeyComponentsIn));
+        SliceQueryRoot.this.properties.andPartitionKeysIn(asList(partitionKeyComponentsIn));
         SliceQueryRoot.this.properties.lastPartitionKeyName(meta.forSliceQuery().getLastPartitionKeyName());
     }
 

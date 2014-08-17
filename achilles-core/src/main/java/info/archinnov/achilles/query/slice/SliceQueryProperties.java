@@ -144,7 +144,7 @@ public class SliceQueryProperties<T> {
         return this;
     }
 
-    protected SliceQueryProperties<T>  partitionKeysIn(List<Object> partitionKeysIn) {
+    protected SliceQueryProperties<T> andPartitionKeysIn(List<Object> partitionKeysIn) {
         this.partitionKeysIn = partitionKeysIn;
         return this;
     }
@@ -286,26 +286,26 @@ public class SliceQueryProperties<T> {
     public Object[] getBoundValues() {
         List<Object> boundValues = new LinkedList<>();
         // Partition keys
-        boundValues.addAll(partitionKeys);
+        boundValues.addAll(entityMeta.forTranscoding().encodePartitionComponents(partitionKeys));
 
         if (isNotEmpty(partitionKeysIn)) {
-            boundValues.add(partitionKeysIn);
+            boundValues.add(entityMeta.forTranscoding().encodePartitionComponentsIN(partitionKeysIn));
         }
 
         // Clustering keys
         if (isNotEmpty(withClusteringKeys)) {
-            boundValues.addAll(withClusteringKeys);
+            boundValues.addAll(entityMeta.forTranscoding().encodeClusteringKeys(withClusteringKeys));
 
             if (isNotEmpty(clusteringsKeysIn)) {
-                boundValues.add(clusteringsKeysIn);
+                boundValues.add(entityMeta.forTranscoding().encodeClusteringKeysIN(clusteringsKeysIn));
             }
         } else {
             if (isNotEmpty(fromClusteringKeys)) {
-                boundValues.addAll(fromClusteringKeys);
+                boundValues.addAll(entityMeta.forTranscoding().encodeClusteringKeys(fromClusteringKeys));
             }
 
             if (isNotEmpty(toClusteringKeys)) {
-                boundValues.addAll(toClusteringKeys);
+                boundValues.addAll(entityMeta.forTranscoding().encodeClusteringKeys(toClusteringKeys));
             }
         }
 

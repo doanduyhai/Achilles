@@ -31,6 +31,8 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.schemabuilder.Create;
 
+import java.util.Arrays;
+
 @RunWith(MockitoJUnitRunner.class)
 public class DeleteDSLTest {
 
@@ -38,27 +40,28 @@ public class DeleteDSLTest {
     private SliceQueryExecutor executor;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EntityMeta entityMeta;
+    private EntityMeta meta;
 
     private Delete delete = QueryBuilder.delete().from("table");
 
     @Before
     public void setUp() {
-        when(entityMeta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC));
-        when(entityMeta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
-        when(entityMeta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
+        when(meta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC));
+        when(meta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
+        when(meta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
 
-        when(entityMeta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
-        when(entityMeta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
-        when(entityMeta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
-        when(entityMeta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
-        when(entityMeta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
+        when(meta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
+        when(meta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
+        when(meta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
+        when(meta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
+        when(meta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
     }
 
     @Test
     public void should_delete_with_partition_keys_only() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forDelete();
+        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
         final DeleteFromPartition<String> start = builder.withPartitionComponents("a");
@@ -75,7 +78,9 @@ public class DeleteDSLTest {
     @Test
     public void should_delete_with_partition_keys_IN() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forDelete();
+        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
+        when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
 
         //When
         final DeleteWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
@@ -92,7 +97,9 @@ public class DeleteDSLTest {
     @Test
     public void should_delete_with_matching_clustering_keys() throws Exception {
         //Given
-        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forDelete();
+        final DeleteDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forDelete();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
         final DeleteFromPartition<String> start = builder.withPartitionComponents("a");

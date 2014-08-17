@@ -34,6 +34,8 @@ import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 
+import java.util.Arrays;
+
 @RunWith(MockitoJUnitRunner.class)
 public class SelectDSLTest {
 
@@ -41,27 +43,28 @@ public class SelectDSLTest {
     private SliceQueryExecutor executor;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EntityMeta entityMeta;
+    private EntityMeta meta;
 
     private Select select = QueryBuilder.select().from("table");
 
     @Before
     public void setUp() {
-        when(entityMeta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new ClusteringOrder("col1", Sorting.ASC));
-        when(entityMeta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
-        when(entityMeta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
+        when(meta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new ClusteringOrder("col1", Sorting.ASC));
+        when(meta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
+        when(meta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
 
-        when(entityMeta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
-        when(entityMeta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
-        when(entityMeta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
-        when(entityMeta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
-        when(entityMeta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
+        when(meta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
+        when(meta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
+        when(meta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
+        when(meta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
+        when(meta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
     }
 
     @Test
     public void should_get_with_limit_from_partition_keys_only() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
         final SelectFromPartition<String> start = builder
@@ -79,7 +82,10 @@ public class SelectDSLTest {
     @Test
     public void should_get_from_partition_keys_IN() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
+        when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
         final SelectWithPartition<String> start = builder
@@ -97,8 +103,8 @@ public class SelectDSLTest {
     @Test
     public void should_get_one_from_partition_keys_only() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
-
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
         //When
         final SelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
@@ -115,8 +121,11 @@ public class SelectDSLTest {
     @Test
     public void should_get_with_limit_with_partition_keys_and_clustering_keys() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
-
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("b", "c"))).thenReturn(Arrays.<Object>asList("b", "c"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("C", "D"))).thenReturn(Arrays.<Object>asList("C", "D"));
         //When
         final SelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
@@ -138,7 +147,10 @@ public class SelectDSLTest {
     @Test
     public void should_get_one_with_clustering_keys_IN() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
+        when(meta.forTranscoding().encodeClusteringKeysIN(Arrays.<Object>asList("C", "D"))).thenReturn(Arrays.<Object>asList("C", "D"));
 
         //When
         final SelectFromPartition<String> start = builder
@@ -159,7 +171,9 @@ public class SelectDSLTest {
     @Test
     public void should_get_one_with_from_clustering_only() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
         final SelectFromPartition<String> start = builder.withPartitionComponents("a");
@@ -176,7 +190,9 @@ public class SelectDSLTest {
     @Test
     public void should_get_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
         final SelectFromPartition<String> start = builder.withPartitionComponents("a");
@@ -196,7 +212,9 @@ public class SelectDSLTest {
     @Test
     public void should_get_first_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
         final SelectFromPartition<String> start = builder.withPartitionComponents("a");
@@ -213,7 +231,9 @@ public class SelectDSLTest {
     @Test
     public void should_get_last_matching_clustering_keys() throws Exception {
         //Given
-        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forSelect();
+        final SelectDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forSelect();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B", "C"))).thenReturn(Arrays.<Object>asList("A", "B", "C"));
 
         //When
         final SelectFromPartition<String> start = builder.withPartitionComponents("a");

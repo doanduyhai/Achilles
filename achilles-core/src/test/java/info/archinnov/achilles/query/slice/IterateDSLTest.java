@@ -32,6 +32,8 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.persistence.operations.SliceQueryExecutor;
 import info.archinnov.achilles.schemabuilder.Create;
 
+import java.util.Arrays;
+
 @RunWith(MockitoJUnitRunner.class)
 public class IterateDSLTest {
 
@@ -39,27 +41,28 @@ public class IterateDSLTest {
     private SliceQueryExecutor executor;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private EntityMeta entityMeta;
+    private EntityMeta meta;
 
     private Select select = QueryBuilder.select().from("table");
 
     @Before
     public void setUp() {
-        when(entityMeta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC));
-        when(entityMeta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
-        when(entityMeta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
+        when(meta.forSliceQuery().getClusteringOrderForSliceQuery()).thenReturn(new Create.Options.ClusteringOrder("col1", Create.Options.ClusteringOrder.Sorting.ASC));
+        when(meta.forSliceQuery().getPartitionKeysSize()).thenReturn(2);
+        when(meta.forSliceQuery().getClusteringKeysSize()).thenReturn(3);
 
-        when(entityMeta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
-        when(entityMeta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
-        when(entityMeta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
-        when(entityMeta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
-        when(entityMeta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
+        when(meta.forSliceQuery().getPartitionKeysName(1)).thenReturn(asList("id"));
+        when(meta.forSliceQuery().getLastPartitionKeyName()).thenReturn("bucket");
+        when(meta.forSliceQuery().getClusteringKeysName(2)).thenReturn(asList("col1", "col2"));
+        when(meta.forSliceQuery().getClusteringKeysName(3)).thenReturn(asList("col1", "col2", "col3"));
+        when(meta.forSliceQuery().getLastClusteringKeyName()).thenReturn("col3");
     }
 
     @Test
     public void should_iterate() throws Exception {
         //Given
-        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forIteration();
+        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forIteration();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
         final IterateFromPartition<String> start = builder.withPartitionComponents("a");
@@ -77,7 +80,10 @@ public class IterateDSLTest {
     @Test
     public void should_iterate_with_partition_keys_IN() throws Exception {
         //Given
-        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forIteration();
+        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forIteration();
+        when(meta.forTranscoding().encodePartitionComponents(asList())).thenReturn(asList());
+        when(meta.forTranscoding().encodePartitionComponentsIN(Arrays.<Object>asList("a", "b"))).thenReturn(Arrays.<Object>asList("a", "b"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A", "B"));
 
         //When
         final IterateWithPartition<String> start = builder.withPartitionComponentsIN("a", "b");
@@ -95,7 +101,8 @@ public class IterateDSLTest {
     @Test
     public void should_iterate_with_batchsize() throws Exception {
         //Given
-        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forIteration();
+        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forIteration();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
 
         //When
         final IterateFromPartition<String> start = builder.withPartitionComponents("a");
@@ -113,7 +120,9 @@ public class IterateDSLTest {
     @Test
     public void should_iterate_with_matching() throws Exception {
         //Given
-        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forIteration();
+        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forIteration();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A" , "B"));
 
         //When
         final IterateFromPartition<String> start = builder.withPartitionComponents("a");
@@ -131,7 +140,9 @@ public class IterateDSLTest {
     @Test
     public void should_iterate_with_matching_and_batchsize() throws Exception {
         //Given
-        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, entityMeta).forIteration();
+        final IterateDSL<String> builder = new SliceQueryBuilder<>(executor, String.class, meta).forIteration();
+        when(meta.forTranscoding().encodePartitionComponents(Arrays.<Object>asList("a"))).thenReturn(Arrays.<Object>asList("a"));
+        when(meta.forTranscoding().encodeClusteringKeys(Arrays.<Object>asList("A", "B"))).thenReturn(Arrays.<Object>asList("A" , "B"));
 
         //When
         final IterateFromPartition<String> start = builder.withPartitionComponents("a");
