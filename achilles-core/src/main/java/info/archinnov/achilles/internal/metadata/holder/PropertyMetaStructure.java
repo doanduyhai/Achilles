@@ -36,10 +36,13 @@ public class PropertyMetaStructure extends PropertyMetaView {
         return meta.type().isCollectionAndMap();
     }
 
+    public boolean isTimeUUID() {
+        return meta.isTimeUUID();
+    }
+
     public ConsistencyLevel getReadConsistencyLevel() {
         return meta.getConsistencyLevels() != null ? meta.getConsistencyLevels().left : null;
     }
-
 
     public ConsistencyLevel getWriteConsistencyLevel() {
         return meta.getConsistencyLevels() != null ? meta.getConsistencyLevels().right : null;

@@ -19,10 +19,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.google.common.base.Optional;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.ListCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.MapCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.SimpleCodec;
+import info.archinnov.achilles.internal.metadata.codec.ListCodec;
+import info.archinnov.achilles.internal.metadata.codec.MapCodec;
+import info.archinnov.achilles.internal.metadata.codec.SetCodec;
+import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +49,8 @@ public class PropertyMetaBuilder {
     private ListCodec listCodec;
     private SetCodec setCodec;
     private MapCodec mapCodec;
+    private Class<?> cql3KeyClass;
+    private Class<?> cql3ValueClass;
 
     public static PropertyMetaBuilder factory() {
         return new PropertyMetaBuilder();
@@ -91,6 +93,8 @@ public class PropertyMetaBuilder {
         meta.setListCodec(Optional.fromNullable(listCodec).orNull());
         meta.setSetCodec(Optional.fromNullable(setCodec).orNull());
         meta.setMapCodec(Optional.fromNullable(mapCodec).orNull());
+        meta.setCql3KeyClass(cql3KeyClass);
+        meta.setCql3ValueClass(cql3ValueClass);
         return meta;
     }
 
@@ -156,6 +160,16 @@ public class PropertyMetaBuilder {
 
     public PropertyMetaBuilder mapCodec(MapCodec mapCodec) {
         this.mapCodec = mapCodec;
+        return this;
+    }
+
+    public PropertyMetaBuilder cql3KeyClass(Class<?> cql3KeyClass) {
+        this.cql3KeyClass = cql3KeyClass;
+        return this;
+    }
+
+    public PropertyMetaBuilder cql3ValueClass(Class<?> cql3ValueClass) {
+        this.cql3ValueClass = cql3ValueClass;
         return this;
     }
 }

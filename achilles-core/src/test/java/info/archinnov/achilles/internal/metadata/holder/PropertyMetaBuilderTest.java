@@ -20,10 +20,10 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import info.archinnov.achilles.internal.metadata.transcoding.codec.ListCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.MapCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.SimpleCodec;
+import info.archinnov.achilles.internal.metadata.codec.ListCodec;
+import info.archinnov.achilles.internal.metadata.codec.MapCodec;
+import info.archinnov.achilles.internal.metadata.codec.SetCodec;
+import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;

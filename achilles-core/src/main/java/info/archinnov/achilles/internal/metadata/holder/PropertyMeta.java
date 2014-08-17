@@ -19,7 +19,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.*;
+import info.archinnov.achilles.internal.metadata.codec.ListCodec;
+import info.archinnov.achilles.internal.metadata.codec.MapCodec;
+import info.archinnov.achilles.internal.metadata.codec.SetCodec;
+import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.json.DefaultJacksonMapper;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
@@ -51,6 +54,8 @@ public class PropertyMeta {
     private String entityClassName;
     private Class<?> valueClass;
     private Class<?> keyClass;
+    private Class<?> cql3ValueClass;
+    private Class<?> cql3KeyClass;
     private PropertyType type;
     String propertyName;
     Method getter;
@@ -107,6 +112,10 @@ public class PropertyMeta {
         return new PropertyMetaStructure(this);
     }
 
+    public PropertyMetaConfig config() {
+        return new PropertyMetaConfig(this);
+    }
+
     public PropertyMetaValues forValues() {
         return new PropertyMetaValues(this);
     }
@@ -145,6 +154,22 @@ public class PropertyMeta {
 
     public void setValueClass(Class<?> valueClass) {
         this.valueClass = valueClass;
+    }
+
+    <T> Class<T> getCql3ValueClass() {
+        return (Class<T>) cql3ValueClass;
+    }
+
+    void setCql3ValueClass(Class<?> cql3ValueClass) {
+        this.cql3ValueClass = cql3ValueClass;
+    }
+
+    <T> Class<T> getCql3KeyClass() {
+        return (Class<T>) cql3KeyClass;
+    }
+
+    void setCql3KeyClass(Class<?> cql3KeyClass) {
+        this.cql3KeyClass = cql3KeyClass;
     }
 
     public Method getGetter() {

@@ -18,7 +18,7 @@ public class PropertyMetaTypedQuery extends PropertyMetaView {
             for (String component : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
                 Validator.validateTrue(queryString.contains(component),
                         "The typed query [%s] should contain the component column '%s' for embedded id type '%s'",
-                        queryString, component, meta.getValueClass().getCanonicalName());
+                        queryString, component, meta.getCql3ValueClass().getCanonicalName());
             }
         } else {
             Validator.validateTrue(queryString.contains(meta.getCQL3ColumnName()), "The typed query [%s] should contain the id column '%s'", queryString, meta.getCQL3ColumnName());

@@ -51,8 +51,7 @@ public class TableUpdater {
         for (PropertyMeta propertyMeta : propertyMetas) {
             String cql3ColumnName = propertyMeta.getCQL3ColumnName();
             if (!columnNames.contains(cql3ColumnName)) {
-                Class<?> keyClass = propertyMeta.getKeyClass();
-                Class<?> valueClass = propertyMeta.forTableCreation().getValueClassForTableCreationAndValidation();
+                Class<?> valueClass = propertyMeta.config().getCQL3ValueType();
                 final boolean staticColumn = propertyMeta.structure().isStaticColumn();
                 String alterTableScript = "";
                 switch (propertyMeta.type()) {
@@ -69,6 +68,7 @@ public class TableUpdater {
                         session.execute(alterTableScript);
                         break;
                     case MAP:
+                        final Class<Object> keyClass = propertyMeta.config().getCQL3KeyType();
                         alterTableScript = alterTable(tableName).addColumn(cql3ColumnName, staticColumn).type(map(toCQLDataType(keyClass), toCQLDataType(valueClass)));
                         session.execute(alterTableScript);
                         break;

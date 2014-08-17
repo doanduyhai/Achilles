@@ -34,7 +34,7 @@ public class PropertyMetaTypedQueryTest {
         //Given
         when(meta.structure().isEmbeddedId()).thenReturn(true);
         when(meta.getEmbeddedIdProperties().getCQL3ComponentNames()).thenReturn(asList("id", "name"));
-        when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
+        when(meta.<CompleteBean>getCql3ValueClass()).thenReturn(CompleteBean.class);
 
         //When
         view.validateTypedQuery("Select id, name From table");

@@ -3,16 +3,28 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.NAME;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
 import static org.fest.assertions.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.internal.metadata.codec.ByteArrayCodec;
+import info.archinnov.achilles.internal.metadata.codec.ByteArrayPrimitiveCodec;
+import info.archinnov.achilles.internal.metadata.codec.ByteCodec;
+import info.archinnov.achilles.internal.metadata.codec.EnumNameCodec;
+import info.archinnov.achilles.internal.metadata.codec.EnumOrdinalCodec;
+import info.archinnov.achilles.internal.metadata.codec.ListCodec;
+import info.archinnov.achilles.internal.metadata.codec.ListCodecImpl;
+import info.archinnov.achilles.internal.metadata.codec.MapCodec;
+import info.archinnov.achilles.internal.metadata.codec.NativeCodec;
+import info.archinnov.achilles.internal.metadata.codec.SetCodec;
+import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
+import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.internal.metadata.transcoding.codec.*;
-import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import info.archinnov.achilles.type.Counter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CodecFactoryTest {
@@ -35,7 +48,7 @@ public class CodecFactoryTest {
     @Mock
     private EntityParsingContext context;
 
-    private CodecFactory parser = new CodecFactory();
+    private CodecFactory factory = new CodecFactory();
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -54,7 +67,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("name");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(NativeCodec.class);
@@ -72,7 +85,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("type");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(EnumNameCodec.class);
@@ -91,7 +104,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("type");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(EnumOrdinalCodec.class);
@@ -109,7 +122,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("flag");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteCodec.class);
@@ -127,7 +140,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("flag");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteCodec.class);
@@ -146,7 +159,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("bytes");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteArrayPrimitiveCodec.class);
@@ -164,7 +177,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("bytes");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteArrayCodec.class);
@@ -183,7 +196,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("json");
 
         //When
-        final SimpleCodec codec = parser.parseSimpleField(createContext(field));
+        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
         final String encoded = (String) codec.encode(bean);
         final Pojo decoded = (Pojo) codec.decode("{\"id\":11,\"name\":\"John\"}");
 
@@ -203,7 +216,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("counts");
 
         //When
-        final ListCodec<Object, Object> codec = parser.parseListField(createContext(field));
+        final ListCodec<Object, Object> codec = factory.parseListField(createContext(field));
         final List<Object> encoded = codec.encode(Arrays.<Object>asList(1, 2, 3));
         final List<Object> decoded = codec.decode(Arrays.<Object>asList(4, 5));
 
@@ -222,7 +235,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("types");
 
         //When
-        final ListCodec codec = parser.parseListField(createContext(field));
+        final ListCodec codec = factory.parseListField(createContext(field));
         final List<Object> encoded = codec.encode(Arrays.<Object>asList(PropertyType.ID, PropertyType.EMBEDDED_ID));
         final List<Object> decoded = codec.decode(Arrays.<Object>asList(2, 3, 4));
 
@@ -240,7 +253,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("counts");
 
         //When
-        final SetCodec<Object, Object> codec = parser.parseSetField(createContext(field));
+        final SetCodec<Object, Object> codec = factory.parseSetField(createContext(field));
         final Set<Object> encoded = codec.encode(Sets.<Object>newSet(1, 2, 3));
         final Set<Object> decoded = codec.decode(Sets.<Object>newSet(4, 5));
 
@@ -259,7 +272,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("types");
 
         //When
-        final SetCodec codec = parser.parseSetField(createContext(field));
+        final SetCodec codec = factory.parseSetField(createContext(field));
         final Set<Object> encoded = codec.encode(Sets.newSet(PropertyType.ID, PropertyType.EMBEDDED_ID));
         final Set<Object> decoded = codec.decode(Sets.newSet(2, 3, 4));
 
@@ -277,7 +290,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec codec = parser.parseMapField(createContext(field));
+        final MapCodec codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, ElementType.FIELD, PropertyType.ID, ElementType.METHOD));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("LIST", "CONSTRUCTOR", "SET", "PARAMETER"));
 
@@ -299,7 +312,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec codec = parser.parseMapField(createContext(field));
+        final MapCodec codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.ID, ElementType.FIELD, PropertyType.EMBEDDED_ID, ElementType.METHOD));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, "CONSTRUCTOR", 4, "PARAMETER"));
 
@@ -321,7 +334,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec<Object, Object, Object, Object> codec = parser.parseMapField(createContext(field));
+        final MapCodec<Object, Object, Object, Object> codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.COUNTER, 1, PropertyType.ID, 2));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of("LIST", 3, "SET", 4));
 
@@ -344,7 +357,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec<Object, Object, Object, Object> codec = parser.parseMapField(createContext(field));
+        final MapCodec<Object, Object, Object, Object> codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(PropertyType.ID, 100, PropertyType.EMBEDDED_ID, 200));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, 3, 4, 4));
 
@@ -365,7 +378,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec codec = parser.parseMapField(createContext(field));
+        final MapCodec codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.COUNTER, 2, PropertyType.ID));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, "LIST", 4, "SET"));
 
@@ -387,7 +400,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("maps");
 
         //When
-        final MapCodec codec = parser.parseMapField(createContext(field));
+        final MapCodec codec = factory.parseMapField(createContext(field));
         Map<Object, Object> encoded = codec.encode(ImmutableMap.<Object, Object>of(1, PropertyType.ID, 2, PropertyType.EMBEDDED_ID));
         Map<Object, Object> decoded = codec.decode(ImmutableMap.<Object, Object>of(3, 3, 4, 4));
 
@@ -397,6 +410,111 @@ public class CodecFactoryTest {
 
         assertThat(decoded.get(3)).isEqualTo(PropertyType.LIST);
         assertThat(decoded.get(4)).isEqualTo(PropertyType.SET);
+    }
+
+    @Test
+    public void should_determine_cql3_simple_type() throws Exception {
+        //Given
+        SimpleCodec simpleCodec = new NativeCodec(String.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)String.class);
+    }
+
+    @Test
+    public void should_determine_cql3_simple_timeuuid_type() throws Exception {
+        //Given
+        SimpleCodec simpleCodec = new NativeCodec(UUID.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, true);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)InternalTimeUUID.class);
+    }
+
+    @Test
+    public void should_determine_cql3_simple_byte_buffer_type() throws Exception {
+        //Given
+        SimpleCodec simpleCodec = new NativeCodec(ByteBuffer.wrap("test".getBytes()).getClass());
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)ByteBuffer.class);
+    }
+
+    @Test
+    public void should_determine_cql3_simple_counter_type() throws Exception {
+        //Given
+        SimpleCodec simpleCodec = new NativeCodec(Counter.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)Long.class);
+    }
+
+
+    @Test
+    public void should_determine_cql3_list_type() throws Exception {
+        //Given
+        ListCodec listCodec = mock(ListCodec.class);
+        when(listCodec.sourceType()).thenReturn(Integer.class);
+        when(listCodec.targetType()).thenReturn(String.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(listCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)String.class);
+    }
+
+    @Test
+    public void should_determine_cql3_set_type() throws Exception {
+        //Given
+        SetCodec setCodec = mock(SetCodec.class);
+        when(setCodec.sourceType()).thenReturn(Integer.class);
+        when(setCodec.targetType()).thenReturn(String.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(setCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)String.class);
+    }
+
+    @Test
+    public void should_determine_cql3_map_value_type() throws Exception {
+        //Given
+        MapCodec mapCodec = mock(MapCodec.class);
+        when(mapCodec.sourceValueType()).thenReturn(Integer.class);
+        when(mapCodec.targetValueType()).thenReturn(String.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3ValueType(mapCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)String.class);
+    }
+
+    @Test
+    public void should_determine_cql3_map_key_type() throws Exception {
+        //Given
+        MapCodec mapCodec = mock(MapCodec.class);
+        when(mapCodec.sourceKeyType()).thenReturn(Integer.class);
+        when(mapCodec.targetKeyType()).thenReturn(String.class);
+
+        //When
+        final Class<?> actualClass = factory.determineCQL3KeyType(mapCodec, false);
+
+        //Then
+        assertThat(actualClass).isEqualTo((Class)String.class);
     }
 
     private PropertyParsingContext createContext(Field field) {

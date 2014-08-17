@@ -54,7 +54,7 @@ public class PropertyMetaRowExtractorTest {
     @Test
     public void should_extract_raw_compound_pk_components_from_row() throws Exception {
         //Given
-        when(embeddedIdProperties.getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
         when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
@@ -160,8 +160,8 @@ public class PropertyMetaRowExtractorTest {
         when(meta.getCQL3ColumnName()).thenReturn("map");
         when(row.isNull("map")).thenReturn(false);
         when(meta.type()).thenReturn(PropertyType.MAP);
-        when(meta.<Integer>getKeyClass()).thenReturn(Integer.class);
-        when(meta.<String>getValueClass()).thenReturn(String.class);
+        when(meta.<Integer>getCql3KeyClass()).thenReturn(Integer.class);
+        when(meta.<String>getCql3ValueClass()).thenReturn(String.class);
         final Map<Integer,String> rawMap = ImmutableMap.of(1,"a");
         when(row.getMap("map", Integer.class, String.class)).thenReturn(rawMap);
         when(meta.forTranscoding().decodeFromCassandra(rawMap)).thenReturn(rawMap);
@@ -211,7 +211,7 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
         when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());
@@ -238,7 +238,7 @@ public class PropertyMetaRowExtractorTest {
         EntityMeta entityMeta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         CompleteBean pk = new CompleteBean();
 
-        when(embeddedIdProperties.getComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
+        when(embeddedIdProperties.getCQL3ComponentClasses()).thenReturn(Arrays.<Class<?>>asList(Long.class,String.class));
         when(embeddedIdProperties.getCQL3ComponentNames()).thenReturn(asList("id", "name"));
 
         Definition columnDef1 = ColumnDefinitionBuilder.buildColumnDef("ks", "table", "id", DataType.bigint());

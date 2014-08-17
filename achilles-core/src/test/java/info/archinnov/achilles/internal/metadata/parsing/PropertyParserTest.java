@@ -24,6 +24,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.THREE;
 import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -36,6 +38,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
+
+import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.Enumerated.Encoding;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,13 +60,11 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.internal.metadata.holder.EmbeddedIdProperties;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
@@ -281,7 +284,7 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-//        assertThat(meta.timeUUID).isTrue();
+        assertThat(meta.structure().isTimeUUID()).isTrue();
     }
 
     @Test
@@ -327,8 +330,8 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.type()).isEqualTo(PropertyType.COUNTER);
-//        assertThat(meta.getCounterProperties()).isNotNull();
-//        assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
+        assertThat(meta.getCounterProperties()).isNotNull();
+        assertThat(meta.getCounterProperties().getFqcn()).isEqualTo(Test.class.getCanonicalName());
         assertThat(context.getCounterMetas().get(0)).isSameAs(meta);
     }
 
@@ -432,7 +435,7 @@ public class PropertyParserTest {
     }
 
     @Test
-    public void should_parse_enum_property() throws Exception {
+    public void should_parse_enum_by_name_property() throws Exception {
         @SuppressWarnings("unused")
         class Test {
             @Column
@@ -450,7 +453,79 @@ public class PropertyParserTest {
         PropertyMeta meta = parser.parse(context);
 
         assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
+        assertThat(meta.config().<String>getCQL3ValueType()).isEqualTo(String.class);
     }
+
+    @Test
+    public void should_parse_enum_by_ordinal_property() throws Exception {
+        @SuppressWarnings("unused")
+        class Test {
+            @Column
+            @Enumerated(Encoding.ORDINAL)
+            private PropertyType type;
+
+            public PropertyType getType() {
+                return type;
+            }
+
+            public void setType(PropertyType type) {
+                this.type = type;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("type"));
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
+        assertThat(meta.config().<Integer>getCQL3ValueType()).isEqualTo(Integer.class);
+    }
+
+    @Test
+    public void should_parse_enum_list_property() throws Exception {
+        @SuppressWarnings("unused")
+        class Test {
+            @Column
+            @Enumerated(Encoding.ORDINAL)
+            private List<PropertyType> types;
+
+            public List<PropertyType> getTypes() {
+                return types;
+            }
+
+            public void setTypes(List<PropertyType> types) {
+                this.types = types;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("types"));
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
+        assertThat(meta.config().<Integer>getCQL3ValueType()).isEqualTo(Integer.class);
+    }
+
+    @Test
+    public void should_parse_enum_map_property() throws Exception {
+        @SuppressWarnings("unused")
+        class Test {
+            @Column
+            @Enumerated(key = Encoding.ORDINAL, value = Encoding.NAME)
+            private Map<RetentionPolicy, PropertyType> types;
+
+            public Map<RetentionPolicy, PropertyType> getTypes() {
+                return types;
+            }
+
+            public void setTypes(Map<RetentionPolicy, PropertyType> types) {
+                this.types = types;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("types"));
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.<PropertyType>getValueClass()).isEqualTo(PropertyType.class);
+        assertThat(meta.config().<Integer>getCQL3KeyType()).isEqualTo(Integer.class);
+        assertThat(meta.config().<String>getCQL3ValueType()).isEqualTo(String.class);
+    }
+
 
     @Test
     public void should_parse_allowed_type_property() throws Exception {

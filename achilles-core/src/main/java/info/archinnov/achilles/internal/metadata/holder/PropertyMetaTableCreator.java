@@ -10,6 +10,7 @@ import java.util.List;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.createIndex;
+import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 public class PropertyMetaTableCreator extends PropertyMetaView {
@@ -24,7 +25,7 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot create partition components for entity '%s' because it does not have a compound primary key", meta.getEntityClassName());
         for (PropertyMeta partitionMeta: meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
             String cql3ColumnName = partitionMeta.getCQL3ColumnName();
-            Class<?> javaType = partitionMeta.forTableCreation().getValueClassForTableCreationAndValidation();
+            Class<?> javaType = partitionMeta.config().getCQL3ValueType();
             createTable.addPartitionKey(cql3ColumnName, toCQLDataType(javaType));
         }
     }
@@ -34,7 +35,7 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot create clustering keys for entity '%s' because it does not have a compound primary key",meta.getEntityClassName());
         for (PropertyMeta clusteringMeta: meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas) {
             String cql3ColumnName = clusteringMeta.getCQL3ColumnName();
-            Class<?> javaType = clusteringMeta.forTableCreation().getValueClassForTableCreationAndValidation();
+            Class<?> javaType = clusteringMeta.config().getCQL3ValueType();
             createTable.addClusteringKey(cql3ColumnName, toCQLDataType(javaType));
         }
     }
@@ -55,28 +56,5 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
             return tableOptions.clusteringOrder(clusteringOrders.toArray(new Create.Options.ClusteringOrder[clusteringOrders.size()]));
         }
         return tableOptions;
-    }
-
-
-    public <T> Class<T> getValueClassForTableCreationAndValidation() {
-        log.debug("Get value class for entity class {} table creation/validation", meta.getEntityClassName());
-        if (meta.isTimeUUID()) {
-            return (Class<T>) InternalTimeUUID.class;
-        } else if (ByteBuffer.class.isAssignableFrom(meta.getValueClass())) {
-            return (Class<T>) ByteBuffer.class;
-        } else {
-            return meta.getValueClass();
-        }
-    }
-
-    public <T> Class<T> getKeyClassForTableCreationAndValidation() {
-        log.debug("Get key class for entity class {} table creation/validation", meta.getEntityClassName());
-        if (meta.isTimeUUID()) {
-            return (Class<T>) InternalTimeUUID.class;
-        } else if (ByteBuffer.class.isAssignableFrom(meta.getKeyClass())) {
-            return (Class<T>) ByteBuffer.class;
-        } else {
-            return meta.getKeyClass();
-        }
     }
 }

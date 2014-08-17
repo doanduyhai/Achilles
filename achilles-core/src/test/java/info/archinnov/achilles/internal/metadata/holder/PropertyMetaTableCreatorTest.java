@@ -53,8 +53,8 @@ public class PropertyMetaTableCreatorTest {
         when(partitionMeta1.getCQL3ColumnName()).thenReturn("id");
         when(partitionMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(partitionMeta1.forTableCreation().<Long>getValueClassForTableCreationAndValidation()).thenReturn(Long.class);
-        when(partitionMeta2.forTableCreation().<String>getValueClassForTableCreationAndValidation()).thenReturn(String.class);
+        when(partitionMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(partitionMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
 
         //When
         view.addPartitionKeys(create);
@@ -77,8 +77,8 @@ public class PropertyMetaTableCreatorTest {
         when(clusteringMeta1.getCQL3ColumnName()).thenReturn("id");
         when(clusteringMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(clusteringMeta1.forTableCreation().<Long>getValueClassForTableCreationAndValidation()).thenReturn(Long.class);
-        when(clusteringMeta2.forTableCreation().<String>getValueClassForTableCreationAndValidation()).thenReturn(String.class);
+        when(clusteringMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(clusteringMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
 
         //When
         view.addClusteringKeys(create);
@@ -140,30 +140,4 @@ public class PropertyMetaTableCreatorTest {
         assertThat(actual).isSameAs(tableOptions);
         assertThat(clusteringOrdersCaptor.getValue()).isSameAs(clusteringOrder);
     }
-
-    @Test
-    public void should_get_value_class_as_timeUUID() throws Exception {
-        //Given
-        when(meta.isTimeUUID()).thenReturn(true);
-
-        //When
-
-        //Then
-        assertThat(view.<InternalTimeUUID>getValueClassForTableCreationAndValidation()).isSameAs(InternalTimeUUID.class);
-    }
-
-
-    @Test
-    public void should_get_value_class_as_byte_buffer() throws Exception {
-        //Given
-        final ByteBuffer wrap = ByteBuffer.wrap(new byte[]{(byte) 5});
-        when(meta.isTimeUUID()).thenReturn(false);
-        when(meta.getValueClass()).thenReturn((Class)wrap.getClass());
-        //When
-
-        //Then
-        assertThat(view.<ByteBuffer>getValueClassForTableCreationAndValidation()).isSameAs(ByteBuffer.class);
-    }
-
-
 }

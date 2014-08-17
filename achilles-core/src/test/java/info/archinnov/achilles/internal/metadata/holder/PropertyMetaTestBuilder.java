@@ -15,10 +15,12 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
+import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import com.google.common.base.Optional;
 import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
@@ -40,7 +42,8 @@ public class PropertyMetaTestBuilder<T, K, V> {
     private PropertyType type;
     private Class<K> keyClass;
     private Class<V> valueClass;
-
+    private Class<?> cql3KeyClass;
+    private Class<?> cql3ValueClass;
 
 
     private boolean buildAccessors;
@@ -81,6 +84,9 @@ public class PropertyMetaTestBuilder<T, K, V> {
         pm.setPropertyName(field);
         pm.setKeyClass(keyClass);
         pm.setValueClass(valueClass);
+        pm.setCql3KeyClass(fromNullable(cql3KeyClass).or((Class) keyClass));
+        pm.setCql3ValueClass(fromNullable(cql3ValueClass).or((Class) valueClass));
+
         if (StringUtils.isNotBlank(field) && clazz == CompleteBean.class) {
             pm.setField(clazz.getDeclaredField(field));
         }
@@ -210,6 +216,16 @@ public class PropertyMetaTestBuilder<T, K, V> {
 
     public PropertyMetaTestBuilder<T, K, V> indexed() {
         this.indexName = field;
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> cql3KeyType(Class<?> cql3KeyClass) {
+        this.cql3KeyClass = cql3KeyClass;
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> cql3ValueType(Class<?> cql3ValueClass) {
+        this.cql3ValueClass = cql3ValueClass;
         return this;
     }
 }

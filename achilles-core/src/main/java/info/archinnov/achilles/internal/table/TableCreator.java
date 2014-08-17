@@ -111,8 +111,7 @@ public class TableCreator {
         final Create createTable = SchemaBuilder.createTable(tableName);
         for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
             String cql3ColumnName = pm.getCQL3ColumnName();
-            Class<?> keyClass = pm.forTableCreation().getKeyClassForTableCreationAndValidation();
-            Class<?> valueClass = pm.forTableCreation().getValueClassForTableCreationAndValidation();
+            Class<?> valueClass = pm.config().getCQL3ValueType();
             final boolean staticColumn = pm.structure().isStaticColumn();
             switch (pm.type()) {
                 case SIMPLE:
@@ -128,6 +127,7 @@ public class TableCreator {
                     createTable.addColumn(cql3ColumnName, DataType.set(toCQLDataType(valueClass)), staticColumn);
                     break;
                 case MAP:
+                    Class<?> keyClass = pm.config().getCQL3KeyType();
                     createTable.addColumn(cql3ColumnName, DataType.map(toCQLDataType(keyClass), toCQLDataType(valueClass)), staticColumn);
                     break;
                 default:
@@ -183,7 +183,7 @@ public class TableCreator {
             pm.forTableCreation().addClusteringKeys(createTable);
         } else {
             String cql3ColumnName = pm.getCQL3ColumnName();
-            createTable.addPartitionKey(cql3ColumnName, toCQLDataType(pm.forTableCreation().getValueClassForTableCreationAndValidation()));
+            createTable.addPartitionKey(cql3ColumnName, toCQLDataType(pm.config().getCQL3ValueType()));
         }
         return clusteringOrders;
     }

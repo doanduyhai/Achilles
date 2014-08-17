@@ -29,7 +29,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
     public List<Object> extractRawCompoundPrimaryComponentsFromRow(Row row) {
         log.trace("Extract raw compound primary components from CQL3 row {} for id meta {}", row, meta);
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot extract raw compound primary keys from CQL3 row because entity '%s' does not have a compound primary key", meta.getEntityClassName());
-        final List<Class<?>> componentClasses = meta.getEmbeddedIdProperties().getComponentClasses();
+        final List<Class<?>> componentClasses = meta.getEmbeddedIdProperties().getCQL3ComponentClasses();
         final List<String> cql3ComponentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
         List<Object> rawValues = new ArrayList<>(Collections.nCopies(cql3ComponentNames.size(), null));
         try {
@@ -110,7 +110,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract property {} from CQL3 row for entity class {}", cql3ColumnName, entityClassName);
         try {
-            Object rawValue = getRowMethod(meta.getValueClass()).invoke(row, cql3ColumnName);
+            Object rawValue = getRowMethod(meta.getCql3ValueClass()).invoke(row, cql3ColumnName);
             return meta.forTranscoding().decodeFromCassandra(rawValue);
         } catch (Exception e) {
             throw new AchillesException(String.format("Cannot retrieve property '%s' for entity class '%S' from CQL Row", cql3ColumnName, entityClassName), e);
@@ -122,7 +122,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract list property {} from CQL3 row for entity class {}", cql3ColumnName, entityClassName);
         try {
-            List<?> rawValues = row.getList(cql3ColumnName, toCompatibleJavaType(meta.getValueClass()));
+            List<?> rawValues = row.getList(cql3ColumnName, toCompatibleJavaType(meta.getCql3ValueClass()));
             return meta.forTranscoding().decodeFromCassandra(rawValues);
 
         } catch (Exception e) {
@@ -136,7 +136,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract set property {} from CQL3 row for entity class {}", cql3ColumnName, entityClassName);
         try {
-            Set<?> rawValues = row.getSet(cql3ColumnName, toCompatibleJavaType(meta.getValueClass()));
+            Set<?> rawValues = row.getSet(cql3ColumnName, toCompatibleJavaType(meta.getCql3ValueClass()));
             return meta.forTranscoding().decodeFromCassandra(rawValues);
 
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         final String entityClassName = meta.getEntityClassName();
         log.trace("Extract map property {} from CQL3 row for entity class {}", cql3ColumnName, entityClassName);
         try {
-            Map<?, ?> rawValues = row.getMap(cql3ColumnName, toCompatibleJavaType(meta.getKeyClass()),toCompatibleJavaType(meta.getValueClass()));
+            Map<?, ?> rawValues = row.getMap(cql3ColumnName, toCompatibleJavaType(meta.getCql3KeyClass()),toCompatibleJavaType(meta.getCql3ValueClass()));
             return meta.forTranscoding().decodeFromCassandra(rawValues);
 
         } catch (Exception e) {
