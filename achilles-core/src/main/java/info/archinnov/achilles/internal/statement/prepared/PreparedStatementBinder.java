@@ -295,7 +295,7 @@ public class PreparedStatementBinder {
     private Object[] extractValuesForSimpleCounterBinding(EntityMeta entityMeta, PropertyMeta pm, Object primaryKey) {
         PropertyMeta idMeta = entityMeta.getIdMeta();
         String fqcn = entityMeta.getClassName();
-        String primaryKeyAsString = idMeta.forTranscoding().forceEncodeToJSON(primaryKey);
+        String primaryKeyAsString = idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey);
         String cql3ColumnName = pm.getCQL3ColumnName();
 
         return new Object[] { fqcn, primaryKeyAsString, cql3ColumnName };

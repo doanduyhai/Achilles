@@ -41,7 +41,7 @@ public class DefaultJacksonMapperFactory implements JacksonMapperFactory {
 
     @Override
     public <T> ObjectMapper getMapper(Class<T> type) {
-        return DefaultJacksonMapper.INSTANCE.get();
+        return DefaultJacksonMapper.DEFAULT.get();
     }
 
 }

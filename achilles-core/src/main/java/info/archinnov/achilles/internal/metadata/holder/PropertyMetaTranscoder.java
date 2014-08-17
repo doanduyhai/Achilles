@@ -106,14 +106,14 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
 
-    public String forceEncodeToJSON(Object object) {
+    public String forceEncodeToJSONForCounter(Object object) {
         log.trace("Force encode {} to JSON for property {} of entity class {}", object, meta.getPropertyName(), meta.getEntityClassName());
         Validator.validateNotNull(object, "Cannot encode to JSON null primary key for class '%s'", meta.getEntityClassName());
         if (object instanceof String) {
             return String.class.cast(object);
         } else {
             try {
-                return this.meta.defaultJacksonMapper.writeValueAsString(object);
+                return this.meta.defaultJacksonMapperForCounter.writeValueAsString(object);
             } catch (Exception e) {
                 throw new AchillesException(String.format("Error while encoding primary key '%s' for class '%s'", object, meta.getEntityClassName()), e);
             }

@@ -10,10 +10,8 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.datastax.driver.core.TableMetadata;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import org.junit.Before;
@@ -262,7 +260,7 @@ public class PropertyMetaTranscoderTest {
         entity.setId(10L);
 
         //When
-        final String json = view.forceEncodeToJSON(entity);
+        final String json = view.forceEncodeToJSONForCounter(entity);
 
         //Then
         assertThat(json).isEqualTo("{\"id\":10}");
@@ -273,7 +271,7 @@ public class PropertyMetaTranscoderTest {
         //Given
         view = new PropertyMetaTranscoder(new PropertyMeta());
         //When
-        final String json = view.forceEncodeToJSON("test");
+        final String json = view.forceEncodeToJSONForCounter("test");
 
         //Then
         assertThat(json).isEqualTo("test");

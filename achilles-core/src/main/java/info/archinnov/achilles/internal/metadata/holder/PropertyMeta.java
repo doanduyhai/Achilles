@@ -45,7 +45,7 @@ public class PropertyMeta {
         }
     };
 
-    ObjectMapper defaultJacksonMapper = DefaultJacksonMapper.INSTANCE.get();
+    ObjectMapper defaultJacksonMapperForCounter = DefaultJacksonMapper.COUNTER.get();
 
     private EmbeddedIdProperties embeddedIdProperties;
     private String entityClassName;

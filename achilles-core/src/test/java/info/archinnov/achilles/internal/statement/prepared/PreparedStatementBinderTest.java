@@ -16,7 +16,6 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static com.google.common.base.Optional.fromNullable;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.APPEND_TO_LIST;
@@ -30,7 +29,6 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_MAP;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
@@ -253,7 +251,7 @@ public class PreparedStatementBinderTest {
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
-        when(idMeta.forTranscoding().forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
+        when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
         when(counterMeta.getCQL3ColumnName()).thenReturn("count");
 
         when(ps.bind(increment, "CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
@@ -273,7 +271,7 @@ public class PreparedStatementBinderTest {
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
-        when(idMeta.forTranscoding().forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
+        when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
         when(counterMeta.getCQL3ColumnName()).thenReturn("count");
 
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
@@ -292,7 +290,7 @@ public class PreparedStatementBinderTest {
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
         when(entityMeta.getClassName()).thenReturn("CompleteBean");
-        when(idMeta.forTranscoding().forceEncodeToJSON(primaryKey)).thenReturn(primaryKey.toString());
+        when(idMeta.forTranscoding().forceEncodeToJSONForCounter(primaryKey)).thenReturn(primaryKey.toString());
         when(counterMeta.getCQL3ColumnName()).thenReturn("count");
 
         when(ps.bind("CompleteBean", primaryKey.toString(), "count")).thenReturn(bs);
