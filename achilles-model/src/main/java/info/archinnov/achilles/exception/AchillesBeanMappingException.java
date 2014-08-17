@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.exception;
 
-public class AchillesBeanMappingException extends RuntimeException {
+public class AchillesBeanMappingException extends AchillesException {
 	private static final long serialVersionUID = 1L;
 
 	public AchillesBeanMappingException() {

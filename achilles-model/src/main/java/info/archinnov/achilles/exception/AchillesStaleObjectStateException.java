@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.exception;
 
-public class AchillesStaleObjectStateException extends Exception {
+public class AchillesStaleObjectStateException extends AchillesException {
 	private static final long serialVersionUID = 1L;
 
 	public AchillesStaleObjectStateException(String message) {

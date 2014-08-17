@@ -19,7 +19,7 @@ import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
 import info.archinnov.achilles.type.TypedMap;
 
-public class AchillesCASException extends RuntimeException {
+public class AchillesCASException extends AchillesException {
     private static final long serialVersionUID = 1L;
     private final CASResult casResult;
 

@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.exception;
 
-public class AchillesInvalidTableException extends RuntimeException {
+public class AchillesInvalidTableException extends AchillesException {
 	private static final long serialVersionUID = 1L;
 
 	public AchillesInvalidTableException(String message) {

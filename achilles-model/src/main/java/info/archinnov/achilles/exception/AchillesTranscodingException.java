@@ -15,12 +15,8 @@
  */
 package info.archinnov.achilles.exception;
 
-import info.archinnov.achilles.type.TypedMap;
 
-import static info.archinnov.achilles.listener.CASResultListener.CASResult;
-import static info.archinnov.achilles.listener.CASResultListener.CASResult.Operation;
-
-public class AchillesTranscodingException extends RuntimeException {
+public class AchillesTranscodingException extends AchillesException {
     private static final long serialVersionUID = 1L;
 
     public AchillesTranscodingException(Throwable throwable) {
