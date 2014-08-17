@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
@@ -50,7 +51,7 @@ public class EntityRefresherTest {
     private EntityMeta entityMeta;
 
     @Mock
-    private EntityInterceptor<CompleteBean> jpaEntityInterceptor;
+    private ProxyInterceptor<CompleteBean> jpaProxyInterceptor;
 
     @Mock
     private Map<Method, DirtyChecker> dirtyMap;
@@ -72,11 +73,11 @@ public class EntityRefresherTest {
         when(context.getPrimaryKey()).thenReturn(bean.getId());
         when(context.getEntity()).thenReturn(bean);
 
-        when(proxifier.getInterceptor(bean)).thenReturn(jpaEntityInterceptor);
+        when(proxifier.getInterceptor(bean)).thenReturn(jpaProxyInterceptor);
 
-        when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
-        when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
-        when(jpaEntityInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
+        when(jpaProxyInterceptor.getTarget()).thenReturn(bean);
+        when(jpaProxyInterceptor.getDirtyMap()).thenReturn(dirtyMap);
+        when(jpaProxyInterceptor.getAlreadyLoaded()).thenReturn(alreadyLoaded);
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(loader.load(context, CompleteBean.class)).thenReturn(bean);
         when(context.getAllGettersExceptCounters()).thenReturn(allGettersExceptCounters);
@@ -86,7 +87,7 @@ public class EntityRefresherTest {
         verify(dirtyMap).clear();
         verify(alreadyLoaded).clear();
         verify(alreadyLoaded).addAll(allGettersExceptCounters);
-        verify(jpaEntityInterceptor).setTarget(bean);
+        verify(jpaProxyInterceptor).setTarget(bean);
     }
 
     @Test(expected = AchillesStaleObjectStateException.class)
@@ -97,10 +98,10 @@ public class EntityRefresherTest {
         when(context.getPrimaryKey()).thenReturn(bean.getId());
         when(context.getEntity()).thenReturn(bean);
 
-        when(proxifier.getInterceptor(bean)).thenReturn(jpaEntityInterceptor);
+        when(proxifier.getInterceptor(bean)).thenReturn(jpaProxyInterceptor);
 
-        when(jpaEntityInterceptor.getTarget()).thenReturn(bean);
-        when(jpaEntityInterceptor.getDirtyMap()).thenReturn(dirtyMap);
+        when(jpaProxyInterceptor.getTarget()).thenReturn(bean);
+        when(jpaProxyInterceptor.getDirtyMap()).thenReturn(dirtyMap);
         when(context.getEntityMeta()).thenReturn(entityMeta);
         when(loader.load(context, CompleteBean.class)).thenReturn(null);
 

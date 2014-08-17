@@ -25,7 +25,6 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -66,13 +65,13 @@ import info.archinnov.achilles.type.Counter;
 import net.sf.cglib.proxy.MethodProxy;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityInterceptorTest {
+public class ProxyInterceptorTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @InjectMocks
-    private EntityInterceptor<CompleteBean> interceptor;
+    private ProxyInterceptor<CompleteBean> interceptor;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PersistenceContext.EntityFacade context;

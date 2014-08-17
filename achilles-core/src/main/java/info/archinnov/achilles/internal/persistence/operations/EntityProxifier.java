@@ -22,13 +22,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
-import info.archinnov.achilles.internal.proxy.EntityInterceptorBuilder;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 import net.sf.cglib.proxy.Callback;
@@ -48,7 +49,7 @@ public class EntityProxifier {
 
         Class<T> baseClass = (Class<T>) entity.getClass();
         if (isProxy(entity)) {
-            EntityInterceptor<?> interceptor = getInterceptor(entity);
+            ProxyInterceptor<?> interceptor = getInterceptor(entity);
             baseClass = (Class<T>) interceptor.getTarget().getClass();
         }
 
@@ -96,7 +97,7 @@ public class EntityProxifier {
 
         if (isProxy(proxy)) {
             Factory factory = (Factory) proxy;
-            EntityInterceptor<T> interceptor = (EntityInterceptor<T>) factory.getCallback(0);
+            ProxyInterceptor<T> interceptor = (ProxyInterceptor<T>) factory.getCallback(0);
             return (T) interceptor.getTarget();
         } else {
             return proxy;
@@ -108,13 +109,13 @@ public class EntityProxifier {
         return Factory.class.isAssignableFrom(entity.getClass());
     }
 
-    public <T> EntityInterceptor<T> getInterceptor(T proxy) {
+    public <T> ProxyInterceptor<T> getInterceptor(T proxy) {
         log.debug("Get interceptor from proxy {} ", proxy);
 
         Factory factory = (Factory) proxy;
 
         @SuppressWarnings("unchecked")
-        EntityInterceptor<T> interceptor = (EntityInterceptor<T>) factory.getCallback(0);
+        ProxyInterceptor<T> interceptor = (ProxyInterceptor<T>) factory.getCallback(0);
         return interceptor;
     }
 
@@ -180,8 +181,8 @@ public class EntityProxifier {
         return result;
     }
 
-    public <T> EntityInterceptor<T> buildInterceptor(EntityOperations context, T entity, Set<Method> alreadyLoaded) {
-        return new EntityInterceptorBuilder<>(context, entity).alreadyLoaded(alreadyLoaded).build();
+    public <T> ProxyInterceptor<T> buildInterceptor(EntityOperations context, T entity, Set<Method> alreadyLoaded) {
+        return new ProxyInterceptorBuilder<>(context, entity).alreadyLoaded(alreadyLoaded).build();
     }
 
 }

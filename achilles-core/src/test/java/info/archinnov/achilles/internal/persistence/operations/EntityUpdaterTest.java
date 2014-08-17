@@ -36,7 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.proxy.dirtycheck.SimpleDirtyChecker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -57,7 +57,7 @@ public class EntityUpdaterTest {
     private EntityProxifier proxifier;
 
     @Mock
-    private EntityInterceptor<CompleteBean> interceptor;
+    private ProxyInterceptor<CompleteBean> interceptor;
 
     @Mock
     private PersistenceContext.EntityFacade context;

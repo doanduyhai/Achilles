@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -59,7 +59,7 @@ public class EntityUpdater {
         Object realObject = proxifier.getRealObject(entity);
         context.setEntity(realObject);
 
-        EntityInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
+        ProxyInterceptor<Object> interceptor = proxifier.getInterceptor(entity);
         Map<Method, DirtyChecker> dirtyMap = interceptor.getDirtyMap();
         List<DirtyChecker> dirtyCheckers = new ArrayList<>(dirtyMap.values());
 

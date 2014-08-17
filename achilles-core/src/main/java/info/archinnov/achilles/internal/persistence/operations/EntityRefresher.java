@@ -15,11 +15,11 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 
 public class EntityRefresher {
     private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
@@ -32,7 +32,7 @@ public class EntityRefresher {
         log.debug("Refreshing entity of class {} and primary key {}", context.getEntityClass().getCanonicalName(),
                 primaryKey);
 
-        EntityInterceptor<Object> interceptor = proxifier.getInterceptor(proxifiedEntity);
+        ProxyInterceptor<Object> interceptor = proxifier.getInterceptor(proxifiedEntity);
         Object entity = context.getEntity();
 
         interceptor.getDirtyMap().clear();

@@ -33,7 +33,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EntityInterceptorBuilderTest {
+public class ProxyInterceptorBuilderTest {
 
     @Mock
     private PersistenceContext.EntityFacade context;
@@ -55,7 +55,7 @@ public class EntityInterceptorBuilderTest {
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
 
-        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.builder(context, entity)
+        ProxyInterceptor<CompleteBean> interceptor = ProxyInterceptorBuilder.builder(context, entity)
                 .alreadyLoaded(Sets.newHashSet(idMeta.getGetter())).build();
 
         assertThat(interceptor.getEntityOperations()).isSameAs(context);
@@ -79,7 +79,7 @@ public class EntityInterceptorBuilderTest {
         when(context.getEntityMeta()).thenReturn(meta);
         when(context.getPrimaryKey()).thenReturn(entity.getId());
 
-        EntityInterceptor<CompleteBean> interceptor = EntityInterceptorBuilder.<CompleteBean>builder(context, entity)
+        ProxyInterceptor<CompleteBean> interceptor = ProxyInterceptorBuilder.<CompleteBean>builder(context, entity)
                 .build();
 
         assertThat(interceptor.getEntityOperations()).isSameAs(context);

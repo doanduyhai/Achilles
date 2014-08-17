@@ -26,28 +26,28 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 import info.archinnov.achilles.internal.validation.Validator;
 
-public class EntityInterceptorBuilder<T> {
-    private static final Logger log = LoggerFactory.getLogger(EntityInterceptorBuilder.class);
+public class ProxyInterceptorBuilder<T> {
+    private static final Logger log = LoggerFactory.getLogger(ProxyInterceptorBuilder.class);
 
     private T target;
     private Set<Method> alreadyLoaded = new HashSet<>();
     private EntityOperations context;
 
-    public static <T> EntityInterceptorBuilder<T> builder(EntityOperations context, T entity) {
-        return new EntityInterceptorBuilder<>(context, entity);
+    public static <T> ProxyInterceptorBuilder<T> builder(EntityOperations context, T entity) {
+        return new ProxyInterceptorBuilder<>(context, entity);
     }
 
-    public EntityInterceptorBuilder(EntityOperations context, T entity) {
+    public ProxyInterceptorBuilder(EntityOperations context, T entity) {
         Validator.validateNotNull(context, "PersistenceContext for interceptor should not be null");
         Validator.validateNotNull(entity, "Target entity for interceptor should not be null");
         this.context = context;
         this.target = entity;
     }
 
-    public EntityInterceptor<T> build() {
+    public ProxyInterceptor<T> build() {
         log.debug("Build interceptor for entity of class {}", context.getEntityMeta().getClassName());
 
-        EntityInterceptor<T> interceptor = new EntityInterceptor<T>();
+        ProxyInterceptor<T> interceptor = new ProxyInterceptor<T>();
 
         EntityMeta entityMeta = context.getEntityMeta();
 
@@ -71,7 +71,7 @@ public class EntityInterceptorBuilder<T> {
         return interceptor;
     }
 
-    public EntityInterceptorBuilder<T> alreadyLoaded(Set<Method> alreadyLoaded) {
+    public ProxyInterceptorBuilder<T> alreadyLoaded(Set<Method> alreadyLoaded) {
         this.alreadyLoaded = alreadyLoaded;
         return this;
     }

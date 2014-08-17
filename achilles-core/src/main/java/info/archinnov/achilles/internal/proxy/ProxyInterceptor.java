@@ -36,9 +36,9 @@ import info.archinnov.achilles.type.Counter;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
-public class EntityInterceptor<T> implements MethodInterceptor, ProxySerializable {
+public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable {
 
-    private static final transient Logger log = LoggerFactory.getLogger(EntityInterceptor.class);
+    private static final transient Logger log = LoggerFactory.getLogger(ProxyInterceptor.class);
 
     private transient EntityLoader loader = new EntityLoader();
     private transient CounterLoader counterLoader = new CounterLoader();

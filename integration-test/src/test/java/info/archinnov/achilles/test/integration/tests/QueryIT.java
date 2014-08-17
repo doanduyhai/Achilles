@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
@@ -42,7 +44,6 @@ import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
 import info.archinnov.achilles.counter.AchillesCounter;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -240,7 +241,7 @@ public class QueryIT {
 
         Factory factory1 = (Factory) found1;
         @SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+        ProxyInterceptor<CompleteBean> interceptor1 = (ProxyInterceptor<CompleteBean>) factory1.getCallback(0);
 
         CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 
@@ -249,7 +250,7 @@ public class QueryIT {
 
         Factory factory2 = (Factory) found1;
         @SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
+        ProxyInterceptor<CompleteBean> interceptor2 = (ProxyInterceptor<CompleteBean>) factory2.getCallback(0);
 
         CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
 
@@ -326,7 +327,7 @@ public class QueryIT {
 
         Factory factory1 = (Factory) found1;
         @SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+        ProxyInterceptor<CompleteBean> interceptor1 = (ProxyInterceptor<CompleteBean>) factory1.getCallback(0);
 
         CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 
@@ -338,7 +339,7 @@ public class QueryIT {
 
         Factory factory2 = (Factory) found1;
         @SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor2 = (EntityInterceptor<CompleteBean>) factory2.getCallback(0);
+        ProxyInterceptor<CompleteBean> interceptor2 = (ProxyInterceptor<CompleteBean>) factory2.getCallback(0);
 
         CompleteBean target2 = (CompleteBean) interceptor2.getTarget();
 
@@ -552,7 +553,7 @@ public class QueryIT {
 
         Factory factory1 = (Factory) actual;
         @SuppressWarnings("unchecked")
-        EntityInterceptor<CompleteBean> interceptor1 = (EntityInterceptor<CompleteBean>) factory1.getCallback(0);
+        ProxyInterceptor<CompleteBean> interceptor1 = (ProxyInterceptor<CompleteBean>) factory1.getCallback(0);
 
         CompleteBean target1 = (CompleteBean) interceptor1.getTarget();
 

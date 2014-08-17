@@ -34,6 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +49,6 @@ import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.EntityInterceptor;
 import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
 import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
@@ -74,7 +75,7 @@ public class EntityProxifierTest {
     private ProxyClassFactory factory;
 
     @Mock
-    private EntityInterceptor<CompleteBean> interceptor;
+    private ProxyInterceptor<CompleteBean> interceptor;
 
     @Mock
     private PersistenceContext.EntityFacade context;
@@ -134,7 +135,7 @@ public class EntityProxifierTest {
         Factory factory = (Factory) proxy;
 
         assertThat(factory.getCallbacks()).hasSize(1);
-        assertThat(factory.getCallback(0)).isInstanceOf(EntityInterceptor.class);
+        assertThat(factory.getCallback(0)).isInstanceOf(ProxyInterceptor.class);
 
         verify(pm.forValues()).getValueFromField(entity);
         verify(pm.forValues()).setValueToField(realProxy, value);
@@ -195,7 +196,7 @@ public class EntityProxifierTest {
         enhancer.setCallback(interceptor);
         CompleteBean proxy = (CompleteBean) enhancer.create();
 
-        EntityInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
+        ProxyInterceptor<CompleteBean> actual = proxifier.getInterceptor(proxy);
 
         assertThat(actual).isSameAs(interceptor);
     }
