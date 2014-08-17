@@ -83,7 +83,11 @@ public class AchillesInitializer {
             cqlPort = parameters.getTyped(CASSANDRA_CQL_PORT);
         }
 
-        Cluster cluster = createCluster(hostname, cqlPort, parameters);
+        final Cluster cluster = createCluster(hostname, cqlPort, parameters);
+
+        // Add Cluster for shutdown process
+        ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addCluster(cluster);
+
         createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
 
         if (nativeSessionOnly) {

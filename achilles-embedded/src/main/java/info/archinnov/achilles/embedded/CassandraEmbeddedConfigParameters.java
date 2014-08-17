@@ -18,6 +18,7 @@ package info.archinnov.achilles.embedded;
 
 import java.util.Set;
 import com.datastax.driver.core.ProtocolOptions.Compression;
+import com.datastax.driver.core.policies.FallthroughRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.google.common.collect.ImmutableSet;
 import info.archinnov.achilles.type.TypedMap;

@@ -75,7 +75,7 @@ public enum ServerStarter {
 
     private static int thriftPort;
 
-    private ExecutorService executor;
+    private static final OrderedShutdownHook orderedShutdownHook = new OrderedShutdownHook();
 
     public void startServer(String cassandraHost, TypedMap parameters) {
         if (StringUtils.isBlank(cassandraHost)) {
@@ -118,8 +118,11 @@ public enum ServerStarter {
         return cqlPort;
     }
 
-    private void start(final CassandraConfig config) {
+    public OrderedShutdownHook getShutdownHook() {
+        return orderedShutdownHook;
+    }
 
+    private void start(final CassandraConfig config) {
         if (isAlreadyRunning()) {
             log.debug("Cassandra is already running, not starting new one");
             return;
@@ -141,7 +144,7 @@ public enum ServerStarter {
         System.setProperty("cassandra-foreground", "true");
 
         final CountDownLatch startupLatch = new CountDownLatch(1);
-        executor = Executors.newSingleThreadExecutor();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -151,12 +154,26 @@ public enum ServerStarter {
             }
         });
 
+
         try {
             startupLatch.await(30, SECONDS);
         } catch (InterruptedException e) {
             log.error("Timeout starting Cassandra embedded", e);
             throw new IllegalStateException("Timeout starting Cassandra embedded", e);
         }
+
+        // Generate an OrderedShutdownHook to shutdown all connections from java clients before closing the server
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                log.info("Calling shutdown on all Cluster instances");
+                // First call shutdown on all registered Java driver Cluster instances
+                orderedShutdownHook.callShutDown();
+
+                log.info("Shutting down embedded Cassandra server");
+                // Then shutdown the server
+                executor.shutdown();
+            }
+        });
     }
 
     private void validateDataFolders(Map<String, Object> parameters) {

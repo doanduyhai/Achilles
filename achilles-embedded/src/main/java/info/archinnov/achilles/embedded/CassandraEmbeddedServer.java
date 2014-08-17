@@ -81,13 +81,6 @@ public class CassandraEmbeddedServer {
         return REPOSITORY.getSessionForKeyspace(keyspaceName);
     }
 
-    public static int getThriftPort() {
-        return CASSANDRA_EMBEDDED.getThriftPort();
-    }
-
-    public static int getCqlPort() {
-        return CASSANDRA_EMBEDDED.getCQLPort();
-    }
 
     public void truncateTable(String keyspaceName, String tableName) {
         String query = "TRUNCATE " + tableName;
