@@ -61,11 +61,7 @@ public abstract class AbstractFlushContext {
 			BatchStatement batch = new BatchStatement(batchType);
 			AbstractStatementWrapper.writeDMLStartBatch(batchType);
 			for (AbstractStatementWrapper statementWrapper : statementWrappers) {
-                if (statementWrapper instanceof NativeStatementWrapper) {
-                    batch.add(((NativeStatementWrapper) statementWrapper).buildParameterizedStatement());
-                } else {
-                    batch.add(statementWrapper.getStatement());
-                }
+                batch.add(statementWrapper.getStatement());
                 statementWrapper.logDMLStatement("\t");
             }
             AbstractStatementWrapper.writeDMLEndBatch(batchType,consistencyLevel);

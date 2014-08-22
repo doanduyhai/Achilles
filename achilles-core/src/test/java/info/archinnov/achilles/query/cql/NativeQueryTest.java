@@ -126,7 +126,7 @@ public class NativeQueryTest {
         verify(daoContext).execute(simpleStatementCaptor.capture());
 
         final NativeStatementWrapper actual = simpleStatementCaptor.getValue();
-        assertThat(actual.getStatement().getQueryString()).isEqualTo("queryString");
+        assertThat(actual.getStatement().toString()).isEqualTo("queryString");
         assertThat(actual.getValues()).isEqualTo(boundValues);
 
     }

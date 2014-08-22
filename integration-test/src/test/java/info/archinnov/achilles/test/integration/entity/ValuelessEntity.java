@@ -18,10 +18,11 @@ package info.archinnov.achilles.test.integration.entity;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 
-@Entity
+@Entity(table = ValuelessEntity.TABLE_NAME)
 public class ValuelessEntity {
 
-	@Id
+    public static final String TABLE_NAME = "valueless_entity";
+    @Id
 	private Long id;
 
 	public ValuelessEntity() {

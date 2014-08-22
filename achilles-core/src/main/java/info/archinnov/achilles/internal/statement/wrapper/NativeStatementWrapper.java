@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internal.statement.wrapper;
 
+import com.datastax.driver.core.Statement;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
@@ -52,8 +54,8 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
     }
 
     @Override
-    public RegularStatement getStatement() {
-        return regularStatement;
+    public Statement getStatement() {
+        return buildParameterizedStatement();
     }
 
     @Override
@@ -67,16 +69,21 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
         }
     }
 
-    public SimpleStatement buildParameterizedStatement() {
-        final SimpleStatement statement = new SimpleStatement(regularStatement.getQueryString(), values);
+    public Statement buildParameterizedStatement() {
+        if (ArrayUtils.isEmpty(regularStatement.getValues()) && ArrayUtils.isNotEmpty(values)) {
+            final SimpleStatement statement = new SimpleStatement(regularStatement.getQueryString(), values);
 
-        if (regularStatement.getConsistencyLevel() != null) {
-            statement.setConsistencyLevel(regularStatement.getConsistencyLevel());
+            if (regularStatement.getConsistencyLevel() != null) {
+                statement.setConsistencyLevel(regularStatement.getConsistencyLevel());
+            }
+
+            if (regularStatement.getSerialConsistencyLevel() != null) {
+                statement.setSerialConsistencyLevel(regularStatement.getSerialConsistencyLevel());
+            }
+            return statement;
+        } else {
+            return regularStatement;
         }
 
-        if (regularStatement.getSerialConsistencyLevel() != null) {
-            statement.setSerialConsistencyLevel(regularStatement.getSerialConsistencyLevel());
-        }
-        return statement;
     }
 }

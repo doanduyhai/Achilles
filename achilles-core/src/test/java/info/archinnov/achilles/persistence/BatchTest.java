@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.SimpleStatement;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -231,7 +232,7 @@ public class BatchTest {
         //Then
         verify(validator).validateUpsertOrDelete(statement);
         verify(flushContext).pushStatement(statementCaptor.capture());
-        assertThat(statementCaptor.getValue().getStatement()).isSameAs(statement);
+        assertThat(statementCaptor.getValue().getStatement()).isInstanceOf(SimpleStatement.class);
         assertThat(statementCaptor.getValue().getValues()).contains(10L);
     }
 
@@ -247,7 +248,7 @@ public class BatchTest {
         //Then
         verify(validator).validateUpsertOrDelete(statement);
         verify(flushContext).pushStatement(statementCaptor.capture());
-        assertThat(statementCaptor.getValue().getStatement()).isSameAs(statement);
+        assertThat(statementCaptor.getValue().getStatement()).isInstanceOf(SimpleStatement.class);
         assertThat(statementCaptor.getValue().getValues()).contains(10L);
     }
 }

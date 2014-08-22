@@ -29,7 +29,7 @@ import info.archinnov.achilles.type.OptionsBuilder;
 public class ValuelessEntityIT {
 
 	@Rule
-	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, "ValuelessEntity");
+	public AchillesInternalCQLResource resource = new AchillesInternalCQLResource(Steps.AFTER_TEST, ValuelessEntity.TABLE_NAME);
 
 	private PersistenceManager manager = resource.getPersistenceManager();
 

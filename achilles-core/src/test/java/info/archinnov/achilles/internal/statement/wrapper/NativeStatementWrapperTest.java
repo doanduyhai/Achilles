@@ -20,6 +20,10 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
+import java.util.UUID;
+
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.Statement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -42,7 +46,7 @@ public class NativeStatementWrapperTest {
         final ByteBuffer[] boundValues = new SimpleStatement("select", 10L).getValues();
 
         //When
-        final SimpleStatement actual = wrapper.buildParameterizedStatement();
+        final SimpleStatement actual = (SimpleStatement)wrapper.buildParameterizedStatement();
 
         //Then
         assertThat(actual.getQueryString()).isEqualTo(statement.getQueryString());
@@ -53,5 +57,22 @@ public class NativeStatementWrapperTest {
         assertThat(actual.getValues()).isEqualTo(boundValues);
     }
 
+    @Test
+    public void should_return_regular_statement() throws Exception {
+        //Given
+        final Insert statement = insertInto("test").value("id", 10L).value("uuid", new UUID(10,10));
+        statement.setConsistencyLevel(ConsistencyLevel.ALL);
+        statement.setSerialConsistencyLevel(ConsistencyLevel.LOCAL_SERIAL);
+        final NativeStatementWrapper wrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, new Object[] {}, Optional.<CASResultListener>absent());
 
+        //When
+        final RegularStatement actual = (RegularStatement)wrapper.buildParameterizedStatement();
+
+        //Then
+        assertThat(actual).isSameAs(statement);
+        assertThat(actual.getQueryString()).isEqualTo(statement.getQueryString());
+        assertThat(actual.getValues()).isNotEmpty();
+        assertThat(actual.getConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(actual.getSerialConsistencyLevel()).isEqualTo(ConsistencyLevel.LOCAL_SERIAL);
+    }
 }

@@ -378,6 +378,28 @@ public class BatchModeIT {
 
     }
 
+    @Test
+    public void should_batch_regular_statement() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong();
+        String name = "DuyHai";
+        final Insert statement = insertInto("CompleteBean").value("id", id).value("name", name).ifNotExists();
+
+        final Batch batch = manager.createBatch();
+
+        batch.startBatch();
+
+        batch.batchNativeStatement(statement);
+
+        batch.endBatch();
+
+        //When
+        final CompleteBean found = manager.find(CompleteBean.class, id);
+
+        //Then
+        assertThat(found.getName()).isEqualTo(name);
+    }
+
     private void assertThatBatchContextHasBeenReset(Batch batchEm) {
         BatchingFlushContext flushContext = Whitebox.getInternalState(batchEm, BatchingFlushContext.class);
         ConsistencyLevel consistencyLevel = Whitebox.getInternalState(flushContext, "consistencyLevel");
