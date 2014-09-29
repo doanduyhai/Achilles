@@ -163,6 +163,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
         // no ALTER's for partition components
         ColumnMetadata columnMetadata = tableMetaData.getColumn(cql3ColumnName);
+        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", cql3ColumnName, tableName);
         validateColumnType(tableName, cql3ColumnName, columnMetadata, columnJavaType);
 
         Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getPartitionKey(), columnMetadata),"Column '%s' of table '%s' should be a partition key component", cql3ColumnName, tableName);
@@ -177,7 +178,9 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
         // no ALTER's for clustering components
         ColumnMetadata columnMetadata = tableMetaData.getColumn(cql3ColumnName);
+        Validator.validateTableTrue(columnMetadata != null, "Cannot find column '%s' in the table '%s'", cql3ColumnName, tableName);
         validateColumnType(tableName, cql3ColumnName, columnMetadata, columnJavaType);
+
         Validator.validateBeanMappingTrue(hasColumnMeta(tableMetaData.getClusteringColumns(), columnMetadata),"Column '%s' of table '%s' should be a clustering key component", cql3ColumnName, tableName);
     }
 
