@@ -128,7 +128,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.config().getTableName()).thenReturn("UserBean");
+        when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
@@ -147,7 +147,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.config().getTableName()).thenReturn("UserBean");
+        when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(false);
 
@@ -165,7 +165,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.config().getTableName()).thenReturn("UserBean");
+        when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
 
@@ -183,7 +183,7 @@ public class AchillesBootstrapperTest {
 
         // When
         when(schemaContext.fetchTableMetaData()).thenReturn(tableMetaDatas);
-        when(meta.config().getTableName()).thenReturn("UserBean");
+        when(meta.config().getQualifiedTableName()).thenReturn("UserBean");
         when(schemaContext.entityMetaEntrySet()).thenReturn(metas.entrySet());
         when(schemaContext.hasSimpleCounter()).thenReturn(true);
 

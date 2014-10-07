@@ -19,8 +19,8 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 
-@Entity(table = "myOwnCF")
-public class BeanWithColumnFamilyName {
+@Entity(keyspace = "ks", table = "myOwnTable")
+public class BeanWithKeyspaceAndTableName {
 
 	@Id
 	private Long id;

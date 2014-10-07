@@ -46,7 +46,7 @@ public class TableUpdater {
     }
 
     private void addNewPropertiesToBuilder(Session session,EntityMeta entityMeta,List<PropertyMeta> propertyMetas, Set<String> columnNames) {
-        final String tableName = normalizerAndValidateColumnFamilyName(entityMeta.config().getTableName());
+        final String tableName = entityMeta.config().getQualifiedTableName();
 
         for (PropertyMeta propertyMeta : propertyMetas) {
             String cql3ColumnName = propertyMeta.getCQL3ColumnName();

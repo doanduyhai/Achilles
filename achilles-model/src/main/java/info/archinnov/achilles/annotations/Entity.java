@@ -39,6 +39,26 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Entity {
 
+    /**
+     * (<strong>Optional</strong>) The name of the keyspace in which this table belongs to.
+     * If not set explicitely on the entity, <strong>Achilles</strong> will use the current
+     * keyspace of the java driver <em>Session</em> object.
+     * <br/>
+     *
+     * <strong>Please note that keyspace names by default are case-insensitive in Cassandra</strong>
+     *
+     * <pre class="code"><code class="java">
+     *
+     *   package info.archinnov.achilles.entity
+     *
+     *   <strong>{@literal @}Entity(keyspace="back_end", table = "user")</strong>
+     *   public class UserEntity {...}
+     *
+     * </code></pre>
+     *
+     */
+    String keyspace() default "";
+
 	/**
 	 * (<strong>Optional</strong>) The name of the table. Defaults to the short class name. <br/>
      * Ex: for the class <em>info.archinnov.achilles.entity.UserEntity</em>, the

@@ -21,6 +21,9 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Map;
+
+import com.google.common.base.Optional;
+import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +43,6 @@ import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingCo
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.BeanWithClusteredId;
-import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.BeanWithDuplicatedColumnName;
 import info.archinnov.achilles.test.parser.entity.BeanWithIdAndColumnAnnotationsOnSameField;
 import info.archinnov.achilles.test.parser.entity.BeanWithInsertStrategy;
@@ -86,6 +88,7 @@ public class EntityParserTest {
         configContext.setEnableSchemaUpdateForTables(ImmutableMap.<String, Boolean>of());
         configContext.setJacksonMapperFactory(jacksonMapperFactory);
         configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
+        configContext.setCurrentKeyspace(Optional.fromNullable("ks"));
     }
 
     @Test
@@ -96,7 +99,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.getClassName()).isEqualTo("info.archinnov.achilles.test.parser.entity.Bean");
-        assertThat(meta.config().getTableName()).isEqualTo("Bean");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.Bean");
         assertThat(meta.getIdMeta().<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
@@ -195,12 +198,12 @@ public class EntityParserTest {
     @Test
     public void should_parse_entity_with_table_name() throws Exception {
 
-        initEntityParsingContext(BeanWithColumnFamilyName.class);
+        initEntityParsingContext(BeanWithKeyspaceAndTableName.class);
 
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta).isNotNull();
-        assertThat(meta.config().getTableName()).isEqualTo("myOwnCF");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.myOwnTable");
     }
 
     @Test
@@ -317,9 +320,9 @@ public class EntityParserTest {
     @Test
     public void should_parse_entity_with_scheme_update_enabled() throws Exception {
         initEntityParsingContext(BeanWithClusteredId.class);
-
+        configContext.setCurrentKeyspace(Optional.fromNullable("ks"));
         configContext.setEnableSchemaUpdate(false);
-        configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("BeanWithClusteredId", true));
+        configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("ks.BeanWithClusteredId", true));
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.config().isSchemaUpdateEnabled()).isTrue();

@@ -24,8 +24,12 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.NativeQueryValidator;
 
+import java.util.regex.Pattern;
+
 public class TypedQueryValidator {
     private static final Logger log  = LoggerFactory.getLogger(TypedQueryValidator.class);
+
+    private static String OPTIONAL_KEYSPACE_PREFIX = "[a-zA-Z0-9_]*\\.?";
 
     private NativeQueryValidator validator = new NativeQueryValidator();
 
@@ -49,7 +53,9 @@ public class TypedQueryValidator {
 
         validator.validateSelect(regularStatement);
 
-        Validator.validateTrue(normalizedQuery.contains(" from " + tableName),"The typed query [%s] should contain the ' from %s' clause if type is '%s'", queryString, tableName,
+        final Pattern pattern = Pattern.compile(".* from "+ OPTIONAL_KEYSPACE_PREFIX + tableName+" .*");
+
+        Validator.validateTrue(pattern.matcher(normalizedQuery).matches(),"The typed query [%s] should contain the table name '%s' if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
 	}
 }

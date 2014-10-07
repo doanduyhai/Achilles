@@ -91,7 +91,7 @@ public class EntityPersisterTest {
     public void should_remove() throws Exception {
         // Given
         when(entityMeta.structure().isClusteredCounter()).thenReturn(false);
-        when(entityMeta.config().getTableName()).thenReturn("table");
+        when(entityMeta.config().getQualifiedTableName()).thenReturn("table");
 
         // When
         persister.remove(context);

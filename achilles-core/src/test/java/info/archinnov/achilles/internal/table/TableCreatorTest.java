@@ -102,26 +102,12 @@ public class TableCreatorTest {
         when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
         when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
         when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
+        when(meta.config().getQualifiedTableName()).thenReturn("myTable");
         when(meta.config().getTableName()).thenReturn("myTable");
         when(meta.config().getTableComment()).thenReturn("test table");
         when(meta.getClassName()).thenReturn("CompleteBean");
         creator = new TableCreator();
 
-    }
-
-    @Test
-    public void should_fetch_table_metas() throws Exception {
-        // Given
-        List<TableMetadata> tableMetas = asList(tableMeta);
-
-        // When
-        when(keyspaceMeta.getTables()).thenReturn(tableMetas);
-        when(tableMeta.getName()).thenReturn("table");
-
-        Map<String, TableMetadata> actual = creator.fetchTableMetaData(keyspaceMeta, "keyspace");
-
-        // Then
-        assertThat(actual.get("table")).isSameAs(tableMeta);
     }
 
     @Test

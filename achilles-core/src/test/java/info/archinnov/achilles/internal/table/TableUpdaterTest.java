@@ -31,8 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.ColumnMetadataBuilder;
-import com.datastax.driver.core.DataType;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,7 +88,7 @@ public class TableUpdaterTest {
         when(keyspaceMeta.getTables()).thenReturn(new ArrayList<TableMetadata>());
         when(keyspaceMeta.getTables()).thenReturn(asList(tableMeta));
         when(tableMeta.getName()).thenReturn("tableName");
-        when(meta.config().getTableName()).thenReturn("tableName");
+        when(meta.config().getQualifiedTableName()).thenReturn("tableName");
         when(meta.config().isSchemaUpdateEnabled()).thenReturn(true);
 
     }

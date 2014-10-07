@@ -29,6 +29,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Optional;
+import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,7 +50,6 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.BeanWithColumnFamilyName;
 import info.archinnov.achilles.test.parser.entity.BeanWithComment;
 import info.archinnov.achilles.test.parser.entity.ChildBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -337,30 +339,66 @@ public class EntityIntrospectorTest {
 
     @Test
     public void should_infer_table_comment_from_default_value() throws Exception {
-        String comment = introspector.inferTableComment(BeanWithColumnFamilyName.class, "default comment");
+        String comment = introspector.inferTableComment(BeanWithKeyspaceAndTableName.class, "default comment");
         assertThat(comment).isEqualTo("default comment");
     }
 
     @Test
-    public void should_infer_column_family_from_annotation() throws Exception {
-        String cfName = introspector.inferTableName(BeanWithColumnFamilyName.class, "canonicalName");
-        assertThat(cfName).isEqualTo("myOwnCF");
+    public void should_infer_table_name_from_annotation() throws Exception {
+        String tableName = introspector.inferTableName(BeanWithKeyspaceAndTableName.class,  "canonicalName");
+        assertThat(tableName).isEqualTo("myOwnTable");
     }
 
     @Test
-    public void should_infer_column_family_from_default_name() throws Exception {
-        String cfName = introspector.inferTableName(CompleteBean.class, "canonicalName");
-        assertThat(cfName).isEqualTo("canonicalName");
+    public void should_infer_table_name_from_default_name() throws Exception {
+        String tableName = introspector.inferTableName(CompleteBean.class, "canonicalName");
+        assertThat(tableName).isEqualTo("canonicalName");
     }
 
     @Test
-    public void should_infer_column_family_from_default_name_when_empty_annotation_name() throws Exception {
+    public void should_infer_table_name_from_default_name_when_empty_annotation_name() throws Exception {
         @Entity(table = "")
         class Test {
 
         }
         String cfName = introspector.inferTableName(Test.class, "canonicalName");
         assertThat(cfName).isEqualTo("canonicalName");
+    }
+
+    
+    @Test
+    public void should_infer_keyspace_name_from_annotation() throws Exception {
+        //Given
+        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable("whatever"));
+
+        //When
+        String keyspaceName = introspector.inferKeyspaceName(BeanWithKeyspaceAndTableName.class, parsingContext);
+
+        //Then
+        assertThat(keyspaceName).isEqualTo("ks");
+    }
+
+    @Test
+    public void should_infer_keyspace_name_from_config() throws Exception {
+        //Given
+        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable("ks"));
+
+        //When
+        String keyspaceName = introspector.inferKeyspaceName(ComplexBean.class, parsingContext);
+
+        //Then
+        assertThat(keyspaceName).isEqualTo("ks");
+    }
+
+    @Test
+    public void should_exception_when_keyspace_name_not_found() throws Exception {
+        //When
+        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable(""));
+
+        expectedEx.expect(AchillesBeanMappingException.class);
+        expectedEx.expectMessage("No keyspace name found for entity '"+CompleteBean.class.getCanonicalName()+"'. Keyspace name is looked up using either the @Entity annotation or in configuration parameter");
+
+        introspector.inferKeyspaceName(CompleteBean.class,  parsingContext);
     }
 
     @Test

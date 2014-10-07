@@ -128,6 +128,7 @@ public class PreparedStatementGeneratorTest {
     public void setUp() {
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.config().getTableName()).thenReturn("table");
+        when(meta.config().getKeyspaceName()).thenReturn("ks");
     }
 
     @Test
@@ -140,7 +141,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
         verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class));
-        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO table(name) VALUES (:name) USING TTL :ttl;");
+        assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table(name) VALUES (:name) USING TTL :ttl;");
     }
 
     @Test
@@ -149,7 +150,7 @@ public class PreparedStatementGeneratorTest {
         when(nameMeta.structure().isCounter()).thenReturn(false);
         when(nameMeta.forStatementGeneration().prepareSelectField(isA(Selection.class))).thenReturn(select().column("name"));
         when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(fromNullable(nameMeta)), isA(Select.class)))
-                .thenReturn(select("name").from("table").where(eq("id",bindMarker("id"))));
+                .thenReturn(select("name").from("ks","table").where(eq("id",bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -157,7 +158,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
 
-        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM ks.table WHERE id=:id;");
     }
 
     @Test
@@ -177,7 +178,7 @@ public class PreparedStatementGeneratorTest {
     public void should_prepare_update_fields_ps() throws Exception {
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta ageMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
-        final Assignments assignments = update("table").with();
+        final Assignments assignments = update("ks","table").with();
 
         when(nameMeta.structure().isStaticColumn()).thenReturn(false);
         when(ageMeta.structure().isStaticColumn()).thenReturn(false);
@@ -191,8 +192,8 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).isSameAs(ps);
 
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table IF name=:name;");
-        assertThat(queryCaptor.getValue()).isEqualTo("UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp WHERE id=:id;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table IF name=:name;");
+        assertThat(queryCaptor.getValue()).isEqualTo("UPDATE ks.table USING TTL :ttl AND TIMESTAMP :timestamp WHERE id=:id;");
     }
 
     @Test
@@ -203,14 +204,14 @@ public class PreparedStatementGeneratorTest {
         when(nameMeta.forStatementGeneration().prepareSelectField(isA(Selection.class))).thenReturn(select().column("name"));
         when(meta.structure().hasOnlyStaticColumns()).thenReturn(false);
         when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(Optional.<PropertyMeta>absent()), isA(Select.class)))
-                .thenReturn(select("name").from("table").where(eq("id", bindMarker("id"))));
+                .thenReturn(select("name").from("ks","table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareSelectAll(session, meta);
 
         assertThat(actual).isSameAs(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM ks.table WHERE id=:id;");
     }
 
     @Test
@@ -223,14 +224,14 @@ public class PreparedStatementGeneratorTest {
         when(meta.getAllMetasExceptId()).thenReturn(asList(nameMeta));
 
         when(idMeta.forStatementGeneration().generateWhereClauseForSelect(Mockito.eq(Optional.fromNullable(nameMeta)), isA(Select.class)))
-                .thenReturn(select("name").from("table").where(eq("id", bindMarker("id"))));
+                .thenReturn(select("name").from("ks","table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
         PreparedStatement actual = generator.prepareSelectAll(session, meta);
 
         assertThat(actual).isSameAs(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("SELECT name FROM ks.table WHERE id=:id;");
     }
 
 
@@ -239,7 +240,7 @@ public class PreparedStatementGeneratorTest {
         when(meta.structure().hasOnlyStaticColumns()).thenReturn(true);
 
         when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(true), isA(Delete.class)))
-                .thenReturn(delete().from("table").where(eq("id", bindMarker("id"))));
+                .thenReturn(delete().from("ks","table").where(eq("id", bindMarker("id"))));
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -247,7 +248,7 @@ public class PreparedStatementGeneratorTest {
 
         assertThat(actual).hasSize(1);
         assertThat(actual).containsValue(ps);
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table WHERE id=:id;");
+        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM ks.table WHERE id=:id;");
     }
 
     @Test
@@ -352,7 +353,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(REMOVE_COLLECTION_OR_MAP);
         when(changeSet.generateUpdateForRemoveAll(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -362,8 +363,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl AND TIMESTAMP :timestamp;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table IF name=:name;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl AND TIMESTAMP :timestamp;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table IF name=:name;");
 
     }
 
@@ -375,7 +376,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
         when(changeSet.generateUpdateForAddedElements(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -384,8 +385,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -396,7 +397,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_SET);
         when(changeSet.generateUpdateForRemovedElements(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -405,8 +406,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -417,7 +418,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(APPEND_TO_LIST);
         when(changeSet.generateUpdateForAppendedElements(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -426,8 +427,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -438,7 +439,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(PREPEND_TO_LIST);
         when(changeSet.generateUpdateForPrependedElements(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -447,8 +448,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -459,7 +460,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST);
         when(changeSet.generateUpdateForRemoveListElements(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -468,8 +469,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -498,7 +499,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(ADD_TO_MAP);
         when(changeSet.generateUpdateForAddedEntries(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -507,8 +508,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -519,7 +520,7 @@ public class PreparedStatementGeneratorTest {
         when(changeSet.getChangeType()).thenReturn(REMOVE_FROM_MAP);
         when(changeSet.generateUpdateForRemovedKey(conditionsCaptor.capture())).thenReturn(assignments);
         when(changeSet.getPropertyMeta().structure().isStaticColumn()).thenReturn(true);
-        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("table").where());
+        when(idMeta.forStatementGeneration().prepareCommonWhereClauseForUpdate(assignments, true)).thenReturn(update("ks","table").where());
 
         when(session.prepare(regularStatementCaptor.capture())).thenReturn(ps);
 
@@ -528,8 +529,8 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL :ttl;");
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table;");
+        assertThat(regularStatementCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL :ttl;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table;");
     }
 
     @Test
@@ -542,7 +543,7 @@ public class PreparedStatementGeneratorTest {
 
         when(sliceQueryProperties.getEntityMeta()).thenReturn(meta);
         when(meta.forOperations().getColumnsMetaToLoad()).thenReturn(asList(pm));
-        when(meta.config().getTableName()).thenReturn("table");
+        when(meta.config().getQualifiedTableName()).thenReturn("table");
         when(sliceQueryProperties.generateWhereClauseForSelect(selectCaptor.capture())).thenReturn(select);
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -551,7 +552,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT name FROM table;");
+        assertThat(selectCaptor.getValue().getQueryString()).isEqualTo("SELECT name FROM ks.table;");
         assertThat(queryCaptor.getValue()).isEqualTo("SELECT * FROM test WHERE id=10 LIMIT 1;");
     }
 
@@ -560,8 +561,9 @@ public class PreparedStatementGeneratorTest {
         //Given
         final ArgumentCaptor<Delete> deleteCaptor = ArgumentCaptor.forClass(Delete.class);
         final ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
-        final Delete.Where delete = delete().from("table").where();
+        final Delete.Where delete = delete().from("ks","table").where();
         when(sliceQueryProperties.getEntityMeta().config().getTableName()).thenReturn("table");
+        when(sliceQueryProperties.getEntityMeta().config().getKeyspaceName()).thenReturn("ks");
         when(sliceQueryProperties.generateWhereClauseForDelete(deleteCaptor.capture())).thenReturn(delete);
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
@@ -570,7 +572,7 @@ public class PreparedStatementGeneratorTest {
 
         //Then
         assertThat(actual).isSameAs(ps);
-        assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE FROM table;");
-        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM table;");
+        assertThat(deleteCaptor.getValue().getQueryString()).isEqualTo("DELETE FROM ks.table;");
+        assertThat(queryCaptor.getValue()).isEqualTo("DELETE FROM ks.table;");
     }
 }

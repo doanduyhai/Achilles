@@ -20,9 +20,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +32,6 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
@@ -62,11 +58,23 @@ public class TypedQueryValidatorTest {
     }
 
     @Test
+    public void should_validate_raw_typed_query() throws Exception {
+        //Given
+        final RegularStatement statement = select().from("ks", "table").where(eq("id", 10L));
+
+        //When
+        validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
+
+        //Then
+
+    }
+
+    @Test
     public void should_exception_when_wrong_table() throws Exception {
-        final RegularStatement statement = select().from("test").where(eq("id",10L));
+        final RegularStatement statement = select().from("ks", "test").where(eq("id", 10L));
 
         exception.expect(AchillesException.class);
-        exception.expectMessage(format("The typed query [SELECT * FROM test WHERE id=10;] should contain the ' from table' clause if type is '%s'", CompleteBean.class.getCanonicalName()));
+        exception.expectMessage(format("The typed query [SELECT * FROM ks.test WHERE id=10;] should contain the table name 'table' if type is '%s'", CompleteBean.class.getCanonicalName()));
 
         validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
     }

@@ -17,8 +17,7 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.counterType;
-import static info.archinnov.achilles.internal.metadata.parsing.PropertyParser.isAssignableFromNativeType;
-import static info.archinnov.achilles.type.Options.CASCondition;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,15 +26,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import info.archinnov.achilles.exception.AchillesException;
-import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
-import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.schemabuilder.Create;
 import info.archinnov.achilles.type.ConsistencyLevel;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
 
@@ -59,6 +51,8 @@ public class EntityMeta {
     private Class<?> entityClass;
     private String className;
     protected String tableName;
+    protected String keyspaceName;
+    protected String qualifiedTableName;
     protected String tableComment;
     private Class<?> idClass;
     private Map<String, PropertyMeta> propertyMetas;
@@ -122,8 +116,16 @@ public class EntityMeta {
         this.className = className;
     }
 
+    void setQualifiedTableName(String qualifiedTableName) {
+        this.qualifiedTableName = qualifiedTableName;
+    }
+
     void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    void setKeyspaceName(String keyspaceName) {
+        this.keyspaceName = keyspaceName;
     }
 
     void setTableComment(String tableComment) {
@@ -233,7 +235,7 @@ public class EntityMeta {
         final ArrayList<String> propertyNames = new ArrayList<>(propertyMetas.keySet());
         Collections.sort(propertyNames);
         return Objects.toStringHelper(this.getClass()).add("className", className)
-                .add("tableName/tableName", tableName)
+                .add("qualifiedTableName", qualifiedTableName)
                 .add("propertyMetas", StringUtils.join(propertyNames, ",")).add("idMeta", idMeta)
                 .add("clusteredEntity", clusteredEntity).add("consistencyLevels", consistencyLevels).toString();
     }

@@ -19,11 +19,14 @@ package info.archinnov.achilles.internal.context;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import info.archinnov.achilles.internal.table.SchemaReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,6 +71,9 @@ public class SchemaContextTest {
     private TableValidator tableValidator;
 
     @Mock
+    private SchemaReader schemaReader;
+
+    @Mock
     private ConfigurationContext configContext;
 
 
@@ -77,10 +83,10 @@ public class SchemaContextTest {
     public void setUp() {
         when(configContext.isForceColumnFamilyCreation()).thenReturn(true);
         context = new SchemaContext(configContext, session, keyspaceName, cluster, new ParsingResult(entityMetaMap, true));
-
-        context.tableCreator=tableCreator;
-        context.tableUpdater=tableUpdater;
-        context.tableValidator=tableValidator;
+        context.tableCreator = tableCreator;
+        context.tableUpdater = tableUpdater;
+        context.tableValidator = tableValidator;
+        context.schemaReader = schemaReader;
     }
 
     @Test
@@ -140,15 +146,18 @@ public class SchemaContextTest {
     public void should_fetch_table_metas() throws Exception {
         // Given
         Map<String, TableMetadata> expected = new HashMap<>();
-        KeyspaceMetadata keyspaceMeta = mock(KeyspaceMetadata.class);
+        EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
+        final List<EntityMeta> entityMetas = Arrays.asList(meta);
+        when(entityMetaMap.values()).thenReturn(entityMetas);
+
 
         // When
-        when(cluster.getMetadata().getKeyspace(keyspaceName)).thenReturn(keyspaceMeta);
-        when(tableCreator.fetchTableMetaData(keyspaceMeta, keyspaceName)).thenReturn(expected);
+        when(schemaReader.fetchTableMetaData(cluster, entityMetas)).thenReturn(expected);
 
         Map<String, TableMetadata> actual = context.fetchTableMetaData();
 
         // Then
+        verify(entityMetaMap).values();
         assertThat(actual).isSameAs(expected);
     }
 

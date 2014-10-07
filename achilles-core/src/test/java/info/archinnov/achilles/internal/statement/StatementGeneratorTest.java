@@ -17,11 +17,9 @@ package info.archinnov.achilles.internal.statement;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.Update.Conditions;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import static info.archinnov.achilles.test.builders.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -35,15 +33,12 @@ import com.datastax.driver.core.querybuilder.Update.Assignments;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Where;
 import com.google.common.base.Optional;
@@ -58,7 +53,6 @@ import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StatementGeneratorTest {
@@ -109,6 +103,7 @@ public class StatementGeneratorTest {
         when(context.getCasConditions()).thenReturn(asList(casCondition));
 
         when(entityMeta.forTranscoding().encodeCasConditionValue(casCondition)).thenReturn("DuyHai_encoded");
+        when(entityMeta.config().getKeyspaceName()).thenReturn("ks");
         when(entityMeta.config().getTableName()).thenReturn("table");
 
         when(dirtyCheckChangeSet.getChangeType()).thenReturn(SET_TO_LIST_AT_INDEX);
@@ -121,7 +116,7 @@ public class StatementGeneratorTest {
         final Pair<Where, Object[]> pair = generator.generateCollectionAndMapUpdateOperation(context, dirtyCheckChangeSet);
 
         //Then
-        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE table USING TTL 10 AND TIMESTAMP 100 IF name=?;");
+        assertThat(conditionsCaptor.getValue().getQueryString()).isEqualTo("UPDATE ks.table USING TTL 10 AND TIMESTAMP 100 IF name=?;");
         assertThat(pair.left.getQueryString()).isEqualTo("UPDATE table SET name=? WHERE id=11;");
         assertThat(pair.right[0]).isEqualTo(10);
         assertThat(pair.right[1]).isEqualTo(100L);
@@ -143,7 +138,7 @@ public class StatementGeneratorTest {
         when(context.getTimestamp()).thenReturn(Optional.fromNullable(100L));
         when(context.getCasConditions()).thenReturn(new ArrayList<CASCondition>());
 
-        when(entityMeta.config().getTableName()).thenReturn("table");
+        when(entityMeta.config().getQualifiedTableName()).thenReturn("table");
 
         when(dirtyCheckChangeSet.getChangeType()).thenReturn(REMOVE_FROM_LIST_AT_INDEX);
         when(dirtyCheckChangeSet.generateUpdateForRemovedAtIndexElement(any(Conditions.class))).thenReturn(updateClauseAndBoundValues);

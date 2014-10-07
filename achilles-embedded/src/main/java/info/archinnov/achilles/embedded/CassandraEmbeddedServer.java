@@ -47,7 +47,7 @@ public class CassandraEmbeddedServer {
      * <em>This constructor is not meant to be used directly. Please use the
      * {@code info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder} instead
      * </em>
-     * @param parameters embedded Cassandra server parameters
+     * @param originalParameters embedded Cassandra server parameters
      * @param achillesParameters Achilles parameters
      */
     public CassandraEmbeddedServer(TypedMap originalParameters, ConfigMap achillesParameters) {

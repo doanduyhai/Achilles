@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
@@ -70,10 +72,11 @@ public class AchillesBootstrapper {
 
         for (Entry<Class<?>, EntityMeta> entry : schemaContext.entityMetaEntrySet()) {
             EntityMeta entityMeta = entry.getValue();
-            String tableName = entityMeta.config().getTableName().toLowerCase();
+            final EntityMetaConfig metaConfig = entityMeta.config();
+            String qualifiedTableName = metaConfig.getQualifiedTableName().toLowerCase();
 
-            if (tableMetaDatas.containsKey(tableName)) {
-                TableMetadata tableMetaData = tableMetaDatas.get(tableName);
+            if (tableMetaDatas.containsKey(qualifiedTableName)) {
+                TableMetadata tableMetaData = tableMetaDatas.get(qualifiedTableName);
                 schemaContext.validateForEntity(entityMeta, tableMetaData);
                 schemaContext.updateForEntity(entityMeta, tableMetaData);
             } else {

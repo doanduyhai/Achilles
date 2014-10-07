@@ -29,8 +29,12 @@ public class EntityMetaConfig extends EntityMetaView {
         return meta.schemaUpdateEnabled;
     }
 
-    public String getTableName() {
-        return meta.tableName;
+    public String getTableName() {return meta.tableName;}
+
+    public String getKeyspaceName() {return meta.keyspaceName;}
+
+    public String getQualifiedTableName() {
+        return meta.qualifiedTableName;
     }
 
     public String getTableComment() {

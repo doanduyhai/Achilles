@@ -38,10 +38,10 @@ public class EntityParsingContextTest {
     @Test
     public void should_determine_schema_update_status_for_table_from_map() throws Exception {
         //Given
-        when(configContext.getEnableSchemaUpdateForTables()).thenReturn(ImmutableMap.of("table", false));
+        when(configContext.getEnableSchemaUpdateForTables()).thenReturn(ImmutableMap.of("ks.table", false));
 
         //When
-        final boolean actual = parsingContext.isSchemaUpdateEnabled("table");
+        final boolean actual = parsingContext.isSchemaUpdateEnabled("ks", "table");
 
         //Then
         assertThat(actual).isFalse();
@@ -50,11 +50,11 @@ public class EntityParsingContextTest {
     @Test
     public void should_determine_schema_update_status_for_table_from_default() throws Exception {
         //Given
-        when(configContext.getEnableSchemaUpdateForTables()).thenReturn(ImmutableMap.of("another_table", false));
+        when(configContext.getEnableSchemaUpdateForTables()).thenReturn(ImmutableMap.of("ks.another_table", false));
         when(configContext.isEnableSchemaUpdate()).thenReturn(true);
 
         //When
-        final boolean actual = parsingContext.isSchemaUpdateEnabled("table");
+        final boolean actual = parsingContext.isSchemaUpdateEnabled("ks", "table");
 
         //Then
         assertThat(actual).isTrue();

@@ -52,6 +52,8 @@ public class AchillesInitializer {
 
     private static final Pattern KEYSPACE_NAME_PATTERN = Pattern.compile("[a-zA-Z][_a-zA-Z0-9]{0,31}");
 
+    private Cluster singletonCluster;
+
     void initializeFromParameters(String cassandraHost, TypedMap parameters, ConfigMap achillesParameters) {
 
         String keyspaceName = achillesParameters.getTyped(KEYSPACE_NAME);
@@ -84,9 +86,6 @@ public class AchillesInitializer {
         }
 
         final Cluster cluster = createCluster(hostname, cqlPort, parameters);
-
-        // Add Cluster for shutdown process
-        ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addCluster(cluster);
 
         createKeyspaceIfNeeded(cluster, keyspaceName, keyspaceDurableWrite);
 
@@ -128,9 +127,17 @@ public class AchillesInitializer {
         RetryPolicy retryPolicy = parameters.getTyped(RETRY_POLICY);
         ReconnectionPolicy reconnectionPolicy = parameters.getTyped(RECONNECTION_POLICY);
 
-        return Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
-                .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
-                .withReconnectionPolicy(reconnectionPolicy).build();
+        synchronized (this) {
+            if (singletonCluster == null) {
+                singletonCluster = Cluster.builder().addContactPoint(host).withPort(cqlPort).withClusterName(clusterName)
+                        .withCompression(compression).withLoadBalancingPolicy(loadBalancingPolicy).withRetryPolicy(retryPolicy)
+                        .withReconnectionPolicy(reconnectionPolicy).build();
+
+                // Add Cluster for shutdown process
+                ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addCluster(singletonCluster);
+            }
+        }
+        return singletonCluster;
     }
 
     private void createKeyspaceIfNeeded(Cluster cluster, String keyspaceName, Boolean keyspaceDurableWrite) {

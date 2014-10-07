@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.ValidationException;
+
+import com.google.common.base.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -120,6 +122,7 @@ public class ArgumentExtractor {
         log.trace("Build ConfigurationContext from configuration map");
 
         ConfigurationContext configContext = new ConfigurationContext();
+        configContext.setCurrentKeyspace(initKeyspaceName(configurationMap));
         configContext.setForceColumnFamilyCreation(initForceTableCreation(configurationMap));
         configContext.setEnableSchemaUpdate(initForceTableUpdate(configurationMap));
         configContext.setEnableSchemaUpdateForTables(initForceTableUpdateMap(configurationMap));
@@ -197,15 +200,22 @@ public class ArgumentExtractor {
         return configMap.getTypedOr(CONSISTENCY_LEVEL_WRITE_MAP, ImmutableMap.<String, ConsistencyLevel>of());
     }
 
+    public Optional<String> initKeyspaceName(ConfigMap configurationMap) {
+        return Optional.fromNullable(configurationMap.<String>getTyped(KEYSPACE_NAME));
+    }
+
     public Session initSession(Cluster cluster, ConfigMap configurationMap) {
         log.trace("Extract or init Session from configuration map");
 
         Session nativeSession = configurationMap.getTyped(NATIVE_SESSION);
-        String keyspace = configurationMap.getTyped(KEYSPACE_NAME);
-        Validator.validateNotBlank(keyspace, "%s property should be provided", KEYSPACE_NAME);
 
         if (nativeSession == null) {
-            nativeSession = cluster.connect(keyspace);
+            final Optional<String> keyspaceNameO = initKeyspaceName(configurationMap);
+            if (keyspaceNameO.isPresent()) {
+                nativeSession = cluster.connect(keyspaceNameO.get());
+            } else {
+                nativeSession = cluster.connect();
+            }
         }
         return nativeSession;
     }
@@ -252,4 +262,5 @@ public class ArgumentExtractor {
     public boolean initRelaxIndexValidation(ConfigMap configMap) {
         return configMap.getTypedOr(RELAX_INDEX_VALIDATION, DEFAULT_INDEX_RELAX_VALIDATION);
     }
+
 }

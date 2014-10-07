@@ -207,15 +207,21 @@ public class ConsistencyLevelIT {
                 ))
                 .buildPersistenceManager();
 
-        //When
-        logAsserter.prepareLogLevel();
-        final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
-        entity.setId(RandomUtils.nextLong());
+        try {
+            //When
+            logAsserter.prepareLogLevel();
+            final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
+            entity.setId(RandomUtils.nextLong());
 
-        pm.insert(entity);
-        //Then
-        assertThat(pm.find(EntityWithTwoConsistency.class, entity.getId())).isNotNull();
-        logAsserter.assertConsistencyLevels(ONE, QUORUM);
+            pm.insert(entity);
+            //Then
+            assertThat(pm.find(EntityWithTwoConsistency.class, entity.getId())).isNotNull();
+            logAsserter.assertConsistencyLevels(ONE, QUORUM);
+        } finally {
+            pm.getNativeSession().close();
+        }
+
+
     }
 
 }

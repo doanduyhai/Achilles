@@ -17,10 +17,15 @@ package info.archinnov.achilles.internal.metadata.parsing;
 
 import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.internal.helper.LoggerHelper.fieldToStringFn;
+import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.validation.Validator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,23 +137,32 @@ public class EntityIntrospector {
         return accessors;
     }
 
-    public String inferTableName(Class<?> entity, String canonicalName) {
-        String columnFamilyName = null;
-        Entity annotation = entity.getAnnotation(Entity.class);
-        if (annotation != null) {
-            if (StringUtils.isNotBlank(annotation.table())) {
-                columnFamilyName = annotation.table();
-            }
+    public String inferKeyspaceName(Class<?> entityClass, EntityParsingContext parsingContext) {
+        String keyspaceName = parsingContext.getCurrentKeyspaceName().or("");
+        Entity annotation = entityClass.getAnnotation(Entity.class);
+        if (annotation != null && StringUtils.isNotBlank(annotation.keyspace())) {
+            keyspaceName = annotation.keyspace();
+        }
+        Validator.validateBeanMappingTrue(StringUtils.isNotBlank(keyspaceName),"No keyspace name found for entity '"+entityClass.getCanonicalName()+"'. Keyspace name is looked up using either the @Entity annotation or in configuration parameter");
+        return keyspaceName;
+    }
+
+    public String inferTableName(Class<?> entityClass, String canonicalName) {
+        String tableName = null;
+        Entity annotation = entityClass.getAnnotation(Entity.class);
+        if (annotation != null && StringUtils.isNotBlank(annotation.table())) {
+            tableName = annotation.table();
         }
 
-        if (!StringUtils.isBlank(columnFamilyName)) {
-            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(columnFamilyName);
+        if (!StringUtils.isBlank(tableName)) {
+            tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(tableName);
         } else {
-            columnFamilyName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
+            tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
         }
+        Validator.validateRegExp(tableName, TABLE_PATTERN, "tableName for entity meta creation");
 
-        log.debug("Inferred tableName for entity {} : {}", canonicalName, columnFamilyName);
-        return columnFamilyName;
+        log.debug("Inferred tableName for entity {} : {}", canonicalName, tableName);
+        return tableName;
     }
 
     public String inferTableComment(Class<?> entity, String defaultComment) {

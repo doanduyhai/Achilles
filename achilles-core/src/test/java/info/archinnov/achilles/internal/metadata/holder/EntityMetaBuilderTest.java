@@ -64,11 +64,13 @@ public class EntityMetaBuilderTest {
         eagerMetas.add(simpleMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).entityClass(CompleteBean.class).className("Bean")
-                .tableName("cfName").propertyMetas(propertyMetas).build();
+                .keyspaceName("ks").tableName("cfName").propertyMetas(propertyMetas).build();
 
         assertThat(meta.<CompleteBean>getEntityClass()).isEqualTo(CompleteBean.class);
         assertThat(meta.getClassName()).isEqualTo("Bean");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.cfName");
         assertThat(meta.config().getTableName()).isEqualTo("cfName");
+        assertThat(meta.config().getKeyspaceName()).isEqualTo("ks");
         assertThat(meta.getIdMeta()).isSameAs(idMeta);
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
         assertThat(meta.getPropertyMetas()).containsKey("name");
@@ -97,10 +99,10 @@ public class EntityMetaBuilderTest {
         eagerMetas.add(simpleMeta);
 
         EntityMeta meta = entityMetaBuilder(idMeta).className("Bean").propertyMetas(propertyMetas)
-                .tableName("table").tableComment("comment").build();
+                .keyspaceName("ks").tableName("table").tableComment("comment").build();
 
         assertThat(meta.getClassName()).isEqualTo("Bean");
-        assertThat(meta.config().getTableName()).isEqualTo("table");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.table");
         assertThat(meta.config().getTableComment()).isEqualTo("comment");
     }
 

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.validation.Validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.interceptor.DefaultBeanValidationInterceptor;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.JacksonMapperFactory;
@@ -53,6 +54,8 @@ public class ConfigurationContext {
     private ClassLoader OSGIClassLoader;
 
     private boolean relaxIndexValidation;
+
+    private Optional<String> currentKeyspace = Optional.absent();
 
     public boolean isForceColumnFamilyCreation() {
         return forceColumnFamilyCreation;
@@ -180,5 +183,13 @@ public class ConfigurationContext {
 
     public void setRelaxIndexValidation(boolean relaxIndexValidation) {
         this.relaxIndexValidation = relaxIndexValidation;
+    }
+
+    public Optional<String> getCurrentKeyspace() {
+        return currentKeyspace;
+    }
+
+    public void setCurrentKeyspace(Optional<String> currentKeyspace) {
+        this.currentKeyspace = currentKeyspace;
     }
 }

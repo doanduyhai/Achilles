@@ -50,26 +50,11 @@ public class TableCreator {
     private static final Logger log = LoggerFactory.getLogger(TableCreator.class);
     private static final Logger DML_LOG = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 
-    public Map<String, TableMetadata> fetchTableMetaData(KeyspaceMetadata keyspaceMeta, String keyspaceName) {
-
-        log.debug("Fetch existing table meta data from Cassandra");
-
-        Map<String, TableMetadata> tableMetas = new HashMap<>();
-
-        Validator.validateTableTrue(keyspaceMeta != null, "Keyspace '%s' doest not exist or cannot be found",
-                keyspaceName);
-
-        for (TableMetadata tableMeta : keyspaceMeta.getTables()) {
-            tableMetas.put(tableMeta.getName(), tableMeta);
-        }
-        return tableMetas;
-    }
-
     public void createTableForEntity(Session session, EntityMeta entityMeta, ConfigurationContext configContext) {
 
         log.debug("Create table for entity {}", entityMeta);
 
-        String tableName = entityMeta.config().getTableName();
+        String tableName = entityMeta.config().getQualifiedTableName();
         if (configContext.isForceColumnFamilyCreation()) {
             log.debug("Force creation of table for entityMeta {}", entityMeta.getClassName());
             createTableForEntity(session, entityMeta);
@@ -106,9 +91,9 @@ public class TableCreator {
     }
 
     private void createTable(Session session, EntityMeta entityMeta) {
-        String tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(entityMeta.config().getTableName());
+        String qualifiedTableName = entityMeta.config().getQualifiedTableName();
         final List<String> indexes = new LinkedList<>();
-        final Create createTable = SchemaBuilder.createTable(tableName);
+        final Create createTable = SchemaBuilder.createTable(qualifiedTableName);
         for (PropertyMeta pm : entityMeta.getAllMetasExceptIdAndCounters()) {
             String cql3ColumnName = pm.getCQL3ColumnName();
             Class<?> valueClass = pm.config().getCQL3ValueType();
@@ -117,7 +102,7 @@ public class TableCreator {
                 case SIMPLE:
                     createTable.addColumn(cql3ColumnName, toCQLDataType(valueClass), staticColumn);
                     if (pm.structure().isIndexed()) {
-                        indexes.add(pm.forTableCreation().createNewIndexScript(tableName));
+                        indexes.add(pm.forTableCreation().createNewIndexScript(entityMeta.config().getTableName()));
                     }
                     break;
                 case LIST:
@@ -159,7 +144,7 @@ public class TableCreator {
     private void createTableForClusteredCounter(Session session, EntityMeta meta) {
         log.debug("Creating table for clustered counter entity {}", meta.getClassName());
 
-        final Create createTable = SchemaBuilder.createTable(TableNameNormalizer.normalizerAndValidateColumnFamilyName(meta.config().getTableName()));
+        final Create createTable = SchemaBuilder.createTable(meta.config().getQualifiedTableName());
 
         PropertyMeta idMeta = meta.getIdMeta();
         buildPrimaryKey(idMeta, createTable);

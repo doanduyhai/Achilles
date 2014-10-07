@@ -20,7 +20,7 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STAT
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdAndCounterType;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdType;
-import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +40,7 @@ public class EntityMetaBuilder {
     private PropertyMeta idMeta;
     private Class<?> entityClass;
     private String className;
+    private String keyspaceName;
     private String tableName;
     private String tableComment;
     private Map<String, PropertyMeta> propertyMetas;
@@ -60,7 +61,6 @@ public class EntityMetaBuilder {
 
         Validator.validateNotNull(idMeta, "idMeta should not be null for entity meta creation");
         Validator.validateNotEmpty(propertyMetas, "propertyMetas map should not be empty for entity meta creation");
-        Validator.validateRegExp(tableName, TABLE_PATTERN, "tableName for entity meta creation");
 
         EntityMeta meta = new EntityMeta();
 
@@ -68,7 +68,9 @@ public class EntityMetaBuilder {
         meta.setIdClass(idMeta.getValueClass());
         meta.setEntityClass(entityClass);
         meta.setClassName(className);
+        meta.setKeyspaceName(keyspaceName);
         meta.setTableName(tableName);
+        meta.setQualifiedTableName(keyspaceName + "."  + tableName);
         meta.setTableComment(tableComment);
         meta.setPropertyMetas(Collections.unmodifiableMap(propertyMetas));
         meta.setGetterMetas(Collections.unmodifiableMap(extractGetterMetas(propertyMetas)));
@@ -132,6 +134,11 @@ public class EntityMetaBuilder {
 
     public EntityMetaBuilder className(String className) {
         this.className = className;
+        return this;
+    }
+
+    public EntityMetaBuilder keyspaceName(String keyspaceName) {
+        this.keyspaceName = keyspaceName;
         return this;
     }
 

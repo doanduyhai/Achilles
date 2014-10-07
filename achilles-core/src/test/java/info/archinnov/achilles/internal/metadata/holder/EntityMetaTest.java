@@ -23,13 +23,11 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMP
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
-import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
-import static info.archinnov.achilles.type.Options.CASCondition;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,13 +36,11 @@ import java.util.regex.Pattern;
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Pair;
 
 public class EntityMetaTest {
@@ -59,7 +55,7 @@ public class EntityMetaTest {
 
         EntityMeta entityMeta = new EntityMeta();
         entityMeta.setClassName("className");
-        entityMeta.setTableName("cfName");
+        entityMeta.setQualifiedTableName("cfName");
         entityMeta.setIdClass(Long.class);
         entityMeta.setPropertyMetas(propertyMetas);
         entityMeta.setIdMeta(idMeta);
@@ -68,7 +64,7 @@ public class EntityMetaTest {
 
         StringBuilder toString = new StringBuilder();
         toString.append("EntityMeta{className=className, ");
-        toString.append("tableName/tableName=cfName, ");
+        toString.append("qualifiedTableName=cfName, ");
         toString.append("propertyMetas=age,name, ");
         toString.append("idMeta=").append(idMeta.toString()).append(", ");
         toString.append("clusteredEntity=true, ");

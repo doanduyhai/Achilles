@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,8 @@ public class PreparedStatementGenerator {
     public PreparedStatement prepareInsert(Session session, EntityMeta entityMeta, List<PropertyMeta> pms, Options options) {
         log.trace("Generate prepared statement for INSERT on {}", entityMeta);
         PropertyMeta idMeta = entityMeta.getIdMeta();
-        Insert insert = insertInto(entityMeta.config().getTableName());
+        final EntityMetaConfig metaConfig = entityMeta.config();
+        Insert insert = insertInto(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         if (options.isIfNotExists()) {
             insert.ifNotExists();
         }
@@ -98,7 +100,8 @@ public class PreparedStatementGenerator {
             throw new IllegalArgumentException(String.format("Cannot prepare statement for property '%s' of entity '%s' because it is a counter type",pm.getPropertyName(),entityMeta.getClassName()));
         } else {
             Selection select = pm.forStatementGeneration().prepareSelectField(select());
-            Select from = select.from(entityMeta.config().getTableName());
+            final EntityMetaConfig metaConfig = entityMeta.config();
+            Select from = select.from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
             RegularStatement statement = idMeta.forStatementGeneration().generateWhereClauseForSelect(Optional.fromNullable(pm), from);
             return session.prepare(statement.getQueryString());
         }
@@ -109,7 +112,8 @@ public class PreparedStatementGenerator {
         log.trace("Generate prepared statement for UPDATE properties {}", pms);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
-        Update update = update(entityMeta.config().getTableName());
+        final EntityMetaConfig metaConfig = entityMeta.config();
+        Update update = update(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         final Update.Conditions updateConditions = update.onlyIf();
         if (options.hasCasConditions()) {
             for (CASCondition CASCondition : options.getCASConditions()) {
@@ -139,13 +143,13 @@ public class PreparedStatementGenerator {
         log.trace("Generate prepared statement for SELECT of {}", entityMeta);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
-
+        final EntityMetaConfig metaConfig = entityMeta.config();
         Selection select = select();
 
         for (PropertyMeta pm : entityMeta.forOperations().getColumnsMetaToLoad()) {
             select = pm.forStatementGeneration().prepareSelectField(select);
         }
-        Select from = select.from(entityMeta.config().getTableName());
+        Select from = select.from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
 
         Optional<PropertyMeta> staticMeta = Optional.absent();
         if (entityMeta.structure().hasOnlyStaticColumns()) {
@@ -191,7 +195,9 @@ public class PreparedStatementGenerator {
 
     public Map<CQLQueryType, Map<String, PreparedStatement>> prepareClusteredCounterQueryMap(Session session, EntityMeta meta) {
         PropertyMeta idMeta = meta.getIdMeta();
-        String tableName = meta.config().getTableName();
+        final EntityMetaConfig metaConfig = meta.config();
+        String keyspaceName = metaConfig.getKeyspaceName();
+        String tableName = metaConfig.getTableName();
 
         Map<CQLQueryType, Map<String, PreparedStatement>> clusteredCounterPSMap = new HashMap<>();
         Map<String, PreparedStatement> incrStatementPerCounter = new HashMap<>();
@@ -204,10 +210,10 @@ public class PreparedStatementGenerator {
             final String cql3ColumnName = counterMeta.getCQL3ColumnName();
             final boolean staticColumn = counterMeta.structure().isStaticColumn();
 
-            RegularStatement incrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(tableName).with(incr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
-            RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(tableName).with(decr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
+            RegularStatement incrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(incr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
+            RegularStatement decrementStatement = prepareWhereClauseForCounterUpdate(statementGenerator, update(keyspaceName,tableName).with(decr(cql3ColumnName, bindMarker(cql3ColumnName))), staticColumn, noOptions());
 
-            RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select(cql3ColumnName).from(tableName));
+            RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select(cql3ColumnName).from(keyspaceName,tableName));
 
             incrStatementPerCounter.put(cql3ColumnName, session.prepare(incrementStatement));
             decrStatementPerCounter.put(cql3ColumnName, session.prepare(decrementStatement));
@@ -216,11 +222,11 @@ public class PreparedStatementGenerator {
         clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
         clusteredCounterPSMap.put(DECR, decrStatementPerCounter);
 
-        RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.<PropertyMeta>absent(), select().from(tableName));
+        RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.<PropertyMeta>absent(), select().from(keyspaceName,tableName));
         selectStatementPerCounter.put(SELECT_ALL.name(), session.prepare(selectStatement));
         clusteredCounterPSMap.put(SELECT, selectStatementPerCounter);
 
-        RegularStatement deleteStatement = statementGenerator.generateWhereClauseForDelete(false, delete().from(tableName));
+        RegularStatement deleteStatement = statementGenerator.generateWhereClauseForDelete(false, delete().from(keyspaceName,tableName));
         clusteredCounterPSMap.put(DELETE, of(DELETE_ALL.name(), session.prepare(deleteStatement)));
 
         return clusteredCounterPSMap;
@@ -249,19 +255,21 @@ public class PreparedStatementGenerator {
         log.trace("Generate prepared statement for DELETE of {}", entityMeta);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
+        final EntityMetaConfig metaConfig = entityMeta.config();
 
         Map<String, PreparedStatement> removePSs = new HashMap<>();
 
-        Delete mainFrom = delete().from(entityMeta.config().getTableName());
+        Delete mainFrom = delete().from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         RegularStatement mainStatement = idMeta.forStatementGeneration().generateWhereClauseForDelete(entityMeta.structure().hasOnlyStaticColumns(), mainFrom);
-        removePSs.put(entityMeta.config().getTableName(), session.prepare(mainStatement.getQueryString()));
+        removePSs.put(metaConfig.getQualifiedTableName(), session.prepare(mainStatement.getQueryString()));
 
         return removePSs;
     }
 
     public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, DirtyCheckChangeSet changeSet, Options options) {
+        final EntityMetaConfig metaConfig = meta.config();
 
-        final Update.Conditions conditions = update(meta.config().getTableName()).onlyIf();
+        final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
 
         if (options.hasCasConditions()) {
             for (CASCondition CASCondition : options.getCASConditions()) {
@@ -316,6 +324,7 @@ public class PreparedStatementGenerator {
         log.trace("Generate SELECT statement for slice query");
 
         EntityMeta entityMeta = sliceQueryProperties.getEntityMeta();
+        final EntityMetaConfig metaConfig = entityMeta.config();
 
         Selection select = select();
 
@@ -323,7 +332,7 @@ public class PreparedStatementGenerator {
             select = pm.forStatementGeneration().prepareSelectField(select);
         }
 
-        Select from = select.from(entityMeta.config().getTableName());
+        Select from = select.from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
 
         final RegularStatement whereClause = sliceQueryProperties.generateWhereClauseForSelect(from);
 
@@ -333,8 +342,9 @@ public class PreparedStatementGenerator {
     public PreparedStatement prepareDeleteSliceQuery(Session session, SliceQueryProperties<?> sliceQueryProperties) {
 
         log.trace("Generate DELETE statement for slice query");
+        final EntityMetaConfig metaConfig = sliceQueryProperties.getEntityMeta().config();
 
-        final Delete delete = delete().from(sliceQueryProperties.getEntityMeta().config().getTableName());
+        final Delete delete = delete().from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
 
         final Delete.Where whereClause = sliceQueryProperties.generateWhereClauseForDelete(delete);
 

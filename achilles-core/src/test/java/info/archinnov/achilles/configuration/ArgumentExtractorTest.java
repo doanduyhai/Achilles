@@ -55,6 +55,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Validator;
+
+import com.google.common.base.Optional;
 import org.fest.assertions.data.MapEntry;
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
@@ -321,7 +323,32 @@ public class ArgumentExtractorTest {
     }
 
     @Test
-    public void should_init_session() throws Exception {
+    public void should_init_keyspace() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+        params.put(KEYSPACE_NAME, "achilles");
+
+        //When
+        Optional<String> keyspaceNameO = extractor.initKeyspaceName(params);
+
+        //Then
+        assertThat(keyspaceNameO.isPresent()).isTrue();
+        assertThat(keyspaceNameO.get()).isEqualTo("achilles");
+    }
+
+    @Test
+    public void should_init_keyspace_to_none() throws Exception {
+        //Given
+
+        //When
+        Optional<String> keyspaceNameO = extractor.initKeyspaceName(new ConfigMap());
+
+        //Then
+        assertThat(keyspaceNameO.isPresent()).isFalse();
+    }
+
+    @Test
+    public void should_init_session_with_keyspace() throws Exception {
         ConfigMap params = new ConfigMap();
         params.put(KEYSPACE_NAME, "achilles");
 
@@ -333,13 +360,13 @@ public class ArgumentExtractorTest {
     }
 
     @Test
-    public void should_exception_when_no_keyspace_name_param() throws Exception {
+    public void should_init_session_without_keyspace() throws Exception {
         ConfigMap params = new ConfigMap();
+        when(cluster.connect()).thenReturn(session);
 
-        exception.expect(AchillesException.class);
-        exception.expectMessage(KEYSPACE_NAME + " property should be provided");
+        Session actual = extractor.initSession(cluster, params);
 
-        extractor.initSession(cluster, params);
+        assertThat(actual).isSameAs(session);
     }
 
     @Test
@@ -379,6 +406,7 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_LRU_CACHE_SIZE);
         assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
         assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
+        assertThat(configContext.getCurrentKeyspace().isPresent()).isFalse();
     }
 
     @Test

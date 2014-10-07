@@ -24,6 +24,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
+import info.archinnov.achilles.internal.table.SchemaReader;
 import info.archinnov.achilles.internal.table.TableCreator;
 import info.archinnov.achilles.internal.table.TableUpdater;
 import info.archinnov.achilles.internal.table.TableValidator;
@@ -46,6 +47,8 @@ public class SchemaContext {
     protected TableValidator tableValidator = new TableValidator();
 
     protected TableUpdater tableUpdater = new TableUpdater();
+
+    protected SchemaReader schemaReader = new SchemaReader();
 
     public SchemaContext(ConfigurationContext configContext, Session session, String keyspaceName, Cluster cluster, ParsingResult parsingResult) {
         this.configContext = configContext;
@@ -77,7 +80,7 @@ public class SchemaContext {
     }
 
     public Map<String, TableMetadata> fetchTableMetaData() {
-        return tableCreator.fetchTableMetaData(cluster.getMetadata().getKeyspace(keyspaceName), keyspaceName);
+        return schemaReader.fetchTableMetaData(cluster, entityMetaMap.values());
     }
 
     public void createTableForEntity(EntityMeta entityMeta) {

@@ -22,6 +22,8 @@ import static info.archinnov.achilles.type.Options.CASCondition;
 import static org.apache.commons.lang.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.querybuilder.Update;
@@ -43,11 +45,13 @@ public class StatementGenerator {
 
         final Object entity = context.getEntity();
         final EntityMeta meta = context.getEntityMeta();
+        final EntityMetaConfig metaConfig = meta.config();
+
         final Optional<Integer> ttlO = context.getTtl();
         final Optional<Long> timestampO = context.getTimestamp();
         final List<CASCondition> CASConditions = context.getCasConditions();
 
-        final Update.Conditions conditions = update(meta.config().getTableName()).onlyIf();
+        final Update.Conditions conditions = update(metaConfig.getKeyspaceName(), metaConfig.getTableName()).onlyIf();
         List<Object> casEncodedValues = addAndEncodeCasConditions(meta, CASConditions, conditions);
 
         Object[] boundValues = new Object[] { };

@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -204,7 +206,8 @@ abstract class AbstractPersistenceManager {
         entityMeta.forTranscoding().encodeIndexConditionValue(indexCondition);
 
         String indexColumnName = indexCondition.getColumnName();
-        final Select.Where statement = select().from(entityMeta.config().getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
+        final EntityMetaConfig metaConfig = entityMeta.config();
+        final Select.Where statement = select().from(metaConfig.getKeyspaceName(), metaConfig.getTableName()).where(eq(indexColumnName, bindMarker(indexColumnName)));
         return this.typedQueryInternal(entityClass, statement, indexCondition.getColumnValue());
     }
 

@@ -59,15 +59,12 @@ public class SchemaUpdateIT {
         session.execute("CREATE TABLE new_simple_field(id bigint PRIMARY KEY, existing_field text)");
         session.execute("CREATE INDEX field_index ON schema_dynamic_update.new_simple_field(existing_field)");
 
-        final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
-
         //When
-        Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
-        final PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.builder(cluster)
+        final PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.builder(session.getCluster())
+                .withNativeSession(session)
                 .withEntities(Arrays.<Class<?>>asList(EntityWithNewSimpleField.class))
-                .withKeyspaceName("schema_dynamic_update")
                 .enableSchemaUpdate(false)
-                .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", true))
+                .enableSchemaUpdateForTables(ImmutableMap.of("schema_dynamic_update.new_simple_field", true))
                 .relaxIndexValidation(true)
                 .build();
 
@@ -81,6 +78,8 @@ public class SchemaUpdateIT {
         assertThat(found.getUnmappedField()).isEqualTo("UNMAPPED");
 
         assertThat(pm.getProxy(EntityWithNewSimpleField.class, id).getUnmappedField()).isEqualTo("UNMAPPED");
+
+        session.close();
     }
 
     @Test
@@ -97,13 +96,9 @@ public class SchemaUpdateIT {
         session.execute("DROP TABLE IF EXISTS new_counter_field");
         session.execute("CREATE TABLE new_counter_field(id bigint, date timeuuid, existing_counter counter, PRIMARY KEY(id,date))");
 
-        final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
-
         //When
-        Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
-        final PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.builder(cluster)
+        final PersistenceManagerFactory pmf = PersistenceManagerFactoryBuilder.builder(session.getCluster())
                 .withEntities(Arrays.<Class<?>>asList(ClusteredCounterEntityWithNewCounterField.class))
-                .withKeyspaceName("schema_dynamic_update_counter")
                 .enableSchemaUpdate(true)
                 .build();
 
@@ -113,6 +108,7 @@ public class SchemaUpdateIT {
         //Then
         assertThat(pm.find(ClusteredCounterEntityWithNewCounterField.class, new ClusteredCounterEntityWithNewCounterField.Compound(id, date))).isNotNull();
 
+        session.close();
     }
 
     @Test(expected = AchillesInvalidTableException.class)
@@ -125,47 +121,37 @@ public class SchemaUpdateIT {
         session.execute("DROP TABLE IF EXISTS new_simple_field");
         session.execute("CREATE TABLE new_simple_field(id bigint PRIMARY KEY, existing_field text)");
 
-        final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
-
         //When
-        Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
-        PersistenceManagerFactoryBuilder.builder(cluster)
+        PersistenceManagerFactoryBuilder.builder(session.getCluster())
                 .withEntities(Arrays.<Class<?>>asList(EntityWithNewSimpleField.class))
                 .withKeyspaceName("schema_dynamic_update_fail")
                 .enableSchemaUpdate(true)
-                .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", false))
+                .enableSchemaUpdateForTables(ImmutableMap.of("schema_dynamic_update_fail.new_simple_field", false))
                 .build();
 
+        session.close();
     }
 
     @Test(expected = AchillesInvalidTableException.class)
     public void should_fail_bootstrapping_if_index_validation_fails() throws Exception {
         //Given
         final Session session = CassandraEmbeddedServerBuilder
-                .noEntityPackages().withKeyspaceName("index_validation_fail")
+                .noEntityPackages().withKeyspaceName("schema_dynamic_update")
                 .cleanDataFilesAtStartup(true)
                 .buildNativeSessionOnly();
-        session.execute("DROP TABLE IF EXISTS entity_with_index");
-        session.execute("DROP INDEX IF EXISTS name_index");
-
-        session.execute("CREATE TABLE entity_with_index(id bigint PRIMARY KEY, name text)");
-        session.execute("CREATE INDEX name_index ON index_validation_fail.entity_with_index(name)");
-
-        final int cqlPort = CASSANDRA_EMBEDDED.getCQLPort();
 
         //When
-        Cluster cluster = Cluster.builder().addContactPoint("localhost").withPort(cqlPort).build();
-        PersistenceManagerFactoryBuilder.builder(cluster)
+        PersistenceManagerFactoryBuilder.builder(session.getCluster())
                 .withEntities(Arrays.<Class<?>>asList(EntityWithNewSimpleField.class))
-                .withKeyspaceName("schema_dynamic_update_fail")
                 .enableSchemaUpdate(true)
-                .enableSchemaUpdateForTables(ImmutableMap.of("new_simple_field", false))
+                .enableSchemaUpdateForTables(ImmutableMap.of("schema_dynamic_update.new_simple_field", false))
                 .relaxIndexValidation(false)
                 .build();
 
+        session.close();
     }
 
-    @Entity(table = "new_simple_field")
+    @Entity(keyspace = "schema_dynamic_update", table = "new_simple_field")
     public static class EntityWithNewSimpleField {
 
         @Id
@@ -254,7 +240,7 @@ public class SchemaUpdateIT {
         }
     }
 
-    @Entity(table = "new_counter_field")
+    @Entity(keyspace = "schema_dynamic_update_counter", table = "new_counter_field")
     public static class ClusteredCounterEntityWithNewCounterField {
 
         @EmbeddedId

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.json.JacksonMapperFactory;
@@ -96,10 +97,11 @@ public class EntityParsingContext {
     }
 
 
-    public boolean isSchemaUpdateEnabled(String columnFamilyName) {
+    public boolean isSchemaUpdateEnabled(String keyspaceName,String tableName) {
+        String qualifiedTableName = keyspaceName + "." + tableName;
         Map<String, Boolean> columnFamilyUpdateMap = configContext.getEnableSchemaUpdateForTables();
-        if (columnFamilyUpdateMap.containsKey(columnFamilyName)) {
-            return columnFamilyUpdateMap.get(columnFamilyName);
+        if (columnFamilyUpdateMap.containsKey(qualifiedTableName)) {
+            return columnFamilyUpdateMap.get(qualifiedTableName);
         }
         return configContext.isEnableSchemaUpdate();
     }
@@ -114,5 +116,9 @@ public class EntityParsingContext {
 
     public EntityParsingContext duplicateForClass(Class<?> entityClass) {
         return new EntityParsingContext(configContext, entityClass, currentObjectMapper);
+    }
+
+    public Optional<String> getCurrentKeyspaceName() {
+        return configContext.getCurrentKeyspace();
     }
 }
