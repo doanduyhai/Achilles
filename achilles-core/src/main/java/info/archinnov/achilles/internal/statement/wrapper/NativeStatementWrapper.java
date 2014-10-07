@@ -18,7 +18,7 @@ package info.archinnov.achilles.internal.statement.wrapper;
 
 import com.datastax.driver.core.Statement;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;

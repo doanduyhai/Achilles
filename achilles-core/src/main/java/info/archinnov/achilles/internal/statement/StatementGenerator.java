@@ -19,7 +19,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.timestamp;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static info.archinnov.achilles.type.Options.CASCondition;
-import static org.apache.commons.lang.ArrayUtils.addAll;
+import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
 

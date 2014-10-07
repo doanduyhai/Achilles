@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -62,7 +62,7 @@ public class NativeQueryMapperTest {
 
 	@Test
 	public void should_map_rows() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
 
 		def1 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "id", DataType.bigint());

@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.querybuilder.Update.Assignments;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -88,7 +88,7 @@ public class StatementGeneratorTest {
     public void should_generate_set_element_at_index_to_list_with_cas_conditions() throws Exception {
         //Given
 
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Object[] boundValues = new Object[] { "whatever" };
         CompleteBean entity = builder().id(id).buid();
         final CASCondition casCondition = new CASCondition("name", "DuyHai");
@@ -125,7 +125,7 @@ public class StatementGeneratorTest {
     @Test
     public void should_generate_remove_element_at_index_to_list_update() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Object[] boundValues = new Object[] { "whatever" };
         CompleteBean entity = builder().id(id).buid();
         final Pair<Assignments, Object[]> updateClauseAndBoundValues = Pair.create(update(), boundValues);

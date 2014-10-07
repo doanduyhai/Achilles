@@ -20,7 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWit
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithStaticCounter.ClusteredKeyForCounter;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
@@ -43,7 +43,7 @@ public class StaticColumnIT {
     /////////////////////// STATIC AND NON STATIC SIMPLE COLUMNS ////////////////////////////////
     @Test
     public void should_query_static_column() throws Exception {
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet1 = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
         ClusteredEntityWithStaticColumn parisStreet2 = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street2"), "Paris", "avenue des Champs Elysees");
 
@@ -86,7 +86,7 @@ public class StaticColumnIT {
     @Test
     public void should_update_static_and_non_static_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
 
         final ClusteredEntityWithStaticColumn managed = manager.insert(parisStreet);
@@ -112,7 +112,7 @@ public class StaticColumnIT {
     @Test
     public void should_lazy_load_static_and_non_static_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
 
         manager.insert(parisStreet);
@@ -146,7 +146,7 @@ public class StaticColumnIT {
     @Test
     public void should_remove_static_and_non_static_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
 
         final ClusteredEntityWithStaticColumn managed = manager.insert(parisStreet);
@@ -164,7 +164,7 @@ public class StaticColumnIT {
     /////////////////////// ONLY STATIC SIMPLE COLUMNS ////////////////////////////////
     @Test
     public void should_query_all_static_columns() throws Exception {
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
         manager.insert(location);
@@ -184,7 +184,7 @@ public class StaticColumnIT {
     @Test
     public void should_update_all_static_columns() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
         final ClusteredEntityWithOnlyStaticColumns managed = manager.insert(location);
@@ -203,7 +203,7 @@ public class StaticColumnIT {
     @Test
     public void should_lazy_load_all_static_columns() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
         manager.insert(location);
@@ -227,7 +227,7 @@ public class StaticColumnIT {
     @Test
     public void should_remove_all_static_columns() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
 
         final ClusteredEntityWithOnlyStaticColumns managed = manager.insert(location);
@@ -246,7 +246,7 @@ public class StaticColumnIT {
     @Test
     public void should_query_static_counter_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Counter version = CounterBuilder.incr();
 
         ClusteredEntityWithStaticCounter count1 = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, CounterBuilder.incr(11));
@@ -293,7 +293,7 @@ public class StaticColumnIT {
     @Test
     public void should_update_static_counter_and_non_static_counter_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Counter version = CounterBuilder.incr(1L);
         final Counter count = CounterBuilder.incr(11);
         ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);
@@ -321,7 +321,7 @@ public class StaticColumnIT {
     @Test
     public void should_lazy_load_static_counter_and_non_static_counter_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Counter version = CounterBuilder.incr(1L);
         final Counter count = CounterBuilder.incr(11);
         ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);
@@ -355,7 +355,7 @@ public class StaticColumnIT {
     @Test
     public void should_remove_static_counter_and_non_static_counter_column() throws Exception {
         //Given
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Counter version = CounterBuilder.incr(1L);
         final Counter count = CounterBuilder.incr(11);
         ClusteredEntityWithStaticCounter entity = new ClusteredEntityWithStaticCounter(new ClusteredKeyForCounter(partitionKey, "count1"), version, count);

@@ -20,7 +20,7 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TA
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,8 +49,8 @@ public class SliceQueryDeleteIT {
 
     @Test
     public void should_delete_with_partition_keys() throws Exception {
-        long pk1 = RandomUtils.nextLong();
-        long pk2 = RandomUtils.nextLong();
+        long pk1 = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        long pk2 = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(pk1, 1, "name1", 1);
         insertClusteredValues(pk2, 1, "name21", 1);
@@ -81,7 +81,7 @@ public class SliceQueryDeleteIT {
 
     @Test
     public void should_delete_with_matching_clusterings() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(partitionKey, 1, "name1", 1);
         insertClusteredValues(partitionKey, 1, "name2", 3);
@@ -119,7 +119,7 @@ public class SliceQueryDeleteIT {
     @Test
     public void should_delete_with_partition_keys_and_partition_keys_IN() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey, "bucket1", 1, "name", 1);
         insertCompositeClusteredValues(partitionKey, "bucket2", 1, "name", 1);
@@ -148,7 +148,7 @@ public class SliceQueryDeleteIT {
     @Test
     public void should_delete_with_partition_keys_and_partition_keys_IN_and_from_clusterings() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey, "bucket1", 1, "abc", 1);
         insertCompositeClusteredValues(partitionKey, "bucket2", 1, "name", 1);

@@ -18,13 +18,13 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;

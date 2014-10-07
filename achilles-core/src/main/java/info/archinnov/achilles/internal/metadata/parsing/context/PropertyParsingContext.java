@@ -23,7 +23,7 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

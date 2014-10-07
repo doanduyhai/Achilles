@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaValues;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -62,7 +62,7 @@ public class CounterLoaderTest {
     @Mock
     private PropertyMeta counterMeta;
 
-    private Object primaryKey = RandomUtils.nextLong();
+    private Object primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
     private Object entity = new Object();
 

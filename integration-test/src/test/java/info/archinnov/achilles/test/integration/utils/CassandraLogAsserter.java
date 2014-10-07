@@ -16,7 +16,7 @@
 package info.archinnov.achilles.test.integration.utils;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.StringUtils.split;
+import static org.apache.commons.lang3.StringUtils.split;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;

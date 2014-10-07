@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
@@ -44,7 +44,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -58,7 +58,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_persist_with_ttl() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -73,7 +73,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -87,7 +87,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_update_with_ttl() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 		entity = manager.insert(entity, OptionsBuilder.withTtl(1));
 
@@ -100,7 +100,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -116,7 +116,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -130,7 +130,7 @@ public class ClusteredEntityIT {
 
 	@Test
 	public void should_remove_by_id() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), RandomUtils.nextInt(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
 
@@ -145,8 +145,8 @@ public class ClusteredEntityIT {
 	@Test
 	public void should_refresh() throws Exception {
 
-		long partitionKey = RandomUtils.nextLong();
-		int count = RandomUtils.nextInt();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		int count = RandomUtils.nextInt(0,Integer.MAX_VALUE);
 		String name = "name";
 		compoundKey = new ClusteredKey(partitionKey, count, name);
 

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,7 +93,7 @@ public class SliceQueryExecutorTest {
     @Mock
     private ClusteredEntity entity;
 
-    private Long partitionKey = RandomUtils.nextLong();
+    private Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
     private List<Object> partitionComponents = Arrays.<Object>asList(partitionKey);
 

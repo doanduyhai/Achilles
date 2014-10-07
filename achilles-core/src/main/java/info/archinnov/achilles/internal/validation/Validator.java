@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class Validator {
 	private static ObjectInstantiator instantiator = new ObjectInstantiator();

@@ -26,7 +26,7 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.validation.Validator;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;

@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -122,8 +122,8 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_insert_with_simple_id() throws Exception {
-        long primaryKey = RandomUtils.nextLong();
-        long age = RandomUtils.nextLong();
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        long age = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta ageMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -148,7 +148,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_insert_with_null_fields() throws Exception {
-        long primaryKey = RandomUtils.nextLong();
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
 
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -171,7 +171,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_insert_with_compound_key() throws Exception {
-        long userId = RandomUtils.nextLong();
+        long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
         String address = "30 WallStreet";
         int age = 30;
@@ -197,7 +197,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_with_only_pk_in_where_clause() throws Exception {
-        long userId = RandomUtils.nextLong();
+        long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
         EmbeddedKey primaryKey = new EmbeddedKey(userId, name);
 
@@ -216,8 +216,8 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_update() throws Exception {
-        long primaryKey = RandomUtils.nextLong();
-        long age = RandomUtils.nextLong();
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        long age = RandomUtils.nextLong(0,Long.MAX_VALUE);
         String name = "name";
         PropertyMeta nameMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta ageMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
@@ -244,8 +244,8 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_simple_counter_increment_decrement() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
-        Long increment = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        Long increment = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -265,7 +265,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_simple_counter_select() throws Exception {
 
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -284,7 +284,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_simple_counter_delete() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -303,8 +303,8 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_clustered_counter_increment_decrement() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
-        Long increment = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        Long increment = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -325,7 +325,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_clustered_counter_select() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -345,7 +345,7 @@ public class PreparedStatementBinderTest {
 
     @Test
     public void should_bind_for_clustered_counter_delete() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
@@ -366,7 +366,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_remove_all_from_collection_and_map() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
 
@@ -391,7 +391,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_assign_value_to_set() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -418,7 +418,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_assign_value_to_map() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -445,7 +445,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_assign_value_to_list() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -472,7 +472,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_add_element_to_set() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(context.getSerialConsistencyLevel()).thenReturn(fromNullable(ConsistencyLevel.LOCAL_SERIAL));
@@ -501,7 +501,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_remove_element_from_set() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -528,7 +528,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_append_element_to_list() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -555,7 +555,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_prepend_element_to_list() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -582,7 +582,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_remove_element_from_list() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(overrider.getWriteLevel(context)).thenReturn(ALL);
@@ -621,7 +621,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_add_elements_to_map_with_timestamp() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(context.getPrimaryKey()).thenReturn(primaryKey);
         when(context.getTimestamp()).thenReturn(fromNullable(100L));
@@ -649,7 +649,7 @@ public class PreparedStatementBinderTest {
     @Test
     public void should_bind_for_remove_entry_from_map_with_cas_condition() throws Exception {
         //Given
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final CASCondition CASCondition = new CASCondition("name", "John");
 
 

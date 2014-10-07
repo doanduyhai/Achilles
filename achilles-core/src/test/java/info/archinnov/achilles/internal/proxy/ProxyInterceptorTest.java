@@ -36,7 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -98,7 +98,7 @@ public class ProxyInterceptorTest {
     private Set<Method> alreadyLoaded = new HashSet<>();
     private Map<Method, DirtyChecker> dirtyMap = new HashMap<>();
     private CompleteBean target;
-    private Long key = RandomUtils.nextLong();
+    private Long key = RandomUtils.nextLong(0,Long.MAX_VALUE);
     private Object rawValue = "raw";
     private PropertyMeta idMeta;
 

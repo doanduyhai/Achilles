@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 public class CompleteBeanTestBuilder {
 
@@ -66,7 +66,7 @@ public class CompleteBeanTestBuilder {
 	}
 
 	public CompleteBeanTestBuilder randomId() {
-		this.id = RandomUtils.nextLong();
+		this.id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		return this;
 	}
 

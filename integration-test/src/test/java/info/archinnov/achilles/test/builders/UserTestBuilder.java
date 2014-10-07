@@ -15,7 +15,7 @@
  */
 package info.archinnov.achilles.test.builders;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import info.archinnov.achilles.test.integration.entity.User;
 
 public class UserTestBuilder {
@@ -45,7 +45,7 @@ public class UserTestBuilder {
 	}
 
 	public UserTestBuilder randomId() {
-		this.id = RandomUtils.nextLong();
+		this.id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		return this;
 	}
 

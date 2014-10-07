@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 public class PartitionComponents extends AbstractComponentProperties {
 

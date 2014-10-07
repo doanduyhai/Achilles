@@ -48,6 +48,14 @@
                 <role>Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>bdutheil</id>
+            <name>Brice DUTHEIL</name>
+            <email>brice.dutheil@gmail.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <properties>
@@ -57,7 +65,7 @@
         <spring.version>3.2.0.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
         <fasterxml.jackson.version>2.3.3</fasterxml.jackson.version>
-        <commons.lang.version>2.6</commons.lang.version>
+        <commons.lang.version>3.3.2</commons.lang.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.collections.version>3.2.1</commons.collections.version>
         <reflections.version>0.9.9-RC1</reflections.version>
@@ -204,8 +212,8 @@
 
             <!-- Utils -->
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang.version}</version>
             </dependency>
             <dependency>

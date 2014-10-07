@@ -19,7 +19,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.PREP
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -41,7 +41,7 @@ public class CacheSizeIT {
     @Test
     public void should_re_prepare_statements_when_cache_size_exceeded() throws Exception {
         //Given
-        CompleteBean bean = builder().id(RandomUtils.nextLong()).name("name").buid();
+        CompleteBean bean = builder().id(RandomUtils.nextLong(0,Long.MAX_VALUE)).name("name").buid();
 
         CompleteBean managed = pm.insert(bean);
 

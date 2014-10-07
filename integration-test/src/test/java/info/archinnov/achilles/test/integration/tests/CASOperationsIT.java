@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -204,7 +204,7 @@ public class CASOperationsIT {
     @Test
     public void should_update_with_cas_conditions_using_cql3_column_name() throws Exception {
         //Given
-        final Long primaryKey = RandomUtils.nextLong();
+        final Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final CompleteBean entity = new CompleteBean();
         entity.setId(primaryKey);
         entity.setAge(32L);

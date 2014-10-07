@@ -19,7 +19,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -39,7 +39,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
@@ -53,7 +53,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
@@ -67,7 +67,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_persist_with_ttl() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
 		CompoundKey compoundKey = new CompoundKey(id, name);
 		ValuelessClusteredEntity entity = new ValuelessClusteredEntity(compoundKey);
@@ -81,7 +81,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_find_by_slice_query() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name1 = "name1";
 		String name2 = "name2";
 		String name3 = "name3";
@@ -112,7 +112,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_iterate_by_slice_query() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name1 = "name1";
 		String name2 = "name2";
 		String name3 = "name3";
@@ -143,7 +143,7 @@ public class ValuelessClusteredEntityIT {
 
 	@Test
 	public void should_remove_by_slice_query() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name1 = "name1";
 		String name2 = "name2";
 		String name3 = "name3";

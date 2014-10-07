@@ -13,7 +13,7 @@ import info.archinnov.achilles.test.integration.entity.ClusteredEntityForTransco
 import info.archinnov.achilles.test.integration.entity.EntityWithEnumeratedConfig;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.TypedMap;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.fest.assertions.core.Condition;
 import org.fest.assertions.data.MapEntry;
 import org.junit.Rule;
@@ -58,7 +58,7 @@ public class EnumeratedSupportIT {
     @Test
     public void should_encode_and_decode_enum_correctly() {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final List<ElementType> elementTypes = asList(FIELD, METHOD);
         final ImmutableMap<RetentionPolicy, ElementType> retentionPolicies = ImmutableMap.of(SOURCE, ANNOTATION_TYPE, RUNTIME, CONSTRUCTOR);
 
@@ -73,7 +73,7 @@ public class EnumeratedSupportIT {
     @Test
     public void should_encode_enum_correctly() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final List<ElementType> elementTypes = asList(FIELD, METHOD);
         final ImmutableMap<RetentionPolicy, ElementType> retentionPolicies = ImmutableMap.of(SOURCE, ANNOTATION_TYPE, RUNTIME, CONSTRUCTOR);
 
@@ -94,7 +94,7 @@ public class EnumeratedSupportIT {
     @Test
     public void should_decode_enum_correctly() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final Insert insert = insertInto(TABLE_NAME).value("id", id)
                 .value("consistency_level", ConsistencyLevel.LOCAL_ONE.ordinal())
                 .value("element_types", asList(FIELD.name(), METHOD.name()))

@@ -17,7 +17,7 @@ package info.archinnov.achilles.internal.context;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +51,7 @@ public class PersistenceContextTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
-    private Long primaryKey = RandomUtils.nextLong();
+    private Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
     @Before
     public void setUp() throws Exception {

@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.InsertStrategy;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +40,7 @@ public class EntityMetaOperationsTest {
     public void should_get_primary_key_from_entity() throws Exception {
         //Given
         Object entity = new Object();
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         when(meta.getIdMeta().forValues().getPrimaryKey(entity)).thenReturn(id);
 

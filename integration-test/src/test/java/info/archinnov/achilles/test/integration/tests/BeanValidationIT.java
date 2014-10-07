@@ -24,7 +24,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Cluster;
@@ -53,7 +53,7 @@ public class BeanValidationIT {
     @Test
     public void should_validate_entity_constrained_on_field() throws Exception {
         // Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithFieldLevelConstraint entity = new EntityWithFieldLevelConstraint();
         entity.setId(id);
         entity.setName("name");
@@ -70,7 +70,7 @@ public class BeanValidationIT {
     @Test
     public void should_validate_entity_constrained_on_property() throws Exception {
         // Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithPropertyLevelConstraint entity = new EntityWithPropertyLevelConstraint();
         entity.setId(id);
         entity.setName("name");
@@ -87,7 +87,7 @@ public class BeanValidationIT {
     @Test
     public void should_validate_entity_constrained_on_class() throws Exception {
         // Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithClassLevelConstraint entity = new EntityWithClassLevelConstraint();
         entity.setId(id);
         entity.setFirstname("firstname");
@@ -107,7 +107,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_field_persist() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithFieldLevelConstraint entity = new EntityWithFieldLevelConstraint();
         entity.setId(id);
 
@@ -130,7 +130,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_field_update() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithFieldLevelConstraint entity = new EntityWithFieldLevelConstraint();
         entity.setId(id);
         entity.setName("name");
@@ -157,7 +157,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_property_persist() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithPropertyLevelConstraint entity = new EntityWithPropertyLevelConstraint();
         entity.setId(id);
 
@@ -180,7 +180,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_property_update() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithPropertyLevelConstraint entity = new EntityWithPropertyLevelConstraint();
         entity.setId(id);
         entity.setName("name");
@@ -206,7 +206,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_class_persist() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithClassLevelConstraint entity = new EntityWithClassLevelConstraint();
         entity.setId(id);
         entity.setFirstname("fn");
@@ -230,7 +230,7 @@ public class BeanValidationIT {
     public void should_error_on_invalid_class_update() throws Exception {
         // Given
         boolean exceptionRaised = false;
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithClassLevelConstraint entity = new EntityWithClassLevelConstraint();
         entity.setId(id);
         entity.setFirstname("fn");
@@ -257,7 +257,7 @@ public class BeanValidationIT {
     @Test
     public void should_use_custom_bean_validator_interceptor() throws Exception {
         // Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         boolean exceptionRaised = false;
 
         Session nativeSession = this.manager.getNativeSession();

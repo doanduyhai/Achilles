@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWithEnumCompoundKey.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
@@ -44,7 +44,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Test
 	public void should_persist_and_get_reference() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.AUDIO);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
@@ -59,7 +59,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.AUDIO);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.AUDIO);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
@@ -74,7 +74,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	@Test
 	public void should_update_modifications() throws Exception {
 
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.FILE);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.FILE);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
@@ -90,7 +90,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), Type.IMAGE);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.IMAGE);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");
 
@@ -105,7 +105,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	@Test
 	public void should_refresh() throws Exception {
 
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		compoundKey = new ClusteredKey(partitionKey, Type.FILE);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");

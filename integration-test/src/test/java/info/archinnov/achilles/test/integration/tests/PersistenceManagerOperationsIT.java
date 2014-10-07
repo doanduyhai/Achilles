@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -213,7 +213,7 @@ public class PersistenceManagerOperationsIT {
         exception.expect(IllegalAccessException.class);
         exception.expectMessage("Cannot change primary key value for existing entity");
 
-        entity.setId(RandomUtils.nextLong());
+        entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
     }
 
     @Test
@@ -382,7 +382,7 @@ public class PersistenceManagerOperationsIT {
     @Test
     public void should_return_empty_list_instead_of_null_for_field_annotated_with_emptyIfNullCollection() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         final CompleteBean proxy = manager.getProxy(CompleteBean.class, id);
 

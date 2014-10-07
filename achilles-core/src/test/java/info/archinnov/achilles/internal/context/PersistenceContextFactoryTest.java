@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +79,7 @@ public class PersistenceContextFactoryTest {
 
     @Test
     public void should_create_new_context_for_entity_with_consistency_and_ttl() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         CompleteBean entity = new CompleteBean(primaryKey);
 
         when(proxifier.<CompleteBean>deriveBaseClass(entity)).thenReturn(CompleteBean.class);
@@ -97,7 +97,7 @@ public class PersistenceContextFactoryTest {
 
     @Test
     public void should_create_new_context_for_entity() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         CompleteBean entity = new CompleteBean(primaryKey);
 
         when(proxifier.<CompleteBean>deriveBaseClass(entity)).thenReturn(CompleteBean.class);
@@ -115,7 +115,7 @@ public class PersistenceContextFactoryTest {
 
     @Test
     public void should_create_new_context_with_primary_key() throws Exception {
-        Object primaryKey = RandomUtils.nextLong();
+        Object primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         PersistenceContext context = pmf.newContext(CompleteBean.class, primaryKey,
                 OptionsBuilder.withConsistency(LOCAL_QUORUM).withTtl(98));
@@ -130,7 +130,7 @@ public class PersistenceContextFactoryTest {
 
     @Test
     public void should_create_new_context_for_slice_query() throws Exception {
-        Long primaryKey = RandomUtils.nextLong();
+        Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         List<Object> partitionComponents = Arrays.<Object>asList(primaryKey);
         when(idMeta.forSliceQueryContext().instantiateEmbeddedIdWithPartitionComponents(partitionComponents)).thenReturn(primaryKey);
 

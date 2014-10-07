@@ -10,7 +10,7 @@ import static info.archinnov.achilles.internal.table.TableNameNormalizer.normali
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.alterTable;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnMetadata;

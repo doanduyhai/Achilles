@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -281,7 +281,7 @@ public class PropertyMetaTranscoderTest {
     @Test
     public void should_encode_partition_components() throws Exception {
         //Given
-        final Long id = RandomUtils.nextLong();
+        final Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket = 10;
 
         when(meta.type()).thenReturn(EMBEDDED_ID);
@@ -322,7 +322,7 @@ public class PropertyMetaTranscoderTest {
     @Test
     public void should_encode_clustering_components() throws Exception {
         //Given
-        final Long id = RandomUtils.nextLong();
+        final Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket = 10;
 
         when(meta.type()).thenReturn(EMBEDDED_ID);

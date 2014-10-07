@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -50,7 +50,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -67,7 +67,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -84,7 +84,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -102,7 +102,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -118,7 +118,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_remove_by_id() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -134,7 +134,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_refresh() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
 
@@ -153,7 +153,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_query_with_default_params() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index1 = 10;
 		Integer index2 = 12;
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
@@ -188,7 +188,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_check_for_common_operation_on_found_clustered_entity() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 1);
 
 		ClusteredEntityWithCompositePartitionKey clusteredEntity = manager
@@ -220,7 +220,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_query_with_custom_params() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 5);
 
 		List<ClusteredEntityWithCompositePartitionKey> entities = manager
@@ -242,7 +242,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_query_with_consistency_level() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 5);
 
 		exception.expect(InvalidQueryException.class);
@@ -259,7 +259,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_query_with_getFirst() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredEntityWithCompositePartitionKey entity = manager
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
                 .forSelect()
@@ -295,7 +295,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_query_with_getLast() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
 		ClusteredEntityWithCompositePartitionKey entity = manager
 				.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)
@@ -331,7 +331,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_iterate_with_default_params() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 5);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
@@ -384,7 +384,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_check_for_common_operation_on_found_clustered_entity_by_iterator() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 1);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
@@ -417,7 +417,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_iterate_with_custom_params() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 5);
 
 		Iterator<ClusteredEntityWithCompositePartitionKey> iter = manager
@@ -440,7 +440,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_remove_with_default_params() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 3);
 
 		manager.sliceQuery(ClusteredEntityWithCompositePartitionKey.class)

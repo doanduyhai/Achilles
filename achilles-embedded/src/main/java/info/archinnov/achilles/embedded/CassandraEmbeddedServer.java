@@ -18,7 +18,7 @@ package info.archinnov.achilles.embedded;
 import static info.archinnov.achilles.embedded.ServerStarter.CASSANDRA_EMBEDDED;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import static info.archinnov.achilles.internal.statement.wrapper.AbstractStatementWrapper.ACHILLES_DML_STATEMENT;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;

@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -110,7 +110,7 @@ public class EntityProxifierTest {
     @Test
     public void should_build_proxy_with_all_fields_loaded() throws Exception {
 
-        long primaryKey = RandomUtils.nextLong();
+        long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta pm = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         PropertyMeta counterMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
         Object value = new Object();

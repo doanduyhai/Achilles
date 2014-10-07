@@ -11,7 +11,7 @@ import java.util.List;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.createIndex;
 import static java.lang.String.format;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PropertyMetaTableCreator extends PropertyMetaView {
     private static final Logger log = LoggerFactory.getLogger(PropertyMetaTableCreator.class);

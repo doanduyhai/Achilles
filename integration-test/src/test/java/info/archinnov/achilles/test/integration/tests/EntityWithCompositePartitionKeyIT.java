@@ -19,7 +19,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.EntityWithCompositePartitionKey.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Row;
@@ -42,7 +42,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_persist() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
 		manager.insert(entity);
@@ -57,7 +57,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_find() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
 		manager.insert(entity);
@@ -74,7 +74,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EmbeddedKey compositeRowKey = new EmbeddedKey(id, "type");
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
@@ -90,7 +90,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
 		entity = manager.insert(entity);
@@ -105,7 +105,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
 		entity = manager.insert(entity);
@@ -119,7 +119,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_remove_by_id() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EmbeddedKey compositeRowKey = new EmbeddedKey(id, "type");
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "clustered_value");
@@ -134,7 +134,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 	@Test
 	public void should_refresh() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 

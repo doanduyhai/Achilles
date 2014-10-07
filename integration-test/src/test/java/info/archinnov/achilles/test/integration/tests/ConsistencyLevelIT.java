@@ -25,7 +25,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -55,7 +55,7 @@ public class ConsistencyLevelIT {
 
     private CassandraLogAsserter logAsserter = new CassandraLogAsserter();
 
-    private Long id = RandomUtils.nextLong();
+    private Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
     @Test
     public void should_throw_exception_when_persisting_with_two_consistency() throws Exception {
@@ -211,7 +211,7 @@ public class ConsistencyLevelIT {
             //When
             logAsserter.prepareLogLevel();
             final EntityWithTwoConsistency entity = new EntityWithTwoConsistency();
-            entity.setId(RandomUtils.nextLong());
+            entity.setId(RandomUtils.nextLong(0,Long.MAX_VALUE));
 
             pm.insert(entity);
             //Then

@@ -19,7 +19,7 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntityWit
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,7 +40,7 @@ public class ClusteredEntityWithReverseClusteringIT {
 
 	@Test
 	public void should_query_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         List<ClusteredEntityWithReverseClustering> entities = manager
 				.sliceQuery(ClusteredEntityWithReverseClustering.class)
                 .forSelect()
@@ -78,7 +78,7 @@ public class ClusteredEntityWithReverseClusteringIT {
 
 	@Test
 	public void should_query_with_reverse_ordering() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 5);
 
 		List<ClusteredEntityWithReverseClustering> entities = manager

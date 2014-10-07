@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.cassandra.utils.UUIDGen;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.RegularStatement;
@@ -199,7 +199,7 @@ public class QueryIT {
     @Test
     public void should_return_cql_functions_for_native_query() throws Exception {
 
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         UUID date = UUIDGen.getTimeUUID();
 
         manager.insert(new ClusteredEntityWithTimeUUID(id, date, "value"));
@@ -573,7 +573,7 @@ public class QueryIT {
 
     @Test
     public void should_return_first_clustered_entity_for_typed_query_with_select_star() throws Exception {
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
         manager.insert(entity);
@@ -619,7 +619,7 @@ public class QueryIT {
 
     @Test
     public void should_return_first_raw_clustered_entity_for_raw_query_with_simple_select() throws Exception {
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         ClusteredEntity entity = new ClusteredEntity(id, 10, "name", "value");
         manager.insert(entity);

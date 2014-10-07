@@ -20,7 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -63,7 +63,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -78,7 +78,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	@Test
 	public void should_merge_modifications() throws Exception {
 
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		Holder newHolder = new Holder("new_content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
@@ -95,7 +95,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		Holder holder = new Holder("content");
 		entity = new ClusteredEntityWithObjectValue(compoundKey, holder);
 
@@ -110,7 +110,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 	@Test
 	public void should_refresh() throws Exception {
 
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		compoundKey = new ClusteredKey(partitionKey, "name");
 		Holder holder = new Holder("content");
 		Holder newHolder = new Holder("new_content");
@@ -128,7 +128,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_query_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		List<ClusteredEntityWithObjectValue> entities = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
                 .forSelect()
 				.withPartitionComponents(partitionKey)
@@ -162,7 +162,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_iterate_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 5);
 
 		Iterator<ClusteredEntityWithObjectValue> iter = manager.sliceQuery(ClusteredEntityWithObjectValue.class)
@@ -205,7 +205,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 	@Test
 	public void should_remove_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 3);
 
 		manager.sliceQuery(ClusteredEntityWithObjectValue.class)

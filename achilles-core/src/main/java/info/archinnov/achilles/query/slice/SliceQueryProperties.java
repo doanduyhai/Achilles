@@ -28,7 +28,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.lte;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;

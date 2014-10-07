@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -49,7 +49,7 @@ public class SchemaUpdateIT {
     @Test
     public void should_allow_dynamic_schema_update() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final Session session = CassandraEmbeddedServerBuilder
                 .noEntityPackages().withKeyspaceName("schema_dynamic_update")
                 .cleanDataFilesAtStartup(true)
@@ -85,7 +85,7 @@ public class SchemaUpdateIT {
     @Test
     public void should_allow_dynamic_schema_update_for_cluster_counter() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         UUID date = UUIDGen.getTimeUUID();
 
         final Session session = CassandraEmbeddedServerBuilder

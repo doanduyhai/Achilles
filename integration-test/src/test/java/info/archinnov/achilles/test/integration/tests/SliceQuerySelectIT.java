@@ -21,7 +21,7 @@ import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,7 +51,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_query_with_default_params() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
@@ -97,7 +97,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_check_for_common_operation_on_found_clustered_entity() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(partitionKey, 1, "name1", 1);
 
@@ -128,7 +128,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_query_with_custom_params() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(partitionKey, 3, "name3", 2);
         insertClusteredValues(partitionKey, 4, "name4", 4);
@@ -151,7 +151,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_query_with_consistency_level() throws Exception {
-        Long partitionKey = RandomUtils.nextLong();
+        Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 5);
 
         exception.expect(InvalidQueryException.class);
@@ -168,7 +168,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_one() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntity entity = manager.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
@@ -190,7 +190,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_by_descending() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(partitionKey, 1, "name1", 5);
 
@@ -209,7 +209,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_first_matching() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 4, "name4", 2);
 
         List<ClusteredEntity> entities = manager.sliceQuery(ClusteredEntity.class)
@@ -225,7 +225,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_last_matching() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertClusteredValues(partitionKey, 1, "name1", 5);
 
@@ -265,7 +265,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_with_partition_keys_IN() throws Exception {
-        long pk1 = RandomUtils.nextLong();
+        long pk1 = RandomUtils.nextLong(0,Long.MAX_VALUE);
         long pk2 = pk1 + 1;
         long pk3 = pk1 + 2;
         long pk4 = pk1 + 3;
@@ -297,7 +297,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_with_partition_keys_IN_and_from_clusterings() throws Exception {
-        long pk1 = RandomUtils.nextLong();
+        long pk1 = RandomUtils.nextLong(0,Long.MAX_VALUE);
         long pk2 = pk1 + 1;
         long pk3 = pk1 + 2;
         long pk4 = pk1 + 3;
@@ -328,7 +328,7 @@ public class SliceQuerySelectIT {
 
     @Test
     public void should_get_with_partition_keys_IN_and_with_clusterings_IN() throws Exception {
-        long pk1 = RandomUtils.nextLong();
+        long pk1 = RandomUtils.nextLong(0,Long.MAX_VALUE);
         long pk2 = pk1 + 1;
         long pk3 = pk1 + 2;
         long pk4 = pk1 + 3;
@@ -370,7 +370,7 @@ public class SliceQuerySelectIT {
     @Test
     public void should_get_with_partition_keys_and_partition_keys_IN() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey,"bucket1",1,"name",1);
         insertCompositeClusteredValues(partitionKey,"bucket2",1,"name",1);
@@ -400,7 +400,7 @@ public class SliceQuerySelectIT {
     @Test
     public void should_get_with_partition_keys_and_partition_keys_IN_and_from_clusterings() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey,"bucket1",1,"abc",1);
         insertCompositeClusteredValues(partitionKey,"bucket2",1,"name",1);

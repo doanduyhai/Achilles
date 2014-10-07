@@ -17,7 +17,7 @@ package info.archinnov.achilles.test.integration.tests;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import info.archinnov.achilles.persistence.PersistenceManager;
@@ -35,7 +35,7 @@ public class ValuelessEntityIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ValuelessEntity entity = new ValuelessEntity(id);
 
 		manager.insert(entity);
@@ -47,7 +47,7 @@ public class ValuelessEntityIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ValuelessEntity entity = new ValuelessEntity(id);
 
 		manager.insert(entity);
@@ -59,7 +59,7 @@ public class ValuelessEntityIT {
 
 	@Test
 	public void should_persist_with_ttl() throws Exception {
-		Long id = RandomUtils.nextLong();
+		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ValuelessEntity entity = new ValuelessEntity(id);
 
 		manager.insert(entity, OptionsBuilder.withTtl(1));

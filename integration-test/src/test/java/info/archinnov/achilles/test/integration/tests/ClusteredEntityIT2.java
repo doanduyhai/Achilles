@@ -20,7 +20,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Date;
 import java.util.UUID;
 import org.apache.cassandra.utils.UUIDGen;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
@@ -49,7 +49,7 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		Long userId = RandomUtils.nextLong();
+		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
@@ -68,8 +68,8 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_merge() throws Exception {
-		Long userId = RandomUtils.nextLong();
-		Long originalAuthorId = RandomUtils.nextLong();
+		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		Long originalAuthorId = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
@@ -94,7 +94,7 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_remove() throws Exception {
-		Long userId = RandomUtils.nextLong();
+		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
@@ -114,8 +114,8 @@ public class ClusteredEntityIT2 {
 	@Test
 	public void should_refresh() throws Exception {
 
-		Long userId = RandomUtils.nextLong();
-		Long originalAuthorId = RandomUtils.nextLong();
+		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		Long originalAuthorId = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
 
@@ -140,7 +140,7 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_persist_and_find_entity_having_compound_id_with_enum() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.TEXT);
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "a message");
@@ -156,7 +156,7 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_update_entity_having_compound_id_with_enum() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.IMAGE);
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an image");
@@ -174,7 +174,7 @@ public class ClusteredEntityIT2 {
 
 	@Test
 	public void should_remove_entity_having_compound_id_with_enum() throws Exception {
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.AUDIO);
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, "an mp3");
@@ -193,7 +193,7 @@ public class ClusteredEntityIT2 {
 		String label = "a random file";
 		String newLabel = "a pdf file";
 
-		long id = RandomUtils.nextLong();
+		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.FILE);
 
 		ClusteredMessageEntity message = new ClusteredMessageEntity(messageId, label);

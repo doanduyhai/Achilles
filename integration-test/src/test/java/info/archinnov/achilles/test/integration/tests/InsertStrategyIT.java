@@ -25,7 +25,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import com.google.common.base.Optional;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.configuration.ConfigurationParameters;
@@ -56,7 +56,7 @@ public class InsertStrategyIT {
     @Test
     public void should_insert_all_fields() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         CompleteBean entity = new CompleteBean();
         entity.setId(id);
         entity.setName("John");
@@ -79,7 +79,7 @@ public class InsertStrategyIT {
     @Test
     public void should_insert_not_null_field_overriding_global_config() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         EntityWithNotNullInsertStrategy entity = new EntityWithNotNullInsertStrategy();
         entity.setId(id);
         entity.setName("Helen");
@@ -101,7 +101,7 @@ public class InsertStrategyIT {
     @Test
     public void should_insert_only_fields_that_are_not_null() throws Exception {
         //Given
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         CompleteBean entity = new CompleteBean();
         entity.setId(id);
         entity.setName("John");

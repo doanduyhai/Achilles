@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 
 public abstract class AbstractComponentProperties {
 

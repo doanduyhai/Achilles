@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Session;
@@ -46,9 +46,9 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_persist_and_find() throws Exception {
-		long counterValue = RandomUtils.nextLong();
-		long versionValue = RandomUtils.nextLong();
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		long versionValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue), incr(versionValue));
 
@@ -63,8 +63,8 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_persist_and_get_proxy() throws Exception {
-		long counterValue = RandomUtils.nextLong();
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
 		manager.insert(entity);
@@ -78,10 +78,10 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_update_modifications() throws Exception {
-		long initialValue = RandomUtils.nextLong();
-		long increment = RandomUtils.nextLong();
+		long initialValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		long increment = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(initialValue),incr(initialValue));
 
@@ -102,8 +102,8 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_remove() throws Exception {
-		long counterValue = RandomUtils.nextLong();
-		compoundKey = new ClusteredKey(RandomUtils.nextLong(), "name");
+		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
 		entity = new ClusteredEntityWithCounter(compoundKey, incr(counterValue));
 
@@ -119,10 +119,10 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_refresh() throws Exception {
-		long counterValue = RandomUtils.nextLong();
-		long incr = RandomUtils.nextLong();
+		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
+		long incr = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name = "name";
 		compoundKey = new ClusteredKey(partitionKey, name);
 
@@ -146,7 +146,7 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_query_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		List<ClusteredEntityWithCounter> entities = manager.sliceQuery(ClusteredEntityWithCounter.class)
                 .forSelect()
 				.withPartitionComponents(partitionKey).fromClusterings("name2").toClusterings("name4").get();
@@ -179,7 +179,7 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_iterate_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 5);
 
 		Iterator<ClusteredEntityWithCounter> iter = manager.sliceQuery(ClusteredEntityWithCounter.class)
@@ -228,7 +228,7 @@ public class ClusteredEntityWithCounterIT {
 
 	@Test
 	public void should_remove_with_default_params() throws Exception {
-		long partitionKey = RandomUtils.nextLong();
+		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 3);
 
 		manager.sliceQuery(ClusteredEntityWithCounter.class)

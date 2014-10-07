@@ -23,7 +23,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYS
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.internal.utils.ConfigMap;

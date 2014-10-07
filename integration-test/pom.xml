@@ -11,9 +11,9 @@
 	<packaging>jar</packaging>
 	<dependencies>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+        </dependency>
 		
 		<!-- TEST -->		
 		<dependency>

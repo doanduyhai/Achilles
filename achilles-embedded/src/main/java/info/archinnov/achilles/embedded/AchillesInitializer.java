@@ -28,7 +28,7 @@ import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.RETRY_POLICY;
 import static info.archinnov.achilles.embedded.StateRepository.REPOSITORY;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;

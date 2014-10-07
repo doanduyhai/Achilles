@@ -16,11 +16,11 @@
 package info.archinnov.achilles.internal.statement.prepared;
 
 import static info.archinnov.achilles.internal.consistency.ConsistencyConverter.getCQLLevel;
-import static org.apache.commons.lang.ArrayUtils.addAll;
+import static org.apache.commons.lang3.ArrayUtils.addAll;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BoundStatement;

@@ -20,7 +20,7 @@ import info.archinnov.achilles.test.integration.entity.User;
 
 import java.util.UUID;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 public class TweetTestBuilder {
 
@@ -49,7 +49,7 @@ public class TweetTestBuilder {
 	}
 
 	public TweetTestBuilder randomId() {
-		this.id = new UUID(RandomUtils.nextLong(), RandomUtils.nextLong());
+		this.id = new UUID(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextLong(0,Long.MAX_VALUE));
 		return this;
 	}
 

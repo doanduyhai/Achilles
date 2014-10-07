@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import com.google.common.base.Optional;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;

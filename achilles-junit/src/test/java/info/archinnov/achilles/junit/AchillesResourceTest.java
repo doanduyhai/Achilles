@@ -16,7 +16,7 @@
 package info.archinnov.achilles.junit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import com.datastax.driver.core.Row;
@@ -41,7 +41,7 @@ public class AchillesResourceTest {
     @Test
     public void should_bootstrap_embedded_server_and_entity_manager() throws Exception {
 
-        Long id = RandomUtils.nextLong();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
         manager.insert(new User(id, "fn", "ln"));
 
         Row row = session.execute("SELECT * FROM User WHERE id=" + id).one();

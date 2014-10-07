@@ -32,8 +32,8 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -272,8 +272,8 @@ public class EventInterceptorIT {
     @Test
     public void should_apply_post_load_interceptor_on_slice_query() throws Exception {
         // Given
-        Long id = RandomUtils.nextLong();
-        Integer count = RandomUtils.nextInt();
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        Integer count = RandomUtils.nextInt(0,Integer.MAX_VALUE);
         String name = RandomStringUtils.randomAlphabetic(10);
         String value = "value_before_load";
         ClusteredEntity entity = new ClusteredEntity(id, count, name, value);

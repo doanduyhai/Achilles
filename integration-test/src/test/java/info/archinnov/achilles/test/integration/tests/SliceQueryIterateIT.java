@@ -19,7 +19,7 @@ package info.archinnov.achilles.test.integration.tests;
 import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TABLE_NAME;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.Iterator;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,7 +46,7 @@ public class SliceQueryIterateIT {
      */
     @Test
     public void should_iterate_with_default_params() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 5);
 
         Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class)
@@ -89,7 +89,7 @@ public class SliceQueryIterateIT {
 
     @Test
     public void should_check_for_common_operation_on_found_clustered_entity_by_iterator() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 1);
 
         Iterator<ClusteredEntity> iter = manager.sliceQuery(ClusteredEntity.class)
@@ -121,7 +121,7 @@ public class SliceQueryIterateIT {
 
     @Test
     public void should_iterate_with_custom_params() throws Exception {
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 5);
         insertClusteredValues(partitionKey, 1, "name2", 5);
 
@@ -152,7 +152,7 @@ public class SliceQueryIterateIT {
     @Test
     public void should_iterate_over_clusterings_components() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 3);
         insertClusteredValues(partitionKey, 2, "name2", 2);
         insertClusteredValues(partitionKey, 3, "name3", 1);
@@ -192,7 +192,7 @@ public class SliceQueryIterateIT {
     @Test
     public void should_iterate_with_clustering_IN() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 3);
         insertClusteredValues(partitionKey, 1, "name2", 2);
         insertClusteredValues(partitionKey, 1, "name3", 1);
@@ -234,7 +234,7 @@ public class SliceQueryIterateIT {
     @Test
     public void should_iterate_with_clustering_matching() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         insertClusteredValues(partitionKey, 1, "name1", 3);
         insertClusteredValues(partitionKey, 2, "name2", 2);
         insertClusteredValues(partitionKey, 3, "name3", 1);
@@ -275,7 +275,7 @@ public class SliceQueryIterateIT {
     @Test
     public void should_iterate_with_partition_keys_and_partition_keys_IN() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey,"bucket1",1,"name1",1);
         insertCompositeClusteredValues(partitionKey,"bucket2",1,"name2",1);
@@ -307,7 +307,7 @@ public class SliceQueryIterateIT {
     @Test
     public void should_iterate_with_partition_keys_and_partition_keys_IN_and_from_clusterings() throws Exception {
         //Given
-        long partitionKey = RandomUtils.nextLong();
+        long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
         insertCompositeClusteredValues(partitionKey,"bucket1",1,"abc",1);
         insertCompositeClusteredValues(partitionKey,"bucket2",1,"name",1);

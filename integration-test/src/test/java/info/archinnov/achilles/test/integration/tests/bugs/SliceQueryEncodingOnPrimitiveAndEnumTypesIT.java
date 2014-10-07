@@ -6,7 +6,7 @@ import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityForTranscoding;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithPrimitiveAndSubTypes;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.fest.assertions.core.Condition;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class SliceQueryEncodingOnPrimitiveAndEnumTypesIT {
     @Test
     public void should_slice_using_partition_keys_and_clustering_keys_IN() {
         //Given
-        final long partition = RandomUtils.nextLong();
+        final long partition = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final PropertyType type1 = PropertyType.LIST, type2 = PropertyType.SET;
         final int year = 2014;
 

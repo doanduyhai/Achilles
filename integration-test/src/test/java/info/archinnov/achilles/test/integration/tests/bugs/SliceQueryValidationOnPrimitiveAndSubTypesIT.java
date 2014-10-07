@@ -4,7 +4,7 @@ import info.archinnov.achilles.junit.AchillesTestResource.Steps;
 import info.archinnov.achilles.persistence.PersistenceManager;
 import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import info.archinnov.achilles.test.integration.entity.ClusteredEntityWithPrimitiveAndSubTypes;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class SliceQueryValidationOnPrimitiveAndSubTypesIT {
     @Test
     public void should_slice_using_partition_keys_IN() {
         //Given
-        final Long partition = RandomUtils.nextLong();
+        final Long partition = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket1 = 1, bucket2 = 2;
         final Date date1 = new Date(100000), date2 = new Date(200000);
 
@@ -51,7 +51,7 @@ public class SliceQueryValidationOnPrimitiveAndSubTypesIT {
     @Test
     public void should_slice_with_clustering_components() throws Exception {
         //Given
-        final Long partition = RandomUtils.nextLong();
+        final Long partition = RandomUtils.nextLong(0,Long.MAX_VALUE);
         final int bucket = 1;
         final Date date1 = new Date(100000);
         final Date date2 = new Date(200000);

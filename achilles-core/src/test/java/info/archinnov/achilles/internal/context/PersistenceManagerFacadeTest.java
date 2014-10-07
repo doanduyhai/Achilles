@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,7 +100,7 @@ public class PersistenceManagerFacadeTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PropertyMeta idMeta;
 
-    private Long primaryKey = RandomUtils.nextLong();
+    private Long primaryKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 
     private CompleteBean entity = CompleteBeanTestBuilder.builder().id(primaryKey).buid();
 

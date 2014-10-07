@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -414,7 +414,7 @@ public class DaoContextTest {
     @Test
     public void should_increment_simple_counter() throws Exception {
         // Given
-        Long counterValue = RandomUtils.nextLong();
+        Long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
 
         // When
@@ -430,7 +430,7 @@ public class DaoContextTest {
     @Test
     public void should_decrement_simple_counter() throws Exception {
         // Given
-        Long counterValue = RandomUtils.nextLong();
+        Long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
         PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
 
         // When
