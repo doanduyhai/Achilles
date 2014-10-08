@@ -13,14 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.internal.persistence.operations;
+package info.archinnov.achilles.query.cql;
 
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -37,30 +37,29 @@ public class NativeQueryMapper {
 
 	private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
 
-	public List<TypedMap> mapRows(List<Row> rows) {
+	List<TypedMap> mapRows(List<Row> rows) {
 		log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
 		List<TypedMap> result = new ArrayList<>();
 		if (!rows.isEmpty()) {
 			for (Row row : rows) {
-				mapRow(result, row);
+                result.add(mapRow(row));
 			}
 		}
 		return result;
 	}
 
-	private void mapRow(List<TypedMap> result, Row row) {
+	TypedMap mapRow(Row row) {
 		log.trace("Map CQL row to a map of <ColumnName,Value>");
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
-		if (columnDefinitions != null) {
-			TypedMap line = new TypedMap();
-			for (Definition column : columnDefinitions) {
-				mapColumn(row, line, column);
-			}
-			result.add(line);
-		}
-	}
+        Validator.validateNotNull(columnDefinitions,"Impossible to fetch column definitions for the row '%s'", row);
+        TypedMap line = new TypedMap();
+        for (Definition column : columnDefinitions) {
+            line.put(column.getName(), mapColumn(row, column));
+        }
+        return line;
+    }
 
-	private void mapColumn(Row row, Map<String, Object> line, Definition column) {
+	private Object mapColumn(Row row, Definition column) {
 		if (log.isTraceEnabled()) {
 			log.trace("Extract data from CQL column [keyspace:{},table:{},column:{}]", column.getKeyspace(),
 					column.getTable(), column.getName());
@@ -82,7 +81,6 @@ public class NativeQueryMapper {
 		} else {
 			value = cqlRowInvoker.invokeOnRowForType(row, javaClass, name);
 		}
-
-		line.put(name, value);
+        return value;
 	}
 }

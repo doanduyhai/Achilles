@@ -26,7 +26,9 @@ import static info.archinnov.achilles.test.integration.entity.ClusteredEntity.TA
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -199,22 +201,56 @@ public class QueryIT {
     @Test
     public void should_return_cql_functions_for_native_query() throws Exception {
 
-        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        Long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
         UUID date = UUIDGen.getTimeUUID();
 
         manager.insert(new ClusteredEntityWithTimeUUID(id, date, "value"));
 
         RegularStatement statement = select()
                 .fcall("now")
-                .fcall("dateOf",column("date"))
-                .fcall("unixTimestampOf",column("date"))
+                .fcall("dateOf", column("date"))
+                .fcall("unixTimestampOf", column("date"))
                 .from(ClusteredEntityWithTimeUUID.TABLE_NAME)
-                .where(eq("id",id));
+                .where(eq("id", id));
 
         Map<String, Object> result = manager.nativeQuery(statement).first();
         assertThat(result.get("now()")).isNotNull().isInstanceOf(UUID.class);
         assertThat(result.get("dateOf(date)")).isNotNull().isInstanceOf(Date.class);
         assertThat(result.get("unixTimestampOf(date)")).isNotNull().isInstanceOf(Long.class);
+    }
+
+    @Test
+    public void should_return_iterator_for_native_query() throws Exception {
+        CompleteBean entity1 = builder().randomId().name("DuyHai").buid();
+        CompleteBean entity2 = builder().randomId().name("Paul").buid();
+        CompleteBean entity3 = builder().randomId().name("George").buid();
+        CompleteBean entity4 = builder().randomId().name("John").buid();
+        CompleteBean entity5 = builder().randomId().name("Helen").buid();
+
+        manager.insert(entity1);
+        manager.insert(entity2);
+        manager.insert(entity3);
+        manager.insert(entity4);
+        manager.insert(entity5);
+
+        List<String> possibleNames = Arrays.asList("DuyHai", "Paul", "George", "John", "Helen");
+
+        RegularStatement statement = select().all().from("CompleteBean").limit(6);
+        statement.setFetchSize(2);
+
+        final Iterator<TypedMap> iterator = manager.nativeQuery(statement).iterator();
+
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next().getTyped("name")).isIn(possibleNames);
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next().getTyped("name")).isIn(possibleNames);
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next().getTyped("name")).isIn(possibleNames);
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next().getTyped("name")).isIn(possibleNames);
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next().getTyped("name")).isIn(possibleNames);
+        assertThat(iterator.hasNext()).isFalse();
     }
 
     @Test
@@ -532,7 +568,6 @@ public class QueryIT {
         CompleteBean entity = builder().randomId().name("DuyHai").buid();
         manager.insert(entity);
 
-        String queryString = "SELECT name FROM CompleteBean LIMIT ?";
         RegularStatement statement = select("name").from("CompleteBean").limit(bindMarker());
         List<CompleteBean> actual = manager.rawTypedQuery(CompleteBean.class, statement, 3).get();
 

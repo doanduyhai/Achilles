@@ -15,13 +15,13 @@
  */
 package info.archinnov.achilles.query.cql;
 
+import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.type.Options;
@@ -96,5 +96,14 @@ public class NativeQuery {
     public void execute() {
         log.debug("Execute native query {}", nativeStatementWrapper.getStatement());
         daoContext.execute(nativeStatementWrapper);
+    }
+
+    /**
+     * Return an iterator of {@link info.archinnov.achilles.type.TypedMap} instance. Each instance represents a CQL row
+     * @return Iterator<TypedMap>
+     */
+    public Iterator<TypedMap> iterator() {
+        log.debug("Execute native query {} and return iterator", nativeStatementWrapper.getStatement());
+        return new TypedMapIterator(daoContext.execute(nativeStatementWrapper).iterator());
     }
 }

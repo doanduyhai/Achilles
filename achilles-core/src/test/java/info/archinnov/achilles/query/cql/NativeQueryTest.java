@@ -35,7 +35,6 @@ import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.internal.context.DaoContext;
-import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;

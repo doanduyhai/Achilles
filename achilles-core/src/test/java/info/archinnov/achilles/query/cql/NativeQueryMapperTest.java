@@ -13,11 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.internal.persistence.operations;
+package info.archinnov.achilles.query.cql;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+
+import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
+import info.archinnov.achilles.query.cql.NativeQueryMapper;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.math.BigInteger;
@@ -142,16 +145,13 @@ public class NativeQueryMapperTest {
 		assertThat(line.get("preferences")).isSameAs(preferences);
 	}
 
-	@Test
-	public void should_return_empty_list_when_no_column() throws Exception {
+	@Test(expected = AchillesException.class)
+	public void should_throw_exception_when_no_columns_definitions() throws Exception {
 		def1 = ColumnDefinitionBuilder.buildColumnDef("keyspace", "table", "id", DataType.bigint());
 
 		when(row.getColumnDefinitions()).thenReturn(null);
 
-		List<TypedMap> result = mapper.mapRows(Arrays.asList(row));
-		assertThat(result).isEmpty();
-
-		verifyZeroInteractions(cqlRowInvoker);
+		mapper.mapRows(Arrays.asList(row));
 	}
 
 	@Test
