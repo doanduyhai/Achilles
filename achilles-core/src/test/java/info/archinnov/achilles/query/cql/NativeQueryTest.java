@@ -17,10 +17,12 @@ package info.archinnov.achilles.query.cql;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
@@ -30,6 +32,7 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.RegularStatement;
@@ -130,4 +133,19 @@ public class NativeQueryTest {
 
     }
 
+    @Test
+    public void should_get_iterator() throws Exception {
+        //Given
+        Iterator<Row> iterator = mock(Iterator.class);
+        when(daoContext.execute(any(NativeStatementWrapper.class)).iterator()).thenReturn(iterator);
+        when(iterator.hasNext()).thenReturn(true, true, false);
+
+        //When
+        final Iterator<TypedMap> actual = query.iterator();
+
+        //Then
+        assertThat(actual.hasNext()).isTrue();
+        assertThat(actual.hasNext()).isTrue();
+        assertThat(actual.hasNext()).isFalse();
+    }
 }
