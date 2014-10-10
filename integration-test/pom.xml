@@ -15,7 +15,7 @@
 			<artifactId>commons-lang3</artifactId>
         </dependency>
 		
-		<!-- TEST -->		
+		<!-- TEST -->
 		<dependency>
 			<groupId>info.archinnov</groupId>
 			<artifactId>achilles-junit</artifactId>
