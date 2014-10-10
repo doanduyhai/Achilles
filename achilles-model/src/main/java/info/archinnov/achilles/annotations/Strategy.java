@@ -22,10 +22,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import info.archinnov.achilles.type.InsertStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
 
 /**
  * <p>
- * Choose a strategy for insertion. Available values are :
+ * Choose a strategy for insertion and schema naming.<br/>
+ *
+ * For insertion strategy, available values are :
  * <ul>
  *     <li>{@code info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS}</li>
  *     <li>{@code info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS}</li>
@@ -41,6 +44,22 @@ import info.archinnov.achilles.type.InsertStrategy;
  *
  * </code></pre>
  * </p>
+ *
+ * For naming strategy, available values are:
+ *
+ * <ul>
+ *     <li>info.archinnov.achilles.type.NamingStrategy.SNAKE_CASE: transform all schema name using <a href="http://en.wikipedia.org/wiki/Snake_case" target="blank_">snake case</a></li>
+ *     <li>info.archinnov.achilles.type.NamingStrategy.CASE_SENSITIVE: enclose the name between double quotes (") for escaping the case</li>
+ *     <li>info.archinnov.achilles.type.NamingStrategy.LOWER_CASE: transform the name to lower case</li>
+ *     <li>info.archinnov.achilles.type.NamingStrategy.INHERIT_OR_LOWER_CASE: applies only to column name, either inherit the strategy from the class <strong>@Strategy</strong> annotation or default to lower case</li>
+ * </ul>
+ * <pre class="code"><code class="java">
+ *
+ *   {@literal @}Entity(table = "usersTable")
+ *   <strong>{@literal @}Strategy(naming = NamingStrategy.SNAKE_CASE)</strong>
+ *   public class UserEntity;
+ *
+ * </code></pre>
  * @see <a href="http://github.com/doanduyhai/Achilles/wiki/Insert-Strategy" target="_blank">Achilles Insert Strategies</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -54,4 +73,18 @@ public @interface Strategy {
      * Default = {@code info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS}
      */
     InsertStrategy insert() default InsertStrategy.ALL_FIELDS;
+
+    /**
+     * Strategy for keyspace, table and column names.Available values are :
+     * <ul>
+     *     <li>info.archinnov.achilles.type.NamingStrategy.SNAKE_CASE</li>
+     *     <li>info.archinnov.achilles.type.NamingStrategy.CASE_SENSITIVE</li>
+     *     <li>info.archinnov.achilles.type.NamingStrategy.LOWER_CASE.</li>
+     *     <li>info.archinnov.achilles.type.NamingStrategy.INHERIT_OR_LOWER_CASE.</li>
+     * </ul>
+     *
+     * If not set, defaults to {@code info.archinnov.achilles.type.NamingStrategy.LOWER_CASE}
+     * @return
+     */
+    NamingStrategy naming() default NamingStrategy.LOWER_CASE;
 }

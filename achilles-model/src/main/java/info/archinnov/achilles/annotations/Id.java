@@ -16,6 +16,7 @@
 
 package info.archinnov.achilles.annotations;
 
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -31,6 +32,9 @@ import java.lang.annotation.Target;
  *   <strong>{@literal @}Id</strong>
  *   private Long userId;
  *
+ *   //Custom column name
+ *   <strong>{@literal @}Id(name = "id")</strong>
+ *   private Long userId;
  * </code></pre>
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#id" target="_blank">@Id</a>
  */

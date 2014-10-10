@@ -20,18 +20,25 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
 import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.NamingStrategy;
 import info.archinnov.achilles.type.Pair;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static info.archinnov.achilles.internal.metadata.parsing.NamingHelper.applyNamingStrategy;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+
 public class PropertyParsingContext {
     private static final Logger log = LoggerFactory.getLogger(PropertyParsingContext.class);
+    private EntityIntrospector introspector = new EntityIntrospector();
     private EntityParsingContext context;
     private Field currentField;
     private String currentPropertyName;
+    private String currentCQL3ColumnName;
     private boolean isCustomConsistencyLevels;
     private boolean primaryKey = false;
     private boolean embeddedId = false;
@@ -39,7 +46,8 @@ public class PropertyParsingContext {
     public PropertyParsingContext(EntityParsingContext context, Field currentField) {
         this.context = context;
         this.currentField = currentField;
-        this.currentPropertyName = inferPropertyName();
+        this.currentPropertyName = currentField.getName();
+        this.currentCQL3ColumnName = introspector.inferCQLColumnName(currentField, context.getNamingStrategy());
     }
 
     public ObjectMapper getCurrentObjectMapper() {
@@ -63,8 +71,8 @@ public class PropertyParsingContext {
         return currentPropertyName;
     }
 
-    public void setCurrentPropertyName(String currentPropertyName) {
-        this.currentPropertyName = currentPropertyName;
+    public String getCurrentCQL3ColumnName() {
+        return currentCQL3ColumnName;
     }
 
     public List<PropertyMeta> getCounterMetas() {
@@ -106,15 +114,11 @@ public class PropertyParsingContext {
         this.embeddedId = embeddedId;
     }
 
-    public String inferPropertyName() {
-        log.trace("Inferring property name for property {}", currentField.getName());
-        Column column = currentField.getAnnotation(Column.class);
-        if (column != null) {
-            return StringUtils.isNotBlank(column.name()) ? column.name() : currentField.getName();
-        } else {
-            return currentField.getName();
-        }
+    public NamingStrategy getClassNamingStrategy() {
+        return context.getNamingStrategy();
     }
+
+
 
     public PropertyParsingContext duplicateForField(Field field) {
         return new PropertyParsingContext(context.duplicateForClass(field.getDeclaringClass()), field);

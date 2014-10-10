@@ -167,7 +167,7 @@ public class ReflectionInvokerTest {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		CompleteBean bean = new CompleteBean(id);
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).type(ID).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).type(ID).propertyName("id")
 				.accessors().build();
 
 		Object key = invoker.getPrimaryKey(bean, idMeta);
@@ -177,7 +177,7 @@ public class ReflectionInvokerTest {
 	@Test
 	public void should_exception_when_getting_primary_key() throws Exception {
 
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).type(ID).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).type(ID).propertyName("id")
 				.accessors().build();
 
 		exception.expect(AchillesException.class);
@@ -189,7 +189,7 @@ public class ReflectionInvokerTest {
 
 	@Test
 	public void should_return_null_key_when_null_entity() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").accessors()
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").accessors()
 				.build();
 		assertThat(invoker.getPrimaryKey(null, idMeta)).isNull();
 	}

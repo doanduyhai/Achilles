@@ -56,7 +56,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnMetadata;
-import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -98,9 +97,8 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_id_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).cqlColumnName("name").type(SIMPLE).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.structure().isEmbeddedId()).thenReturn(false);
@@ -118,16 +116,16 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_embedded_id_for_entity() throws Exception {
-        PropertyMeta userId = valueClass(Long.class).field("userId").type(SIMPLE).build();
-        PropertyMeta name = valueClass(String.class).field("name").type(SIMPLE).build();
+        PropertyMeta userId = valueClass(Long.class).propertyName("userId").cqlColumnName("userid").type(SIMPLE).build();
+        PropertyMeta name = valueClass(String.class).propertyName("name").cqlColumnName("name").type(SIMPLE).build();
 
         PropertyMeta idMeta = valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
-                .field("compound")
+                .propertyName("compound")
                 .partitionKeyMetas(userId).clusteringKeyMetas(name)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.ASC))
                 .build();
 
-        PropertyMeta stringMeta = valueClass(String.class).field("string").type(SIMPLE).build();
+        PropertyMeta stringMeta = valueClass(String.class).propertyName("string").cqlColumnName("string").type(SIMPLE).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.structure().isEmbeddedId()).thenReturn(true);
@@ -151,9 +149,8 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_simple_field_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
-
-        PropertyMeta simpleMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE)
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
+        PropertyMeta simpleMeta = completeBean(Void.class, String.class).cqlColumnName("name").type(SIMPLE)
                 .build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -172,11 +169,11 @@ public class TableValidatorTest {
 
     @Test
     public void should_validate_collection_and_map_fields_for_entity() throws Exception {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").type(ID).build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).cqlColumnName("id").type(ID).build();
 
-        PropertyMeta listMeta = completeBean(Void.class, String.class).field("friends").type(LIST).build();
-        PropertyMeta setMeta = completeBean(Void.class, String.class).field("followers").type(SET).build();
-        PropertyMeta mapMeta = completeBean(Integer.class, String.class).field("preferences").type(MAP).build();
+        PropertyMeta listMeta = completeBean(Void.class, String.class).cqlColumnName("friends").type(LIST).build();
+        PropertyMeta setMeta = completeBean(Void.class, String.class).cqlColumnName("followers").type(SET).build();
+        PropertyMeta mapMeta = completeBean(Integer.class, String.class).cqlColumnName("preferences").type(MAP).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.structure().isEmbeddedId()).thenReturn(false);
@@ -202,16 +199,16 @@ public class TableValidatorTest {
     @Test
     public void should_validate_clustered_counter_fields() throws Exception {
         //Given
-        PropertyMeta userId = valueClass(Long.class).field("userId").type(SIMPLE).build();
-        PropertyMeta name = valueClass(String.class).field("name").type(SIMPLE).build();
+        PropertyMeta userId = valueClass(Long.class).cqlColumnName("userid").type(SIMPLE).build();
+        PropertyMeta name = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
 
         PropertyMeta idMeta = valueClass(EmbeddedKey.class).type(EMBEDDED_ID)
-                .field("compound")
+                .propertyName("compound")
                 .partitionKeyMetas(userId).clusteringKeyMetas(name)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.ASC))
                 .build();
 
-        PropertyMeta counter = completeBean(Void.class, Counter.class).field("count")
+        PropertyMeta counter = completeBean(Void.class, Counter.class).cqlColumnName("count")
                 .type(COUNTER).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);

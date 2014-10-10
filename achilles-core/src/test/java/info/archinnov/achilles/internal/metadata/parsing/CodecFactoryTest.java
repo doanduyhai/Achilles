@@ -25,6 +25,7 @@ import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.type.Counter;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +55,9 @@ public class CodecFactoryTest {
 
     @Before
     public void setUp() {
-        Mockito.when(context.getCurrentObjectMapper()).thenReturn(mapper);
+        when(context.getCurrentObjectMapper()).thenReturn(mapper);
+        when(context.getNamingStrategy()).thenReturn(NamingStrategy.LOWER_CASE);
+
     }
 
     @Test

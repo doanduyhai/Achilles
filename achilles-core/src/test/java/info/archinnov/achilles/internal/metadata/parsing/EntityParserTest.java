@@ -24,6 +24,7 @@ import java.util.Map;
 
 import com.google.common.base.Optional;
 import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -87,7 +88,8 @@ public class EntityParserTest {
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
         configContext.setEnableSchemaUpdateForTables(ImmutableMap.<String, Boolean>of());
         configContext.setJacksonMapperFactory(jacksonMapperFactory);
-        configContext.setInsertStrategy(InsertStrategy.ALL_FIELDS);
+        configContext.setGlobalInsertStrategy(InsertStrategy.ALL_FIELDS);
+        configContext.setGlobalNamingStrategy(NamingStrategy.LOWER_CASE);
         configContext.setCurrentKeyspace(Optional.fromNullable("ks"));
     }
 
@@ -99,7 +101,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.getClassName()).isEqualTo("info.archinnov.achilles.test.parser.entity.Bean");
-        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.Bean");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.bean");
         assertThat(meta.getIdMeta().<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
         assertThat(meta.<Long>getIdClass()).isEqualTo(Long.class);
@@ -107,7 +109,7 @@ public class EntityParserTest {
 
         PropertyMeta id = meta.getPropertyMetas().get("id");
         PropertyMeta name = meta.getPropertyMetas().get("name");
-        PropertyMeta age = meta.getPropertyMetas().get("age_in_year");
+        PropertyMeta age = meta.getPropertyMetas().get("age");
         PropertyMeta friends = meta.getPropertyMetas().get("friends");
         PropertyMeta followers = meta.getPropertyMetas().get("followers");
         PropertyMeta preferences = meta.getPropertyMetas().get("preferences");
@@ -136,7 +138,8 @@ public class EntityParserTest {
         assertThat(name.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
         assertThat(name.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
-        assertThat(age.getPropertyName()).isEqualTo("age_in_year");
+        assertThat(age.getPropertyName()).isEqualTo("age");
+        assertThat(age.getCQL3ColumnName()).isEqualTo("age_in_year");
         assertThat(age.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(age.type()).isEqualTo(SIMPLE);
         assertThat(age.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
@@ -192,7 +195,7 @@ public class EntityParserTest {
 
         assertThat(idMeta.structure().isEmbeddedId()).isTrue();
 
-        assertThat(meta.getPropertyMetas().get("name").structure().isStaticColumn()).isTrue();
+        assertThat(meta.getPropertyMetas().get("firstName").structure().isStaticColumn()).isTrue();
     }
 
     @Test
@@ -203,7 +206,7 @@ public class EntityParserTest {
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta).isNotNull();
-        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.myOwnTable");
+        assertThat(meta.config().getQualifiedTableName()).isEqualTo("ks.myowntable");
     }
 
     @Test
@@ -247,7 +250,8 @@ public class EntityParserTest {
 
         // Then
         assertThat(meta).isNotNull();
-        assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("toto");
+        assertThat(meta.getIdMeta().getPropertyName()).isEqualTo("id");
+        assertThat(meta.getIdMeta().getCQL3ColumnName()).isEqualTo("toto");
     }
 
     @Test
@@ -282,8 +286,7 @@ public class EntityParserTest {
     public void should_exception_when_entity_has_duplicated_column_name() throws Exception {
         initEntityParsingContext(BeanWithDuplicatedColumnName.class);
         expectedEx.expect(AchillesBeanMappingException.class);
-        expectedEx.expectMessage("The property 'name' is already used for the entity '"
-                + BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
+        expectedEx.expectMessage("The CQL column 'name' is already used for the entity '"+ BeanWithDuplicatedColumnName.class.getCanonicalName() + "'");
 
         parser.parseEntity(entityContext);
     }
@@ -322,7 +325,7 @@ public class EntityParserTest {
         initEntityParsingContext(BeanWithClusteredId.class);
         configContext.setCurrentKeyspace(Optional.fromNullable("ks"));
         configContext.setEnableSchemaUpdate(false);
-        configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("ks.BeanWithClusteredId", true));
+        configContext.setEnableSchemaUpdateForTables(ImmutableMap.of("ks.bean_with_clustered_id", true));
         EntityMeta meta = parser.parseEntity(entityContext);
 
         assertThat(meta.config().isSchemaUpdateEnabled()).isTrue();

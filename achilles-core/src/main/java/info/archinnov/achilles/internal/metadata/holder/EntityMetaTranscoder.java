@@ -54,7 +54,7 @@ public class EntityMetaTranscoder extends EntityMetaView {
 
     private PropertyMeta findPropertyMetaByCQL3Name(String cql3Name) {
         for (PropertyMeta propertyMeta : meta.getAllMetasExceptCounters()) {
-            if (propertyMeta.getCQL3ColumnName().equals(cql3Name) || propertyMeta.getPropertyName().equals(cql3Name)) {
+            if (propertyMeta.getCQL3ColumnName().equals(cql3Name) ) {
                 return propertyMeta;
             }
         }

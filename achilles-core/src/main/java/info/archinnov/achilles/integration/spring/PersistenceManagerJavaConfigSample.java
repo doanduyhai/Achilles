@@ -25,7 +25,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
@@ -40,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.validation.Validator;
+
+import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -111,7 +114,10 @@ public class PersistenceManagerJavaConfigSample {
     private boolean forceBatchStatementsOrdering;
 
     @Autowired
-    private InsertStrategy insertStrategy;
+    private InsertStrategy globalInsertStrategy;
+
+    @Autowired
+    private NamingStrategy globalNamingStrategy;
 
     @Autowired
     private ClassLoader osgiClassLoader;
@@ -136,7 +142,10 @@ public class PersistenceManagerJavaConfigSample {
             configMap.put(NATIVE_SESSION, session);
         }
 
-        configMap.put(KEYSPACE_NAME, keyspaceName);
+        if (StringUtils.isNotBlank(keyspaceName)) {
+            configMap.put(KEYSPACE_NAME, keyspaceName);
+        }
+
         configMap.put(JACKSON_MAPPER_FACTORY, objecMapperFactory);
 
         if (isNotBlank(consistencyLevelReadDefault)) {
@@ -168,8 +177,12 @@ public class PersistenceManagerJavaConfigSample {
         configMap.put(PREPARED_STATEMENTS_CACHE_SIZE, preparedStatementsCacheSize);
         configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
 
-        if (insertStrategy != null) {
-            configMap.put(INSERT_STRATEGY, insertStrategy);
+        if (globalInsertStrategy != null) {
+            configMap.put(GLOBAL_INSERT_STRATEGY, globalInsertStrategy);
+        }
+
+        if (globalNamingStrategy != null) {
+            configMap.put(GLOBAL_NAMING_STRATEGY, globalNamingStrategy);
         }
 
         if (osgiClassLoader != null) {

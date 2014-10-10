@@ -43,7 +43,7 @@ public class ProxyInterceptorBuilderTest {
     @Test
     public void should_build_interceptor_with_eager_fields_already_loaded() throws Exception {
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("id").build();
 
         EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -67,7 +67,7 @@ public class ProxyInterceptorBuilderTest {
     @Test
     public void should_build_interceptor_with_no_eager_fields() throws Exception {
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("id").build();
 
         EntityMeta meta = mock(EntityMeta.class, RETURNS_DEEP_STUBS);
         when(meta.getIdMeta()).thenReturn(idMeta);

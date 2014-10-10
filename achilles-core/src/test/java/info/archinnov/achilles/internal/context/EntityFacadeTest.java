@@ -106,7 +106,7 @@ public class EntityFacadeTest {
         List<PropertyMeta> pms = new ArrayList<>();
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(pms);
         context.entityMeta = meta;
-        when(configurationContext.getInsertStrategy()).thenReturn(ALL_FIELDS);
+        when(configurationContext.getGlobalInsertStrategy()).thenReturn(ALL_FIELDS);
 
         //When
         facade.pushInsertStatement();

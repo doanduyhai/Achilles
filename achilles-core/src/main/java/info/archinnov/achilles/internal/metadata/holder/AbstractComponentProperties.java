@@ -19,7 +19,6 @@ package info.archinnov.achilles.internal.metadata.holder;
 import static com.google.common.collect.FluentIterable.from;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -34,12 +33,6 @@ public abstract class AbstractComponentProperties {
         }
     };
 
-    private static final Function<PropertyMeta, Class<?>> GET_CQL3_CLASS = new Function<PropertyMeta, Class<?>>() {
-        @Override
-        public Class<?> apply(PropertyMeta meta) {
-            return meta.getCql3ValueClass();
-        }
-    };
 
     private static final Function<PropertyMeta, String> GET_NAME = new Function<PropertyMeta, String>() {
         @Override

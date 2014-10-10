@@ -24,29 +24,23 @@ import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static java.lang.String.format;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.schemabuilder.Create;
 import info.archinnov.achilles.schemabuilder.SchemaBuilder;
 
 public class TableCreator {
     static final String ACHILLES_DDL_SCRIPT = "ACHILLES_DDL_SCRIPT";
 
-    public static final String TABLE_PATTERN = "[a-zA-Z0-9_]+";
     private static final Logger log = LoggerFactory.getLogger(TableCreator.class);
     private static final Logger DML_LOG = LoggerFactory.getLogger(ACHILLES_DDL_SCRIPT);
 

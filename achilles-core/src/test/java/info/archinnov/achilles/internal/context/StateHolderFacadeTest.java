@@ -81,8 +81,8 @@ public class StateHolderFacadeTest {
     @Test
     public void should_get_state() throws Exception {
         //Given
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors().build();
-        PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Counter.class).field("count").accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").accessors().build();
+        PropertyMeta counterMeta = PropertyMetaTestBuilder.completeBean(Void.class, Counter.class).propertyName("count").accessors().build();
 
         when(meta.structure().isClusteredCounter()).thenReturn(true);
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));

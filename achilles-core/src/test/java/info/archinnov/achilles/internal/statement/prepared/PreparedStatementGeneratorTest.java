@@ -307,6 +307,7 @@ public class PreparedStatementGeneratorTest {
 
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta));
         when(counterMeta.forStatementGeneration()).thenReturn(statementGenerator);
+        when(counterMeta.getPropertyName()).thenReturn("countProperty");
         when(counterMeta.getCQL3ColumnName()).thenReturn("count");
         when(counterMeta.structure().isStaticColumn()).thenReturn(false);
 
@@ -333,9 +334,9 @@ public class PreparedStatementGeneratorTest {
 
         Map<CQLQueryType, Map<String, PreparedStatement>> actual = generator.prepareClusteredCounterQueryMap(session,meta);
 
-        assertThat(actual.get(INCR).get("count")).isSameAs(incrPs);
-        assertThat(actual.get(DECR).get("count")).isSameAs(decrPs);
-        assertThat(actual.get(SELECT).get("count")).isSameAs(selectPs);
+        assertThat(actual.get(INCR).get("countProperty")).isSameAs(incrPs);
+        assertThat(actual.get(DECR).get("countProperty")).isSameAs(decrPs);
+        assertThat(actual.get(SELECT).get("countProperty")).isSameAs(selectPs);
         assertThat(actual.get(SELECT).get(SELECT_ALL.name())).isSameAs(selectAllPs);
         assertThat(actual.get(DELETE).get(DELETE_ALL.name())).isSameAs(deletePs);
 
@@ -539,7 +540,8 @@ public class PreparedStatementGeneratorTest {
         final ArgumentCaptor<Select> selectCaptor = ArgumentCaptor.forClass(Select.class);
         final ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
         final Select select = select().from("test").where(eq("id", 10)).limit(1);
-        final PropertyMeta pm = completeBean(Void.class, Long.class).field("name").type(SIMPLE).build();
+        final PropertyMeta pm = completeBean(Void.class, Long.class)
+                .propertyName("name").cqlColumnName("name").type(SIMPLE).build();
 
         when(sliceQueryProperties.getEntityMeta()).thenReturn(meta);
         when(meta.forOperations().getColumnsMetaToLoad()).thenReturn(asList(pm));

@@ -25,6 +25,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
 
 public class ConfigurationContext {
     private boolean forceColumnFamilyCreation;
@@ -49,7 +50,8 @@ public class ConfigurationContext {
 
     private int preparedStatementLRUCacheSize = 10000;
 
-    private InsertStrategy insertStrategy;
+    private InsertStrategy globalInsertStrategy;
+    private NamingStrategy globalNamingStrategy;
 
     private ClassLoader OSGIClassLoader;
 
@@ -121,12 +123,20 @@ public class ConfigurationContext {
         this.preparedStatementLRUCacheSize = preparedStatementLRUCacheSize;
     }
 
-    public InsertStrategy getInsertStrategy() {
-        return insertStrategy;
+    public InsertStrategy getGlobalInsertStrategy() {
+        return globalInsertStrategy;
     }
 
-    public void setInsertStrategy(InsertStrategy insertStrategy) {
-        this.insertStrategy = insertStrategy;
+    public void setGlobalInsertStrategy(InsertStrategy globalInsertStrategy) {
+        this.globalInsertStrategy = globalInsertStrategy;
+    }
+
+    public NamingStrategy getGlobalNamingStrategy() {
+        return globalNamingStrategy;
+    }
+
+    public void setGlobalNamingStrategy(NamingStrategy globalNamingStrategy) {
+        this.globalNamingStrategy = globalNamingStrategy;
     }
 
     public void setOSGIClassLoader(ClassLoader OSGIClassLoader) {

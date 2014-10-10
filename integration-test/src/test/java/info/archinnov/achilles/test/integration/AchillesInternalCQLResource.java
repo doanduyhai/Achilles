@@ -18,7 +18,7 @@ package info.archinnov.achilles.test.integration;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
@@ -168,7 +168,7 @@ public class AchillesInternalCQLResource extends AchillesTestResource {
         ConfigMap config = new ConfigMap();
         config.put(FORCE_TABLE_CREATION, true);
         config.put(BEAN_VALIDATION_ENABLE, true);
-        config.put(INSERT_STRATEGY, insertStrategy);
+        config.put(GLOBAL_INSERT_STRATEGY, insertStrategy);
         config.put(KEYSPACE_NAME, DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
         config.put(ENTITY_PACKAGES, ACHILLES_ENTITY_PACKAGES);
         return config;

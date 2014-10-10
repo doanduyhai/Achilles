@@ -34,6 +34,7 @@ public class PropertyMetaBuilder {
 
     private PropertyType type;
     private String propertyName;
+    private String cql3ColumnName;
     private String entityClassName;
     private Method[] accessors;
     private Field field;
@@ -58,6 +59,11 @@ public class PropertyMetaBuilder {
 
     public PropertyMetaBuilder propertyName(String propertyName) {
         this.propertyName = propertyName;
+        return this;
+    }
+
+    public PropertyMetaBuilder cqlColumnName(String cqlColumnName) {
+        this.cql3ColumnName = cqlColumnName;
         return this;
     }
 
@@ -93,6 +99,7 @@ public class PropertyMetaBuilder {
         meta.setListCodec(Optional.fromNullable(listCodec).orNull());
         meta.setSetCodec(Optional.fromNullable(setCodec).orNull());
         meta.setMapCodec(Optional.fromNullable(mapCodec).orNull());
+        meta.setCql3ColumnName(cql3ColumnName);
         meta.setCql3KeyClass(cql3KeyClass);
         meta.setCql3ValueClass(cql3ValueClass);
         return meta;

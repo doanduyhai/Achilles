@@ -17,7 +17,11 @@ package info.archinnov.achilles.internal.metadata.parsing;
 
 import static com.google.common.base.Optional.fromNullable;
 import static info.archinnov.achilles.internal.helper.LoggerHelper.fieldToStringFn;
-import static info.archinnov.achilles.internal.table.TableCreator.TABLE_PATTERN;
+import static info.archinnov.achilles.internal.metadata.parsing.NamingHelper.applyNamingStrategy;
+import static info.archinnov.achilles.internal.table.SchemaNameNormalizer.extractTableNameFromCanonical;
+import static info.archinnov.achilles.internal.table.SchemaNameNormalizer.validateSchemaName;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -25,7 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.internal.validation.Validator;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +43,6 @@ import info.archinnov.achilles.annotations.Strategy;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
-import info.archinnov.achilles.internal.table.TableNameNormalizer;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 import info.archinnov.achilles.type.Pair;
@@ -137,30 +143,28 @@ public class EntityIntrospector {
         return accessors;
     }
 
-    public String inferKeyspaceName(Class<?> entityClass, EntityParsingContext parsingContext) {
-        String keyspaceName = parsingContext.getCurrentKeyspaceName().or("");
+    public String inferKeyspaceName(Class<?> entityClass, Optional<String> currentKeyspaceNameO, NamingStrategy namingStrategy) {
+        String keyspaceName = currentKeyspaceNameO.or("");
+        if(isNoneBlank(keyspaceName)) return keyspaceName;
+
         Entity annotation = entityClass.getAnnotation(Entity.class);
-        if (annotation != null && StringUtils.isNotBlank(annotation.keyspace())) {
-            keyspaceName = annotation.keyspace();
-        }
-        Validator.validateBeanMappingTrue(StringUtils.isNotBlank(keyspaceName),"No keyspace name found for entity '"+entityClass.getCanonicalName()+"'. Keyspace name is looked up using either the @Entity annotation or in configuration parameter");
+
+        keyspaceName = applyNamingStrategy(annotation.keyspace(), namingStrategy);
+
+        Validator.validateBeanMappingTrue(isNotBlank(keyspaceName),"No keyspace name found for entity '"+entityClass.getCanonicalName()+"'. Keyspace name is looked up using either the @Entity annotation or in configuration parameter");
+
+        keyspaceName = validateSchemaName(keyspaceName);
         return keyspaceName;
     }
 
-    public String inferTableName(Class<?> entityClass, String canonicalName) {
-        String tableName = null;
+    public String inferTableName(Class<?> entityClass, String canonicalName, NamingStrategy namingStrategy) {
         Entity annotation = entityClass.getAnnotation(Entity.class);
-        if (annotation != null && StringUtils.isNotBlank(annotation.table())) {
-            tableName = annotation.table();
-        }
-
-        if (!StringUtils.isBlank(tableName)) {
-            tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(tableName);
+        String tableName;
+        if (isNotBlank(annotation.table())) {
+            tableName = validateSchemaName(applyNamingStrategy(annotation.table(), namingStrategy));
         } else {
-            tableName = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
+            tableName = validateSchemaName(applyNamingStrategy(extractTableNameFromCanonical(canonicalName), namingStrategy));
         }
-        Validator.validateRegExp(tableName, TABLE_PATTERN, "tableName for entity meta creation");
-
         log.debug("Inferred tableName for entity {} : {}", canonicalName, tableName);
         return tableName;
     }
@@ -168,10 +172,8 @@ public class EntityIntrospector {
     public String inferTableComment(Class<?> entity, String defaultComment) {
         String comment = defaultComment;
         Entity annotation = entity.getAnnotation(Entity.class);
-        if (annotation != null) {
-            if (StringUtils.isNotBlank(annotation.comment())) {
-                comment = annotation.comment().trim().replaceAll("'","''");
-            }
+        if (isNotBlank(annotation.comment())) {
+            comment = annotation.comment().trim().replaceAll("'","''");
         }
         return comment;
     }
@@ -200,7 +202,7 @@ public class EntityIntrospector {
     public List<Field> getInheritedPrivateFields(Class<?> type) {
         log.debug("Find inherited private fields from hierarchy for entity class {}", type.getCanonicalName());
 
-        List<Field> fields = new ArrayList<Field>();
+        List<Field> fields = new ArrayList<>();
 
         Class<?> i = type;
         while (i != null && i != Object.class) {
@@ -255,5 +257,29 @@ public class EntityIntrospector {
         Strategy strategy = type.getAnnotation(Strategy.class);
 
         return strategy != null ? strategy.insert() : parsingContext.getDefaultInsertStrategy();
+    }
+
+    public NamingStrategy determineClassNamingStrategy(ConfigurationContext configContext, Class<?> currentEntityClass) {
+        final Strategy strategy = currentEntityClass.getAnnotation(Strategy.class);
+        return strategy != null ? strategy.naming() : configContext.getGlobalNamingStrategy();
+    }
+
+    public String inferCQLColumnName(Field field, NamingStrategy namingStrategy) {
+        final String columnName = field.getName();
+        log.trace("Inferring property columnName for property {}", columnName);
+        final Column column = field.getAnnotation(Column.class);
+        final Id id = field.getAnnotation(Id.class);
+
+        if (column != null) {
+            return determineColumnNameUsingStrategy(column.name(), columnName, namingStrategy);
+        } else if (id != null) {
+            return determineColumnNameUsingStrategy(id.name(), columnName, namingStrategy);
+        } else {
+            return applyNamingStrategy(columnName, namingStrategy);
+        }
+    }
+
+    private String determineColumnNameUsingStrategy(String customColumnName, String canonicalName, NamingStrategy namingStrategy) {
+        return isNoneBlank(customColumnName) ? customColumnName: applyNamingStrategy(canonicalName, namingStrategy);
     }
 }

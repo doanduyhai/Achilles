@@ -25,25 +25,38 @@ import org.mockito.runners.MockitoJUnitRunner;
 import info.archinnov.achilles.exception.AchillesInvalidTableException;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TableNameNormalizerTest {
+public class SchemaNameNormalizerTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
 	@Test
-	public void should_exception_when_even_class_name_exceeeds_48_characters() throws Exception {
+	public void should_exception_when_schema_name_exceeds_48_characters() throws Exception {
 		String canonicalName = "ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters";
 
 		exception.expect(AchillesInvalidTableException.class);
-		exception
-				.expectMessage("The table name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should be respect the pattern [a-zA-Z0-9_] and be at most 48 characters long");
-		TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
+		exception.expectMessage("The schema name 'ItIsAVeryLoooooooooooooooooooooooooooooooooooooongClassNameExceeding48Characters' is invalid. It should respect the pattern [a-zA-Z0-9][a-zA-Z0-9_]{1,47} optionally enclosed in double quotes (\")");
+		SchemaNameNormalizer.validateSchemaName(canonicalName);
 	}
 
+    @Test
+    public void should_exception_when_schema_name_start_with_non_alpha_numeric() throws Exception {
+        String canonicalName = "_test";
+
+        exception.expect(AchillesInvalidTableException.class);
+        exception.expectMessage("The schema name '_test' is invalid. It should respect the pattern [a-zA-Z0-9][a-zA-Z0-9_]{1,47} optionally enclosed in double quotes (\")");
+        SchemaNameNormalizer.validateSchemaName(canonicalName);
+    }
+
+    @Test
+    public void should_validate_correct_schema_name() throws Exception {
+        SchemaNameNormalizer.validateSchemaName("complete_table");
+    }
+
 	@Test
-	public void should_normalize_canonical_classname() throws Exception {
+	public void should_extract_table_name_from_canonical_name() throws Exception {
 		String canonicalName = "org.achilles.entity.ClassName";
 
-		String normalized = TableNameNormalizer.normalizerAndValidateColumnFamilyName(canonicalName);
+		String normalized = SchemaNameNormalizer.extractTableNameFromCanonical(canonicalName);
 
 		assertThat(normalized).isEqualTo("ClassName");
 	}

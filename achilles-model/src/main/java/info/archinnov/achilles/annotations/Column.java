@@ -24,12 +24,17 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Annotation for simple column. Example
+ * Annotation for simple column. Examples:
  *
  * <pre class="code"><code class="java">
  *
- *   <strong>{@literal @}Column</strong>
+ *   //Custom column name
+ *   <strong>{@literal @}Column(name = "first_name")</strong>
  *   private String userFirstname;
+ *
+ *   //Static column
+ *   <strong>{@literal @}Column(staticColumn = true)</strong>
+ *   private String age;
  *
  * </code></pre>
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Achilles-Annotations#column" target="_blank">@Column</a>

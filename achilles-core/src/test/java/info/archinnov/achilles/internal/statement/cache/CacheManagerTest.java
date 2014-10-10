@@ -46,7 +46,6 @@ import com.google.common.cache.Cache;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyCheckChangeSet;
 import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGenerator;
 import info.archinnov.achilles.query.slice.SliceQueryProperties;
@@ -87,9 +86,9 @@ public class CacheManagerTest {
     @Test
     public void should_get_cache_for_simple_field() throws Exception {
         EntityMeta meta = new EntityMeta();
-//        meta.setTableName("table");
 
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class)
+                .propertyName("name").cqlColumnName("name").type(SIMPLE)
                 .build();
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
@@ -127,7 +126,7 @@ public class CacheManagerTest {
         EntityMeta meta = new EntityMeta();
 //        meta.setTableName("table");
 
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").type(SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").type(SIMPLE)
                 .build();
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
@@ -147,8 +146,8 @@ public class CacheManagerTest {
         EntityMeta meta = new EntityMeta();
 //        meta.setTableName("table");
 
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
+        PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
@@ -168,9 +167,9 @@ public class CacheManagerTest {
         EntityMeta meta = new EntityMeta();
 //        meta.setTableName("table");
 
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
 
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
+        PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
 
         List<PropertyMeta> pms = asList(nameMeta, ageMeta);
 
@@ -193,8 +192,8 @@ public class CacheManagerTest {
         EntityMeta meta = new EntityMeta();
 //        meta.setTableName("table");
 
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
+        PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
 
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
         when(context.getEntityMeta()).thenReturn(meta);
@@ -214,8 +213,8 @@ public class CacheManagerTest {
         EntityMeta meta = new EntityMeta();
 //        meta.setTableName("table");
 
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
-        PropertyMeta ageMeta = completeBean(Void.class, String.class).field("age").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
+        PropertyMeta ageMeta = completeBean(Void.class, String.class).propertyName("age").type(SIMPLE).build();
 
         List<PropertyMeta> pms = asList(nameMeta, ageMeta);
 

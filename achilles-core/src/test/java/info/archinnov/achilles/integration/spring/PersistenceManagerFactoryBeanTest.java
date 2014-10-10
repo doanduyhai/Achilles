@@ -16,6 +16,7 @@
 package info.archinnov.achilles.integration.spring;
 
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import javax.validation.Validator;
@@ -62,11 +63,12 @@ public class PersistenceManagerFactoryBeanTest {
 
 
     @Test
-    public void should_exception_when_no_keyspace_name_set() throws Exception {
+    public void should_bootstrap_even_when_no_keyspace_name_set() throws Exception {
+        when(cluster.connect()).thenThrow(IllegalStateException.class);
+        factory.setCluster(cluster);
         factory.setEntityPackages("com.test");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Keyspace name should be provided");
+        exception.expect(IllegalStateException.class);
         factory.initialize();
     }
 
@@ -101,7 +103,7 @@ public class PersistenceManagerFactoryBeanTest {
         factory.setBeanValidator(Mockito.mock(Validator.class));
         factory.setPreparedStatementCacheSize(100);
         factory.setDisableProxiesWarmUp(true);
-        factory.setInsertStrategy(InsertStrategy.NOT_NULL_FIELDS);
+        factory.setGlobalInsertStrategy(InsertStrategy.NOT_NULL_FIELDS);
         factory.setOsgiClassLoader(this.getClass().getClassLoader());
 
         exception.expect(IllegalStateException.class);

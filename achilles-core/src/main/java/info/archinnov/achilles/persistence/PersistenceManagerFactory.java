@@ -27,7 +27,7 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
@@ -486,7 +486,7 @@ public class PersistenceManagerFactory {
          * @return PersistenceManagerFactoryBuilder
          */
         public PersistenceManagerFactoryBuilder globalInsertStrategy(InsertStrategy globalInsertStrategy) {
-            configMap.put(INSERT_STRATEGY, globalInsertStrategy);
+            configMap.put(GLOBAL_INSERT_STRATEGY, globalInsertStrategy);
             return this;
         }
 

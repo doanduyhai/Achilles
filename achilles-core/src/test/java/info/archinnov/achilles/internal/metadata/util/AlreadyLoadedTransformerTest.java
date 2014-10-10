@@ -41,7 +41,7 @@ public class AlreadyLoadedTransformerTest {
 		Map<Method, PropertyMeta> getterMetas = new HashMap<Method, PropertyMeta>();
 		AlreadyLoadedTransformer transformer = new AlreadyLoadedTransformer(getterMetas);
 
-		PropertyMeta pm1 = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").accessors()
+		PropertyMeta pm1 = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").accessors()
 				.type(PropertyType.SIMPLE).build();
 
 		getterMetas.put(pm1.getGetter(), pm1);

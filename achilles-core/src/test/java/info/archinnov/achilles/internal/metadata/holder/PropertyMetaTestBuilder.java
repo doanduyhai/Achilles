@@ -20,7 +20,6 @@ import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrd
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import com.google.common.base.Optional;
 import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
@@ -37,7 +36,8 @@ public class PropertyMetaTestBuilder<T, K, V> {
     private EmbeddedIdPropertiesBuilder clusteringBuilder = new EmbeddedIdPropertiesBuilder();
 
     private Class<T> clazz;
-    private String field;
+    private String propertyName;
+    private String cqlColumnName;
     private String entityClassName;
     private PropertyType type;
     private Class<K> keyClass;
@@ -81,18 +81,19 @@ public class PropertyMetaTestBuilder<T, K, V> {
         PropertyMeta pm = new PropertyMeta();
         pm.setType(type);
         pm.setEntityClassName(entityClassName);
-        pm.setPropertyName(field);
+        pm.setPropertyName(propertyName);
+        pm.setCql3ColumnName(cqlColumnName);
         pm.setKeyClass(keyClass);
         pm.setValueClass(valueClass);
         pm.setCql3KeyClass(fromNullable(cql3KeyClass).or((Class) keyClass));
         pm.setCql3ValueClass(fromNullable(cql3ValueClass).or((Class) valueClass));
 
-        if (StringUtils.isNotBlank(field) && clazz == CompleteBean.class) {
-            pm.setField(clazz.getDeclaredField(field));
+        if (StringUtils.isNotBlank(propertyName) && clazz == CompleteBean.class) {
+            pm.setField(clazz.getDeclaredField(propertyName));
         }
 
         if (buildAccessors) {
-            Field declaredField = clazz.getDeclaredField(field);
+            Field declaredField = clazz.getDeclaredField(propertyName);
             pm.setGetter(achillesEntityIntrospector.findGetter(clazz, declaredField));
             Class<?> fieldClass = declaredField.getType();
             if (!Counter.class.isAssignableFrom(fieldClass)) {
@@ -114,17 +115,22 @@ public class PropertyMetaTestBuilder<T, K, V> {
             consistencyLevels = Pair.create(ConsistencyLevel.ONE, ConsistencyLevel.ONE);
         }
         pm.setConsistencyLevels(consistencyLevels);
-        pm.setInvoker(invoker);
+//        pm.setInvoker(invoker);
         pm.setStaticColumn(staticColumn);
         if (StringUtils.isNotBlank(indexName)) {
-            pm.setIndexProperties(new IndexProperties(indexName, field));
+            pm.setIndexProperties(new IndexProperties(indexName, propertyName));
         }
         return pm;
     }
 
 
-    public PropertyMetaTestBuilder<T, K, V> field(String field) {
-        this.field = field;
+    public PropertyMetaTestBuilder<T, K, V> propertyName(String propertyName) {
+        this.propertyName = propertyName;
+        return this;
+    }
+
+    public PropertyMetaTestBuilder<T, K, V> cqlColumnName(String cqlColumnName) {
+        this.cqlColumnName = cqlColumnName;
         return this;
     }
 
@@ -139,12 +145,12 @@ public class PropertyMetaTestBuilder<T, K, V> {
     }
 
     public PropertyMetaTestBuilder<T,K,V> withPartitionMeta(String name, Class<?> type) throws Exception {
-        this.partitionBuilder.addPropertyMeta(PropertyMetaTestBuilder.valueClass(type).field(name).build());
+        this.partitionBuilder.addPropertyMeta(PropertyMetaTestBuilder.valueClass(type).propertyName(name).build());
         return this;
     }
 
     public PropertyMetaTestBuilder<T,K,V> withClusteringMeta(String name, Class<?> type) throws Exception {
-        this.clusteringBuilder.addPropertyMeta(PropertyMetaTestBuilder.valueClass(type).field(name).build());
+        this.clusteringBuilder.addPropertyMeta(PropertyMetaTestBuilder.valueClass(type).propertyName(name).build());
         return this;
     }
 
@@ -215,7 +221,7 @@ public class PropertyMetaTestBuilder<T, K, V> {
     }
 
     public PropertyMetaTestBuilder<T, K, V> indexed() {
-        this.indexName = field;
+        this.indexName = propertyName;
         return this;
     }
 

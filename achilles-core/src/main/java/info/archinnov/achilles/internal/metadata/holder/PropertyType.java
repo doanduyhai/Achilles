@@ -49,10 +49,13 @@ public enum PropertyType {
         return (this == LIST || this == SET || this == MAP);
     }
 
-    public static final PropertyTypeFilter counterType = new PropertyTypeFilter(COUNTER);
+    public static final PropertyTypeFilter COUNTER_TYPE = new PropertyTypeFilter(COUNTER);
+    public static final PropertyTypeFilter EMBEDDED_ID_TYPE = new PropertyTypeFilter(EMBEDDED_ID);
 
-    public static final PropertyTypeExclude excludeIdType = new PropertyTypeExclude(ID, EMBEDDED_ID);
-    public static final PropertyTypeExclude excludeCounterType = new PropertyTypeExclude(COUNTER);
+    public static final PropertyTypeExclude EXCLUDE_ID_TYPES = new PropertyTypeExclude(ID, EMBEDDED_ID);
+    public static final PropertyTypeExclude EXCLUDE_EMBEDDED_ID_TYPE = new PropertyTypeExclude(EMBEDDED_ID);
 
-    public static final PropertyTypeExclude excludeIdAndCounterType = new PropertyTypeExclude(ID, EMBEDDED_ID, COUNTER);
+    public static final PropertyTypeExclude EXCLUDE_COUNTER_TYPE = new PropertyTypeExclude(COUNTER);
+
+    public static final PropertyTypeExclude EXCLUDE_ID_AND_COUNTER_TYPE = new PropertyTypeExclude(ID, EMBEDDED_ID, COUNTER);
 }

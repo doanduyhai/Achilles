@@ -2,8 +2,10 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.Row;
+import com.google.common.collect.FluentIterable;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState;
+import info.archinnov.achilles.internal.metadata.parsing.NamingHelper;
 import info.archinnov.achilles.internal.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import java.util.Set;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.getRowMethod;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCompatibleJavaType;
+import static info.archinnov.achilles.internal.metadata.parsing.NamingHelper.TO_LOWER_CASE;
 import static java.lang.String.format;
 
 public class PropertyMetaRowExtractor extends PropertyMetaView{
@@ -33,15 +36,11 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         final List<String> cql3ComponentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
         List<Object> rawValues = new ArrayList<>(Collections.nCopies(cql3ComponentNames.size(), null));
         try {
-            for (ColumnDefinitions.Definition column : row.getColumnDefinitions()) {
-                String columnName = column.getName();
-                int index = cql3ComponentNames.indexOf(columnName);
+            for (int index=0; index<cql3ComponentNames.size(); index++) {
                 Object rawValue;
-                if (index >= 0) {
-                    Class<?> componentClass = componentClasses.get(index);
-                    rawValue = getRowMethod(componentClass).invoke(row, columnName);
-                    rawValues.set(index, rawValue);
-                }
+                Class<?> componentClass = componentClasses.get(index);
+                rawValue = getRowMethod(componentClass).invoke(row, cql3ComponentNames.get(index));
+                rawValues.set(index, rawValue);
             }
         } catch (Exception e) {
             throw new AchillesException(format("Cannot retrieve compound primary key for entity class '%s' from CQL Row", meta.getEntityClassName()), e);

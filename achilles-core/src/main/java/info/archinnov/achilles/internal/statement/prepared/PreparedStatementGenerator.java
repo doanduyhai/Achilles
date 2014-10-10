@@ -207,6 +207,7 @@ public class PreparedStatementGenerator {
         final PropertyMetaStatementGenerator statementGenerator = idMeta.forStatementGeneration();
 
         for (PropertyMeta counterMeta : meta.getAllCounterMetas()) {
+            final String propertyName = counterMeta.getPropertyName();
             final String cql3ColumnName = counterMeta.getCQL3ColumnName();
             final boolean staticColumn = counterMeta.structure().isStaticColumn();
 
@@ -215,9 +216,9 @@ public class PreparedStatementGenerator {
 
             RegularStatement selectStatement = statementGenerator.generateWhereClauseForSelect(Optional.fromNullable(counterMeta), select(cql3ColumnName).from(keyspaceName,tableName));
 
-            incrStatementPerCounter.put(cql3ColumnName, session.prepare(incrementStatement));
-            decrStatementPerCounter.put(cql3ColumnName, session.prepare(decrementStatement));
-            selectStatementPerCounter.put(cql3ColumnName, session.prepare(selectStatement));
+            incrStatementPerCounter.put(propertyName, session.prepare(incrementStatement));
+            decrStatementPerCounter.put(propertyName, session.prepare(decrementStatement));
+            selectStatementPerCounter.put(propertyName, session.prepare(selectStatement));
         }
         clusteredCounterPSMap.put(INCR, incrStatementPerCounter);
         clusteredCounterPSMap.put(DECR, decrStatementPerCounter);

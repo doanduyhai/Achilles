@@ -17,8 +17,10 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
@@ -33,7 +35,6 @@ import info.archinnov.achilles.type.Pair;
 public class PropertyMeta {
 
 
-    private ReflectionInvoker invoker = new ReflectionInvoker();
     public static final Predicate<PropertyMeta> STATIC_COLUMN_FILTER = new Predicate<PropertyMeta>() {
         @Override
         public boolean apply(PropertyMeta pm) {
@@ -48,6 +49,20 @@ public class PropertyMeta {
         }
     };
 
+    public static final Function<PropertyMeta,String> GET_CQL_COLUMN_NAME = new Function<PropertyMeta, String>() {
+        @Override
+        public String apply(PropertyMeta meta) {
+            return meta.getCQL3ColumnName();
+        }
+    };
+
+    public static final Function<PropertyMeta, List<String>> GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID = new Function<PropertyMeta, List<String>>() {
+        @Override
+        public List<String> apply(PropertyMeta embeddedIdMeta) {
+            return embeddedIdMeta.getEmbeddedIdProperties().getCQL3ComponentNames();
+        }
+    };
+
     ObjectMapper defaultJacksonMapperForCounter = DefaultJacksonMapper.COUNTER.get();
 
     private EmbeddedIdProperties embeddedIdProperties;
@@ -58,6 +73,7 @@ public class PropertyMeta {
     private Class<?> cql3KeyClass;
     private PropertyType type;
     String propertyName;
+    String cql3ColumnName;
     Method getter;
     Method setter;
     private Field field;
@@ -240,10 +256,6 @@ public class PropertyMeta {
         this.indexProperties = indexProperties;
     }
 
-    void setInvoker(ReflectionInvoker invoker) {
-        this.invoker = invoker;
-    }
-
     boolean isTimeUUID() {
         return timeUUID;
     }
@@ -269,7 +281,11 @@ public class PropertyMeta {
     }
 
     public String getCQL3ColumnName() {
-        return propertyName.toLowerCase();
+        return cql3ColumnName;
+    }
+
+    public void setCql3ColumnName(String cqlColumnName) {
+        this.cql3ColumnName = cqlColumnName;
     }
 
     SimpleCodec getSimpleCodec() {

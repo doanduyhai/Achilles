@@ -38,7 +38,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.archinnov.achilles.internal.metadata.holder.*;
@@ -112,15 +111,15 @@ public class TableCreatorTest {
 
     @Test
     public void should_create_complete_table() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).cqlColumnName("id").build();
 
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").indexed("simple_idx").build();
+        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").indexed("simple_idx").build();
 
-        PropertyMeta longListColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(LIST).field("longListCol").build();
+        PropertyMeta longListColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(LIST).cqlColumnName("longlistcol").build();
 
-        PropertyMeta longSetColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SET).field("longSetCol").build();
+        PropertyMeta longSetColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SET).cqlColumnName("longsetcol").build();
 
-        PropertyMeta longMapColPM = PropertyMetaTestBuilder.keyValueClass(Integer.class, Long.class).type(MAP).field("longMapCol").build();
+        PropertyMeta longMapColPM = PropertyMetaTestBuilder.keyValueClass(Integer.class, Long.class).type(MAP).cqlColumnName("longmapcol").build();
 
         when(meta.structure().isClusteredCounter()).thenReturn(false);
         when(meta.getAllMetasExceptIdAndCounters()).thenReturn(asList(longColPM, longListColPM, longSetColPM, longMapColPM));
@@ -149,12 +148,12 @@ public class TableCreatorTest {
     @Test
     public void should_create_complete_table_with_clustering_order() throws Exception {
 
-        PropertyMeta idPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("id").build();
-        PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).field("name").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+        PropertyMeta idPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("id").build();
+        PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).cqlColumnName("name").build();
+        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").build();
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
-                .type(EMBEDDED_ID).field("compound")
+                .type(EMBEDDED_ID).propertyName("compound")
                 .partitionKeyMetas(idPM).clusteringKeyMetas(namePM)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.DESC))
                 .build();
@@ -180,15 +179,15 @@ public class TableCreatorTest {
 
     @Test
     public void should_create_clustered_counter_table() throws Exception {
-        PropertyMeta idPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("id").build();
-        PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).field("name").build();
+        PropertyMeta idPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).cqlColumnName("id").build();
+        PropertyMeta namePM = PropertyMetaTestBuilder.valueClass(String.class).type(SIMPLE).cqlColumnName("name").build();
 
         PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(EmbeddedKey.class)
-                .type(EMBEDDED_ID).field("compound")
+                .type(EMBEDDED_ID).propertyName("compound")
                 .partitionKeyMetas(idPM).clusteringKeyMetas(namePM)
                 .clusteringOrders(new ClusteringOrder("name", Sorting.DESC))
                 .build();
-        PropertyMeta counterColPM = PropertyMetaTestBuilder.keyValueClass(Void.class, Counter.class).type(COUNTER).field("counterCol").build();
+        PropertyMeta counterColPM = PropertyMetaTestBuilder.keyValueClass(Void.class, Counter.class).type(COUNTER).cqlColumnName("countercol").build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
         when(meta.structure().isClusteredCounter()).thenReturn(true);

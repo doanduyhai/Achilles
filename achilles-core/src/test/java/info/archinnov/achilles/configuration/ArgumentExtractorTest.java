@@ -28,7 +28,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
@@ -57,6 +58,7 @@ import java.util.Map;
 import javax.validation.Validator;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.fest.assertions.data.MapEntry;
 import org.hibernate.validator.internal.engine.ValidatorImpl;
 import org.junit.Before;
@@ -77,7 +79,6 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.bean.validation.FakeValidator;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -404,8 +405,8 @@ public class ArgumentExtractorTest {
         assertThat(configContext.getDefaultWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(configContext.getBeanValidator()).isNull();
         assertThat(configContext.getPreparedStatementLRUCacheSize()).isEqualTo(DEFAULT_LRU_CACHE_SIZE);
-        assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
-        assertThat(configContext.getInsertStrategy()).isEqualTo(ALL_FIELDS);
+        assertThat(configContext.getGlobalInsertStrategy()).isEqualTo(ALL_FIELDS);
+        assertThat(configContext.getGlobalNamingStrategy()).isEqualTo(NamingStrategy.LOWER_CASE);
         assertThat(configContext.getCurrentKeyspace().isPresent()).isFalse();
     }
 
@@ -485,7 +486,7 @@ public class ArgumentExtractorTest {
     public void should_init_insert_strategy() throws Exception {
         //Given
         ConfigMap params = new ConfigMap();
-        params.put(INSERT_STRATEGY, ALL_FIELDS);
+        params.put(GLOBAL_INSERT_STRATEGY, ALL_FIELDS);
 
         //When
         final InsertStrategy strategy = extractor.initInsertStrategy(params);
@@ -519,8 +520,30 @@ public class ArgumentExtractorTest {
         //Then
         assertThat(actual).isTrue();
         assertThat(extractor.initRelaxIndexValidation(new ConfigMap())).isFalse();
+    }
 
+    @Test
+    public void should_init_global_naming_strategy() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+        params.put(GLOBAL_NAMING_STRATEGY, NamingStrategy.CASE_SENSITIVE);
 
+        //When
+        final NamingStrategy actual = extractor.initGlobalNamingStrategy(params);
 
+        //Then
+        assertThat(actual).isSameAs(NamingStrategy.CASE_SENSITIVE);
+    }
+
+    @Test
+    public void should_init_default_global_naming_strategy() throws Exception {
+        //Given
+        ConfigMap params = new ConfigMap();
+
+        //When
+        final NamingStrategy actual = extractor.initGlobalNamingStrategy(params);
+
+        //Then
+        assertThat(actual).isSameAs(ArgumentExtractor.DEFAULT_GLOBAL_NAMING_STRATEGY);
     }
 }

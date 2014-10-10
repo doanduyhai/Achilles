@@ -24,31 +24,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
 import info.archinnov.achilles.type.Pair;
 
 
 public class EntityParsingContext {
+
+    private EntityIntrospector introspector = new EntityIntrospector();
+
     private ConfigurationContext configContext;
     private Boolean hasCounter = false;
-
     private Map<String, PropertyMeta> propertyMetas = new HashMap<>();
     private List<PropertyMeta> counterMetas = new ArrayList<>();
     private Class<?> currentEntityClass;
     private ObjectMapper currentObjectMapper;
     private Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels;
+    private NamingStrategy namingStrategy;
+    private String keyspaceName;
+    private String tableName;
 
     public EntityParsingContext(ConfigurationContext configContext, Class<?> currentEntityClass) {
         this.configContext = configContext;
         this.currentEntityClass = currentEntityClass;
+        this.namingStrategy = introspector.determineClassNamingStrategy(configContext, currentEntityClass);
+        this.keyspaceName = introspector.inferKeyspaceName(currentEntityClass, configContext.getCurrentKeyspace(), namingStrategy);
+        this.tableName = introspector.inferTableName(currentEntityClass, currentEntityClass.getName(), namingStrategy);
+        this.currentConsistencyLevels = introspector.findConsistencyLevels(currentEntityClass, tableName, configContext);
     }
 
-    private EntityParsingContext(ConfigurationContext configContext, Class<?> currentEntityClass, ObjectMapper currentObjectMapper) {
+    private EntityParsingContext(ConfigurationContext configContext, Class<?> currentEntityClass, ObjectMapper currentObjectMapper, NamingStrategy namingStrategy, String keyspaceName, String tableName, Pair<ConsistencyLevel, ConsistencyLevel> currentConsistencyLevels) {
         this.configContext = configContext;
         this.currentEntityClass = currentEntityClass;
         this.currentObjectMapper = currentObjectMapper;
+        this.namingStrategy = namingStrategy;
+        this.keyspaceName = keyspaceName;
+        this.tableName = tableName;
+        this.currentConsistencyLevels = currentConsistencyLevels;
     }
 
     public PropertyParsingContext newPropertyContext(Field currentField) {
@@ -107,7 +122,7 @@ public class EntityParsingContext {
     }
 
     public InsertStrategy getDefaultInsertStrategy() {
-        return configContext.getInsertStrategy();
+        return configContext.getGlobalInsertStrategy();
     }
 
     public ConfigurationContext getConfigContext() {
@@ -115,10 +130,22 @@ public class EntityParsingContext {
     }
 
     public EntityParsingContext duplicateForClass(Class<?> entityClass) {
-        return new EntityParsingContext(configContext, entityClass, currentObjectMapper);
+        return new EntityParsingContext(configContext, entityClass, currentObjectMapper, namingStrategy, keyspaceName, tableName, currentConsistencyLevels);
     }
 
     public Optional<String> getCurrentKeyspaceName() {
         return configContext.getCurrentKeyspace();
+    }
+
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
+    }
+
+    public String getKeyspaceName() {
+        return keyspaceName;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 }

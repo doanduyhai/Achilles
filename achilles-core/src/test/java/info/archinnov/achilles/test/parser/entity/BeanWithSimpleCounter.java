@@ -16,9 +16,11 @@
 package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.type.Counter;
 
+@Entity
 public class BeanWithSimpleCounter {
 
 	@Id

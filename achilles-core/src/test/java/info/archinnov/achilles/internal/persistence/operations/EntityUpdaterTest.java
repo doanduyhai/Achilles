@@ -98,7 +98,7 @@ public class EntityUpdaterTest {
         when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
         when(meta.getAllCounterMetas()).thenReturn(allCounterMetas);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).propertyName("user").type(SIMPLE)
                 .accessors().build();
         DirtyChecker dirtyChecker = new SimpleDirtyChecker(pm);
         dirtyMap.put(pm.getGetter(), dirtyChecker);
@@ -124,7 +124,7 @@ public class EntityUpdaterTest {
         when(proxifier.getInterceptor(entity)).thenReturn(interceptor);
         when(interceptor.getDirtyMap()).thenReturn(dirtyMap);
 
-        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).field("user").type(SIMPLE)
+        PropertyMeta pm = PropertyMetaTestBuilder.completeBean(Void.class, UserBean.class).propertyName("user").type(SIMPLE)
                 .accessors().build();
         DirtyChecker dirtyChecker = new SimpleDirtyChecker(pm);
         dirtyMap.put(pm.getGetter(), dirtyChecker);

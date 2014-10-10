@@ -35,7 +35,6 @@ import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.counter.AchillesCounter.CQLQueryType;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
@@ -132,7 +131,7 @@ public class DaoContextFactoryTest {
         // Given
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
         EntityMeta meta = new EntityMeta();
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
 
 //        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);
@@ -159,7 +158,7 @@ public class DaoContextFactoryTest {
         // Given
         Map<Class<?>, EntityMeta> entityMetaMap = new HashMap<>();
         EntityMeta meta = new EntityMeta();
-        PropertyMeta nameMeta = completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+        PropertyMeta nameMeta = completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
 
 //        meta.setPropertyMetas(ImmutableMap.of("name", nameMeta));
         entityMetaMap.put(CompleteBean.class, meta);

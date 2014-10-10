@@ -6,7 +6,6 @@ import static com.datastax.driver.core.DataType.map;
 import static com.datastax.driver.core.DataType.set;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
-import static info.archinnov.achilles.internal.table.TableNameNormalizer.normalizerAndValidateColumnFamilyName;
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.alterTable;
 import java.util.List;
 import java.util.Set;

@@ -48,13 +48,11 @@ public class EntityParser {
         Class<?> entityClass = context.getCurrentEntityClass();
         validateEntityAndGetObjectMapper(context);
 
-        String keyspaceName = introspector.inferKeyspaceName(entityClass, context);
-        String tableName = introspector.inferTableName(entityClass, entityClass.getName());
+        String keyspaceName = context.getKeyspaceName();
+        String tableName = context.getTableName();
         String tableComment = introspector.inferTableComment(entityClass, "Create table for entity \"" + entityClass.getName() + "\"");
-        Pair<ConsistencyLevel, ConsistencyLevel> consistencyLevels = introspector.findConsistencyLevels(entityClass, tableName, context.getConfigContext());
         final InsertStrategy insertStrategy = introspector.getInsertStrategy(entityClass, context);
 
-        context.setCurrentConsistencyLevels(consistencyLevels);
 
         PropertyMeta idMeta = null;
         List<Field> inheritedFields = introspector.getInheritedPrivateFields(entityClass);

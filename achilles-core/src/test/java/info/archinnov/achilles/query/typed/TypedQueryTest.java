@@ -40,7 +40,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.interceptor.Event;
@@ -96,9 +95,9 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_all_managed_with_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
 
@@ -119,11 +118,11 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_all_managed_with_normal_select() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
 
-        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("age").type(SIMPLE).accessors().build();
+        PropertyMeta ageMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("age").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta, ageMeta);
 
@@ -177,10 +176,10 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_first_managed_entity() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name")
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name")
                 .type(PropertyType.SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
@@ -201,9 +200,9 @@ public class TypedQueryTest {
 
     @Test
     public void should_get_first_raw_entity() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(ID).accessors().build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(ID).accessors().build();
 
-        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).field("name").type(SIMPLE).accessors().build();
+        PropertyMeta nameMeta = PropertyMetaTestBuilder.completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).accessors().build();
 
         EntityMeta meta = buildEntityMeta(idMeta, nameMeta);
         RegularStatement regularStatement = select("id").from("test");

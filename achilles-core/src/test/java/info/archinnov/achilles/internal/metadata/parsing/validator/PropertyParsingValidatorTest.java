@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.validator;
 
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.valueClass;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
 import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import static org.mockito.Mockito.when;
@@ -24,6 +26,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableMap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,18 +56,33 @@ public class PropertyParsingValidatorTest {
     private PropertyParsingContext context;
 
     @Test
-    public void should_exception_when_duplicate_property_meta() throws Exception {
-        Map<String, PropertyMeta> propertyMetas = new HashMap<String, PropertyMeta>();
+    public void should_exception_when_duplicate_property_name() throws Exception {
+        Map<String, PropertyMeta> propertyMetas = new HashMap<>();
         propertyMetas.put("name", null);
         when(context.getCurrentPropertyName()).thenReturn("name");
         when(context.getPropertyMetas()).thenReturn(propertyMetas);
         when(context.<CompleteBean>getCurrentEntityClass()).thenReturn(CompleteBean.class);
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage("The property 'name' is already used for the entity '"
-                + CompleteBean.class.getCanonicalName() + "'");
+        exception.expectMessage("The property 'name' is already used for the entity '" + CompleteBean.class.getCanonicalName() + "'");
 
-        validator.validateNoDuplicate(context);
+        validator.validateNoDuplicatePropertyName(context);
+    }
+
+    @Test
+    public void should_exception_when_duplicate_cql3_name() throws Exception {
+        PropertyMeta name = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
+        PropertyMeta duplicatedName = valueClass(String.class).cqlColumnName("name").type(SIMPLE).build();
+        Map<String, PropertyMeta> propertyMetas = ImmutableMap.of("name1", name, "name2", duplicatedName);
+        when(context.getCurrentPropertyName()).thenReturn("name");
+        when(context.getCurrentCQL3ColumnName()).thenReturn("name");
+        when(context.getPropertyMetas()).thenReturn(propertyMetas);
+        when(context.<CompleteBean>getCurrentEntityClass()).thenReturn(CompleteBean.class);
+
+        exception.expect(AchillesBeanMappingException.class);
+        exception.expectMessage("The CQL column 'name' is already used for the entity '" + CompleteBean.class.getCanonicalName() + "'");
+
+        validator.validateNoDuplicateCQLName(context);
     }
 
     @Test

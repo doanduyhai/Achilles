@@ -17,9 +17,9 @@ package info.archinnov.achilles.internal.metadata.holder;
 
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.STATIC_COLUMN_FILTER;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeCounterType;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdAndCounterType;
-import static info.archinnov.achilles.internal.metadata.holder.PropertyType.excludeIdType;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_COUNTER_TYPE;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_ID_AND_COUNTER_TYPE;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EXCLUDE_ID_TYPES;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -79,16 +79,16 @@ public class EntityMetaBuilder {
         meta.setInsertStrategy(insertStrategy);
         meta.setSchemaUpdateEnabled(schemaUpdateEnabled);
 
-        List<PropertyMeta> allMetasExceptId = new ArrayList<>(from(propertyMetas.values()).filter(excludeIdType)
+        List<PropertyMeta> allMetasExceptId = new ArrayList<>(from(propertyMetas.values()).filter(EXCLUDE_ID_TYPES)
                 .toList());
         meta.setAllMetasExceptId(allMetasExceptId);
 
         List<PropertyMeta> allMetasExceptIdAndCounters = new ArrayList<>(from(propertyMetas.values()).filter(
-                excludeIdAndCounterType).toList());
+                EXCLUDE_ID_AND_COUNTER_TYPE).toList());
         meta.setAllMetasExceptIdAndCounters(allMetasExceptIdAndCounters);
 
         List<PropertyMeta> allMetasExceptCounters = new ArrayList<>(from(propertyMetas.values()).filter(
-                excludeCounterType).toList());
+                EXCLUDE_COUNTER_TYPE).toList());
         meta.setAllMetasExceptCounters(allMetasExceptCounters);
 
         boolean clusteredEntity = idMeta.structure().isEmbeddedId() && idMeta.structure().isClustered();

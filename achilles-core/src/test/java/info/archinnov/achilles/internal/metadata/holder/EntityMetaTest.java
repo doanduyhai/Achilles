@@ -50,7 +50,7 @@ public class EntityMetaTest {
         propertyMetas.put("name", null);
         propertyMetas.put("age", null);
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.SIMPLE).consistencyLevels(Pair.create(ALL, ALL)).build();
 
         EntityMeta entityMeta = new EntityMeta();
@@ -93,7 +93,7 @@ public class EntityMetaTest {
         EntityMeta entityMeta = new EntityMeta();
         PropertyMeta counterMeta = PropertyMetaTestBuilder
                 //
-                .completeBean(Void.class, Long.class).field("count").type(COUNTER).build();
+                .completeBean(Void.class, Long.class).propertyName("count").type(COUNTER).build();
 
         entityMeta.setClusteredEntity(false);
         entityMeta.setPropertyMetas(ImmutableMap.of("count", counterMeta));
@@ -107,11 +107,11 @@ public class EntityMetaTest {
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder
                 //
-                .completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+                .completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
 
         PropertyMeta counterMeta = PropertyMetaTestBuilder
                 //
-                .completeBean(Void.class, Long.class).field("count").type(COUNTER).build();
+                .completeBean(Void.class, Long.class).propertyName("count").type(COUNTER).build();
 
         entityMeta.setClusteredEntity(true);
         entityMeta.setPropertyMetas(ImmutableMap.of("name", nameMeta, "count", counterMeta));
@@ -122,7 +122,7 @@ public class EntityMetaTest {
     @Test
     public void should_return_false_for_is_clustered_counter_if_value_less() throws Exception {
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.ID).build();
 
         entityMeta.setClusteredEntity(false);
@@ -134,12 +134,12 @@ public class EntityMetaTest {
     @Test
     public void should_return_false_for_is_clustered_counter_if_not_counter_type() throws Exception {
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.ID).build();
 
         PropertyMeta nameMeta = PropertyMetaTestBuilder
                 //
-                .completeBean(Void.class, String.class).field("name").type(SIMPLE).build();
+                .completeBean(Void.class, String.class).propertyName("name").type(SIMPLE).build();
         entityMeta.setClusteredEntity(true);
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta, "nameMeta", nameMeta));
 
@@ -150,7 +150,7 @@ public class EntityMetaTest {
     public void should_return_true_when_value_less() throws Exception {
         EntityMeta entityMeta = new EntityMeta();
 
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.ID).build();
 
         entityMeta.setPropertyMetas(ImmutableMap.of("idMeta", idMeta));
@@ -223,9 +223,9 @@ public class EntityMetaTest {
 
         CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
         EntityMeta entityMeta = new EntityMeta();
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
                 .type(PropertyType.EMBEDDED_ID).accessors().build();
-        idMeta.setInvoker(new ReflectionInvoker());
+//        idMeta.setInvoker(new ReflectionInvoker());
         entityMeta.setIdMeta(idMeta);
         entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
         entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(POST_PERSIST, 35L));

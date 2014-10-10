@@ -17,14 +17,12 @@
 package info.archinnov.achilles.test.integration.tests;
 
 import static com.google.common.base.Optional.fromNullable;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.test.integration.AchillesInternalCQLResource.CLEAN_DATA_FILES_PROPERTY;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import com.google.common.base.Optional;
-import info.archinnov.achilles.test.integration.AchillesInternalCQLResource;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
@@ -41,14 +39,14 @@ public class InsertStrategyIT {
     private PersistenceManager manager1 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class, EntityWithNotNullInsertStrategy.class)
             .withKeyspaceName("ALL_FIELDS_INSERT")
-            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(INSERT_STRATEGY, ALL_FIELDS))
+            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(GLOBAL_INSERT_STRATEGY, ALL_FIELDS))
             .cleanDataFilesAtStartup(cleanDataFiles)
             .buildPersistenceManager();
 
     private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .withKeyspaceName("NOT_NULL_FIELDS_INSERT")
-            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(INSERT_STRATEGY, NOT_NULL_FIELDS))
+            .withAchillesConfigParams(ImmutableMap.<ConfigurationParameters, Object>of(GLOBAL_INSERT_STRATEGY, NOT_NULL_FIELDS))
             .cleanDataFilesAtStartup(cleanDataFiles)
             .buildPersistenceManager();
 

@@ -189,10 +189,9 @@ public class PropertyParser {
                 .getCurrentEntityClass().getCanonicalName());
 
         Field field = context.getCurrentField();
-        inferPropertyName(context);
         context.setCustomConsistencyLevels(hasConsistencyAnnotation(context.getCurrentField()));
 
-        validator.validateNoDuplicate(context);
+        validator.validateNoDuplicatePropertyName(context);
         validator.validateIndexIfSet(context);
 
         Class<?> fieldType = field.getType();
@@ -218,6 +217,8 @@ public class PropertyParser {
             }
         }
         context.getPropertyMetas().put(context.getCurrentPropertyName(), propertyMeta);
+
+        validator.validateNoDuplicateCQLName(context);
         return propertyMeta;
     }
 
@@ -273,7 +274,7 @@ public class PropertyParser {
         PropertyType type = SIMPLE;
 
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors)
                 .consistencyLevels(context.getCurrentConsistencyLevels()).field(field).timeuuid(timeUUID)
                 .staticColumn(staticColumn).simpleCodec(simpleCodec).cql3ValueClass(cql3ValueType)
@@ -298,7 +299,7 @@ public class PropertyParser {
         CounterProperties counterProperties = new CounterProperties(context.getCurrentEntityClass().getCanonicalName());
 
         PropertyMeta propertyMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName()).accessors(accessors).field(field)
                 .counterProperties(counterProperties).consistencyLevels(context.getCurrentConsistencyLevels()).staticColumn(staticColumn)
                 .cql3ValueClass(Long.class)
@@ -336,7 +337,7 @@ public class PropertyParser {
         PropertyType type = LIST;
 
         PropertyMeta listMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
@@ -370,7 +371,7 @@ public class PropertyParser {
         PropertyType type = SET;
 
         PropertyMeta setMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
@@ -406,7 +407,7 @@ public class PropertyParser {
         PropertyType type = MAP;
 
         PropertyMeta mapMeta = factory().objectMapper(context.getCurrentObjectMapper()).type(type)
-                .propertyName(context.getCurrentPropertyName())
+                .propertyName(context.getCurrentPropertyName()).cqlColumnName(context.getCurrentCQL3ColumnName())
                 .entityClassName(context.getCurrentEntityClass().getCanonicalName())
                 .consistencyLevels(context.getCurrentConsistencyLevels()).accessors(accessors).field(field)
                 .timeuuid(timeUUID).emptyCollectionAndMapIfNull(emptyCollectionIfNull).staticColumn(staticColumn)
@@ -418,20 +419,6 @@ public class PropertyParser {
 
         return mapMeta;
 
-    }
-
-    void inferPropertyName(PropertyParsingContext context) {
-        log.trace("Inferring property name for property {}", context.getCurrentPropertyName());
-
-        String propertyName;
-        Field field = context.getCurrentField();
-        Column column = field.getAnnotation(Column.class);
-        if (column != null) {
-            propertyName = StringUtils.isNotBlank(column.name()) ? column.name() : field.getName();
-        } else {
-            propertyName = field.getName();
-        }
-        context.setCurrentPropertyName(propertyName);
     }
 
     private EmbeddedIdProperties extractEmbeddedIdProperties(Class<?> keyClass, PropertyParsingContext context) {

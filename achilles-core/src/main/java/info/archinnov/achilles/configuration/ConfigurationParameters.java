@@ -141,13 +141,20 @@ package info.archinnov.achilles.configuration;
  *
  * <p>If you want to speed up start up, you may disable this behavior. </p>
  *
- * <h4>Insert Strategy</h4>
+ * <h4>Strategies</h4>
  *
  * <ul >
  * <li>
- * <strong>INSERT_STRATEGY</strong> (OPTIONAL): choose between <strong><code>ConfigurationParameters.InsertStrategy.ALL_FIELDS</code></strong> and <strong><code>ConfigurationParameters.InsertStrategy.NOT_NULL_FIELDS</code></strong>.
- * Default value is <strong><code>ConfigurationParameters.InsertStrategy.ALL_FIELDS</code></strong>. </li>
- * </ul><p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Insert-Strategy">Insert Strategy</a></strong></p>
+ * <strong>GLOBAL_INSERT_STRATEGY</strong> (OPTIONAL): choose between <strong><code>InsertStrategy.ALL_FIELDS</code></strong> and <strong><code>InsertStrategy.NOT_NULL_FIELDS</code></strong>.
+ * Default value is <strong><code>ConfigurationParameters.InsertStrategy.ALL_FIELDS</code></strong>.
+ * <p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Insert-Strategy">Insert Strategy</a></strong></p>
+ * </li>
+ * <li>
+ * <strong>GLOBAL_NAMING_STRATEGY</strong> (OPTIONAL): choose between <strong><code>NamingStrategy.LOWER_CASE</code></strong>, <strong><code>NamingStrategy.SNAKE_CASE</code></strong> and <strong><code>NamingStrategy.CASE_SENSITIVE</code></strong>.
+ * Default value is <strong><code>NamingStrategy.LOWER_CASE</code></strong>.
+ * <p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Entity-Mapping#naming-strategy">Naming Strategy</a></strong></p>
+ * </li>
+ * </ul>
  *
  * <h4>OSGI Class loader</h4>
  *
@@ -186,11 +193,13 @@ public enum ConfigurationParameters {
 
     PROXIES_WARM_UP_DISABLED("achilles.proxies.warm.up.disabled"),
 
-    INSERT_STRATEGY("achilles.insert.strategy"),
+    GLOBAL_INSERT_STRATEGY("achilles.global.insert.strategy"),
 
     OSGI_CLASS_LOADER("achilles.osgi.class.loader"),
 
-    RELAX_INDEX_VALIDATION("achilles.relax.index.validation");
+    RELAX_INDEX_VALIDATION("achilles.relax.index.validation"),
+
+    GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy");
 
     private String label;
 

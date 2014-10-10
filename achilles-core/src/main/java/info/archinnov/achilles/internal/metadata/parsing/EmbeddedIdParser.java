@@ -42,6 +42,7 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class EmbeddedIdParser {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedIdParser.class);
+    private EntityIntrospector introspector = new EntityIntrospector();
     private PropertyFilter filter = new PropertyFilter();
 
     private final PropertyParsingContext context;
@@ -115,8 +116,9 @@ public class EmbeddedIdParser {
 
         for (Field clusteringField : clusteringFields) {
             final Order order = clusteringField.getAnnotation(Order.class);
-            final String columnName = extractColumnName(clusteringField);
-            sortOrders.add(new ClusteringOrder(columnName, order.reversed() ? Sorting.DESC : Sorting.ASC));
+            final String cqlColumnName = introspector.inferCQLColumnName(clusteringField, context.getClassNamingStrategy());
+            validateNotStaticColumn(clusteringField);
+            sortOrders.add(new ClusteringOrder(cqlColumnName, order.reversed() ? Sorting.DESC : Sorting.ASC));
         }
 
         return sortOrders;
@@ -196,20 +198,10 @@ public class EmbeddedIdParser {
         }
     }
 
-    private String extractColumnName(Field compositeKeyField) {
-        String componentName;
+    private void validateNotStaticColumn(Field compositeKeyField) {
         Column column = compositeKeyField.getAnnotation(Column.class);
-
-        if (column != null && isNotBlank(column.name())) {
-            componentName = column.name().toLowerCase();
-        }
-        else {
-            componentName = compositeKeyField.getName().toLowerCase();
-        }
-
         if (column != null && column.staticColumn()) {
-            throw new AchillesBeanMappingException(String.format("The property '%s' of class '%s' cannot be a static column because it belongs to the primary key",componentName,compositeKeyField.getDeclaringClass().getCanonicalName()));
+            throw new AchillesBeanMappingException(String.format("The property '%s' of class '%s' cannot be a static column because it belongs to the primary key",compositeKeyField.getName(),compositeKeyField.getDeclaringClass().getCanonicalName()));
         }
-        return componentName;
     }
 }

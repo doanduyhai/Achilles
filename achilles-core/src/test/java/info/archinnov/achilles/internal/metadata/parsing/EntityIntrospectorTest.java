@@ -24,6 +24,8 @@ import static info.archinnov.achilles.type.ConsistencyLevel.TWO;
 import static info.archinnov.achilles.type.InsertStrategy.ALL_FIELDS;
 import static info.archinnov.achilles.type.InsertStrategy.NOT_NULL_FIELDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,7 +33,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.test.parser.entity.BeanWithKeyspaceAndTableName;
+import info.archinnov.achilles.test.parser.entity.BeanWithNamingStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -344,47 +349,18 @@ public class EntityIntrospectorTest {
     }
 
     @Test
-    public void should_infer_table_name_from_annotation() throws Exception {
-        String tableName = introspector.inferTableName(BeanWithKeyspaceAndTableName.class,  "canonicalName");
-        assertThat(tableName).isEqualTo("myOwnTable");
-    }
-
-    @Test
-    public void should_infer_table_name_from_default_name() throws Exception {
-        String tableName = introspector.inferTableName(CompleteBean.class, "canonicalName");
-        assertThat(tableName).isEqualTo("canonicalName");
-    }
-
-    @Test
-    public void should_infer_table_name_from_default_name_when_empty_annotation_name() throws Exception {
-        @Entity(table = "")
-        class Test {
-
-        }
-        String cfName = introspector.inferTableName(Test.class, "canonicalName");
-        assertThat(cfName).isEqualTo("canonicalName");
-    }
-
-    
-    @Test
     public void should_infer_keyspace_name_from_annotation() throws Exception {
-        //Given
-        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable("whatever"));
-
         //When
-        String keyspaceName = introspector.inferKeyspaceName(BeanWithKeyspaceAndTableName.class, parsingContext);
+        String keyspaceName = introspector.inferKeyspaceName(BeanWithNamingStrategy.class, Optional.<String>absent(), NamingStrategy.SNAKE_CASE);
 
         //Then
-        assertThat(keyspaceName).isEqualTo("ks");
+        assertThat(keyspaceName).isEqualTo("my_keyspace");
     }
 
     @Test
     public void should_infer_keyspace_name_from_config() throws Exception {
-        //Given
-        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable("ks"));
-
         //When
-        String keyspaceName = introspector.inferKeyspaceName(ComplexBean.class, parsingContext);
+        String keyspaceName = introspector.inferKeyspaceName(ComplexBean.class, Optional.fromNullable("ks"), NamingStrategy.LOWER_CASE);
 
         //Then
         assertThat(keyspaceName).isEqualTo("ks");
@@ -393,13 +369,36 @@ public class EntityIntrospectorTest {
     @Test
     public void should_exception_when_keyspace_name_not_found() throws Exception {
         //When
-        when(parsingContext.getCurrentKeyspaceName()).thenReturn(Optional.fromNullable(""));
-
         expectedEx.expect(AchillesBeanMappingException.class);
         expectedEx.expectMessage("No keyspace name found for entity '"+CompleteBean.class.getCanonicalName()+"'. Keyspace name is looked up using either the @Entity annotation or in configuration parameter");
 
-        introspector.inferKeyspaceName(CompleteBean.class,  parsingContext);
+        introspector.inferKeyspaceName(CompleteBean.class,  Optional.<String>absent(), NamingStrategy.LOWER_CASE);
     }
+
+    @Test
+    public void should_infer_table_name_from_annotation() throws Exception {
+        String tableName = introspector.inferTableName(BeanWithNamingStrategy.class,  "canonicalName", NamingStrategy.SNAKE_CASE);
+        assertThat(tableName).isEqualTo("my_table");
+    }
+
+    @Test
+    public void should_infer_table_name_from_default_name() throws Exception {
+        String tableName = introspector.inferTableName(CompleteBean.class, CompleteBean.class.getCanonicalName(), NamingStrategy.SNAKE_CASE);
+        assertThat(tableName).isEqualTo("complete_bean");
+    }
+
+    @Test
+    public void should_infer_table_name_from_default_name_when_empty_annotation_name() throws Exception {
+        @Entity(table = "")
+        class Test {
+
+        }
+        String tableName = introspector.inferTableName(Test.class, "canonicalName", NamingStrategy.LOWER_CASE);
+        assertThat(tableName).isEqualTo("canonicalname");
+    }
+
+    
+
 
     @Test
     public void should_find_consistency_level_from_class() throws Exception {
@@ -495,6 +494,66 @@ public class EntityIntrospectorTest {
 
         //Then
         assertThat(insertStrategy).isEqualTo(ALL_FIELDS);
+    }
+
+    @Test
+    public void should_determine_class_naming_strategy() throws Exception {
+        //When
+        when(configContext.getGlobalNamingStrategy()).thenReturn(NamingStrategy.LOWER_CASE);
+        final NamingStrategy classNamingStrategy = introspector.determineClassNamingStrategy(configContext, BeanWithNamingStrategy.class);
+        final NamingStrategy defaultNamingStrategy = introspector.determineClassNamingStrategy(configContext, CompleteBean.class);
+
+        //Then
+        assertThat(classNamingStrategy).isSameAs(NamingStrategy.SNAKE_CASE);
+        assertThat(defaultNamingStrategy).isSameAs(NamingStrategy.LOWER_CASE);
+    }
+
+    @Test
+    public void should_infer_property_name_from_class_naming_strategy() throws Exception {
+        //Given
+        Field field = BeanWithNamingStrategy.class.getDeclaredField("firstName");
+
+        //When
+        final String actual = introspector.inferCQLColumnName(field, NamingStrategy.SNAKE_CASE);
+
+        //Then
+        assertThat(actual).isEqualTo("first_name");
+    }
+
+    @Test
+         public void should_infer_property_name_from_column_annotation() throws Exception {
+        //Given
+        Field field = BeanWithNamingStrategy.class.getDeclaredField("lastName");
+
+        //When
+        final String actual = introspector.inferCQLColumnName(field, NamingStrategy.SNAKE_CASE);
+
+        //Then
+        assertThat(actual).isEqualTo("\"lastName\"");
+    }
+
+    @Test
+    public void should_infer_property_name_from_id_annotation() throws Exception {
+        //Given
+        Field field = BeanWithNamingStrategy.class.getDeclaredField("id");
+
+        //When
+        final String actual = introspector.inferCQLColumnName(field, NamingStrategy.SNAKE_CASE);
+
+        //Then
+        assertThat(actual).isEqualTo("my_Id");
+    }
+
+    @Test
+    public void should_infer_property_name_to_lower_case_when_no_column_annotation() throws Exception {
+        //Given
+        Field field = BeanWithNamingStrategy.class.getDeclaredField("unMappedColumn");
+
+        //When
+        final String actual = introspector.inferCQLColumnName(field, NamingStrategy.LOWER_CASE);
+
+        //Then
+        assertThat(actual).isEqualTo("unmappedcolumn");
     }
 
 

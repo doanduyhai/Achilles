@@ -27,7 +27,6 @@ import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMP
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.ADD_TO_SET;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.REMOVE_FROM_LIST_AT_INDEX;
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
-import static info.archinnov.achilles.type.ConsistencyLevel.ALL;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.LOCAL_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
@@ -224,7 +223,7 @@ public class DaoContextTest {
     @Test
     public void should_push_collection_and_map_update() throws Exception {
         // Given
-        PropertyMeta setMeta = PropertyMetaTestBuilder.valueClass(String.class).field("followers").build();
+        PropertyMeta setMeta = PropertyMetaTestBuilder.valueClass(String.class).propertyName("followers").build();
 
         when(changeSet.getChangeType()).thenReturn(ADD_TO_SET);
         when(changeSet.getPropertyMeta()).thenReturn(setMeta);
@@ -415,7 +414,7 @@ public class DaoContextTest {
     public void should_increment_simple_counter() throws Exception {
         // Given
         Long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").build();
 
         // When
         when(counterQueryMap.get(INCR)).thenReturn(ps);
@@ -431,7 +430,7 @@ public class DaoContextTest {
     public void should_decrement_simple_counter() throws Exception {
         // Given
         Long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").build();
 
         // When
         when(counterQueryMap.get(CQLQueryType.DECR)).thenReturn(ps);
@@ -448,7 +447,7 @@ public class DaoContextTest {
         // Given
         ResultSet resultSet = mock(ResultSet.class);
         Row row = mock(Row.class);
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
 
         // When
         when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
@@ -465,7 +464,7 @@ public class DaoContextTest {
     @Test
     public void should_bind_simple_counter_delete() throws Exception {
         // Given
-        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).field("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
+        PropertyMeta pm = PropertyMetaTestBuilder.valueClass(String.class).propertyName("name").consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).build();
 
         // When
         when(context.getConsistencyLevel()).thenReturn(Optional.<ConsistencyLevel>fromNullable(null));
@@ -482,7 +481,7 @@ public class DaoContextTest {
     @Test
     public void should_push_clustered_counter_increment() throws Exception {
         // Given
-        PropertyMeta counterMeta = PropertyMetaTestBuilder.valueClass(Long.class).field("count")
+        PropertyMeta counterMeta = PropertyMetaTestBuilder.valueClass(Long.class).propertyName("count")
                 .consistencyLevels(Pair.create(EACH_QUORUM, EACH_QUORUM)).staticColumn(false).build();
 
         // When

@@ -81,7 +81,7 @@ public class TypedQueryValidatorTest {
 
     @Test
     public void should_exception_when_missing_id_column() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").cqlColumnName("id").type(PropertyType.ID).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
 
@@ -95,7 +95,7 @@ public class TypedQueryValidatorTest {
 
     @Test
     public void should_skip_id_column_validation_when_select_star() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id").type(PropertyType.ID).build();
+        PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id").type(PropertyType.ID).build();
 
         when(meta.getIdMeta()).thenReturn(idMeta);
 

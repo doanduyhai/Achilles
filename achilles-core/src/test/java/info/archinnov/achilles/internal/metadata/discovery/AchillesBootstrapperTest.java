@@ -26,6 +26,10 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Optional;
+import info.archinnov.achilles.type.ConsistencyLevel;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,6 +91,11 @@ public class AchillesBootstrapperTest {
     public void setUp() {
         Whitebox.setInternalState(bootstrapper, EntityParser.class, parser);
         Whitebox.setInternalState(bootstrapper, DaoContextFactory.class, factory);
+        when(configContext.getGlobalNamingStrategy()).thenReturn(NamingStrategy.LOWER_CASE);
+        when(configContext.getCurrentKeyspace()).thenReturn(Optional.fromNullable("keyspace"));
+        when(configContext.getDefaultReadConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+        when(configContext.getDefaultWriteConsistencyLevel()).thenReturn(ConsistencyLevel.ONE);
+
     }
 
     @Test

@@ -25,7 +25,7 @@ import org.junit.Test;
 public class CounterPropertiesTest {
 	@Test
 	public void should_to_string() throws Exception {
-		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).field("id")
+		PropertyMeta idMeta = PropertyMetaTestBuilder.completeBean(Void.class, Long.class).propertyName("id")
 				.type(PropertyType.SIMPLE).consistencyLevels(Pair.create(ConsistencyLevel.ALL, ConsistencyLevel.ALL))//
 				.build();
 		CounterProperties props = new CounterProperties("fqcn", idMeta);

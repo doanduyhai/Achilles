@@ -39,8 +39,12 @@ import java.util.Set;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.base.Optional;
+import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Enumerated;
 import info.archinnov.achilles.annotations.Enumerated.Encoding;
+import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,6 +95,8 @@ public class PropertyParserTest {
         configContext = new ConfigurationContext();
         configContext.setDefaultReadConsistencyLevel(ConsistencyLevel.ONE);
         configContext.setDefaultWriteConsistencyLevel(ConsistencyLevel.ALL);
+        configContext.setCurrentKeyspace(Optional.fromNullable("ks"));
+        configContext.setGlobalNamingStrategy(NamingStrategy.LOWER_CASE);
     }
 
     @Test
@@ -154,6 +160,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_primary_key() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Id
             private Long id;
@@ -184,6 +191,7 @@ public class PropertyParserTest {
     public void should_parse_simple_property_string() throws Exception {
 
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private String name;
@@ -216,8 +224,32 @@ public class PropertyParserTest {
     }
 
     @Test
+    public void should_parse_id_property_and_override_name() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        class Test {
+            @Id(name = "my_custom_id")
+            private Long customId;
+
+            public Long getCustomId() {
+                return customId;
+            }
+
+            public void setCustomId(Long customId) {
+                this.customId = customId;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("customId"));
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.getCQL3ColumnName()).isEqualTo("my_custom_id");
+    }
+
+    @Test
     public void should_parse_simple_property_and_override_name() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column(name = "firstname")
             private String name;
@@ -234,14 +266,40 @@ public class PropertyParserTest {
 
         PropertyMeta meta = parser.parse(context);
 
-        assertThat(meta.getPropertyName()).isEqualTo("firstname");
+        assertThat(meta.getCQL3ColumnName()).isEqualTo("firstname");
     }
+
+    @Test
+    public void should_parse_simple_property_with_snake_case_naming_strategy() throws Exception {
+        @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
+        @Strategy(naming = NamingStrategy.SNAKE_CASE)
+        class Test {
+            @Column
+            private String firstName;
+
+            public String getFirstName() {
+                return firstName;
+            }
+
+            public void setFirstName(String name) {
+                this.firstName = name;
+            }
+        }
+        PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("firstName"));
+
+        PropertyMeta meta = parser.parse(context);
+
+        assertThat(meta.getCQL3ColumnName()).isEqualTo("first_name");
+    }
+
 
     @SuppressWarnings("unchecked")
     @Test
     public void should_parse_simple_static_property_string() throws Exception {
 
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column(staticColumn = true)
             private String name;
@@ -266,6 +324,7 @@ public class PropertyParserTest {
     public void should_parse_simple_property_of_time_uuid_type() throws Exception {
 
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @TimeUUID
             @Column
@@ -290,6 +349,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_primitive_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private boolean active;
@@ -312,6 +372,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_counter_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private Counter counter;
@@ -338,6 +399,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_static_counter_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column(staticColumn = true)
             private Counter counter;
@@ -361,6 +423,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_counter_property_with_consistency_level() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Consistency(read = ONE, write = ALL)
             @Column
@@ -388,6 +451,7 @@ public class PropertyParserTest {
     @Test
     public void should_exception_when_counter_consistency_is_any_for_read() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Consistency(read = ANY, write = ALL)
             @Column
@@ -412,6 +476,7 @@ public class PropertyParserTest {
     @Test
     public void should_exception_when_counter_consistency_is_any_for_write() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Consistency(read = ONE, write = ANY)
             @Column
@@ -437,6 +502,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_enum_by_name_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private PropertyType type;
@@ -459,6 +525,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_enum_by_ordinal_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             @Enumerated(Encoding.ORDINAL)
@@ -482,6 +549,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_enum_list_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             @Enumerated(Encoding.ORDINAL)
@@ -505,6 +573,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_enum_map_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             @Enumerated(key = Encoding.ORDINAL, value = Encoding.NAME)
@@ -530,6 +599,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_allowed_type_property() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private UUID uuid;
@@ -552,6 +622,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_index() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             @Index
@@ -575,6 +646,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_list() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @EmptyCollectionIfNull
             @Column(staticColumn = true)
@@ -625,6 +697,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_set() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column(staticColumn = true)
             private Set<Long> followers;
@@ -656,6 +729,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_map() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column(staticColumn = true)
             private Map<Integer, String> preferences;
@@ -688,6 +762,7 @@ public class PropertyParserTest {
     @Test
     public void should_parse_map_with_parameterized_value() throws Exception {
         @SuppressWarnings("unused")
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Column
             private Map<Integer, List<String>> map;
@@ -718,6 +793,8 @@ public class PropertyParserTest {
 
     @Test
     public void should_find_index() throws Exception {
+
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Index
             private String name;
@@ -730,6 +807,8 @@ public class PropertyParserTest {
 
     @Test
     public void should_check_consistency_annotation() throws Exception {
+
+        @Entity(keyspace = "ks", table="test")
         class Test {
             @Consistency
             private String consistency;
@@ -759,6 +838,7 @@ public class PropertyParserTest {
     @Test
     public void should_exception_when_no_default_constructor_for_embeddedid() throws Exception {
         //Given
+        @Entity(keyspace = "ks", table="test")
          class TestWithEmbeddedId {
             @EmbeddedId
             private Embedded id;

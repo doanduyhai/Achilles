@@ -28,7 +28,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
@@ -49,6 +50,7 @@ import java.util.Set;
 import javax.validation.ValidationException;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -62,7 +64,6 @@ import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.utils.ConfigMap;
-import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -83,6 +84,7 @@ public class ArgumentExtractor {
     static final boolean DEFAULT_INDEX_RELAX_VALIDATION = false;
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
+    static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
 
 
     public List<Class<?>> initEntities(ConfigMap configurationMap, ClassLoader classLoader) {
@@ -134,7 +136,8 @@ public class ArgumentExtractor {
         configContext.setWriteConsistencyLevelMap(initWriteConsistencyMap(configurationMap));
         configContext.setBeanValidator(initValidator(configurationMap));
         configContext.setPreparedStatementLRUCacheSize(initPreparedStatementsCacheSize(configurationMap));
-        configContext.setInsertStrategy(initInsertStrategy(configurationMap));
+        configContext.setGlobalInsertStrategy(initInsertStrategy(configurationMap));
+        configContext.setGlobalNamingStrategy(initGlobalNamingStrategy(configurationMap));
         configContext.setOSGIClassLoader(initOSGIClassLoader(configurationMap));
         configContext.setRelaxIndexValidation(initRelaxIndexValidation(configurationMap));
         return configContext;
@@ -253,7 +256,7 @@ public class ArgumentExtractor {
     }
 
     public InsertStrategy initInsertStrategy(ConfigMap configMap) {
-        return configMap.getTypedOr(INSERT_STRATEGY, DEFAULT_INSERT_STRATEGY);
+        return configMap.getTypedOr(GLOBAL_INSERT_STRATEGY, DEFAULT_INSERT_STRATEGY);
     }
 
     public ClassLoader initOSGIClassLoader(ConfigMap configMap) {
@@ -262,6 +265,10 @@ public class ArgumentExtractor {
 
     public boolean initRelaxIndexValidation(ConfigMap configMap) {
         return configMap.getTypedOr(RELAX_INDEX_VALIDATION, DEFAULT_INDEX_RELAX_VALIDATION);
+    }
+
+    public NamingStrategy initGlobalNamingStrategy(ConfigMap configMap) {
+        return configMap.getTypedOr(GLOBAL_NAMING_STRATEGY, DEFAULT_GLOBAL_NAMING_STRATEGY);
     }
 
 }

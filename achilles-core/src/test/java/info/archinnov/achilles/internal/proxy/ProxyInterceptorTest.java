@@ -121,7 +121,7 @@ public class ProxyInterceptorTest {
         dirtyMap.clear();
         alreadyLoaded.clear();
 
-        idMeta = completeBean(Void.class, Long.class).field("id").accessors().build();
+        idMeta = completeBean(Void.class, Long.class).propertyName("id").accessors().build();
 
         interceptor.setIdGetter(idMeta.getGetter());
         interceptor.setIdSetter(idMeta.getSetter());
@@ -134,7 +134,7 @@ public class ProxyInterceptorTest {
     @Test
     public void should_delegate_method_call_to_the_target() throws Throwable {
         //Given
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("name").accessors()
                 .type(PropertyType.SIMPLE).build();
         MethodProxy proxy = mock(MethodProxy.class);
         when(proxy.invoke(target, args)).thenReturn("name");
@@ -149,7 +149,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_key_when_invoking_id_getter() throws Throwable {
-        PropertyMeta idMeta = completeBean(Void.class, Long.class).field("id").accessors().build();
+        PropertyMeta idMeta = completeBean(Void.class, Long.class).propertyName("id").accessors().build();
 
         interceptor.setIdGetter(idMeta.getGetter());
 
@@ -168,7 +168,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_simple_property() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("name").accessors()
                 .type(PropertyType.SIMPLE).build();
 
         alreadyLoaded.add(propertyMeta.getGetter());
@@ -183,7 +183,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_load_and_return_simple_property() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("name").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("name").accessors()
                 .type(PropertyType.SIMPLE).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -197,7 +197,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_list_wrapper() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("friends").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("friends").accessors()
                 .type(PropertyType.LIST).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -226,7 +226,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_set_wrapper() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("followers").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("followers").accessors()
                 .type(PropertyType.SET).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -240,7 +240,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_null_for_set_property() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, String.class).field("followers").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, String.class).propertyName("followers").accessors()
                 .type(PropertyType.SET).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -253,7 +253,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_map_wrapper() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Integer.class, String.class).field("preferences").accessors()
+        PropertyMeta propertyMeta = completeBean(Integer.class, String.class).propertyName("preferences").accessors()
                 .type(PropertyType.MAP).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -267,7 +267,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_return_null_for_map_property() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Integer.class, String.class).field("preferences").accessors()
+        PropertyMeta propertyMeta = completeBean(Integer.class, String.class).propertyName("preferences").accessors()
                 .type(PropertyType.MAP).build();
 
         getterMetas.put(propertyMeta.getGetter(), propertyMeta);
@@ -280,7 +280,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_exception_when_calling_setter_on_counter() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).field("count").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).propertyName("count").accessors()
                 .type(PropertyType.COUNTER).build();
         args = new Object[] { null };
 
@@ -487,7 +487,7 @@ public class ProxyInterceptorTest {
 
     @Test
     public void should_load_clustered_counter() throws Throwable {
-        PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).field("count").accessors()
+        PropertyMeta propertyMeta = completeBean(Void.class, Counter.class).propertyName("count").accessors()
                 .type(PropertyType.COUNTER).invoker(new ReflectionInvoker()).build();
 
         when(context.isClusteredCounter()).thenReturn(true);

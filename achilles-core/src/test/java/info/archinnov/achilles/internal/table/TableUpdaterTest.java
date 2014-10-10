@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.table;
 
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.completeBean;
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMetaTestBuilder.valueClass;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.LIST;
@@ -108,8 +110,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_simple_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").staticColumn().build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta longColPM = valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").staticColumn().build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(longColPM));
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -126,8 +128,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_indexed_simple_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta longColPM = PropertyMetaTestBuilder.valueClass(Long.class).type(SIMPLE).field("longCol").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta longColPM = valueClass(Long.class).type(SIMPLE).cqlColumnName("longcol").build();
         longColPM.setIndexProperties(new IndexProperties("long_index", "longCol"));
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(longColPM));
@@ -148,8 +150,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_list_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta listStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(LIST).field("list_string").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta listStringPM = valueClass(String.class).type(LIST).cqlColumnName("list_string").build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(listStringPM));
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -166,8 +168,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_set_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta setStringPM = PropertyMetaTestBuilder.valueClass(String.class).type(SET).field("set_string").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta setStringPM = valueClass(String.class).type(SET).cqlColumnName("set_string").build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(setStringPM));
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -184,8 +186,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_map_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta mapStringPM = PropertyMetaTestBuilder.completeBean(Integer.class, String.class).type(MAP).field("preferences").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta mapStringPM = completeBean(Integer.class, String.class).type(MAP).cqlColumnName("preferences").build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(mapStringPM));
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -202,8 +204,8 @@ public class TableUpdaterTest {
     @Test
     public void should_update_table_with_new_clustered_counter_field() throws Exception {
         // Given
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta counterPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).cqlColumnName("id").build();
+        PropertyMeta counterPM = valueClass(Counter.class).type(COUNTER).cqlColumnName("count").build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(counterPM));
         when(meta.getIdMeta()).thenReturn(idMeta);
@@ -220,8 +222,8 @@ public class TableUpdaterTest {
 
     @Test
     public void should_not_add_counter_field_if_non_clustered_counter_entity() throws Exception {
-        PropertyMeta idMeta = PropertyMetaTestBuilder.valueClass(Long.class).type(ID).field("id").build();
-        PropertyMeta counterPM = PropertyMetaTestBuilder.valueClass(Counter.class).type(COUNTER).field("count").build();
+        PropertyMeta idMeta = valueClass(Long.class).type(ID).propertyName("id").build();
+        PropertyMeta counterPM = valueClass(Counter.class).type(COUNTER).propertyName("count").build();
 
         when(meta.getAllMetasExceptId()).thenReturn(asList(counterPM));
         when(meta.getIdMeta()).thenReturn(idMeta);

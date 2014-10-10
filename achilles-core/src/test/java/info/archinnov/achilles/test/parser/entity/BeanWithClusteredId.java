@@ -17,13 +17,18 @@ package info.archinnov.achilles.test.parser.entity;
 
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.EmbeddedId;
+import info.archinnov.achilles.annotations.Entity;
+import info.archinnov.achilles.annotations.Strategy;
+import info.archinnov.achilles.type.NamingStrategy;
 
+@Entity
+@Strategy(naming = NamingStrategy.SNAKE_CASE)
 public class BeanWithClusteredId {
 	@EmbeddedId
 	private EmbeddedKey id;
 
 	@Column(staticColumn = true)
-	private String name;
+	private String firstName;
 
 	public EmbeddedKey getId() {
 		return id;
@@ -33,12 +38,12 @@ public class BeanWithClusteredId {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getFirstName() {
+		return firstName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
 	}
 
 }

@@ -15,11 +15,21 @@
  */
 package info.archinnov.achilles.internal.metadata.parsing.validator;
 
+import static info.archinnov.achilles.internal.metadata.holder.PropertyMeta.GET_CQL_COLUMN_NAME;
 import static info.archinnov.achilles.type.ConsistencyLevel.ANY;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.exception.AchillesBeanMappingException;
@@ -32,14 +42,37 @@ import info.archinnov.achilles.type.Pair;
 public class PropertyParsingValidator {
     private static final Logger log = LoggerFactory.getLogger(PropertyParsingValidator.class);
 
-    public void validateNoDuplicate(PropertyParsingContext context) {
-        String propertyName = context.getCurrentPropertyName();
-        log.debug("Validate that property name {} is unique for the entity class {}", propertyName, context
-                .getCurrentEntityClass().getCanonicalName());
 
+    public void validateNoDuplicatePropertyName(PropertyParsingContext context) {
+        String propertyName = context.getCurrentPropertyName();
         Validator.validateBeanMappingFalse(context.getPropertyMetas().containsKey(propertyName),
                 "The property '%s' is already used for the entity '%s'", propertyName, context.getCurrentEntityClass()
-                .getCanonicalName());
+                        .getCanonicalName());
+    }
+
+    public void validateNoDuplicateCQLName(PropertyParsingContext context) {
+        String currentCQL3ColumnName = context.getCurrentCQL3ColumnName();
+        log.debug("Validate that property name {} is unique for the entity class {}", currentCQL3ColumnName, context
+                .getCurrentEntityClass().getCanonicalName());
+
+        final Set<String> distincCQLColumNames = new HashSet<>();
+        final List<String> cqlColumnNames = new ArrayList<>(FluentIterable.from(context.getPropertyMetas().values())
+                .filter(PropertyType.EXCLUDE_EMBEDDED_ID_TYPE)
+                .transform(GET_CQL_COLUMN_NAME).toList());
+        final List<String> cqlPrimaryKeyColumnNames = FluentIterable.from(context.getPropertyMetas().values())
+                .filter(PropertyType.EMBEDDED_ID_TYPE)
+                .first()
+                .transform(PropertyMeta.GET_CQL_COLUMN_NAMES_FROM_EMBEDDED_ID)
+                .or(new ArrayList<String>());
+
+        cqlColumnNames.addAll(cqlPrimaryKeyColumnNames);
+
+        for (String cqlColumnName : cqlColumnNames) {
+
+            Validator.validateBeanMappingTrue(distincCQLColumNames.add(cqlColumnName),
+                    "The CQL column '%s' is already used for the entity '%s'", cqlColumnName, context.getCurrentEntityClass().getCanonicalName());
+
+        }
 
     }
 

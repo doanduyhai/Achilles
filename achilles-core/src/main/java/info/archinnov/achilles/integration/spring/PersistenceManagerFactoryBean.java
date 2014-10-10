@@ -24,7 +24,8 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
@@ -38,7 +39,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Validator;
+
+import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -83,7 +87,9 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
 
     private boolean disableProxiesWarmUp = true;
 
-    private InsertStrategy insertStrategy = InsertStrategy.ALL_FIELDS;
+    private InsertStrategy globalInsertStrategy = InsertStrategy.ALL_FIELDS;
+
+    private NamingStrategy globalNamingStrategy = NamingStrategy.LOWER_CASE;
 
     private ClassLoader osgiClassLoader;
 
@@ -119,7 +125,8 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
             configMap.put(PREPARED_STATEMENTS_CACHE_SIZE, preparedStatementCacheSize);
         }
         configMap.put(PROXIES_WARM_UP_DISABLED, disableProxiesWarmUp);
-        configMap.put(INSERT_STRATEGY, insertStrategy);
+        configMap.put(GLOBAL_INSERT_STRATEGY, globalInsertStrategy);
+        configMap.put(GLOBAL_NAMING_STRATEGY, globalNamingStrategy);
 
         if (osgiClassLoader != null) {
             configMap.put(OSGI_CLASS_LOADER, osgiClassLoader);
@@ -149,10 +156,9 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
     }
 
     private void fillKeyspaceName(Map<ConfigurationParameters, Object> configMap) {
-        if (isBlank(keyspaceName)) {
-            throw new IllegalArgumentException("Keyspace name should be provided");
+        if (StringUtils.isNotBlank(keyspaceName)) {
+            configMap.put(KEYSPACE_NAME, keyspaceName);
         }
-        configMap.put(KEYSPACE_NAME, keyspaceName);
     }
 
 
@@ -219,8 +225,8 @@ public class PersistenceManagerFactoryBean extends AbstractFactoryBean<Persisten
         this.disableProxiesWarmUp = disableProxiesWarmUp;
     }
 
-    public void setInsertStrategy(InsertStrategy insertStrategy) {
-        this.insertStrategy = insertStrategy;
+    public void setGlobalInsertStrategy(InsertStrategy globalInsertStrategy) {
+        this.globalInsertStrategy = globalInsertStrategy;
     }
 
     public void setForceTableCreation(boolean forceTableCreation) {
