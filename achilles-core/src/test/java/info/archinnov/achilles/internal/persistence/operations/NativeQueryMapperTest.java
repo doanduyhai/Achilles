@@ -13,14 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
-import info.archinnov.achilles.query.cql.NativeQueryMapper;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.math.BigInteger;

@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +34,6 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.RegularStatement;

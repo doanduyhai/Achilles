@@ -34,9 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -45,30 +43,15 @@ import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
-import info.archinnov.achilles.query.cql.NativeQuery;
-import info.archinnov.achilles.query.cql.NativeQueryValidator;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
 import info.archinnov.achilles.type.OptionsBuilder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
-import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BatchTest {

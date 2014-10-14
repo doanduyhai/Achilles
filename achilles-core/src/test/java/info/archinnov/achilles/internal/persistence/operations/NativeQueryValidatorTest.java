@@ -14,11 +14,12 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.*;
 import info.archinnov.achilles.exception.AchillesException;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;

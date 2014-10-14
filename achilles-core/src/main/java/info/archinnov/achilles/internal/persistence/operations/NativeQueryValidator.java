@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;

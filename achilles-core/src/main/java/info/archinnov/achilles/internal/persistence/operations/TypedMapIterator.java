@@ -1,4 +1,4 @@
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.Row;
 import info.archinnov.achilles.type.TypedMap;
@@ -11,7 +11,7 @@ public class TypedMapIterator implements Iterator<TypedMap> {
     private final Iterator<Row> sourceIterator;
     NativeQueryMapper mapper = NativeQueryMapper.Singleton.INSTANCE.get();
 
-    TypedMapIterator(Iterator<Row> sourceIterator) {
+    public TypedMapIterator(Iterator<Row> sourceIterator) {
         this.sourceIterator = sourceIterator;
     }
 

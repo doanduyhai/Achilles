@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -37,7 +37,7 @@ public class NativeQueryMapper {
 
     private RowMethodInvoker cqlRowInvoker = RowMethodInvoker.Singleton.INSTANCE.get();
 
-	List<TypedMap> mapRows(List<Row> rows) {
+	public List<TypedMap> mapRows(List<Row> rows) {
 		log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
 		List<TypedMap> result = new ArrayList<>();
 		if (!rows.isEmpty()) {
@@ -48,7 +48,7 @@ public class NativeQueryMapper {
 		return result;
 	}
 
-	TypedMap mapRow(Row row) {
+    public TypedMap mapRow(Row row) {
 		log.trace("Map CQL row to a map of <ColumnName,Value>");
 		ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
         Validator.validateNotNull(columnDefinitions,"Impossible to fetch column definitions for the row '%s'", row);

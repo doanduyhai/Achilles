@@ -13,13 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.query.typed;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 
+import info.archinnov.achilles.internal.persistence.operations.TypedQueryValidator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

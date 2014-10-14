@@ -49,7 +49,7 @@ import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.query.cql.NativeQuery;
 import info.archinnov.achilles.query.slice.SliceQueryBuilder;
 import info.archinnov.achilles.query.typed.TypedQuery;
-import info.archinnov.achilles.query.typed.TypedQueryValidator;
+import info.archinnov.achilles.internal.persistence.operations.TypedQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.IndexCondition;
 import info.archinnov.achilles.type.Options;

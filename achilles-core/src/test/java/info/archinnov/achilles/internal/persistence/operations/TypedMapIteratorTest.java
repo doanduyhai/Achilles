@@ -1,9 +1,11 @@
-package info.archinnov.achilles.query.cql;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.datastax.driver.core.Row;
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
 import info.archinnov.achilles.type.TypedMap;
 import org.junit.Before;
 import org.junit.Test;

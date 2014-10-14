@@ -18,6 +18,8 @@ package info.archinnov.achilles.query.cql;
 import java.util.Iterator;
 import java.util.List;
 
+import info.archinnov.achilles.internal.persistence.operations.NativeQueryMapper;
+import info.archinnov.achilles.internal.persistence.operations.TypedMapIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;

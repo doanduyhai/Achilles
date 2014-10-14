@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package info.archinnov.achilles.query.typed;
+package info.archinnov.achilles.internal.persistence.operations;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ import com.datastax.driver.core.RegularStatement;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.query.cql.NativeQueryValidator;
 
 import java.util.regex.Pattern;
 
