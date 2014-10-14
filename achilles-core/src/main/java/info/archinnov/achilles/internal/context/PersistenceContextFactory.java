@@ -18,6 +18,7 @@ package info.archinnov.achilles.internal.context;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Options;
@@ -41,8 +42,8 @@ public class PersistenceContextFactory {
 	private DaoContext daoContext;
 	private ConfigurationContext configContext;
 	private Map<Class<?>, EntityMeta> entityMetaMap;
-	private EntityProxifier proxifier = new EntityProxifier();
-	private ReflectionInvoker invoker = new ReflectionInvoker();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
+    private ReflectionInvoker invoker = ReflectionInvoker.Singleton.INSTANCE.get();
 
 	public PersistenceContextFactory(DaoContext daoContext, ConfigurationContext configContext,
 			Map<Class<?>, EntityMeta> entityMetaMap) {

@@ -77,4 +77,14 @@ public class NativeQueryValidator {
     public boolean isSimpleStatement(RegularStatement regularStatement) {
         return regularStatement instanceof SimpleStatement;
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final NativeQueryValidator instance = new NativeQueryValidator();
+
+        public NativeQueryValidator get() {
+            return instance;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +11,7 @@ import java.util.List;
 public class PropertyMetaSliceQueryContext extends PropertyMetaView {
 
     private static final Logger log = LoggerFactory.getLogger(PropertyMetaSliceQueryContext.class);
-    private ReflectionInvoker invoker = new ReflectionInvoker();
+    private ReflectionInvoker invoker = ReflectionInvoker.Singleton.INSTANCE.get();
 
     protected PropertyMetaSliceQueryContext(PropertyMeta meta) {
         super(meta);

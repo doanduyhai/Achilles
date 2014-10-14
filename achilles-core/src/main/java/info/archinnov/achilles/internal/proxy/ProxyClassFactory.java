@@ -33,4 +33,14 @@ public class ProxyClassFactory {
         enhancer.setUseFactory(true);
         return enhancer.createClass();
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final ProxyClassFactory instance = new ProxyClassFactory();
+
+        public ProxyClassFactory get() {
+            return instance;
+        }
+    }
 }

@@ -17,6 +17,8 @@
 package info.archinnov.achilles.internal.consistency;
 
 import static info.archinnov.achilles.internal.context.AbstractFlushContext.FlushType.BATCH;
+
+import info.archinnov.achilles.annotations.Consistency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.AbstractFlushContext;
@@ -64,5 +66,15 @@ public class ConsistencyOverrider {
                 : pm.structure().getWriteConsistencyLevel();
         log.trace("Write consistency level : " + consistency);
         return consistency;
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final ConsistencyOverrider instance = new ConsistencyOverrider();
+
+        public ConsistencyOverrider get() {
+            return instance;
+        }
     }
 }

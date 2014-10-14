@@ -75,4 +75,13 @@ public class PropertyFilter {
 		return field.getAnnotation((Class<Annotation>) annotationClass) != null;
 	}
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final PropertyFilter instance = new PropertyFilter();
+
+        public PropertyFilter get() {
+            return instance;
+        }
+    }
 }

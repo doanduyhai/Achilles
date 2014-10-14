@@ -19,13 +19,14 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 
 public abstract class AbstractWrapper {
 	protected Map<Method, DirtyChecker> dirtyMap;
 	protected Method setter;
 	protected PropertyMeta propertyMeta;
-	protected EntityProxifier proxifier = new EntityProxifier();
+    protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
 
 	public Map<Method, DirtyChecker> getDirtyMap() {

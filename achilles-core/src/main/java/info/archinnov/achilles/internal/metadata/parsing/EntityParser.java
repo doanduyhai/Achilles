@@ -18,6 +18,9 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder.entityMetaBuilder;
 import java.lang.reflect.Field;
 import java.util.List;
+
+import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector.Singleton;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,10 +40,10 @@ import info.archinnov.achilles.type.Pair;
 public class EntityParser {
     private static final Logger log = LoggerFactory.getLogger(EntityParser.class);
 
-    private EntityParsingValidator validator = new EntityParsingValidator();
-    private PropertyParser parser = new PropertyParser();
-    private PropertyFilter filter = new PropertyFilter();
-    private EntityIntrospector introspector = new EntityIntrospector();
+    private EntityParsingValidator validator = EntityParsingValidator.Singleton.INSTANCE.get();
+    private PropertyParser parser = PropertyParser.Singleton.INSTANCE.get();
+    private PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
+    private EntityIntrospector introspector = EntityIntrospector.Singleton.INSTANCE.get();
 
     public EntityMeta parseEntity(EntityParsingContext context) {
         log.debug("Parsing entity class {}", context.getCurrentEntityClass().getCanonicalName());
@@ -116,6 +119,16 @@ public class EntityParser {
                     counterMeta.getPropertyName(), context.getCurrentEntityClass().getCanonicalName());
 
             counterMeta.setIdMetaForCounterProperties(idMeta);
+        }
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityParser instance = new EntityParser();
+
+        public EntityParser get() {
+            return instance;
         }
     }
 }

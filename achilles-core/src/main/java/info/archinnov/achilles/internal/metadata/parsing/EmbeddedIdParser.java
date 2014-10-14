@@ -25,6 +25,7 @@ import java.util.*;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +43,8 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class EmbeddedIdParser {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddedIdParser.class);
-    private EntityIntrospector introspector = new EntityIntrospector();
-    private PropertyFilter filter = new PropertyFilter();
+    private EntityIntrospector introspector = EntityIntrospector.Singleton.INSTANCE.get();
+    private PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
 
     private final PropertyParsingContext context;
 

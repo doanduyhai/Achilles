@@ -15,6 +15,8 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper.Singleton;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +26,8 @@ import info.archinnov.achilles.internal.context.facade.EntityOperations;
 public class EntityRefresher {
     private static final Logger log = LoggerFactory.getLogger(EntityRefresher.class);
 
-    private EntityProxifier proxifier = new EntityProxifier();
-    private EntityLoader loader = new EntityLoader();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
+    private EntityLoader loader = EntityLoader.Singleton.INSTANCE.get();
 
     public void refresh(Object proxifiedEntity, EntityOperations context) throws AchillesStaleObjectStateException {
         Object primaryKey = context.getPrimaryKey();
@@ -46,5 +48,15 @@ public class EntityRefresher {
         interceptor.setTarget(freshEntity);
         interceptor.getAlreadyLoaded().clear();
         interceptor.getAlreadyLoaded().addAll(context.getAllGettersExceptCounters());
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityRefresher instance = new EntityRefresher();
+
+        public EntityRefresher get() {
+            return instance;
+        }
     }
 }

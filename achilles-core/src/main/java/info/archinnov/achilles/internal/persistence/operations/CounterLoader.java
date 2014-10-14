@@ -21,12 +21,13 @@ import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class CounterLoader {
 
-    private EntityMapper mapper = new EntityMapper();
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
+    private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
+    private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
 
     public <T> T loadClusteredCounters(EntityOperations context) {
         EntityMeta entityMeta = context.getEntityMeta();
@@ -55,6 +56,16 @@ public class CounterLoader {
         ConsistencyLevel readLevel = overrider.getReadLevel(context, counterMeta);
         final Long initialCounterValue = context.getSimpleCounter(counterMeta, readLevel);
         mapper.setCounterToEntity(counterMeta, entity, initialCounterValue);
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final CounterLoader instance = new CounterLoader();
+
+        public CounterLoader get() {
+            return instance;
+        }
     }
 
 }

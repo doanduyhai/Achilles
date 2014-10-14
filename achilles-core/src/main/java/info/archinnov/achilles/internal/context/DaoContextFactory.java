@@ -22,6 +22,8 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.CLUSTE
 import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EXCLUDE_CLUSTERED_COUNTER_FILTER;
 import java.util.HashMap;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
@@ -39,7 +41,7 @@ import info.archinnov.achilles.internal.statement.prepared.PreparedStatementGene
 public class DaoContextFactory {
     private static final Logger log = LoggerFactory.getLogger(DaoContextFactory.class);
 
-    private PreparedStatementGenerator queryGenerator = new PreparedStatementGenerator();
+    private PreparedStatementGenerator queryGenerator = PreparedStatementGenerator.Singleton.INSTANCE.get();
 
     public DaoContext create(Session session, ParsingResult parsingResult, ConfigurationContext configContext) {
         log.debug("Build DaoContext");

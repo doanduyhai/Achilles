@@ -5,6 +5,7 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.table.ColumnMetaDataComparator;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Counter;
@@ -23,7 +24,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         super(meta);
     }
 
-    private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
+    private ColumnMetaDataComparator columnMetaDataComparator = ColumnMetaDataComparator.Singleton.INSTANCE.get();
 
     public void validatePrimaryKeyComponents(TableMetadata tableMetadata, boolean partitionKey) {
         log.debug("Validate existing primary key component from table {} against entity class {}",tableMetadata.getName(), meta.getEntityClassName());

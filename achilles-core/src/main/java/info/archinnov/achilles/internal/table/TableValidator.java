@@ -26,6 +26,7 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_V
 import java.util.Collection;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTableValidator;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnMetadata;
@@ -41,7 +42,7 @@ public class TableValidator {
 
     private static final Logger log = LoggerFactory.getLogger(TableValidator.class);
 
-    private ColumnMetaDataComparator columnMetaDataComparator = new ColumnMetaDataComparator();
+    private ColumnMetaDataComparator columnMetaDataComparator = ColumnMetaDataComparator.Singleton.INSTANCE.get();
 
     public void validateForEntity(EntityMeta entityMeta, TableMetadata tableMetadata, ConfigurationContext configContext) {
         log.debug("Validate existing table {} for {}", tableMetadata.getName(), entityMeta);
@@ -131,5 +132,15 @@ public class TableValidator {
             fqcnColumnMatches = fqcnColumnMatches || columnMetaDataComparator.isEqual(columnMetaToVerify, columnMetadata);
         }
         return fqcnColumnMatches;
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final TableValidator instance = new TableValidator();
+
+        public TableValidator get() {
+            return instance;
+        }
     }
 }

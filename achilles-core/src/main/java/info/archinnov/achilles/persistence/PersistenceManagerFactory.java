@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
@@ -82,10 +84,8 @@ public class PersistenceManagerFactory {
     ConfigMap configurationMap;
 
     private ArgumentExtractor argumentExtractor = new ArgumentExtractor();
-
     private AchillesBootstrapper bootstrapper = new AchillesBootstrapper();
-
-    private ProxyClassFactory proxyClassFactory = new ProxyClassFactory();
+    private ProxyClassFactory proxyClassFactory = ProxyClassFactory.Singleton.INSTANCE.get();
     private Cluster cluster;
 
 

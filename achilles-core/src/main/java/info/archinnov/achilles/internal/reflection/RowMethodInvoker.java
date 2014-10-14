@@ -44,4 +44,14 @@ public class RowMethodInvoker {
                     + "' from CQL Row", e);
         }
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final RowMethodInvoker instance = new RowMethodInvoker();
+
+        public RowMethodInvoker get() {
+            return instance;
+        }
+    }
 }

@@ -91,4 +91,14 @@ public class CounterPersister {
             context.bindForSimpleCounterRemoval(pm);
         }
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final CounterPersister instance = new CounterPersister();
+
+        public CounterPersister get() {
+            return instance;
+        }
+    }
 }

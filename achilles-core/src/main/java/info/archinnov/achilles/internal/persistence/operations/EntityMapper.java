@@ -20,6 +20,8 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.Entity
 import java.util.Map;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
+import info.archinnov.achilles.internal.reflection.RowMethodInvoker.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions;
@@ -34,7 +36,7 @@ public class EntityMapper {
 
     private static final Logger log = LoggerFactory.getLogger(EntityMapper.class);
 
-    private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
+    private RowMethodInvoker cqlRowInvoker = RowMethodInvoker.Singleton.INSTANCE.get();
 
     public void setNonCounterPropertiesToEntity(Row row, EntityMeta entityMeta, Object entity) {
         log.debug("Set non-counter properties to entity class {} from fetched CQL row", entityMeta.getClassName());
@@ -99,5 +101,13 @@ public class EntityMapper {
         setCounterToEntity(counterMeta, entity, counterValue);
     }
 
+    public static enum Singleton {
+        INSTANCE;
 
+        private final EntityMapper instance = new EntityMapper();
+
+        public EntityMapper get() {
+            return instance;
+        }
+    }
 }

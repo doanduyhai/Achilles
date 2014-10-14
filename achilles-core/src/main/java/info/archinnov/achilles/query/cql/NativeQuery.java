@@ -17,6 +17,8 @@ package info.archinnov.achilles.query.cql;
 
 import java.util.Iterator;
 import java.util.List;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -44,7 +46,7 @@ public class NativeQuery {
 
     private DaoContext daoContext;
 
-    private NativeQueryMapper mapper = new NativeQueryMapper();
+    private NativeQueryMapper mapper = NativeQueryMapper.Singleton.INSTANCE.get();
     protected Object[] boundValues;
 
     protected NativeStatementWrapper nativeStatementWrapper;

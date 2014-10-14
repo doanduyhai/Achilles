@@ -24,6 +24,7 @@ import info.archinnov.achilles.internal.context.DaoContext;
 import info.archinnov.achilles.internal.context.PersistenceContextFactory;
 import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.internal.utils.UUIDGen;
@@ -84,7 +85,7 @@ public class Batch extends CommonPersistenceManager {
     private static final Logger log = LoggerFactory.getLogger(Batch.class);
 
     protected BatchingFlushContext flushContext;
-    protected NativeQueryValidator validator = new NativeQueryValidator();
+    protected NativeQueryValidator validator = NativeQueryValidator.Singleton.INSTANCE.get();
     private final ConsistencyLevel defaultConsistencyLevel;
     private final boolean orderedBatch;
 

@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.query.cql;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.TypedMap;
@@ -35,7 +36,7 @@ public class NativeQueryMapper {
 
 	private static final Logger log = LoggerFactory.getLogger(NativeQueryMapper.class);
 
-	private RowMethodInvoker cqlRowInvoker = new RowMethodInvoker();
+    private RowMethodInvoker cqlRowInvoker = RowMethodInvoker.Singleton.INSTANCE.get();
 
 	List<TypedMap> mapRows(List<Row> rows) {
 		log.trace("Map CQL rows to List<Map<ColumnName,Value>>");
@@ -83,4 +84,14 @@ public class NativeQueryMapper {
 		}
         return value;
 	}
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final NativeQueryMapper instance = new NativeQueryMapper();
+
+        public NativeQueryMapper get() {
+            return instance;
+        }
+    }
 }

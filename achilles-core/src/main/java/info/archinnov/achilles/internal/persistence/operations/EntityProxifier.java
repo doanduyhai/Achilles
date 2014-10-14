@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +40,8 @@ public class EntityProxifier {
 
     private static final Logger log = LoggerFactory.getLogger(EntityProxifier.class);
 
-    private ObjectInstantiator instantiator = new ObjectInstantiator();
-
-    private ProxyClassFactory factory = new ProxyClassFactory();
+    private ObjectInstantiator instantiator = ObjectInstantiator.Singleton.INSTANCE.get();
+    private ProxyClassFactory factory = ProxyClassFactory.Singleton.INSTANCE.get();
 
     @SuppressWarnings("unchecked")
     public <T> Class<T> deriveBaseClass(Object entity) {
@@ -185,4 +185,13 @@ public class EntityProxifier {
         return new ProxyInterceptorBuilder<>(context, entity).alreadyLoaded(alreadyLoaded).build();
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityProxifier instance = new EntityProxifier();
+
+        public EntityProxifier get() {
+            return instance;
+        }
+    }
 }

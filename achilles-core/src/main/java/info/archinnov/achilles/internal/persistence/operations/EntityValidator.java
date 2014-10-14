@@ -17,6 +17,8 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -26,7 +28,7 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class EntityValidator {
     private static final Logger log = LoggerFactory.getLogger(EntityValidator.class);
 
-    private EntityProxifier proxifier = new EntityProxifier();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     public void validateEntity(Object entity, Map<Class<?>, EntityMeta> entityMetaMap) {
         Validator.validateNotNull(entity, "Entity should not be null");
@@ -65,5 +67,15 @@ public class EntityValidator {
         EntityMeta entityMeta = entityMetaMap.get(baseClass);
         Validator.validateFalse(entityMeta.structure().isClusteredCounter(),
                 "The entity '%s' is a clustered counter and does not support insert/update with TTL", entity);
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityValidator instance = new EntityValidator();
+
+        public EntityValidator get() {
+            return instance;
+        }
     }
 }

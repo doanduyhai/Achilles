@@ -94,4 +94,13 @@ public class StatementGenerator {
         return casEncodedValues;
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final StatementGenerator instance = new StatementGenerator();
+
+        public StatementGenerator get() {
+            return instance;
+        }
+    }
 }

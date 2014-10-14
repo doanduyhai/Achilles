@@ -352,4 +352,14 @@ public class PreparedStatementGenerator {
         return session.prepare(whereClause.getQueryString());
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final PreparedStatementGenerator instance = new PreparedStatementGenerator();
+
+        public PreparedStatementGenerator get() {
+            return instance;
+        }
+    }
+
 }

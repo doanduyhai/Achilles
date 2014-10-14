@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
@@ -27,8 +28,8 @@ public class EntityLoader {
 
     private static final Logger log = LoggerFactory.getLogger(EntityLoader.class);
 
-    private EntityMapper mapper = new EntityMapper();
-    private CounterLoader counterLoader = new CounterLoader();
+    private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
+    private CounterLoader counterLoader = CounterLoader.Singleton.INSTANCE.get();
 
     public <T> T load(EntityOperations context, Class<T> entityClass) {
         log.debug("Loading entity of class {} using PersistenceContext {}", entityClass, context);
@@ -83,5 +84,15 @@ public class EntityLoader {
             mapper.setPropertyToEntity(row, context.getEntityMeta(), pm, realObject);
         }
 
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityLoader instance = new EntityLoader();
+
+        public EntityLoader get() {
+            return instance;
+        }
     }
 }

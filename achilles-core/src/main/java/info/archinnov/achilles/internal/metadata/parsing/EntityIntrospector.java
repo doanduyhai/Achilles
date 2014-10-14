@@ -31,6 +31,7 @@ import java.util.List;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
@@ -50,7 +51,7 @@ import info.archinnov.achilles.type.Pair;
 public class EntityIntrospector {
     private static final Logger log = LoggerFactory.getLogger(EntityIntrospector.class);
 
-    private PropertyFilter filter = new PropertyFilter();
+    private PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
 
     protected String[] deriveGetterName(Field field) {
         log.debug("Derive getter name for field {} from class {}", field.getName(), field.getDeclaringClass()
@@ -281,5 +282,15 @@ public class EntityIntrospector {
 
     private String determineColumnNameUsingStrategy(String customColumnName, String canonicalName, NamingStrategy namingStrategy) {
         return isNoneBlank(customColumnName) ? customColumnName: applyNamingStrategy(canonicalName, namingStrategy);
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityIntrospector instance = new EntityIntrospector();
+
+        public EntityIntrospector get() {
+            return instance;
+        }
     }
 }

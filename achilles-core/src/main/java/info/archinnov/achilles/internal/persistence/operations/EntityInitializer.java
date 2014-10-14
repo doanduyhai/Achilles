@@ -33,4 +33,14 @@ public class EntityInitializer {
 				propertyMeta.forValues().forceLoad(entity);
 		}
 	}
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityInitializer instance = new EntityInitializer();
+
+        public EntityInitializer get() {
+            return instance;
+        }
+    }
 }

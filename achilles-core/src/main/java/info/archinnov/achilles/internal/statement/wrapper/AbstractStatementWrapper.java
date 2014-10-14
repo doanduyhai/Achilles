@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public abstract class AbstractStatementWrapper {
     protected static final String CAS_RESULT_COLUMN = "[applied]";
 
     protected static final Logger dmlLogger = LoggerFactory.getLogger(ACHILLES_DML_STATEMENT);
-    protected RowMethodInvoker invoker = new RowMethodInvoker();
+    protected RowMethodInvoker invoker = RowMethodInvoker.Singleton.INSTANCE.get();
 
     protected Optional<CASResultListener> casResultListener = Optional.absent();
 

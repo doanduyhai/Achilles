@@ -20,6 +20,8 @@ import static org.apache.commons.lang3.ArrayUtils.addAll;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,7 @@ public class PreparedStatementBinder {
     protected static final Optional<CASResultListener> NO_LISTENER = Optional.absent();
     protected static final Optional<com.datastax.driver.core.ConsistencyLevel> NO_SERIAL_CONSISTENCY = Optional.absent();
 
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
+    private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
 
     public BoundStatementWrapper bindForInsert(PersistentStateHolder context, PreparedStatement ps, List<PropertyMeta> pms) {
 
@@ -299,5 +301,15 @@ public class PreparedStatementBinder {
         String cql3ColumnName = pm.getCQL3ColumnName();
 
         return new Object[] { fqcn, primaryKeyAsString, cql3ColumnName };
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final PreparedStatementBinder instance = new PreparedStatementBinder();
+
+        public PreparedStatementBinder get() {
+            return instance;
+        }
     }
 }

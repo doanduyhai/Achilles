@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
@@ -23,7 +24,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 public class EntityPersister {
     private static final Logger log = LoggerFactory.getLogger(EntityPersister.class);
 
-    private CounterPersister counterPersister = new CounterPersister();
+    private CounterPersister counterPersister = CounterPersister.Singleton.INSTANCE.get();
 
     public void persist(EntityOperations context) {
         EntityMeta entityMeta = context.getEntityMeta();
@@ -47,6 +48,16 @@ public class EntityPersister {
         } else {
             context.bindForRemoval(entityMeta.config().getQualifiedTableName());
             counterPersister.removeRelatedCounters(context);
+        }
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityPersister instance = new EntityPersister();
+
+        public EntityPersister get() {
+            return instance;
         }
     }
 }

@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;
@@ -38,7 +41,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
-import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.DaoOperations;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.context.facade.PersistenceManagerOperations;
@@ -63,25 +65,25 @@ public class PersistenceContext {
     private static final Logger log = LoggerFactory.getLogger(PersistenceContext.class);
 
     protected AbstractFlushContext flushContext;
-    protected EntityInitializer initializer = new EntityInitializer();
-    protected EntityPersister persister = new EntityPersister();
-    protected EntityProxifier proxifier = new EntityProxifier();
-    protected EntityRefresher refresher = new EntityRefresher();
-    protected EntityLoader loader = new EntityLoader();
-    protected EntityUpdater updater = new EntityUpdater();
+    protected EntityInitializer initializer = EntityInitializer.Singleton.INSTANCE.get();
+    protected EntityPersister persister = EntityPersister.Singleton.INSTANCE.get();
+    protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
+    protected EntityRefresher refresher = EntityRefresher.Singleton.INSTANCE.get();
+    protected EntityLoader loader = EntityLoader.Singleton.INSTANCE.get();
+    protected EntityUpdater updater = EntityUpdater.Singleton.INSTANCE.get();
+    private ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
 
     protected ConfigurationContext configContext;
     protected Class<?> entityClass;
     protected EntityMeta entityMeta;
     protected Object entity;
     protected Object primaryKey;
+
     protected Object partitionKey;
 
     protected Options options = OptionsBuilder.noOptions();
 
     protected DaoContext daoContext;
-
-    private ConsistencyOverrider overrider = new ConsistencyOverrider();
 
     protected PersistenceManagerFacade persistenceManagerFacade = new PersistenceManagerFacade();
 

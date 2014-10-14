@@ -15,6 +15,7 @@
  */
 package info.archinnov.achilles.query.typed;
 
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ public class TypedQueryValidator {
 
     private static String OPTIONAL_KEYSPACE_PREFIX = "[a-zA-Z0-9_]*\\.?";
 
-    private NativeQueryValidator validator = new NativeQueryValidator();
+    private NativeQueryValidator validator = NativeQueryValidator.Singleton.INSTANCE.get();
 
     public void validateTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
         log.debug("Validate typed query {}",regularStatement.getQueryString());
@@ -58,4 +59,14 @@ public class TypedQueryValidator {
         Validator.validateTrue(pattern.matcher(normalizedQuery).matches(),"The typed query [%s] should contain the table name '%s' if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
 	}
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final TypedQueryValidator instance = new TypedQueryValidator();
+
+        public TypedQueryValidator get() {
+            return instance;
+        }
+    }
 }

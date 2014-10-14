@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.persistence.operations.CounterPersister.Singleton;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
@@ -40,10 +43,8 @@ public class EntityUpdater {
     private static final Logger log = LoggerFactory.getLogger(EntityUpdater.class);
 
     private PropertyMetaComparator comparator = new PropertyMetaComparator();
-
-    private CounterPersister counterPersister = new CounterPersister();
-    private EntityProxifier proxifier = new EntityProxifier();
-
+    private CounterPersister counterPersister = CounterPersister.Singleton.INSTANCE.get();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     public void update(EntityOperations context, Object entity) {
         log.debug("Merging entity of class {} with primary key {}", context.getEntityClass().getCanonicalName(),
@@ -107,5 +108,15 @@ public class EntityUpdater {
             return arg0.getCQL3ColumnName().compareTo(arg1.getCQL3ColumnName());
         }
 
+    }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityUpdater instance = new EntityUpdater();
+
+        public EntityUpdater get() {
+            return instance;
+        }
     }
 }

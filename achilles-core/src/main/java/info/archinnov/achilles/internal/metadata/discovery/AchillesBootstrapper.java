@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;
@@ -42,11 +43,10 @@ import info.archinnov.achilles.internal.validation.Validator;
 public class AchillesBootstrapper {
     private static final Logger log = LoggerFactory.getLogger(AchillesBootstrapper.class);
 
-    private EntityParser entityParser = new EntityParser();
+    private EntityParser entityParser = EntityParser.Singleton.INSTANCE.get();
+    private PropertyParser propertyParser = PropertyParser.Singleton.INSTANCE.get();
 
     private DaoContextFactory daoContextFactory = new DaoContextFactory();
-
-    private PropertyParser propertyParser = new PropertyParser();
 
     public ParsingResult buildMetaDatas(ConfigurationContext configContext, List<Class<?>> entities) {
         log.debug("Build meta data for candidate entities");

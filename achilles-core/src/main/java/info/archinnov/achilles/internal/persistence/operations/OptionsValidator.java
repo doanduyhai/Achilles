@@ -18,12 +18,13 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import java.util.Map;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Options;
 
 public class OptionsValidator {
 
-    protected EntityValidator entityValidator = new EntityValidator();
+    protected EntityValidator entityValidator = EntityValidator.Singleton.INSTANCE.get();
 
     public void validateOptionsForUpsert(Object entity, Map<Class<?>, EntityMeta> entityMetaMap, Options options) {
         validateNoTtlForClusteredCounter(entity, entityMetaMap, options);
@@ -41,4 +42,13 @@ public class OptionsValidator {
         }
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final OptionsValidator instance = new OptionsValidator();
+
+        public OptionsValidator get() {
+            return instance;
+        }
+    }
 }

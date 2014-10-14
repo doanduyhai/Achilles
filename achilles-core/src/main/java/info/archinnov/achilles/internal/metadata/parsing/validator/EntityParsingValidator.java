@@ -52,4 +52,14 @@ public class EntityParsingValidator {
             Validator.validateBeanMappingFalse(staticCountersCount == propertyMetasCount,"The entity class '%s' is a clustered counter and thus cannot have only static counter column", className);
         }
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final EntityParsingValidator instance = new EntityParsingValidator();
+
+        public EntityParsingValidator get() {
+            return instance;
+        }
+    }
 }

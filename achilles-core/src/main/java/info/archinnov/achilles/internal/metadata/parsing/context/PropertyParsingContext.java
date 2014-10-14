@@ -23,6 +23,7 @@ import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.NamingStrategy;
 import info.archinnov.achilles.type.Pair;
@@ -34,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 public class PropertyParsingContext {
     private static final Logger log = LoggerFactory.getLogger(PropertyParsingContext.class);
-    private EntityIntrospector introspector = new EntityIntrospector();
+    private EntityIntrospector introspector = EntityIntrospector.Singleton.INSTANCE.get();
     private EntityParsingContext context;
     private Field currentField;
     private String currentPropertyName;

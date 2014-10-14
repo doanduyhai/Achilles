@@ -19,6 +19,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import info.archinnov.achilles.internal.persistence.operations.EntityMapper;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
@@ -40,9 +43,9 @@ public class ProxyInterceptor<T> implements MethodInterceptor, ProxySerializable
 
     private static final transient Logger log = LoggerFactory.getLogger(ProxyInterceptor.class);
 
-    private transient EntityLoader loader = new EntityLoader();
-    private transient CounterLoader counterLoader = new CounterLoader();
-    private transient ReflectionInvoker invoker = new ReflectionInvoker();
+    private transient EntityLoader loader = EntityLoader.Singleton.INSTANCE.get();
+    private transient CounterLoader counterLoader = CounterLoader.Singleton.INSTANCE.get();
+    private transient ReflectionInvoker invoker = ReflectionInvoker.Singleton.INSTANCE.get();
 
     private transient T target;
     private transient Object primaryKey;

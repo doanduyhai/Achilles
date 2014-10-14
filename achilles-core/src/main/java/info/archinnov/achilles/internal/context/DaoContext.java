@@ -26,6 +26,8 @@ import static info.archinnov.achilles.internal.persistence.operations.Collection
 import static info.archinnov.achilles.internal.persistence.operations.CollectionAndMapChangeType.SET_TO_LIST_AT_INDEX;
 import java.util.List;
 import java.util.Map;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.BatchStatement;
@@ -75,11 +77,9 @@ public class DaoContext {
 
     protected CacheManager cacheManager;
 
-    protected PreparedStatementBinder binder = new PreparedStatementBinder();
-
-    protected StatementGenerator statementGenerator = new StatementGenerator();
-
-    protected ConsistencyOverrider overrider = new ConsistencyOverrider();
+    protected PreparedStatementBinder binder = PreparedStatementBinder.Singleton.INSTANCE.get();
+    protected StatementGenerator statementGenerator = StatementGenerator.Singleton.INSTANCE.get();
+    protected ConsistencyOverrider overrider = ConsistencyOverrider.Singleton.INSTANCE.get();
 
     public void pushInsertStatement(DaoOperations context, List<PropertyMeta> pms) {
         log.debug("Push insert statement for PersistenceContext '{}' and properties '{}'", context, pms);

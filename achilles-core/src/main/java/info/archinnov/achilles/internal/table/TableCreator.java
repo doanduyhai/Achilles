@@ -166,4 +166,14 @@ public class TableCreator {
         }
         return clusteringOrders;
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final TableCreator instance = new TableCreator();
+
+        public TableCreator get() {
+            return instance;
+        }
+    }
 }

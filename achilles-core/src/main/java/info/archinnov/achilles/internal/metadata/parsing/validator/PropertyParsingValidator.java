@@ -137,4 +137,13 @@ public class PropertyParsingValidator {
         }
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final PropertyParsingValidator instance = new PropertyParsingValidator();
+
+        public PropertyParsingValidator get() {
+            return instance;
+        }
+    }
 }

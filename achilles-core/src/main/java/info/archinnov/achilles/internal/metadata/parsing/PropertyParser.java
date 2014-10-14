@@ -42,6 +42,8 @@ import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
+import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator.Singleton;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,10 +113,10 @@ public class PropertyParser {
         allowedTypes.add(UUID.class);
     }
 
-    private EntityIntrospector entityIntrospector = new EntityIntrospector();
-    private PropertyParsingValidator validator = new PropertyParsingValidator();
-    private PropertyFilter filter = new PropertyFilter();
-    private CodecFactory codecFactory = new CodecFactory();
+    private EntityIntrospector entityIntrospector = EntityIntrospector.Singleton.INSTANCE.get();
+    private PropertyParsingValidator validator = PropertyParsingValidator.Singleton.INSTANCE.get();
+    private PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
+    private CodecFactory codecFactory = CodecFactory.Singleton.INSTANCE.get();
 
     public static String getIndexName(Field field) {
         log.debug("Check @Index annotation on field {} of class {}", field.getName(), field.getDeclaringClass().getCanonicalName());
@@ -459,4 +461,13 @@ public class PropertyParser {
         return column!= null && column.staticColumn();
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final PropertyParser instance = new PropertyParser();
+
+        public PropertyParser get() {
+            return instance;
+        }
+    }
 }

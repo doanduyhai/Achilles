@@ -1,6 +1,7 @@
 package info.archinnov.achilles.query.cql;
 
 import com.datastax.driver.core.Row;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.Iterator;
@@ -9,7 +10,7 @@ import java.util.NoSuchElementException;
 public class TypedMapIterator implements Iterator<TypedMap> {
 
     private final Iterator<Row> sourceIterator;
-    NativeQueryMapper mapper = new NativeQueryMapper();
+    NativeQueryMapper mapper = NativeQueryMapper.Singleton.INSTANCE.get();
 
     TypedMapIterator(Iterator<Row> sourceIterator) {
         this.sourceIterator = sourceIterator;

@@ -170,4 +170,14 @@ public class CodecFactory {
         final Class<Object> valueType = TypeParser.inferValueClassForListOrSet(field.getGenericType(), field.getClass());
         return createSimpleCodec(context, valueType, maybeEncoding);
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final CodecFactory instance = new CodecFactory();
+
+        public CodecFactory get() {
+            return instance;
+        }
+    }
 }

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -62,11 +63,10 @@ abstract class AbstractPersistenceManager {
     protected ConfigurationContext configContext;
     protected PersistenceContextFactory contextFactory;
 
-    protected EntityProxifier proxifier = new EntityProxifier();
-    protected OptionsValidator optionsValidator = new OptionsValidator();
-
-    protected EntityValidator entityValidator = new EntityValidator();
-    protected TypedQueryValidator typedQueryValidator = new TypedQueryValidator();
+    protected EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
+    protected OptionsValidator optionsValidator = OptionsValidator.Singleton.INSTANCE.get();
+    protected EntityValidator entityValidator = EntityValidator.Singleton.INSTANCE.get();
+    protected TypedQueryValidator typedQueryValidator = TypedQueryValidator.Singleton.INSTANCE.get();
 
     protected SliceQueryExecutor sliceQueryExecutor;
 

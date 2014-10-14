@@ -24,6 +24,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.table.SchemaReader;
 import info.archinnov.achilles.internal.table.TableCreator;
 import info.archinnov.achilles.internal.table.TableUpdater;
@@ -42,13 +43,10 @@ public class SchemaContext {
 
     private boolean hasCounter;
 
-    protected TableCreator tableCreator = new TableCreator();
-
-    protected TableValidator tableValidator = new TableValidator();
-
-    protected TableUpdater tableUpdater = new TableUpdater();
-
-    protected SchemaReader schemaReader = new SchemaReader();
+    protected TableCreator tableCreator = TableCreator.Singleton.INSTANCE.get();
+    protected TableValidator tableValidator = TableValidator.Singleton.INSTANCE.get();
+    protected TableUpdater tableUpdater = TableUpdater.Singleton.INSTANCE.get();
+    protected SchemaReader schemaReader = SchemaReader.Singleton.INSTANCE.get();
 
     public SchemaContext(ConfigurationContext configContext, Session session, String keyspaceName, Cluster cluster, ParsingResult parsingResult) {
         this.configContext = configContext;

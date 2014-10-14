@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -48,8 +50,8 @@ public class TypedQuery<T> {
     private EntityState entityState;
     private Object[] boundValues;
 
-    EntityMapper mapper = new EntityMapper();
-    EntityProxifier proxifier = new EntityProxifier();
+    EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
+    EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     public TypedQuery(Class<T> entityClass, DaoContext daoContext, RegularStatement regularStatement, EntityMeta meta,
             PersistenceContextFactory contextFactory, EntityState entityState, Object[] boundValues) {

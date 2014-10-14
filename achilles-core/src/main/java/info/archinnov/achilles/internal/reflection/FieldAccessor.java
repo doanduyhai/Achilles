@@ -46,4 +46,14 @@ public class FieldAccessor {
             }
         }
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final FieldAccessor instance = new FieldAccessor();
+
+        public FieldAccessor get() {
+            return instance;
+        }
+    }
 }

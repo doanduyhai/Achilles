@@ -93,4 +93,14 @@ public class TableUpdater {
             }
         }
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final TableUpdater instance = new TableUpdater();
+
+        public TableUpdater get() {
+            return instance;
+        }
+    }
 }

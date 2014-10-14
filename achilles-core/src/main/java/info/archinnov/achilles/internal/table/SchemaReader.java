@@ -59,7 +59,15 @@ public class SchemaReader {
             this.tableName = tableName;
             this.qualifiedTableName = qualifiedTableName;
         }
+    }
 
+    public static enum Singleton {
+        INSTANCE;
 
+        private final SchemaReader instance = new SchemaReader();
+
+        public SchemaReader get() {
+            return instance;
+        }
     }
 }

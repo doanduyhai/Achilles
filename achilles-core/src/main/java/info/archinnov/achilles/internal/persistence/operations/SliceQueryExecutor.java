@@ -18,6 +18,8 @@ package info.archinnov.achilles.internal.persistence.operations;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
@@ -38,8 +40,8 @@ public class SliceQueryExecutor {
 
     private static final Logger log = LoggerFactory.getLogger(SliceQueryExecutor.class);
 
-    private EntityMapper mapper = new EntityMapper();
-    private EntityProxifier proxifier = new EntityProxifier();
+    private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
     private PersistenceContextFactory contextFactory;
     private DaoContext daoContext;
     private ConsistencyLevel defaultReadLevel;

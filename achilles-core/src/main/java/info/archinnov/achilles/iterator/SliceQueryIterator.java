@@ -16,6 +16,8 @@
 package info.archinnov.achilles.iterator;
 
 import java.util.Iterator;
+
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;
@@ -40,8 +42,8 @@ public class SliceQueryIterator<T> implements Iterator<T> {
     private Iterator<Row> iterator;
     private EntityMeta meta;
 
-    private EntityMapper mapper = new EntityMapper();
-    private EntityProxifier proxifier = new EntityProxifier();
+    private EntityMapper mapper = EntityMapper.Singleton.INSTANCE.get();
+    private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
 
     public SliceQueryIterator(SliceQueryProperties<T> sliceQueryProperties, PersistenceContext context, Iterator<Row> iterator) {
         this.context = context;

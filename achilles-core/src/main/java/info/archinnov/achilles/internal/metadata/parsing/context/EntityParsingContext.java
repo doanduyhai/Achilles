@@ -25,6 +25,7 @@ import com.google.common.base.Optional;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
@@ -34,7 +35,7 @@ import info.archinnov.achilles.type.Pair;
 
 public class EntityParsingContext {
 
-    private EntityIntrospector introspector = new EntityIntrospector();
+    private EntityIntrospector introspector = EntityIntrospector.Singleton.INSTANCE.get();
 
     private ConfigurationContext configContext;
     private Boolean hasCounter = false;

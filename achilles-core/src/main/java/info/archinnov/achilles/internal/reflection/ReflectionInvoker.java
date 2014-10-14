@@ -17,6 +17,8 @@ package info.archinnov.achilles.internal.reflection;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.provider.ServiceProvider;
+import info.archinnov.achilles.internal.reflection.FieldAccessor.Singleton;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Field;
@@ -31,8 +33,8 @@ import org.slf4j.LoggerFactory;
 public class ReflectionInvoker {
 	private static final Logger log = LoggerFactory.getLogger(ReflectionInvoker.class);
 
-	private FieldAccessor accessor = new FieldAccessor();
-	private ObjectInstantiator instantiator = new ObjectInstantiator();
+    private FieldAccessor accessor = FieldAccessor.Singleton.INSTANCE.get();
+    private ObjectInstantiator instantiator = ObjectInstantiator.Singleton.INSTANCE.get();
 
 	public Object getPrimaryKey(Object entity, PropertyMeta idMeta) {
 
@@ -125,4 +127,14 @@ public class ReflectionInvoker {
 		log.trace("Instantiate entity class {}", entityClass);
 		return instantiator.instantiate(entityClass);
 	}
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final ReflectionInvoker instance = new ReflectionInvoker();
+
+        public ReflectionInvoker get() {
+            return instance;
+        }
+    }
 }

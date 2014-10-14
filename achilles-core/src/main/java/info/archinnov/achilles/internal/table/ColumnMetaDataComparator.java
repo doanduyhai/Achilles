@@ -66,4 +66,14 @@ public class ColumnMetaDataComparator {
         }
         return isEqual;
     }
+
+    public static enum Singleton {
+        INSTANCE;
+
+        private final ColumnMetaDataComparator instance = new ColumnMetaDataComparator();
+
+        public ColumnMetaDataComparator get() {
+            return instance;
+        }
+    }
 }

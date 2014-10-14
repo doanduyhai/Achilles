@@ -30,4 +30,13 @@ public class ObjectInstantiator {
         }
     }
 
+    public static enum Singleton {
+        INSTANCE;
+
+        private final ObjectInstantiator instance = new ObjectInstantiator();
+
+        public ObjectInstantiator get() {
+            return instance;
+        }
+    }
 }
