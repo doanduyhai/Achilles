@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;

@@ -24,7 +24,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.ParsingResult;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.table.SchemaReader;
 import info.archinnov.achilles.internal.table.TableCreator;
 import info.archinnov.achilles.internal.table.TableUpdater;

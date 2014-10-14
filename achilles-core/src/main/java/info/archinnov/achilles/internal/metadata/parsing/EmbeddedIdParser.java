@@ -17,7 +17,6 @@ package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import static info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.reflections.ReflectionUtils.getAllFields;
 
 import java.lang.reflect.Field;
@@ -25,7 +24,6 @@ import java.util.*;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -21,7 +21,6 @@ import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

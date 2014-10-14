@@ -19,8 +19,6 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMetaBuilder
 import java.lang.reflect.Field;
 import java.util.List;
 
-import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector.Singleton;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,9 +31,7 @@ import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingCo
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.internal.metadata.parsing.validator.EntityParsingValidator;
 import info.archinnov.achilles.internal.validation.Validator;
-import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
-import info.archinnov.achilles.type.Pair;
 
 public class EntityParser {
     private static final Logger log = LoggerFactory.getLogger(EntityParser.class);

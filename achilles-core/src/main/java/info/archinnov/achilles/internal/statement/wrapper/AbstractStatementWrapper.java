@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import info.archinnov.achilles.exception.AchillesLightWeightTransactionException;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

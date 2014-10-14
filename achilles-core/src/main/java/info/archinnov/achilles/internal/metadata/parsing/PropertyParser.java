@@ -42,8 +42,6 @@ import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
-import info.archinnov.achilles.internal.metadata.parsing.validator.PropertyParsingValidator.Singleton;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

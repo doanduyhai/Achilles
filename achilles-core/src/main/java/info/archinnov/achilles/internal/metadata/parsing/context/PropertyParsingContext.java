@@ -19,19 +19,13 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.Id;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.metadata.parsing.EntityIntrospector;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.NamingStrategy;
 import info.archinnov.achilles.type.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static info.archinnov.achilles.internal.metadata.parsing.NamingHelper.applyNamingStrategy;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 public class PropertyParsingContext {
     private static final Logger log = LoggerFactory.getLogger(PropertyParsingContext.class);

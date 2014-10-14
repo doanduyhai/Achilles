@@ -15,7 +15,6 @@
  */
 package info.archinnov.achilles.query.cql;
 
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.reflection.RowMethodInvoker;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.TypedMap;

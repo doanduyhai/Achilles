@@ -5,7 +5,6 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.DataType.Name;
 import com.datastax.driver.core.TableMetadata;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.table.ColumnMetaDataComparator;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Counter;

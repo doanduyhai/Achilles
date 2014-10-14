@@ -21,7 +21,6 @@ import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
 import info.archinnov.achilles.internal.context.facade.EntityOperations;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class CounterLoader {

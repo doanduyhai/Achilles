@@ -1,6 +1,5 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

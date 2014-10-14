@@ -17,7 +17,6 @@ package info.archinnov.achilles.iterator;
 
 import java.util.Iterator;
 
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Row;

@@ -20,8 +20,6 @@ import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.Entity
 import java.util.Map;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaRowExtractor;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
-import info.archinnov.achilles.internal.reflection.RowMethodInvoker.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnDefinitions;

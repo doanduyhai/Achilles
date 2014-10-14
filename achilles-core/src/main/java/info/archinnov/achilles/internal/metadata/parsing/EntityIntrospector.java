@@ -31,7 +31,6 @@ import java.util.List;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;

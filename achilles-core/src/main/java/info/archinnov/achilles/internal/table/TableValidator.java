@@ -26,7 +26,6 @@ import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_V
 import java.util.Collection;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaTableValidator;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ColumnMetadata;

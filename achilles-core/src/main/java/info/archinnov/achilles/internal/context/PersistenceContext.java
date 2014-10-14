@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 
 import info.archinnov.achilles.internal.consistency.ConsistencyOverrider;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.ResultSet;

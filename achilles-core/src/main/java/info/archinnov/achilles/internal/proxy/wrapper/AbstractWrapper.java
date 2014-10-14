@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.persistence.operations.EntityProxifier;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.proxy.dirtycheck.DirtyChecker;
 
 public abstract class AbstractWrapper {

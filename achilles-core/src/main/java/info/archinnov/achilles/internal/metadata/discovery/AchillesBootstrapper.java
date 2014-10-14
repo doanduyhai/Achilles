@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Session;

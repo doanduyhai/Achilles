@@ -17,8 +17,6 @@ package info.archinnov.achilles.internal.reflection;
 
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
-import info.archinnov.achilles.internal.reflection.FieldAccessor.Singleton;
 import info.archinnov.achilles.internal.validation.Validator;
 
 import java.lang.reflect.Field;

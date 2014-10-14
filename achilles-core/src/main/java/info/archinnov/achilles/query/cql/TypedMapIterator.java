@@ -1,7 +1,6 @@
 package info.archinnov.achilles.query.cql;
 
 import com.datastax.driver.core.Row;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.type.TypedMap;
 
 import java.util.Iterator;

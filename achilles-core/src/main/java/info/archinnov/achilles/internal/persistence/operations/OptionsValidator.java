@@ -18,7 +18,6 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import java.util.Map;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.type.Options;
 

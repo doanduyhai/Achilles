@@ -15,8 +15,6 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
-import info.archinnov.achilles.internal.persistence.operations.EntityMapper.Singleton;
-import info.archinnov.achilles.internal.provider.ServiceProvider;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
