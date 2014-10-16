@@ -18,6 +18,9 @@
 - Life cycle interceptors
 - Bean Validation (JSR-303)
 - Distributed CAS operation support
+- Multi-keyspace
+- Naming Strategy
+- Type Transformer
 
 
 ## Installation #
@@ -28,7 +31,7 @@
 	<dependency>	
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.6</version>
+		<version>3.0.7</version>
 	</dependency>
 ```
  
@@ -38,19 +41,23 @@
  	<dependency>	
  		<groupId>info.archinnov</groupId>
  		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.6</version>
+ 		<version>3.0.7</version>
  		<scope>test</scope>
  	</dependency>
 ```
  
  For now, **Achilles** depends on the following libraries:
  
- 1. cassandra 2.0.9
- 2. cassandra-driver-core 2.0.4
+ 1. cassandra 2.0.1O
+ 2. cassandra-driver-core 2.0.6
  3. CGLIB nodep 2.2.2 for proxy building
- 5. Jackson core, annotations, databind & module jaxb annotations 2.2.3
- 6. org.reflections 0.9.9-RC1
- 7. Guava 15.0 
+ 4. Jackson core, annotations, databind & module jaxb annotations 2.2.3
+ 5. org.reflections 0.9.9-RC1
+ 6. Guava 15.0 
+ 7. slf4j-api 1.7.2
+ 8. commons-io 2.4
+ 9. commons-lang3 3.3.2
+10. commons-collections 3.2.1
    
   
 ## 5 minutes tutorial
