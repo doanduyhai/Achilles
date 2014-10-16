@@ -63,7 +63,7 @@ import java.lang.annotation.Target;
  *
  *   {@literal @}Column
  *   <strong>{@literal @}TypeTransformer(valueCodecClass = LongToString.class)</strong>
- *   private List&lt;Long&gt listOfLong;
+ *   private List&lt;Long&gt; listOfLong;
  *
  * </code></pre>
  *
@@ -73,7 +73,7 @@ import java.lang.annotation.Target;
  *
  *   {@literal @}Column
  *   <strong>{@literal @}TypeTransformer(valueCodecClass = LongToString.class)</strong>
- *   private Set&lt;Long&gt setOfLong;
+ *   private Set&lt;Long&gt; setOfLong;
  *
  * </code></pre>
  *
@@ -83,7 +83,7 @@ import java.lang.annotation.Target;
  *
  *   {@literal @}Column
  *   <strong>{@literal @}TypeTransformer(keyCodecClass = LongToString.class)</strong>
- *   private Map<&lt;Long,Double&gt mapKeyTransformation;
+ *   private Map&lt;Long,Double&gt; mapKeyTransformation;
  *
  * </code></pre>
  *
@@ -93,7 +93,7 @@ import java.lang.annotation.Target;
  *
  *   {@literal @}Column
  *   <strong>{@literal @}TypeTransformer(valueCodecClass = LongToString.class)</strong>
- *   private Map<&lt;Integer,Long&gt mapValueTransformation;
+ *   private Map&lt;Integer,Long&gt; mapValueTransformation;
  *
  * </code></pre>
  *
@@ -103,7 +103,7 @@ import java.lang.annotation.Target;
  *
  *   {@literal @}Column
  *   <strong>{@literal @}TypeTransformer(keyCodecClass = LongToString.class, valueCodecClass = LongToString.class)</strong>
- *   private Map<&lt;Long,Long&gt mapKeyValueTransformation;
+ *   private Map&lt;Long,Long&gt; mapKeyValueTransformation;
  *
  * </code></pre>
  * </p>

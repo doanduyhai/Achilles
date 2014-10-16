@@ -45,8 +45,6 @@ public @interface Entity {
      * keyspace of the java driver <em>Session</em> object.
      * <br/>
      *
-     * <strong>Please note that keyspace names by default are case-insensitive in Cassandra</strong>
-     *
      * <pre class="code"><code class="java">
      *
      *   package info.archinnov.achilles.entity
@@ -64,8 +62,6 @@ public @interface Entity {
      * Ex: for the class <em>info.archinnov.achilles.entity.UserEntity</em>, the
      * default table name will be <strong>userentity</strong> if the attribute <em>table</em> is not set.
      * <br/>
-     *
-     * <strong>Please note that table names by default are case-insensitive in Cassandra</strong>
      *
      * <pre class="code"><code class="java">
      *

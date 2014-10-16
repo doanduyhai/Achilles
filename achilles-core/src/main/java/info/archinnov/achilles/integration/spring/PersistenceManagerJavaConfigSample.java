@@ -142,7 +142,7 @@ public class PersistenceManagerJavaConfigSample {
             configMap.put(NATIVE_SESSION, session);
         }
 
-        if (StringUtils.isNotBlank(keyspaceName)) {
+        if (isNotBlank(keyspaceName)) {
             configMap.put(KEYSPACE_NAME, keyspaceName);
         }
 
