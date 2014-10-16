@@ -60,8 +60,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cassandra.version>2.0.9</cassandra.version>
-        <datastax.driver.core.version>2.0.4</datastax.driver.core.version>
+        <cassandra.version>2.0.10</cassandra.version>
+        <datastax.driver.core.version>2.0.6</datastax.driver.core.version>
         <spring.version>3.2.0.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
         <fasterxml.jackson.version>2.3.3</fasterxml.jackson.version>
