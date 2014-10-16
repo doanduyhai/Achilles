@@ -87,52 +87,80 @@ public class PropertyMeta {
     private SetCodec setCodec;
     private MapCodec mapCodec;
 
+    private final PropertyMetaRowExtractor forRowExtraction;
+    private final PropertyMetaStatementGenerator forStatementGeneration;
+    private final PropertyMetaCacheSupport forCache;
+    private final PropertyMetaTableValidator forTableValidation;
+    private final PropertyMetaTableCreator forTableCreation;
+    private final PropertyMetaSliceQuerySupport forSliceQuery;
+    private final PropertyMetaSliceQueryContext forSliceQueryContext;
+    private final PropertyMetaTypedQuery forTypedQuery;
+    private final PropertyMetaTranscoder forTranscoding;
+    private final PropertyMetaStructure structure;
+    private final PropertyMetaConfig config;
+    private final PropertyMetaValues forValues;
+
+    public PropertyMeta() {
+        this.forRowExtraction = new PropertyMetaRowExtractor(this);
+        this.forStatementGeneration = new PropertyMetaStatementGenerator(this);
+        this.forCache = new PropertyMetaCacheSupport(this);
+        this.forTableValidation = new PropertyMetaTableValidator(this);
+        this.forTableCreation = new PropertyMetaTableCreator(this);
+        this.forSliceQuery = new PropertyMetaSliceQuerySupport(this);
+        this.forSliceQueryContext = new PropertyMetaSliceQueryContext(this);
+        this.forTypedQuery = new PropertyMetaTypedQuery(this);
+        this.forTranscoding = new PropertyMetaTranscoder(this);
+        this.structure = new PropertyMetaStructure(this);
+        this.config = new PropertyMetaConfig(this);
+        this.forValues = new PropertyMetaValues(this);
+    }
+
     public PropertyMetaRowExtractor forRowExtraction() {
-        return new PropertyMetaRowExtractor(this);
+        return forRowExtraction;
     }
 
     public PropertyMetaStatementGenerator forStatementGeneration() {
-        return new PropertyMetaStatementGenerator(this);
+        return forStatementGeneration;
     }
 
     public PropertyMetaCacheSupport forCache() {
-        return new PropertyMetaCacheSupport(this);
+        return forCache;
     }
 
     public PropertyMetaTableValidator forTableValidation() {
-        return new PropertyMetaTableValidator(this);
+        return forTableValidation;
     }
 
     public PropertyMetaTableCreator forTableCreation() {
-        return new PropertyMetaTableCreator(this);
+        return forTableCreation;
     }
 
     public PropertyMetaSliceQuerySupport forSliceQuery() {
-        return new PropertyMetaSliceQuerySupport(this);
+        return forSliceQuery;
     }
 
     public PropertyMetaSliceQueryContext forSliceQueryContext() {
-        return new PropertyMetaSliceQueryContext(this);
+        return forSliceQueryContext;
     }
 
     public PropertyMetaTypedQuery forTypedQuery() {
-        return new PropertyMetaTypedQuery(this);
+        return forTypedQuery;
     }
 
     public PropertyMetaTranscoder forTranscoding() {
-        return new PropertyMetaTranscoder(this);
+        return forTranscoding;
     }
 
     public PropertyMetaStructure structure() {
-        return new PropertyMetaStructure(this);
+        return structure;
     }
 
     public PropertyMetaConfig config() {
-        return new PropertyMetaConfig(this);
+        return config;
     }
 
     public PropertyMetaValues forValues() {
-        return new PropertyMetaValues(this);
+        return forValues;
     }
 
 

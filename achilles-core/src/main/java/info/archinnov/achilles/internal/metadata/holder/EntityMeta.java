@@ -74,28 +74,47 @@ public class EntityMeta {
     protected InsertStrategy insertStrategy;
     protected boolean schemaUpdateEnabled = false;
 
+    private final EntityMetaInterceptors forInterception;
+    private final EntityMetaSliceQuerySupport forSliceQuery;
+    private final EntityMetaTranscoder forTranscoding;
+    private final EntityMetaOperations forOperations;
+    private final EntityMetaStructure structure;
+    private final EntityMetaConfig config;
+
+    public EntityMeta() {
+        // We can safely create singleton instance of entity meta views here since those views
+        // only require a reference on the EntityMeta class. Any mutation on the EntityMeta
+        // instance are transparent to the views
+        this.forInterception = new EntityMetaInterceptors(this);
+        this.forSliceQuery = new EntityMetaSliceQuerySupport(this);
+        this.forTranscoding = new EntityMetaTranscoder(this);
+        this.forOperations = new EntityMetaOperations(this);
+        this.structure = new EntityMetaStructure(this);
+        this.config = new EntityMetaConfig(this);
+    }
+
     public EntityMetaInterceptors forInterception() {
-        return new EntityMetaInterceptors(this);
+        return forInterception;
     }
 
     public EntityMetaSliceQuerySupport forSliceQuery() {
-        return new EntityMetaSliceQuerySupport(this);
+        return forSliceQuery;
     }
 
     public EntityMetaTranscoder forTranscoding() {
-        return new EntityMetaTranscoder(this);
+        return forTranscoding;
     }
 
     public EntityMetaOperations forOperations() {
-        return new EntityMetaOperations(this);
+        return forOperations;
     }
 
     public EntityMetaStructure structure() {
-        return new EntityMetaStructure(this);
+        return structure;
     }
 
     public EntityMetaConfig config() {
-        return new EntityMetaConfig(this);
+        return config;
     }
 
 
