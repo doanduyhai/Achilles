@@ -57,8 +57,8 @@
  7. slf4j-api 1.7.2
  8. commons-io 2.4
  9. commons-lang3 3.3.2
-10. commons-collections 3.2.1
-11. validation-api 1.1.0.Final
+ 10. commons-collections 3.2.1
+ 11. validation-api 1.1.0.Final
    
   
 ## 5 minutes tutorial
