@@ -1,10 +1,11 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.nio.ByteBuffer;
 
-public class ByteArrayPrimitiveCodec implements SimpleCodec<byte[],ByteBuffer> {
+public class ByteArrayPrimitiveCodec implements Codec<byte[],ByteBuffer> {
 
     @Override
     public Class<byte[]> sourceType() {

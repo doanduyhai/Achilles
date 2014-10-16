@@ -42,6 +42,12 @@ public class Validator {
 		}
 	}
 
+    public static void validateBeanMappingNotNull(Object arg, String message, Object... args) {
+        if (arg == null) {
+            throw new AchillesBeanMappingException(format(message, args));
+        }
+    }
+
     public static void validateNotEmpty(Object[] arg, String message, Object... args) {
         if (arg == null || arg.length== 0) {
             throw new AchillesException(format(message, args));

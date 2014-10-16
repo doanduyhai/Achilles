@@ -21,14 +21,13 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.json.DefaultJacksonMapper;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.Pair;
 
@@ -83,7 +82,7 @@ public class PropertyMeta {
     private boolean timeUUID = false;
     private boolean emptyCollectionAndMapIfNull = false;
     private boolean staticColumn = false;
-    private SimpleCodec simpleCodec;
+    private Codec simpleCodec;
     private ListCodec listCodec;
     private SetCodec setCodec;
     private MapCodec mapCodec;
@@ -288,11 +287,11 @@ public class PropertyMeta {
         this.cql3ColumnName = cqlColumnName;
     }
 
-    SimpleCodec getSimpleCodec() {
+    Codec getSimpleCodec() {
         return simpleCodec;
     }
 
-    public void setSimpleCodec(SimpleCodec simpleCodec) {
+    public void setSimpleCodec(Codec simpleCodec) {
         this.simpleCodec = simpleCodec;
     }
 

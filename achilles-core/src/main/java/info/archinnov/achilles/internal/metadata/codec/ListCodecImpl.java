@@ -1,5 +1,6 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ public class ListCodecImpl<FROM,TO> implements ListCodec<FROM,TO> {
 
     private final Class<FROM> sourceType;
     private final Class<TO> targetType;
-    private final SimpleCodec<FROM,TO> valueCodec;
+    private final Codec<FROM,TO> valueCodec;
 
-    public ListCodecImpl(Class<FROM> sourceType, Class<TO> targetType, SimpleCodec<FROM, TO> valueCodec) {
+    public ListCodecImpl(Class<FROM> sourceType, Class<TO> targetType, Codec<FROM, TO> valueCodec) {
         this.sourceType = sourceType;
         this.targetType = targetType;
         this.valueCodec = valueCodec;

@@ -806,20 +806,6 @@ public class PropertyParserTest {
     }
 
     @Test
-    public void should_check_consistency_annotation() throws Exception {
-
-        @Entity(keyspace = "ks", table="test")
-        class Test {
-            @Consistency
-            private String consistency;
-        }
-
-        Field field = Test.class.getDeclaredField("consistency");
-
-        assertThat(parser.hasConsistencyAnnotation(field)).isTrue();
-    }
-
-    @Test
     public void should_not_find_counter_if_not_long_type() throws Exception {
 
     }

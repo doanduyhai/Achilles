@@ -2,6 +2,8 @@ package info.archinnov.achilles.internal.metadata.parsing;
 
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.NAME;
 import static info.archinnov.achilles.annotations.Enumerated.Encoding.ORDINAL;
+import static info.archinnov.achilles.internal.metadata.parsing.TypeTransformerParserTest.EnumToStringCodec;
+import static info.archinnov.achilles.internal.metadata.parsing.TypeTransformerParserTest.LongToStringCodec;
 import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,17 +11,17 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.TypeTransformer;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayPrimitiveCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteCodec;
 import info.archinnov.achilles.internal.metadata.codec.EnumNameCodec;
 import info.archinnov.achilles.internal.metadata.codec.EnumOrdinalCodec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
-import info.archinnov.achilles.internal.metadata.codec.ListCodecImpl;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.NativeCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.EntityParsingContext;
@@ -30,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -53,6 +54,7 @@ public class CodecFactoryTest {
 
     private ObjectMapper mapper = new ObjectMapper();
 
+
     @Before
     public void setUp() {
         when(context.getCurrentObjectMapper()).thenReturn(mapper);
@@ -70,12 +72,30 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("name");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(NativeCodec.class);
         assertThat(codec.encode("toto")).isEqualTo("toto");
         assertThat(codec.decode("toto")).isEqualTo("toto");
+    }
+
+    @Test
+    public void should_create_simple_codec_from_transformer() throws Exception {
+        //Given
+        class Test {
+            @TypeTransformer(valueCodecClass = LongToStringCodec.class)
+            private Long field;
+        }
+
+        Field field = Test.class.getDeclaredField("field");
+
+        //When
+        final Codec codec = factory.parseSimpleField(createContext(field));
+
+        //Then
+        assertThat(codec.sourceType()).isSameAs(Long.class);
+        assertThat(codec.targetType()).isSameAs(String.class);
     }
 
     @Test
@@ -88,7 +108,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("type");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(EnumNameCodec.class);
@@ -107,7 +127,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("type");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(EnumOrdinalCodec.class);
@@ -125,7 +145,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("flag");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteCodec.class);
@@ -143,7 +163,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("flag");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteCodec.class);
@@ -162,7 +182,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("bytes");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteArrayPrimitiveCodec.class);
@@ -180,7 +200,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("bytes");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
 
         //Then
         assertThat(codec).isInstanceOf(ByteArrayCodec.class);
@@ -199,7 +219,7 @@ public class CodecFactoryTest {
         Field field = Test.class.getDeclaredField("json");
 
         //When
-        final SimpleCodec codec = factory.parseSimpleField(createContext(field));
+        final Codec codec = factory.parseSimpleField(createContext(field));
         final String encoded = (String) codec.encode(bean);
         final Pojo decoded = (Pojo) codec.decode("{\"id\":11,\"name\":\"John\"}");
 
@@ -248,6 +268,22 @@ public class CodecFactoryTest {
     }
 
     @Test
+    public void should_create_list_codec_from_transformer() throws Exception {
+        class Test {
+            @TypeTransformer(valueCodecClass = LongToStringCodec.class)
+            private List<Long> counts;
+        }
+
+        Field field = Test.class.getDeclaredField("counts");
+        //When
+        final ListCodec codec = factory.parseListField(createContext(field));
+
+        //Then
+        assertThat(codec.sourceType()).isSameAs(Long.class);
+        assertThat(codec.targetType()).isSameAs(String.class);
+    }
+
+    @Test
     public void should_create_set_codec() throws Exception {
         class Test {
             private Set<Integer> counts;
@@ -282,6 +318,22 @@ public class CodecFactoryTest {
         //Then
         assertThat(encoded).containsOnly(0, 1);
         assertThat(decoded).containsOnly(PropertyType.SIMPLE, PropertyType.LIST, PropertyType.SET);
+    }
+
+    @Test
+    public void should_create_set_codec_from_transformer() throws Exception {
+        class Test {
+            @TypeTransformer(valueCodecClass = LongToStringCodec.class)
+            private Set<Long> counts;
+        }
+
+        Field field = Test.class.getDeclaredField("counts");
+        //When
+        final SetCodec codec = factory.parseSetField(createContext(field));
+
+        //Then
+        assertThat(codec.sourceType()).isSameAs(Long.class);
+        assertThat(codec.targetType()).isSameAs(String.class);
     }
 
     @Test
@@ -416,9 +468,28 @@ public class CodecFactoryTest {
     }
 
     @Test
+    public void should_create_map_codec_from_transformer() throws Exception {
+        class Test {
+            @TypeTransformer(keyCodecClass = LongToStringCodec.class, valueCodecClass = EnumToStringCodec.class)
+            private Map<Long,NamingStrategy> map;
+        }
+
+        Field field = Test.class.getDeclaredField("map");
+        //When
+        final MapCodec codec = factory.parseMapField(createContext(field));
+
+        //Then
+        assertThat(codec.sourceKeyType()).isSameAs(Long.class);
+        assertThat(codec.targetKeyType()).isSameAs(String.class);
+
+        assertThat(codec.sourceValueType()).isSameAs(NamingStrategy.class);
+        assertThat(codec.targetValueType()).isSameAs(String.class);
+    }
+
+    @Test
     public void should_determine_cql3_simple_type() throws Exception {
         //Given
-        SimpleCodec simpleCodec = new NativeCodec(String.class);
+        Codec simpleCodec = new NativeCodec(String.class);
 
         //When
         final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
@@ -430,7 +501,7 @@ public class CodecFactoryTest {
     @Test
     public void should_determine_cql3_simple_timeuuid_type() throws Exception {
         //Given
-        SimpleCodec simpleCodec = new NativeCodec(UUID.class);
+        Codec simpleCodec = new NativeCodec(UUID.class);
 
         //When
         final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, true);
@@ -442,7 +513,7 @@ public class CodecFactoryTest {
     @Test
     public void should_determine_cql3_simple_byte_buffer_type() throws Exception {
         //Given
-        SimpleCodec simpleCodec = new NativeCodec(ByteBuffer.wrap("test".getBytes()).getClass());
+        Codec simpleCodec = new NativeCodec(ByteBuffer.wrap("test".getBytes()).getClass());
 
         //When
         final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);
@@ -454,7 +525,7 @@ public class CodecFactoryTest {
     @Test
     public void should_determine_cql3_simple_counter_type() throws Exception {
         //Given
-        SimpleCodec simpleCodec = new NativeCodec(Counter.class);
+        Codec simpleCodec = new NativeCodec(Counter.class);
 
         //When
         final Class<?> actualClass = factory.determineCQL3ValueType(simpleCodec, false);

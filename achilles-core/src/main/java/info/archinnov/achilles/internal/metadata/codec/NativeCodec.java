@@ -1,10 +1,11 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import static java.lang.String.format;
 
-public class NativeCodec<TYPE> implements SimpleCodec<TYPE,TYPE> {
+public class NativeCodec<TYPE> implements Codec<TYPE,TYPE> {
 
     private final Class<TYPE> type;
 

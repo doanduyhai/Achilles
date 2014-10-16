@@ -1,17 +1,18 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetCodecImpl<FROM,TO> implements SetCodec<FROM,TO>{
+public class SetCodecImpl<FROM,TO> implements SetCodec<FROM,TO> {
 
     private final Class<FROM> sourceType;
     private final Class<TO> targetType;
-    private final SimpleCodec<FROM,TO> valueCodec;
+    private final Codec<FROM,TO> valueCodec;
 
-    public SetCodecImpl(Class<FROM> sourceType, Class<TO> targetType, SimpleCodec<FROM, TO> valueCodec) {
+    public SetCodecImpl(Class<FROM> sourceType, Class<TO> targetType, Codec<FROM, TO> valueCodec) {
         this.sourceType = sourceType;
         this.targetType = targetType;
         this.valueCodec = valueCodec;

@@ -1,5 +1,7 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
+
 public class SetCodecBuilder {
 
     public static <VAL> SetCodec<VAL, VAL> withType(Class<VAL> valueType) {
@@ -31,7 +33,7 @@ public class SetCodecBuilder {
             this.toType = toType;
         }
 
-        public SetCodec<FROM, TO> withCodec(SimpleCodec<FROM, TO> codec) {
+        public SetCodec<FROM, TO> withCodec(Codec<FROM, TO> codec) {
             return new SetCodecImpl<>(fromType, toType, codec);
         }
     }

@@ -38,10 +38,10 @@ import java.util.Set;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,16 +126,16 @@ public class PropertyParser {
         return indexName;
     }
 
-    public boolean hasConsistencyAnnotation(Field field) {
-        log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
-                .getCanonicalName());
-
-        boolean consistency = false;
-        if (field.getAnnotation(Consistency.class) != null) {
-            consistency = true;
-        }
-        return consistency;
-    }
+//    public boolean hasConsistencyAnnotation(Field field) {
+//        log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
+//                .getCanonicalName());
+//
+//        boolean consistency = false;
+//        if (field.getAnnotation(Consistency.class) != null) {
+//            consistency = true;
+//        }
+//        return consistency;
+//    }
 
     public static <T> boolean isSupportedNativeType(Class<T> valueClass) {
         return valueClass != null && (allowedTypes.contains(valueClass) || (ByteBuffer.class.isAssignableFrom(valueClass)));
@@ -189,7 +189,7 @@ public class PropertyParser {
                 .getCurrentEntityClass().getCanonicalName());
 
         Field field = context.getCurrentField();
-        context.setCustomConsistencyLevels(hasConsistencyAnnotation(context.getCurrentField()));
+        context.setCustomConsistencyLevels(filter.hasAnnotation(context.getCurrentField(), Consistency.class));
 
         validator.validateNoDuplicatePropertyName(context);
         validator.validateIndexIfSet(context);
@@ -269,7 +269,7 @@ public class PropertyParser {
         boolean timeUUID = isTimeUUID(context, field);
 
         Method[] accessors = entityIntrospector.findAccessors(entityClass, field);
-        final SimpleCodec simpleCodec = codecFactory.parseSimpleField(context);
+        final Codec simpleCodec = codecFactory.parseSimpleField(context);
         final Class<?> cql3ValueType = codecFactory.determineCQL3ValueType(simpleCodec, timeUUID);
         PropertyType type = SIMPLE;
 

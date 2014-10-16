@@ -1,12 +1,13 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.util.List;
 
 import static java.lang.String.format;
 
-public class EnumOrdinalCodec<ENUM> implements SimpleCodec<ENUM,Integer> {
+public class EnumOrdinalCodec<ENUM> implements Codec<ENUM,Integer> {
 
     private final List<ENUM> enumValues;
     private final Class<ENUM> sourceType;

@@ -20,10 +20,10 @@ import static info.archinnov.achilles.type.ConsistencyLevel.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.test.parser.entity.Bean;
 import info.archinnov.achilles.test.parser.entity.EmbeddedKey;
@@ -54,7 +54,7 @@ public class PropertyMetaBuilderTest {
 	@Test
 	public void should_build_simple() throws Exception {
 
-        SimpleCodec simpleCodec = mock(SimpleCodec.class);
+        Codec simpleCodec = mock(Codec.class);
 
 		PropertyMeta built = PropertyMetaBuilder.factory().type(SIMPLE).propertyName("prop").accessors(accessors)
                 .field(field).objectMapper(objectMapper)
@@ -97,7 +97,7 @@ public class PropertyMetaBuilderTest {
 
 	@Test
 	public void should_build_simple_with_object_as_value() throws Exception {
-        SimpleCodec simpleCodec = mock(SimpleCodec.class);
+        Codec simpleCodec = mock(Codec.class);
 
         PropertyMeta built = PropertyMetaBuilder.factory()
                 .type(SIMPLE)

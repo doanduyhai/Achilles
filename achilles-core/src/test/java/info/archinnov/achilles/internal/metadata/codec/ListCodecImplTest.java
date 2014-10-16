@@ -3,9 +3,7 @@ package info.archinnov.achilles.internal.metadata.codec;
 import static org.fest.assertions.api.Assertions.*;
 
 import info.archinnov.achilles.exception.AchillesTranscodingException;
-import info.archinnov.achilles.internal.metadata.codec.ListCodec;
-import info.archinnov.achilles.internal.metadata.codec.ListCodecBuilder;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
+import info.archinnov.achilles.codec.Codec;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -19,7 +17,7 @@ public class ListCodecImplTest {
     @Test
     public void should_encode_and_decode() throws Exception {
         //Given
-        SimpleCodec<Integer, String> valueCodec = new SimpleCodec<Integer, String>() {
+        Codec<Integer, String> valueCodec = new Codec<Integer, String>() {
             @Override
             public Class<Integer> sourceType() {
                 return Integer.class;

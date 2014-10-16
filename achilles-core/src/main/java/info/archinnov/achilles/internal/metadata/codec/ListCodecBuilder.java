@@ -1,5 +1,7 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
+
 public class ListCodecBuilder {
 
     public static <VAL> ListCodec<VAL, VAL> withType(Class<VAL> valueType) {
@@ -31,7 +33,7 @@ public class ListCodecBuilder {
             this.toType = toType;
         }
 
-        public ListCodec<FROM, TO> withCodec(SimpleCodec<FROM, TO> codec) {
+        public ListCodec<FROM, TO> withCodec(Codec<FROM, TO> codec) {
             return new ListCodecImpl<>(fromType, toType, codec);
         }
     }

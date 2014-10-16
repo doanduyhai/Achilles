@@ -3,6 +3,8 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.TypeTransformer;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayPrimitiveCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteCodec;
@@ -16,9 +18,7 @@ import info.archinnov.achilles.internal.metadata.codec.MapCodecBuilder;
 import info.archinnov.achilles.internal.metadata.codec.NativeCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodecImpl;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.internal.metadata.holder.InternalTimeUUID;
-import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import info.archinnov.achilles.type.Counter;
 import info.archinnov.achilles.type.Pair;
@@ -53,47 +53,69 @@ public class CodecFactory {
         }
     };
 
-    SimpleCodec parseSimpleField(PropertyParsingContext context) {
+    protected PropertyFilter filter = PropertyFilter.Singleton.INSTANCE.get();
+    protected TypeTransformerParser typeTransformerParser = TypeTransformerParser.Singleton.INSTANCE.get();
+
+    Codec parseSimpleField(PropertyParsingContext context) {
         final Field field = context.getCurrentField();
         log.debug("Parse simple codec for field {}", field);
         final Class type = field.getType();
-        final Optional<Encoding> maybeEncoding = fromNullable(field.getAnnotation(Enumerated.class)).transform(valueEncoding);
-        return createSimpleCodec(context, type, maybeEncoding);
+        if (filter.hasAnnotation(field, TypeTransformer.class)) {
+            return typeTransformerParser.parseAndValidateSimpleCodec(field);
+        } else {
+            final Optional<Encoding> maybeEncoding = fromNullable(field.getAnnotation(Enumerated.class)).transform(valueEncoding);
+            return createSimpleCodec(context, type, maybeEncoding);
+        }
     }
 
     ListCodec parseListField(PropertyParsingContext context) {
-        log.debug("Parse list codec for field {}", context.getCurrentField());
-        final SimpleCodec simpleCodec = createSimpleCodecForCollection(context);
-        return new ListCodecImpl(simpleCodec.sourceType(), simpleCodec.targetType(), simpleCodec);
+        final Field field = context.getCurrentField();
+        log.debug("Parse list codec for field {}", field);
+        if (filter.hasAnnotation(field, TypeTransformer.class)) {
+            return typeTransformerParser.parseAndValidateListCodec(field);
+        } else {
+            final Codec simpleCodec = createSimpleCodecForCollection(context);
+            return new ListCodecImpl(simpleCodec.sourceType(), simpleCodec.targetType(), simpleCodec);
+        }
     }
 
     SetCodec parseSetField(PropertyParsingContext context) {
-        log.debug("Parse set codec for field {}", context.getCurrentField());
-        final SimpleCodec simpleCodec = createSimpleCodecForCollection(context);
-        return new SetCodecImpl(simpleCodec.sourceType(), simpleCodec.targetType(), simpleCodec);
+        final Field field = context.getCurrentField();
+        log.debug("Parse set codec for field {}", field);
+        if (filter.hasAnnotation(field, TypeTransformer.class)) {
+            return typeTransformerParser.parseAndValidateSetCodec(field);
+        } else {
+            final Codec simpleCodec = createSimpleCodecForCollection(context);
+            return new SetCodecImpl(simpleCodec.sourceType(), simpleCodec.targetType(), simpleCodec);
+        }
     }
 
     MapCodec parseMapField(PropertyParsingContext context) {
         final Field field = context.getCurrentField();
         log.debug("Parse map codec for field {}", field);
 
-        final Optional<Encoding> maybeEncodingKey = fromNullable(field.getAnnotation(Enumerated.class)).transform(keyEncoding);
-        final Optional<Encoding> maybeEncodingValue = fromNullable(field.getAnnotation(Enumerated.class)).transform(valueEncoding);
+        if (filter.hasAnnotation(field, TypeTransformer.class)) {
+            return typeTransformerParser.parseAndValidateMapCodec(field);
+        } else {
+            final Optional<Encoding> maybeEncodingKey = fromNullable(field.getAnnotation(Enumerated.class)).transform(keyEncoding);
+            final Optional<Encoding> maybeEncodingValue = fromNullable(field.getAnnotation(Enumerated.class)).transform(valueEncoding);
 
-        final Pair<Class<Object>, Class<Object>> sourceTargetTypes = TypeParser.determineMapGenericTypes(field);
+            final Pair<Class<Object>, Class<Object>> sourceTargetTypes = TypeParser.determineMapGenericTypes(field);
 
-        final SimpleCodec keyCodec = createSimpleCodec(context, sourceTargetTypes.left, maybeEncodingKey);
-        final SimpleCodec valueCodec = createSimpleCodec(context, sourceTargetTypes.right, maybeEncodingValue);
+            final Codec keyCodec = createSimpleCodec(context, sourceTargetTypes.left, maybeEncodingKey);
+            final Codec valueCodec = createSimpleCodec(context, sourceTargetTypes.right, maybeEncodingValue);
 
-        return MapCodecBuilder.fromKeyType(keyCodec.sourceType())
-                .toKeyType(keyCodec.targetType())
-                .withKeyCodec(keyCodec)
-                .fromValueType(valueCodec.sourceType())
-                .toValueType(valueCodec.targetType())
-                .withValueCodec(valueCodec);
+            return MapCodecBuilder.fromKeyType(keyCodec.sourceType())
+                    .toKeyType(keyCodec.targetType())
+                    .withKeyCodec(keyCodec)
+                    .fromValueType(valueCodec.sourceType())
+                    .toValueType(valueCodec.targetType())
+                    .withValueCodec(valueCodec);
+        }
+
     }
 
-    Class<?> determineCQL3ValueType(SimpleCodec simpleCodec, boolean timeUUID) {
+    Class<?> determineCQL3ValueType(Codec simpleCodec, boolean timeUUID) {
         log.trace("Determine CQL3 type for type {}", simpleCodec.sourceType());
         return determineType(simpleCodec.targetType(), timeUUID);
     }
@@ -130,9 +152,9 @@ public class CodecFactory {
             return input;
         }
     }
-    private SimpleCodec createSimpleCodec(PropertyParsingContext context, Class type, Optional<Encoding> maybeEncoding) {
+    private Codec createSimpleCodec(PropertyParsingContext context, Class type, Optional<Encoding> maybeEncoding) {
         log.debug("Create simple codec for java type {}", type);
-        SimpleCodec codec;
+        Codec codec;
         if (Byte.class.isAssignableFrom(type) || byte.class.isAssignableFrom(type)) {
             codec = new ByteCodec();
         } else if (byte[].class.isAssignableFrom(type)) {
@@ -149,9 +171,9 @@ public class CodecFactory {
         return codec;
     }
 
-    private SimpleCodec createEnumCodec(Class type, Optional<Encoding> maybeEncoding) {
+    private Codec createEnumCodec(Class type, Optional<Encoding> maybeEncoding) {
         log.debug("Create enum codec for java type {}", type);
-        SimpleCodec codec;
+        Codec codec;
         final List<Object> enumConstants = Arrays.asList(type.getEnumConstants());
         if (maybeEncoding.isPresent()) {
             if (maybeEncoding.get() == Encoding.NAME) {
@@ -164,7 +186,7 @@ public class CodecFactory {
         } return codec;
     }
 
-    private SimpleCodec createSimpleCodecForCollection(PropertyParsingContext context) {
+    private Codec createSimpleCodecForCollection(PropertyParsingContext context) {
         final Field field = context.getCurrentField();
         final Optional<Encoding> maybeEncoding = fromNullable(field.getAnnotation(Enumerated.class)).transform(valueEncoding);
         final Class<Object> valueType = TypeParser.inferValueClassForListOrSet(field.getGenericType(), field.getClass());

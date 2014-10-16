@@ -3,10 +3,8 @@ package info.archinnov.achilles.internal.metadata.codec;
 import static org.fest.assertions.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
-import info.archinnov.achilles.internal.metadata.codec.MapCodec;
-import info.archinnov.achilles.internal.metadata.codec.MapCodecBuilder;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +18,7 @@ public class MapCodecImplTest {
     @Test
     public void should_encode_and_decode_a_complete_transformed_map() throws Exception {
         //Given
-        SimpleCodec<PropertyType, String> keyCodec = new SimpleCodec<PropertyType, String>() {
+        Codec<PropertyType, String> keyCodec = new Codec<PropertyType, String>() {
             @Override
             public Class<PropertyType> sourceType() {
                 return PropertyType.class;
@@ -42,7 +40,7 @@ public class MapCodecImplTest {
             }
         };
 
-        SimpleCodec<Integer, String> valueCodec = new SimpleCodec<Integer, String>() {
+        Codec<Integer, String> valueCodec = new Codec<Integer, String>() {
             @Override
             public Class<Integer> sourceType() {
                 return Integer.class;
@@ -87,7 +85,7 @@ public class MapCodecImplTest {
     @Test
     public void should_encode_and_decoded_transformed_key_map() throws Exception {
         //Given
-        SimpleCodec<PropertyType, String> keyCodec = new SimpleCodec<PropertyType, String>() {
+        Codec<PropertyType, String> keyCodec = new Codec<PropertyType, String>() {
             @Override
             public Class<PropertyType> sourceType() {
                 return PropertyType.class;
@@ -130,7 +128,7 @@ public class MapCodecImplTest {
     @Test
     public void should_encode_and_decode_transformed_value() throws Exception {
         //Given
-        SimpleCodec<Integer, String> valueCodec = new SimpleCodec<Integer, String>() {
+        Codec<Integer, String> valueCodec = new Codec<Integer, String>() {
             @Override
             public Class<Integer> sourceType() {
                 return Integer.class;

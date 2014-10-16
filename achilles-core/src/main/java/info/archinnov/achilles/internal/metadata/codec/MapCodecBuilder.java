@@ -1,5 +1,7 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
+
 public class MapCodecBuilder {
 
     public static <TYPE> FromSourceKeyType<TYPE> fromKeyType(Class<TYPE> sourceKeyType) {
@@ -31,7 +33,7 @@ public class MapCodecBuilder {
             this.targetKeyType = targetKeyType;
         }
 
-        public WithKeyCodec<FROM_KEY, TO_KEY> withKeyCodec(SimpleCodec<FROM_KEY, TO_KEY> keyCodec) {
+        public WithKeyCodec<FROM_KEY, TO_KEY> withKeyCodec(Codec<FROM_KEY, TO_KEY> keyCodec) {
             return new WithKeyCodec<>(sourceKeyType, targetKeyType, keyCodec);
         }
     }
@@ -56,9 +58,9 @@ public class MapCodecBuilder {
     public static class WithKeyCodec<FROM_KEY, TO_KEY> {
         private final Class<FROM_KEY> sourceKeyType;
         private final Class<TO_KEY> targetKeyType;
-        private final SimpleCodec<FROM_KEY, TO_KEY> sourceCodec;
+        private final Codec<FROM_KEY, TO_KEY> sourceCodec;
 
-        private WithKeyCodec(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, SimpleCodec<FROM_KEY, TO_KEY> sourceCodec) {
+        private WithKeyCodec(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, Codec<FROM_KEY, TO_KEY> sourceCodec) {
             this.sourceKeyType = sourceKeyType;
             this.targetKeyType = targetKeyType;
             this.sourceCodec = sourceCodec;
@@ -79,10 +81,10 @@ public class MapCodecBuilder {
     public static class FromSourceValueType<FROM_KEY, TO_KEY, FROM_VAL> {
         private final Class<FROM_KEY> sourceKeyType;
         private final Class<TO_KEY> targetKeyType;
-        private final SimpleCodec<FROM_KEY, TO_KEY> keyCodec;
+        private final Codec<FROM_KEY, TO_KEY> keyCodec;
         private final Class<FROM_VAL> sourceValueType;
 
-        private FromSourceValueType(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, SimpleCodec<FROM_KEY, TO_KEY> keyCodec, Class<FROM_VAL> sourceValueType) {
+        private FromSourceValueType(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, Codec<FROM_KEY, TO_KEY> keyCodec, Class<FROM_VAL> sourceValueType) {
             this.sourceKeyType = sourceKeyType;
             this.targetKeyType = targetKeyType;
             this.keyCodec = keyCodec;
@@ -97,11 +99,11 @@ public class MapCodecBuilder {
     public static class ToTargetValueType<FROM_KEY, TO_KEY, FROM_VAL, TO_VAL> {
         private final Class<FROM_KEY> sourceKeyType;
         private final Class<TO_KEY> targetKeyType;
-        private final SimpleCodec<FROM_KEY, TO_KEY> keyCodec;
+        private final Codec<FROM_KEY, TO_KEY> keyCodec;
         private final Class<FROM_VAL> sourceValueType;
         private final Class<TO_VAL> targetValueType;
 
-        private ToTargetValueType(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, SimpleCodec<FROM_KEY, TO_KEY> keyCodec, Class<FROM_VAL> sourceValueType, Class<TO_VAL> targetValueType) {
+        private ToTargetValueType(Class<FROM_KEY> sourceKeyType, Class<TO_KEY> targetKeyType, Codec<FROM_KEY, TO_KEY> keyCodec, Class<FROM_VAL> sourceValueType, Class<TO_VAL> targetValueType) {
             this.sourceKeyType = sourceKeyType;
             this.targetKeyType = targetKeyType;
             this.keyCodec = keyCodec;
@@ -109,7 +111,7 @@ public class MapCodecBuilder {
             this.targetValueType = targetValueType;
         }
 
-        public MapCodec<FROM_KEY, FROM_VAL, TO_KEY, TO_VAL> withValueCodec(SimpleCodec<FROM_VAL, TO_VAL> valueCodec) {
+        public MapCodec<FROM_KEY, FROM_VAL, TO_KEY, TO_VAL> withValueCodec(Codec<FROM_VAL, TO_VAL> valueCodec) {
             return new MapCodecImpl<>(sourceKeyType, sourceValueType, targetKeyType, targetValueType, keyCodec, valueCodec);
         }
     }

@@ -19,10 +19,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import com.google.common.base.Optional;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.internal.metadata.codec.ListCodec;
 import info.archinnov.achilles.internal.metadata.codec.MapCodec;
 import info.archinnov.achilles.internal.metadata.codec.SetCodec;
-import info.archinnov.achilles.internal.metadata.codec.SimpleCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,7 +46,7 @@ public class PropertyMetaBuilder {
     private boolean timeUUID = false;
     private boolean emptyCollectionAndMapIfNull = false;
     private boolean staticColumn = false;
-    private SimpleCodec simpleCodec;
+    private Codec simpleCodec;
     private ListCodec listCodec;
     private SetCodec setCodec;
     private MapCodec mapCodec;
@@ -150,7 +150,7 @@ public class PropertyMetaBuilder {
         return this;
     }
 
-    public PropertyMetaBuilder simpleCodec(SimpleCodec simpleCodec) {
+    public PropertyMetaBuilder simpleCodec(Codec simpleCodec) {
         this.simpleCodec = simpleCodec;
         return this;
     }

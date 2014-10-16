@@ -2,13 +2,14 @@ package info.archinnov.achilles.internal.metadata.codec;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.io.IOException;
 
 import static java.lang.String.format;
 
-public class JSONCodec<TYPE> implements SimpleCodec<TYPE,String> {
+public class JSONCodec<TYPE> implements Codec<TYPE,String> {
 
     private final Class<TYPE> sourceType;
     private final ObjectMapper objectMapper;

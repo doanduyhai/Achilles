@@ -1,20 +1,21 @@
 package info.archinnov.achilles.internal.metadata.codec;
 
+import info.archinnov.achilles.codec.Codec;
 import info.archinnov.achilles.exception.AchillesTranscodingException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapCodecImpl<FROM_KEY,FROM_VAL,TO_KEY,TO_VAL> implements MapCodec<FROM_KEY,FROM_VAL,TO_KEY,TO_VAL>{
+public class MapCodecImpl<FROM_KEY,FROM_VAL,TO_KEY,TO_VAL> implements MapCodec<FROM_KEY,FROM_VAL,TO_KEY,TO_VAL> {
 
     private final Class<FROM_KEY> sourceKeyType;
     private final Class<FROM_VAL> sourceValueType;
     private final Class<TO_KEY> targetKeyType;
     private final Class<TO_VAL> targetValueType;
-    private final SimpleCodec<FROM_KEY,TO_KEY> keyCodec;
-    private final SimpleCodec<FROM_VAL,TO_VAL> valueCodec;
+    private final Codec<FROM_KEY,TO_KEY> keyCodec;
+    private final Codec<FROM_VAL,TO_VAL> valueCodec;
 
-    MapCodecImpl(Class<FROM_KEY> sourceKeyType, Class<FROM_VAL> sourceValueType, Class<TO_KEY> targetKeyType, Class<TO_VAL> targetValueType, SimpleCodec<FROM_KEY, TO_KEY> keyCodec, SimpleCodec<FROM_VAL, TO_VAL> valueCodec) {
+    MapCodecImpl(Class<FROM_KEY> sourceKeyType, Class<FROM_VAL> sourceValueType, Class<TO_KEY> targetKeyType, Class<TO_VAL> targetValueType, Codec<FROM_KEY, TO_KEY> keyCodec, Codec<FROM_VAL, TO_VAL> valueCodec) {
         this.sourceKeyType = sourceKeyType;
         this.sourceValueType = sourceValueType;
         this.targetKeyType = targetKeyType;
