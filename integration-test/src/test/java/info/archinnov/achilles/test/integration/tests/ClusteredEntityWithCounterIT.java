@@ -109,7 +109,7 @@ public class ClusteredEntityWithCounterIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		Thread.sleep(2000);
 

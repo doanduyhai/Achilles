@@ -28,16 +28,16 @@ package info.archinnov.achilles.interceptor;
  * </tr></thead>
  * <tbody>
  * <tr>
- * <td>persist()</td>
- * <td>PRE_PERSIST/POST_PERSIST</td>
+ * <td>insert()</td>
+ * <td>PRE_INSERT/POST_INSERT</td>
  * </tr>
  * <tr>
  * <td>update()</td>
  * <td>PRE_UPDATE/POST_UPDATE</td>
  * </tr>
  * <tr>
- * <td>remove()</td>
- * <td>PRE_REMOVE/POST_REMOVE</td>
+ * <td>delete()</td>
+ * <td>PRE_DELETE/POST_DELETE</td>
  * </tr>
  * <tr>
  * <td>find()</td>
@@ -61,5 +61,5 @@ package info.archinnov.achilles.interceptor;
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Interceptors" target="_blank">Interceptors</a>
  */
 public enum Event {
-    PRE_PERSIST, POST_PERSIST, PRE_UPDATE, POST_UPDATE, PRE_REMOVE, POST_REMOVE, POST_LOAD;
+    PRE_INSERT, POST_INSERT, PRE_UPDATE, POST_UPDATE, PRE_DELETE, POST_DELETE, POST_LOAD;
 }

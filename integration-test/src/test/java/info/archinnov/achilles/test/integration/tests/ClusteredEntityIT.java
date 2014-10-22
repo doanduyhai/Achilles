@@ -122,7 +122,7 @@ public class ClusteredEntityIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNull();
 
@@ -136,7 +136,7 @@ public class ClusteredEntityIT {
 
 		entity = manager.insert(entity);
 
-		manager.removeById(ClusteredEntity.class, entity.getId());
+		manager.deleteById(ClusteredEntity.class, entity.getId());
 
 		assertThat(manager.find(ClusteredEntity.class, compoundKey)).isNull();
 

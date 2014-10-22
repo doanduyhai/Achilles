@@ -232,7 +232,7 @@ public class PersistenceManagerOperationsIT {
 
         entity = manager.insert(entity);
 
-        manager.remove(entity);
+        manager.delete(entity);
 
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 
@@ -248,7 +248,7 @@ public class PersistenceManagerOperationsIT {
 
         entity = manager.insert(entity);
 
-        manager.removeById(CompleteBean.class, entity.getId());
+        manager.deleteById(CompleteBean.class, entity.getId());
 
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
 
@@ -264,7 +264,7 @@ public class PersistenceManagerOperationsIT {
 
         manager.insert(entity);
 
-        manager.remove(entity);
+        manager.delete(entity);
 
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
     }

@@ -152,7 +152,7 @@ public class StaticColumnIT {
         final ClusteredEntityWithStaticColumn managed = manager.insert(parisStreet);
 
         //When
-        manager.remove(managed);
+        manager.delete(managed);
 
         //Then
         final ClusteredEntityWithStaticColumn found = manager.find(ClusteredEntityWithStaticColumn.class, parisStreet.getId());
@@ -233,7 +233,7 @@ public class StaticColumnIT {
         final ClusteredEntityWithOnlyStaticColumns managed = manager.insert(location);
 
         //When
-        manager.remove(managed);
+        manager.delete(managed);
 
         //Then
         final ClusteredEntityWithOnlyStaticColumns found = manager.find(ClusteredEntityWithOnlyStaticColumns.class, location.getId());
@@ -362,7 +362,7 @@ public class StaticColumnIT {
         final ClusteredEntityWithStaticCounter managed = manager.insert(entity);
 
         //When
-        manager.remove(managed);
+        manager.delete(managed);
 
         Thread.sleep(1000);
 

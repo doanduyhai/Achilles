@@ -53,7 +53,7 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *         <em>remove()</em>
  *     </li>
  *     <li>
- *         <em>removeById()</em>
+ *         <em>deleteById()</em>
  *     </li>
  * </ul>
  *
@@ -315,8 +315,8 @@ public class Batch extends CommonPersistenceManager {
      *            Entity to be removed
      */
     @Override
-    public void remove(final Object entity) {
-        super.remove(entity, maybeAddTimestampToStatement(noOptions()));
+    public void delete(final Object entity) {
+        super.delete(entity, maybeAddTimestampToStatement(noOptions()));
     }
 
     /**
@@ -340,12 +340,12 @@ public class Batch extends CommonPersistenceManager {
      *            options for consistency level and timestamp
      */
     @Override
-    public void remove(final Object entity, Options options) {
+    public void delete(final Object entity, Options options) {
         if (options.getConsistencyLevel().isPresent()) {
             flushContext = flushContext.duplicateWithNoData();
             throw new AchillesException("Runtime custom Consistency Level cannot be set for batch mode. Please set the Consistency Levels at batch start with 'startBatch(consistencyLevel)'");
         } else {
-            super.remove(entity, maybeAddTimestampToStatement(options));
+            super.delete(entity, maybeAddTimestampToStatement(options));
         }
     }
 
@@ -355,7 +355,7 @@ public class Batch extends CommonPersistenceManager {
      *  <pre class="code"><code class="java">
      *      // Direct remove without read-before-write
      *      Batch batch = manager.createBatch();
-     *      batch.removeById(User.class,1L);
+     *      batch.deleteById(User.class,1L);
      *
      *      ...
      *
@@ -369,8 +369,8 @@ public class Batch extends CommonPersistenceManager {
      *            Primary key
      */
     @Override
-    public void removeById(Class<?> entityClass, Object primaryKey) {
-        super.removeById(entityClass, primaryKey, maybeAddTimestampToStatement(noOptions()));
+    public void deleteById(Class<?> entityClass, Object primaryKey) {
+        super.deleteById(entityClass, primaryKey, maybeAddTimestampToStatement(noOptions()));
     }
 
     /**
@@ -379,7 +379,7 @@ public class Batch extends CommonPersistenceManager {
      *  <pre class="code"><code class="java">
      *      // Direct remove without read-before-write
      *      Batch batch = manager.createBatch();
-     *      batch.removeById(User.class,1L, Options.withTimestamp(32234424234L));
+     *      batch.deleteById(User.class,1L, Options.withTimestamp(32234424234L));
      *
      *      ...
      *
@@ -393,8 +393,8 @@ public class Batch extends CommonPersistenceManager {
      *            Primary key
      */
     @Override
-    public void removeById(Class<?> entityClass, Object primaryKey, Options options) {
-        super.removeById(entityClass, primaryKey, maybeAddTimestampToStatement(options));
+    public void deleteById(Class<?> entityClass, Object primaryKey, Options options) {
+        super.deleteById(entityClass, primaryKey, maybeAddTimestampToStatement(options));
     }
 
     /**

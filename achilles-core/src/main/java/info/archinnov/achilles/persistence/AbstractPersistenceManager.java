@@ -98,14 +98,14 @@ abstract class AbstractPersistenceManager {
         context.update(entity);
     }
 
-    protected void remove(final Object entity, Options options) {
+    protected void delete(final Object entity, Options options) {
         Object realObject = proxifier.getRealObject(entity);
         entityValidator.validateEntity(realObject, entityMetaMap);
         PersistenceManagerOperations context = initPersistenceContext(realObject, options);
         context.remove();
     }
 
-    protected void removeById(Class<?> entityClass, Object primaryKey, Options options) {
+    protected void deleteById(Class<?> entityClass, Object primaryKey, Options options) {
         Validator.validateNotNull(entityClass, "The entity class should not be null for removal by id");
         Validator.validateNotNull(primaryKey, "The primary key should not be null for removal by id");
         PersistenceManagerOperations context = initPersistenceContext(entityClass, primaryKey, options);

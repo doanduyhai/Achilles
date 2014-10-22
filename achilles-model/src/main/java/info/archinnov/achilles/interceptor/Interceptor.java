@@ -55,7 +55,7 @@ import java.util.List;
  *       }
  *
  *       public List&lt;Event&gt; events() {
- *          return Arrays.asList(PRE_PERSIST,PRE_UPDATE);
+ *          return Arrays.asList(PRE_INSERT,PRE_UPDATE);
  *          }
  *    }
  *

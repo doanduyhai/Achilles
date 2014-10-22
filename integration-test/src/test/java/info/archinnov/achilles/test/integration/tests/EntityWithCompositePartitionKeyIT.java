@@ -110,7 +110,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		EntityWithCompositePartitionKey found = manager.find(EntityWithCompositePartitionKey.class, new EmbeddedKey(id,
 				"type"));
@@ -126,7 +126,7 @@ public class EntityWithCompositePartitionKeyIT {
 
 		manager.insert(entity);
 
-		manager.removeById(EntityWithCompositePartitionKey.class, compositeRowKey);
+		manager.deleteById(EntityWithCompositePartitionKey.class, compositeRowKey);
 
 		assertThat(manager.find(EntityWithCompositePartitionKey.class, compositeRowKey)).isNull();
 

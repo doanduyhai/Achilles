@@ -17,18 +17,18 @@
 package info.archinnov.achilles.internal.context;
 
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
+import static info.archinnov.achilles.interceptor.Event.POST_DELETE;
 import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
+import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import java.util.Arrays;
+
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.RandomUtils;
@@ -136,10 +136,10 @@ public class PersistenceManagerFacadeTest {
 
         InOrder inOrder = Mockito.inOrder(flushContext, persister);
 
-        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_PERSIST);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_INSERT);
         inOrder.verify(persister).persist(context.entityFacade);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_PERSIST);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_INSERT);
     }
 
     @Test
@@ -172,10 +172,10 @@ public class PersistenceManagerFacadeTest {
         //Then
         InOrder inOrder = Mockito.inOrder(flushContext, persister);
 
-        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_REMOVE);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_DELETE);
         inOrder.verify(persister).remove(context.entityFacade);
         inOrder.verify(flushContext).flush();
-        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_REMOVE);
+        inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_DELETE);
     }
 
     @Test

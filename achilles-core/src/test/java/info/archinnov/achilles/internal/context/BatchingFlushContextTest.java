@@ -162,14 +162,14 @@ public class BatchingFlushContextTest {
         Object entity = new Object();
 
         //When
-        context.triggerInterceptor(meta, entity, Event.POST_PERSIST);
+        context.triggerInterceptor(meta, entity, Event.POST_INSERT);
 
         //Then
-        verify(meta.forInterception(), never()).intercept(entity, Event.POST_PERSIST);
+        verify(meta.forInterception(), never()).intercept(entity, Event.POST_INSERT);
         assertThat(context.eventHolders).hasSize(1);
         final EventHolder eventHolder = context.eventHolders.get(0);
         eventHolder.triggerInterception();
-        verify(meta.forInterception()).intercept(entity, Event.POST_PERSIST);
+        verify(meta.forInterception()).intercept(entity, Event.POST_INSERT);
     }
 
     @Test

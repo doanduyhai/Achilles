@@ -100,7 +100,7 @@ public class EntityWithGroupConstraint {
 
 		@Override
 		public List<Event> events() {
-			return asList(PRE_PERSIST, PRE_UPDATE);
+			return asList(PRE_INSERT, PRE_UPDATE);
 		}
 
 	}

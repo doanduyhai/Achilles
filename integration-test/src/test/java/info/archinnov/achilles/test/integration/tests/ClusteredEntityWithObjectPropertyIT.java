@@ -101,7 +101,7 @@ public class ClusteredEntityWithObjectPropertyIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntityWithObjectValue.class, compoundKey)).isNull();
 

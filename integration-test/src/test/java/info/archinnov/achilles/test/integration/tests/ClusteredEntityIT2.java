@@ -104,7 +104,7 @@ public class ClusteredEntityIT2 {
 
 		tweet = manager.insert(tweet);
 
-		manager.remove(tweet);
+		manager.delete(tweet);
 
 		ClusteredTweetEntity found = manager.find(ClusteredTweetEntity.class, id);
 
@@ -181,7 +181,7 @@ public class ClusteredEntityIT2 {
 
 		message = manager.insert(message);
 
-		manager.remove(message);
+		manager.delete(message);
 
 		ClusteredMessageEntity found = manager.find(ClusteredMessageEntity.class, messageId);
 

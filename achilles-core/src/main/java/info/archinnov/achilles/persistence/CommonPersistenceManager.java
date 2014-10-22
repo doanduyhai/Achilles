@@ -147,7 +147,7 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
     }
 
     /**
-     * Remove an entity.
+     * Delete an entity.
      *
      *  <pre class="code"><code class="java">
      *      // Simple removal
@@ -156,15 +156,15 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *  </code></pre>
      *
      * @param entity
-     *            Entity to be removed
+     *            Entity to be deleted
      */
-    public void remove(Object entity) {
-        log.debug("Removing entity '{}'", proxifier.getRealObject(entity));
-        super.remove(entity, noOptions());
+    public void delete(Object entity) {
+        log.debug("Deleting entity '{}'", proxifier.getRealObject(entity));
+        super.delete(entity, noOptions());
     }
 
     /**
-     * Remove an entity with the given options.
+     * Delete an entity with the given options.
      *
      *  <pre class="code"><code class="java">
      *      // Removal with option
@@ -173,21 +173,21 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      *  </code></pre>
      *
      * @param entity
-     *            Entity to be removed
+     *            Entity to be deleted
      * @param options
      *            options for consistency level and timestamp
      */
-    public void remove(final Object entity, Options options) {
+    public void delete(final Object entity, Options options) {
         log.debug("Removing entity '{}' with options {}", proxifier.getRealObject(entity), options);
-        super.remove(entity,options);
+        super.delete(entity, options);
     }
 
     /**
-     * Remove an entity by its id.
+     * Delete an entity by its id.
      *
      *  <pre class="code"><code class="java">
      *      // Direct remove without read-before-write
-     *      manager.removeById(User.class,1L);
+     *      manager.deleteById(User.class,1L);
      *  </code></pre>
      *
      * @param entityClass
@@ -196,17 +196,17 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      * @param primaryKey
      *            Primary key
      */
-    public void removeById(Class<?> entityClass, Object primaryKey) {
+    public void deleteById(Class<?> entityClass, Object primaryKey) {
         log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        super.removeById(entityClass, primaryKey, noOptions());
+        super.deleteById(entityClass, primaryKey, noOptions());
     }
 
     /**
-     * Remove an entity by its id with the given options.
+     * Delete an entity by its id with the given options.
      *
      *  <pre class="code"><code class="java">
      *      // Direct remove without read-before-write
-     *      manager.removeById(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
+     *      manager.deleteById(User.class,1L,OptionsBuilder.withConsistency(QUORUM));
      *  </code></pre>
      *
      * @param entityClass
@@ -215,8 +215,8 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
      * @param primaryKey
      *            Primary key
      */
-    public void removeById(Class<?> entityClass, Object primaryKey, Options options) {
+    public void deleteById(Class<?> entityClass, Object primaryKey, Options options) {
         log.debug("Removing entity of type '{}' by its id '{}'", entityClass, primaryKey);
-        super.removeById(entityClass, primaryKey, options);
+        super.deleteById(entityClass, primaryKey, options);
     }
 }

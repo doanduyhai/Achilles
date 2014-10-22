@@ -179,7 +179,7 @@ public class ConsistencyLevelIT {
         entity = manager.insert(entity);
 
         logAsserter.prepareLogLevel();
-        manager.remove(entity, withConsistency(EACH_QUORUM));
+        manager.delete(entity, withConsistency(EACH_QUORUM));
         assertThat(manager.find(CompleteBean.class, entity.getId())).isNull();
         logAsserter.assertConsistencyLevels(EACH_QUORUM,ONE);
     }

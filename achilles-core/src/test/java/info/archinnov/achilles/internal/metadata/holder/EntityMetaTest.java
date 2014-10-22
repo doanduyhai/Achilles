@@ -15,8 +15,8 @@
  */
 package info.archinnov.achilles.internal.metadata.holder;
 
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
+import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
+import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.COUNTER;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.EMBEDDED_ID;
 import static info.archinnov.achilles.internal.metadata.holder.PropertyType.SIMPLE;
@@ -38,7 +38,6 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.interceptor.Event;
 import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.internal.reflection.ReflectionInvoker;
 import info.archinnov.achilles.test.builders.CompleteBeanTestBuilder;
 import info.archinnov.achilles.test.mapping.entity.CompleteBean;
 import info.archinnov.achilles.type.Pair;
@@ -206,16 +205,16 @@ public class EntityMetaTest {
     public void should_return_event_interceptors_for_specific_event() throws Exception {
         // Given
         EntityMeta entityMeta = new EntityMeta();
-        Interceptor<String> postPersistInterceptor = createInterceptor(POST_PERSIST);
-        Interceptor<String> prePersistInterceptor = createInterceptor(PRE_PERSIST);
+        Interceptor<String> postPersistInterceptor = createInterceptor(POST_INSERT);
+        Interceptor<String> prePersistInterceptor = createInterceptor(PRE_INSERT);
 
         // When
         entityMeta.forInterception().addInterceptor(postPersistInterceptor);
         entityMeta.forInterception().addInterceptor(prePersistInterceptor);
 
         // Then
-        assertThat(entityMeta.forInterception().getInterceptorsForEvent(POST_PERSIST)).containsExactly(postPersistInterceptor);
-        assertThat(entityMeta.forInterception().getInterceptorsForEvent(PRE_PERSIST)).containsExactly(prePersistInterceptor);
+        assertThat(entityMeta.forInterception().getInterceptorsForEvent(POST_INSERT)).containsExactly(postPersistInterceptor);
+        assertThat(entityMeta.forInterception().getInterceptorsForEvent(PRE_INSERT)).containsExactly(prePersistInterceptor);
     }
 
     @Test
@@ -227,12 +226,12 @@ public class EntityMetaTest {
                 .type(PropertyType.EMBEDDED_ID).accessors().build();
 //        idMeta.setInvoker(new ReflectionInvoker());
         entityMeta.setIdMeta(idMeta);
-        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(PRE_PERSIST, 30L));
-        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(POST_PERSIST, 35L));
+        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(PRE_INSERT, 30L));
+        entityMeta.forInterception().addInterceptor(createInterceptorForCompleteBean(POST_INSERT, 35L));
 
-        entityMeta.forInterception().intercept(bean, PRE_PERSIST);
+        entityMeta.forInterception().intercept(bean, PRE_INSERT);
         Assertions.assertThat(bean.getAge()).isEqualTo(30L);
-        entityMeta.forInterception().intercept(bean, POST_PERSIST);
+        entityMeta.forInterception().intercept(bean, POST_INSERT);
         Assertions.assertThat(bean.getAge()).isEqualTo(35L);
     }
 

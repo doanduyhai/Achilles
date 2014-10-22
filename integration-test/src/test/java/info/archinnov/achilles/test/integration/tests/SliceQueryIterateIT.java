@@ -115,7 +115,7 @@ public class SliceQueryIterateIT {
         assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
         // Check for remove
-        manager.remove(clusteredEntity);
+        manager.delete(clusteredEntity);
         assertThat(manager.find(ClusteredEntity.class, clusteredEntity.getId())).isNull();
     }
 

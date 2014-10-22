@@ -66,7 +66,7 @@ public class DefaultBeanValidationInterceptor implements Interceptor<Object> {
 
 	@Override
 	public List<Event> events() {
-		return asList(PRE_PERSIST, PRE_UPDATE);
+		return asList(PRE_INSERT, PRE_UPDATE);
 	}
 
 }

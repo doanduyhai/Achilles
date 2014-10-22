@@ -68,7 +68,7 @@ import info.archinnov.achilles.type.Options;
  *      manager.remove(managedUser);
  *
  *      // Direct remove without read-before-write
- *      manager.removeById(User.class,1L);
+ *      manager.deleteById(User.class,1L);
  *  </code></pre>
  *
  *  <h3>IV Loading entities</h3>

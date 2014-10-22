@@ -21,11 +21,11 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
+import static info.archinnov.achilles.interceptor.Event.POST_DELETE;
 import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
+import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
 import static java.util.Arrays.asList;
@@ -63,7 +63,7 @@ public class EventInterceptorIT {
 
         @Override
         public List<Event> events() {
-            return Arrays.asList(PRE_PERSIST);
+            return Arrays.asList(PRE_INSERT);
         }
     };
 
@@ -75,7 +75,7 @@ public class EventInterceptorIT {
 
         @Override
         public List<Event> events() {
-            return Arrays.asList(POST_PERSIST);
+            return Arrays.asList(POST_INSERT);
 
         }
     };
@@ -112,7 +112,7 @@ public class EventInterceptorIT {
 
         @Override
         public List<Event> events() {
-            return Arrays.asList(PRE_REMOVE);
+            return Arrays.asList(PRE_DELETE);
         }
     };
 
@@ -124,7 +124,7 @@ public class EventInterceptorIT {
 
         @Override
         public List<Event> events() {
-            return Arrays.asList(POST_REMOVE);
+            return Arrays.asList(POST_DELETE);
         }
     };
 
@@ -219,7 +219,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.remove(entity);
+        manager.delete(entity);
 
         assertThat(entity.getName()).isEqualTo("preRemove");
     }
@@ -229,7 +229,7 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager2.remove(entity);
+        manager2.delete(entity);
 
         assertThat(entity.getLabel()).isEqualTo("postRemove");
     }

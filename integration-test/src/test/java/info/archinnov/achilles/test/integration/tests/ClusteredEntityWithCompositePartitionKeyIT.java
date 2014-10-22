@@ -110,7 +110,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, compoundKey)).isNull();
 
@@ -126,7 +126,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 
 		entity = manager.insert(entity);
 
-		manager.removeById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
+		manager.deleteById(ClusteredEntityWithCompositePartitionKey.class, entity.getId());
 
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, compoundKey)).isNull();
 
@@ -214,7 +214,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
 		// Check for remove
-		manager.remove(clusteredEntity);
+		manager.delete(clusteredEntity);
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, clusteredEntity.getId())).isNull();
 	}
 
@@ -411,7 +411,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
 		// Check for remove
-		manager.remove(clusteredEntity);
+		manager.delete(clusteredEntity);
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, clusteredEntity.getId())).isNull();
 	}
 

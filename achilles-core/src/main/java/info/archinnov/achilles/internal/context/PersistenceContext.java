@@ -18,11 +18,11 @@ package info.archinnov.achilles.internal.context;
 import static com.google.common.collect.FluentIterable.from;
 import static info.archinnov.achilles.counter.AchillesCounter.ACHILLES_COUNTER_VALUE;
 import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
-import static info.archinnov.achilles.interceptor.Event.POST_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.POST_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
+import static info.archinnov.achilles.interceptor.Event.POST_DELETE;
 import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
-import static info.archinnov.achilles.interceptor.Event.PRE_PERSIST;
-import static info.archinnov.achilles.interceptor.Event.PRE_REMOVE;
+import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
+import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
 import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
 import static info.archinnov.achilles.type.Options.CASCondition;
 import java.lang.reflect.Method;
@@ -244,10 +244,10 @@ public class PersistenceContext {
         }
 
         public <T> T persist(T rawEntity) {
-            flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_PERSIST);
+            flushContext.triggerInterceptor(entityMeta, rawEntity, PRE_INSERT);
             persister.persist(entityFacade);
             flush();
-            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_PERSIST);
+            flushContext.triggerInterceptor(entityMeta, rawEntity, POST_INSERT);
             return proxifier.buildProxyWithAllFieldsLoadedExceptCounters(rawEntity, entityFacade);
         }
 
@@ -259,10 +259,10 @@ public class PersistenceContext {
         }
 
         public void remove() {
-            flushContext.triggerInterceptor(entityMeta, entity, PRE_REMOVE);
+            flushContext.triggerInterceptor(entityMeta, entity, PRE_DELETE);
             persister.remove(entityFacade);
             flush();
-            flushContext.triggerInterceptor(entityMeta, entity, POST_REMOVE);
+            flushContext.triggerInterceptor(entityMeta, entity, POST_DELETE);
         }
 
         public <T> T find(Class<T> entityClass) {

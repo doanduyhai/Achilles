@@ -96,7 +96,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 
 		entity = manager.insert(entity);
 
-		manager.remove(entity);
+		manager.delete(entity);
 
 		assertThat(manager.find(ClusteredEntityWithEnumCompoundKey.class, compoundKey)).isNull();
 

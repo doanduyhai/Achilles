@@ -113,7 +113,7 @@ public class CounterIT {
 		// Pause required to let Cassandra remove counter columns
 		Thread.sleep(1000);
 
-		manager.remove(bean);
+		manager.delete(bean);
 
 		row = session.execute(
 				"select counter_value from achilles_counter_table where fqcn='" + CompleteBean.class.getCanonicalName()

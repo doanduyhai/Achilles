@@ -9,10 +9,7 @@ import info.archinnov.achilles.interceptor.Interceptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Arrays;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityMetaInterceptorsTest {
@@ -42,14 +39,14 @@ public class EntityMetaInterceptorsTest {
     public void should_get_interceptor_for_event() throws Exception {
         //Given
         Interceptor<String> interceptor = mock(Interceptor.class);
-        when(interceptor.events()).thenReturn(asList(Event.POST_LOAD, Event.POST_PERSIST));
+        when(interceptor.events()).thenReturn(asList(Event.POST_LOAD, Event.POST_INSERT));
 
         //When
         view.addInterceptor(interceptor);
 
         //Then
         assertThat(view.getInterceptorsForEvent(Event.POST_LOAD)).containsExactly(interceptor);
-        assertThat(view.getInterceptorsForEvent(Event.POST_PERSIST)).containsExactly(interceptor);
+        assertThat(view.getInterceptorsForEvent(Event.POST_INSERT)).containsExactly(interceptor);
         assertThat(view.getInterceptorsForEvent(Event.POST_UPDATE)).isEmpty();
     }
 }
