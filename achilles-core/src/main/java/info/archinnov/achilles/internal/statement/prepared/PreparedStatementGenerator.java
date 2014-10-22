@@ -251,20 +251,20 @@ public class PreparedStatementGenerator {
         }
     }
 
-    public Map<String, PreparedStatement> prepareRemovePSs(Session session, EntityMeta entityMeta) {
+    public Map<String, PreparedStatement> prepareDeletePSs(Session session, EntityMeta entityMeta) {
 
         log.trace("Generate prepared statement for DELETE of {}", entityMeta);
 
         PropertyMeta idMeta = entityMeta.getIdMeta();
         final EntityMetaConfig metaConfig = entityMeta.config();
 
-        Map<String, PreparedStatement> removePSs = new HashMap<>();
+        Map<String, PreparedStatement> deletePSs = new HashMap<>();
 
         Delete mainFrom = delete().from(metaConfig.getKeyspaceName(), metaConfig.getTableName());
         RegularStatement mainStatement = idMeta.forStatementGeneration().generateWhereClauseForDelete(entityMeta.structure().hasOnlyStaticColumns(), mainFrom);
-        removePSs.put(metaConfig.getQualifiedTableName(), session.prepare(mainStatement.getQueryString()));
+        deletePSs.put(metaConfig.getQualifiedTableName(), session.prepare(mainStatement.getQueryString()));
 
-        return removePSs;
+        return deletePSs;
     }
 
     public PreparedStatement prepareCollectionAndMapUpdate(Session session, EntityMeta meta, DirtyCheckChangeSet changeSet, Options options) {

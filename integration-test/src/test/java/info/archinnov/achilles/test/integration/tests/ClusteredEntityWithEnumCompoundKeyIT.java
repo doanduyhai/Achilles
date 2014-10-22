@@ -89,7 +89,7 @@ public class ClusteredEntityWithEnumCompoundKeyIT {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), Type.IMAGE);
 
 		entity = new ClusteredEntityWithEnumCompoundKey(compoundKey, "clustered_value");

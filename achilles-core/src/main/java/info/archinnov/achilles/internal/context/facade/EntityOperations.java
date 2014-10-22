@@ -35,14 +35,14 @@ public interface EntityOperations extends PersistentStateHolder {
 
     public void pushCollectionAndMapUpdateStatements(DirtyCheckChangeSet changeSet);
 
-    public void bindForRemoval(String tableName);
+    public void bindForDeletion(String tableName);
 
     // Simple counter
     public void bindForSimpleCounterIncrement(PropertyMeta counterMeta, Long increment);
 
     public Long getSimpleCounter(PropertyMeta counterMeta, ConsistencyLevel consistency);
 
-    public void bindForSimpleCounterRemoval(PropertyMeta counterMeta);
+    public void bindForSimpleCounterDeletion(PropertyMeta counterMeta);
 
     // Clustered counter
     public void pushClusteredCounterIncrementStatement(PropertyMeta counterMeta, Long increment);
@@ -51,6 +51,6 @@ public interface EntityOperations extends PersistentStateHolder {
 
     public Long getClusteredCounterColumn(PropertyMeta counterMeta);
 
-    public void bindForClusteredCounterRemoval();
+    public void bindForClusteredCounterDeletion();
 
 }

@@ -39,14 +39,14 @@ public class EntityPersister {
         }
     }
 
-    public void remove(EntityOperations context) {
-        log.trace("Removing entity using PersistenceContext {}", context);
+    public void delete(EntityOperations context) {
+        log.trace("Deleting entity using PersistenceContext {}", context);
         EntityMeta entityMeta = context.getEntityMeta();
         if (entityMeta.structure().isClusteredCounter()) {
-            context.bindForClusteredCounterRemoval();
+            context.bindForClusteredCounterDeletion();
         } else {
-            context.bindForRemoval(entityMeta.config().getQualifiedTableName());
-            counterPersister.removeRelatedCounters(context);
+            context.bindForDeletion(entityMeta.config().getQualifiedTableName());
+            counterPersister.deleteRelatedCounters(context);
         }
     }
 

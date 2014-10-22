@@ -101,7 +101,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
@@ -117,7 +117,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_remove_by_id() throws Exception {
+	public void should_delete_by_id() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		Integer index = 11;
 		compoundKey = new EmbeddedKey(id, "type", index);
@@ -213,7 +213,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
-		// Check for remove
+		// Check for delete
 		manager.delete(clusteredEntity);
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, clusteredEntity.getId())).isNull();
 	}
@@ -410,7 +410,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 		manager.refresh(clusteredEntity);
 		assertThat(clusteredEntity.getValue()).isEqualTo("dirty_again");
 
-		// Check for remove
+		// Check for delete
 		manager.delete(clusteredEntity);
 		assertThat(manager.find(ClusteredEntityWithCompositePartitionKey.class, clusteredEntity.getId())).isNull();
 	}
@@ -439,7 +439,7 @@ public class ClusteredEntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_remove_with_default_params() throws Exception {
+	public void should_delete_with_default_params() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(id, 3);
 

@@ -115,7 +115,7 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");
@@ -129,7 +129,7 @@ public class ClusteredEntityIT {
 	}
 
 	@Test
-	public void should_remove_by_id() throws Exception {
+	public void should_delete_by_id() throws Exception {
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), RandomUtils.nextInt(0,Integer.MAX_VALUE), "name");
 
 		entity = new ClusteredEntity(compoundKey, "clustered_value");

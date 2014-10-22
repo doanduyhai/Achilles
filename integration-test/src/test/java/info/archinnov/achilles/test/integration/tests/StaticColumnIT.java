@@ -144,7 +144,7 @@ public class StaticColumnIT {
 
 
     @Test
-    public void should_remove_static_and_non_static_column() throws Exception {
+    public void should_delete_static_and_non_static_column() throws Exception {
         //Given
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithStaticColumn parisStreet = new ClusteredEntityWithStaticColumn(new ClusteredKey(partitionKey, "street1"), "Paris", "rue de la paix");
@@ -225,7 +225,7 @@ public class StaticColumnIT {
 
 
     @Test
-    public void should_remove_all_static_columns() throws Exception {
+    public void should_delete_all_static_columns() throws Exception {
         //Given
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         ClusteredEntityWithOnlyStaticColumns location = new ClusteredEntityWithOnlyStaticColumns(new ClusteredOnlyStaticColumnsKey(partitionKey, "location"), "Paris", "rue de la paix");
@@ -353,7 +353,7 @@ public class StaticColumnIT {
     }
 
     @Test
-    public void should_remove_static_counter_and_non_static_counter_column() throws Exception {
+    public void should_delete_static_counter_and_non_static_counter_column() throws Exception {
         //Given
         Long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
         Counter version = CounterBuilder.incr(1L);

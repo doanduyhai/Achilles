@@ -94,7 +94,7 @@ public class CounterIT {
 	}
 
 	@Test
-	public void should_remove_counter() throws Exception {
+	public void should_delete_counter() throws Exception {
 		long version = 154321L;
 		bean = CompleteBeanTestBuilder.builder().randomId().name("test").buid();
 
@@ -110,7 +110,7 @@ public class CounterIT {
 
 		assertThat(row.getLong("counter_value")).isEqualTo(version);
 
-		// Pause required to let Cassandra remove counter columns
+		// Pause required to let Cassandra delete counter columns
 		Thread.sleep(1000);
 
 		manager.delete(bean);

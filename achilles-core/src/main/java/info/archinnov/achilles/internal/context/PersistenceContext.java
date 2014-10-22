@@ -258,9 +258,9 @@ public class PersistenceContext {
             flushContext.triggerInterceptor(entityMeta, proxifiedEntity, POST_UPDATE);
         }
 
-        public void remove() {
+        public void delete() {
             flushContext.triggerInterceptor(entityMeta, entity, PRE_DELETE);
-            persister.remove(entityFacade);
+            persister.delete(entityFacade);
             flush();
             flushContext.triggerInterceptor(entityMeta, entity, POST_DELETE);
         }
@@ -335,8 +335,8 @@ public class PersistenceContext {
             daoContext.pushCollectionAndMapUpdateStatement(daoFacade, changeSet);
         }
 
-        public void bindForRemoval(String tableName) {
-            daoContext.bindForRemoval(daoFacade, entityMeta,tableName);
+        public void bindForDeletion(String tableName) {
+            daoContext.bindForDeletion(daoFacade, entityMeta, tableName);
         }
 
         // Simple counter
@@ -354,7 +354,7 @@ public class PersistenceContext {
             return null;
         }
 
-        public void bindForSimpleCounterRemoval(PropertyMeta counterMeta) {
+        public void bindForSimpleCounterDeletion(PropertyMeta counterMeta) {
             daoContext.bindForSimpleCounterDelete(daoFacade, counterMeta);
         }
 
@@ -373,7 +373,7 @@ public class PersistenceContext {
             return daoContext.getClusteredCounterColumn(daoFacade, counterMeta);
         }
 
-        public void bindForClusteredCounterRemoval() {
+        public void bindForClusteredCounterDeletion() {
             daoContext.bindForClusteredCounterDelete(daoFacade);
         }
     }

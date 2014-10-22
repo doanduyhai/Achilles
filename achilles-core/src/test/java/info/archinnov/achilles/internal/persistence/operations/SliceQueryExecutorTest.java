@@ -153,7 +153,7 @@ public class SliceQueryExecutorTest {
     }
 
     @Test
-    public void should_remove_clustered_entities() throws Exception {
+    public void should_delete_clustered_entities() throws Exception {
         when(daoContext.bindForSliceQueryDelete(sliceQueryProperties, defaultWriteLevel)).thenReturn(bsWrapper);
 
         executor.delete(sliceQueryProperties);

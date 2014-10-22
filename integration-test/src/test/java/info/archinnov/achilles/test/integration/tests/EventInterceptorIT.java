@@ -215,7 +215,7 @@ public class EventInterceptorIT {
     }
 
     @Test
-    public void should_apply_pre_remove_interceptors() throws Exception {
+    public void should_apply_pre_delete_interceptors() throws Exception {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
@@ -225,7 +225,7 @@ public class EventInterceptorIT {
     }
 
     @Test
-    public void should_apply_post_remove_interceptors() throws Exception {
+    public void should_apply_post_delete_interceptors() throws Exception {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 

@@ -161,19 +161,19 @@ public class PersistenceManagerFacadeTest {
     }
 
     @Test
-    public void should_remove() throws Exception {
+    public void should_delete() throws Exception {
         //Given
         Object entity = new Object();
         context.entity = entity;
 
         //When
-        facade.remove();
+        facade.delete();
 
         //Then
         InOrder inOrder = Mockito.inOrder(flushContext, persister);
 
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, PRE_DELETE);
-        inOrder.verify(persister).remove(context.entityFacade);
+        inOrder.verify(persister).delete(context.entityFacade);
         inOrder.verify(flushContext).flush();
         inOrder.verify(flushContext).triggerInterceptor(meta, entity, POST_DELETE);
     }

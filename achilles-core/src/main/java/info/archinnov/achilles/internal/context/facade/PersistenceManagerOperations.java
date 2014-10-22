@@ -27,7 +27,7 @@ public interface PersistenceManagerOperations extends PersistentStateHolder {
 
     public void update(Object proxifiedEntity);
 
-    public void remove();
+    public void delete();
 
     public <T> T find(Class<T> entityClass);
 

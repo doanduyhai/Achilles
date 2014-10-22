@@ -104,7 +104,7 @@ public class EntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EntityWithCompositePartitionKey entity = new EntityWithCompositePartitionKey(id, "type", "value");
 
@@ -118,7 +118,7 @@ public class EntityWithCompositePartitionKeyIT {
 	}
 
 	@Test
-	public void should_remove_by_id() throws Exception {
+	public void should_delete_by_id() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		EmbeddedKey compositeRowKey = new EmbeddedKey(id, "type");
 

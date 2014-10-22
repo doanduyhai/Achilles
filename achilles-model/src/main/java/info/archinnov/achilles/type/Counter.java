@@ -29,7 +29,7 @@ import info.archinnov.achilles.json.CounterSerializer;
  *     and is consistent with the way counters should be accessed in Cassandra
  *     <br>
  *     <br>
- *     Counter <strong>removal</strong> is not exposed because it is officially not recommended and is subject
+ *     Counter <strong>deletion</strong> is not exposed because it is officially not recommended and is subject
  *     to subtle bugs
  * </p>
  * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Counters" target="_blank">Counter</a>

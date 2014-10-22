@@ -236,7 +236,7 @@ public class PreparedStatementGeneratorTest {
 
 
     @Test
-    public void should_remove_entity_having_single_key() throws Exception {
+    public void should_delete_entity_having_single_key() throws Exception {
         when(meta.structure().hasOnlyStaticColumns()).thenReturn(true);
 
         when(idMeta.forStatementGeneration().generateWhereClauseForDelete(Mockito.eq(true), isA(Delete.class)))
@@ -244,7 +244,7 @@ public class PreparedStatementGeneratorTest {
 
         when(session.prepare(queryCaptor.capture())).thenReturn(ps);
 
-        Map<String, PreparedStatement> actual = generator.prepareRemovePSs(session, meta);
+        Map<String, PreparedStatement> actual = generator.prepareDeletePSs(session, meta);
 
         assertThat(actual).hasSize(1);
         assertThat(actual).containsValue(ps);

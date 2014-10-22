@@ -178,7 +178,7 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_remove_property_after_merge() throws Exception {
+    public void should_delete_property_after_merge() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("Jonathan").age(40L)
                 .addFriends("bob", "alice").addFollowers("Billy", "Stephen", "Jacky").addPreference(1, "US")
                 .addPreference(2, "New York").buid();
@@ -225,7 +225,7 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_remove() throws Exception {
+    public void should_delete() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
@@ -241,7 +241,7 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_remove_by_id() throws Exception {
+    public void should_delete_by_id() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();
@@ -257,7 +257,7 @@ public class PersistenceManagerOperationsIT {
     }
 
     @Test
-    public void should_remove_transient_entity() throws Exception {
+    public void should_delete_transient_entity() throws Exception {
         CompleteBean entity = CompleteBeanTestBuilder.builder().randomId().name("DuyHai").age(35L)
                 .addFriends("foo", "bar").addFollowers("George", "Paul").addPreference(1, "FR")
                 .addPreference(2, "Paris").addPreference(3, "75014").buid();

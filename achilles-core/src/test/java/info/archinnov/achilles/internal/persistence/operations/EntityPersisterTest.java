@@ -88,28 +88,28 @@ public class EntityPersisterTest {
     }
 
     @Test
-    public void should_remove() throws Exception {
+    public void should_delete() throws Exception {
         // Given
         when(entityMeta.structure().isClusteredCounter()).thenReturn(false);
         when(entityMeta.config().getQualifiedTableName()).thenReturn("table");
 
         // When
-        persister.remove(context);
+        persister.delete(context);
 
         // Then
-        verify(context).bindForRemoval("table");
-        verify(counterPersister).removeRelatedCounters(context);
+        verify(context).bindForDeletion("table");
+        verify(counterPersister).deleteRelatedCounters(context);
     }
 
     @Test
-    public void should_remove_clustered_counter() throws Exception {
+    public void should_delete_clustered_counter() throws Exception {
         // Given
         when(entityMeta.structure().isClusteredCounter()).thenReturn(true);
 
         // When
-        persister.remove(context);
+        persister.delete(context);
 
         // Then
-        verify(context).bindForClusteredCounterRemoval();
+        verify(context).bindForClusteredCounterDeletion();
     }
 }

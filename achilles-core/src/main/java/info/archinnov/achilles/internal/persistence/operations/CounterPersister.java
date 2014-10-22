@@ -83,12 +83,12 @@ public class CounterPersister {
         return counterDelta;
     }
 
-    public void removeRelatedCounters(EntityOperations context) {
-        log.trace("Removing counter values related to entity using PersistenceContext {}", context);
+    public void deleteRelatedCounters(EntityOperations context) {
+        log.trace("Deleting counter values related to entity using PersistenceContext {}", context);
         EntityMeta entityMeta = context.getEntityMeta();
 
         for (PropertyMeta pm : entityMeta.getAllCounterMetas()) {
-            context.bindForSimpleCounterRemoval(pm);
+            context.bindForSimpleCounterDeletion(pm);
         }
     }
 

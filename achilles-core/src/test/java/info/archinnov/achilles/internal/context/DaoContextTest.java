@@ -108,7 +108,7 @@ public class DaoContextTest {
     private Map<Class<?>, PreparedStatement> selectEagerPSs;
 
     @Mock
-    private Map<Class<?>, Map<String, PreparedStatement>> removePSs;
+    private Map<Class<?>, Map<String, PreparedStatement>> deletePSs;
 
     @Mock
     private Map<CQLQueryType, PreparedStatement> counterQueryMap;
@@ -168,7 +168,7 @@ public class DaoContextTest {
         daoContext.cacheManager = cacheManager;
         daoContext.dynamicPSCache = dynamicPSCache;
         daoContext.selectPSs = selectEagerPSs;
-        daoContext.removePSs = removePSs;
+        daoContext.deletePSs = deletePSs;
         daoContext.counterQueryMap = counterQueryMap;
         daoContext.clusteredCounterQueryMap = clusteredCounterQueryMap;
         daoContext.session = session;
@@ -185,7 +185,7 @@ public class DaoContextTest {
         when(context.getOptions().isIfNotExists()).thenReturn(false);
 
         selectEagerPSs.clear();
-        removePSs.clear();
+        deletePSs.clear();
     }
 
     @Test
@@ -293,25 +293,25 @@ public class DaoContextTest {
     }
 
     @Test
-    public void should_bind_for_removal() throws Exception {
+    public void should_bind_for_deletion() throws Exception {
         when(context.<CompleteBean>getEntityClass()).thenReturn(CompleteBean.class);
-        when(removePSs.get(CompleteBean.class)).thenReturn(of("table", ps));
+        when(deletePSs.get(CompleteBean.class)).thenReturn(of("table", ps));
         when(overrider.getWriteLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, false, EACH_QUORUM)).thenReturn(bsWrapper);
 
-        daoContext.bindForRemoval(context, entityMeta, "table");
+        daoContext.bindForDeletion(context, entityMeta, "table");
 
         verify(context).pushStatement(bsWrapper);
     }
 
     @Test
-    public void should_exception_when_removal_ps_not_found_for_a_table() throws Exception {
-        when(removePSs.get(CompleteBean.class)).thenReturn(of("some_table", ps));
+    public void should_exception_when_deletion_ps_not_found_for_a_table() throws Exception {
+        when(deletePSs.get(CompleteBean.class)).thenReturn(of("some_table", ps));
         when(context.getConsistencyLevel()).thenReturn(fromNullable(EACH_QUORUM));
         exception.expect(AchillesException.class);
         exception.expectMessage("Cannot find prepared statement for deletion for table 'table'");
 
-        daoContext.bindForRemoval(context, entityMeta, "table");
+        daoContext.bindForDeletion(context, entityMeta, "table");
     }
 
     @Test

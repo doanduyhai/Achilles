@@ -101,7 +101,7 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		long counterValue = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		compoundKey = new ClusteredKey(RandomUtils.nextLong(0,Long.MAX_VALUE), "name");
 
@@ -227,7 +227,7 @@ public class ClusteredEntityWithCounterIT {
 	}
 
 	@Test
-	public void should_remove_with_default_params() throws Exception {
+	public void should_delete_with_default_params() throws Exception {
 		long partitionKey = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		insertValues(partitionKey, 3);
 

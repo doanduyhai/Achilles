@@ -131,10 +131,10 @@ public class EntityFacadeTest {
     }
 
     @Test
-    public void should_bind_for_removal() throws Exception {
-        facade.bindForRemoval("table");
+    public void should_bind_for_deletion() throws Exception {
+        facade.bindForDeletion("table");
 
-        verify(daoContext).bindForRemoval(context.daoFacade, meta,"table");
+        verify(daoContext).bindForDeletion(context.daoFacade, meta, "table");
     }
 
 
@@ -171,10 +171,10 @@ public class EntityFacadeTest {
     }
 
     @Test
-    public void should_bind_for_simple_counter_removal() throws Exception {
+    public void should_bind_for_simple_counter_deletion() throws Exception {
         PropertyMeta counterMeta = new PropertyMeta();
 
-        facade.bindForSimpleCounterRemoval(counterMeta);
+        facade.bindForSimpleCounterDeletion(counterMeta);
 
         verify(daoContext).bindForSimpleCounterDelete(context.daoFacade, counterMeta);
     }
@@ -212,8 +212,8 @@ public class EntityFacadeTest {
     }
 
     @Test
-    public void should_bind_for_clustered_counter_removal() throws Exception {
-        facade.bindForClusteredCounterRemoval();
+    public void should_bind_for_clustered_counter_deletion() throws Exception {
+        facade.bindForClusteredCounterDeletion();
 
         verify(daoContext).bindForClusteredCounterDelete(context.daoFacade);
     }

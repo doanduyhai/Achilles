@@ -142,7 +142,7 @@ public class ValuelessClusteredEntityIT {
 	}
 
 	@Test
-	public void should_remove_by_slice_query() throws Exception {
+	public void should_delete_by_slice_query() throws Exception {
 		Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		String name1 = "name1";
 		String name2 = "name2";

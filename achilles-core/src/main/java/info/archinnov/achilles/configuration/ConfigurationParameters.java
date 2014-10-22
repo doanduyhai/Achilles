@@ -121,7 +121,7 @@ package info.archinnov.achilles.configuration;
  * <ul >
  * <li>
  * <strong>PREPARED_STATEMENTS_CACHE_SIZE</strong> (OPTIONAL): define the LRU cache size for prepared statements cache. </li>
- * </ul><p>By default, common operations like <code>insert</code>, <code>find</code> and <code>remove</code> are prepared before-hand for each entity class. For <code>update</code> and all operations with timestamp, since the updated fields and timestamp value are only known at runtime, <strong>Achilless</strong> will prepare the statements only on the fly and save them into a Guava LRU cache.</p>
+ * </ul><p>By default, common operations like <code>insert</code>, <code>find</code> and <code>delete</code> are prepared before-hand for each entity class. For <code>update</code> and all operations with timestamp, since the updated fields and timestamp value are only known at runtime, <strong>Achilless</strong> will prepare the statements only on the fly and save them into a Guava LRU cache.</p>
  *
  * <p>The default size is <code>10000</code> entries. Once the limit is reached, oldest prepared statements are evicted, causing <strong>Achilles</strong> to re-prepare them and get warnings from the Java Driver.</p>
  *

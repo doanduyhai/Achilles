@@ -174,7 +174,7 @@ public class ConsistencyLevelIT {
     }
 
     @Test
-    public void should_remove_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
+    public void should_delete_with_runtime_consistency_level_overriding_predefined_one() throws Exception {
         CompleteBean entity = builder().randomId().name("name").buid();
         entity = manager.insert(entity);
 

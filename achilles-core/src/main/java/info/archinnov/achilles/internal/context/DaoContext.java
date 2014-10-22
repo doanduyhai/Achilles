@@ -66,7 +66,7 @@ public class DaoContext {
 
     protected Map<Class<?>, PreparedStatement> selectPSs;
 
-    protected Map<Class<?>, Map<String, PreparedStatement>> removePSs;
+    protected Map<Class<?>, Map<String, PreparedStatement>> deletePSs;
 
     protected Map<CQLQueryType, PreparedStatement> counterQueryMap;
 
@@ -122,10 +122,10 @@ public class DaoContext {
         return returnFirstRowOrNull(rows);
     }
 
-    public void bindForRemoval(DaoOperations context, EntityMeta entityMeta, String tableName) {
+    public void bindForDeletion(DaoOperations context, EntityMeta entityMeta, String tableName) {
         log.debug("Push delete statement for PersistenceContext '{}'", context);
         Class<?> entityClass = context.getEntityClass();
-        Map<String, PreparedStatement> psMap = removePSs.get(entityClass);
+        Map<String, PreparedStatement> psMap = deletePSs.get(entityClass);
 
         if (psMap.containsKey(tableName)) {
             ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
@@ -285,8 +285,8 @@ public class DaoContext {
         this.selectPSs = selectPSs;
     }
 
-    void setRemovePSs(Map<Class<?>, Map<String, PreparedStatement>> removePSs) {
-        this.removePSs = removePSs;
+    void setDeletePSs(Map<Class<?>, Map<String, PreparedStatement>> deletePSs) {
+        this.deletePSs = deletePSs;
     }
 
     void setCounterQueryMap(Map<CQLQueryType, PreparedStatement> counterQueryMap) {

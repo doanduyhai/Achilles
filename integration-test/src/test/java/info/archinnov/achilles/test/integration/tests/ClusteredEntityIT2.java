@@ -93,7 +93,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_remove() throws Exception {
+	public void should_delete() throws Exception {
 		Long userId = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		UUID tweetId = UUIDGen.getTimeUUID();
 		Date creationDate = new Date();
@@ -173,7 +173,7 @@ public class ClusteredEntityIT2 {
 	}
 
 	@Test
-	public void should_remove_entity_having_compound_id_with_enum() throws Exception {
+	public void should_delete_entity_having_compound_id_with_enum() throws Exception {
 		long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
 		ClusteredMessageId messageId = new ClusteredMessageId(id, Type.AUDIO);
 

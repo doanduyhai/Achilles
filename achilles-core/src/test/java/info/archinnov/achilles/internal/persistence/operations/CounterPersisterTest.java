@@ -130,16 +130,16 @@ public class CounterPersisterTest {
     }
 
     @Test
-    public void should_remove_related_counters() throws Exception {
+    public void should_delete_related_counters() throws Exception {
         //Given
         when(meta.getAllCounterMetas()).thenReturn(asList(counterMeta, counterMeta2));
 
         //When
-        persister.removeRelatedCounters(context);
+        persister.deleteRelatedCounters(context);
 
         //Then
-        verify(context).bindForSimpleCounterRemoval(counterMeta);
-        verify(context).bindForSimpleCounterRemoval(counterMeta2);
+        verify(context).bindForSimpleCounterDeletion(counterMeta);
+        verify(context).bindForSimpleCounterDeletion(counterMeta2);
     }
 
 }

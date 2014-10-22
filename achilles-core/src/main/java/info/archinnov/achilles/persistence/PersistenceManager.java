@@ -61,13 +61,13 @@ import info.archinnov.achilles.type.Options;
  *      manager.update(user);
  *  </code></pre>
  *
- *  <h3>III Removing entities</h3>
+ *  <h3>III Deleting entities</h3>
  *  <pre class="code"><code class="java">
- *      // Simple removed
+ *      // Simple deletion
  *      User managedUser = manager.find(User.class,1L);
- *      manager.remove(managedUser);
+ *      manager.delete(managedUser);
  *
- *      // Direct remove without read-before-write
+ *      // Direct deletion without read-before-write
  *      manager.deleteById(User.class,1L);
  *  </code></pre>
  *

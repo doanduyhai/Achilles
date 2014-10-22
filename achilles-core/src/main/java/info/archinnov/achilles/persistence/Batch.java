@@ -50,7 +50,7 @@ import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
  *         <em>update()</em>
  *     </li>
  *     <li>
- *         <em>remove()</em>
+ *         <em>delete()</em>
  *     </li>
  *     <li>
  *         <em>deleteById()</em>
@@ -297,14 +297,14 @@ public class Batch extends CommonPersistenceManager {
     }
 
     /**
-     * Batch remove an entity.
+     * Batch delete an entity.
      *
      *  <pre class="code"><code class="java">
-     *      // Simple removal
+     *      // Simple deletion
      *      Batch batch = manager.createBatch();
      *      User managedUser = manager.find(User.class,1L);
      *
-     *      batch.remove(managedUser);
+     *      batch.delete(managedUser);
      *
      *      ...
      *
@@ -312,7 +312,7 @@ public class Batch extends CommonPersistenceManager {
      *  </code></pre>
      *
      * @param entity
-     *            Entity to be removed
+     *            Entity to be deleted
      */
     @Override
     public void delete(final Object entity) {
@@ -320,14 +320,14 @@ public class Batch extends CommonPersistenceManager {
     }
 
     /**
-     * Batch remove an entity with the given options.
+     * Batch delete an entity with the given options.
      *
      *  <pre class="code"><code class="java">
-     *      // Removal with option
+     *      // Deletion with option
      *      Batch batch = manager.createBatch();
      *      User managedUser = manager.find(User.class,1L);
      *
-     *      batch.remove(managedUser, OptionsBuilder.withTimestamp(20292382030L));
+     *      batch.delete(managedUser, OptionsBuilder.withTimestamp(20292382030L));
      *
      *      ...
      *
@@ -335,7 +335,7 @@ public class Batch extends CommonPersistenceManager {
      *  </code></pre>
      *
      * @param entity
-     *            Entity to be removed
+     *            Entity to be deleted
      * @param options
      *            options for consistency level and timestamp
      */
@@ -350,10 +350,10 @@ public class Batch extends CommonPersistenceManager {
     }
 
     /**
-     * Batch remove an entity by its id.
+     * Batch delete an entity by its id.
      *
      *  <pre class="code"><code class="java">
-     *      // Direct remove without read-before-write
+     *      // Direct deletion without read-before-write
      *      Batch batch = manager.createBatch();
      *      batch.deleteById(User.class,1L);
      *
@@ -374,10 +374,10 @@ public class Batch extends CommonPersistenceManager {
     }
 
     /**
-     * Batch remove an entity by its id with the given options.
+     * Batch delete an entity by its id with the given options.
      *
      *  <pre class="code"><code class="java">
-     *      // Direct remove without read-before-write
+     *      // Direct deletion without read-before-write
      *      Batch batch = manager.createBatch();
      *      batch.deleteById(User.class,1L, Options.withTimestamp(32234424234L));
      *
