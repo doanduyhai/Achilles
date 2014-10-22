@@ -21,6 +21,8 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.util.Map;
+
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +62,7 @@ public class AchillesResourceBuilderTest {
 
 	@Test
 	public void should_create_resources_once() throws Exception {
-		AchillesResource resource = new AchillesResource(null,"info.archinnov.achilles.junit.test.entity");
+		AchillesResource resource = new AchillesResource(new ConfigMap(),"info.archinnov.achilles.junit.test.entity");
 
 		assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
 		assertThat(resource.getPersistenceManager()).isSameAs(manager);

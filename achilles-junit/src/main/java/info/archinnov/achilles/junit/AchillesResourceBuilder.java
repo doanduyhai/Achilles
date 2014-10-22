@@ -16,23 +16,42 @@
 
 package info.archinnov.achilles.junit;
 
+import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import info.archinnov.achilles.junit.AchillesTestResource.Steps;
+import info.archinnov.achilles.type.InsertStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
+
+import java.util.List;
+import java.util.Map;
+
+import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 
 public class AchillesResourceBuilder {
 
 	private Steps cleanupSteps = Steps.BOTH;
 	private String[] tablesToCleanUp;
-    private String keyspaceName;
-	private String entityPackages;
+    private ConfigMap configMap = new ConfigMap();
 
 	private AchillesResourceBuilder() {
 	}
 
 	private AchillesResourceBuilder(String entityPackages) {
-		this.entityPackages = entityPackages;
+		configMap.put(ENTITY_PACKAGES, entityPackages);
 	}
 
-	/**
+    public AchillesResourceBuilder(List<Class<?>> entityClasses) {
+        configMap.put(ENTITIES_LIST, entityClasses);
+    }
+
+    /**
 	 * Start building an AchillesResource with entity packages
 	 * 
 	 * @param entityPackages
@@ -42,18 +61,30 @@ public class AchillesResourceBuilder {
 		return new AchillesResourceBuilder(entityPackages);
 	}
 
+    /**
+     * Start building an AchillesResource with list of entity classes
+     *
+     * @param entityClasses
+     *            list of entity classes to manage
+     */
+    public static AchillesResourceBuilder withEntityClasses(List<Class<?>> entityClasses) {
+        return new AchillesResourceBuilder(entityClasses);
+    }
+
 	/**
 	 * Start building an AchillesResource with no entity packages and default 'achilles_test' keyspace
 	 */
 	public static AchillesResource noEntityPackages() {
-		return new AchillesResource(null,null);
+		return new AchillesResource(new ConfigMap(),null);
 	}
 
     /**
 	 * Start building an AchillesResource with no entity packages and the provided keyspace name
 	 */
 	public static AchillesResource noEntityPackages(String keyspaceName) {
-		return new AchillesResource(keyspaceName,null);
+        final ConfigMap configMap = new ConfigMap();
+        configMap.put(KEYSPACE_NAME, keyspaceName);
+        return new AchillesResource(configMap,null);
 	}
 
     /**
@@ -61,10 +92,41 @@ public class AchillesResourceBuilder {
      * @param keyspaceName
      *          keyspace name to be used
      */
-    public AchillesResourceBuilder keyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
+    public AchillesResourceBuilder withKeyspaceName(String keyspaceName) {
+        configMap.put(KEYSPACE_NAME, keyspaceName);
         return this;
     }
+
+
+    /**
+     * Activate Bean Validation. Do not forget to have a JAR with the real Implementation of Bean Validation in your dependencies
+     */
+    public AchillesResourceBuilder withBeanValidation() {
+        configMap.put(BEAN_VALIDATION_ENABLE, true);
+        return this;
+    }
+
+    /**
+     * Register provided list of event interceptors
+     * @param interceptors
+     *          list of interceptors to register to Achilles
+     */
+    public AchillesResourceBuilder withInterceptors(List<Interceptor<?>> interceptors) {
+        configMap.put(EVENT_INTERCEPTORS, interceptors);
+        return this;
+    }
+
+
+    /**
+     * Provide map of Achilles configuration
+     * @param achillesConfig
+     *          map of all Achilles configuration
+     */
+    public AchillesResourceBuilder withAchillesConfig(Map<ConfigurationParameters, Object> achillesConfig) {
+        configMap.putAll(achillesConfig);
+        return this;
+    }
+
 
 	/**
 	 * Tables to be truncated during unit tests
@@ -102,6 +164,6 @@ public class AchillesResourceBuilder {
 	}
 
 	public AchillesResource build() {
-		return new AchillesResource(keyspaceName,entityPackages, cleanupSteps, tablesToCleanUp);
+		return new AchillesResource(configMap, cleanupSteps, tablesToCleanUp);
 	}
 }

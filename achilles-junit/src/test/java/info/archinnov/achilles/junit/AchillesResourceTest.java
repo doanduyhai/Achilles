@@ -15,7 +15,13 @@
  */
 package info.archinnov.achilles.junit;
 
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
+import static info.archinnov.achilles.internal.utils.ConfigMap.fromMap;
 import static org.fest.assertions.api.Assertions.assertThat;
+
+import com.google.common.collect.ImmutableMap;
+import info.archinnov.achilles.configuration.ConfigurationParameters;
+import info.archinnov.achilles.internal.utils.ConfigMap;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +37,7 @@ public class AchillesResourceTest {
     private static final String CUSTOM_KEYSPACE_NAME = "my_keyspace";
 
     @Rule
-    public AchillesResource resource = new AchillesResource(CUSTOM_KEYSPACE_NAME, "info.archinnov.achilles.test.integration.entity",
+    public AchillesResource resource = new AchillesResource(fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.test.integration.entity")),
             Steps.AFTER_TEST, "User");
 
     private PersistenceManagerFactory pmf = resource.getPersistenceManagerFactory();
@@ -54,7 +60,7 @@ public class AchillesResourceTest {
 
     @Test
     public void should_create_resources_once() throws Exception {
-        AchillesResource resource = new AchillesResource(CUSTOM_KEYSPACE_NAME, "info.archinnov.achilles.junit.test.entity");
+        AchillesResource resource = new AchillesResource(fromMap(ImmutableMap.<ConfigurationParameters, Object>of(KEYSPACE_NAME, CUSTOM_KEYSPACE_NAME, ENTITY_PACKAGES, "info.archinnov.achilles.junit.test.entity")));
 
         assertThat(resource.getPersistenceManagerFactory()).isSameAs(pmf);
         assertThat(resource.getPersistenceManager()).isSameAs(manager);

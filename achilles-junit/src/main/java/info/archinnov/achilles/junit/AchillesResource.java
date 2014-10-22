@@ -15,13 +15,12 @@
  */
 package info.archinnov.achilles.junit;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.CLEAN_CASSANDRA_DATA_FILES;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
 import static info.archinnov.achilles.embedded.CassandraEmbeddedConfigParameters.KEYSPACE_DURABLE_WRITE;
-import org.apache.commons.lang3.StringUtils;
+
 import com.datastax.driver.core.Session;
 import info.archinnov.achilles.embedded.CassandraEmbeddedServer;
 import info.archinnov.achilles.internal.utils.ConfigMap;
@@ -41,23 +40,21 @@ public class AchillesResource extends AchillesTestResource {
 
     private String keyspaceToUse;
 
-    AchillesResource(String keyspaceName, String entityPackages, String... tables) {
+    AchillesResource(ConfigMap configMap, String... tables) {
         super(tables);
-        initResource(keyspaceName, entityPackages);
+        initResource(configMap);
     }
 
-    AchillesResource(String keyspaceName, String entityPackages, Steps cleanUpSteps, String... tables) {
+    AchillesResource(ConfigMap configMap, Steps cleanUpSteps, String... tables) {
         super(cleanUpSteps, tables);
-        initResource(keyspaceName, entityPackages);
+        initResource(configMap);
     }
 
-    private void initResource(String keyspaceName, String entityPackages) {
-        keyspaceToUse = StringUtils.isNotBlank(keyspaceName) ? keyspaceName
-                : DEFAULT_ACHILLES_TEST_KEYSPACE_NAME;
-        TypedMap config = buildConfigMap();
-        ConfigMap achillesConfig = buildAchillesConfigMap(entityPackages, keyspaceToUse);
+    private void initResource(ConfigMap achillesConfig) {
+        TypedMap cassandraConfig = buildConfigMap();
+        buildAchillesConfigMap(achillesConfig);
 
-        server = new CassandraEmbeddedServer(config, achillesConfig);
+        server = new CassandraEmbeddedServer(cassandraConfig, achillesConfig);
         pmf = server.getPersistenceManagerFactory(keyspaceToUse);
         manager = server.getPersistenceManager(keyspaceToUse);
         session = server.getNativeSession(keyspaceToUse);
@@ -70,23 +67,12 @@ public class AchillesResource extends AchillesTestResource {
         return config;
     }
 
-    private ConfigMap buildAchillesConfigMap(String entityPackages, String keyspaceToUse) {
-        ConfigMap config = new ConfigMap();
-        config.put(FORCE_TABLE_CREATION, true);
-        config.put(KEYSPACE_NAME, keyspaceToUse);
-        config = addEntityPackagesIfNeeded(entityPackages, config);
-        return config;
+    private void buildAchillesConfigMap(ConfigMap configMap) {
+        keyspaceToUse = configMap.getTypedOr(KEYSPACE_NAME,DEFAULT_ACHILLES_TEST_KEYSPACE_NAME);
+        configMap.put(FORCE_TABLE_CREATION, true);
+        configMap.put(KEYSPACE_NAME, keyspaceToUse);
     }
 
-    private ConfigMap addEntityPackagesIfNeeded(String entityPackages, ConfigMap config) {
-        if (StringUtils.isNotBlank(entityPackages)) {
-            final ConfigMap newConfig = new ConfigMap();
-            newConfig.putAll(config);
-            newConfig.put(ENTITY_PACKAGES, entityPackages);
-            config = newConfig;
-        }
-        return config;
-    }
 
     /**
      * Return a singleton PersistenceManagerFactory
