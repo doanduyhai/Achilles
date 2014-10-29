@@ -71,6 +71,21 @@ public class TypedQueryValidatorTest {
     }
 
     @Test
+    public void should_validate_raw_typed_query_without_keyspace() throws Exception {
+        //Given
+        when(meta.config().getTableName()).thenReturn("service_profile");
+
+        final RegularStatement statement = select().from("service_profile").where();
+
+        //When
+        validator.validateRawTypedQuery(CompleteBean.class, statement, meta);
+
+        //Then
+
+    }
+
+
+    @Test
     public void should_exception_when_wrong_table() throws Exception {
         final RegularStatement statement = select().from("ks", "test").where(eq("id", 10L));
 

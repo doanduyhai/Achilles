@@ -52,7 +52,7 @@ public class TypedQueryValidator {
 
         validator.validateSelect(regularStatement);
 
-        final Pattern pattern = Pattern.compile(".* from "+ OPTIONAL_KEYSPACE_PREFIX + tableName+" .*");
+        final Pattern pattern = Pattern.compile(".* from "+ OPTIONAL_KEYSPACE_PREFIX + tableName+"(?: )?.*");
 
         Validator.validateTrue(pattern.matcher(normalizedQuery).matches(),"The typed query [%s] should contain the table name '%s' if type is '%s'", queryString, tableName,
 				entityClass.getCanonicalName());
