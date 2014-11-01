@@ -59,7 +59,9 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
     }
 
     public Object invokeOnRowForFields(Row row) {
-        log.trace("Extract column {} from CQL3 row {} for id meta {}", meta.getCQL3ColumnName(), row, meta);
+        if(log.isTraceEnabled()) {
+            log.trace("Extract column {} from CQL3 row {} for id meta {}", meta.getCQL3ColumnName(), row, meta);
+        }
 
         Object value = null;
         if (!row.isNull(meta.getCQL3ColumnName())) {
