@@ -99,6 +99,7 @@
         <module>achilles-embedded</module>
         <module>achilles-junit</module>
         <module>integration-test</module>
+        <module>achilles-perf</module>
     </modules>
 
     <dependencyManagement>
