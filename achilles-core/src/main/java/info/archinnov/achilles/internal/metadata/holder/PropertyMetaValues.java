@@ -19,7 +19,9 @@ public class PropertyMetaValues extends PropertyMetaView {
     }
 
     public Object getPrimaryKey(Object entity) {
-        log.trace("Extract primary from entity {} of class {}", entity, meta.getEntityClassName());
+        if(log.isTraceEnabled()) {
+            log.trace("Extract primary from entity {} of class {}", entity, meta.getEntityClassName());
+        }
         if (meta.type().isId()) {
             return invoker.getPrimaryKey(entity, meta);
         } else {
@@ -28,7 +30,9 @@ public class PropertyMetaValues extends PropertyMetaView {
     }
 
     public Object instantiate() {
-        log.trace("Instantiate new entity of class {}", meta.getEntityClassName());
+        if(log.isTraceEnabled()) {
+            log.trace("Instantiate new entity of class {}", meta.getEntityClassName());
+        }
         return invoker.instantiate(meta.getValueClass());
     }
 
@@ -57,7 +61,9 @@ public class PropertyMetaValues extends PropertyMetaView {
                     break;
             }
         }
-        log.trace("Get null or empty collection & map {} for property {} of entity class {}", value, meta.getPropertyName(), meta.getEntityClassName());
+        if(log.isTraceEnabled()) {
+            log.trace("Get null or empty collection & map {} for property {} of entity class {}", value, meta.getPropertyName(), meta.getEntityClassName());
+        }
         return value;
     }
 

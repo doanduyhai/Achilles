@@ -101,8 +101,10 @@ public class ListWrapper extends AbstractWrapper implements List<Object> {
 
 	@Override
 	public Object get(int index) {
-		log.trace("Return element at index {} for list property {} of entity class {}", index,
-				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+        if(log.isTraceEnabled()) {
+            log.trace("Return element at index {} for list property {} of entity class {}", index,
+                    propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+        }
 		return target.get(index);
 	}
 

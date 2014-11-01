@@ -63,8 +63,10 @@ public class MapWrapper extends AbstractWrapper implements Map<Object, Object> {
 
 	@Override
 	public Object get(Object key) {
-		log.trace("Return value having key{} for map property {} of entity class {}", key,
-				propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+        if(log.isTraceEnabled()) {
+            log.trace("Return value having key{} for map property {} of entity class {}", key,
+                    propertyMeta.getPropertyName(), propertyMeta.getEntityClassName());
+        }
 		return this.target.get(key);
 	}
 

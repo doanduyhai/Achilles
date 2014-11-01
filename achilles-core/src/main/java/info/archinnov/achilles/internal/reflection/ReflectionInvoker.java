@@ -37,10 +37,10 @@ public class ReflectionInvoker {
 	public Object getPrimaryKey(Object entity, PropertyMeta idMeta) {
 
 		final Field field = idMeta.getField();
-
-		log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(), entity, field
-				.getDeclaringClass().getCanonicalName());
-
+        if(log.isTraceEnabled()) {
+            log.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(), entity, field
+                    .getDeclaringClass().getCanonicalName());
+        }
 		if (entity != null) {
 			try {
 				return accessor.getValueFromField(field, entity);
@@ -53,9 +53,10 @@ public class ReflectionInvoker {
 	}
 
 	public <T> T getValueFromField(Object target, Field field) {
-		log.trace("Get value from field {} from instance {} of class {}", field.getName(), target, field
-				.getDeclaringClass().getCanonicalName());
-
+        if(log.isTraceEnabled()) {
+            log.trace("Get value from field {} from instance {} of class {}", field.getName(), target, field
+                    .getDeclaringClass().getCanonicalName());
+        }
 		T value = null;
 
 		if (target != null) {
@@ -71,9 +72,10 @@ public class ReflectionInvoker {
 	}
 
 	public Object getValueFromField(Object target, Method getter) {
-		log.trace("Get value with getter {} from instance {} of class {}", getter.getName(), target, getter
-				.getDeclaringClass().getCanonicalName());
-
+        if(log.isTraceEnabled()) {
+            log.trace("Get value with getter {} from instance {} of class {}", getter.getName(), target, getter
+                    .getDeclaringClass().getCanonicalName());
+        }
 		Object value = null;
 
 		if (target != null) {
@@ -102,8 +104,10 @@ public class ReflectionInvoker {
 	}
 
 	public void setValueToField(Object target, Field field, Object args) {
-		log.trace("Set value to field {} from instance {} of class {} with {}", field.getName(), target, field
-				.getDeclaringClass().getCanonicalName(), args);
+        if(log.isTraceEnabled()) {
+            log.trace("Set value to field {} from instance {} of class {} with {}", field.getName(), target, field
+                    .getDeclaringClass().getCanonicalName(), args);
+        }
 
 		final Class<?> type = field.getType();
 		if (type.isPrimitive()) {
@@ -122,7 +126,9 @@ public class ReflectionInvoker {
 	}
 
 	public <T> T instantiate(Class<T> entityClass) {
-		log.trace("Instantiate entity class {}", entityClass);
+        if(log.isTraceEnabled()) {
+            log.trace("Instantiate entity class {}", entityClass);
+        }
 		return instantiator.instantiate(entityClass);
 	}
 
