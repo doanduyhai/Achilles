@@ -15,6 +15,19 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import info.archinnov.achilles.internal.context.facade.EntityOperations;
+import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
+import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
+import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
+import net.sf.cglib.proxy.Callback;
+import net.sf.cglib.proxy.Factory;
+import net.sf.cglib.proxy.NoOp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,18 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import info.archinnov.achilles.internal.proxy.ProxyInterceptorBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import info.archinnov.achilles.internal.context.facade.EntityOperations;
-import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
-import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
-import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
-import info.archinnov.achilles.internal.proxy.ProxyClassFactory;
-import info.archinnov.achilles.internal.reflection.ObjectInstantiator;
-import net.sf.cglib.proxy.Callback;
-import net.sf.cglib.proxy.Factory;
 
 public class EntityProxifier {
 
@@ -86,7 +87,10 @@ public class EntityProxifier {
             pm.forValues().setValueToField(entity,null);
         }
 
-        ((Factory) instance).setCallbacks(new Callback[] { buildInterceptor(context, entity, alreadyLoaded) });
+        ((Factory) instance).setCallbacks(new Callback[] {
+                buildInterceptor(context, entity, alreadyLoaded),
+                NoOp.INSTANCE
+        });
         return instance;
     }
 
