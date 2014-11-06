@@ -16,15 +16,17 @@
 
 package info.archinnov.achilles.internal.proxy;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import info.archinnov.achilles.internal.context.ConfigurationContext;
+import info.archinnov.achilles.test.mapping.entity.CompleteBean;
+import net.sf.cglib.proxy.Factory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import info.archinnov.achilles.internal.context.ConfigurationContext;
-import info.archinnov.achilles.test.mapping.entity.CompleteBean;
-import net.sf.cglib.proxy.Factory;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.assertions.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProxyClassFactoryTest {
@@ -54,5 +56,17 @@ public class ProxyClassFactoryTest {
 
         //Then
         assertThat(proxyClass1 == proxyClass2).isTrue();
+    }
+
+    @Test
+    public void should_not_intercept_finalize_methods() throws Exception {
+        Class<?> proxyClass = factory.createProxyClass(CompleteBean.class, new ConfigurationContext());
+
+        try {
+            proxyClass.getDeclaredMethod("finalize");
+            fail("Should have reported the finalize method don't exists");
+        } catch (NoSuchMethodException nsm) {
+            assertThat(nsm).hasMessageContaining("finalize");
+        }
     }
 }
