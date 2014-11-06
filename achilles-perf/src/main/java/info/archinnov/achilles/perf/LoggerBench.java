@@ -53,7 +53,7 @@ public class LoggerBench {
 
     @Benchmark
     public void log_with_guard() throws NoSuchFieldException {
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             logger.trace("Get primary key {} from instance {} of class {}", idMeta.getPropertyName(), entity, field
                     .getDeclaringClass().getCanonicalName());
         }
@@ -64,7 +64,7 @@ public class LoggerBench {
         String propertyName = idMeta.getPropertyName();
         String canonicalName = field.getDeclaringClass().getCanonicalName();
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             logger.trace("Get primary key {} from instance {} of class {}", propertyName, entity, canonicalName);
         }
     }
