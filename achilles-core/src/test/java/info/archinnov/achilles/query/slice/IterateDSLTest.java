@@ -72,7 +72,7 @@ public class IterateDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 3);
         assertThat(start.properties.fetchSizeO.isPresent()).isFalse();
     }
@@ -112,7 +112,7 @@ public class IterateDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 3);
         assertThat(start.properties.fetchSizeO.get()).isEqualTo(120);
     }
@@ -132,7 +132,7 @@ public class IterateDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B", 3);
         assertThat(start.properties.fetchSizeO.isPresent()).isFalse();
     }
@@ -147,7 +147,7 @@ public class IterateDSLTest {
         //When
         final IterateFromPartition<String> start = builder.withPartitionComponents("a");
 
-        start.limit(3).iteratorWithMatchingAndBatchSize(123, "A", "B");
+        start.limit(3).orderByAscending().iteratorWithMatchingAndBatchSize(123, "A", "B");
 
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 

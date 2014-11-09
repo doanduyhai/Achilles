@@ -55,9 +55,8 @@ public class ClusteredEntityWithReverseClusteringIT {
 		entities = manager.sliceQuery(ClusteredEntityWithReverseClustering.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-				.fromClusterings(2)
-                .toClusterings(4)
-                .orderByDescending()
+				.fromClusterings(4)
+                .toClusterings(2)
                 .get();
 
 		assertThat(entities).hasSize(3);
@@ -85,8 +84,8 @@ public class ClusteredEntityWithReverseClusteringIT {
 				.sliceQuery(ClusteredEntityWithReverseClustering.class)
                 .forSelect()
                 .withPartitionComponents(partitionKey)
-				.fromClusterings(2)
-                .toClusterings(4)
+				.fromClusterings(4)
+                .toClusterings(2)
                 .orderByAscending()
                 .get();
 

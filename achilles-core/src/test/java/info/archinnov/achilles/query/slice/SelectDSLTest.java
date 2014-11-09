@@ -75,7 +75,7 @@ public class SelectDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 10);
     }
 
@@ -91,7 +91,7 @@ public class SelectDSLTest {
         final SelectWithPartition<String> start = builder
                 .withPartitionComponentsIN("a", "b");
 
-        start.limit(2).fromClusterings("A","B").limit(3).get(10);
+        start.limit(2).fromClusterings("A","B").limit(3).orderByAscending().get(10);
 
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
@@ -109,12 +109,12 @@ public class SelectDSLTest {
         final SelectFromPartition<String> start = builder
                 .withPartitionComponents("a");
 
-        start.limit(3).getOne();
+        start.limit(3).orderByDescending().getOne();
 
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id ORDER BY col1 DESC LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", 1);
     }
 
@@ -140,7 +140,7 @@ public class SelectDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket IN :partitionComponentsIn AND (col1,col2)>=(:col1,:col2) AND (col1,col2)<=(:col1,:col2) ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket IN :partitionComponentsIn AND (col1,col2)>=(:col1,:col2) AND (col1,col2)<=(:col1,:col2) LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", asList("b", "c"), "A", "B", "C", "D", 10);
     }
 
@@ -164,7 +164,7 @@ public class SelectDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 AND col3 IN :clusteringKeysIn ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 AND col3 IN :clusteringKeysIn LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B", asList("C", "D"), 1);
     }
 
@@ -204,7 +204,7 @@ public class SelectDSLTest {
         final RegularStatement whereClause = start.properties.generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 AND col3=:col3 ORDER BY col1 ASC LIMIT :limitSize;");
+        assertThat(whereClause.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND col1=:col1 AND col2=:col2 AND col3=:col3 LIMIT :limitSize;");
         assertThat(start.properties.getBoundValues()).containsSequence("a", "A", "B", "C", 3);
     }
 

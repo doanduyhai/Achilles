@@ -32,6 +32,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+
+import com.datastax.driver.core.querybuilder.Select.Where;
+import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +54,6 @@ public class SliceQueryProperties<T> {
     private static final Logger log = LoggerFactory.getLogger(SliceQueryProperties.class);
 
     public static final int DEFAULT_LIMIT = 100;
-    public static final int DEFAULT_BATCH_SIZE = 100;
 
     private static final Function<String, Object> FROM_NAME_TO_BIND_MARKER = new Function<String, Object>() {
         @Override
@@ -67,7 +69,7 @@ public class SliceQueryProperties<T> {
     private Optional<Integer> limitO = Optional.fromNullable(DEFAULT_LIMIT);
     protected Optional<Integer> fetchSizeO = Optional.absent();
     private BoundingMode boundingMode = BoundingMode.INCLUSIVE_BOUNDS;
-    private Optional<OrderingMode> orderingModeO = Optional.fromNullable(OrderingMode.ASCENDING);
+    private Optional<OrderingMode> orderingModeO = Optional.absent();
 
     private Optional<ConsistencyLevel> consistencyLevelO = Optional.absent();
 
@@ -219,19 +221,11 @@ public class SliceQueryProperties<T> {
             }
         } else {
             if (isNotEmpty(fromClusteringKeys)) {
-                if (boundingMode.isInclusiveStart()) {
-                    where.and(gte(fromClusteringKeysName, from(fromClusteringKeysName).transform(FROM_NAME_TO_BIND_MARKER).toList()));
-                } else {
-                    where.and(gt(fromClusteringKeysName, from(fromClusteringKeysName).transform(FROM_NAME_TO_BIND_MARKER).toList()));
-                }
+                boundingMode.buildFromClusteringKeys(where, clusteringOrder, fromClusteringKeysName);
             }
 
             if (isNotEmpty(toClusteringKeys)) {
-                if (boundingMode.isInclusiveEnd()) {
-                    where.and(lte(toClusteringKeysName, from(toClusteringKeysName).transform(FROM_NAME_TO_BIND_MARKER).toList()));
-                } else {
-                    where.and(lt(toClusteringKeysName, from(toClusteringKeysName).transform(FROM_NAME_TO_BIND_MARKER).toList()));
-                }
+                boundingMode.buildToClusteringKeys(where, clusteringOrder, toClusteringKeysName);
             }
         }
 

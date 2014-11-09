@@ -233,6 +233,16 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND (rating,date)&gt;=(2,now)</strong> ORDER BY rating ASC LIMIT 100
+     * <br/>
+     * <br/>
+     * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+     * <pre class="code"><code class="java">
+     *     fromClustering("col1","col2)
+     * </code></pre>
+     * <em>will generate</em>
+     * <pre class="code"><code class="sql">
+     *     WHERE (col1,col2)<=(:col1,:col2)
+     * </code></pre>
      *
      * @return slice DSL
      */
@@ -259,6 +269,16 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
      *
      * <br/>
      *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
+     * <br/>
+     * <br/>
+     * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+     * <pre class="code"><code class="java">
+     *     toClustering("col1","col2)
+     * </code></pre>
+     * <em>will generate</em>
+     * <pre class="code"><code class="sql">
+     *     WHERE (col1,col2)>=(:col1,:col2)
+     * </code></pre>
      *
      * @return slice DSL
      */
@@ -617,6 +637,16 @@ public abstract class SelectPartitionRoot<TYPE, T extends SelectPartitionRoot<TY
          *
          * <br/>
          *  SELECT * FROM article_rating WHERE article_id=... <strong>AND rating&lt;=3</strong> ORDER BY rating ASC LIMIT 100
+         * <br/>
+         * <br/>
+         * <em>Remark: the generated CQL3 query will take into account the defined clustering order of the table. For example if the clustering order is <strong>descending</strong>,</em>
+         * <pre class="code"><code class="java">
+         *     toClustering("col1","col2)
+         * </code></pre>
+         * <em>will generate</em>
+         * <pre class="code"><code class="sql">
+         *     WHERE (col1,col2)>=(:col1,:col2)
+         * </code></pre>
          *
          * @return slice DSL
          */

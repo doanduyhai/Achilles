@@ -80,7 +80,7 @@ public class SliceQueryPropertiesTest {
                 .generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket=:bucket AND (date)>(:date) AND (date,type)<(:date,:type) ORDER BY date ASC LIMIT :limitSize;");
+        assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket=:bucket AND (date)<(:date) AND (date,type)>(:date,:type) LIMIT :limitSize;");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class SliceQueryPropertiesTest {
                 .generateWhereClauseForSelect(select);
 
         //Then
-        assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket=:bucket AND (date)>=(:date) AND (date,type)<=(:date,:type) LIMIT :limitSize;");
+        assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM table WHERE id=:id AND bucket=:bucket AND (date)<=(:date) AND (date,type)>=(:date,:type) LIMIT :limitSize;");
     }
 
     @Test
