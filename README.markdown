@@ -48,8 +48,8 @@
 
  For now, **Achilles** depends on the following libraries:
 
- 1. cassandra 2.0.1O
- 2. cassandra-driver-core 2.0.6
+ 1. cassandra 2.0.11
+ 2. cassandra-driver-core 2.0.7
  3. CGLIB nodep 2.2.2 for proxy building
  4. Jackson core, annotations, databind & module jaxb annotations 2.2.3
  5. org.reflections 0.9.9-RC1
