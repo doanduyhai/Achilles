@@ -311,7 +311,6 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      */
     public <T> T initialize(final T entity) {
-        log.debug("Force lazy fields initialization for entity {}", entity);
         if (log.isDebugEnabled()) {
             log.debug("Force lazy fields initialization for entity {}", proxifier.removeProxy(entity));
         }
