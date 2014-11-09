@@ -32,6 +32,10 @@ package info.archinnov.achilles.interceptor;
  * <td>PRE_INSERT/POST_INSERT</td>
  * </tr>
  * <tr>
+ * <td>insertOrUpdate()</td>
+ * <td>PRE_INSERT/POST_INSERT or PRE_UPDATE/POST_UPDATE</td>
+ * </tr>
+ * <tr>
  * <td>update()</td>
  * <td>PRE_UPDATE/POST_UPDATE</td>
  * </tr>
