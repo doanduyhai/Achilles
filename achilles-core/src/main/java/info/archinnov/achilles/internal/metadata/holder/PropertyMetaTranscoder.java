@@ -21,7 +21,9 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
     public Object decodeFromComponents(List<?> components) {
-        log.trace("Decode CQL3 components {} into compound primary key {} for entity class {}", components, meta.getPropertyName(), meta.getEntityClassName());
+        if (log.isTraceEnabled()) {
+            log.trace("Decode CQL3 components {} into compound primary key {} for entity class {}", components, meta.getPropertyName(), meta.getEntityClassName());
+        }
         Validator.validateTrue(meta.type() == PropertyType.EMBEDDED_ID, "Cannot decode components '%s' for the property '%s' which is not a compound primary key", components, meta.propertyName);
         if (CollectionUtils.isEmpty(components)) {
             return components;
@@ -40,7 +42,9 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
     Object decodeFromCassandra(Object fromCassandra) {
-        log.trace("Decode Cassandra value {} into Java for property {} of entity class {}", fromCassandra, meta.getPropertyName(), meta.getEntityClassName());
+        if (log.isTraceEnabled()) {
+            log.trace("Decode Cassandra value {} into Java for property {} of entity class {}", fromCassandra, meta.getPropertyName(), meta.getEntityClassName());
+        }
         switch (meta.type()) {
             case SIMPLE:
             case ID:
@@ -52,12 +56,14 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
             case MAP:
                 return meta.getMapCodec().decode((Map) fromCassandra);
             default:
-                throw new AchillesException(String.format("Cannot decode value '%s' from CQL3 for property '%s' of type '%s'",fromCassandra, meta.propertyName, meta.type().name()));
+                throw new AchillesException(String.format("Cannot decode value '%s' from CQL3 for property '%s' of type '%s'", fromCassandra, meta.propertyName, meta.type().name()));
         }
     }
 
     public <T> T encodeToCassandra(Object fromJava) {
-        log.trace("Encode Java value {} into Cassandra for property {} of entity class {}", fromJava, meta.getPropertyName(), meta.getEntityClassName());
+        if (log.isTraceEnabled()) {
+            log.trace("Encode Java value {} into Cassandra for property {} of entity class {}", fromJava, meta.getPropertyName(), meta.getEntityClassName());
+        }
         switch (meta.type()) {
             case SIMPLE:
             case ID:
@@ -76,7 +82,9 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
     public Object getAndEncodeValueForCassandra(Object entity) {
-        log.trace("Get and encode Java value into Cassandra for property {} of entity class {} from entity ", meta.getPropertyName(), meta.getEntityClassName(), entity);
+        if (log.isTraceEnabled()) {
+            log.trace("Get and encode Java value into Cassandra for property {} of entity class {} from entity ", meta.getPropertyName(), meta.getEntityClassName(), entity);
+        }
         Object value = meta.forValues().getValueFromField(entity);
         if (value != null) {
             return encodeToCassandra(value);
@@ -155,7 +163,9 @@ public class PropertyMetaTranscoder extends PropertyMetaView {
     }
 
     public String forceEncodeToJSONForCounter(Object object) {
-        log.trace("Force encode {} to JSON for property {} of entity class {}", object, meta.getPropertyName(), meta.getEntityClassName());
+        if (log.isTraceEnabled()) {
+            log.trace("Force encode {} to JSON for property {} of entity class {}", object, meta.getPropertyName(), meta.getEntityClassName());
+        }
         Validator.validateNotNull(object, "Cannot encode to JSON null primary key for class '%s'", meta.getEntityClassName());
         if (object instanceof String) {
             return String.class.cast(object);

@@ -198,7 +198,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            Consistency Level for read
      */
     public <T> T find(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+        if (log.isDebugEnabled()) {
+            log.debug("Find entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+        }
         return super.find(entityClass, primaryKey, readLevel);
     }
 
@@ -242,7 +244,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      *            Consistency Level for read
      */
     public <T> T getProxy(final Class<T> entityClass, final Object primaryKey, ConsistencyLevel readLevel) {
-        log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}",entityClass, primaryKey, readLevel);
+        if (log.isDebugEnabled()) {
+            log.debug("Get reference for entity class '{}' with primary key {} and read consistency level {}", entityClass, primaryKey, readLevel);
+        }
         return super.getProxy(entityClass, primaryKey, readLevel);
     }
 

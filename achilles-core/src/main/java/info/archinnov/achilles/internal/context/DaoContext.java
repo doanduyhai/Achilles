@@ -101,7 +101,9 @@ public class DaoContext {
         final CollectionAndMapChangeType changeType = changeSet.getChangeType();
         final PropertyMeta propertyMeta = changeSet.getPropertyMeta();
 
-        log.debug("Push update statement for PersistenceContext '{}' and collection/map property '{}' for change type '{}'", context, propertyMeta, changeType);
+        if (log.isDebugEnabled()) {
+            log.debug("Push update statement for PersistenceContext '{}' and collection/map property '{}' for change type '{}'", context, propertyMeta, changeType);
+        }
 
         if (changeType == SET_TO_LIST_AT_INDEX || changeType == REMOVE_FROM_LIST_AT_INDEX) {
             ConsistencyLevel writeLevel = overrider.getWriteLevel(context);
@@ -161,7 +163,9 @@ public class DaoContext {
     }
 
     public Row getSimpleCounter(DaoOperations context, PropertyMeta counterMeta, ConsistencyLevel consistencyLevel) {
-        log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'", counterMeta, context, consistencyLevel);
+        if (log.isDebugEnabled()) {
+            log.debug("Get simple counter value for counterMeta '{}' PersistenceContext '{}' using Consistency level '{}'", counterMeta, context, consistencyLevel);
+        }
         PreparedStatement ps = counterQueryMap.get(SELECT);
         BoundStatementWrapper bsWrapper = binder.bindForSimpleCounterSelect(context, ps, counterMeta, consistencyLevel);
         ResultSet resultSet = context.executeImmediate(bsWrapper);
@@ -177,7 +181,9 @@ public class DaoContext {
 
     // Clustered counter
     public void pushClusteredCounterIncrementStatement(DaoOperations context, PropertyMeta counterMeta, Long increment) {
-        log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta, context, increment);
+        if (log.isDebugEnabled()) {
+            log.debug("Push clustered counter increment statement for counterMeta '{}' and PersistenceContext '{}' and value '{}'", counterMeta, context, increment);
+        }
 
         PreparedStatement ps = clusteredCounterQueryMap.get(context.getEntityClass()).get(INCR).get(counterMeta.getPropertyName());
         BoundStatementWrapper bsWrapper = binder.bindForClusteredCounterIncrementDecrement(context, ps, counterMeta, increment);

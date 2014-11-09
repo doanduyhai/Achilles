@@ -123,7 +123,9 @@ public abstract class AbstractStatementWrapper {
 
         Logger actualLogger = displayDMLForEntity ? entityLogger : dmlLogger;
 
-        actualLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+        if (actualLogger.isDebugEnabled()) {
+            actualLogger.debug("{} : [{}] with CONSISTENCY LEVEL [{}]", queryType, queryString, consistencyLevel);
+        }
 
         if (ArrayUtils.isNotEmpty(values)) {
             actualLogger.debug("\t bound values : {}", Arrays.asList(values));
@@ -206,7 +208,9 @@ public abstract class AbstractStatementWrapper {
             for (ExecutionInfo executionInfo : resultSet.getAllExecutionInfo()) {
                 actualLogger.trace("Query tracing at host {} with achieved consistency level {} ", executionInfo.getQueriedHost(), executionInfo.getAchievedConsistencyLevel());
                 actualLogger.trace("****************************");
-                actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
+                if (actualLogger.isTraceEnabled()) {
+                    actualLogger.trace(String.format("%1$-80s | %2$-16s | %3$-24s | %4$-20s", "Description", "Source", "Source elapsed in micros", "Thread name"));
+                }
                 try {
                     final List<QueryTrace.Event> events = new ArrayList<>(executionInfo.getQueryTrace().getEvents());
                     Collections.sort(events, EVENT_TRACE_COMPARATOR);

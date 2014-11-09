@@ -88,7 +88,9 @@ public class EntityMapper {
     }
 
     public void setCounterToEntity(PropertyMeta counterMeta, Object entity, Long counterValue) {
-        log.debug("Set counter value {} to property {} of entity class {}", counterValue, counterMeta.getPropertyName(), counterMeta.getEntityClassName());
+        if (log.isDebugEnabled()) {
+            log.debug("Set counter value {} to property {} of entity class {}", counterValue, counterMeta.getPropertyName(), counterMeta.getEntityClassName());
+        }
         final Counter counter = InternalCounterBuilder.initialValue(counterValue);
         counterMeta.forValues().setValueToField(entity, counter);
     }

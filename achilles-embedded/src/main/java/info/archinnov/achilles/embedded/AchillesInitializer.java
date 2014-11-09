@@ -120,7 +120,9 @@ public class AchillesInitializer {
     }
 
     private Cluster createCluster(String host, int cqlPort, TypedMap parameters) {
-        LOGGER.debug("Creating Cluster object with host/port {}/{} and parameters {}", host, cqlPort, parameters);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Creating Cluster object with host/port {}/{} and parameters {}", host, cqlPort, parameters);
+        }
         String clusterName = parameters.getTyped(CLUSTER_NAME);
         Compression compression = parameters.getTyped(COMPRESSION_TYPE);
         LoadBalancingPolicy loadBalancingPolicy = parameters.getTyped(LOAD_BALANCING_POLICY);

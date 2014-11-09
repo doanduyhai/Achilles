@@ -45,7 +45,9 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         final boolean schemaUpdateEnabled = entityMeta.config().isSchemaUpdateEnabled();
         final String tableName = tableMetaData.getName();
 
-        log.debug("Validate existing column {} from table {} against type {}", cql3ColumnName, tableName, columnJavaType);
+        if (log.isDebugEnabled()) {
+            log.debug("Validate existing column {} from table {} against type {}", cql3ColumnName, tableName, columnJavaType);
+        }
 
         final ColumnMetadata columnMetadata = tableMetaData.getColumn(cql3ColumnName);
 
@@ -83,7 +85,9 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         }
         final Name realType = columnMetadata.getType().getName();
 
-        log.debug("Validate existing collection/map column {} from table {} against type {}", cql3ColumnName, tableName, realType);
+        if (log.isDebugEnabled()) {
+            log.debug("Validate existing collection/map column {} from table {} against type {}", cql3ColumnName, tableName, realType);
+        }
 
         final Name expectedValueType = toCQLType(meta.config().getCQL3ValueType());
 
@@ -132,7 +136,9 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
     public void validateClusteredCounterColumn(TableMetadata tableMetaData, EntityMeta entityMeta) {
         final String cql3ColumnName = meta.getCQL3ColumnName();
 
-        log.debug("Validate existing counter column {} from table {} against type {}", cql3ColumnName, tableMetaData.getName(), Counter.class);
+        if (log.isDebugEnabled()) {
+            log.debug("Validate existing counter column {} from table {} against type {}", cql3ColumnName, tableMetaData.getName(), Counter.class);
+        }
 
         final boolean schemaUpdateEnabled = entityMeta.config().isSchemaUpdateEnabled();
 
@@ -159,7 +165,10 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         final String tableName = tableMetaData.getName();
         final String cql3ColumnName = partitionMeta.getCQL3ColumnName();
         final Class<?> columnJavaType = partitionMeta.config().getCQL3ValueType();
-        log.debug("Validate existing partition key component {} from table {} against type {}", cql3ColumnName, tableName, columnJavaType.getCanonicalName());
+
+        if (log.isDebugEnabled()) {
+            log.debug("Validate existing partition key component {} from table {} against type {}", cql3ColumnName, tableName, columnJavaType.getCanonicalName());
+        }
 
         // no ALTER's for partition components
         ColumnMetadata columnMetadata = tableMetaData.getColumn(cql3ColumnName);
@@ -174,7 +183,10 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
         final String tableName = tableMetaData.getName();
         final String cql3ColumnName = clusteringMeta.getCQL3ColumnName();
         final Class<?> columnJavaType = clusteringMeta.config().getCQL3ValueType();
-        log.debug("Validate existing clustering column {} from table {} against type {}", cql3ColumnName,tableName, columnJavaType);
+
+        if (log.isDebugEnabled()) {
+            log.debug("Validate existing clustering column {} from table {} against type {}", cql3ColumnName,tableName, columnJavaType);
+        }
 
         // no ALTER's for clustering components
         ColumnMetadata columnMetadata = tableMetaData.getColumn(cql3ColumnName);

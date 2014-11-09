@@ -72,7 +72,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object entity = context.getEntity();
 
-        log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for properties {} update of entity {}", ps.getQueryString(), pms, entity);
+        }
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
@@ -169,7 +171,10 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}", ps.getQueryString(), pm, primaryKey, increment);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for simple counter increment of {} using primary key {} and value {}", ps.getQueryString(), pm, primaryKey, increment);
+        }
+
         Object[] boundValues = ArrayUtils.add(extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey), 0, increment);
 
         BoundStatement bs = ps.bind(boundValues);
@@ -180,7 +185,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}", ps.getQueryString(), pm, primaryKey);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for simple counter read of {} using primary key {}", ps.getQueryString(), pm, primaryKey);
+        }
 
         Object[] boundValues = extractValuesForSimpleCounterBinding(entityMeta, pm, primaryKey);
         BoundStatement bs = ps.bind(boundValues);
@@ -191,7 +198,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), pm, primaryKey);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), pm, primaryKey);
+        }
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
@@ -205,7 +214,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for clustered counter increment/decrement for {} using primary key {} and value {}", ps.getQueryString(), entityMeta, primaryKey, increment);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for clustered counter increment/decrement for {} using primary key {} and value {}", ps.getQueryString(), entityMeta, primaryKey, increment);
+        }
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
@@ -221,7 +232,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for clustered counter read for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for clustered counter read for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+        }
 
         List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta(), onlyStaticColumns);
         Object[] boundValues = primaryKeys.toArray();
@@ -234,7 +247,9 @@ public class PreparedStatementBinder {
         EntityMeta entityMeta = context.getEntityMeta();
         Object primaryKey = context.getPrimaryKey();
 
-        log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+        if (log.isTraceEnabled()) {
+            log.trace("Bind prepared statement {} for simple counter delete for {} using primary key {}", ps.getQueryString(), entityMeta, primaryKey);
+        }
 
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
         List<Object> primaryKeys = bindPrimaryKey(primaryKey, entityMeta.getIdMeta(), false);
