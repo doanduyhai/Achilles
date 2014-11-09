@@ -1,7 +1,7 @@
 ![Achilles logo](assets/Achilles_New_Logo.png)
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[![Build Status](https://travis-ci.org/doanduyhai/Achilles.png?branch=master)](https://travis-ci.org/doanduyhai/Achilles)[![Maven central](https://maven-badges.herokuapp.com/maven-central/info.archinnov/achilles-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/info.archinnov/achilles-core)
 
   Achilles is an **open source** Persistence Manager for **Apache Cassandra**. Among all the features:
 
