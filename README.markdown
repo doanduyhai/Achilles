@@ -21,6 +21,7 @@
 - Multi-keyspace
 - Naming Strategy
 - Type Transformer
+- Asynchronous operations
 
 
 ## Installation #
@@ -31,7 +32,7 @@
 	<dependency>
 		<groupId>info.archinnov</groupId>
 		<artifactId>achilles-core</artifactId>
-		<version>3.0.8</version>
+		<version>3.0.9</version>
 	</dependency>
 ```
 
@@ -41,7 +42,7 @@
  	<dependency>
  		<groupId>info.archinnov</groupId>
  		<artifactId>achilles-junit</artifactId>
- 		<version>3.0.8</version>
+ 		<version>3.0.9</version>
  		<scope>test</scope>
  	</dependency>
 ```
