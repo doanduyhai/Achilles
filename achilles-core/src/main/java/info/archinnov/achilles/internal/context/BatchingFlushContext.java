@@ -63,7 +63,7 @@ public class BatchingFlushContext extends AbstractFlushContext {
     @Override
     public ListenableFuture<List<ResultSet>> flush() {
         log.debug("Flush called but do nothing. Flushing is done only at the end of the batch");
-        return new EmptyFutureResultSets();
+        return EmptyFutureResultSets.instance();
     }
 
     @Override

@@ -16,7 +16,7 @@
 
 package info.archinnov.achilles.internal.async;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -26,6 +26,18 @@ import com.datastax.driver.core.ResultSet;
 import com.google.common.util.concurrent.ListenableFuture;
 
 public class EmptyFutureResultSets implements ListenableFuture<List<ResultSet>> {
+
+    private static final EmptyFutureResultSets INSTANCE = new EmptyFutureResultSets();
+
+    public static EmptyFutureResultSets instance() {
+        return INSTANCE;
+    }
+
+    /**
+     * Use {@link #instance()} to get an instance.
+     */
+    private EmptyFutureResultSets() {
+    }
 
     @Override
     public void addListener(Runnable listener, Executor executor) {
@@ -49,11 +61,11 @@ public class EmptyFutureResultSets implements ListenableFuture<List<ResultSet>> 
 
     @Override
     public List<ResultSet> get() throws InterruptedException, ExecutionException {
-        return Arrays.asList();
+        return Collections.emptyList();
     }
 
     @Override
     public List<ResultSet> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return Arrays.asList();
+        return Collections.emptyList();
     }
 }
