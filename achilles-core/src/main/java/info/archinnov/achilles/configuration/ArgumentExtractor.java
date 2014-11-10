@@ -22,6 +22,9 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.CONS
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MAX_THREAD;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
@@ -29,13 +32,12 @@ import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTI
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
-
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
 import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
@@ -50,11 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.validation.ValidationException;
-
-import com.google.common.base.Optional;
-import info.archinnov.achilles.type.NamingStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -62,17 +63,18 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.interceptor.Interceptor;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
 import info.archinnov.achilles.internal.utils.ConfigMap;
-import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.json.DefaultJacksonMapperFactory;
 import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
+import info.archinnov.achilles.type.NamingStrategy;
 
 public class ArgumentExtractor {
 
@@ -90,8 +92,6 @@ public class ArgumentExtractor {
 
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
      static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
-
-    static final ExecutorService DEFAULT_EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
     public List<Class<?>> initEntities(ConfigMap configurationMap, ClassLoader classLoader) {
         log.trace("Extract entities from configuration map");
@@ -277,6 +277,16 @@ public class ArgumentExtractor {
     }
 
     public ExecutorService initExecutorService(ConfigMap configMap) {
-        return configMap.getTypedOr(EXECUTOR_SERVICE, DEFAULT_EXECUTOR_SERVICE);
+        return configMap.getTypedOr(EXECUTOR_SERVICE, initializeDefaultExecutor(configMap));
+    }
+
+    private ExecutorService initializeDefaultExecutor(ConfigMap configMap) {
+        int minThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, 10);
+        int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, 10);
+        long threadKeepalive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, 60L);
+        int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, 1000);
+        return new ThreadPoolExecutor(minThreads, maxThreads, threadKeepalive, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(queueSize),
+                new DefaultExecutorThreadFactory());
     }
 }

@@ -201,6 +201,11 @@ public enum ConfigurationParameters {
 
      EXECUTOR_SERVICE("achilles.executor.service"),
 
+    DEFAULT_EXECUTOR_SERVICE_MIN_THREAD("achilles.executor.service.default.thread.min"),
+    DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),
+    DEFAULT_EXECUTOR_SERVICE_MAX_THREAD("achilles.executor.service.default.thread.max"),
+    DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size"),
+
     GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy");
 
     private String label;
