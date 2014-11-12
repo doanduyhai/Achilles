@@ -163,6 +163,57 @@ package info.archinnov.achilles.configuration;
  * <strong>OSGI_CLASS_LOADER</strong> (OPTIONAL): define the class loader to be use for entity introspection and proxies creation, instead of the default class loader.</li>
  * </ul><p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/OSGI-Support">OSGI Support</a></strong></p>
  *
+ *
+ * <h4>Asynchronous Operations</h4>
+ *
+ * <ul >
+ *  <li>
+ *      <strong>EXECUTOR_SERVICE</strong> (OPTIONAL): define the executor service (thread pool) to be used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      By default, the thread pool is configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(1000),
+ *                  new DefaultExecutorThreadFactory())
+ *       </code></pre>
+ *  </li>
+ *  <li>
+ *      <strong>DEFAULT_EXECUTOR_SERVICE_MIN_THREAD</strong> (OPTIONAL): define the minimum thread count for the executor service used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      The thread pool will configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(DEFAULT_EXECUTOR_SERVICE_MIN_THREAD, 20, 60, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(1000),
+ *                  new DefaultExecutorThreadFactory())
+ *       </code></pre>
+ *  </li>
+ *  <li>
+ *      <strong>DEFAULT_EXECUTOR_SERVICE_MAX_THREAD</strong> (OPTIONAL): define the maximum thread count for the executor service used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      The thread pool will configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(5, DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, 60, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(1000),
+ *                  new DefaultExecutorThreadFactory())
+ *       </code></pre>
+ *  </li>
+ *  <li>
+ *      <strong>DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE</strong> (OPTIONAL): define the duration in seconds during which a thread is kept alive before being destroyed, on the executor service used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      The thread pool will configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(5, 20, DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(1000),
+ *                  new DefaultExecutorThreadFactory())
+ *       </code></pre>
+ *  </li>
+ *  <li>
+ *      <strong>DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE</strong> (OPTIONAL): define the size of the LinkedBlockingQueue used by the executor service used by <strong>Achilles</strong> for its internal asynchronous operations.
+ *      The thread pool will configured as follow:
+ *       <pre class="code"><code class="java">
+ *              new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+ *                  new LinkedBlockingQueue<Runnable>(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE),
+ *                  new DefaultExecutorThreadFactory())
+ *       </code></pre>
+ *  </li>
+ * </ul>
+ * <p>For more details, please check <strong><a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a></strong></p>
  */
 public enum ConfigurationParameters {
     ENTITY_PACKAGES("achilles.entity.packages"),
@@ -197,16 +248,17 @@ public enum ConfigurationParameters {
 
     OSGI_CLASS_LOADER("achilles.osgi.class.loader"),
 
-     RELAX_INDEX_VALIDATION("achilles.relax.index.validation"),
+    RELAX_INDEX_VALIDATION("achilles.relax.index.validation"),
 
-     EXECUTOR_SERVICE("achilles.executor.service"),
+    GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy"),
+
+    EXECUTOR_SERVICE("achilles.executor.service"),
 
     DEFAULT_EXECUTOR_SERVICE_MIN_THREAD("achilles.executor.service.default.thread.min"),
-    DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),
     DEFAULT_EXECUTOR_SERVICE_MAX_THREAD("achilles.executor.service.default.thread.max"),
-    DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size"),
+    DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE("achilles.executor.service.default.thread.keepalive"),
+    DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE("achilles.executor.service.default.queue.size");
 
-    GLOBAL_NAMING_STRATEGY("achilles.global.naming.strategy");
 
     private String label;
 

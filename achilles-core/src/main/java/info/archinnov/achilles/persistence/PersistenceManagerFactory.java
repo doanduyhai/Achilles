@@ -15,30 +15,11 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RELAX_INDEX_VALIDATION;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +43,8 @@ import info.archinnov.achilles.json.JacksonMapperFactory;
 import info.archinnov.achilles.type.ConsistencyLevel;
 import info.archinnov.achilles.type.InsertStrategy;
 import org.springframework.scheduling.annotation.Async;
+
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 
 /**
  * <p>
@@ -545,6 +528,105 @@ public class PersistenceManagerFactory {
          */
         public PersistenceManagerFactoryBuilder relaxIndexValidation(boolean relaxIndexValidation) {
             configMap.put(RELAX_INDEX_VALIDATION, relaxIndexValidation);
+            return this;
+        }
+
+        /**
+         * Pass an ExecutorService (ThreadPool) to Achilles to be used internally for asynchronous operations.
+         * <br/>
+         * If omitted, the default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(1000),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param executorService an executor service (thread pool) to be used by Achilles for internal for asynchronous operations
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withDefaultExecutorService(ExecutorService executorService) {
+            configMap.put(EXECUTOR_SERVICE, executorService);
+            return this;
+        }
+
+        /**
+         * Define the min thread count for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+         * <br/>
+         * The default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      // Create proxy
+         *      new ThreadPoolExecutor(minThreadCount, 20, 60, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(1000),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param minThreadCount min thread count for the executor service
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withExecutorServiceMinThreadCount(int minThreadCount) {
+            configMap.put(DEFAULT_EXECUTOR_SERVICE_MIN_THREAD, minThreadCount);
+            return this;
+        }
+
+        /**
+         * Define the max thread count for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+         * <br/>
+         * The default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      // Create proxy
+         *      new ThreadPoolExecutor(5, maxThreadCount, 60, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(1000),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param maxThreadCount max thread count for the executor service
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withExecutorServiceMaxThreadCount(int maxThreadCount) {
+            configMap.put(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, maxThreadCount);
+            return this;
+        }
+
+        /**
+         * Define the thread keep-alive duration in second for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+         * <br/>
+         * The default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      // Create proxy
+         *      new ThreadPoolExecutor(5, 20, keepAliveDuration, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(1000),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param keepAliveDuration thread keep-alive duration in second for the executor service
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withExecutorServiceThreadKeepAliveDuration(int keepAliveDuration) {
+            configMap.put(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, keepAliveDuration);
+            return this;
+        }
+
+        /**
+         * Define the LinkedBlockingQueue size for the ExecutorService (ThreadPool) to be used internally for asynchronous operations.
+         * <br/>
+         * The default ExecutorService is configured as below:
+         *  <pre class="code"><code class="java">
+         *      // Create proxy
+         *      new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
+         *              new LinkedBlockingQueue<Runnable>(threadQueueSize),
+         *              new DefaultExecutorThreadFactory())
+         *  </code></pre>
+         * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Asynchronous-Operations">Asynchronous Operations</a>
+         * @param threadQueueSize the LinkedBlockingQueue size for the executor service
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withExecutorServiceThreadQueueSize(int threadQueueSize) {
+            configMap.put(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, threadQueueSize);
             return this;
         }
 

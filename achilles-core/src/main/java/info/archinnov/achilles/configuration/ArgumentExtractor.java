@@ -16,32 +16,7 @@
 
 package info.archinnov.achilles.configuration;
 
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_ENABLE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.BEAN_VALIDATION_VALIDATOR;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_READ_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_DEFAULT;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.CONSISTENCY_LEVEL_WRITE_MAP;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_MAX_THREAD;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENABLE_SCHEMA_UPDATE_FOR_TABLES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITIES_LIST;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.ENTITY_PACKAGES;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EXECUTOR_SERVICE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_INSERT_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.GLOBAL_NAMING_STRATEGY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.JACKSON_MAPPER_FACTORY;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.KEYSPACE_NAME;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.NATIVE_SESSION;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.OSGI_CLASS_LOADER;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PREPARED_STATEMENTS_CACHE_SIZE;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.PROXIES_WARM_UP_DISABLED;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.RELAX_INDEX_VALIDATION;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.*;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,8 +65,13 @@ public class ArgumentExtractor {
 
     static final boolean DEFAULT_INDEX_RELAX_VALIDATION = false;
 
+    static final int DEFAULT_THREAD_POOL_MIN_THREAD_COUNT = 10;
+    static final int DEFAULT_THREAD_POOL_MAX_THREAD_COUNT = 10;
+    static final long DEFAULT_THREAD_POOL_THREAD_TTL = 60L;
+    static final int DEFAULT_THREAD_POOL_QUEUE_SIZE = 1000;
+
     static final InsertStrategy DEFAULT_INSERT_STRATEGY = InsertStrategy.ALL_FIELDS;
-     static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
+    static final NamingStrategy DEFAULT_GLOBAL_NAMING_STRATEGY = NamingStrategy.LOWER_CASE;
 
     public List<Class<?>> initEntities(ConfigMap configurationMap, ClassLoader classLoader) {
         log.trace("Extract entities from configuration map");
@@ -281,10 +261,11 @@ public class ArgumentExtractor {
     }
 
     private ExecutorService initializeDefaultExecutor(ConfigMap configMap) {
-        int minThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, 10);
-        int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, 10);
-        long threadKeepalive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, 60L);
-        int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, 1000);
+
+        int minThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MIN_THREAD, DEFAULT_THREAD_POOL_MIN_THREAD_COUNT);
+        int maxThreads = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_MAX_THREAD, DEFAULT_THREAD_POOL_MAX_THREAD_COUNT);
+        long threadKeepalive = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_THREAD_KEEPALIVE, DEFAULT_THREAD_POOL_THREAD_TTL);
+        int queueSize = configMap.getTypedOr(DEFAULT_EXECUTOR_SERVICE_QUEUE_SIZE, DEFAULT_THREAD_POOL_QUEUE_SIZE);
         return new ThreadPoolExecutor(minThreads, maxThreads, threadKeepalive, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(queueSize),
                 new DefaultExecutorThreadFactory());
