@@ -254,7 +254,7 @@ public class AsyncBatchModeIT {
             }
         };
 
-        manager.insert(tweet1);
+        manager.insert(tweet1).getImmediately();
 
         // Start batch
         AsyncBatch batch = manager.createBatch();
