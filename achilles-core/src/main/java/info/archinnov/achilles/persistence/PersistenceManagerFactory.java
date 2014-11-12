@@ -549,6 +549,19 @@ public class PersistenceManagerFactory {
         }
 
         /**
+         * Pass an arbitrary parameter to configure Achilles
+         *
+         * @param parameter an instance of the ConfigurationParameters enum
+         * @param value the value of the parameter
+         *
+         * @return PersistenceManagerFactoryBuilder
+         */
+        public PersistenceManagerFactoryBuilder withParameter(ConfigurationParameters parameter, Object value) {
+            configMap.put(parameter, value);
+            return this;
+        }
+
+        /**
          * Build a new PersistenceManagerFactory
          *
          * @return PersistenceManagerFactory
