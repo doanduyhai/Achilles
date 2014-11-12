@@ -78,7 +78,6 @@ public class AsyncUtils {
         }
     }
 
-
     public void maybeAddAsyncListeners(ListenableFuture<?> listenableFuture, FutureCallback<Object>[] asyncListeners, ExecutorService executorService) {
         if (ArrayUtils.isNotEmpty(asyncListeners)) {
             for (FutureCallback<Object> callback : asyncListeners) {
@@ -87,23 +86,11 @@ public class AsyncUtils {
         }
     }
 
-//    public <V, T> ListenableFuture<T> transformFuture(ListenableFuture<V> listenableFuture, Function<V, T> function) {
-//        return Futures.transform(listenableFuture, function);
-//    }
 
     public <T, V> ListenableFuture<T> transformFuture(ListenableFuture<V> from, Function<V, T> function, ExecutorService executorService) {
         return Futures.transform(from, function, executorService);
     }
-//
-//    public <V> ListenableFuture<Empty> transformFutureToEmpty(ListenableFuture<V> from) {
-//        Function<V, Empty> function = new Function<V, Empty>() {
-//            @Override
-//            public Empty apply(V input) {
-//                return Empty.INSTANCE;
-//            }
-//        };
-//        return Futures.transform(from, function);
-//    }
+
 
     public <V> ListenableFuture<Empty> transformFutureToEmpty(ListenableFuture<V> from, ExecutorService executorService) {
         Function<V, Empty> function = new Function<V, Empty>() {
