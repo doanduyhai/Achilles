@@ -15,43 +15,40 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
-import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
-import static info.archinnov.achilles.interceptor.Event.POST_LOAD;
-import static info.archinnov.achilles.interceptor.Event.POST_INSERT;
-import static info.archinnov.achilles.interceptor.Event.POST_DELETE;
-import static info.archinnov.achilles.interceptor.Event.POST_UPDATE;
-import static info.archinnov.achilles.interceptor.Event.PRE_INSERT;
-import static info.archinnov.achilles.interceptor.Event.PRE_DELETE;
-import static info.archinnov.achilles.interceptor.Event.PRE_UPDATE;
-import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
-import static info.archinnov.achilles.type.CounterBuilder.incr;
-import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import java.util.Arrays;
-import java.util.List;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.FutureCallback;
+import info.archinnov.achilles.async.AchillesFuture;
+import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
+import info.archinnov.achilles.interceptor.Event;
+import info.archinnov.achilles.interceptor.Interceptor;
+import info.archinnov.achilles.persistence.*;
+import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
+import info.archinnov.achilles.test.integration.entity.CompleteBean;
+import info.archinnov.achilles.type.OptionsBuilder;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.google.common.collect.ImmutableMap;
-import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
-import info.archinnov.achilles.interceptor.Event;
-import info.archinnov.achilles.interceptor.Interceptor;
-import info.archinnov.achilles.persistence.Batch;
-import info.archinnov.achilles.persistence.PersistenceManager;
-import info.archinnov.achilles.persistence.PersistenceManagerFactory;
-import info.archinnov.achilles.test.integration.entity.ClusteredEntity;
-import info.archinnov.achilles.test.integration.entity.CompleteBean;
 
-public class EventInterceptorIT {
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.EVENT_INTERCEPTORS;
+import static info.archinnov.achilles.configuration.ConfigurationParameters.FORCE_TABLE_CREATION;
+import static info.archinnov.achilles.interceptor.Event.*;
+import static info.archinnov.achilles.test.integration.entity.CompleteBeanTestBuilder.builder;
+import static info.archinnov.achilles.type.CounterBuilder.incr;
+import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
+
+public class AsyncEventInterceptorIT {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -161,35 +158,48 @@ public class EventInterceptorIT {
     private PersistenceManagerFactory pmf = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .cleanDataFilesAtStartup(true)
-            .withKeyspaceName("interceptor_keyspace1")
+            .withKeyspaceName("async_interceptor_keyspace1")
             .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, interceptors, FORCE_TABLE_CREATION, true))
             .buildPersistenceManagerFactory();
 
-    private PersistenceManager manager = pmf.createPersistenceManager();
+    private AsyncManager manager = pmf.createAsyncManager();
     private Session session = manager.getNativeSession();
 
-    private PersistenceManager manager2 = CassandraEmbeddedServerBuilder
+    private AsyncManager manager2 = CassandraEmbeddedServerBuilder
             .withEntities(CompleteBean.class)
             .cleanDataFilesAtStartup(true)
-            .withKeyspaceName("interceptor_keyspace2")
+            .withKeyspaceName("async_interceptor_keyspace2")
             .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, postRemoveInterceptors, FORCE_TABLE_CREATION, true))
             .cleanDataFilesAtStartup(true)
-            .buildPersistenceManager();
+            .buildPersistenceManagerFactory().createAsyncManager();
 
-    private PersistenceManager manager3 = CassandraEmbeddedServerBuilder
+    private AsyncManager manager3 = CassandraEmbeddedServerBuilder
             .withEntities(ClusteredEntity.class)
             .cleanDataFilesAtStartup(true)
-            .withKeyspaceName("interceptor_keyspace3")
+            .withKeyspaceName("async_interceptor_keyspace3")
             .withAchillesConfigParams(ImmutableMap.of(EVENT_INTERCEPTORS, asList(postLoadForClustered), FORCE_TABLE_CREATION, true))
             .cleanDataFilesAtStartup(true)
-            .buildPersistenceManager();
+            .buildPersistenceManagerFactory().createAsyncManager();
 
     @Test
     public void should_apply_persist_interceptors() throws Exception {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").version(incr(2L)).buid();
 
-        manager.insert(entity);
+        final CountDownLatch latch = new CountDownLatch(1);
+        manager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        }));
+
+        latch.await();
 
         assertThat(entity.getName()).isEqualTo("prePersist");
         assertThat(entity.getLabel()).isEqualTo("postPersist : label");
@@ -206,11 +216,37 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().buid();
 
-        entity = manager.insert(entity);
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AchillesFuture<CompleteBean> future = manager.insert(entity, withAsyncListeners(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        }));
+
+        entity = future.get();
         entity.setName("DuyHai");
         entity.setLabel("label");
 
-        manager.update(entity);
+
+        manager.update(entity, withAsyncListeners(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        }));
+
+        latch.await();
 
         Row row = session.execute("select name,label from CompleteBean where id = " + entity.getId()).one();
 
@@ -235,7 +271,20 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager2.delete(entity);
+        final CountDownLatch latch = new CountDownLatch(1);
+        manager2.delete(entity, withAsyncListeners(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        }));
+
+        latch.await();
 
         assertThat(entity.getLabel()).isEqualTo("postRemove");
     }
@@ -245,33 +294,61 @@ public class EventInterceptorIT {
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.insert(entity);
+        manager.insert(entity).getImmediately();
 
-        entity = manager.find(CompleteBean.class, entity.getId());
+        final CountDownLatch latch = new CountDownLatch(1);
 
-        assertThat(entity.getLabel()).isEqualTo("postLoad");
+        final AchillesFuture<CompleteBean> future = manager.find(CompleteBean.class, entity.getId(), withAsyncListeners(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        }));
+
+        latch.await();
+
+        assertThat(future.get().getLabel()).isEqualTo("postLoad");
     }
 
     @Test
     public void should_apply_interceptors_after_flush_for_batch() throws Exception {
         // Given
-        final Batch batchingPM = pmf.createBatch();
-        batchingPM.startBatch();
+        final AsyncBatch asyncBatch = manager.createBatch();
+        asyncBatch.startBatch();
 
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
         // When
-        batchingPM.insert(entity);
+        asyncBatch.insert(entity);
 
         // Then
         assertThat(entity.getName()).isEqualTo("DuyHai");
         assertThat(entity.getLabel()).isEqualTo("label");
 
         // When
-        batchingPM.endBatch();
+        final CountDownLatch latch = new CountDownLatch(1);
+        asyncBatch.endBatch(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch.await();
 
         // Then
         assertThat(entity.getName()).isEqualTo("prePersist");
+
         assertThat(entity.getLabel()).isEqualTo("postPersist : label");
     }
 
@@ -284,16 +361,21 @@ public class EventInterceptorIT {
         String value = "value_before_load";
         ClusteredEntity entity = new ClusteredEntity(id, count, name, value);
 
-        manager3.insert(entity);
+        manager3.insert(entity).getImmediately();
 
         // When
-        final List<ClusteredEntity> clusteredEntities = manager3.sliceQuery(ClusteredEntity.class)
+        final AchillesFuture<List<ClusteredEntity>> futures = manager3.sliceQuery(ClusteredEntity.class)
                 .forSelect()
                 .withPartitionComponents(id)
+                .async()
                 .get(10);
 
+
         // Then
-        assertThat(clusteredEntities.get(0).getValue()).isEqualTo("postLoad");
+        while (!futures.isDone()) {
+            Thread.sleep(4);
+        }
+        assertThat(futures.get().get(0).getValue()).isEqualTo("postLoad");
     }
 
     @Test
@@ -301,15 +383,28 @@ public class EventInterceptorIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.insert(entity);
+        manager.insert(entity).getImmediately();
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
         // When
-        final CompleteBean actual = manager.typedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AchillesFuture<CompleteBean> future = manager.typedQuery(CompleteBean.class, statement, entity.getId()).asyncGetFirst(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch.await();
 
         // Then
-        assertThat(actual.getLabel()).isEqualTo("postLoad");
+        assertThat(future.get().getLabel()).isEqualTo("postLoad");
     }
 
     @Test
@@ -317,14 +412,29 @@ public class EventInterceptorIT {
         // Given
         CompleteBean entity = builder().randomId().name("DuyHai").label("label").buid();
 
-        manager.insert(entity);
+
+        manager.insert(entity).getImmediately();
 
         RegularStatement statement = select().from("CompleteBean").where(eq("id",bindMarker()));
 
         // When
-        final CompleteBean actual = manager.rawTypedQuery(CompleteBean.class, statement,entity.getId()).getFirst();
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        final AchillesFuture<CompleteBean> future = manager.rawTypedQuery(CompleteBean.class, statement, entity.getId()).asyncGetFirst(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch.await();
 
         // Then
-        assertThat(actual.getLabel()).isEqualTo("postLoad");
+        assertThat(future.get().getLabel()).isEqualTo("postLoad");
     }
 }
