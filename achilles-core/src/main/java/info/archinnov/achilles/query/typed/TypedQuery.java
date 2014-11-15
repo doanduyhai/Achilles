@@ -110,18 +110,18 @@ public class TypedQuery<T> {
         log.debug("Get results asynchronously for typed query '{}'", nativeStatementWrapper.getStatement());
 
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS, executorService);
+        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ROWS);
 
         Function<List<Row>, List<T>> rowsToEntities = rowsToEntities();
         Function<List<T>, List<T>> applyTriggers = applyTriggersToEntities();
         Function<List<T>, List<T>> maybeCreateProxy = proxifyEntities();
 
-        final ListenableFuture<List<T>> rawEntities = asyncUtils.transformFuture(futureRows, rowsToEntities, executorService);
-        final ListenableFuture<List<T>> entitiesWithTriggers = asyncUtils.transformFuture(rawEntities, applyTriggers, executorService);
+        final ListenableFuture<List<T>> rawEntities = asyncUtils.transformFutureSync(futureRows, rowsToEntities);
+        final ListenableFuture<List<T>> entitiesWithTriggers = asyncUtils.transformFutureSync(rawEntities, applyTriggers);
 
         asyncUtils.maybeAddAsyncListeners(entitiesWithTriggers, asyncListeners, executorService);
 
-        final ListenableFuture<List<T>> maybeProxyCreated = asyncUtils.transformFuture(entitiesWithTriggers, maybeCreateProxy, executorService);
+        final ListenableFuture<List<T>> maybeProxyCreated = asyncUtils.transformFutureSync(entitiesWithTriggers, maybeCreateProxy);
 
         return asyncUtils.buildInterruptible(maybeProxyCreated);
     }
@@ -154,18 +154,18 @@ public class TypedQuery<T> {
         log.debug("Get first result asynchronously for typed query '{}'", nativeStatementWrapper.getStatement());
 
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<Row> futureRow = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROW, executorService);
+        final ListenableFuture<Row> futureRow = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ROW);
 
         Function<Row, T> rowToEntity = rowToEntity();
         Function<T, T> applyTriggers = applyTriggersToEntity();
         Function<T, T> maybeCreateProxy = proxifyEntity();
 
-        final ListenableFuture<T> rawEntity = asyncUtils.transformFuture(futureRow, rowToEntity, executorService);
-        final ListenableFuture<T> entityWithTriggers = asyncUtils.transformFuture(rawEntity, applyTriggers, executorService);
+        final ListenableFuture<T> rawEntity = asyncUtils.transformFutureSync(futureRow, rowToEntity);
+        final ListenableFuture<T> entityWithTriggers = asyncUtils.transformFutureSync(rawEntity, applyTriggers);
 
         asyncUtils.maybeAddAsyncListeners(entityWithTriggers, asyncListeners, executorService);
 
-        final ListenableFuture<T> maybeProxyCreated = asyncUtils.transformFuture(entityWithTriggers, maybeCreateProxy, executorService);
+        final ListenableFuture<T> maybeProxyCreated = asyncUtils.transformFutureSync(entityWithTriggers, maybeCreateProxy);
 
         return asyncUtils.buildInterruptible(maybeProxyCreated);
     }

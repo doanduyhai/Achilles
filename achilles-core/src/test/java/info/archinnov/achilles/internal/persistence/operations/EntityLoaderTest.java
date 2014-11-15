@@ -117,7 +117,7 @@ public class EntityLoaderTest {
         when(meta.structure().isClusteredCounter()).thenReturn(false);
         when(context.loadEntity()).thenReturn(futureRow);
         when(meta.forOperations().instanciate()).thenReturn(entity);
-        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         // When
@@ -139,7 +139,7 @@ public class EntityLoaderTest {
         // Given
         when(meta.structure().isClusteredCounter()).thenReturn(false);
         when(context.loadEntity()).thenReturn(futureRow);
-        when(asyncUtils.transformFuture(eq(futureRow), rowToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureRow), rowToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         // When

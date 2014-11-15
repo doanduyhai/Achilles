@@ -46,7 +46,7 @@ public class EntityRefresher {
         final AchillesFuture<T> entityFuture = loader.load(context, entityClass);
 
         Function<T, T> updateInterceptor = updateProxyInterceptor(context, interceptor, entity, primaryKey);
-        final ListenableFuture<T> triggerInterceptors = asyncUtils.transformFuture(entityFuture, updateInterceptor, context.getExecutorService());
+        final ListenableFuture<T> triggerInterceptors = asyncUtils.transformFutureSync(entityFuture, updateInterceptor);
         return asyncUtils.buildInterruptible(triggerInterceptors);
     }
 
