@@ -414,6 +414,7 @@
                     <systemPropertyVariables>
                         <clean.data.files>${clean.data.files}</clean.data.files>
                     </systemPropertyVariables>
+                    <workingDirectory>${basedir}/..</workingDirectory>
                 </configuration>
             </plugin>
             <plugin>
