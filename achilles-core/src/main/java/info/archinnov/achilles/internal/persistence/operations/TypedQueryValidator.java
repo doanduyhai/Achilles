@@ -15,6 +15,9 @@
  */
 package info.archinnov.achilles.internal.persistence.operations;
 
+import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.Statement;
+import info.archinnov.achilles.internal.statement.StatementHelpder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,25 +35,29 @@ public class TypedQueryValidator {
 
     private NativeQueryValidator validator = NativeQueryValidator.Singleton.INSTANCE.get();
 
-    public void validateTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
-        log.debug("Validate typed query {}",regularStatement.getQueryString());
+    public void validateTypedQuery(Class<?> entityClass, Statement statement, EntityMeta meta) {
+        log.debug("Validate typed query {}", statement);
+        String queryString = StatementHelpder.maybeGetQueryString(statement);
+
+        Validator.validateFalse(statement instanceof BatchStatement,"Cannot perform typed query with batch statements");
+
 		PropertyMeta idMeta = meta.getIdMeta();
-		String queryString = regularStatement.getQueryString().toLowerCase().trim();
+		String normalizedQueryString = queryString.toLowerCase().trim();
 
-		validateRawTypedQuery(entityClass, regularStatement, meta);
+		validateRawTypedQuery(entityClass, statement, meta);
 
-		if (!queryString.contains("select *")) {
-			idMeta.forTypedQuery().validateTypedQuery(queryString);
+		if (!normalizedQueryString.contains("select *")) {
+			idMeta.forTypedQuery().validateTypedQuery(normalizedQueryString);
 		}
 	}
 
-	public void validateRawTypedQuery(Class<?> entityClass, RegularStatement regularStatement, EntityMeta meta) {
-        log.debug("Validate raw typed query {}",regularStatement);
+	public void validateRawTypedQuery(Class<?> entityClass, Statement statement, EntityMeta meta) {
+        log.debug("Validate raw typed query {}",statement);
+        String queryString = StatementHelpder.maybeGetQueryString(statement);
         String tableName = meta.config().getTableName().toLowerCase();
-        final String queryString = regularStatement.getQueryString();
         String normalizedQuery = queryString.toLowerCase();
 
-        validator.validateSelect(regularStatement);
+        validator.validateSelect(statement);
 
         final Pattern pattern = Pattern.compile(".* from "+ OPTIONAL_KEYSPACE_PREFIX + tableName+"(?: )?.*");
 

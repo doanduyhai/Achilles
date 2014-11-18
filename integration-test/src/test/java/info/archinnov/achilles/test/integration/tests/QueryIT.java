@@ -36,6 +36,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.cassandra.utils.UUIDGen;
 import org.apache.commons.lang3.RandomUtils;
@@ -722,5 +725,34 @@ public class QueryIT {
 
         // Then
         assertThat(actual.getLabel()).isEqualTo("label");
+    }
+
+    @Test
+    public void should_allow_native_and_typed_query_with_bound_statement() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        final Session session = manager.getNativeSession();
+        final PreparedStatement insertPs = session.prepare(insertInto(CompleteBean.TABLE_NAME)
+                .value("id", bindMarker("id"))
+                .value("label", bindMarker("label"))
+                .value("age_in_years", bindMarker("age")));
+        final BoundStatement insertBs = insertPs.bind(id, "label", 32L);
+        manager.nativeQuery(insertBs).execute();
+
+        final PreparedStatement selectPs = session.prepare(select().from(CompleteBean.TABLE_NAME).where(eq("id", bindMarker("id"))));
+        final BoundStatement selectBs = selectPs.bind(id);
+
+        //When
+        final CompleteBean foundWithProxy = manager.typedQuery(CompleteBean.class, selectBs).getFirst();
+        final CompleteBean foundRaw = manager.rawTypedQuery(CompleteBean.class, selectBs).getFirst();
+
+        //Then
+        assertThat(foundWithProxy).isNotNull();
+        assertThat(foundWithProxy.getLabel()).isEqualTo("label");
+        assertThat(foundWithProxy.getAge()).isEqualTo(32L);
+
+        assertThat(foundRaw).isNotNull();
+        assertThat(foundRaw.getLabel()).isEqualTo("label");
+        assertThat(foundRaw.getAge()).isEqualTo(32L);
     }
 }

@@ -34,6 +34,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Session;
 import info.archinnov.achilles.internal.proxy.ProxyInterceptor;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Rule;
@@ -418,19 +421,6 @@ public class AsyncQueryIT {
             }
         };
 
-        FutureCallback<Object> exceptionCallBack = new FutureCallback<Object>() {
-            @Override
-            public void onSuccess(Object result) {
-                latch.countDown();
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                exceptionSpy.getAndSet(t);
-                latch.countDown();
-            }
-        };
-
         String clusteredValuePrefix = insertValues(partitionKey, 1, 5);
 
         entities = manager.sliceQuery(ClusteredEntity.class)
@@ -751,6 +741,75 @@ public class AsyncQueryIT {
 
         assertThat(entities.get(2).getId().getCount()).isEqualTo(3);
         assertThat(entities.get(2).getValue()).isEqualTo(clusteredValuePrefix + 1);
+    }
+
+    @Test
+    public void should_allow_native_and_typed_query_with_bound_statement() throws Exception {
+        //Given
+        final long id = RandomUtils.nextLong(0, Long.MAX_VALUE);
+        final Session session = manager.getNativeSession();
+        final PreparedStatement insertPs = session.prepare(insertInto(CompleteBean.TABLE_NAME)
+                .value("id", bindMarker("id"))
+                .value("label", bindMarker("label"))
+                .value("age_in_years", bindMarker("age")));
+        final BoundStatement insertBs = insertPs.bind(id, "label", 32L);
+
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        manager.nativeQuery(insertBs).asyncExecute(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch1.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch1.await();
+
+        final PreparedStatement selectPs = session.prepare(select().from(CompleteBean.TABLE_NAME).where(eq("id", bindMarker("id"))));
+        final BoundStatement selectBs = selectPs.bind(id);
+
+        //When
+        final CountDownLatch latch2 = new CountDownLatch(2);
+        final AchillesFuture<CompleteBean> foundWithProxy = manager.typedQuery(CompleteBean.class, selectBs).asyncGetFirst(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch2.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+        final AchillesFuture<CompleteBean> foundRaw = manager.rawTypedQuery(CompleteBean.class, selectBs).asyncGetFirst(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch2.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch2.await();
+
+        final CompleteBean entityWithProxy = foundWithProxy.get();
+        final CompleteBean entityRaw = foundRaw.get();
+
+        //Then
+        assertThat(entityWithProxy).isNotNull();
+        assertThat(entityWithProxy.getLabel()).isEqualTo("label");
+        assertThat(entityWithProxy.getAge()).isEqualTo(32L);
+
+        assertThat(entityRaw).isNotNull();
+        assertThat(entityRaw.getLabel()).isEqualTo("label");
+        assertThat(entityRaw.getAge()).isEqualTo(32L);
     }
 
     private String insertValues(long partitionKey, int countValue, int size) {

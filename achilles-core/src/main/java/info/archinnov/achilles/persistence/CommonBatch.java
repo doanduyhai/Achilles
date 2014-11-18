@@ -15,7 +15,9 @@
  */
 package info.archinnov.achilles.persistence;
 
+import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.Statement;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
@@ -27,6 +29,7 @@ import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.statement.wrapper.NativeQueryLog;
 import info.archinnov.achilles.internal.statement.wrapper.NativeStatementWrapper;
 import info.archinnov.achilles.internal.utils.UUIDGen;
+import info.archinnov.achilles.internal.validation.Validator;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
 import info.archinnov.achilles.type.ConsistencyLevel;
@@ -322,11 +325,11 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * batch.batchNativeStatement(statement,10,"John");
      * </code></pre>
      *
-     * @param regularStatement native CQL3 statement
+     * @param statement native CQL3 statement
      * @param boundValues      optional bound values
      */
-    public void batchNativeStatement(RegularStatement regularStatement, Object... boundValues) {
-        this.batchNativeStatementWithCASListener(regularStatement, null, boundValues);
+    public void batchNativeStatement(Statement statement, Object... boundValues) {
+        this.batchNativeStatementWithCASListener(statement, null, boundValues);
     }
 
     /**
@@ -336,14 +339,15 @@ abstract class CommonBatch extends CommonPersistenceManager {
      * batch.batchNativeStatementWithCASListener(statement,listener,10,"John");
      * </code></pre>
      *
-     * @param regularStatement  native CQL3 statement
+     * @param statement  native CQL3 statement
      * @param casResultListener result listener for CAS operation
      * @param boundValues       optional bound values
      */
-    public void batchNativeStatementWithCASListener(RegularStatement regularStatement, CASResultListener casResultListener, Object... boundValues) {
-        log.debug("Batch native statement '{}' with bound values '{}'", regularStatement, boundValues);
-        validator.validateUpsertOrDelete(regularStatement);
-        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, regularStatement, boundValues, Optional.fromNullable(casResultListener));
+    public void batchNativeStatementWithCASListener(Statement statement, CASResultListener casResultListener, Object... boundValues) {
+        log.debug("Batch native statement '{}' with bound values '{}'", statement, boundValues);
+        Validator.validateFalse(statement instanceof BatchStatement, "Cannot add raw batch statement into batch");
+        validator.validateUpsertOrDelete(statement);
+        final NativeStatementWrapper nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, Optional.fromNullable(casResultListener));
         flushContext.pushStatement(nativeStatementWrapper);
     }
 

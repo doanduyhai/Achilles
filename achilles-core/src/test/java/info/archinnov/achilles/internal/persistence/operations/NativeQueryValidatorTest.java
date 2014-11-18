@@ -16,20 +16,28 @@
 
 package info.archinnov.achilles.internal.persistence.operations;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.querybuilder.*;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.persistence.operations.NativeQueryValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeQueryValidatorTest {
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private BoundStatement boundStatement;
 
     private NativeQueryValidator validator = new NativeQueryValidator();
 
@@ -51,6 +59,10 @@ public class NativeQueryValidatorTest {
 
     @Test
     public void should_detect_select_statement() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" select * from");
+
+        //Then
         assertThat(validator.isSelectStatement(statement1)).isTrue();
         assertThat(validator.isSelectStatement(statement2)).isTrue();
         assertThat(validator.isSelectStatement(statement3)).isTrue();
@@ -67,10 +79,15 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isSelectStatement(statement11)).isFalse();
         assertThat(validator.isSelectStatement(statement12)).isFalse();
 
+        assertThat(validator.isSelectStatement(boundStatement)).isTrue();
     }
 
     @Test
     public void should_detect_insert_statement() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" Insert into");
+
+        //Then
         assertThat(validator.isInsertStatement(statement1)).isFalse();
         assertThat(validator.isInsertStatement(statement2)).isFalse();
         assertThat(validator.isInsertStatement(statement3)).isFalse();
@@ -86,11 +103,17 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isInsertStatement(statement10)).isFalse();
         assertThat(validator.isInsertStatement(statement11)).isFalse();
         assertThat(validator.isInsertStatement(statement12)).isFalse();
+
+        assertThat(validator.isInsertStatement(boundStatement)).isTrue();
     }
 
 
     @Test
     public void should_detect_update_statement() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" UPDATE test");
+
+        //Then
         assertThat(validator.isUpdateStatement(statement1)).isFalse();
         assertThat(validator.isUpdateStatement(statement2)).isFalse();
         assertThat(validator.isUpdateStatement(statement3)).isFalse();
@@ -106,10 +129,16 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isUpdateStatement(statement10)).isFalse();
         assertThat(validator.isUpdateStatement(statement11)).isFalse();
         assertThat(validator.isUpdateStatement(statement12)).isFalse();
+
+        assertThat(validator.isUpdateStatement(boundStatement)).isTrue();
     }
 
     @Test
     public void should_detect_delete_statement() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" delete from test");
+
+        //Then
         assertThat(validator.isDeleteStatement(statement1)).isFalse();
         assertThat(validator.isDeleteStatement(statement2)).isFalse();
         assertThat(validator.isDeleteStatement(statement3)).isFalse();
@@ -125,10 +154,16 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isDeleteStatement(statement10)).isTrue();
         assertThat(validator.isDeleteStatement(statement11)).isTrue();
         assertThat(validator.isDeleteStatement(statement12)).isTrue();
+
+        assertThat(validator.isDeleteStatement(boundStatement)).isTrue();
     }
 
     @Test
     public void should_detect_upsert_statement() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" insert into test");
+
+        //Then
         assertThat(validator.isUpsertStatement(statement1)).isFalse();
         assertThat(validator.isUpsertStatement(statement2)).isFalse();
         assertThat(validator.isUpsertStatement(statement3)).isFalse();
@@ -144,6 +179,8 @@ public class NativeQueryValidatorTest {
         assertThat(validator.isUpsertStatement(statement10)).isFalse();
         assertThat(validator.isUpsertStatement(statement11)).isFalse();
         assertThat(validator.isUpsertStatement(statement12)).isFalse();
+
+        assertThat(validator.isUpsertStatement(boundStatement)).isTrue();
     }
 
     @Test
@@ -155,6 +192,10 @@ public class NativeQueryValidatorTest {
 
     @Test
     public void should_validate_upsert_and_delete_statements() throws Exception {
+        //Given
+        when(boundStatement.preparedStatement().getQueryString()).thenReturn(" delete from test");
+
+        //Then
         validator.validateUpsertOrDelete(statement4);
         validator.validateUpsertOrDelete(statement5);
         validator.validateUpsertOrDelete(statement6);
@@ -166,5 +207,7 @@ public class NativeQueryValidatorTest {
         validator.validateUpsertOrDelete(statement10);
         validator.validateUpsertOrDelete(statement11);
         validator.validateUpsertOrDelete(statement12);
+
+        validator.validateUpsertOrDelete(boundStatement);
     }
 }

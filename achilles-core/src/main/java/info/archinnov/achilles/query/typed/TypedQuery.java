@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+
+import com.datastax.driver.core.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -65,12 +67,12 @@ public class TypedQuery<T> {
     private EntityProxifier proxifier = EntityProxifier.Singleton.INSTANCE.get();
     private AsyncUtils asyncUtils = AsyncUtils.Singleton.INSTANCE.get();
 
-    public TypedQuery(Class<T> entityClass, DaoContext daoContext, ConfigurationContext configContext, RegularStatement regularStatement, EntityMeta meta,
+    public TypedQuery(Class<T> entityClass, DaoContext daoContext, ConfigurationContext configContext, Statement statement, EntityMeta meta,
             PersistenceContextFactory contextFactory, EntityState entityState, Object[] boundValues) {
         this.daoContext = daoContext;
         this.executorService = configContext.getExecutorService();
         this.boundValues = boundValues;
-        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, regularStatement, this.boundValues, Optional.<CASResultListener>absent());
+        this.nativeStatementWrapper = new NativeStatementWrapper(entityClass, statement, this.boundValues, Optional.<CASResultListener>absent());
         this.meta = meta;
         this.contextFactory = contextFactory;
         this.entityState = entityState;

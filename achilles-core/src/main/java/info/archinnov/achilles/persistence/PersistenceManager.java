@@ -15,15 +15,14 @@
  */
 package info.archinnov.achilles.persistence;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.MANAGED;
-import static info.archinnov.achilles.internal.metadata.holder.EntityMeta.EntityState.NOT_MANAGED;
 import static info.archinnov.achilles.type.OptionsBuilder.noOptions;
 import static info.archinnov.achilles.type.OptionsBuilder.withConsistency;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.datastax.driver.core.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -498,7 +497,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -507,8 +506,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(RegularStatement regularStatement, Object... boundValues) {
-        return super.nativeQuery(regularStatement, noOptions(), boundValues);
+    public NativeQuery nativeQuery(Statement statement, Object... boundValues) {
+        return super.nativeQuery(statement, noOptions(), boundValues);
     }
 
     /**
@@ -534,8 +533,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param regularStatement
-     *            native CQL3 regularStatement, including limit, ttl and consistency
+     * @param statement
+     *            native CQL3 statement, including limit, ttl and consistency
      *            options
      *
      * @param options
@@ -548,9 +547,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(RegularStatement regularStatement, Options options, Object... boundValues) {
-        log.debug("Execute native query {}", regularStatement);
-        return super.nativeQuery(regularStatement, options, boundValues);
+    public NativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
+        log.debug("Execute native query {}", statement);
+        return super.nativeQuery(statement, options, boundValues);
     }
 
     /**
@@ -581,7 +580,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -590,8 +589,8 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
-        return super.typedQueryInternal(entityClass, regularStatement, boundValues);
+    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
+        return super.typedQueryInternal(entityClass, statement, boundValues);
     }
 
     /**
@@ -641,7 +640,7 @@ public class PersistenceManager extends CommonPersistenceManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -650,9 +649,9 @@ public class PersistenceManager extends CommonPersistenceManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
+    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
-        return super.rawTypedQuery(entityClass, regularStatement, boundValues);
+        return super.rawTypedQuery(entityClass, statement, boundValues);
     }
 
     /**

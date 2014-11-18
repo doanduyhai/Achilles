@@ -17,6 +17,7 @@ package info.archinnov.achilles.persistence;
 
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import info.archinnov.achilles.async.AchillesFuture;
 import info.archinnov.achilles.exception.AchillesStaleObjectStateException;
 import info.archinnov.achilles.internal.context.ConfigurationContext;
@@ -456,7 +457,7 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -465,8 +466,8 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(RegularStatement regularStatement, Object... boundValues) {
-        return super.nativeQuery(regularStatement, noOptions(), boundValues);
+    public NativeQuery nativeQuery(Statement statement, Object... boundValues) {
+        return super.nativeQuery(statement, noOptions(), boundValues);
     }
 
     /**
@@ -492,7 +493,7 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @see <a href="https://github.com/doanduyhai/Achilles/wiki/Queries#native-query" target="_blank">Native query API</a>
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -506,9 +507,9 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return NativeQuery
      */
-    public NativeQuery nativeQuery(RegularStatement regularStatement, Options options, Object... boundValues) {
-        log.debug("Execute native query {}", regularStatement);
-        return super.nativeQuery(regularStatement, options, boundValues);
+    public NativeQuery nativeQuery(Statement statement, Options options, Object... boundValues) {
+        log.debug("Execute native query {}", statement);
+        return super.nativeQuery(statement, options, boundValues);
     }
 
     /**
@@ -539,7 +540,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -548,8 +549,8 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
-        return super.typedQueryInternal(entityClass, regularStatement, boundValues);
+    public <T> TypedQuery<T> typedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
+        return super.typedQueryInternal(entityClass, statement, boundValues);
     }
 
     /**
@@ -599,7 +600,7 @@ public class AsyncManager extends CommonAsyncManager {
      * @param entityClass
      *            type of entity to be returned
      *
-     * @param regularStatement
+     * @param statement
      *            native CQL3 regularStatement, including limit, ttl and consistency
      *            options
      *
@@ -608,9 +609,9 @@ public class AsyncManager extends CommonAsyncManager {
      *
      * @return TypedQuery<T>
      */
-    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, RegularStatement regularStatement, Object... boundValues) {
+    public <T> TypedQuery<T> rawTypedQuery(Class<T> entityClass, Statement statement, Object... boundValues) {
         log.debug("Execute raw typed query for entity class {}", entityClass);
-        return super.rawTypedQuery(entityClass, regularStatement, boundValues);
+        return super.rawTypedQuery(entityClass, statement, boundValues);
     }
 
     /**

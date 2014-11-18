@@ -16,62 +16,108 @@
 
 package info.archinnov.achilles.internal.persistence.operations;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Delete;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.internal.validation.Validator;
 
+import java.util.regex.Pattern;
+
 public class NativeQueryValidator {
 
-    public void validateUpsertOrDelete(RegularStatement regularStatement) {
-        Validator.validateTrue(
-                isUpsertStatement(regularStatement) || isDeleteStatement(regularStatement),
-                "The statement '%s' should be an INSERT, an UPDATE or a DELETE",
-                regularStatement.getQueryString()
-        );
+    private static final Pattern SELECT_PATTERN = Pattern.compile("select .*");
+    private static final Pattern INSERT_PATTERN = Pattern.compile("insert .*");
+    private static final Pattern UPDATE_PATTERN = Pattern.compile("update .*");
+    private static final Pattern DELETE_PATTERN = Pattern.compile("delete .*");
+
+
+    public void validateUpsertOrDelete(Statement statement) {
+        if (statement instanceof RegularStatement) {
+            final RegularStatement regularStatement = (RegularStatement) statement;
+            Validator.validateTrue(
+                    isUpsertStatement(regularStatement) || isDeleteStatement(regularStatement),
+                    "The regular statement '%s' should be an INSERT, an UPDATE or a DELETE",
+                    regularStatement.getQueryString()
+            );
+        } else if(statement instanceof BoundStatement) {
+            final BoundStatement boundStatement = (BoundStatement) statement;
+            Validator.validateTrue(
+                    isUpsertStatement(boundStatement) || isDeleteStatement(boundStatement),
+                    "The bound statement '%s' should be an INSERT, an UPDATE or a DELETE",
+                    boundStatement.preparedStatement().getQueryString()
+            );
+        }
     }
 
-    public void validateSelect(RegularStatement regularStatement) {
-        Validator.validateTrue(isSelectStatement(regularStatement),"The statement '%s' should be a SELECT",regularStatement.getQueryString());
+    public void validateSelect(Statement statement) {
+        if (statement instanceof RegularStatement) {
+            final RegularStatement regularStatement = (RegularStatement) statement;
+            Validator.validateTrue(isSelectStatement(regularStatement), "The regular statement '%s' should be a SELECT", regularStatement.getQueryString());
+        } else if (statement instanceof BoundStatement) {
+            final BoundStatement boundStatement = (BoundStatement) statement;
+            Validator.validateTrue(isSelectStatement(boundStatement), "The bound statement '%s' should be a SELECT", boundStatement.preparedStatement().getQueryString());
+        }
     }
 
     public boolean isSelectStatement(RegularStatement regularStatement) {
         if (isSimpleStatement(regularStatement)) {
-            return regularStatement.getQueryString().toLowerCase().trim().startsWith("select ");
+            return SELECT_PATTERN.matcher(regularStatement.getQueryString().toLowerCase().trim()).matches();
         } else {
             return regularStatement instanceof Select || regularStatement instanceof Select.Where;
         }
     }
 
+    public boolean isSelectStatement(BoundStatement boundStatement) {
+        return SELECT_PATTERN.matcher(boundStatement.preparedStatement().getQueryString().toLowerCase().trim()).matches();
+    }
+
     public boolean isInsertStatement(RegularStatement regularStatement) {
         if (isSimpleStatement(regularStatement)) {
-            return regularStatement.getQueryString().toLowerCase().trim().startsWith("insert into ");
+            return INSERT_PATTERN.matcher(regularStatement.getQueryString().toLowerCase().trim()).matches();
         } else {
             return regularStatement instanceof Insert || regularStatement instanceof Insert.Options;
         }
     }
 
+    public boolean isInsertStatement(BoundStatement boundStatement) {
+        return INSERT_PATTERN.matcher(boundStatement.preparedStatement().getQueryString().toLowerCase().trim()).matches();
+    }
+
     public boolean isUpdateStatement(RegularStatement regularStatement) {
         if (isSimpleStatement(regularStatement)) {
-            return regularStatement.getQueryString().toLowerCase().trim().startsWith("update ");
+            return UPDATE_PATTERN.matcher(regularStatement.getQueryString().toLowerCase().trim()).matches();
         } else {
             return regularStatement instanceof Update.Where || regularStatement instanceof Update.Options;
         }
     }
 
+    public boolean isUpdateStatement(BoundStatement boundStatement) {
+        return UPDATE_PATTERN.matcher(boundStatement.preparedStatement().getQueryString().toLowerCase().trim()).matches();
+    }
+
     public boolean isDeleteStatement(RegularStatement regularStatement) {
         if (isSimpleStatement(regularStatement)) {
-            return regularStatement.getQueryString().toLowerCase().trim().startsWith("delete ");
+            return DELETE_PATTERN.matcher(regularStatement.getQueryString().toLowerCase().trim()).matches();
         } else {
             return regularStatement instanceof Delete.Where || regularStatement instanceof Delete.Options;
         }
     }
 
+    public boolean isDeleteStatement(BoundStatement boundStatement) {
+        return DELETE_PATTERN.matcher(boundStatement.preparedStatement().getQueryString().toLowerCase().trim()).matches();
+    }
+
     public boolean isUpsertStatement(RegularStatement regularStatement) {
         return isInsertStatement(regularStatement) || isUpdateStatement(regularStatement);
+    }
+
+    public boolean isUpsertStatement(BoundStatement boundStatement) {
+        return isInsertStatement(boundStatement) || isUpdateStatement(boundStatement);
     }
 
     public boolean isSimpleStatement(RegularStatement regularStatement) {

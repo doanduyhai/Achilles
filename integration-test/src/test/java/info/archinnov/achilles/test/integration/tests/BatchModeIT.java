@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.Insert;
 import info.archinnov.achilles.listener.CASResultListener;
 import info.archinnov.achilles.type.TypedMap;
@@ -34,11 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.Update;
 import info.archinnov.achilles.exception.AchillesException;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
@@ -386,6 +382,30 @@ public class BatchModeIT {
         batch.startBatch();
 
         batch.batchNativeStatement(statement);
+
+        batch.endBatch();
+
+        //When
+        final CompleteBean found = manager.find(CompleteBean.class, id);
+
+        //Then
+        assertThat(found.getName()).isEqualTo(name);
+    }
+
+    @Test
+    public void should_batch_bound_statement() throws Exception {
+        //Given
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        String name = "DuyHai";
+        final Insert insert = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
+        final PreparedStatement ps = manager.getNativeSession().prepare(insert);
+        final BoundStatement bs = ps.bind(id, name);
+
+        final Batch batch = manager.createBatch();
+
+        batch.startBatch();
+
+        batch.batchNativeStatement(bs);
 
         batch.endBatch();
 

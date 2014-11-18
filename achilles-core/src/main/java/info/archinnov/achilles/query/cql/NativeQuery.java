@@ -20,6 +20,8 @@ import static info.archinnov.achilles.internal.async.AsyncUtils.RESULTSET_TO_ROW
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import com.datastax.driver.core.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.RegularStatement;
@@ -64,9 +66,9 @@ public class NativeQuery {
     private ExecutorService executorService;
 
 
-    public NativeQuery(DaoContext daoContext, ConfigurationContext configContext, RegularStatement regularStatement, Options options, Object... boundValues) {
+    public NativeQuery(DaoContext daoContext, ConfigurationContext configContext, Statement statement, Options options, Object... boundValues) {
         this.daoContext = daoContext;
-        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, regularStatement, boundValues, options.getCasResultListener());
+        this.nativeStatementWrapper = new NativeStatementWrapper(NativeQueryLog.class, statement, boundValues, options.getCasResultListener());
         this.executorService = configContext.getExecutorService();
     }
 

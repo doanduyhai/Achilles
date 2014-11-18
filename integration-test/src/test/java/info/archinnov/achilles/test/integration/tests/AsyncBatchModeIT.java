@@ -15,8 +15,8 @@
  */
 package info.archinnov.achilles.test.integration.tests;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.bindMarker;
 import static info.archinnov.achilles.type.ConsistencyLevel.EACH_QUORUM;
 import static info.archinnov.achilles.type.ConsistencyLevel.ONE;
 import static info.archinnov.achilles.type.ConsistencyLevel.QUORUM;
@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.datastax.driver.core.*;
+import com.datastax.driver.core.querybuilder.Insert;
 import info.archinnov.achilles.persistence.*;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Before;
@@ -33,11 +35,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.powermock.reflect.Whitebox;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.SimpleStatement;
-import com.datastax.driver.core.Statement;
 import com.google.common.util.concurrent.FutureCallback;
 import info.archinnov.achilles.type.Empty;
 import info.archinnov.achilles.internal.context.BatchingFlushContext;
@@ -364,6 +361,43 @@ public class AsyncBatchModeIT {
         Statement statement = new SimpleStatement("SELECT name from CompleteBean where id=" + entity.getId());
         Row row = manager.getNativeSession().execute(statement).one();
         assertThat(row.getString("name")).isEqualTo("name");
+    }
+
+    @Test
+    public void should_batch_bound_statement() throws Exception {
+        //Given
+        final CountDownLatch latch = new CountDownLatch(1);
+        Long id = RandomUtils.nextLong(0,Long.MAX_VALUE);
+        String name = "DuyHai";
+        final Insert insert = insertInto("CompleteBean").value("id", bindMarker("id")).value("name", bindMarker("name")).ifNotExists();
+        final PreparedStatement ps = manager.getNativeSession().prepare(insert);
+        final BoundStatement bs = ps.bind(id, name);
+
+        final AsyncBatch batch = manager.createBatch();
+
+        batch.startBatch();
+
+        batch.batchNativeStatement(bs);
+
+        batch.endBatch(new FutureCallback<Object>() {
+            @Override
+            public void onSuccess(Object result) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+
+            }
+        });
+
+        latch.await();
+        
+        //When
+        final CompleteBean found = manager.find(CompleteBean.class, id).get();
+
+        //Then
+        assertThat(found.getName()).isEqualTo(name);
     }
 
     private void assertThatBatchContextHasBeenReset(AsyncBatch batch) {

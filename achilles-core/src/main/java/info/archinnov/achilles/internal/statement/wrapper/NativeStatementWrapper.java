@@ -18,12 +18,9 @@ package info.archinnov.achilles.internal.statement.wrapper;
 
 import java.util.concurrent.ExecutorService;
 
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
+import info.archinnov.achilles.internal.statement.StatementHelpder;
 import org.apache.commons.lang3.ArrayUtils;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
 import info.archinnov.achilles.listener.CASResultListener;
@@ -31,18 +28,18 @@ import info.archinnov.achilles.listener.CASResultListener;
 public class NativeStatementWrapper extends AbstractStatementWrapper {
 
 
-    private RegularStatement regularStatement;
+    private Statement statement;
 
-    public NativeStatementWrapper(Class<?> entityClass, RegularStatement regularStatement, Object[] values, Optional<CASResultListener> casResultListener) {
+    public NativeStatementWrapper(Class<?> entityClass, Statement statement, Object[] values, Optional<CASResultListener> casResultListener) {
         super(entityClass, values);
-        this.regularStatement = regularStatement;
+        this.statement = statement;
         super.casResultListener = casResultListener;
     }
 
 
     @Override
     public String getQueryString() {
-        return regularStatement.getQueryString();
+        return StatementHelpder.maybeGetQueryString(statement);
     }
 
     @Override
@@ -53,34 +50,43 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public Statement getStatement() {
-        return buildParameterizedStatement();
+        if (statement instanceof RegularStatement) {
+            return buildParameterizedStatement();
+        } else {
+            return statement;
+        }
     }
 
     @Override
     public void logDMLStatement(String indentation) {
         if (dmlLogger.isDebugEnabled() || displayDMLForEntity) {
-            String queryType = "Parameterized statement";
-            String queryString = regularStatement.getQueryString();
-            String consistencyLevel = regularStatement.getConsistencyLevel() == null ? "DEFAULT" : regularStatement
+            String queryType = statement.getClass().getSimpleName();
+            String queryString = getQueryString();
+            String consistencyLevel = statement.getConsistencyLevel() == null ? "DEFAULT" : statement
                     .getConsistencyLevel().name();
             writeDMLStatementLog(queryType, queryString, consistencyLevel, values);
         }
     }
 
     public Statement buildParameterizedStatement() {
-        if (ArrayUtils.isEmpty(regularStatement.getValues()) && ArrayUtils.isNotEmpty(values)) {
-            final SimpleStatement statement = new SimpleStatement(regularStatement.getQueryString(), values);
+        if (statement instanceof RegularStatement) {
+            final RegularStatement regularStatement = (RegularStatement) statement;
+            if (ArrayUtils.isEmpty(regularStatement.getValues()) && ArrayUtils.isNotEmpty(values)) {
+                final SimpleStatement statement = new SimpleStatement(getQueryString(), values);
 
-            if (regularStatement.getConsistencyLevel() != null) {
-                statement.setConsistencyLevel(regularStatement.getConsistencyLevel());
-            }
+                if (this.statement.getConsistencyLevel() != null) {
+                    statement.setConsistencyLevel(this.statement.getConsistencyLevel());
+                }
 
-            if (regularStatement.getSerialConsistencyLevel() != null) {
-                statement.setSerialConsistencyLevel(regularStatement.getSerialConsistencyLevel());
+                if (this.statement.getSerialConsistencyLevel() != null) {
+                    statement.setSerialConsistencyLevel(this.statement.getSerialConsistencyLevel());
+                }
+                return statement;
+            } else {
+                return statement;
             }
-            return statement;
         } else {
-            return regularStatement;
+            return statement;
         }
 
     }
