@@ -41,7 +41,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
 
     public void validateColumn(TableMetadata tableMetaData, EntityMeta entityMeta, ConfigurationContext configContext) {
         final String cql3ColumnName = meta.getCQL3ColumnName();
-        final Class<?> columnJavaType = meta.config().getCQL3ValueType();
+        final Class<?> columnJavaType = meta.structure().getCQL3ValueType();
         final boolean schemaUpdateEnabled = entityMeta.config().isSchemaUpdateEnabled();
         final String tableName = tableMetaData.getName();
 
@@ -89,7 +89,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
             log.debug("Validate existing collection/map column {} from table {} against type {}", cql3ColumnName, tableName, realType);
         }
 
-        final Name expectedValueType = toCQLType(meta.config().getCQL3ValueType());
+        final Name expectedValueType = toCQLType(meta.structure().getCQL3ValueType());
 
         switch (meta.type()) {
             case LIST:
@@ -117,7 +117,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
                         "Column '%s' of table '%s' of type '%s' should be of type '%s' indeed", cql3ColumnName, tableName,
                         realType, Name.MAP);
 
-                Name expectedMapKeyType = toCQLType(meta.config().getCQL3KeyType());
+                Name expectedMapKeyType = toCQLType(meta.structure().getCQL3KeyType());
                 Name realMapKeyType = columnMetadata.getType().getTypeArguments().get(0).getName();
                 Name realMapValueType = columnMetadata.getType().getTypeArguments().get(1).getName();
                 Validator.validateTableTrue(realMapKeyType == expectedMapKeyType,
@@ -164,7 +164,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
     private void validatePartitionComponent(TableMetadata tableMetaData, PropertyMeta partitionMeta) {
         final String tableName = tableMetaData.getName();
         final String cql3ColumnName = partitionMeta.getCQL3ColumnName();
-        final Class<?> columnJavaType = partitionMeta.config().getCQL3ValueType();
+        final Class<?> columnJavaType = partitionMeta.structure().getCQL3ValueType();
 
         if (log.isDebugEnabled()) {
             log.debug("Validate existing partition key component {} from table {} against type {}", cql3ColumnName, tableName, columnJavaType.getCanonicalName());
@@ -182,7 +182,7 @@ public class PropertyMetaTableValidator extends PropertyMetaView{
     private void validateClusteringComponent(TableMetadata tableMetaData, PropertyMeta clusteringMeta) {
         final String tableName = tableMetaData.getName();
         final String cql3ColumnName = clusteringMeta.getCQL3ColumnName();
-        final Class<?> columnJavaType = clusteringMeta.config().getCQL3ValueType();
+        final Class<?> columnJavaType = clusteringMeta.structure().getCQL3ValueType();
 
         if (log.isDebugEnabled()) {
             log.debug("Validate existing clustering column {} from table {} against type {}", cql3ColumnName,tableName, columnJavaType);

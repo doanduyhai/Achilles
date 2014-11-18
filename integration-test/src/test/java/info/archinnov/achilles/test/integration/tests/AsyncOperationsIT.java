@@ -234,9 +234,9 @@ public class AsyncOperationsIT {
         CompleteBean entity2 = CompleteBeanTestBuilder.builder().randomId().name("Paul").buid();
         CompleteBean entity3 = CompleteBeanTestBuilder.builder().randomId().name("Michael").buid();
 
-        manager.insert(entity1);
-        manager.insert(entity2);
-        manager.insert(entity3);
+        manager.insert(entity1).getImmediately();
+        manager.insert(entity2).getImmediately();
+        manager.insert(entity3).getImmediately();
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Object> successSpy = new AtomicReference<>();

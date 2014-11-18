@@ -128,12 +128,12 @@ public class PropertyParsingValidator {
         }
     }
 
-    public static void validateAllowedTypes(Class<?> type, Set<Class<?>> allowedTypes, String message) {
-        log.debug("Validate that type {} is supported", type);
-        if (!allowedTypes.contains(type) && !type.isEnum()) {
-            throw new AchillesBeanMappingException(message);
-        }
-    }
+//    public static void validateAllowedTypes(Class<?> type, Set<Class<?>> allowedTypes, String message) {
+//        log.debug("Validate that type {} is supported", type);
+//        if (!allowedTypes.contains(type) && !type.isEnum()) {
+//            throw new AchillesBeanMappingException(message);
+//        }
+//    }
 
     public static enum Singleton {
         INSTANCE;

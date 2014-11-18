@@ -5,12 +5,10 @@ import info.archinnov.achilles.schemabuilder.Create;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import static info.archinnov.achilles.internal.cql.TypeMapper.toCQLDataType;
 import static info.archinnov.achilles.schemabuilder.SchemaBuilder.createIndex;
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PropertyMetaTableCreator extends PropertyMetaView {
@@ -25,7 +23,7 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot create partition components for entity '%s' because it does not have a compound primary key", meta.getEntityClassName());
         for (PropertyMeta partitionMeta: meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
             String cql3ColumnName = partitionMeta.getCQL3ColumnName();
-            Class<?> javaType = partitionMeta.config().getCQL3ValueType();
+            Class<?> javaType = partitionMeta.structure().getCQL3ValueType();
             createTable.addPartitionKey(cql3ColumnName, toCQLDataType(javaType));
         }
     }
@@ -35,7 +33,7 @@ public class PropertyMetaTableCreator extends PropertyMetaView {
         Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot create clustering keys for entity '%s' because it does not have a compound primary key",meta.getEntityClassName());
         for (PropertyMeta clusteringMeta: meta.getEmbeddedIdProperties().getClusteringComponents().propertyMetas) {
             String cql3ColumnName = clusteringMeta.getCQL3ColumnName();
-            Class<?> javaType = clusteringMeta.config().getCQL3ValueType();
+            Class<?> javaType = clusteringMeta.structure().getCQL3ValueType();
             createTable.addClusteringKey(cql3ColumnName, toCQLDataType(javaType));
         }
     }

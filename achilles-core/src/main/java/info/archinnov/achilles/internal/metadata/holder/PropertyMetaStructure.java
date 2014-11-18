@@ -1,6 +1,5 @@
 package info.archinnov.achilles.internal.metadata.holder;
 
-import info.archinnov.achilles.type.ConsistencyLevel;
 
 public class PropertyMetaStructure extends PropertyMetaView {
 
@@ -18,7 +17,6 @@ public class PropertyMetaStructure extends PropertyMetaView {
         }
         return false;
     }
-
 
     public boolean isStaticColumn() {
         return meta.isStaticColumn();
@@ -40,12 +38,12 @@ public class PropertyMetaStructure extends PropertyMetaView {
         return meta.isTimeUUID();
     }
 
-    public ConsistencyLevel getReadConsistencyLevel() {
-        return meta.getConsistencyLevels() != null ? meta.getConsistencyLevels().left : null;
+    public <T> Class<T> getCQL3ValueType() {
+        return meta.getCql3ValueClass();
     }
 
-    public ConsistencyLevel getWriteConsistencyLevel() {
-        return meta.getConsistencyLevels() != null ? meta.getConsistencyLevels().right : null;
+    public <T> Class<T> getCQL3KeyType() {
+        return meta.getCql3KeyClass();
     }
 
 }

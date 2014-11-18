@@ -33,6 +33,12 @@ public abstract class AbstractComponentProperties {
         }
     };
 
+    private static final Function<PropertyMeta, Class<?>> GET_CQL3_CLASS = new Function<PropertyMeta, Class<?>>() {
+        @Override
+        public Class<?> apply(PropertyMeta meta) {
+            return meta.getCql3ValueClass();
+        }
+    };
 
     private static final Function<PropertyMeta, String> GET_NAME = new Function<PropertyMeta, String>() {
         @Override
@@ -66,7 +72,7 @@ public abstract class AbstractComponentProperties {
 	}
 
     public List<Class<?>> getCQL3ComponentClasses() {
-        return from(propertyMetas).transform(GET_CLASS).toList();
+        return from(propertyMetas).transform(GET_CQL3_CLASS).toList();
     }
 
     public List<Field> getComponentFields() {

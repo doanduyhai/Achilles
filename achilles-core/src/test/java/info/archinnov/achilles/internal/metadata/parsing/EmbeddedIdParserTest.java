@@ -142,8 +142,7 @@ public class EmbeddedIdParserTest {
         parser = new EmbeddedIdParser(new PropertyParsingContext(context, nameField));
 
         exception.expect(AchillesBeanMappingException.class);
-        exception.expectMessage(format("The class '%s' is not a valid component type for the @EmbeddedId class '%s'",
-                List.class.getCanonicalName(), EmbeddedKeyIncorrectType.class.getCanonicalName()));
+        exception.expectMessage(format("The column '%s' cannot be a list because it belongs to the partition key","name"));
 
         parser.parseEmbeddedId(EmbeddedKeyIncorrectType.class, propertyParser);
     }

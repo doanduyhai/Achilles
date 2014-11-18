@@ -71,8 +71,8 @@ public class PropertyMetaTableValidatorTest {
         when(partitionMeta1.getCQL3ColumnName()).thenReturn("id");
         when(partitionMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(partitionMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(partitionMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(partitionMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(partitionMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
 
         when(tableMetadata.getPartitionKey()).thenReturn(asList(idColumnMeta, nameColumnMeta));
         when(tableMetadata.getColumn("id")).thenReturn(idColumnMeta);
@@ -95,8 +95,8 @@ public class PropertyMetaTableValidatorTest {
         when(clusteringMeta1.getCQL3ColumnName()).thenReturn("id");
         when(clusteringMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(clusteringMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(clusteringMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(clusteringMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(clusteringMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
 
         when(tableMetadata.getClusteringColumns()).thenReturn(asList(idColumnMeta, nameColumnMeta));
         when(tableMetadata.getColumn("id")).thenReturn(idColumnMeta);
@@ -112,7 +112,7 @@ public class PropertyMetaTableValidatorTest {
         final ColumnMetadata nameColumnMeta = create(tableMetadata, "name", text());
 
         when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -128,7 +128,7 @@ public class PropertyMetaTableValidatorTest {
     public void should_skip_simple_column_validation_if_dynamic_schema_update_enabled() throws Exception {
         //Given
         when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 
         when(tableMetadata.getColumn("name")).thenReturn(null);
@@ -147,7 +147,7 @@ public class PropertyMetaTableValidatorTest {
         final ColumnMetadata nameColumnMeta = create(tableMetadata, "name", text());
 
         when(meta.getCQL3ColumnName()).thenReturn("name");
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -172,7 +172,7 @@ public class PropertyMetaTableValidatorTest {
 
         when(meta.getCQL3ColumnName()).thenReturn("list");
         when(meta.type()).thenReturn(LIST);
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -189,7 +189,7 @@ public class PropertyMetaTableValidatorTest {
 
         when(meta.getCQL3ColumnName()).thenReturn("set");
         when(meta.type()).thenReturn(SET);
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -206,8 +206,8 @@ public class PropertyMetaTableValidatorTest {
 
         when(meta.getCQL3ColumnName()).thenReturn("map");
         when(meta.type()).thenReturn(MAP);
-        when(meta.config().<Integer>getCQL3KeyType()).thenReturn(Integer.class);
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<Integer>getCQL3KeyType()).thenReturn(Integer.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -222,7 +222,7 @@ public class PropertyMetaTableValidatorTest {
         //Given
         when(meta.getCQL3ColumnName()).thenReturn("list");
         when(meta.type()).thenReturn(LIST);
-        when(meta.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(meta.structure().<String>getCQL3ValueType()).thenReturn(String.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 
@@ -237,7 +237,7 @@ public class PropertyMetaTableValidatorTest {
         final ColumnMetadata counterColumnMeta = create(tableMetadata, "count", counter());
 
         when(meta.getCQL3ColumnName()).thenReturn("count");
-        when(meta.config().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
+        when(meta.structure().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(false);
 
@@ -250,7 +250,7 @@ public class PropertyMetaTableValidatorTest {
     @Test
     public void should_skip_validation_of_clustered_counter_column_if_schema_update_enabled() throws Exception {
         when(meta.getCQL3ColumnName()).thenReturn("count");
-        when(meta.config().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
+        when(meta.structure().<Counter>getCQL3ValueType()).thenReturn(Counter.class);
         when(meta.isStaticColumn()).thenReturn(false);
         when(entityMeta.config().isSchemaUpdateEnabled()).thenReturn(true);
 

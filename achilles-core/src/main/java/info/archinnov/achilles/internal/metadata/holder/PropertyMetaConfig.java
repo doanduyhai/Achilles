@@ -8,14 +8,6 @@ public class PropertyMetaConfig extends PropertyMetaView {
         super(meta);
     }
 
-    public <T> Class<T> getCQL3ValueType() {
-        return meta.getCql3ValueClass();
-    }
-
-    public <T> Class<T> getCQL3KeyType() {
-        return meta.getCql3KeyClass();
-    }
-
     public ConsistencyLevel getReadConsistencyLevel() {
         return meta.getConsistencyLevels() != null ? meta.getConsistencyLevels().left : null;
     }

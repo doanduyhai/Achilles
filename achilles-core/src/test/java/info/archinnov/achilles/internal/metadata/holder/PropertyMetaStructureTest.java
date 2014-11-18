@@ -87,25 +87,5 @@ public class PropertyMetaStructureTest {
         assertThat(view.isCollectionAndMap()).isTrue();
     }
 
-    @Test
-    public void should_return_read_consistency_level() throws Exception {
-        //Given
-        when(meta.getConsistencyLevels()).thenReturn(Pair.create(ALL, LOCAL_ONE));
 
-        //When
-
-        //Then
-        assertThat(view.getReadConsistencyLevel()).isEqualTo(ALL);
-    }
-
-    @Test
-    public void should_return_write_consistency_level() throws Exception {
-        //Given
-        when(meta.getConsistencyLevels()).thenReturn(Pair.create(ALL, LOCAL_ONE));
-
-        //When
-
-        //Then
-        assertThat(view.getWriteConsistencyLevel()).isEqualTo(LOCAL_ONE);
-    }
 }

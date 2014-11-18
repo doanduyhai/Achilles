@@ -40,8 +40,6 @@ public class EntityWithTypeTransformerIT {
 
     private PersistenceManager manager = resource.getPersistenceManager();
 
-    private Session session = resource.getNativeSession();
-
     @Test
     public void should_insert_and_find_entity_with_transformed_types() throws Exception {
         //Given

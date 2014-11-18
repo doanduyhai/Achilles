@@ -69,8 +69,8 @@ public class PropertyMetaBuilderTest {
 
 		assertThat(built.getField()).isEqualTo(field);
 		assertThat(built.structure().isEmbeddedId()).isFalse();
-		assertThat(built.structure().getReadConsistencyLevel()).isEqualTo(ONE);
-		assertThat(built.structure().getWriteConsistencyLevel()).isEqualTo(ALL);
+		assertThat(built.config().getReadConsistencyLevel()).isEqualTo(ONE);
+		assertThat(built.config().getWriteConsistencyLevel()).isEqualTo(ALL);
 		assertThat(built.getSimpleCodec()).isSameAs(simpleCodec);
 	}
 
@@ -89,8 +89,8 @@ public class PropertyMetaBuilderTest {
         assertThat(built.<EmbeddedKey>getValueClass()).isEqualTo(EmbeddedKey.class);
 
         assertThat(built.structure().isEmbeddedId()).isTrue();
-        assertThat(built.structure().getReadConsistencyLevel()).isEqualTo(ONE);
-        assertThat(built.structure().getWriteConsistencyLevel()).isEqualTo(ALL);
+        assertThat(built.config().getReadConsistencyLevel()).isEqualTo(ONE);
+        assertThat(built.config().getWriteConsistencyLevel()).isEqualTo(ALL);
         assertThat(built.getSimpleCodec()).isNull();
     }
 

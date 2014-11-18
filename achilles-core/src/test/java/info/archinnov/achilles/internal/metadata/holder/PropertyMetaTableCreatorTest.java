@@ -5,12 +5,10 @@ import static org.fest.assertions.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.datastax.driver.core.DataType;
-import info.archinnov.achilles.annotations.TimeUUID;
 import info.archinnov.achilles.schemabuilder.Create;
 import info.archinnov.achilles.schemabuilder.Create.Options;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder;
 import info.archinnov.achilles.schemabuilder.Create.Options.ClusteringOrder.Sorting;
-import info.archinnov.achilles.schemabuilder.SchemaBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,8 +18,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.nio.ByteBuffer;
 
 import java.util.Arrays;
 
@@ -53,8 +49,8 @@ public class PropertyMetaTableCreatorTest {
         when(partitionMeta1.getCQL3ColumnName()).thenReturn("id");
         when(partitionMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(partitionMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(partitionMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(partitionMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(partitionMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
 
         //When
         view.addPartitionKeys(create);
@@ -77,8 +73,8 @@ public class PropertyMetaTableCreatorTest {
         when(clusteringMeta1.getCQL3ColumnName()).thenReturn("id");
         when(clusteringMeta2.getCQL3ColumnName()).thenReturn("name");
 
-        when(clusteringMeta1.config().<Long>getCQL3ValueType()).thenReturn(Long.class);
-        when(clusteringMeta2.config().<String>getCQL3ValueType()).thenReturn(String.class);
+        when(clusteringMeta1.structure().<Long>getCQL3ValueType()).thenReturn(Long.class);
+        when(clusteringMeta2.structure().<String>getCQL3ValueType()).thenReturn(String.class);
 
         //When
         view.addClusteringKeys(create);

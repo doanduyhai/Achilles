@@ -126,17 +126,6 @@ public class PropertyParser {
         return indexName;
     }
 
-//    public boolean hasConsistencyAnnotation(Field field) {
-//        log.debug("Check @Consistency annotation on field {} of class {}", field.getName(), field.getDeclaringClass()
-//                .getCanonicalName());
-//
-//        boolean consistency = false;
-//        if (field.getAnnotation(Consistency.class) != null) {
-//            consistency = true;
-//        }
-//        return consistency;
-//    }
-
     public static <T> boolean isSupportedNativeType(Class<T> valueClass) {
         return valueClass != null && (allowedTypes.contains(valueClass) || (ByteBuffer.class.isAssignableFrom(valueClass)));
     }

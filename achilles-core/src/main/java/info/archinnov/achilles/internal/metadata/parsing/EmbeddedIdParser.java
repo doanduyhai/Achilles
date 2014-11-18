@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
+import info.archinnov.achilles.internal.metadata.holder.PropertyType;
 import info.archinnov.achilles.internal.metadata.parsing.context.PropertyParsingContext;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -78,8 +79,7 @@ public class EmbeddedIdParser {
         for (Field candidateField : candidateFields) {
             Order orderAnnotation = candidateField.getAnnotation(Order.class);
             int order = orderAnnotation.value();
-            Class<?> componentType = candidateField.getType();
-            orderSum = validateNoDuplicateOrderAndType(embeddedIdClassName, orders, orderSum, order, componentType);
+            orderSum = validateNoDuplicateOrderAndType(embeddedIdClassName, orders, orderSum, order);
             components.put(order, candidateField);
         }
 
@@ -124,17 +124,13 @@ public class EmbeddedIdParser {
 
     }
 
-    private int validateNoDuplicateOrderAndType(String embeddedIdClassName, Set<Integer> orders, int orderSum,
-            int order, Class<?> componentType) {
+    private int validateNoDuplicateOrderAndType(String embeddedIdClassName, Set<Integer> orders, int orderSum,int order) {
         log.debug("Validate type and component ordering for embedded id class {} ", embeddedIdClassName);
         Validator.validateBeanMappingTrue(orders.add(order), "The order '%s' is duplicated in @EmbeddedId class '%s'",
                 order, embeddedIdClassName);
 
         orderSum += order;
 
-        PropertyParsingValidator.validateAllowedTypes(componentType, PropertyParser.allowedTypes, "The class '"
-                + componentType.getCanonicalName() + "' is not a valid component type for the @EmbeddedId class '"
-                + embeddedIdClassName + "'");
         return orderSum;
     }
 
@@ -176,10 +172,17 @@ public class EmbeddedIdParser {
 
     private void buildPartitionAndClusteringKeys(PropertyParser propertyParser, Class<?> embeddedIdClass, Map<Integer, Field> components,
             EmbeddedIdPropertiesBuilder partitionKeysBuilder,EmbeddedIdPropertiesBuilder clusteringKeysBuilder) {
-        log.debug("Build Components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
+        log.debug("Build components meta data for embedded id class {}", embeddedIdClass.getCanonicalName());
 
         for (Integer order : components.keySet()) {
             Field compositeKeyField = components.get(order);
+
+            final Class<?> type = compositeKeyField.getType();
+            final String propertyName = compositeKeyField.getName();
+
+            Validator.validateBeanMappingFalse(List.class.isAssignableFrom(type), "The column '%s' cannot be a list because it belongs to the partition key", propertyName);
+            Validator.validateBeanMappingFalse(Set.class.isAssignableFrom(type), "The column '%s' cannot be a set because it belongs to the partition key", propertyName);
+            Validator.validateBeanMappingFalse(Map.class.isAssignableFrom(type), "The column '%s' cannot be a map because it belongs to the partition key", propertyName);
 
             final PropertyMeta propertyMeta = propertyParser.parseSimpleProperty(context.duplicateForField(compositeKeyField));
 

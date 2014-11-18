@@ -129,40 +129,40 @@ public class EntityParserTest {
         assertThat(id.getPropertyName()).isEqualTo("id");
         assertThat(id.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(id.type()).isEqualTo(ID);
-        assertThat(id.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(id.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(id.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(id.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(name.getPropertyName()).isEqualTo("name");
         assertThat(name.<String>getValueClass()).isEqualTo(String.class);
         assertThat(name.type()).isEqualTo(SIMPLE);
-        assertThat(name.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(name.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(name.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(name.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(age.getPropertyName()).isEqualTo("age");
         assertThat(age.getCQL3ColumnName()).isEqualTo("age_in_year");
         assertThat(age.<Long>getValueClass()).isEqualTo(Long.class);
         assertThat(age.type()).isEqualTo(SIMPLE);
-        assertThat(age.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(age.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(age.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(age.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(friends.getPropertyName()).isEqualTo("friends");
         assertThat(friends.<String>getValueClass()).isEqualTo(String.class);
         assertThat(friends.type()).isEqualTo(PropertyType.LIST);
-        assertThat(friends.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(friends.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(friends.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(friends.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(followers.getPropertyName()).isEqualTo("followers");
         assertThat(followers.<String>getValueClass()).isEqualTo(String.class);
         assertThat(followers.type()).isEqualTo(PropertyType.SET);
-        assertThat(followers.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(followers.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(followers.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(followers.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(preferences.getPropertyName()).isEqualTo("preferences");
         assertThat(preferences.<String>getValueClass()).isEqualTo(String.class);
         assertThat(preferences.type()).isEqualTo(PropertyType.MAP);
         assertThat(preferences.<Integer>getKeyClass()).isEqualTo(Integer.class);
-        assertThat(preferences.structure().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
-        assertThat(preferences.structure().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
+        assertThat(preferences.config().getReadConsistencyLevel()).isEqualTo(ConsistencyLevel.ONE);
+        assertThat(preferences.config().getWriteConsistencyLevel()).isEqualTo(ConsistencyLevel.ALL);
 
         assertThat(creator.getPropertyName()).isEqualTo("creator");
         assertThat(creator.<UserBean>getValueClass()).isEqualTo(UserBean.class);
