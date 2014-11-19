@@ -19,7 +19,7 @@ package info.archinnov.achilles.internal.statement.wrapper;
 import java.util.concurrent.ExecutorService;
 
 import com.datastax.driver.core.*;
-import info.archinnov.achilles.internal.statement.StatementHelpder;
+import info.archinnov.achilles.internal.statement.StatementHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -39,7 +39,7 @@ public class NativeStatementWrapper extends AbstractStatementWrapper {
 
     @Override
     public String getQueryString() {
-        return StatementHelpder.maybeGetQueryString(statement);
+        return StatementHelper.maybeGetQueryString(statement);
     }
 
     @Override

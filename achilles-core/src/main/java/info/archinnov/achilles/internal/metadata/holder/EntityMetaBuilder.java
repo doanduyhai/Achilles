@@ -104,8 +104,11 @@ public class EntityMetaBuilder {
         meta.setClusteredCounter(clusteredCounter);
 
         final int staticColumnsCount = from(allMetasExceptId).filter(STATIC_COLUMN_FILTER).size();
-        if (staticColumnsCount > 0 && staticColumnsCount == allMetasExceptId.size()) {
-            meta.setHasOnlyStaticColumns(true);
+        if (staticColumnsCount > 0) {
+            meta.setHasStaticColumns(true);
+            if (staticColumnsCount == allMetasExceptId.size()) {
+                meta.setHasOnlyStaticColumns(true);
+            }
         }
 
         return meta;

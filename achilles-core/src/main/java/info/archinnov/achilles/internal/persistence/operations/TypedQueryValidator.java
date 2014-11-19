@@ -17,11 +17,10 @@ package info.archinnov.achilles.internal.persistence.operations;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.Statement;
-import info.archinnov.achilles.internal.statement.StatementHelpder;
+import info.archinnov.achilles.internal.statement.StatementHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datastax.driver.core.RegularStatement;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import info.archinnov.achilles.internal.validation.Validator;
@@ -37,12 +36,11 @@ public class TypedQueryValidator {
 
     public void validateTypedQuery(Class<?> entityClass, Statement statement, EntityMeta meta) {
         log.debug("Validate typed query {}", statement);
-        String queryString = StatementHelpder.maybeGetQueryString(statement);
+        String normalizedQueryString = StatementHelper.maybeGetNormalizedQueryString(statement);
 
         Validator.validateFalse(statement instanceof BatchStatement,"Cannot perform typed query with batch statements");
 
 		PropertyMeta idMeta = meta.getIdMeta();
-		String normalizedQueryString = queryString.toLowerCase().trim();
 
 		validateRawTypedQuery(entityClass, statement, meta);
 
@@ -53,7 +51,7 @@ public class TypedQueryValidator {
 
 	public void validateRawTypedQuery(Class<?> entityClass, Statement statement, EntityMeta meta) {
         log.debug("Validate raw typed query {}",statement);
-        String queryString = StatementHelpder.maybeGetQueryString(statement);
+        String queryString = StatementHelper.maybeGetQueryString(statement);
         String tableName = meta.config().getTableName().toLowerCase();
         String normalizedQuery = queryString.toLowerCase();
 

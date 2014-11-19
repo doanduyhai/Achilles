@@ -89,7 +89,7 @@ public class PropertyMetaRowExtractorTest {
         when(meta.<CompleteBean>getValueClass()).thenReturn(CompleteBean.class);
 
         exception.expect(AchillesException.class);
-        exception.expectMessage(String.format("Error, the component '%s' from @EmbeddedId class 'class %s' cannot be found in Cassandra", "name", CompleteBean.class.getCanonicalName()));
+        exception.expectMessage(String.format("Error, the component '%s' from @EmbeddedId class 'class %s' is null in Cassandra", "name", CompleteBean.class.getCanonicalName()));
 
         //When
         extractor.validateExtractedCompoundPrimaryComponents(Arrays.<Object>asList(10L, null));

@@ -67,6 +67,7 @@ public class EntityMeta {
     protected boolean clusteredEntity = false;
     protected boolean clusteredCounter = false;
     protected boolean hasOnlyStaticColumns = false;
+    protected boolean hasStaticColumns = false;
 
     protected List<Interceptor<?>> interceptors = new ArrayList<>();
 
@@ -247,6 +248,14 @@ public class EntityMeta {
 
     void setHasOnlyStaticColumns(boolean hasOnlyStaticColumns) {
         this.hasOnlyStaticColumns = hasOnlyStaticColumns;
+    }
+
+    public boolean hasStaticColumns() {
+        return hasStaticColumns;
+    }
+
+    public void setHasStaticColumns(boolean hasStaticColumns) {
+        this.hasStaticColumns = hasStaticColumns;
     }
 
     @Override

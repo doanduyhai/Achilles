@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.ArrayUtils.addAll;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.archinnov.achilles.internal.statement.StatementHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class PreparedStatementBinder {
         ConsistencyLevel consistencyLevel = overrider.getWriteLevel(context);
 
         List<Object> values = new ArrayList<>();
-        values.addAll(fetchPrimaryKeyValues(entityMeta, entity, false));
+        values.addAll(fetchPrimaryKeyValues(entityMeta, entity, StatementHelper.hasOnlyStaticColumns(pms)));
         values.addAll(fetchPropertiesValues(pms, entity));
         values.addAll(fetchTTLAndTimestampValues(context));
 

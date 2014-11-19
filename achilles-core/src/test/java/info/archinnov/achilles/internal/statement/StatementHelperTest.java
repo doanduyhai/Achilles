@@ -8,16 +8,17 @@ import static org.mockito.Mockito.*;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import info.archinnov.achilles.internal.metadata.holder.PropertyMeta;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Arrays;
+
 @RunWith(MockitoJUnitRunner.class)
-public class StatementHelpderTest {
+public class StatementHelperTest {
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private BoundStatement boundStatement;
@@ -30,7 +31,7 @@ public class StatementHelpderTest {
         //When
 
         //Then
-        assertThat(StatementHelpder.maybeGetQueryString(statement)).isEqualTo("SELECT * FROM test WHERE id=:id;");
+        assertThat(StatementHelper.maybeGetQueryString(statement)).isEqualTo("SELECT * FROM test WHERE id=:id;");
     }
 
     @Test
@@ -41,6 +42,22 @@ public class StatementHelpderTest {
         //When
 
         //Then
-        assertThat(StatementHelpder.maybeGetQueryString(boundStatement)).isEqualTo("test");
+        assertThat(StatementHelper.maybeGetQueryString(boundStatement)).isEqualTo("test");
+    }
+
+    @Test
+    public void should_determine_whether_columns_are_all_static() throws Exception {
+        //Given
+        PropertyMeta meta1 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+        PropertyMeta meta2 = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+
+        when(meta1.structure().isStaticColumn()).thenReturn(true);
+        when(meta2.structure().isStaticColumn()).thenReturn(true);
+
+        //When
+        final boolean actual = StatementHelper.hasOnlyStaticColumns(Arrays.asList(meta1, meta2));
+
+        //Then
+        assertThat(actual).isTrue();
     }
 }

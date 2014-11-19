@@ -45,6 +45,7 @@ import java.util.Map;
 
 import info.archinnov.achilles.internal.metadata.holder.EntityMetaConfig;
 import info.archinnov.achilles.internal.metadata.holder.PropertyMetaStatementGenerator;
+import info.archinnov.achilles.internal.statement.StatementHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.PreparedStatement;
@@ -77,7 +78,9 @@ public class PreparedStatementGenerator {
             insert.ifNotExists();
         }
 
-        idMeta.forStatementGeneration().generateInsertPrimaryKey(insert);
+        final boolean onlyStaticColumns = StatementHelper.hasOnlyStaticColumns(pms);
+
+        idMeta.forStatementGeneration().generateInsertPrimaryKey(insert, onlyStaticColumns);
 
         for (PropertyMeta pm : pms) {
             String cql3ColumnName = pm.getCQL3ColumnName();

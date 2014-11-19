@@ -48,16 +48,6 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         return rawValues;
     }
 
-    public void validateExtractedCompoundPrimaryComponents(List<Object> rawComponents) {
-        log.trace("Validate raw compound primary components {} for id meta {}", rawComponents, meta);
-
-        Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot validate raw compound primary keys from CQL3 row because entity '%s' does not have a compound primary key",meta.getEntityClassName());
-        final List<String> cql3ComponentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
-        for (int i = 0; i < cql3ComponentNames.size(); i++) {
-            Validator.validateNotNull(rawComponents.get(i), "Error, the component '%s' from @EmbeddedId class '%s' cannot be found in Cassandra", cql3ComponentNames.get(i), meta.getValueClass());
-        }
-    }
-
     public Object invokeOnRowForFields(Row row) {
         if(log.isTraceEnabled()) {
             log.trace("Extract column {} from CQL3 row {} for id meta {}", meta.getCQL3ColumnName(), row, meta);
@@ -104,6 +94,16 @@ public class PropertyMetaRowExtractor extends PropertyMetaView{
         }
         return meta.forTranscoding().decodeFromComponents(rawComponents);
 
+    }
+
+    public void validateExtractedCompoundPrimaryComponents(List<Object> rawComponents) {
+        log.trace("Validate raw compound primary components {} for id meta {}", rawComponents, meta);
+
+        Validator.validateNotNull(meta.getEmbeddedIdProperties(), "Cannot validate raw compound primary keys from CQL3 row because entity '%s' does not have a compound primary key",meta.getEntityClassName());
+        final List<String> cql3ComponentNames = meta.getEmbeddedIdProperties().getCQL3ComponentNames();
+        for (int i = 0; i < cql3ComponentNames.size(); i++) {
+            Validator.validateNotNull(rawComponents.get(i), "Error, the component '%s' from @EmbeddedId class '%s' is null in Cassandra", cql3ComponentNames.get(i), meta.getValueClass());
+        }
     }
 
     private Object invokeOnRowForProperty(Row row) {

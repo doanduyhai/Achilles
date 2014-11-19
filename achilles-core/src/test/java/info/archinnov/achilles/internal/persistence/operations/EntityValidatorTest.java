@@ -16,6 +16,8 @@
 
 package info.archinnov.achilles.internal.persistence.operations;
 
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import info.archinnov.achilles.internal.context.PersistenceContext;
 import info.archinnov.achilles.internal.metadata.holder.EntityMeta;
@@ -107,6 +109,25 @@ public class EntityValidatorTest {
 
 		entityValidator.validateEntity(bean, entityMeta);
 	}
+
+    @Test
+    public void should_validate_clustered_id_for_static_columns_only() throws Exception {
+        CompleteBean bean = CompleteBeanTestBuilder.builder().id(12L).buid();
+        EmbeddedKey clusteredId = new EmbeddedKey(11L, null);
+        PropertyMeta staticColumnMeta = mock(PropertyMeta.class, RETURNS_DEEP_STUBS);
+
+        when(entityMeta.forOperations().getPrimaryKey(bean)).thenReturn(clusteredId);
+        when(entityMeta.hasStaticColumns()).thenReturn(true);
+        when(entityMeta.getAllMetasExceptIdAndCounters()).thenReturn(Arrays.asList(staticColumnMeta));
+        when(staticColumnMeta.structure().isStaticColumn()).thenReturn(true);
+        when(staticColumnMeta.forValues().getValueFromField(clusteredId)).thenReturn("static");
+
+        when(proxifier.getRealObject(bean)).thenReturn(bean);
+        when(idMeta.structure().isEmbeddedId()).thenReturn(true);
+        when(idMeta.forTranscoding().encodeToComponents(clusteredId,true)).thenReturn(Arrays.<Object> asList(11L, "static"));
+
+        entityValidator.validateEntity(bean, entityMeta);
+    }
 
 	@Test
 	public void should_validate_simple_id() throws Exception {

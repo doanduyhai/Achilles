@@ -140,7 +140,7 @@ public class PreparedStatementGeneratorTest {
         PreparedStatement actual = generator.prepareInsert(session, meta, asList(nameMeta), noOptions());
 
         assertThat(actual).isSameAs(ps);
-        verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class));
+        verify(idMeta.forStatementGeneration()).generateInsertPrimaryKey(isA(Insert.class), Mockito.eq(false));
         assertThat(queryCaptor.getValue()).isEqualTo("INSERT INTO ks.table(name) VALUES (:name) USING TTL :ttl;");
     }
 

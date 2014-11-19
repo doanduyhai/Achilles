@@ -38,6 +38,12 @@ public class ClusteredEntityWithStaticColumn {
     public ClusteredEntityWithStaticColumn() {
     }
 
+    public ClusteredEntityWithStaticColumn(Long id, String name, String city, String street) {
+        this.id = new ClusteredKey(id, name);
+        this.city = city;
+        this.street = street;
+    }
+
     public ClusteredEntityWithStaticColumn(ClusteredKey id, String city, String street) {
 		this.id = id;
         this.city = city;

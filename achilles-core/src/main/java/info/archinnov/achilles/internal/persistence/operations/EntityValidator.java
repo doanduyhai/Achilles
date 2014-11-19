@@ -43,11 +43,15 @@ public class EntityValidator {
         Validator.validateNotNull(entityMeta, "The entity %s is not managed by Achilles", entity.getClass().getCanonicalName());
 
         Object rawEntity = proxifier.getRealObject(entity);
-        Object id = entityMeta.forOperations().getPrimaryKey(rawEntity);
-        if (id == null) {
+        Object primaryKey = entityMeta.forOperations().getPrimaryKey(rawEntity);
+        if (primaryKey == null) {
             throw new IllegalArgumentException("Cannot get primary key for entity " + rawEntity.getClass().getCanonicalName());
         }
-        validatePrimaryKey(entityMeta.getIdMeta(), id);
+        if (entityMeta.hasStaticColumns()) {
+            validatePrimaryKeyForEntityWithStaticsColumns(entityMeta, entity, primaryKey);
+        } else {
+            validatePrimaryKey(entityMeta.getIdMeta(), primaryKey);
+        }
     }
 
     public void validatePrimaryKey(PropertyMeta idMeta, Object primaryKey) {
@@ -55,7 +59,35 @@ public class EntityValidator {
         if (idMeta.structure().isEmbeddedId()) {
             List<Object> components = idMeta.forTranscoding().encodeToComponents(primaryKey, false);
             for (Object component : components) {
-                Validator.validateNotNull(component, "The compound primary key '%s' components should not be null", idMeta.getPropertyName());
+                Validator.validateNotNull(component, "The compound primary key '%s' component should not be null", idMeta.getPropertyName());
+            }
+        }
+    }
+
+    private void validatePrimaryKeyForEntityWithStaticsColumns(EntityMeta entityMeta, Object entity, Object primaryKey) {
+        log.trace("Validate primary key {} for entity class {}", primaryKey, entityMeta.getClassName());
+        final PropertyMeta idMeta = entityMeta.getIdMeta();
+
+        final List<PropertyMeta> allMetasExceptIdAndCounters = entityMeta.getAllMetasExceptIdAndCounters();
+        int nonNullCount = 0;
+        int nonNullStaticCount = 0;
+
+        for (PropertyMeta propertyMeta : allMetasExceptIdAndCounters) {
+            final Object value = propertyMeta.forValues().getValueFromField(entity);
+            if (value != null) {
+                nonNullCount++;
+                if (propertyMeta.structure().isStaticColumn()) {
+                    nonNullStaticCount++;
+                }
+            }
+        }
+
+
+        if (idMeta.structure().isEmbeddedId()) {
+            boolean encodeOnlyPartitionKey = nonNullCount == nonNullStaticCount;
+            List<Object> components = idMeta.forTranscoding().encodeToComponents(primaryKey, encodeOnlyPartitionKey);
+            for (Object component : components) {
+                Validator.validateNotNull(component, "The compound primary key '%s' component should not be null", idMeta.getPropertyName());
             }
         }
     }

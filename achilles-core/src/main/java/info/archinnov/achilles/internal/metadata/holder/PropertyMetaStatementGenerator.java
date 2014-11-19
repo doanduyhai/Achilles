@@ -23,11 +23,18 @@ public class PropertyMetaStatementGenerator extends PropertyMetaView{
     }
 
 
-    public Insert generateInsertPrimaryKey(Insert insert) {
+    public Insert generateInsertPrimaryKey(Insert insert, boolean onlyStaticColumns) {
         log.debug("Generate INSERT primary key for id meta {}", meta);
         if (meta.structure().isEmbeddedId()) {
-            for (String component : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
-                insert.value(component, bindMarker(component));
+            if (onlyStaticColumns) {
+                for (PropertyMeta partitionComponents : meta.getEmbeddedIdProperties().getPartitionComponents().propertyMetas) {
+                    final String cql3ColumnName = partitionComponents.getCQL3ColumnName();
+                    insert.value(cql3ColumnName, bindMarker(cql3ColumnName));
+                }
+            } else {
+                for (String component : meta.getEmbeddedIdProperties().getCQL3ComponentNames()) {
+                    insert.value(component, bindMarker(component));
+                }
             }
             return insert;
         } else {

@@ -53,10 +53,28 @@ public class PropertyMetaStatementGeneratorTest {
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
-        final Insert actual = view.generateInsertPrimaryKey(insert);
+        final Insert actual = view.generateInsertPrimaryKey(insert, false);
 
         //Then
         assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id,name) VALUES (:id,:name);");
+    }
+
+    @Test
+    public void should_prepare_insert_primary_key_for_embedded_id_with_only_static_columns() throws Exception {
+        //Given
+        PropertyMeta meta1 = mock(PropertyMeta.class);
+        when(meta1.getCQL3ColumnName()).thenReturn("id");
+
+        PartitionComponents partitionComponents = new PartitionComponents(asList(meta1));
+        when(meta.structure().isEmbeddedId()).thenReturn(true);
+        when(meta.getEmbeddedIdProperties().getPartitionComponents()).thenReturn(partitionComponents);
+        Insert insert = QueryBuilder.insertInto("table");
+
+        //When
+        final Insert actual = view.generateInsertPrimaryKey(insert, true);
+
+        //Then
+        assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id) VALUES (:id);");
     }
 
     @Test
@@ -67,7 +85,7 @@ public class PropertyMetaStatementGeneratorTest {
         Insert insert = QueryBuilder.insertInto("table");
 
         //When
-        final Insert actual = view.generateInsertPrimaryKey(insert);
+        final Insert actual = view.generateInsertPrimaryKey(insert, false);
 
         //Then
         assertThat(actual.getQueryString()).isEqualTo("INSERT INTO table(id) VALUES (:id);");
