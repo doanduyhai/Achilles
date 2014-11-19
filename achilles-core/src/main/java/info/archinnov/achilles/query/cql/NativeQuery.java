@@ -98,7 +98,7 @@ public class NativeQuery {
 
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
 
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS, executorService);
+        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ROWS);
 
         Function<List<Row>, List<TypedMap>> rowsToTypedMaps = new Function<List<Row>, List<TypedMap>>() {
             @Override
@@ -107,7 +107,7 @@ public class NativeQuery {
             }
         };
 
-        final ListenableFuture<List<TypedMap>> futureTypedMap = asyncUtils.transformFuture(futureRows, rowsToTypedMaps, executorService);
+        final ListenableFuture<List<TypedMap>> futureTypedMap = asyncUtils.transformFutureSync(futureRows, rowsToTypedMaps);
 
         asyncUtils.maybeAddAsyncListeners(futureTypedMap, asyncListeners, executorService);
 
@@ -136,7 +136,7 @@ public class NativeQuery {
     public AchillesFuture<TypedMap> asyncFirst(FutureCallback<Object>... asyncListeners) {
         log.debug("Get first result for native query '{}' asynchronously", nativeStatementWrapper.getStatement());
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(nativeStatementWrapper);
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS, executorService);
+        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ROWS);
 
         Function<List<Row>, TypedMap> rowsToTypedMap = new Function<List<Row>, TypedMap>() {
             @Override
@@ -149,7 +149,7 @@ public class NativeQuery {
                 }
             }
         };
-        final ListenableFuture<TypedMap> futureTypedMap = asyncUtils.transformFuture(futureRows, rowsToTypedMap, executorService);
+        final ListenableFuture<TypedMap> futureTypedMap = asyncUtils.transformFutureSync(futureRows, rowsToTypedMap);
 
         asyncUtils.maybeAddAsyncListeners(futureTypedMap, asyncListeners, executorService);
 
@@ -203,7 +203,7 @@ public class NativeQuery {
             }
         };
 
-        final ListenableFuture<Iterator<TypedMap>> futureTypedMapIterator = asyncUtils.transformFuture(futureResultSet, toTypedMap, executorService);
+        final ListenableFuture<Iterator<TypedMap>> futureTypedMapIterator = asyncUtils.transformFutureSync(futureResultSet, toTypedMap);
         return asyncUtils.buildInterruptible(futureTypedMapIterator);
     }
 

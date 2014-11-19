@@ -61,7 +61,7 @@ public class EntityLoader {
                     return entity;
                 }
             };
-            final ListenableFuture<T> futureEntity = asyncUtils.transformFuture(futureRow, rowToEntity, context.getExecutorService());
+            final ListenableFuture<T> futureEntity = asyncUtils.transformFutureSync(futureRow, rowToEntity);
             achillesFuture = asyncUtils.buildInterruptible(futureEntity);
         }
         return achillesFuture;

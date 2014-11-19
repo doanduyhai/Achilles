@@ -88,7 +88,7 @@ public class SliceQueryExecutor {
         };
 
         final ListenableFuture<List<T>> futureEntities = coreAsyncGet(sliceQueryProperties);
-        final ListenableFuture<T> futureEntity = asyncUtils.transformFuture(futureEntities, takeFirstFunction, executorService);
+        final ListenableFuture<T> futureEntity = asyncUtils.transformFutureSync(futureEntities, takeFirstFunction);
         return asyncUtils.buildInterruptible(futureEntity);
     }
 
@@ -98,7 +98,7 @@ public class SliceQueryExecutor {
         final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
 
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(bsWrapper);
-        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ROWS, executorService);
+        final ListenableFuture<List<Row>> futureRows = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ROWS);
         Function<List<Row>, List<T>> rowsToEntities = new Function<List<Row>, List<T>>() {
             @Override
             public List<T> apply(List<Row> rows) {
@@ -112,10 +112,10 @@ public class SliceQueryExecutor {
                 return clusteredEntities;
             }
         };
-        final ListenableFuture<List<T>> futureEntities = asyncUtils.transformFuture(futureRows, rowsToEntities, executorService);
+        final ListenableFuture<List<T>> futureEntities = asyncUtils.transformFutureSync(futureRows, rowsToEntities);
         asyncUtils.maybeAddAsyncListeners(futureEntities, sliceQueryProperties.getAsyncListeners(), executorService);
 
-        return asyncUtils.transformFuture(futureEntities, this.<T>getProxyListTransformer(), executorService);
+        return asyncUtils.transformFutureSync(futureEntities, this.<T>getProxyListTransformer());
     }
 
     public <T> Iterator<T> iterator(final SliceQueryProperties<T> sliceQueryProperties) {
@@ -127,7 +127,7 @@ public class SliceQueryExecutor {
         log.debug("Get iterator for slice query asynchronously");
         final BoundStatementWrapper bsWrapper = daoContext.bindForSliceQuerySelect(sliceQueryProperties, defaultReadLevel);
         final ListenableFuture<ResultSet> resultSetFuture = daoContext.execute(bsWrapper);
-        final ListenableFuture<Iterator<Row>> futureIterator = asyncUtils.transformFuture(resultSetFuture, RESULTSET_TO_ITERATOR, executorService);
+        final ListenableFuture<Iterator<Row>> futureIterator = asyncUtils.transformFutureSync(resultSetFuture, RESULTSET_TO_ITERATOR);
 
         Function<Iterator<Row>, Iterator<T>> rowToIterator = new Function<Iterator<Row>, Iterator<T>>() {
             @Override
@@ -136,7 +136,7 @@ public class SliceQueryExecutor {
                 return new SliceQueryIterator<>(sliceQueryProperties, context, rowIterator);
             }
         };
-        final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFuture(futureIterator, rowToIterator, executorService);
+        final ListenableFuture<Iterator<T>> listenableFuture = asyncUtils.transformFutureSync(futureIterator, rowToIterator);
         asyncUtils.maybeAddAsyncListeners(listenableFuture, sliceQueryProperties.getAsyncListeners(), executorService);
         return asyncUtils.buildInterruptible(listenableFuture);
     }

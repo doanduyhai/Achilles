@@ -162,8 +162,8 @@ public class PersistenceManagerFacadeTest {
     public void should_persist() throws Exception {
         //Given
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
-        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureResultSets), resultSetsToEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -210,7 +210,7 @@ public class PersistenceManagerFacadeTest {
     @Test
     public void should_update() throws Exception {
         //Given
-        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureResultSets), resultSetsToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -232,7 +232,7 @@ public class PersistenceManagerFacadeTest {
     @Test
     public void should_delete() throws Exception {
         //Given
-        when(asyncUtils.transformFuture(eq(futureResultSets), resultSetsToEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureResultSets), resultSetsToEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -257,8 +257,8 @@ public class PersistenceManagerFacadeTest {
         when(loader.load(context.entityFacade, CompleteBean.class)).thenReturn(achillesFutureEntity);
         when(proxifier.buildProxyWithAllFieldsLoadedExceptCounters(entity, context.entityFacade)).thenReturn(entity);
 
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(achillesFutureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         //When
@@ -299,8 +299,8 @@ public class PersistenceManagerFacadeTest {
         CompleteBean proxy = new CompleteBean();
         when(refresher.refresh(proxy, context.entityFacade)).thenReturn(achillesFutureEntity);
         when(proxifier.removeProxy(proxy)).thenReturn(entity);
-        when(asyncUtils.transformFuture(eq(achillesFutureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
-        when(asyncUtils.transformFuture(eq(futureEntity), isoEntityCaptor.capture(), eq(executorService))).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(achillesFutureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
+        when(asyncUtils.transformFutureSync(eq(futureEntity), isoEntityCaptor.capture())).thenReturn(futureEntity);
         when(asyncUtils.buildInterruptible(futureEntity)).thenReturn(achillesFutureEntity);
 
         // When

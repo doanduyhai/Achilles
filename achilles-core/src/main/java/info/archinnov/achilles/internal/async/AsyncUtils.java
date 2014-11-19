@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import info.archinnov.achilles.async.SynchronousTransformingFuture;
 import info.archinnov.achilles.type.Empty;
 import org.apache.commons.lang3.ArrayUtils;
 import com.datastax.driver.core.ResultSet;
@@ -89,6 +90,10 @@ public class AsyncUtils {
 
     public <T, V> ListenableFuture<T> transformFuture(ListenableFuture<V> from, Function<V, T> function, ExecutorService executorService) {
         return Futures.transform(from, function, executorService);
+    }
+
+    public <T, V> ListenableFuture<T> transformFutureSync(ListenableFuture<V> from, Function<V, T> function) {
+        return new SynchronousTransformingFuture<>(from, function);
     }
 
 

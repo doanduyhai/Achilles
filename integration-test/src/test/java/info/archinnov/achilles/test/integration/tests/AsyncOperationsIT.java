@@ -18,6 +18,8 @@ package info.archinnov.achilles.test.integration.tests;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static info.archinnov.achilles.listener.CASResultListener.CASResult;
 import static info.archinnov.achilles.type.OptionsBuilder.withAsyncListeners;
+import static java.lang.Long.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
@@ -244,7 +246,7 @@ public class AsyncOperationsIT {
         FutureCallback<Object> successCallBack = new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
-                successSpy.getAndSet(result);
+                successSpy.set(result);
                 latch.countDown();
             }
 

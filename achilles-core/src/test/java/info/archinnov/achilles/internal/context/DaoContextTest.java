@@ -348,7 +348,7 @@ public class DaoContextTest {
         when(overrider.getReadLevel(context)).thenReturn(LOCAL_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, false, LOCAL_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFutureSync(futureResultSet, RESULTSET_TO_ROW)).thenReturn(futureRow);
 
         // When
         final ListenableFuture<Row> actual = daoContext.loadEntity(context);
@@ -369,7 +369,7 @@ public class DaoContextTest {
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindStatementWithOnlyPKInWhereClause(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFutureSync(futureResultSet, RESULTSET_TO_ROW)).thenReturn(futureRow);
         when(asyncUtils.buildInterruptible(futureRow).getImmediately()).thenReturn(row);
 
         // When
@@ -450,7 +450,7 @@ public class DaoContextTest {
         when(counterQueryMap.get(CQLQueryType.SELECT)).thenReturn(ps);
         when(binder.bindForSimpleCounterSelect(context, ps, pm, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFutureSync(futureResultSet, RESULTSET_TO_ROW)).thenReturn(futureRow);
         when(asyncUtils.buildInterruptible(futureRow).getImmediately()).thenReturn(row);
         when(row.isNull(ACHILLES_COUNTER_VALUE)).thenReturn(false);
         when(row.getLong(ACHILLES_COUNTER_VALUE)).thenReturn(11L);
@@ -506,7 +506,7 @@ public class DaoContextTest {
         when(overrider.getReadLevel(context)).thenReturn(EACH_QUORUM);
         when(binder.bindForClusteredCounterSelect(context, ps, false, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFutureSync(futureResultSet, RESULTSET_TO_ROW)).thenReturn(futureRow);
 
         // When
         ListenableFuture<Row> actual = daoContext.getClusteredCounter(context);
@@ -527,7 +527,7 @@ public class DaoContextTest {
         when(overrider.getReadLevel(context, counterMeta)).thenReturn(EACH_QUORUM);
         when(binder.bindForClusteredCounterSelect(context, ps, true, EACH_QUORUM)).thenReturn(bsWrapper);
         when(context.executeImmediate(bsWrapper)).thenReturn(futureResultSet);
-        when(asyncUtils.transformFuture(futureResultSet, RESULTSET_TO_ROW, executorService)).thenReturn(futureRow);
+        when(asyncUtils.transformFutureSync(futureResultSet, RESULTSET_TO_ROW)).thenReturn(futureRow);
         when(asyncUtils.buildInterruptible(futureRow).getImmediately()).thenReturn(row);
 
         when(row.isNull("counter")).thenReturn(false);

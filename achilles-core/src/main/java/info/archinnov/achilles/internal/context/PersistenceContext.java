@@ -269,11 +269,11 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFutureSync(resultSetFutures, applyTriggers);
 
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
 
-            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy, getExecutorService());
+            final ListenableFuture<T> proxyCreated = asyncUtils.transformFutureSync(triggersApplied, createProxy);
 
             return asyncUtils.buildInterruptible(proxyCreated);
         }
@@ -298,7 +298,7 @@ public class PersistenceContext {
                     return proxy;
                 }
             };
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFutureSync(resultSetFutures, applyTriggers);
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
             return asyncUtils.buildInterruptible(triggersApplied);
         }
@@ -314,7 +314,7 @@ public class PersistenceContext {
                     return (T) entity;
                 }
             };
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(resultSetFutures, applyTriggers, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFutureSync(resultSetFutures, applyTriggers);
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
             return asyncUtils.buildInterruptible(triggersApplied);
         }
@@ -329,7 +329,7 @@ public class PersistenceContext {
                     return Empty.INSTANCE;
                 }
             };
-            final ListenableFuture<Empty> triggersApplied = asyncUtils.transformFuture(resultSetFutures, toEmpty, getExecutorService());
+            final ListenableFuture<Empty> triggersApplied = asyncUtils.transformFutureSync(resultSetFutures, toEmpty);
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
             return asyncUtils.buildInterruptible(triggersApplied);
         }
@@ -347,7 +347,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTrigger, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFutureSync(achillesFuture, applyTrigger);
 
             asyncUtils.maybeAddAsyncListeners(triggersApplied, options, getExecutorService());
 
@@ -358,7 +358,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> proxyCreated = asyncUtils.transformFuture(triggersApplied, createProxy, getExecutorService());
+            final ListenableFuture<T> proxyCreated = asyncUtils.transformFutureSync(triggersApplied, createProxy);
             return asyncUtils.buildInterruptible(proxyCreated);
         }
 
@@ -380,7 +380,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> proxyRemoved = asyncUtils.transformFuture(achillesFuture, removeProxy, getExecutorService());
+            final ListenableFuture<T> proxyRemoved = asyncUtils.transformFutureSync(achillesFuture, removeProxy);
 
             asyncUtils.maybeAddAsyncListeners(proxyRemoved, options, getExecutorService());
 
@@ -392,7 +392,7 @@ public class PersistenceContext {
                 }
             };
 
-            final ListenableFuture<T> triggersApplied = asyncUtils.transformFuture(achillesFuture, applyTriggers, getExecutorService());
+            final ListenableFuture<T> triggersApplied = asyncUtils.transformFutureSync(achillesFuture, applyTriggers);
 
             return asyncUtils.buildInterruptible(triggersApplied);
         }
