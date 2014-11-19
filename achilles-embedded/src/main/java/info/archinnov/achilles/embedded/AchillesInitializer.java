@@ -103,6 +103,8 @@ public class AchillesInitializer {
 
             PersistenceManagerFactory factory = PersistenceManagerFactoryBuilder.build(cluster, achillesParameters);
 
+            ServerStarter.CASSANDRA_EMBEDDED.getShutdownHook().addManagerFactory(factory);
+
             PersistenceManager manager = factory.createPersistenceManager();
             AsyncManager asyncManager = factory.createAsyncManager();
 

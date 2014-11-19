@@ -213,4 +213,11 @@ public class CommonPersistenceManager extends AbstractPersistenceManager {
         log.debug("Deleting  entity of type '{}' by its id '{}'", entityClass, primaryKey);
         super.asyncDeleteById(entityClass, primaryKey, options).getImmediately();
     }
+
+    /**
+     * Call shutdown on Achilles, especially shutdown the internal thread pool handling asynchronous tasks
+     */
+    public void shutDown() {
+        configContext.getExecutorService().shutdown();
+    }
 }

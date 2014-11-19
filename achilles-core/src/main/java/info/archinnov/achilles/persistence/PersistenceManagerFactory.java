@@ -652,4 +652,16 @@ public class PersistenceManagerFactory {
             return new PersistenceManagerFactory(cluster, configMap).bootstrap();
         }
     }
+
+    /**
+     * Call shutdown on Achilles, especially shutdown the internal thread pool handling asynchronous tasks
+     */
+    public void shutDown() {
+        configContext.getExecutorService().shutdown();
+    }
+
+    @Override
+    public String toString() {
+        return "PersistenceManagerFactory for keyspace : "+this.configContext.getCurrentKeyspace().or("none");
+    }
 }
