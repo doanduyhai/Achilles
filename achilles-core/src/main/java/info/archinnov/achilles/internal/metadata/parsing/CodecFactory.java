@@ -3,8 +3,10 @@ package info.archinnov.achilles.internal.metadata.parsing;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.TypeTransformer;
 import info.archinnov.achilles.codec.Codec;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayPrimitiveCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteCodec;
@@ -165,8 +167,10 @@ public class CodecFactory {
             codec = new NativeCodec<Object>(type);
         } else if (type.isEnum()) {
             codec = createEnumCodec(type, maybeEncoding);
-        } else {
+        } else if (filter.hasAnnotation(context.getCurrentField(), JSON.class)) {
             codec = new JSONCodec<>(context.getCurrentObjectMapper(), type);
+        } else {
+            throw new AchillesBeanMappingException(format("The type '%s' on field '%s' of entity '%s' is not supported. If you want to convert it to JSON string, do not forget to add @JSON", type.getCanonicalName(), context.getCurrentPropertyName(), context.getCurrentEntityClass().getCanonicalName()));
         }
         return codec;
     }

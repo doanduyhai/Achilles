@@ -18,6 +18,7 @@ package info.archinnov.achilles.test.integration.entity;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.JSON;
 
 @Entity
 public class User {
@@ -31,9 +32,11 @@ public class User {
 	private String lastname;
 
 	@Column
-	private User referrer;
+    @JSON
+    private User referrer;
 
 	@Column
+    @JSON
 	private User referree;
 
 	public User() {

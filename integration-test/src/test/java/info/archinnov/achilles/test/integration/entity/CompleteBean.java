@@ -18,11 +18,8 @@ package info.archinnov.achilles.test.integration.entity;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import info.archinnov.achilles.annotations.Column;
-import info.archinnov.achilles.annotations.EmptyCollectionIfNull;
-import info.archinnov.achilles.annotations.Entity;
-import info.archinnov.achilles.annotations.Id;
-import info.archinnov.achilles.annotations.Index;
+
+import info.archinnov.achilles.annotations.*;
 import info.archinnov.achilles.type.Counter;
 
 @Entity(table = CompleteBean.TABLE_NAME, comment = "Table for testing main operations: 'insert', 'update', 'delete', 'find'")
@@ -53,12 +50,14 @@ public class CompleteBean {
     private Map<Integer, String> preferences;
 
     @Column
+    @JSON
     private Tweet welcomeTweet;
 
     @Column
     private Counter version;
 
     @Column
+    @JSON
     private List<Tweet> favoriteTweets;
 
     public Long getId() {

@@ -19,6 +19,7 @@ import java.util.UUID;
 import info.archinnov.achilles.annotations.Column;
 import info.archinnov.achilles.annotations.Entity;
 import info.archinnov.achilles.annotations.Id;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.type.Counter;
 
 @Entity
@@ -27,7 +28,8 @@ public class Tweet {
 	private UUID id;
 
 	@Column
-	private User creator;
+    @JSON
+    private User creator;
 
 	@Column
 	private String content;

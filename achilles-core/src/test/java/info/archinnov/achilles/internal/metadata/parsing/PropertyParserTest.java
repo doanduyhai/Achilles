@@ -760,7 +760,7 @@ public class PropertyParserTest {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void should_parse_map_with_parameterized_value() throws Exception {
+    public void should_exception_for_nested_collection() throws Exception {
         @SuppressWarnings("unused")
         @Entity(keyspace = "ks", table="test")
         class Test {
@@ -777,18 +777,9 @@ public class PropertyParserTest {
 
         }
         PropertyParsingContext context = newContext(Test.class, Test.class.getDeclaredField("map"));
-        PropertyMeta meta = parser.parse(context);
-
-        assertThat(meta.getPropertyName()).isEqualTo("map");
-        assertThat((Class) meta.getValueClass()).isEqualTo(List.class);
-        assertThat(meta.type()).isEqualTo(PropertyType.MAP);
-
-        assertThat(meta.<Integer>getKeyClass()).isEqualTo(Integer.class);
-
-        assertThat(meta.getGetter().getName()).isEqualTo("getMap");
-        assertThat((Class<Map>) meta.getGetter().getReturnType()).isEqualTo(Map.class);
-        assertThat(meta.getSetter().getName()).isEqualTo("setMap");
-        assertThat((Class<Map>) meta.getSetter().getParameterTypes()[0]).isEqualTo(Map.class);
+        expectedEx.expect(AchillesBeanMappingException.class);
+        expectedEx.expectMessage("The type 'java.util.List' on field 'map' of entity 'null' is not supported. If you want to convert it to JSON string, do not forget to add @JSON");
+        parser.parse(context);
     }
 
     @Test

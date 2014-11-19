@@ -11,8 +11,10 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import info.archinnov.achilles.annotations.Enumerated;
+import info.archinnov.achilles.annotations.JSON;
 import info.archinnov.achilles.annotations.TypeTransformer;
 import info.archinnov.achilles.codec.Codec;
+import info.archinnov.achilles.exception.AchillesBeanMappingException;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteArrayPrimitiveCodec;
 import info.archinnov.achilles.internal.metadata.codec.ByteCodec;
@@ -211,6 +213,7 @@ public class CodecFactoryTest {
     @Test
     public void should_create_JSON_codec() throws Exception {
         class Test {
+            @JSON
             private Pojo json;
         }
 
@@ -229,6 +232,23 @@ public class CodecFactoryTest {
         assertThat(decoded.getName()).isEqualTo("John");
     }
 
+    @Test(expected = AchillesBeanMappingException.class)
+    public void should_exception_for_unsupported_types() throws Exception {
+        //Given
+        class Test {
+            private Pojo json;
+        }
+
+        Field field = Test.class.getDeclaredField("json");
+
+        when(context.getCurrentEntityClass()).thenReturn((Class)Test.class);
+
+        //When
+        factory.parseSimpleField(createContext(field));
+
+        //Then
+
+    }
 
     @Test
     public void should_create_list_codec() throws Exception {
